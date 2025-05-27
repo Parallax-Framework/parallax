@@ -165,3 +165,14 @@ function PLAYER:ToggleWeaponRaise()
     local bRaised = self:GetRelay("bWeaponRaised", false)
     self:SetWeaponRaised(!bRaised)
 end
+
+PLAYER.StripWeaponInternal = PLAYER.StripWeaponInternal or PLAYER.StripWeapon
+function PLAYER:StripWeapon(weaponClass)
+    local axWeapons = self:GetRelay("weapons", {})
+    if ( axWeapons[weaponClass] ) then
+        axWeapons[weaponClass] = nil
+        self:SetRelay("weapons", axWeapons)
+    end
+
+    return self:StripWeaponInternal(weaponClass)
+end
