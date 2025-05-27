@@ -48,7 +48,7 @@ function PANEL:Populate()
         parent:Populate()
     end
 
-    local characterList = self:Add("DScrollPanel")
+    local characterList = self:Add("ax.scroller.vertical")
     characterList:Dock(FILL)
     characterList:DockMargin(padding * 4, padding, padding * 4, padding)
     characterList:InvalidateParent(true)

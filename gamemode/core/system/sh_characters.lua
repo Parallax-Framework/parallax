@@ -101,7 +101,7 @@ ax.character:RegisterVariable("model", {
         label:SetFont("parallax.button")
         label:SetText(self.Name or k)
 
-        local scroller = parent:Add("DScrollPanel")
+        local scroller = parent:Add("ax.scroller.vertical")
         scroller:Dock(TOP)
         scroller:DockMargin(0, 0, 0, ScreenScale(16))
         scroller:SetTall(256)

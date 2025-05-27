@@ -14,7 +14,7 @@ function PANEL:Init()
     title:SetFont("parallax.title")
     title:SetText("SCOREBOARD")
 
-    self.container = self:Add("DScrollPanel")
+    self.container = self:Add("ax.scroller.vertical")
     self.container:Dock(FILL)
     self.container:DockMargin(0, padding / 8, 0, 0)
 

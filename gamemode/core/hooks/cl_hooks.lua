@@ -727,7 +727,7 @@ function GM:PopulateHelpCategories(categories)
         filler:Dock(FILL)
     end
     categories["flags"] = function(container)
-        local scroller = container:Add("DScrollPanel")
+        local scroller = container:Add("ax.scroller.vertical")
         scroller:Dock(FILL)
         scroller:GetVBar():SetWide(0)
         scroller.Paint = nil

@@ -16,7 +16,7 @@ function PANEL:Init()
     self.buttons.btnLeft:SetAlpha(0)
     self.buttons.btnRight:SetAlpha(0)
 
-    self.container = self:Add("DScrollPanel")
+    self.container = self:Add("ax.scroller.vertical")
     self.container:Dock(FILL)
     self.container:GetVBar():SetWide(0)
     self.container.Paint = nil
