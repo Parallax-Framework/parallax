@@ -179,11 +179,7 @@ function PANEL:AddConfig(configData)
         label:SetContentAlignment(6)
         label.Think = function(this)
             this:SetTextColor(panel:GetTextColor())
-        end
-
-        slider.OnValueSet = function(this, _)
-            value = this:GetValue()
-            label:SetText(this:GetValue())
+            this:SetText(tostring(slider:GetValue()), true, true)
         end
 
         slider.OnValueChanged = function(this, _)

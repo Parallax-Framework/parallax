@@ -178,12 +178,15 @@ function PANEL:AddSetting(settingData)
         label:SetContentAlignment(6)
         label.Think = function(this)
             this:SetTextColor(panel:GetTextColor())
+            this:SetText(tostring(slider:GetValue()), true, true)
         end
 
         slider.OnValueSet = function(this, _)
             ax.option:Set(settingData.UniqueID, this:GetValue())
-            value = this:GetValue()
-            label:SetText(this:GetValue(), true, true, true)
+        end
+
+        slider.OnValueChanged = function(this, _)
+            ax.client:EmitSound("ui/buttonrollover.wav", 100, 100, 1, CHAN_STATIC)
         end
 
         panel.DoClick = function(this)

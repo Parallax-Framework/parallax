@@ -63,7 +63,24 @@ end
 function PANEL:OnCursorMoved(x, y)
     if ( !self.dragging ) then return end
 
-    local value = math.Clamp((x / self:GetWide()) * (self.max - self.min) + self.min, self.min, self.max)
+    local width = self:GetWide()
+    local fraction = math.Clamp(x / width, 0, 1) -- Ensure fraction is always between 0 and 1
+
+    local value = nil -- Initialize value to ensure it is always defined
+
+    -- Snap to min or max if the cursor is near the edges
+    if ( fraction <= 0.01 ) then
+        value = self.min
+    elseif ( fraction >= 0.99 ) then
+        value = self.max
+    else
+        value = fraction * (self.max - self.min) + self.min
+    end
+
+    -- Ensure value is always set
+    if ( value == nil ) then
+        value = self.min -- Fallback to min if value is somehow nil
+    end
 
     self:SetValue(value)
 end
