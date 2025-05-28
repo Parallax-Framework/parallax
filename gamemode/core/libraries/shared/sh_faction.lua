@@ -103,7 +103,7 @@ function ax.faction:Register(factionData)
     end
 
     local uniqueID = string.lower(string.gsub(FACTION.Name, "%s+", "_"))
-    for k, v in pairs(self.instances) do
+    for k, v in ipairs(self.instances) do
         if ( v.UniqueID == uniqueID ) then
             return false, "Attempted to register a faction that already exists!"
         end
@@ -132,17 +132,16 @@ function ax.faction:Get(identifier)
             return false, "Attempted to get a faction with an invalid ID!"
         end
 
-        identifier = tonumber(identifier)
         return self.instances[identifier]
-    end
+    elseif ( isstring(identifier) ) then
+        if ( self.stored[identifier] ) then
+            return self.stored[identifier]
+        end
 
-    if ( self.stored[identifier] ) then
-        return self.stored[identifier]
-    end
-
-    for k, v in ipairs(self.instances) do
-        if ( ax.util:FindString(v.Name, identifier) or ax.util:FindString(v.UniqueID, identifier) ) then
-            return v
+        for k, v in ipairs(self.instances) do
+            if ( ax.util:FindString(v.Name, identifier) or ax.util:FindString(v.UniqueID, identifier) ) then
+                return v
+            end
         end
     end
 
