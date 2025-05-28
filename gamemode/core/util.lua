@@ -306,19 +306,25 @@ function ax.util:FindPlayer(identifier)
         return Player(identifier)
     end
 
-    if ( isstring(identifierType) ) then
-        for _, v in player.Iterator() do
-            if ( self:FindString(v:Name(), identifier) or self:FindString(v:SteamID(), identifier) or self:FindString(v:SteamID64(), identifier) ) then
-                return v
-            end
-        end
-    end
-
-    if ( self:FindString(identifierType, "table") ) then
+    if ( istable(identifier) ) then
         for k, v in ipairs(identifier) do
             local foundPlayer = self:FindPlayer(v)
             if ( foundPlayer ) then
                 return foundPlayer
+            end
+        end
+    end
+
+    if ( isstring(identifier) ) then
+        if (string.find(identifier, "STEAM_(%d+):(%d+):(%d+)")) then
+            return player.GetBySteamID(identifier)
+        elseif (string.find(identifier, "7656119%d+")) then
+            return player.GetBySteamID64(identifier)
+        end
+
+        for _, v in player.Iterator() do
+            if ( self:FindString(v:Name(), identifier) or self:FindString(v:SteamID(), identifier) or self:FindString(v:SteamID64(), identifier) ) then
+                return v
             end
         end
     end
