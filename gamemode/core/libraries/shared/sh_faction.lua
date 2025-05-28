@@ -133,12 +133,7 @@ function ax.faction:Get(identifier)
         end
 
         identifier = tonumber(identifier)
-
-        for k, v in ipairs(self:GetAll()) do
-            if ( ax.util:FindString(v.ID, identifier) ) then
-                return v
-            end
-        end
+        return self.instances[identifier]
     end
 
     if ( self.stored[identifier] ) then

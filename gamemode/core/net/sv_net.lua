@@ -207,3 +207,11 @@ ax.net:Hook("client.ready", function(client)
 
     hook.Run("PlayerReady", client)
 end)
+
+ax.net:Hook("client.voice.start", function(client, speaker)
+    hook.Run("PlayerVoiceStart", speaker)
+end)
+
+ax.net:Hook("client.voice.end", function(client, prevSpeaker)
+    hook.Run("PlayerVoiceEnd", prevSpeaker)
+end)
