@@ -674,6 +674,11 @@ function ax.util:GetMaterial(path, parameters)
     return mat
 end
 
+function ax.util:ZeroNumber(number, digits)
+    local str = tostring(number)
+    return string.rep("0", digits - #str) .. str
+end
+
 if ( CLIENT ) then
     --- Returns the given text's width.
     -- @realm client
