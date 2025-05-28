@@ -847,3 +847,15 @@ end
 function GM:ForceDermaSkin()
     return "Parallax"
 end
+
+function GM:OnScreenSizeChanged(oldWidth, oldHeight, newWidth, newHeight)
+    for k, v in ipairs(ax.gui) do
+        if ( IsValid(v) and ispanel(v) ) then
+            v:Remove()
+
+            -- Perhaps recreate the GUIs?
+        end
+    end
+
+    hook.Run("LoadFonts")
+end
