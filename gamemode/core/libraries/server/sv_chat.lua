@@ -11,6 +11,8 @@ function ax.chat:SendSpeaker(speaker, uniqueID, text)
         end
     end
 
+    if ( players[1] == nil ) then return end
+
     ax.net:Start(players, "chat.send", {
         Speaker = speaker:EntIndex(),
         UniqueID = uniqueID,
