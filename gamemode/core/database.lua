@@ -102,14 +102,14 @@ function ax.database:LoadTables()
     })
 
     self:InitializeTable("ax_characters", {
-        id = "INT PRIMARY KEY AUTO_INCREMENT",
+        id = "INTEGER PRIMARY KEY AUTOINCREMENT",
         steamid = "VARCHAR(32)",
         inventories = "TEXT",
         data = "TEXT"
     })
 
     self:InitializeTable("ax_inventories", {
-        id = "INT PRIMARY KEY AUTO_INCREMENT",
+        id = "INTEGER PRIMARY KEY AUTOINCREMENT",
         character_id = "INT",
         name = "TEXT",
         max_weight = "INT",
@@ -117,7 +117,7 @@ function ax.database:LoadTables()
     })
 
     self:InitializeTable("ax_items", {
-        id = "INT PRIMARY KEY AUTO_INCREMENT",
+        id = "INTEGER PRIMARY KEY AUTOINCREMENT",
         inventory_id = "INT",
         character_id = "INT",
         unique_id = "TEXT",

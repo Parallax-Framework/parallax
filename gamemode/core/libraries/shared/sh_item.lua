@@ -9,11 +9,9 @@ ax.item.instances = ax.item.instances or {}
 
 function ax.item:Load(path)
     if ( !path or !isstring(path) ) then return end
+
     local files, _ = file.Find(path .. "/*.lua", "LUA")
-    if ( !files or #files == 0 ) then
-        ax.util:PrintError("No items found in path: " .. path)
-        return
-    end
+    if ( !files or #files == 0 ) then return end
 
     for _, v in ipairs(files) do
         local filePath = path .. "/" .. v
@@ -153,6 +151,8 @@ function ax.item:LoadFolder(path)
 
         self:Load(path .. "/" .. v)
     end
+
+    self:Load(path)
 end
 
 function ax.item:Get(identifier)

@@ -1,17 +1,30 @@
---- SQLite Utility Library for Parallax
--- Provides dynamic variable registration and row management per table.
--- Designed for frameworks with multiple data tables like `users`, `characters`, etc.
+--- Parallax Sqlite Database Wrapper
+-- Provides a wrapper around the Garry's Mod SQLite system.
 -- @module ax.sqlite
 
 ax.sqlite = ax.sqlite or {}
-ax.sqlite.tables = ax.sqlite.tables or {}
 
---- Registers a variable for a table to be included in table creation and loading.
--- It will also automatically add the column to the table in the database if it doesn't exist.
+--- Executes a raw SQL query and optionally handles success/failure callbacks.
 -- @realm shared
--- @tparam string tableName The name of the table (e.g. "users", "characters")
--- @tparam string key The name of the variable (e.g. "credits", "xp")
--- @tparam any default The default value for the variable
+-- @tparam string query SQL query string
+-- @tparam function[opt] onSuccess Callback with query result (table)
+-- @tparam function[opt] onError Callback with error message (string)
+function ax.sqlite:Query(query, onSuccess, onError)
+    local result = sql.Query(query)
+    if ( result == false ) then
+        local err = sql.LastError()
+        ax.util:PrintError("SQLite query failed: " .. query .. " :: " .. (err or "unknown"))
+        if ( onError ) then onError(err) end
+    else
+        if ( onSuccess ) then onSuccess(result) end
+    end
+
+    return result
+end
+
+--- Registers a variable/column for the specified table and sets its default value.
+-- @realm shared
+-- @usage ax.sqlite:RegisterVar
 function ax.sqlite:RegisterVar(tableName, key, default)
     self.tables[tableName] = self.tables[tableName] or {}
     self.tables[tableName][key] = default
@@ -19,12 +32,56 @@ function ax.sqlite:RegisterVar(tableName, key, default)
     self:AddColumn(tableName, key, type(default) == "number" and "INTEGER" or "TEXT", default)
 end
 
---- Adds a column to an existing table if the column doesn't already exist.
+--- Creates a SQL table with the registered and extra schema fields.
 -- @realm shared
--- @tparam string tableName The name of the table (e.g. "users", "characters")
--- @tparam string columnName The name of the column to add
--- @tparam string columnType The type of the column (e.g. "INTEGER", "TEXT")
--- @tparam any defaultValue The default value to set if the column is added
+-- @usage ax.sqlite:InitializeTable
+function ax.sqlite:InitializeTable(tableName, extraSchema)
+    local schema = {}
+
+    -- Check if any primary key is defined in user schema
+    local hasPrimaryKey = false
+    for k, v in pairs(extraSchema or {}) do
+        if ( isstring(v) and v:find("PRIMARY KEY") ) then
+            hasPrimaryKey = true
+            break
+        end
+    end
+
+    -- Only default to id primary key if not explicitly defined
+    if ( !hasPrimaryKey ) then
+        schema.id = "INTEGER PRIMARY KEY AUTOINCREMENT"
+    end
+
+    -- Merge registered vars
+    for k, v in pairs(self.tables[tableName] or {}) do
+        if ( isnumber(v) ) then
+            schema[k] = "INT"
+        elseif ( isstring(v) ) then
+            schema[k] = "TEXT"
+        elseif ( isbool(v) ) then
+            schema[k] = "BOOLEAN"
+        else
+            schema[k] = "TEXT"
+        end
+    end
+
+    -- Merge user-provided schema
+    for k, v in pairs(extraSchema or {}) do
+        schema[k] = v
+    end
+
+    local parts = {}
+    for k, v in pairs(schema) do
+        parts[#parts + 1] = string.format("`%s` %s", k, v)
+    end
+
+    local query = string.format("CREATE TABLE IF NOT EXISTS `%s` (%s);", tableName, table.concat(parts, ", "))
+    self:Query(query)
+end
+
+--- Adds a column to a table if it doesn't exist already.
+-- @realm shared
+-- @usage ax.sqlite:AddColumn
 function ax.sqlite:AddColumn(tableName, columnName, columnType, defaultValue)
     local result = sql.Query(string.format("PRAGMA table_info(%s);", tableName))
     if ( result ) then
@@ -44,16 +101,14 @@ function ax.sqlite:AddColumn(tableName, columnName, columnType, defaultValue)
                 columnType,
                 sql.SQLStr(defaultValue)
             )
-            sql.Query(insertQuery)
+            self:Query(insertQuery)
         end
     end
 end
 
---- Returns a default row based on registered variables for a table.
+--- Returns a default row populated with the registered default values.
 -- @realm shared
--- @tparam string query The table name
--- @tparam table[opt] override Optional overrides to apply to default row
--- @treturn table The default row with values
+-- @usage ax.sqlite:GetDefaultRow
 function ax.sqlite:GetDefaultRow(query, override)
     local data = table.Copy(self.tables[query] or {})
     for k, v in pairs(override or {}) do
@@ -63,42 +118,9 @@ function ax.sqlite:GetDefaultRow(query, override)
     return data
 end
 
---- Initializes a table by creating it in SQLite with registered and extra schema fields.
+--- Loads a row based on a key/value match or inserts a default if not found.
 -- @realm shared
--- @tparam string query The table name
--- @tparam table[opt] extraSchema Extra schema definitions (e.g. primary key)
-function ax.sqlite:InitializeTable(query, extraSchema)
-    local schema = {
-        id = "INTEGER PRIMARY KEY AUTOINCREMENT"
-    }
-
-    for k, v in pairs(self.tables[query] or {}) do
-        if ( isnumber(v) ) then
-            schema[k] = "INTEGER"
-        elseif ( isstring(v) ) then
-            schema[k] = "TEXT"
-        elseif ( isbool(v) ) then
-            schema[k] = "BOOLEAN"
-        else
-            schema[k] = "TEXT"
-        end
-    end
-
-    if ( extraSchema ) then
-        for k, v in pairs(extraSchema) do
-            schema[k] = v
-        end
-    end
-
-    self:CreateTable(query, schema)
-end
-
---- Loads a row from a table, or inserts a default if not found.
--- @realm shared
--- @tparam string query Table name
--- @tparam string key Column to match (e.g. "steamid")
--- @tparam any value Value to match (e.g. player's SteamID)
--- @tparam function callback Function to run with resulting data row
+-- @usage ax.sqlite:LoadRow
 function ax.sqlite:LoadRow(query, key, value, callback)
     local condition = string.format("%s = %s", key, sql.SQLStr(value))
     local result = self:Select(query, nil, condition)
@@ -137,12 +159,9 @@ function ax.sqlite:LoadRow(query, key, value, callback)
     end
 end
 
---- Saves a full data row back into the table using a key match.
+--- Saves a row of data into the table using the given key.
 -- @realm shared
--- @tparam string query Table name
--- @tparam table data The row data to save
--- @tparam string key Column name to use for matching
--- @tparam function[opt] callback Optional callback to run after saving
+-- @usage ax.sqlite:SaveRow
 function ax.sqlite:SaveRow(query, data, key, callback)
     local condition = string.format("%s = %s", key, sql.SQLStr(data[key]))
     self:Update(query, data, condition)
@@ -152,25 +171,9 @@ function ax.sqlite:SaveRow(query, data, key, callback)
     end
 end
 
---- Creates a table with a given schema if it doesn't already exist.
+--- Inserts a new row of data into the table.
 -- @realm shared
--- @tparam string query Table name
--- @tparam table schema Column definitions
-function ax.sqlite:CreateTable(query, schema)
-    local parts = {}
-    for column, columnType in pairs(schema) do
-        parts[#parts + 1] = string.format("%s %s", column, columnType)
-    end
-
-    local insertQuery = string.format("CREATE TABLE IF NOT EXISTS %s (%s);", query, table.concat(parts, ", "))
-    sql.Query(insertQuery)
-end
-
---- Inserts a row into a table and optionally returns the inserted row ID.
--- @realm shared
--- @tparam string query Table name
--- @tparam table data Row data
--- @tparam function[opt] callback Optional callback to receive last inserted ID
+-- @usage ax.sqlite:Insert
 function ax.sqlite:Insert(query, data, callback)
     local keys, values = {}, {}
 
@@ -185,7 +188,7 @@ function ax.sqlite:Insert(query, data, callback)
         table.concat(keys, ", "),
         table.concat(values, ", ")
     )
-    sql.Query(insertQuery)
+    self:Query(insertQuery)
 
     if ( callback ) then
         local result = sql.QueryRow("SELECT last_insert_rowid();")
@@ -196,34 +199,9 @@ function ax.sqlite:Insert(query, data, callback)
     end
 end
 
---- Deletes a row from a table
+--- Updates existing data in the table matching a given condition.
 -- @realm shared
--- @tparam string query Table name
--- @tparam string condition WHERE clause condition
--- @tparam function[opt] callback Optional callback to run after deletion
--- @treturn boolean Success status
-function ax.sqlite:Delete(query, condition, callback)
-    local insertQuery = string.format("DELETE FROM %s WHERE %s;", query, condition)
-    local result = sql.Query(insertQuery)
-    if ( result == false ) then
-        ax.util:PrintError("Database Failed to delete row: ", insertQuery, sql.LastError())
-        return false
-    end
-
-    if ( callback and isfunction(callback) ) then
-        callback(result)
-    end
-
-    return true
-end
-
---- Updates a row in a table based on a condition.
--- @realm shared
--- @tparam string query Table name
--- @tparam table data Row data to update
--- @tparam string condition WHERE clause condition
--- @tparam function[opt] callback Optional callback to run after update
--- @treturn boolean Success status
+-- @usage ax.sqlite:Update
 function ax.sqlite:Update(query, data, condition, callback)
     local updates = {}
     for k, v in pairs(data) do
@@ -231,7 +209,7 @@ function ax.sqlite:Update(query, data, condition, callback)
     end
 
     local insertQuery = string.format("UPDATE %s SET %s WHERE %s;", query, table.concat(updates, ", "), condition)
-    local result = sql.Query(insertQuery)
+    local result = self:Query(insertQuery)
     if ( result == false ) then
         ax.util:PrintError("Database Failed to update row: ", insertQuery, sql.LastError())
         return false
@@ -244,13 +222,27 @@ function ax.sqlite:Update(query, data, condition, callback)
     return true
 end
 
---- Selects rows from a table matching a condition.
+--- Deletes rows from the table based on a condition.
 -- @realm shared
--- @tparam string query Table name
--- @tparam table[opt] columns Array of column names or nil for all
--- @tparam string[opt] condition WHERE clause
--- @tparam function[opt] callback Optional callback to process results
--- @treturn table|nil Resulting rows or nil
+-- @usage ax.sqlite:Delete
+function ax.sqlite:Delete(query, condition, callback)
+    local insertQuery = string.format("DELETE FROM %s WHERE %s;", query, condition)
+    local result = self:Query(insertQuery)
+    if ( result == false ) then
+        ax.util:PrintError("Database Failed to delete row: ", insertQuery, sql.LastError())
+        return false
+    end
+
+    if ( callback and isfunction(callback) ) then
+        callback(result)
+    end
+
+    return true
+end
+
+--- Selects rows from the table matching the optional condition.
+-- @realm shared
+-- @usage ax.sqlite:Select
 function ax.sqlite:Select(query, columns, condition, callback)
     local cols = columns and table.concat(columns, ", ") or "*"
     local insertQuery = string.format("SELECT %s FROM %s", cols, query)
@@ -259,7 +251,7 @@ function ax.sqlite:Select(query, columns, condition, callback)
         insertQuery = insertQuery .. " WHERE " .. condition
     end
 
-    local result = sql.Query(insertQuery)
+    local result = self:Query(insertQuery)
     if ( result == false ) then
         ax.util:PrintError("Database Failed to select rows: ", insertQuery, " ", sql.LastError())
         return nil
@@ -272,11 +264,9 @@ function ax.sqlite:Select(query, columns, condition, callback)
     return result
 end
 
---- Returns the number of rows in a table.
+--- Counts the number of rows in a table matching an optional condition.
 -- @realm shared
--- @tparam string query Table name
--- @tparam string[opt] condition WHERE clause
--- @treturn number Number of rows
+-- @usage ax.sqlite:Count
 function ax.sqlite:Count(query, condition)
     local insertQuery = string.format("SELECT COUNT(*) FROM %s", query)
 
@@ -284,6 +274,6 @@ function ax.sqlite:Count(query, condition)
         insertQuery = insertQuery .. " WHERE " .. condition
     end
 
-    local result = sql.Query(insertQuery)
+    local result = self:Query(insertQuery)
     return result and result[1]["COUNT(*)"] or 0
 end
