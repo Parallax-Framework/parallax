@@ -111,8 +111,8 @@ function PANEL:Init()
     self.recommendations:GetVBar():SetWide(0)
     self.recommendations.list = {}
     self.recommendations.panels = {}
-    self.recommendations.indexSelect = 1
-    self.recommendations.maxSelection = 1
+    self.recommendations.indexSelect = 0
+    self.recommendations.maxSelection = 0
     self.recommendations.Paint = function(this, width, height)
         ax.util:DrawBlur(this)
 
@@ -140,8 +140,8 @@ function PANEL:PopulateRecommendations(text)
 
             self.recommendations.list = {}
             self.recommendations.panels = {}
-            self.recommendations.indexSelect = 1
-            self.recommendations.maxSelection = 1
+            self.recommendations.indexSelect = 0
+            self.recommendations.maxSelection = 0
         end
 
         return
