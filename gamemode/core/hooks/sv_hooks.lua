@@ -191,6 +191,8 @@ function GM:OnReloaded()
     if ( _reloaded ) then return end
     _reloaded = true
 
+    ax.config:Synchronize()
+
     ax.module:LoadFolder("parallax/modules")
     ax.item:LoadFolder("parallax/gamemode/items")
     ax.schema:Initialize()

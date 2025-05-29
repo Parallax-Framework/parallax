@@ -115,14 +115,19 @@ end
 -- @return Whether or not the configuration was synchronized with the player.
 -- @usage ax.config:Synchronize(Entity(1)) -- Synchronizes the configuration with the first player.
 function ax.config:Synchronize(client)
-    if ( !IsValid(client) ) then return false end
-
     local tableToSend = self:GetNetworkData()
+
+    if ( !IsValid(client) ) then
+        ax.net:Start(nil, "config.sync", tableToSend)
+        hook.Run("PostConfigSync")
+
+        return
+    end
+
     local shouldSend = hook.Run("PreConfigSync", client, tableToSend)
     if ( shouldSend == false ) then return false end
 
     ax.net:Start(client, "config.sync", tableToSend)
-
     hook.Run("PostConfigSync", client)
 
     return true
