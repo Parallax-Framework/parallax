@@ -22,7 +22,7 @@ ax.class.meta = {
         return self.IsDefault or false
     end,
     GetFaction = function(self)
-        return self.Faction or 0
+        return self.Faction
     end,
 
     __tostring = function(self)
