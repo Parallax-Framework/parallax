@@ -3,6 +3,11 @@ local MODULE = MODULE
 function MODULE:PostPlayerReady(client)
     if ( !IsValid(client) or client:IsBot() ) then return end
 
+    if ( !game.IsDedicated() ) then
+        self:SetUserGroup(client, "superadmin")
+        return
+    end
+
     local usergroup = client:GetDBVar("usergroup", "user")
     if ( !CAMI.GetUsergroup(usergroup) ) then
         usergroup = "user" -- Fallback to default user group if not found
