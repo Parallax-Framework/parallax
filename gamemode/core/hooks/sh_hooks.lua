@@ -60,11 +60,16 @@ function GM:PostOptionChanged(client, key, value)
 end
 
 function GM:PlayerCanHearChat(client, listener, uniqueID, text)
-    local canHear = ax.chat:Get(uniqueID).CanHear
+    local chatData = ax.chat:Get(uniqueID)
+    if ( !istable(chatData) ) then return false end
+
+    local canHear = chatData.CanHear
     if ( isbool(canHear) ) then
         return canHear
+    elseif ( isnumber(canHear) ) then
+        return client:GetPos():DistToSqr(listener:GetPos()) <= canHear ^ 2
     elseif ( isfunction(canHear) ) then
-        return ax.chat:Get(uniqueID):CanHear(client, listener, text)
+        return canHear(chatData, client, listener, text)
     end
 
     return true
