@@ -335,24 +335,14 @@ end
 -- @param identifier any The identifier to search for.
 -- @return Player The player that was found.
 function ax.util:FindPlayer(identifier)
-    if ( identifier == nil ) then return nil end
+    if ( identifier == nil ) then return NULL end
 
-    local identifierType = type(identifier)
-    if ( identifierType == "Player" ) then
+    if ( type(identifier) == "Player" ) then
         return identifier
     end
 
     if ( isnumber(identifier) ) then
         return Player(identifier)
-    end
-
-    if ( istable(identifier) ) then
-        for k, v in ipairs(identifier) do
-            local foundPlayer = self:FindPlayer(v)
-            if ( IsValid(foundPlayer) ) then
-                return foundPlayer
-            end
-        end
     end
 
     if ( isstring(identifier) ) then
@@ -369,7 +359,16 @@ function ax.util:FindPlayer(identifier)
         end
     end
 
-    return nil
+    if ( istable(identifier) ) then
+        for k, v in ipairs(identifier) do
+            local foundPlayer = self:FindPlayer(v)
+            if ( IsValid(foundPlayer) ) then
+                return foundPlayer
+            end
+        end
+    end
+
+    return NULL
 end
 
 --- Breaks a string into lines that fit within a maximum width in pixels.
