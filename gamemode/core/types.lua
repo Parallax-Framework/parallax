@@ -32,7 +32,6 @@ ax.types = ax.types or {
     [128]   = "player",
     [256]   = "character",
     [512]   = "steamid",
-    [1024]  = "steamid64",
 
     string     = 1,
     text       = 2,
@@ -44,8 +43,7 @@ ax.types = ax.types or {
     player     = 128,
     character  = 256,
     steamid    = 512,
-    steamid64  = 1024,
 
-    optional   = 2048,
-    array      = 4096,
+    optional   = 1024,
+    array      = 2048
 }
