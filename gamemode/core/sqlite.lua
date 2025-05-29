@@ -3,6 +3,7 @@
 -- @module ax.sqlite
 
 ax.sqlite = ax.sqlite or {}
+ax.sqlite.tables = ax.sqlite.tables or {}
 
 --- Executes a raw SQL query and optionally handles success/failure callbacks.
 -- @realm shared
