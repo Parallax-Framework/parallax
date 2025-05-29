@@ -152,11 +152,19 @@ function GM:PhysgunPickup(client, ent)
         return true
     end
 
-    return IsValid(ent) and ent:EntIndex() > 0 and IsValid(ent:GetPhysicsObject()) and ent:GetPhysicsObject():IsMoveable()
+    if ( !IsValid(ent) or ent:EntIndex() <= 0 ) then
+        return false
+    end
+
+    return true
 end
 
 function GM:PhysgunDrop(client, ent)
     if ( !hook.Run("PlayerGetPhysgun", client) ) then
+        return false
+    end
+
+    if ( !IsValid(ent) or ent:EntIndex() <= 0 ) then
         return false
     end
 
@@ -165,8 +173,9 @@ function GM:PhysgunDrop(client, ent)
         return true
     end
 
-    if ( IsValid(ent) and ent:GetPhysicsObject():IsMoveable() ) then
-        ent:GetPhysicsObject():EnableMotion(true)
+    local physicsObject = ent:GetPhysicsObject()
+    if ( IsValid(physicsObject) and physicsObject:IsMoveable() ) then
+        physicsObject:EnableMotion(true)
         return true
     end
 

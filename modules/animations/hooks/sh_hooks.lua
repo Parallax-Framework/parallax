@@ -373,6 +373,10 @@ function MODULE:TranslateActivity(client, act)
 
     local class = ax.animations:GetModelClass(client:GetModel())
     if ( !class or class == "player" ) then
+        if ( client:InVehicle() ) then
+            return
+        end
+
         local holdType = clientTable.axHoldType
         if ( holdType and !client:IsWeaponRaised() ) then
             local animTable = PlayerPassiveTranslator[holdType]

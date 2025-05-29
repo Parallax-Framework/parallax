@@ -34,15 +34,17 @@ end
 
 function playerMeta:SetRelay(key, value, recipient)
     if ( SERVER ) then
-        ax.relay.user[self] = ax.relay.user[self] or {}
-        ax.relay.user[self][key] = value
+        local index = self:EntIndex()
+        ax.relay.user[index] = ax.relay.user[index] or {}
+        ax.relay.user[index][key] = value
 
-        ax.net:Start(recipient, "relay.user", self:EntIndex(), key, value)
+        ax.net:Start(recipient, "relay.user", index, key, value)
     end
 end
 
 function playerMeta:GetRelay(key, default)
-    local t = ax.relay.user[self]
+    local index = self:EntIndex()
+    local t = ax.relay.user[index]
     if ( t == nil ) then
         return default
     end
@@ -54,28 +56,24 @@ if ( CLIENT ) then
     ax.net:Hook("relay.user", function(index, key, value)
         if ( value == nil ) then return end
 
-        local client = Entity(index)
-        if ( IsValid(client) ) then
-            ax.relay.user[client] = ax.relay.user[client] or {}
-            ax.relay.user[client][key] = value
-        else
-            ax.util:PrintError("Attempted to set relay for invalid client: " .. tostring(index))
-            return
-        end
+        ax.relay.user[index] = ax.relay.user[index] or {}
+        ax.relay.user[index][key] = value
     end)
 end
 
 function entityMeta:SetRelay(key, value, recipient)
     if ( SERVER ) then
-        ax.relay.entity[self] = ax.relay.entity[self] or {}
-        ax.relay.entity[self][key] = value
+        local index = self:EntIndex()
+        ax.relay.entity[index] = ax.relay.entity[index] or {}
+        ax.relay.entity[index][key] = value
 
-        ax.net:Start(recipient, "relay.entity", self:EntIndex(), key, value)
+        ax.net:Start(recipient, "relay.entity", index, key, value)
     end
 end
 
 function entityMeta:GetRelay(key, default)
-    local t = ax.relay.entity[self]
+    local index = self:EntIndex()
+    local t = ax.relay.entity[index]
     if ( t == nil ) then
         return default
     end
@@ -87,13 +85,45 @@ if ( CLIENT ) then
     ax.net:Hook("relay.entity", function(index, key, value)
         if ( value == nil ) then return end
 
-        local ent = Entity(index)
-        if ( IsValid(ent) ) then
-            ax.relay.entity[ent] = ax.relay.entity[ent] or {}
-            ax.relay.entity[ent][key] = value
-        else
-            ax.util:PrintError("Attempted to set relay for invalid entity: " .. tostring(index))
-            return
+        ax.relay.entity[index] = ax.relay.entity[index] or {}
+        ax.relay.entity[index][key] = value
+    end)
+end
+
+hook.Add("EntityRemoved", "ax.relay.cleanup.entity", function(entity)
+    local index = entity:EntIndex()
+    if ( ax.relay.entity[index] ) then
+        ax.relay.entity[index] = nil
+    end
+end)
+
+if ( SERVER ) then
+    hook.Add("PlayerDisconnected", "ax.relay.cleanup.user", function(player)
+        local index = player:EntIndex()
+        if ( ax.relay.user[index] ) then
+            ax.relay.user[index] = nil
+        end
+
+        ax.net:Start(nil, "relay.cleanup.user", index)
+    end)
+
+    hook.Add("SaveData", "ax.relay.cleanup", function()
+        for index, _ in pairs(ax.relay.user) do
+            if ( !IsValid(Entity(index)) ) then
+                ax.relay.user[index] = nil
+            end
+        end
+
+        for index, _ in pairs(ax.relay.entity) do
+            if ( !IsValid(Entity(index)) ) then
+                ax.relay.entity[index] = nil
+            end
+        end
+    end)
+else
+    ax.net:Hook("relay.cleanup.user", function(index)
+        if ( ax.relay.user[index] ) then
+            ax.relay.user[index] = nil
         end
     end)
 end
