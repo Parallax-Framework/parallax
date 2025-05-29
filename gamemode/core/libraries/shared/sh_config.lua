@@ -3,6 +3,7 @@
 
 ax.config = ax.config or {}
 ax.config.stored = ax.config.stored or {}
+ax.config.instances = ax.config.instances or {}
 
 --- Gets the current value of the specified configuration.
 -- @realm shared
@@ -18,7 +19,10 @@ function ax.config:Get(key, fallback)
         return fallback
     end
 
-    return configData.Value == nil and configData.Default or configData.Value
+    local instance = self.instances[key] or {}
+    local value = instance.Value or instance.Default or configData.Default
+
+    return value or fallback
 end
 
 --- Gets the default value of the specified configuration.
@@ -34,7 +38,10 @@ function ax.config:GetDefault(key)
         return nil
     end
 
-    return configData.Default
+    local instance = self.instances[key] or {}
+    local defaultValue = instance.Default or configData.Default
+
+    return defaultValue
 end
 
 --- Sets the value of the specified configuration.
@@ -59,11 +66,13 @@ function ax.config:Set(key, value)
         return false
     end
 
-    local oldValue = stored.Value != nil and stored.Value or stored.Default
+    local instance = self.instances[key] or {}
+    local oldValue = instance.Value or instance.Default or stored.Default
     local bResult = hook.Run("PreConfigChanged", key, value, oldValue)
     if ( bResult == false ) then return false end
 
-    stored.Value = value
+    instance.Value = value
+    self.instances[key] = instance
 
     if ( SERVER and stored.NoNetworking != true ) then
         ax.net:Start(nil, "config.set", key, value)
@@ -95,7 +104,9 @@ function ax.config:SetDefault(key, value)
         return false
     end
 
-    stored.Default = value
+    local instance = self.instances[key] or {}
+    instance.Default = value
+    self.instances[key] = instance
 
     return true
 end

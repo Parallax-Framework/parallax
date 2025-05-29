@@ -3,6 +3,7 @@
 
 ax.config = ax.config or {}
 ax.config.stored = ax.config.stored or {}
+ax.config.instances = ax.config.instances or {}
 
 --- Loads the configuration from the file.
 -- @realm shared

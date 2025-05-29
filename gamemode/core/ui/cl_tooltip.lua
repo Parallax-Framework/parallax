@@ -62,6 +62,10 @@ function PANEL:SizeToContents()
 end
 
 function PANEL:Think()
+    if ( !system.HasFocus() ) then
+        self:Remove()
+    end
+
     self:SetPos(gui.MouseX() + 16, gui.MouseY())
 
     local mouseX, mouseY = gui.MouseX(), gui.MouseY()

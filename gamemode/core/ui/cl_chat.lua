@@ -99,7 +99,7 @@ function PANEL:Init()
         end
     end
 
-    self.history = self:Add("ax.scroller.vertical")
+    self.history = self:Add("DScrollPanel")
     self.history:SetSize(self:GetWide() - 16, self:GetTall() - 16 - label:GetTall() - self.entry:GetTall())
     self.history:SetPos(8, label:GetTall() + 8)
     self.history:GetVBar():SetWide(0)
