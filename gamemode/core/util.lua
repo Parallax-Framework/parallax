@@ -309,7 +309,7 @@ function ax.util:FindPlayer(identifier)
     if ( istable(identifier) ) then
         for k, v in ipairs(identifier) do
             local foundPlayer = self:FindPlayer(v)
-            if ( foundPlayer ) then
+            if ( IsValid(foundPlayer) ) then
                 return foundPlayer
             end
         end
