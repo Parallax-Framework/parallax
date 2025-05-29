@@ -2,7 +2,7 @@
 -- @module ax.config
 
 ax.config = ax.config or {}
-ax.config.stored = {}
+ax.config.stored = ax.config.stored or {}
 
 --- Gets the current value of the specified configuration.
 -- @realm shared

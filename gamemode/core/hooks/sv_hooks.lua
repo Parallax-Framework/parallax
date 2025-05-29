@@ -199,15 +199,15 @@ function GM:OnReloaded()
         ax.database:Initialize()
     end
 
-    ax.config:Synchronize()
-
     ax.module:LoadFolder("parallax/modules")
     ax.item:LoadFolder("parallax/gamemode/items")
     ax.schema:Initialize()
+
+    ax.config:Synchronize()
 end
 
 function GM:DatabaseConnected()
-    -- Do something when the database is connected...
+    hook.Run("LoadData")
 end
 
 function GM:DatabaseConnectionFailed()
@@ -217,6 +217,7 @@ end
 
 function GM:DatabaseFallback(reason)
     ax.database:LoadTables()
+    hook.Run("LoadData")
 end
 
 function GM:SetupPlayerVisibility(client, viewEntity)
@@ -284,10 +285,6 @@ function GM:Think()
         nextSave = CurTime() + ax.config:Get("save.interval", 300)
         hook.Run("SaveData")
     end
-end
-
-function GM:InitPostEntity()
-    hook.Run("LoadData")
 end
 
 function GM:ShutDown()

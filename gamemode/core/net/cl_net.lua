@@ -147,11 +147,8 @@ end)
 ax.net:Hook("config.sync", function(data)
     if ( !istable(data) ) then return end
 
-    for k, v in pairs(data) do
-        local stored = ax.config.stored[k]
-        if ( !istable(stored) ) then continue end
-
-        stored.Value = v
+    for key, value in pairs(data) do
+        ax.config:Set(key, value)
     end
 end)
 
