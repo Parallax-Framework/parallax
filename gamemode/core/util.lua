@@ -35,7 +35,11 @@ function ax.util:CoerceType(typeID, value)
 			return value
 		end
 	elseif ( typeID == ax.types.steamid ) then
-		if ( isstring(value) and #value == 17 and value:match("^%d+$") ) then
+		if ( isstring(value) and #value == 17 and string.match(value, "^%d+$") ) then
+			return value
+		end
+	elseif ( typeID == ax.types.steamid64 ) then
+		if ( isstring(value) and #value == 17 and string.match(value, "^7656119%d+$") ) then
 			return value
 		end
 	end
@@ -48,7 +52,7 @@ local basicTypeMap = {
 	number  = ax.types.number,
 	boolean = ax.types.bool,
 	Vector  = ax.types.vector,
-	Angle   = ax.types.angle
+	Angle   = ax.types.angle,
 }
 
 local checkTypeMap = {
