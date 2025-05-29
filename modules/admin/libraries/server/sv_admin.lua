@@ -84,7 +84,7 @@ function MODULE:SetUserGroup(client, groupName)
     local oldGroup = client:GetUserGroup()
 
     client:SetUserGroup(groupName)
-    CAMI.PlayerUsergroupChanged(client, oldGroup, groupName)
+    CAMI.SignalUserGroupChanged(client, oldGroup, groupName, "Parallax")
 end
 
 function MODULE:GetUserGroup(client)
@@ -92,7 +92,7 @@ function MODULE:GetUserGroup(client)
 end
 
 function MODULE:HasPermission(client, permission, callback)
-    CAMI.PlayerHasAccess(client, permission, callback)
+    return CAMI.PlayerHasAccess(client, permission, callback)
 end
 
 --- Adds a group via code or future UI.
