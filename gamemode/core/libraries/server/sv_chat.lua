@@ -2,7 +2,7 @@
 -- @module ax.chat
 
 function ax.chat:SendSpeaker(speaker, uniqueID, text)
-    local players = {speaker}
+    local players = {}
     for k, v in player.Iterator() do
         if ( !IsValid(v) or !v:Alive() or !v:GetCharacter() ) then continue end
 
