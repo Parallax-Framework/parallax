@@ -1,110 +1,119 @@
 local MODULE = MODULE
 
-MODULE.Name = "Sway"
-MODULE.Description = "Implements a swaying effect ported over from ARC9."
+MODULE.Name = "View"
+MODULE.Description = "Implements a swaying effect ported over from ARC9, while also adding own implementations for view bobbing and camera roll."
 MODULE.Author = "Riggs"
 
 ax.localization:Register("en", {
-    ["category.sway"] = "Sway",
-    ["option.sway"] = "Sway",
-    ["option.sway.help"] = "Enable or disable sway.",
-    ["option.sway.multiplier"] = "Sway Multiplier",
-    ["option.sway.multiplier.help"] = "Set the sway multiplier.",
-    ["option.sway.multiplier.sprint"] = "Sway Multiplier Sprint",
-    ["option.sway.multiplier.sprint.help"] = "Set the sway multiplier while sprinting.",
+    ["category.view"] = "View",
+    ["option.view"] = "View Effects",
+    ["option.view.help"] = "Enable or disable view effects such as sway and bobbing.",
+    ["option.view.intensity"] = "Intensity",
+    ["option.view.intensity.help"] = "Intensity of the view offset effect.",
+    ["option.view.max.roll"] = "Max Roll",
+    ["option.view.max.roll.help"] = "Maximum roll angle for the view.",
+    ["option.view.max.tilt"] = "Max Tilt",
+    ["option.view.max.tilt.help"] = "Maximum tilt angle for the view.",
+    ["option.view.multiplier"] = "View Multiplier",
+    ["option.view.multiplier.help"] = "Set the view multiplier.",
+    ["option.view.multiplier.sprint"] = "View Multiplier Sprint",
+    ["option.view.multiplier.sprint.help"] = "Set the view multiplier while sprinting.",
+    ["option.view.pitch.speed"] = "Pitch Speed",
+    ["option.view.pitch.speed.help"] = "Speed at which the view pitch adjusts to mouse movement.",
+    ["option.view.roll.speed"] = "Roll Speed",
+    ["option.view.roll.speed.help"] = "Speed at which the view roll adjusts to mouse movement."
 })
 
-ax.option:Register("sway", {
-    Name = "option.sway",
+ax.option:Register("view", {
+    Name = "option.view",
     Type = ax.types.bool,
     Default = true,
-    Description = "option.sway.help",
-    NoNetworking = true,
-    Category = "category.sway"
+    Description = "option.view.help",
+    Category = "category.view"
 })
 
-ax.option:Register("sway.multiplier", {
-    Name = "option.sway.multiplier",
+ax.option:Register("view.multiplier", {
+    Name = "option.view.multiplier",
     Type = ax.types.number,
     Default = 1,
     Min = 0,
     Max = 10,
     Decimals = 1,
-    Description = "option.sway.multiplier.help",
+    Description = "option.view.multiplier.help",
     NoNetworking = true,
-    Category = "category.sway"
+    Category = "category.view"
 })
 
-ax.option:Register("sway.multiplier.sprint", {
-    Name = "option.sway.multiplier.sprint",
+ax.option:Register("view.multiplier.sprint", {
+    Name = "option.view.multiplier.sprint",
     Type = ax.types.number,
     Default = 1,
     Min = 0,
     Max = 10,
     Decimals = 1,
-    Description = "option.sway.multiplier.sprint.help",
+    Description = "option.view.multiplier.sprint.help",
     NoNetworking = true,
-    Category = "category.sway"
+    Category = "category.view"
 })
 
-ax.option:Register("camera.max.roll", {
-    Name = "Camera Max Roll",
+ax.option:Register("view.max.roll", {
+    Name = "option.view.max.roll",
     Type = ax.types.number,
     Default = 10,
     Min = 0,
     Max = 45,
     Decimals = 1,
-    Description = "Maximum roll angle for the camera.",
+    Description = "option.view.max.roll.help",
     NoNetworking = true,
-    Category = "category.sway"
+    Category = "category.view"
 })
 
-ax.option:Register("camera.max.tilt", {
-    Name = "Camera Max Tilt",
+ax.option:Register("view.max.tilt", {
+    Name = "option.view.max.tilt",
     Type = ax.types.number,
     Default = 10,
     Min = 0,
     Max = 45,
     Decimals = 1,
-    Description = "Maximum tilt angle for the camera.",
+    Description = "option.view.max.tilt.help",
     NoNetworking = true,
-    Category = "category.sway"
+    Category = "category.view"
 })
 
-ax.option:Register("camera.roll.speed", {
-    Name = "Camera Roll Speed",
+ax.option:Register("view.roll.speed", {
+    Name = "option.view.roll.speed",
     Type = ax.types.number,
     Default = 5,
     Min = 0,
     Max = 20,
     Decimals = 1,
-    Description = "Speed at which the camera roll adjusts to mouse movement.",
+    Description = "option.view.roll.speed.help",
     NoNetworking = true,
-    Category = "category.sway"
+    Category = "category.view"
 })
 
-ax.option:Register("camera.pitch.speed", {
-    Name = "Camera Pitch Speed",
+ax.option:Register("view.pitch.speed", {
+    Name = "option.view.pitch.speed",
     Type = ax.types.number,
     Default = 5,
     Min = 0,
     Max = 20,
     Decimals = 1,
-    Description = "Speed at which the camera pitch adjusts to mouse movement.",
+    Description = "option.view.pitch.speed.help",
     NoNetworking = true,
-    Category = "category.sway"
+    Category = "category.view"
 })
 
-ax.option:Register("camera.intensity", {
-    Name = "Camera Intensity",
+ax.option:Register("view.intensity", {
+    Name = "option.view.intensity",
     Type = ax.types.number,
     Default = 1,
     Min = 0,
     Max = 5,
     Decimals = 1,
-    Description = "Intensity of the camera offset effect.",
+    Description = "option.view.intensity.help",
     NoNetworking = true,
-    Category = "category.sway"
+    Category = "category.view"
 })
 
 if ( CLIENT ) then
@@ -127,11 +136,11 @@ if ( CLIENT ) then
         local mag = 1
         local ts = 0
 
-        local swayEnabled = ax.option:Get("sway")
+        local swayEnabled = ax.option:Get("view")
         if ( !swayEnabled ) then return pos, ang end
 
-        local swayMult = ax.option:Get("sway.multiplier")
-        local swayMultSprint = ax.option:Get("sway.multiplier.sprint")
+        local swayMult = ax.option:Get("view.multiplier")
+        local swayMultSprint = ax.option:Get("view.multiplier.sprint")
 
         local client = ax.client
         local ft = FrameTime()
@@ -215,8 +224,10 @@ if ( CLIENT ) then
     local targetVerticalTilt = 0
     local sensitivityY = 0.1
     function MODULE:CreateMove(cmd)
-        local maxRoll = ax.option:Get("camera.max.roll", 10)
-        local maxTilt = ax.option:Get("camera.max.tilt", 10)
+        if ( !ax.option:Get("view") ) then return end
+
+        local maxRoll = ax.option:Get("view.max.roll", 10)
+        local maxTilt = ax.option:Get("view.max.tilt", 10)
         local mouseX = cmd:GetMouseX()
         local mouseY = cmd:GetMouseY()
 
@@ -230,6 +241,7 @@ if ( CLIENT ) then
     local lerpPitch = 0
     local lerpFOV = 75
     function MODULE:CalcView(client, origin, angles, fov, znear, zfar)
+        if ( !ax.option:Get("view") ) then return end
         if ( !IsValid(client) or client:InObserver() ) then return end
 
         local view = {
@@ -265,8 +277,8 @@ if ( CLIENT ) then
         -- Up and down pitch when moving forward or backward
         newAngles.pitch = newAngles.pitch + ( ( math.sin( CurTime() ) / 6 * lerpMultiplier ) + lerpPitch )
 
-        local rollSpeed = ax.option:Get("camera.roll.speed", 5)
-        local pitchSpeed = ax.option:Get("camera.pitch.speed", 5)
+        local rollSpeed = ax.option:Get("view.roll.speed", 5)
+        local pitchSpeed = ax.option:Get("view.pitch.speed", 5)
 
         -- Smoothly interpolate the current values toward the target values.
         horizontalRoll = Lerp(FrameTime() * rollSpeed, horizontalRoll, targetHorizontalRoll)
@@ -280,13 +292,13 @@ if ( CLIENT ) then
         --- Implementation of Camera bone if it exists
         local viewModel = client:GetViewModel()
         if ( IsValid(viewModel) ) then
-            local cameraAttachmentIndex = viewModel:LookupAttachment("camera")
+            local cameraAttachmentIndex = viewModel:LookupAttachment("view")
             if ( cameraAttachmentIndex > 0 ) then
                 local cameraAttachment = viewModel:GetAttachment(cameraAttachmentIndex)
                 if ( cameraAttachment ) then
                     local rootAttachmentIndex = viewModel:LookupAttachment("camera_root")
                     if ( rootAttachmentIndex == 0 ) then
-                        rootAttachmentIndex = viewModel:LookupAttachment("camera")
+                        rootAttachmentIndex = viewModel:LookupAttachment("view")
                     end
 
                     local rootAttachment = rootAttachmentIndex > 0 and viewModel:GetAttachment(rootAttachmentIndex) or {
@@ -295,7 +307,7 @@ if ( CLIENT ) then
                     }
 
                     local offsetAngles = cameraAttachment.Ang - rootAttachment.Ang
-                    local intensity = ax.option:Get("camera.intensity", 1)
+                    local intensity = ax.option:Get("view.intensity", 1)
 
                     newAngles = newAngles + offsetAngles * intensity
                 end
@@ -310,6 +322,7 @@ if ( CLIENT ) then
     end
 
     function MODULE:CalcViewModelView(weapon, viewModel, oldEyePos, oldEyeAng, eyePos, eyeAng)
+        if ( !ax.option:Get("view") ) then return end
         if ( !IsValid(weapon) or !IsValid(viewModel) ) then return end
         if ( ax.client:InObserver() ) then return end
 
@@ -327,6 +340,12 @@ if ( CLIENT ) then
 end
 
 local function HandlePlayerStep(client, side)
+    if ( SERVER ) then
+        if ( !ax.option:Get(client, "view") ) then return end
+    else
+        if ( !ax.option:Get("view") ) then return end
+    end
+
     if ( !IsValid(client) or client:InObserver() ) then return end
 
     local punch = Angle(0, 0, 0)
@@ -343,13 +362,17 @@ local function HandlePlayerStep(client, side)
     client:ViewPunch(punch)
 end
 
-function MODULE:HandlePlayerStep(client, side)
-    if ( !IsValid(client) or client:InObserver() ) then return end
-
-    HandlePlayerStep(client, side)
-end
-
 function MODULE:PlayerFootstep(client, pos, foot, sound, volume, filter)
+    if ( SERVER ) then
+        if ( !ax.option:Get(client, "view") ) then
+            return
+        end
+    else
+        if ( !ax.option:Get("view") ) then
+            return
+        end
+    end
+
     if ( !IsValid(client) or client:InObserver() ) then return end
 
     HandlePlayerStep(client, foot)

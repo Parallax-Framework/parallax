@@ -164,7 +164,7 @@ ax.net:Hook("option.set", function(key, value)
     local stored = ax.option.stored[key]
     if ( !istable(stored) ) then return end
 
-    ax.option:Set(key, value)
+    ax.option:Set(key, value, true)
 end)
 
 --[[-----------------------------------------------------------------------------

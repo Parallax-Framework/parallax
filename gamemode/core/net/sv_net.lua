@@ -112,15 +112,13 @@ ax.net:Hook("option.set", function(client, key, value)
     local bResult = hook.Run("PreOptionChanged", client, key, value)
     if ( bResult == false ) then return false end
 
-    ax.option:Set(client, key, value)
+    ax.option:Set(client, key, value, true)
 
     hook.Run("PostOptionChanged", client, key, value)
 end)
 
 ax.net:Hook("option.sync", function(client, data)
-    if ( !IsValid(client) ) then return end
-
-    if ( !istable(data) ) then return end
+    if ( !IsValid(client) or !istable(data) ) then return end
 
     for k, v in pairs(ax.option.stored) do
         local stored = ax.option.stored[k]
@@ -132,7 +130,7 @@ ax.net:Hook("option.sync", function(client, data)
         if ( stored.NoNetworking ) then continue end
 
         if ( data[k] != nil ) then
-            if ( ax.util:DetectType(data[k]) != stored.Type ) then
+            if ( ax.util:DetectType(data[k].Value) != stored.Type ) then
                 ax.util:PrintError("Option \"" .. k .. "\" is not of type \"" .. stored.Type .. "\"!")
                 return
             end

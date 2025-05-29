@@ -2,7 +2,7 @@
 -- @module ax.option
 
 ax.option = ax.option or {}
-ax.option.stored = {}
+ax.option.stored = ax.option.stored or {}
 
 function ax.option:SetDefault(key, default)
     local stored = self.stored[key]
@@ -46,7 +46,7 @@ if ( CLIENT ) then
         return data
     end
 
-    function ax.option:Set(key, value)
+    function ax.option:Set(key, value, bNoNetworking)
         local stored = self.stored[key]
         if ( !istable(stored) ) then
             ax.util:PrintError("Option \"" .. key .. "\" does not exist!")
@@ -64,7 +64,7 @@ if ( CLIENT ) then
 
         stored.Value = value
 
-        if ( stored.NoNetworking != true ) then
+        if ( stored.NoNetworking != true and !bNoNetworking ) then
             ax.net:Start("option.set", key, value)
         end
 

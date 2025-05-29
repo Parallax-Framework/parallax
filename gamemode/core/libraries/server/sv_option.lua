@@ -1,9 +1,11 @@
 --- Options library
 -- @module ax.option
 
-ax.option.clients = {}
+ax.option = ax.option or {}
+ax.option.stored = ax.option.stored or {}
+ax.option.clients = ax.option.clients or {}
 
-function ax.option:Set(client, key, value)
+function ax.option:Set(client, key, value, bNoNetworking)
     local stored = ax.option.stored[key]
     if ( !istable(stored) ) then
         ax.util:PrintError("Option \"" .. key .. "\" does not exist!")
@@ -18,29 +20,32 @@ function ax.option:Set(client, key, value)
     end
 
     if ( isnumber(value) ) then
-        if ( isnumber(stored.Min) && value < stored.Min ) then
+        if ( isnumber(stored.Min) and value < stored.Min ) then
             ax.util:PrintError("Option \"" .. key .. "\" is below minimum value!")
             return false
         end
 
-        if ( isnumber(stored.Max) && value > stored.Max ) then
+        if ( isnumber(stored.Max) and value > stored.Max ) then
             ax.util:PrintError("Option \"" .. key .. "\" is above maximum value!")
             return false
         end
     end
 
-    ax.net:Start(nil, "option.set", key, value)
+    if ( stored.NoNetworking != true ) then
+        if ( !bNoNetworking ) then
+            ax.net:Start(client, "option.set", key, value)
+        end
+
+        local index = client:EntIndex()
+        if ( ax.option.clients[index] == nil ) then
+            ax.option.clients[index] = {}
+        end
+
+        ax.option.clients[index][key] = value
+    end
 
     if ( isfunction(stored.OnChange) ) then
         stored:OnChange(value, client)
-    end
-
-    if ( !stored.NoNetworking ) then
-        if ( ax.option.clients[client] == nil ) then
-            ax.option.clients[client] = {}
-        end
-
-        ax.option.clients[client][key] = value
     end
 
     return true
@@ -60,10 +65,10 @@ function ax.option:Get(client, key, default)
         return nil
     end
 
-    local plyStored = ax.option.clients[client]
-    if ( !istable(plyStored) ) then
+    local clientStored = ax.option.clients[client:EntIndex()]
+    if ( !istable(clientStored) ) then
         return stored.Value or default
     end
 
-    return plyStored[key] or stored.Default
+    return clientStored[key] != nil and clientStored[key] or stored.Value or default
 end
