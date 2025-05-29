@@ -140,10 +140,34 @@ local colorError = Color(255, 120, 120)
 function ax.util:PrintError(...)
     local arguments = self:PreparePackage(...)
 
+    -- Get the second line of the traceback, which contains the file and line number of the error
+    local traceBack = debug.traceback()
+    local secondLine = string.match(traceBack, "\n(.-)\n") or ""
+    secondLine = string.Trim(secondLine)
+
+    -- If the second line is empty, we don't need to add it to the arguments
+    if ( secondLine != "" ) then
+        -- Remove the "\n" at the end of arguments, since it was added by PreparePackage
+        if ( #arguments > 0 and type(arguments[#arguments]) == "string" ) then
+            arguments[#arguments] = string.Trim(arguments[#arguments])
+        end
+
+        -- Strip gamemodes/parallax from the second line if it exists, because it is not useful
+        secondLine = string.gsub(secondLine, "gamemodes/parallax/", "")
+
+        table.insert(arguments, " (" .. secondLine .. ")")
+        table.insert(arguments, "\n")
+    end
+
     MsgC(violetColor, "[Parallax] ", colorError, "[Error] ", unpack(arguments))
 
     if ( CLIENT and ax.config and ax.config.Get and ax.config:Get("debug.developer") ) then
         chat.AddText(violetColor, "[Parallax] ", colorError, "[Error] ", unpack(arguments))
+    end
+
+    -- Print the entire traceback to the console if developer mode is enabled
+    if ( ax.config and ax.config.Get and ax.config:Get("debug.developer") ) then
+        MsgC(violetColor, "[Parallax] ", colorError, "[Error] [Traceback] ", traceBack, "\n")
     end
 
     return arguments
@@ -240,7 +264,7 @@ end
 -- @return string The type of the value.
 function ax.util:FindString(str, find)
     if ( str == nil or find == nil ) then
-        ax.util:PrintError("Attempted to find a string with no value to find for! (" .. str .. ", " .. find .. ")")
+        ax.util:PrintError("Attempted to find a string with no value to find for! (" .. tostring(str) .. ", " .. tostring(find) .. ")")
         return false
     end
 
