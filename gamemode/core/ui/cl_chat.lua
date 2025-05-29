@@ -147,6 +147,9 @@ function PANEL:PopulateRecommendations(text)
         return
     end
 
+    self.recommendations.list = {}
+    self.recommendations.panels = {}
+
     for key, command in SortedPairsByMemberValue(ax.command:GetAll(), "UniqueID") do
         if ( ax.util:FindString(command.UniqueID, text, true) or ( command.Prefixes and ax.util:FindInTable(command.Prefixes, text, true) ) ) then
             table.insert(self.recommendations.list, command)

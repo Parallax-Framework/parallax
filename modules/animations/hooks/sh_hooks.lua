@@ -325,6 +325,34 @@ IdleActivityTranslate[ACT_MP_SWIM] = IdleActivity + 9
 IdleActivityTranslate[ACT_LAND] = ACT_LAND
 
 local PlayerPassiveTranslator = {
+    ["melee"] = {
+        [ACT_MP_STAND_IDLE] = ACT_HL2MP_IDLE,
+        [ACT_MP_WALK] = ACT_HL2MP_WALK,
+        [ACT_MP_RUN] = ACT_HL2MP_RUN,
+        [ACT_MP_CROUCH_IDLE] = ACT_HL2MP_IDLE_CROUCH,
+        [ACT_MP_CROUCHWALK] = ACT_HL2MP_WALK_CROUCH,
+    },
+    ["pistol"] = {
+        [ACT_MP_STAND_IDLE] = ACT_HL2MP_IDLE,
+        [ACT_MP_WALK] = ACT_HL2MP_WALK,
+        [ACT_MP_RUN] = ACT_HL2MP_RUN,
+        [ACT_MP_CROUCH_IDLE] = ACT_HL2MP_IDLE_CROUCH,
+        [ACT_MP_CROUCHWALK] = ACT_HL2MP_WALK_CROUCH,
+    },
+    ["smg"] = {
+        [ACT_MP_STAND_IDLE] = ACT_HL2MP_IDLE_PASSIVE,
+        [ACT_MP_WALK] = ACT_HL2MP_WALK_PASSIVE,
+        [ACT_MP_RUN] = ACT_HL2MP_RUN_PASSIVE,
+        [ACT_MP_CROUCH_IDLE] = ACT_HL2MP_IDLE_CROUCH_PASSIVE,
+        [ACT_MP_CROUCHWALK] = ACT_HL2MP_WALK_CROUCH_PASSIVE,
+    },
+    ["shotgun"] = {
+        [ACT_MP_STAND_IDLE] = ACT_HL2MP_IDLE_PASSIVE,
+        [ACT_MP_WALK] = ACT_HL2MP_WALK_PASSIVE,
+        [ACT_MP_RUN] = ACT_HL2MP_RUN_PASSIVE,
+        [ACT_MP_CROUCH_IDLE] = ACT_HL2MP_IDLE_CROUCH_PASSIVE,
+        [ACT_MP_CROUCHWALK] = ACT_HL2MP_WALK_CROUCH_PASSIVE,
+    },
     ["ar2"] = {
         [ACT_MP_STAND_IDLE] = ACT_HL2MP_IDLE_PASSIVE,
         [ACT_MP_WALK] = ACT_HL2MP_WALK_PASSIVE,
