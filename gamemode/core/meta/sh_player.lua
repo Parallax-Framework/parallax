@@ -123,7 +123,7 @@ end
 
 if ( CLIENT ) then
     function PLAYER:InDarkness(factor)
-        if ( factor == nil ) then factor = 0.5 end
+        if ( !isnumber(factor) ) then factor = 0.5 end
 
         local lightLevel = render.GetLightColor(self:GetPos()):Length()
         return lightLevel < factor
@@ -136,4 +136,15 @@ local developers = {
 
 function PLAYER:IsDeveloper()
     return hook.Run("IsPlayerDeveloper", self) or developers[self:SteamID64()] or false
+end
+
+function PLAYER:IsFemale()
+    local model = string.lower(self:GetModel())
+    if ( !isstring(model) or model == "" ) then return false end
+
+    if ( ax.util:FindString(model, "female") or ax.util:FindString(model, "alyx") or ax.util:FindString(model, "mossman") ) then
+        return true
+    end
+
+    return false
 end

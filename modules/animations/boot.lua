@@ -349,6 +349,21 @@ ax.animations:SetModelClass("models/vortigaunt_doctor.mdl", "vortigaunt")
 ax.animations:SetModelClass("models/vortigaunt_slave.mdl", "vortigaunt")
 
 local playerMeta = FindMetaTable("Player")
+local _isFemale = playerMeta.IsFemale
+
+function playerMeta:IsFemale()
+    local modelClass = ax.animations:GetModelClass(self:GetModel())
+    if ( !isstring(modelClass) or modelClass == "" ) then
+        return _isFemale(self)
+    end
+
+    if ( ax.util:FindString(modelClass, "female") ) then
+        return true
+    end
+
+    return _isFemale(self)
+end
+
 if ( SERVER ) then
     function playerMeta:LeaveSequence()
         local prevent = hook.Run("PrePlayerLeaveSequence", self)

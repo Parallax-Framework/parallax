@@ -40,7 +40,7 @@ function hook.Call(name, gm, ...)
 
     for k, v in pairs(ax.module.stored) do
         for k2, v2 in pairs(v) do
-            if ( type(v2) == "function" and k2 == name ) then
+            if ( isfunction(v2) and k2 == name ) then
                 local a, b, c, d, e, f = v2(v, ...)
 
                 if ( a != nil ) then
