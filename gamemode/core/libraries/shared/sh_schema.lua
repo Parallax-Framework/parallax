@@ -67,7 +67,7 @@ function ax.schema:Initialize()
         ax.util:Print("Loaded map config for \"" .. map .. "\".")
         hook.Run("PostInitializeMapConfig", SCHEMA, path, map)
     else
-        ax.util:PrintError("Failed to find map config for \"" .. map .. "\".")
+        ax.util:PrintWarning("Failed to find map config for \"" .. map .. "\".")
     end
 
     if ( SERVER ) then

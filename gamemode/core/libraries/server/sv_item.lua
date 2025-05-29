@@ -185,6 +185,14 @@ function ax.item:Cache(characterID, callback)
     end
 
     ax.database:Select("ax_items", nil, "character_id = " .. characterID .. " OR character_id = 0", function(result)
+        if ( !result or #result == 0 ) then
+            ax.util:PrintWarning("No items found for character ID " .. characterID)
+            if ( callback ) then
+                callback({})
+            end
+            return
+        end
+
         for _, row in ipairs(result) do
             local itemID = tonumber(row.id)
             local uniqueID = row.unique_id

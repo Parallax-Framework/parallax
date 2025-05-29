@@ -622,6 +622,67 @@ function ax.util:LoadEntityFolder(basePath, folder, globalKey, registerFn, defau
     end
 end
 
+--- Loads and registers toolgun tools from a custom path.
+-- Mimics GMod's native behavior for loading from stools/ folder.
+-- @param path string Path to the folder containing tool files.
+-- @realm shared
+function ax.util:LoadTools(path)
+    local files, folders = file.Find(path .. "/*.lua", "LUA")
+
+    for _, fileName in ipairs(files) do
+        local toolID = string.StripExtension(fileName)
+        local toolPath = path .. "/" .. fileName
+
+        TOOL = {
+            Mode = toolID,
+            Category = "Parallax",
+            Name = "#" .. toolID,
+            ClientConVar = {},
+            ServerConVar = {}
+        }
+
+        self:LoadFile(toolPath, "shared")
+
+        if ( !weapons.GetStored("gmod_tool") ) then
+            ErrorNoHalt("gmod_tool base not found; skipping tool '" .. toolID .. "'\n")
+            TOOL = nil
+            continue
+        end
+
+        weapons.GetStored("gmod_tool").Tool = weapons.GetStored("gmod_tool").Tool or {}
+        weapons.GetStored("gmod_tool").Tool[toolID] = TOOL
+
+        TOOL = nil
+    end
+
+    for _, dir in ipairs(folders) do
+        local toolPath = path .. "/" .. dir .. "/shared.lua"
+
+        if ( file.Exists(toolPath, "LUA") ) then
+            TOOL = {
+                Mode = dir,
+                Category = "Parallax",
+                Name = "#" .. dir,
+                ClientConVar = {},
+                ServerConVar = {}
+            }
+
+            self:LoadFile(toolPath, "shared")
+
+            if ( !weapons.GetStored("gmod_tool") ) then
+                ErrorNoHalt("gmod_tool base not found; skipping tool '" .. dir .. "'\n")
+                TOOL = nil
+                continue
+            end
+
+            weapons.GetStored("gmod_tool").Tool = weapons.GetStored("gmod_tool").Tool or {}
+            weapons.GetStored("gmod_tool").Tool[dir] = TOOL
+
+            TOOL = nil
+        end
+    end
+end
+
 --- Loads all entities, weapons, and effects from a module or schema directory.
 -- @param path string Path to module or schema folder.
 -- @realm shared
@@ -639,6 +700,8 @@ function ax.util:LoadEntities(path)
     })
 
     self:LoadEntityFolder(path, "effects", "EFFECT", effects and effects.Register, nil, true)
+
+    self:LoadTools(path .. "/tools")
 end
 
 --- Returns the current difference between local time and UTC in seconds.

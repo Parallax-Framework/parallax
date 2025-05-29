@@ -34,12 +34,10 @@ end
 -- @tparam string reason Reason for fallback
 -- @usage ax.database:Fallback("MySQL connection failed")
 function ax.database:Fallback(reason)
-    if ( self.backend != ax.sqlite ) then
-        self.backend = ax.sqlite
-        ax.util:PrintWarning((reason or "MySQL unavailable") .. ". Falling back to SQLite.")
+    self.backend = ax.sqlite
+    ax.util:PrintWarning((reason or "MySQL unavailable") .. ". Falling back to SQLite.")
 
-        hook.Run("DatabaseFallback", reason)
-    end
+    hook.Run("DatabaseFallback", reason)
 end
 
 --- Returns current backend object.

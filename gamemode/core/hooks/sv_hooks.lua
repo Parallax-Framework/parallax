@@ -155,6 +155,10 @@ function GM:PlayerUseSpawnSaver(client)
 end
 
 function GM:Initialize()
+    if ( ax.sqloo == nil ) then
+        ax.database:Initialize()
+    end
+
     ax.module:LoadFolder("parallax/modules")
     ax.item:LoadFolder("parallax/gamemode/items")
     ax.schema:Initialize()
@@ -190,6 +194,10 @@ local _reloaded = false
 function GM:OnReloaded()
     if ( _reloaded ) then return end
     _reloaded = true
+
+    if ( ax.sqloo == nil ) then
+        ax.database:Initialize()
+    end
 
     ax.config:Synchronize()
 

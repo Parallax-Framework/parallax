@@ -1,7 +1,27 @@
-local success = pcall(require, "mysqloo")
+-- Detect if mysqloo binary exists before requiring
+local function hasMysqlooBinary()
+    local osName = jit.os:lower()
+    local arch = jit.arch == "x64" and "win64" or "win32"
+
+    if ( osName == "osx" ) then arch = "osx" end
+    if ( osName == "linux" ) then arch = "linux" end
+
+    local binaryName = "gmsv_mysqloo_" .. arch .. ".dll"
+    if ( osName == "linux" ) then binaryName = "gmsv_mysqloo_linux.dll" end
+    if ( osName == "osx" ) then binaryName = "gmsv_mysqloo_osx.dll" end
+
+    return file.Exists("lua/bin/" .. binaryName, "GAME")
+end
+
+if ( !hasMysqlooBinary() ) then
+    ax.util:PrintWarning("MySQLOO binary not found in lua/bin/. ax.sqloo disabled.")
+    return
+end
+
+-- Now safe to require
+local success, err = pcall(require, "mysqloo")
 if ( !success or !mysqloo ) then
-    ax.util:PrintError("MySQLOO module not found. Disabling ax.sqloo.")
-    ax.sqloo = nil
+    ax.util:PrintWarning("Failed to load MySQLOO module: " .. (err or "unknown"))
     return
 end
 
@@ -166,9 +186,9 @@ function ax.sqloo:InitializeTable(tableName, extraSchema)
         end
     end
 
-    -- Only default to steamid primary key if not explicitly defined
+    -- Only default to id primary key if not explicitly defined
     if ( !hasPrimaryKey ) then
-        schema.steamid = "VARCHAR(32) PRIMARY KEY"
+        schema.id = "VARCHAR(32) PRIMARY KEY"
     end
 
     -- Merge registered vars
