@@ -48,7 +48,7 @@ function MODULE:OnPlayerHitGround(client, inWater, onFloater, speed)
     end
 end
 
-function MODULE:PlayerSpawn(client)
+function MODULE:PlayerReady(client)
     if ( !ax.config:Get("stamina", true) ) then return end
 
     -- Initialize stamina when player spawns
