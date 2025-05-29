@@ -335,9 +335,10 @@ end
 -- @param identifier any The identifier to search for.
 -- @return Player The player that was found.
 function ax.util:FindPlayer(identifier)
-    if ( identifier == nil ) then return NULL end
+    if ( identifier == nil ) then return nil end
 
-    if ( type(identifier) == "Player" ) then
+    local identifierType = type(identifier)
+    if ( identifierType == "Player" ) then
         return identifier
     end
 
@@ -368,7 +369,7 @@ function ax.util:FindPlayer(identifier)
         end
     end
 
-    return NULL
+    return nil
 end
 
 --- Breaks a string into lines that fit within a maximum width in pixels.
