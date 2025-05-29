@@ -140,22 +140,28 @@ local colorError = Color(255, 120, 120)
 function ax.util:PrintError(...)
     local arguments = self:PreparePackage(...)
 
-    -- Get the second line of the traceback, which contains the file and line number of the error
-    local traceBack = debug.traceback()
-    local secondLine = string.match(traceBack, "\n(.-)\n") or ""
-    secondLine = string.Trim(secondLine)
+    -- Get the line of the traceback, which contains the file and line number of the error occurrence
+    local info = debug.getinfo(2, "Sl")
+    local line = ""
+    if ( info.currentline > 0 ) then
+        -- Get the second line of the traceback, which contains the file and line number of the error occurrence
+        local secondInfo = debug.getinfo(3, "Sl")
+        if ( secondInfo and secondInfo.short_src and secondInfo.currentline > 0 ) then
+            line = secondInfo.short_src .. ":" .. secondInfo.currentline
+        end
+    end
 
     -- If the second line is empty, we don't need to add it to the arguments
-    if ( secondLine != "" ) then
+    if ( line != "" ) then
         -- Remove the "\n" at the end of arguments, since it was added by PreparePackage
         if ( #arguments > 0 and type(arguments[#arguments]) == "string" ) then
             arguments[#arguments] = string.Trim(arguments[#arguments])
         end
 
-        -- Strip gamemodes/parallax from the second line if it exists, because it is not useful
-        secondLine = string.gsub(secondLine, "gamemodes/parallax/", "")
+        -- Strip gamemodes/ from the second line if it exists, because it is not useful
+        line = string.gsub(line, "gamemodes/", "")
 
-        table.insert(arguments, " (" .. secondLine .. ")")
+        table.insert(arguments, " (" .. line .. ")")
         table.insert(arguments, "\n")
     end
 
@@ -167,7 +173,17 @@ function ax.util:PrintError(...)
 
     -- Print the entire traceback to the console if developer mode is enabled
     if ( ax.config and ax.config.Get and ax.config:Get("debug.developer") ) then
-        MsgC(violetColor, "[Parallax] ", colorError, "[Error] [Traceback] ", traceBack, "\n")
+        local log = {}
+        for i = 2, 10 do
+            local traceInfo = debug.getinfo(i, "Sl")
+            if ( !traceInfo ) then break end
+
+            local file = traceInfo.short_src or "unknown"
+            local line = traceInfo.currentline or "unknown"
+            table.insert(log, string.format("%s:%d", file, line) .. "\n")
+        end
+        log = table.concat(log, " -> ")
+        MsgC(violetColor, "[Parallax] ", colorError, "[Error] [Traceback] ", log, "\n")
     end
 
     return arguments
