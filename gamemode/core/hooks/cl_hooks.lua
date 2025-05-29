@@ -851,9 +851,15 @@ end
 function GM:OnScreenSizeChanged(oldWidth, oldHeight, newWidth, newHeight)
     for k, v in ipairs(ax.gui) do
         if ( IsValid(v) and ispanel(v) ) then
+            local className = v:GetClassName()
             v:Remove()
 
-            -- Perhaps recreate the GUIs?
+            -- Attempt to recreate the GUI element
+            if ( className == "ax.mainmenu" ) then
+                vgui.Create("ax.mainmenu")
+            elseif ( className == "ax.tab" ) then
+                vgui.Create("ax.tab")
+            end
         end
     end
 
