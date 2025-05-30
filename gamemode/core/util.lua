@@ -140,33 +140,33 @@ local f = "[%s Error] "
 local colorError = Color(255, 120, 120)
 local _printingError = false
 function ax.util:PrintError(...)
-    if ( _printingError ) then return end
-    _printingError = true
+	if ( _printingError ) then return end
+	_printingError = true
 
-    local arguments = self:PreparePackage(...)
-    local info = {}
+	local arguments = self:PreparePackage(...)
+	local info = {}
 
-    for i = 1, 10 do
-        local traceInfo = debug.getinfo(i, "Sl")
-        if ( !traceInfo ) then break end
-        table.insert(info, traceInfo)
-    end
+	for i = 1, 10 do
+		local traceInfo = debug.getinfo(i, "Sl")
+		if ( !traceInfo ) then break end
+		table.insert(info, traceInfo)
+	end
 
-    local line = ""
-    local quickInfo = info[3]
-    if ( quickInfo and quickInfo.short_src and quickInfo.currentline > 0 ) then
-        line = quickInfo.short_src .. ":" .. quickInfo.currentline
-    end
+	local line = ""
+	local quickInfo = info[3]
+	if ( quickInfo and quickInfo.short_src and quickInfo.currentline > 0 ) then
+		line = quickInfo.short_src .. ":" .. quickInfo.currentline
+	end
 
-    if ( line != "" ) then
-        if ( #arguments > 0 and type(arguments[#arguments]) == "string" ) then
-            arguments[#arguments] = string.Trim(arguments[#arguments])
-        end
+	if ( line != "" ) then
+		if ( #arguments > 0 and type(arguments[#arguments]) == "string" ) then
+			arguments[#arguments] = string.Trim(arguments[#arguments])
+		end
 
-        line = string.gsub(line, "gamemodes/", "")
-        table.insert(arguments, " (" .. line .. ")")
-        table.insert(arguments, "\n")
-    end
+		line = string.gsub(line, "gamemodes/", "")
+		table.insert(arguments, " (" .. line .. ")")
+		table.insert(arguments, "\n")
+	end
 
 	MsgC(violetColor, "[Parallax] ", colorError, string.format(f, SERVER and "Server" or "Client"), unpack(arguments))
 
@@ -174,22 +174,22 @@ function ax.util:PrintError(...)
 		chat.AddText(violetColor, "[Parallax] ", colorError, "[Error] ", unpack(arguments))
 	end
 
-    if ( ax.config and ax.config.Get and ax.config:Get("debug.developer") ) then
-        local log = {}
-        for i = 1, 10 do
-            local traceInfo = info[i]
-            if ( !traceInfo ) then break end
+	if ( ax.config and ax.config.Get and ax.config:Get("debug.developer") ) then
+		local log = {}
+		for i = 1, 10 do
+			local traceInfo = info[i]
+			if ( !traceInfo ) then break end
 
-            local file = traceInfo.short_src or "unknown"
-            local lineNum = traceInfo.currentline or 0
-            table.insert(log, string.format("%s:%d", file, lineNum) .. "\n")
-        end
-        log = table.concat(log, " -> ")
-        MsgC(violetColor, "[Parallax] ", colorError, "[Error] [Traceback] ", log, "\n")
-    end
+			local file = traceInfo.short_src or "unknown"
+			local lineNum = traceInfo.currentline or 0
+			table.insert(log, string.format("%s:%d", file, lineNum) .. "\n")
+		end
+		log = table.concat(log, " -> ")
+		MsgC(violetColor, "[Parallax] ", colorError, "[Error] [Traceback] ", log, "\n")
+	end
 
-    _printingError = false
-    return arguments
+	_printingError = false
+	return arguments
 end
 
 --- Prints a warning message to the console.
