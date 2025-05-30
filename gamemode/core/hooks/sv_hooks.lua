@@ -10,15 +10,15 @@ function GM:PlayerReady(client)
     client:SetTeam(0)
     client:SetModel("models/player/kleiner.mdl")
 
-    client:SetNoDraw(true)
-    client:SetNotSolid(true)
-    client:SetMoveType(MOVETYPE_NONE)
-
     client:KillSilent()
 
     ax.character:CacheAll(client, function()
         ax.util:SendChatText(nil, Color(25, 75, 150), client:SteamName() .. " has joined the server.")
         ax.net:Start(client, "mainmenu")
+
+        client:SetNoDraw(true)
+        client:SetNotSolid(true)
+        client:SetMoveType(MOVETYPE_NONE)
 
         hook.Run("PostPlayerInitialSpawn", client)
 
@@ -122,6 +122,11 @@ function GM:PrePlayerLoadedCharacter(client, character, previousCharacter)
 end
 
 function GM:PlayerDeathThink(client)
+    if ( client:Team() == 0 ) then
+        -- If the player is in the main menu, we don't want to do anything
+        return true
+    end
+
     -- TODO: uh, some happy day this should be replaced
     if ( client:KeyPressed(IN_ATTACK) or client:KeyPressed(IN_ATTACK2) or client:KeyPressed(IN_JUMP) or client:IsBot() ) then
         client:Spawn()
