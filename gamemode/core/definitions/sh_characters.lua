@@ -31,17 +31,21 @@ ax.character:RegisterVariable("name", {
     Numeric = false,
 
     OnValidate = function(self, parent, payload, client)
-        if ( string.len(payload.name) < 3 ) then
+        local name = payload.name or ""
+        local factionData = ax.faction:Get(payload.faction)
+        local lengthMin = factionData.NameLengthMin or 3
+        local lengthMax = factionData.NameLengthMax or 32
+        if ( string.len(name) < lengthMin ) then
             return false, "Name must be at least 3 characters long!"
-        elseif ( string.len(payload.name) > 32 ) then
+        elseif ( string.len(name) > lengthMax ) then
             return false, "Name must be at most 32 characters long!"
         end
 
-        if ( string.find(payload.name, "[^%a%d%s]") ) then
+        if ( string.find(name, "[^%a%d%s]") and factionData.AllowNonAscii != true ) then
             return false, "Name can only contain letters, numbers and spaces!"
         end
 
-        if ( string.find(payload.name, "%s%s") ) then
+        if ( string.find(name, "%s%s") and factionData.AllowMultipleSpaces != true ) then
             return false, "Name cannot contain multiple spaces in a row!"
         end
 
