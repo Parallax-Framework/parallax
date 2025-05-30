@@ -353,7 +353,7 @@ local _isFemale = playerMeta.IsFemale
 
 function playerMeta:IsFemale()
     local modelClass = ax.animations:GetModelClass(self:GetModel())
-    if ( !isstring(modelClass) or modelClass == "" ) then
+    if ( !isstring(modelClass) or modelClass == "" and isfunction(_isFemale) ) then
         return _isFemale(self)
     end
 
@@ -361,7 +361,7 @@ function playerMeta:IsFemale()
         return true
     end
 
-    return _isFemale(self)
+    return isfunction(_isFemale) and _isFemale(self) or false
 end
 
 if ( SERVER ) then
