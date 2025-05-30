@@ -180,7 +180,7 @@ function ax.util:PrintError(...)
 			if ( !traceInfo ) then break end
 
 			local file = traceInfo.short_src or "unknown"
-			local line = traceInfo.currentline or "unknown"
+			line = traceInfo.currentline or "unknown"
 			table.insert(log, string.format("%s:%d", file, line) .. "\n")
 		end
 		log = table.concat(log, " -> ")
