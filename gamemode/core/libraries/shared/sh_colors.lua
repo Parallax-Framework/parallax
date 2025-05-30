@@ -33,7 +33,7 @@ end
 function ax.color:Get(name)
     local storedColor = self.stored[name]
     if ( IsColor(storedColor) ) then
-        return setmetatable({r = storedColor.r, g = storedColor.g, b = storedColor.b, a = storedColor.a}, colorObject)
+        return storedColor:Copy()
     end
 
     ax.util:PrintError("Attempted to get an invalid color!")
