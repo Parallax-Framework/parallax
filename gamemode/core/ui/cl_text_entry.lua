@@ -4,11 +4,11 @@ local PANEL = {}
 
 function PANEL:Init()
     self:SetFont("parallax")
-    self:SetTextColor(color_white)
+    self:SetTextColor(ax.color:Get("text.light"))
     self:SetPaintBackground(false)
     self:SetUpdateOnType(true)
-    self:SetCursorColor(color_white)
-    self:SetHighlightColor(color_white)
+    self:SetCursorColor(ax.color:Get("text.light"))
+    self:SetHighlightColor(ax.color:Get("text.light"))
 
     self:SetTall(ScreenScale(12))
 end
