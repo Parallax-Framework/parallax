@@ -136,6 +136,7 @@ end
 --- Prints an error message to the console.
 -- @realm shared
 -- @param ... any The message to print.
+local f = "[%s Error] "
 local colorError = Color(255, 120, 120)
 function ax.util:PrintError(...)
 	local arguments = self:PreparePackage(...)
@@ -165,7 +166,7 @@ function ax.util:PrintError(...)
 		table.insert(arguments, "\n")
 	end
 
-	MsgC(violetColor, "[Parallax] ", colorError, "[Error] ", unpack(arguments))
+	MsgC(violetColor, "[Parallax] ", colorError, string.format(f, SERVER and "Server" or "Client"), unpack(arguments))
 
 	if ( CLIENT and ax.config and ax.config.Get and ax.config:Get("debug.developer") ) then
 		chat.AddText(violetColor, "[Parallax] ", colorError, "[Error] ", unpack(arguments))
