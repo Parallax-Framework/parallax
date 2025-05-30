@@ -40,7 +40,7 @@ function PANEL:Paint(width, height)
     draw.RoundedBox(0, 0, 0, width, height, ax.color:Get("background.slider"))
     local fraction = (self.value - self.min) / (self.max - self.min)
     local barWidth = math.Clamp(fraction * width, 0, width)
-    draw.RoundedBox(0, 0, 0, barWidth, height, color_white)
+    draw.RoundedBox(0, 0, 0, barWidth, height, ax.color:Get("white"))
 end
 
 function PANEL:OnMousePressed(mouseCode)

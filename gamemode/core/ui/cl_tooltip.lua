@@ -98,12 +98,12 @@ function PANEL:Paint(width, height)
     ax.util:DrawBlur(self)
     draw.RoundedBox(0, 0, 0, width, height, Color(0, 0, 0, 200))
     local title = ax.localization:GetPhrase(self.title) or self.title
-    draw.SimpleText(title, "parallax.large.bold", 8, 0, color_white, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+    draw.SimpleText(title, "parallax.large.bold", 8, 0, ax.color:Get("text.light"), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
 
     local desc = ax.localization:GetPhrase(self.description) or self.description
     local descWrapped = ax.util:GetWrappedText(desc, "parallax", width - 32)
     for i = 1, #descWrapped do
-        draw.SimpleText(descWrapped[i], "parallax", 16, 32 + (i - 1) * ax.util:GetTextHeight("parallax"), color_white, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+        draw.SimpleText(descWrapped[i], "parallax", 16, 32 + (i - 1) * ax.util:GetTextHeight("parallax"), ax.color:Get("text"), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
     end
 end
 

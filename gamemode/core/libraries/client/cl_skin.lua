@@ -8,12 +8,12 @@ SKIN.fontTab = "DermaDefault"
 SKIN.fontButton = "DermaDefault"
 
 SKIN.Colours = table.Copy(derma.SkinList.Default.Colours)
-SKIN.Colours.Window.TitleActive = color_white
-SKIN.Colours.Window.TitleInactive = color_white
+SKIN.Colours.Window.TitleActive = ax.color:Get("white")
+SKIN.Colours.Window.TitleInactive = ax.color:Get("white")
 
-SKIN.Colours.Button.Normal = color_white
-SKIN.Colours.Button.Hover = color_white
-SKIN.Colours.Button.Down = color_white
+SKIN.Colours.Button.Normal = ax.color:Get("white")
+SKIN.Colours.Button.Hover = ax.color:Get("white")
+SKIN.Colours.Button.Down = ax.color:Get("white")
 SKIN.Colours.Button.Disabled = Color(0, 0, 0, 100)
 
 SKIN.Colours.Label.Highlight = Color(90, 200, 250, 255)

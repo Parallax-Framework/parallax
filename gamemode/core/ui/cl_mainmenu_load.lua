@@ -77,7 +77,7 @@ function PANEL:Populate()
         deleteButton:Dock(RIGHT)
         deleteButton:DockMargin(tinyPadding, 0, 0, 0)
         deleteButton.baseTextColor = ax.color:Get("error")
-        deleteButton.baseTextColorTarget = color_black
+        deleteButton.baseTextColorTarget = ax.color:Get("black")
         deleteButton.backgroundColor = ax.color:Get("error")
         deleteButton:SetText("X")
         deleteButton:SetWide(button:GetTall())

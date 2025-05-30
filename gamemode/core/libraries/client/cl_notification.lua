@@ -11,7 +11,6 @@ local FONT_NAME = "parallax.bold"
 -- Utility function to create a notification
 function ax.notification:Add(text, duration, bgColor)
     duration = duration or 3
-    -- bgColor = bgColor or ax.color:Get("notification.backgroun", color_white) -- TODO: What is this?
     bgColor.a = 200
 
     -- Create panel
@@ -39,7 +38,7 @@ function ax.notification:Add(text, duration, bgColor)
                 FONT_NAME,
                 PANEL_MARGIN,
                 PANEL_MARGIN + (i - 1) * lineHeight,
-                color_white,
+                ax.color:Get("white"),
                 TEXT_ALIGN_LEFT,
                 TEXT_ALIGN_TOP
             )

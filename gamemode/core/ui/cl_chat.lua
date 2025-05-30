@@ -44,7 +44,6 @@ function PANEL:Init()
     self.entry:Dock(FILL)
     self.entry:DockMargin(8, 0, 0, 0)
     self.entry:SetPlaceholderText("Say something...")
-    self.entry:SetTextColor(color_white)
     self.entry:SetDrawLanguageID(false)
     self.entry:SetTabbingDisabled(true)
 

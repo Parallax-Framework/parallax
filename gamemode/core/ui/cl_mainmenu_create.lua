@@ -135,7 +135,7 @@ function PANEL:PopulateFactionSelect()
             local imageHeight = height * 0.85
             imageHeight = math.Round(imageHeight)
 
-            surface.SetDrawColor(color_white)
+            surface.SetDrawColor(ax.color:Get("white"))
             surface.SetMaterial(banner)
             surface.DrawTexturedRect(0, 0, width, imageHeight)
 
@@ -145,7 +145,7 @@ function PANEL:PopulateFactionSelect()
 
             local boxHeight = boxHeightStatic * inertia
             boxHeight = math.Round(boxHeight)
-            draw.RoundedBox(0, 0, imageHeight - boxHeight, width, boxHeight, ColorAlpha(color_white, 255 * inertia))
+            draw.RoundedBox(0, 0, imageHeight - boxHeight, width, boxHeight, ColorAlpha(ax.color:Get("white"), 255 * inertia))
 
             local textColor = factionButton:GetTextColor()
 
@@ -295,7 +295,6 @@ function PANEL:PopulateCreateCharacterForm()
             entry:Dock(TOP)
             entry:DockMargin(0, 0, 0, smallPadding)
             entry:SetFont("parallax.button")
-            entry:SetTextColor(color_white)
             entry:SetPlaceholderText(v.Default or "")
             entry:SetTall(ScreenScale(16))
             entry:SetZPos(zPos)
@@ -319,7 +318,6 @@ function PANEL:PopulateCreateCharacterForm()
             label:Dock(TOP)
             label:SetText(v.Name or k)
             label:SetFont("parallax.button")
-            label:SetTextColor(color_white)
             label:SizeToContents()
 
             zPos = zPos - 1
@@ -330,7 +328,6 @@ function PANEL:PopulateCreateCharacterForm()
             entry:Dock(TOP)
             entry:DockMargin(0, 0, 0, smallPadding)
             entry:SetFont("parallax.button.small")
-            entry:SetTextColor(color_white)
             entry:SetPlaceholderText(v.Default or "")
             entry:SetMultiline(true)
             entry:SetTall(ScreenScale(12) * 4)

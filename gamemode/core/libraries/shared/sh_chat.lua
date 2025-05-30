@@ -17,7 +17,7 @@ function ax.chat:Register(uniqueID, chatData)
 
     if ( !isfunction(chatData.OnChatAdd) ) then
         chatData.OnChatAdd = function(info, speaker, text)
-            chat.AddText(color_white, speaker:Name() .. " says \"" .. text .. "\"")
+            chat.AddText(ax.color:Get("text"), speaker:Name() .. " says \"" .. text .. "\"")
             chat.PlaySound()
         end
     end

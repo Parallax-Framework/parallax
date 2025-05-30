@@ -86,7 +86,6 @@ function PANEL:SetInventory(id)
     label:Dock(FILL)
     label:SetFont("parallax.large")
     label:SetText(weight .. "kg / " .. maxWeight .. "kg")
-    label:SetTextColor(color_white)
     label:SetContentAlignment(5)
 
     local items = inventory:GetItems()

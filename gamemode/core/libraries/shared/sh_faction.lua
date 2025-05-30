@@ -34,7 +34,7 @@ ax.faction.meta = {
         return self.Models or DEFAULT_MODELS
     end,
     GetColor = function(self)
-        return self.Color or color_white
+        return self.Color or ax.color:Get("white")
     end,
     GetID = function(self)
         return self.ID or 0
@@ -83,7 +83,7 @@ local default = {
     Description = "No description available.",
     Models = DEFAULT_MODELS,
     IsDefault = false,
-    Color = color_white,
+    Color = ax.color:Get("white"),
     Classes = {},
 }
 

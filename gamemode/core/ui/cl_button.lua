@@ -6,7 +6,7 @@ AccessorFunc(PANEL, "inertia", "Inertia", FORCE_NUMBER)
 
 function PANEL:Init()
     self:SetFont("parallax.button")
-    self:SetTextColorProperty(color_white)
+    self:SetTextColorProperty(ax.color:Get("white"))
     self:SetContentAlignment(4)
     self:SetTall(ScreenScale(18))
     self:SetTextInset(ScreenScale(2), 0)
@@ -20,8 +20,8 @@ function PANEL:Init()
     self.height = self.baseHeight
     self.heightTarget = self.baseHeight
 
-    self.textColor = color_white
-    self.textColorTarget = color_white
+    self.textColor = Color(255, 255, 255, 255)
+    self.textColorTarget = ax.color:Get("white")
 
     self.textInset = {ScreenScale(2), 0}
     self.textInsetTarget = {ScreenScale(2), 0}
@@ -84,7 +84,7 @@ function PANEL:Think()
         self:SetFont("parallax.button")
 
         self.heightTarget = self.baseHeight
-        self.textColorTarget = self.baseTextColor or color_white
+        self.textColorTarget = self.baseTextColor or ax.color:Get("white")
         self.textInsetTarget = {ScreenScale(2), 0}
 
         self.inertiaTarget = 0
@@ -137,7 +137,7 @@ AccessorFunc(PANEL, "backgroundColor", "BackgroundColor")
 
 function PANEL:Init()
     self:SetFont("parallax.button.small")
-    self:SetTextColorProperty(color_white)
+    self:SetTextColorProperty(ax.color:Get("white"))
     self:SetContentAlignment(5)
     self:SetTall(ScreenScale(12))
     self:SetTextInset(0, 0)
@@ -153,10 +153,10 @@ function PANEL:Init()
     self.baseHeight = self:GetTall()
     self.baseTextColor = self:GetTextColor()
 
-    self.baseTextColorTarget = color_black
-    self.textColorTarget = color_black
+    self.baseTextColorTarget = ax.color:Get("black")
+    self.textColorTarget = ax.color:Get("black")
 
-    self.backgroundColor = color_white
+    self.backgroundColor = ax.color:Get("white")
 end
 
 function PANEL:SizeToContents()
@@ -186,7 +186,7 @@ function PANEL:Think()
     if ( !self:IsHovered() and ( self.textColorTarget != self.baseTextColor ) ) then
         self:SetFont("parallax.button.small")
 
-        self.textColorTarget = self.baseTextColor or color_white
+        self.textColorTarget = self.baseTextColor or ax.color:Get("white")
 
         self.inertiaTarget = self.backgroundAlphaUnHovered or 0
 
@@ -203,7 +203,7 @@ function PANEL:OnCursorEntered()
 
     self:SetFont("parallax.button.small.hover")
 
-    self.textColorTarget = self.baseTextColorTarget or color_black
+    self.textColorTarget = self.baseTextColorTarget or ax.color:Get("black")
 
     self.inertiaTarget = self.backgroundAlphaHovered or 1
 
