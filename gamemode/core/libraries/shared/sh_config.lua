@@ -15,7 +15,7 @@ ax.config.instances = ax.config.instances or {}
 function ax.config:Get(key, fallback)
     local configData = self.stored[key]
     if ( !istable(configData) ) then
-        ax.util:PrintError("Config \"" .. key .. "\" does not exist!")
+        ax.util:PrintError("Config \"" .. tostring(key) .. "\" does not exist!")
         return fallback
     end
 
@@ -34,7 +34,7 @@ end
 function ax.config:GetDefault(key)
     local configData = self.stored[key]
     if ( !istable(configData) ) then
-        ax.util:PrintError("Config \"" .. key .. "\" does not exist!")
+        ax.util:PrintError("Config \"" .. tostring(key) .. "\" does not exist!")
         return nil
     end
 
@@ -53,7 +53,7 @@ end
 function ax.config:Set(key, value)
     local stored = self.stored[key]
     if ( !istable(stored) ) then
-        ax.util:PrintError("Config \"" .. key .. "\" does not exist!")
+        ax.util:PrintError("Config \"" .. tostring(key) .. "\" does not exist!")
         return false
     end
 
@@ -100,7 +100,7 @@ end
 function ax.config:SetDefault(key, value)
     local stored = self.stored[key]
     if ( !istable(stored) ) then
-        ax.util:PrintError("Configuration \"" .. key .. "\" does not exist!")
+        ax.util:PrintError("Config \"" .. tostring(key) .. "\" does not exist!")
         return false
     end
 
