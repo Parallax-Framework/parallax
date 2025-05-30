@@ -21,10 +21,11 @@ function PANEL:SizeToContents()
 end
 
 function PANEL:Paint(width, height)
-    BaseClass.Paint(self, width, height)
-
     surface.SetDrawColor(ax.color:Get("background.transparent"))
-    surface.DrawRect(0, 0, width, height)
+    surface.DrawRect(0, 0, width, height
+)
+    BaseClass.Paint(self, width, height)
 end
+
 
 vgui.Register("ax.text.entry", PANEL, "DTextEntry")
