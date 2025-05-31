@@ -207,9 +207,9 @@ ax.net:Hook("client.ready", function(client)
 end)
 
 ax.net:Hook("client.voice.start", function(client, speaker)
-    hook.Run("PlayerVoiceStart", speaker)
+    hook.Run("PlayerStartVoice", speaker)
 end)
 
 ax.net:Hook("client.voice.end", function(client, prevSpeaker)
-    hook.Run("PlayerVoiceEnd", prevSpeaker)
+    hook.Run("PlayerEndVoice", prevSpeaker)
 end)
