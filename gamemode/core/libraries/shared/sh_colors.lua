@@ -49,6 +49,23 @@ function ax.color:Dim(col, frac)
     return setmetatable({r = col.r * frac, g = col.g * frac, b = col.b * frac, a = col.a}, colorObject)
 end
 
+--- Returns whether or not a color is dark.
+-- @realm shared
+-- @param col Color The color to check.
+-- @return boolean True if the color is dark, false otherwise.
+-- @note A color is considered dark if its luminance is less than 0.5.
+function ax.color:IsDark(col)
+    if ( !IsColor(col) ) then
+        ax.util:PrintError("Attempted to check if a color is dark without a valid color!")
+        return false
+    end
+
+    local r, g, b = col.r / 255, col.g / 255, col.b / 255
+
+    local luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b
+    return luminance < 0.5
+end
+
 if ( CLIENT ) then
     concommand.Add("ax_list_colors", function(client, cmd, arguments)
         for k, v in pairs(ax.color.stored) do
