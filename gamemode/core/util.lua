@@ -35,7 +35,11 @@ function ax.util:CoerceType(typeID, value)
 			return value
 		end
 	elseif ( typeID == ax.types.steamid ) then
-		if ( isstring(value) and #value == 17 and value:match("^%d+$") ) then
+		if ( isstring(value) and #value == 17 and string.match(value, "^%d+$") ) then
+			return value
+		end
+	elseif ( typeID == ax.types.steamid64 ) then
+		if ( isstring(value) and #value == 17 and string.match(value, "^7656119%d+$") ) then
 			return value
 		end
 	end
@@ -54,7 +58,8 @@ local basicTypeMap = {
 local checkTypeMap = {
 	[ax.types.color] = function(val) return IsColor(val) end,
 	[ax.types.character] = function(val) return getmetatable(val) == ax.character.meta end,
-	[ax.types.steamid] = function(val) return isstring(val) and #val == 17 and val:match("^%d+$") end
+	[ax.types.steamid] = function(val) return isstring(val) and #val == 17 and string.match(value, "^%d+$") end,
+	[ax.types.steamid64] = function(val) return isstring(val) and #val == 17 and string.match(value, "^7656119%d+$") end
 }
 
 --- Attempts to identify the framework type of a given value.
