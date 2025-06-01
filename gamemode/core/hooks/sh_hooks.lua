@@ -77,15 +77,6 @@ function GM:PlayerCanHearChat(client, listener, uniqueID, text)
 end
 
 function GM:PreConfigChanged(key, value, oldValue)
-    local CONF_DATA = ax.config.stored[key]
-    if ( CLIENT and istable(CONF_DATA) ) then
-        local bHidden = CONF_DATA.Hidden
-        if ( isbool(bHidden) and bHidden == false ) then
-            return false
-        elseif ( isfunction(bHidden) and bHidden(CONF_DATA, ax.client) == false ) then
-            return false
-        end
-    end
 end
 
 function GM:PostConfigChanged(key, value, oldValue, client)

@@ -404,15 +404,6 @@ function GM:PostPlayerTakeItem(client, item, entity)
 end
 
 function GM:PrePlayerConfigChanged(client, key, value, oldValue)
-    local CONF_DATA = ax.config.stored[key]
-    if ( istable(CONF_DATA) ) then
-        local bHidden = CONF_DATA.Hidden
-        if ( isbool(bHidden) and bHidden == true ) then
-            return false
-        elseif ( isfunction(bHidden) and bHidden(CONF_DATA, client) == false ) then
-            return false
-        end
-    end
 end
 
 local function IsAdmin(_, client)
