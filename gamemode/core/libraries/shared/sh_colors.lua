@@ -32,7 +32,7 @@ end
 function ax.color:Get(name)
     local storedColor = self.stored[name]
     if ( ax.util:CoerceType(ax.types.color, storedColor) ) then
-        return Color(storedColor.r, storedColor.g, storedColor.b, storedColor.a)
+        return Color(storedColor.r, storedColor.g, storedColor.b, storedColor.a or 255)
     end
 
     ax.util:PrintError("Attempted to get an invalid color!")
