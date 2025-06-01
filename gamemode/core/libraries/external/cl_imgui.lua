@@ -25,7 +25,6 @@ function imgui.Hook(name, id, callback)
 	hook.Add(name, "IMGUI / " .. id .. " / " .. hookUniqifier, callback)
 end
 
-local localPlayer
 local gState = {}
 
 local function shouldAcceptInput()
@@ -68,7 +67,7 @@ local function isObstructed(eyePos, hitPos, ignoredEntity, ignoreParent)
 	local q = traceQueryTable
 	q.start = eyePos
 	q.endpos = hitPos
-	q.filter[1] = localPlayer
+	q.filter[1] = ax.client
 	q.filter[2] = ignoredEntity
 	if ignoreParent and IsValid(ignoredEntity) then
 		local parent = ignoredEntity:GetParent()
@@ -90,10 +89,6 @@ local function isObstructed(eyePos, hitPos, ignoredEntity, ignoreParent)
 end
 
 function imgui.Start3D2D(pos, angles, scale, distanceHide, distanceFadeStart)
-	if not IsValid(localPlayer) then
-		localPlayer = LocalPlayer()
-	end
-
 	if gState.shutdown == true then
 		return
 	end
@@ -109,7 +104,7 @@ function imgui.Start3D2D(pos, angles, scale, distanceHide, distanceFadeStart)
 
 	_devMode = imgui.IsDeveloperMode()
 
-	local eyePos = localPlayer:EyePos()
+	local eyePos = ax.client:EyePos()
 	local eyePosToPos = pos - eyePos
 
 	-- OPTIMIZATION: Test that we are in front of the UI
@@ -153,7 +148,7 @@ function imgui.Start3D2D(pos, angles, scale, distanceHide, distanceFadeStart)
 
 	-- calculate mousepos
 	if not vgui.CursorVisible() or vgui.IsHoveringWorld() then
-		local tr = localPlayer:GetEyeTrace()
+		local tr = ax.client:GetEyeTrace()
 		local eyepos = tr.StartPos
 		local eyenormal
 
@@ -279,7 +274,7 @@ local function developerText(str, x, y, clr)
 end
 
 local function drawDeveloperInfo()
-	local camAng = localPlayer:EyeAngles()
+	local camAng = ax.client:EyeAngles()
 	camAng:RotateAroundAxis(camAng:Right(), 90)
 	camAng:RotateAroundAxis(camAng:Up(), -90)
 
@@ -324,7 +319,7 @@ local function drawDeveloperInfo()
 	developerText(string.format("ang: %.2f %.2f %.2f", ang.p, ang.y, ang.r), 0, 75, devColours["ang"])
 	developerText(string.format("dot %d", gState._devDot or 0), 0, 88, devColours["dot"])
 
-	local angToEye = (pos - localPlayer:EyePos()):Angle()
+	local angToEye = (pos - ax.client:EyePos()):Angle()
 	angToEye:RotateAroundAxis(ang:Up(), -90)
 	angToEye:RotateAroundAxis(ang:Right(), 90)
 
