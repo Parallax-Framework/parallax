@@ -170,7 +170,7 @@ function PLAYER:GetFactionData()
     if ( !character ) then return end
 
     local faction = character:GetFactionData()
-    if ( !faction ) then return end
+    if ( !istable(faction) ) then return end
 
     return faction
 end
@@ -180,7 +180,7 @@ function PLAYER:GetClassData()
     if ( !character ) then return end
 
     local class = character:GetClassData()
-    if ( !class ) then return end
+    if ( !istable(class) ) then return end
 
     return class
 end
