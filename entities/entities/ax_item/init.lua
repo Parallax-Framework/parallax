@@ -84,11 +84,11 @@ function ENT:SetItem(itemID, uniqueID)
 end
 
 function ENT:GetData()
-    return self:GetTable().axItemData or {}
+    return self:GetDataVariable("ItemData", {})
 end
 
 function ENT:SetData(data)
-    self:GetTable().axItemData = data
+    self:SetDataVariable("ItemData", data)
 end
 
 function ENT:Use(client)

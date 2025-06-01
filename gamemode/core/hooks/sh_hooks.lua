@@ -24,7 +24,8 @@ function GM:PlayerGetToolgun(client)
 end
 
 function GM:PlayerGetPhysgun(client)
-    return CAMI.PlayerHasAccess(client, "Parallax - Physgun", nil)
+    local character = client:GetCharacter()
+    return CAMI.PlayerHasAccess(client, "Parallax - Physgun", nil) or character and character:HasFlag("p")
 end
 
 function GM:PlayerCanCreateCharacter(client, character)

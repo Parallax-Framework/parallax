@@ -32,11 +32,11 @@ end
 function ax.color:Get(name)
     local storedColor = self.stored[name]
     if ( ax.util:CoerceType(ax.types.color, storedColor) ) then
-        return storedColor:Copy()
+        return Color(storedColor.r, storedColor.g, storedColor.b, storedColor.a)
     end
 
     ax.util:PrintError("Attempted to get an invalid color!")
-    return color_white:Copy()
+    return color_white
 end
 
 --- Dims a color by a specified fraction.
@@ -68,7 +68,7 @@ end
 if ( CLIENT ) then
     concommand.Add("ax_list_colors", function(client, cmd, arguments)
         for k, v in pairs(ax.color.stored) do
-            ax.util:Print("Color: " .. k .. " >> ", ax.color:Get("cyan"), v, " Color Sample")
+            ax.util:Print("Color: " .. k .. " >> ", ax.color:Get("cyan"), v, " Sample")
         end
     end)
 end

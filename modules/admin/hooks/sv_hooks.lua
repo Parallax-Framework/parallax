@@ -23,7 +23,7 @@ end
 
 function MODULE:SaveData()
     for _, client in player.Iterator() do
-        if ( !IsValid(client) or client:IsBot() ) then continue end
+        if ( client:IsBot() ) then continue end
 
         local usergroup = client:GetUserGroup()
         if ( usergroup and CAMI.GetUsergroup(usergroup) ) then
