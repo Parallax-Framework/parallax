@@ -19,6 +19,13 @@ local defaultModels = {
     Model("models/player/group01/male_09.mdl")
 }
 
+FACTION.Name = "Unknown Faction"
+FACTION.Description = "No description available."
+FACTION.IsDefault = false
+FACTION.Color = color_white
+FACTION.Models = defaultModels
+FACTION.Classes = {}
+
 function FACTION:__tostring()
     return "faction[" .. self:GetID() .. "][" .. self:GetUniqueID() .. "]"
 end

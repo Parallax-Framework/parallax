@@ -21,3 +21,5 @@ Contributions are welcome! Fork the repo, make your changes, and submit a pull r
 ## Framework Integrity
 
 If you see any code that appears to be cut and pasted directly from another framework or uncannily similar to externally derived content, **please open an issue immediately**. We would like to uphold the integrity and originality of Parallax and will give all reports serious consideration.
+
+All changes I (bloodycop6385) make, are done on the `x86-64` branch.

@@ -1,6 +1,12 @@
 local CLASS = ax.class.meta or {}
 CLASS.__index = CLASS
 
+CLASS.Name = "Unknown"
+CLASS.Description = "No description available."
+CLASS.IsDefault = false
+CLASS.CanSwitchTo = nil
+CLASS.OnSwitch = nil
+
 function CLASS:__tostring()
     return "class[" .. self:GetID() .. "][" .. self:GetUniqueID() .. "]"
 end

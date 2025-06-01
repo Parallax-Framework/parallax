@@ -7,14 +7,6 @@ ax.class.instances = {}
 
 ax.class.meta = ax.class.meta or {}
 
-local default = {
-    Name = "Unknown",
-    Description = "No description available.",
-    IsDefault = false,
-    CanSwitchTo = nil,
-    OnSwitch = nil
-}
-
 function ax.class:Register(classData)
     local CLASS = setmetatable(classData, self.meta)
     if ( !isnumber(CLASS.Faction) ) then
@@ -26,12 +18,6 @@ function ax.class:Register(classData)
     if ( faction == nil or !istable(faction) ) then
         ax.util:PrintError("Attempted to register a class for an invalid faction!")
         return false
-    end
-
-    for k, v in pairs(default) do
-        if ( CLASS[k] == nil ) then
-            CLASS[k] = v
-        end
     end
 
     local bResult = hook.Run("PreClassRegistered", CLASS)

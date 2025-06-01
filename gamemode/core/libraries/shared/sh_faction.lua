@@ -6,23 +6,8 @@ ax.faction.stored = {}
 ax.faction.instances = {}
 ax.faction.meta = ax.faction.meta or {}
 
-local default = {
-    Name = "Unknown Faction",
-    Description = "No description available.",
-    Models = DEFAULT_MODELS,
-    IsDefault = false,
-    Color = ax.color:Get("white"),
-    Classes = {},
-}
-
 function ax.faction:Register(factionData)
     local FACTION = setmetatable(factionData, self.meta)
-
-    for k, v in pairs(default) do
-        if ( FACTION[k] == nil ) then
-            FACTION[k] = v
-        end
-    end
 
     local bResult = hook.Run("PreFactionRegistered", FACTION)
     if ( bResult == false ) then

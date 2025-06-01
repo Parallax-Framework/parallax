@@ -3,7 +3,6 @@
 
 ax.color = {}
 ax.color.stored = {}
-local colorObject = FindMetaTable("Color")
 
 --- Registers a new color.
 -- @realm shared
@@ -14,7 +13,7 @@ function ax.color:Register(name, color)
         return false
     end
 
-    if ( !IsColor(color) ) then
+    if ( !ax.util:CoerceType(ax.types.color, color) ) then
         ax.util:PrintError("Attempted to register a color without a color!")
         return false
     end
@@ -32,12 +31,12 @@ end
 -- @return The color.
 function ax.color:Get(name)
     local storedColor = self.stored[name]
-    if ( IsColor(storedColor) or ( istable(storedColor) and isnumber(storedColor.r) and isnumber(storedColor.g) and isnumber(storedColor.b) and isnumber(storedColor.a) ) ) then
+    if ( ax.util:CoerceType(ax.types.color, storedColor) ) then
         return storedColor:Copy()
     end
 
     ax.util:PrintError("Attempted to get an invalid color!")
-    return nil
+    return color_white:Copy()
 end
 
 --- Dims a color by a specified fraction.
@@ -46,7 +45,7 @@ end
 -- @param frac number The fraction to dim the color by.
 -- @return Color The dimmed color.
 function ax.color:Dim(col, frac)
-    return setmetatable({r = col.r * frac, g = col.g * frac, b = col.b * frac, a = col.a}, colorObject)
+    return Color(col.r * frac, col.g * frac, col.b * frac, col.a)
 end
 
 --- Returns whether or not a color is dark.
@@ -55,7 +54,7 @@ end
 -- @return boolean True if the color is dark, false otherwise.
 -- @note A color is considered dark if its luminance is less than 0.5.
 function ax.color:IsDark(col)
-    if ( !IsColor(col) ) then
+    if ( !ax.util:CoerceType(ax.types.color, col) ) then
         ax.util:PrintError("Attempted to check if a color is dark without a valid color!")
         return false
     end
