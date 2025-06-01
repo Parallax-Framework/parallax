@@ -151,3 +151,16 @@ function PLAYER:IsFemale()
 
     return false
 end
+
+--- Checks if the player is running.
+-- @realm shared
+-- @return boolean Returns true if the player is running (i.e., moving faster than walking speed).
+
+function PLAYER:IsRunning()
+    if ( !IsValid(self) ) then return false end
+
+    local velocity = self:GetVelocity()
+    local speed = velocity:Length()
+
+    return speed > self:GetWalkSpeed() * 1.2
+end
