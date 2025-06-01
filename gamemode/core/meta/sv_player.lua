@@ -109,6 +109,10 @@ function PLAYER:CreateServerRagdoll()
     ragdoll:SetCollisionGroup(COLLISION_GROUP_DEBRIS_TRIGGER)
     ragdoll:Activate()
 
+    if ( self:IsOnFire() ) then
+        ragdoll:Ignite(10, 0)
+    end
+
     local velocity = self:GetVelocity()
     for i = 0, ragdoll:GetPhysicsObjectCount() - 1 do
         local phys = ragdoll:GetPhysicsObjectNum(i)

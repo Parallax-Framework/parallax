@@ -342,11 +342,28 @@ local drownSounds = {
 }
 
 function GM:GetPlayerPainSound(client, attacker, healthRemaining, damageTaken)
+    local character = client:GetCharacter()
+    if ( !character ) then return end
+
     if ( client:Health() <= 0 ) then return end
 
-    local factionData = client:GetFactionData()
+    local factionData = character:GetFactionData()
+    if ( client:IsOnFire() ) then
+        if ( factionData and factionData.FirePainSounds and #factionData.FirePainSounds > 0 ) then
+            local sound = factionData.FirePainSounds[math.random(#factionData.FirePainSounds)]
+            if ( sound and sound != "" ) then
+                return sound
+            end
+        end
+
+        return Sound("ambient/fire/fire_small1.wav")
+    end
 
     if ( client:WaterLevel() >= 3 ) then
+        if ( client:IsOnFire() ) then
+            client:Extinguish()
+        end
+
         if ( factionData and factionData.DrownSounds and #factionData.DrownSounds > 0 ) then
             local sound = factionData.DrownSounds[math.random(#factionData.DrownSounds)]
             if ( sound and sound != "" ) then
