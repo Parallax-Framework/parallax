@@ -2,12 +2,16 @@ function GM:PlayerStartVoice(client)
     if ( IsValid(g_VoicePanelList) ) then
         g_VoicePanelList:Remove()
     end
+
+    ax.net:Start("client.voice.start", client)
 end
 
 function GM:PlayerEndVoice(client)
     if ( IsValid(g_VoicePanelList) ) then
         g_VoicePanelList:Remove()
     end
+
+    ax.net:Start("client.voice.end", client)
 end
 
 function GM:ScoreboardShow()
@@ -34,7 +38,11 @@ function GM:Initialize()
     hook.Run("LoadFonts")
 end
 
+local _reloaded = false
 function GM:OnReloaded()
+    if ( _reloaded ) then return end
+    _reloaded = true
+
     ax.module:LoadFolder("parallax/modules")
     ax.item:LoadFolder("parallax/gamemode/items")
     ax.schema:Initialize()

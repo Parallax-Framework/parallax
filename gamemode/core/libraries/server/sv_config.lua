@@ -17,10 +17,11 @@ function ax.config:Load()
         local storedData = self.stored[k]
         if ( !istable(storedData) ) then continue end
 
-        storedData.Value = v
+        self.instances[k] = {}
+        self.instances[k].Value = ax.util:CoerceType(storedData.Type, v)
     end
 
-    local tableToSend =  self:GetNetworkData()
+    local tableToSend = self:GetNetworkData()
     ax.net:Start(nil, "config.sync", tableToSend)
 
     ax.util:Print("Configuration loaded.")
@@ -31,10 +32,12 @@ end
 
 function ax.config:GetSaveData()
     local saveData = {}
-    for k, v in pairs(self.stored) do
-        if ( v.Value != nil and v.Value != v.Default ) then
-            saveData[k] = v.Value
-        end
+    for k, v in pairs(self.instances) do
+        local storedData = self.stored[k]
+        if ( !istable(storedData) ) then continue end
+        if ( storedData.NoSave ) then continue end
+
+        saveData[k] = v.Value
     end
 
     return saveData
@@ -42,14 +45,12 @@ end
 
 function ax.config:GetNetworkData()
     local saveData = self:GetSaveData()
-    for k, v in pairs(self.stored) do
-        if ( v.NoNetworking ) then
-            saveData[k] = nil
-            continue
-        end
+    for k, v in pairs(saveData) do
+        local storedData = self.stored[k]
+        if ( !istable(storedData) ) then continue end
 
-        if ( v.Value != nil and v.Value != v.Default ) then
-            saveData[k] = v.Value
+        if ( storedData.NoNetworking ) then
+            saveData[k] = nil
         end
     end
 

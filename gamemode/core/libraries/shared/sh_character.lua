@@ -67,6 +67,9 @@ function ax.character:SetVariable(id, key, value)
     if ( !character ) then return end
 
     local data = self.variables[key]
+    local translatedType = ax.util:CoerceType(data.Type, value)
+    value = translatedType != nil and translatedType or value
+
     if ( data.OnSet ) then
         value = data:OnSet(character, value)
     end
@@ -96,11 +99,15 @@ function ax.character:GetVariable(id, key)
     local variable = self.variables[key]
     if ( !variable ) then return end
 
+    local value = character[key]
+    local translatedType = ax.util:CoerceType(variable.Type, value)
+    value = translatedType != nil and translatedType or value
+
     if ( variable.OnGet ) then
-        return variable:OnGet(character, character[key])
+        return variable:OnGet(character, value)
     end
 
-    return character[key]
+    return value
 end
 
 function ax.character:CreateObject(characterID, data, client)

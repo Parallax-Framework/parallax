@@ -34,7 +34,7 @@ function ax.command:Run(client, command, arguments)
             return false
         end
     else
-        if ( !CAMI.PlayerHasAccess(client, "Parallax - Commands - " .. info.UniqueID) ) then
+        if ( !CAMI.PlayerHasAccess(client, "Parallax - Commands - " .. info.UniqueID, nil) ) then
             return false
         end
     end

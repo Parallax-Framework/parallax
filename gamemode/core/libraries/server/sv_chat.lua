@@ -4,12 +4,14 @@
 function ax.chat:SendSpeaker(speaker, uniqueID, text)
     local players = {}
     for k, v in player.Iterator() do
-        if ( !IsValid(v) or !v:Alive() ) then continue end
+        if ( !IsValid(v) or !v:Alive() or !v:GetCharacter() ) then continue end
 
         if ( hook.Run("PlayerCanHearChat", speaker, v, uniqueID, text) != false ) then
             table.insert(players, v)
         end
     end
+
+    if ( players[1] == nil ) then return end
 
     ax.net:Start(players, "chat.send", {
         Speaker = speaker:EntIndex(),

@@ -19,10 +19,18 @@ function ax.config:Get(key, fallback)
         return fallback
     end
 
-    local instance = self.instances[key] or {}
-    local value = instance.Value or instance.Default or configData.Default
+    fallback = configData.Default != nil and configData.Default or fallback
 
-    return value or fallback
+    local instance = self.instances[key]
+    if ( !istable(instance) ) then
+        return fallback
+    end
+
+    if ( instance.Default != nil ) then
+        fallback = instance.Default
+    end
+
+    return instance.Value == nil and fallback or instance.Value
 end
 
 --- Gets the default value of the specified configuration.
@@ -73,6 +81,8 @@ function ax.config:Set(key, value)
 
     instance.Value = value
     self.instances[key] = instance
+
+    print("saved", key, tostring(value))
 
     if ( SERVER and stored.NoNetworking != true ) then
         ax.net:Start(nil, "config.set", key, value)

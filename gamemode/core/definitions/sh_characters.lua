@@ -115,7 +115,9 @@ ax.character:RegisterVariable("model", {
 
         local faction = ax.faction:Get(payload.faction)
         if ( faction and faction.Models ) then
-            for _, v in SortedPairs(faction.Models) do
+            for _, v in SortedPairs(faction:GetModels()) do
+                if ( istable(v) ) then v = v[1] end
+
                 local icon = layout:Add("SpawnIcon")
                 icon:SetModel(v)
                 icon:SetSize(64, 128)
@@ -123,6 +125,13 @@ ax.character:RegisterVariable("model", {
                 icon.DoClick = function()
                     ax.client:Notify("You have selected " .. v .. " as your model!")
                     payload.model = v
+                    layout.selected = icon
+                end
+                icon.Paint = function(this, w, h)
+                    if ( ispanel(layout.selected) and this == layout.selected ) then
+                        surface.SetDrawColor(ax.color:Get("white"))
+                        surface.DrawRect(0, 0, w, h)
+                    end
                 end
             end
         end

@@ -121,8 +121,9 @@ function ENTITY:GetDataVariable(key, defaultValue)
     local selfTable = self:GetTable()
     key = "ax." .. key
 
-    if ( selfTable[key] != nil ) then
-        return selfTable[key]
+    local value = selfTable[key]
+    if ( value != nil ) then
+        return value
     end
 
     return defaultValue

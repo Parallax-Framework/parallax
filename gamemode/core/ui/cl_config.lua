@@ -321,12 +321,11 @@ function PANEL:AddConfig(configData)
 
             local mixer = frame:Add("DColorMixer")
             mixer:Dock(FILL)
-            mixer:SetAlphaBar(false)
+            mixer:SetAlphaBar(true)
             mixer:SetPalette(true)
             mixer:SetWangs(true)
             mixer:SetColor(value)
-            mixer.ValueChanged = function(this, old)
-                local new = Color(old.r, old.g, old.b, 255)
+            mixer.ValueChanged = function(this, new)
                 value = new
                 color.color = new
             end

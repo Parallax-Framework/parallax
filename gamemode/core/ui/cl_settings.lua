@@ -23,6 +23,11 @@ function PANEL:Init()
 
     local categories = {}
     for k, v in pairs(ax.option.stored) do
+        local bHidden = v.Hidden
+
+        if ( isbool(bHidden) ) then if ( bHidden ) then continue end
+        elseif ( isfunction(bHidden) and bHidden(v, ax.client, value) ) then continue end
+
         if ( table.HasValue(categories, v.Category) ) then continue end
 
         table.insert(categories, v.Category)
@@ -330,14 +335,13 @@ function PANEL:AddSetting(settingData)
 
             local mixer = frame:Add("DColorMixer")
             mixer:Dock(FILL)
-            mixer:SetAlphaBar(false)
+            mixer:SetAlphaBar(true)
             mixer:SetPalette(true)
             mixer:SetWangs(true)
             mixer:SetColor(value)
-            mixer.ValueChanged = function(this, old)
-                local new = Color(old.r, old.g, old.b, 255)
-                value = new
-                color.color = new
+            mixer.ValueChanged = function(this, newColor)
+                value = newColor
+                color.color = newColor
             end
         end
 

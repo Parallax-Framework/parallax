@@ -2,15 +2,15 @@ local time = CurTime()
 function GM:PlayerInitialSpawn(client)
     time = CurTime()
     ax.util:Print("Starting to load player " .. client:SteamName() .. " (" .. client:SteamID64() .. ")")
+end
+
+function GM:PlayerReady(client)
+    if ( !IsValid(client) or client:IsBot() ) then return end
 
     client:SetTeam(0)
     client:SetModel("models/player/kleiner.mdl")
 
     client:KillSilent()
-end
-
-function GM:PlayerReady(client)
-    if ( !IsValid(client) or client:IsBot() ) then return end
 
     ax.character:CacheAll(client, function()
         ax.util:SendChatText(nil, Color(25, 75, 150), client:SteamName() .. " has joined the server.")

@@ -89,7 +89,7 @@ function ax.sqloo:InitializeTable(tableName, extraSchema)
     -- Check if any primary key is defined in user schema
     local hasPrimaryKey = false
     for k, v in pairs(extraSchema or {}) do
-        if ( isstring(v) and v:find("PRIMARY KEY") ) then
+        if ( isstring(v) and string.find(v, "PRIMARY KEY") ) then
             hasPrimaryKey = true
             break
         end

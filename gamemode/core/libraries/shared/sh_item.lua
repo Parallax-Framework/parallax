@@ -161,6 +161,8 @@ function ax.item:Get(identifier)
     elseif ( isnumber(identifier) ) then
         return self.instances[identifier]
     end
+
+    return nil
 end
 
 function ax.item:GetAll()
