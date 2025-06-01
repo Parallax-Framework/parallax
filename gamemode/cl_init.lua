@@ -18,3 +18,4 @@ end
 timer.Remove("HintSystem_OpeningMenu")
 timer.Remove("HintSystem_Annoy1")
 timer.Remove("HintSystem_Annoy2")
+
