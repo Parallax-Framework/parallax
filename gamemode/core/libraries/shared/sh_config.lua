@@ -14,21 +14,19 @@ ax.config.instances = ax.config.instances or {}
 -- print(color) -- Prints the color of the schema.
 function ax.config:Get(key, fallback)
     local configData = self.stored[key]
-    if ( fallback == nil ) then
-        fallback = configData.Default != nil and configData.Default or nil
-    end
-
     if ( !istable(configData) ) then
         ax.util:PrintError("Config \"" .. tostring(key) .. "\" does not exist!")
         return fallback
     end
+
+    fallback = configData.Default != nil and configData.Default or fallback
 
     local instance = self.instances[key]
     if ( !istable(instance) ) then
         return fallback
     end
 
-    if ( fallback == nil and instance.Default != nil ) then
+    if ( instance.Default != nil ) then
         fallback = instance.Default
     end
 
