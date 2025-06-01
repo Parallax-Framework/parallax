@@ -36,8 +36,6 @@ function ax.config:GetSaveData()
 
         if ( v.Value != nil and v.Value != v.Default ) then
             saveData[k] = v.Value
-        elseif ( v.Default != nil ) then
-            saveData[k] = v.Default
         end
     end
 
