@@ -162,6 +162,22 @@ function PANEL:PopulateFactionSelect()
 end
 
 function PANEL:PopulateCreateCharacter()
+    -- If we have no payload, reset it
+    if ( !self.currentCreatePayload ) then
+        self.currentCreatePayload = {}
+    end
+
+    -- If we have no faction select the 1st one available
+    if ( !self.currentCreatePayload.faction or self.currentCreatePayload.faction == 0 ) then
+        local factions = ax.faction:GetAll()
+        if ( #factions > 0 ) then
+            self.currentCreatePayload.faction = factions[1]:GetID()
+        else
+            ax.util:PrintError("No factions available for character creation!")
+            return
+        end
+    end
+
     local parent = self:GetParent()
     parent:SetGradientLeftTarget(0)
     parent:SetGradientRightTarget(0)

@@ -344,11 +344,27 @@ local drownSounds = {
 function GM:GetPlayerPainSound(client, attacker, healthRemaining, damageTaken)
     if ( client:Health() <= 0 ) then return end
 
+    local factionData = client:GetFactionData()
+
     if ( client:WaterLevel() >= 3 ) then
+        if ( factionData and factionData.DrownSounds and #factionData.DrownSounds > 0 ) then
+            local sound = factionData.DrownSounds[math.random(#factionData.DrownSounds)]
+            if ( sound and sound != "" ) then
+                return sound
+            end
+        end
+
         return drownSounds[math.random(#drownSounds)]
     end
 
     if ( damageTaken > 0 ) then
+        if ( factionData and factionData.PainSounds and #factionData.PainSounds > 0 ) then
+            local sound = factionData.PainSounds[math.random(#factionData.PainSounds)]
+            if ( sound and sound != "" ) then
+                return sound
+            end
+        end
+
         return painSounds[math.random(#painSounds)]
     end
 end
@@ -388,6 +404,14 @@ local deathSounds = {
 }
 
 function GM:GetPlayerDeathSound(client, inflictor, attacker)
+    local factionData = client:GetFactionData()
+    if ( factionData and factionData.DeathSounds and #factionData.DeathSounds > 0 ) then
+        local sound = factionData.DeathSounds[math.random(#factionData.DeathSounds)]
+        if ( sound and sound != "" ) then
+            return sound
+        end
+    end
+
     return deathSounds[math.random(#deathSounds)]
 end
 
