@@ -26,7 +26,7 @@ function PANEL:Init()
         local bHidden = v.Hidden
 
         if ( isbool(bHidden) ) then if ( bHidden ) then continue end
-        elseif ( isfunction(bHidden) and bHidden(v, ax.client, value) ) then continue end
+        elseif ( isfunction(bHidden) and bHidden(v, ax.client) ) then continue end
 
         if ( table.HasValue(categories, v.Category) ) then continue end
 

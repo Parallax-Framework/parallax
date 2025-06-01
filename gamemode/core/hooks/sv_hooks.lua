@@ -403,6 +403,18 @@ function GM:PostPlayerTakeItem(client, item, entity)
     entity:EmitSound("physics/body/body_medium_impact_soft" .. math.random(5, 7) .. ".wav", 75, math.random(90, 110), 1, CHAN_ITEM)
 end
 
+function GM:PrePlayerConfigChanged(client, key, value, oldValue)
+    local CONF_DATA = ax.config.stored[key]
+    if ( istable(CONF_DATA) ) then
+        local bHidden = CONF_DATA.Hidden
+        if ( isboolean(bHidden) and bHidden == true ) then
+            return false
+        elseif ( isfunction(bHidden) and bHidden(CONF_DATA, client) == false ) then
+            return false
+        end
+    end
+end
+
 local function IsAdmin(_, client)
     return client:IsAdmin()
 end

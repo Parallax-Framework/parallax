@@ -82,8 +82,6 @@ function ax.config:Set(key, value)
     instance.Value = value
     self.instances[key] = instance
 
-    print("saved", key, tostring(value))
-
     if ( SERVER and stored.NoNetworking != true ) then
         ax.net:Start(nil, "config.set", key, value)
     end
