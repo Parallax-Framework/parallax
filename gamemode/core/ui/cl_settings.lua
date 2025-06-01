@@ -24,9 +24,9 @@ function PANEL:Init()
     local categories = {}
     for k, v in pairs(ax.option.stored) do
         local bHidden = v.Hidden
-
-        if ( isbool(bHidden) ) then if ( bHidden ) then continue end
-        elseif ( isfunction(bHidden) and bHidden(v, ax.client) ) then continue end
+        if ( isbool(bHidden) and bHidden == true ) then continue
+        elseif ( isfunction(bHidden) and bHidden(v, ax.client) ) then continue
+        end
 
         if ( table.HasValue(categories, v.Category) ) then continue end
 
