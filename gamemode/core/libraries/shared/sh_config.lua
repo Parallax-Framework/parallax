@@ -14,15 +14,25 @@ ax.config.instances = ax.config.instances or {}
 -- print(color) -- Prints the color of the schema.
 function ax.config:Get(key, fallback)
     local configData = self.stored[key]
+    if ( fallback == nil ) then
+        fallback = configData.Default != nil and configData.Default or nil
+    end
+
     if ( !istable(configData) ) then
         ax.util:PrintError("Config \"" .. tostring(key) .. "\" does not exist!")
         return fallback
     end
 
-    local instance = self.instances[key] or {}
-    local value = instance.Value or instance.Default or configData.Default
+    local instance = self.instances[key]
+    if ( !istable(instance) ) then
+        return fallback
+    end
 
-    return value or fallback
+    if ( fallback == nil and instance.Default != nil ) then
+        fallback = instance.Default
+    end
+
+    return instance.Value == nil and fallback or instance.Value
 end
 
 --- Gets the default value of the specified configuration.
@@ -73,6 +83,8 @@ function ax.config:Set(key, value)
 
     instance.Value = value
     self.instances[key] = instance
+
+    print("saved", key, tostring(value))
 
     if ( SERVER and stored.NoNetworking != true ) then
         ax.net:Start(nil, "config.set", key, value)

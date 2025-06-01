@@ -23,6 +23,11 @@ function PANEL:Init()
 
     local categories = {}
     for k, v in pairs(ax.option.stored) do
+        local bHidden = v.Hidden
+
+        if ( isbool(bHidden) ) then if ( bHidden ) then continue end
+        elseif ( isfunction(bHidden) and bHidden(v, ax.client, value) ) then continue end
+
         if ( table.HasValue(categories, v.Category) ) then continue end
 
         table.insert(categories, v.Category)

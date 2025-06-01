@@ -31,9 +31,13 @@ end
 
 function ax.config:GetSaveData()
     local saveData = {}
-    for k, v in pairs(self.stored) do
+    for k, v in pairs(self.instances) do
+        if ( !istable(v) ) then continue end
+
         if ( v.Value != nil and v.Value != v.Default ) then
             saveData[k] = v.Value
+        elseif ( v.Default != nil ) then
+            saveData[k] = v.Default
         end
     end
 
@@ -46,10 +50,6 @@ function ax.config:GetNetworkData()
         if ( v.NoNetworking ) then
             saveData[k] = nil
             continue
-        end
-
-        if ( v.Value != nil and v.Value != v.Default ) then
-            saveData[k] = v.Value
         end
     end
 
