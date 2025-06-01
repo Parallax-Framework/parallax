@@ -1,82 +1,10 @@
 --- Faction library
 -- @module ax.faction
 
-local DEFAULT_MODELS = {
-    Model("models/player/group01/female_01.mdl"),
-    Model("models/player/group01/female_02.mdl"),
-    Model("models/player/group01/female_03.mdl"),
-    Model("models/player/group01/female_04.mdl"),
-    Model("models/player/group01/female_05.mdl"),
-    Model("models/player/group01/female_06.mdl"),
-    Model("models/player/group01/male_01.mdl"),
-    Model("models/player/group01/male_02.mdl"),
-    Model("models/player/group01/male_03.mdl"),
-    Model("models/player/group01/male_04.mdl"),
-    Model("models/player/group01/male_05.mdl"),
-    Model("models/player/group01/male_06.mdl"),
-    Model("models/player/group01/male_07.mdl"),
-    Model("models/player/group01/male_08.mdl"),
-    Model("models/player/group01/male_09.mdl")
-}
-
 ax.faction = ax.faction or {}
 ax.faction.stored = {}
 ax.faction.instances = {}
-
-ax.faction.meta = {
-    GetName = function(self)
-        return self.Name or "Unknown Faction"
-    end,
-    GetDescription = function(self)
-        return self.Description or "No description available."
-    end,
-    GetModels = function(self)
-        return self.Models or DEFAULT_MODELS
-    end,
-    GetColor = function(self)
-        return self.Color or ax.color:Get("white")
-    end,
-    GetID = function(self)
-        return self.ID or 0
-    end,
-    GetUniqueID = function(self)
-        return self.UniqueID or "unknown_faction"
-    end,
-    GetIsDefault = function(self)
-        return self.IsDefault or false
-    end,
-    GetClasses = function(self)
-        local classes = {}
-        for k, v in ipairs(ax.class:GetAll()) do
-            if ( v.Faction == self.ID ) then
-                classes[#classes + 1] = v
-            end
-        end
-
-        return classes
-    end,
-
-    __tostring = function(self)
-        return "faction[" .. self:GetUniqueID() .. "][" .. self:GetID() .. "]"
-    end,
-    __eq = function(self, other)
-        if ( isstring(other) ) then
-            return self:GetUniqueID() == other
-        end
-
-        if ( isnumber(other) ) then
-            return self:Get() == other
-        end
-
-        if ( type(other) == "Player" ) then
-            return self:Get() == other:GetFaction()
-        end
-
-        return false
-    end,
-}
-
-ax.faction.meta.__index = ax.faction.meta
+ax.faction.meta = ax.faction.meta or {}
 
 local default = {
     Name = "Unknown Faction",
@@ -88,7 +16,7 @@ local default = {
 }
 
 function ax.faction:Register(factionData)
-    local FACTION = setmetatable(factionData, { __index = ax.faction.meta })
+    local FACTION = setmetatable(factionData, self.meta)
 
     for k, v in pairs(default) do
         if ( FACTION[k] == nil ) then
@@ -110,9 +38,12 @@ function ax.faction:Register(factionData)
     end
 
     FACTION.UniqueID = FACTION.UniqueID or uniqueID
+    FACTION.ID = #self.instances + 1
+
+    PrintTable(FACTION)
 
     table.insert(self.instances, FACTION)
-    FACTION.ID = table.Count(self.instances)
+
     self.stored[FACTION.UniqueID] = FACTION
 
     team.SetUp(FACTION.ID, FACTION.Name, FACTION.Color, false)
