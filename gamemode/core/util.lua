@@ -21,7 +21,7 @@ function ax.util:CoerceType(typeID, value)
 	elseif ( typeID == ax.types.angle ) then
 		return isangle(value) and value or angle_zero
 	elseif ( typeID == ax.types.color ) then
-		return IsColor(value) and value or color_white
+		return ( IsColor(value) or ( istable(value) and isnumber(value.r) and isnumber(value.g) and isnumber(value.b) and isnumber(value.a) ) ) and value or color_white
 	elseif ( typeID == ax.types.player ) then
 		if ( isstring(value) ) then
 			return ax.util:FindPlayer(value)
@@ -56,7 +56,9 @@ local basicTypeMap = {
 }
 
 local checkTypeMap = {
-	[ax.types.color] = function(val) return IsColor(val) end,
+	[ax.types.color] = function(val)
+		return IsColor(val) or ( istable(val) and isnumber(val.r) and isnumber(val.g) and isnumber(val.b) and isnumber(val.a) )
+	end,
 	[ax.types.character] = function(val) return getmetatable(val) == ax.character.meta end,
 	[ax.types.steamid] = function(val) return isstring(val) and #val == 17 and string.match(value, "^%d+$") end,
 	[ax.types.steamid64] = function(val) return isstring(val) and #val == 17 and string.match(value, "^7656119%d+$") end

@@ -40,8 +40,6 @@ function ax.faction:Register(factionData)
     FACTION.UniqueID = FACTION.UniqueID or uniqueID
     FACTION.ID = #self.instances + 1
 
-    PrintTable(FACTION)
-
     table.insert(self.instances, FACTION)
 
     self.stored[FACTION.UniqueID] = FACTION
