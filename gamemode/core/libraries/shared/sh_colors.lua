@@ -32,7 +32,7 @@ end
 -- @return The color.
 function ax.color:Get(name)
     local storedColor = self.stored[name]
-    if ( IsColor(storedColor) ) then
+    if ( IsColor(storedColor) or ( istable(storedColor) and isnumber(storedColor.r) and isnumber(storedColor.g) and isnumber(storedColor.b) and isnumber(storedColor.a) ) ) then
         return storedColor:Copy()
     end
 
