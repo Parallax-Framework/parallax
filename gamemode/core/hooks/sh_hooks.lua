@@ -14,10 +14,6 @@ function GM:PrePlayerHandsPush(client, ent)
     return true
 end
 
-function GM:GetMainMenuMusic()
-    return ax.config:Get("mainmenu.music", "music/hl2_song20_submix0.mp3")
-end
-
 function GM:PlayerGetToolgun(client)
     local character = client:GetCharacter()
     return CAMI.PlayerHasAccess(client, "Parallax - Toolgun", nil) or character and character:HasFlag("t")

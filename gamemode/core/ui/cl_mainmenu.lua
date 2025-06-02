@@ -38,10 +38,6 @@ function PANEL:Init()
 
     CloseDermaMenus()
 
-    if ( system.IsWindows() ) then
-        system.FlashWindow()
-    end
-
     self.gradientLeft = 0
     self.gradientRight = 0
     self.gradientTop = 0
@@ -72,7 +68,6 @@ function PANEL:Init()
     end
 
     self:Populate()
-    self:PlayMenuTrack()
 end
 
 function PANEL:Populate()
@@ -124,7 +119,7 @@ function PANEL:Populate()
 
         schemaName = string.upper(schemaName)
     else
-        ax.uti:PrintError("SCHEMA is not defined! Please ensure that your schema is properly set up.")
+        ax.util:PrintError("SCHEMA is not defined! Please ensure that your schema is properly set up.")
     end
 
     subtitle:SetText(schemaName)
@@ -203,47 +198,6 @@ function PANEL:Populate()
             RunConsoleCommand("disconnect")
         end, "No")
     end
-end
-
-function PANEL:PlayMenuTrack()
-    local track = hook.Run("GetMainMenuMusic")
-    if ( !isstring(track) or #track == 0 ) then return end
-
-    sound.PlayFile("sound/" .. track, "noplay noblock", function(station, errorID, errorName)
-        if ( IsValid(station) and IsValid(self) ) then
-            station:Play()
-            station:SetVolume(ax.option:Get("mainmenu.music.volume", 75) / 100)
-            station:EnableLooping(ax.option:Get("mainmenu.music.loop", true))
-            self.station = station
-
-            if ( ax.option:Get("mainmenu.music.loop", true) and !timer.Exists("ax.mainmenu.music") ) then
-                local length = station:GetLength()
-                timer.Create("ax.mainmenu.music", length, 1, function()
-                    if ( IsValid(self) and IsValid(self.station) ) then
-                        self.station:Stop()
-                        self.station = nil
-
-                        self:PlayMenuTrack()
-                    end
-                end)
-            end
-        else
-            ax.client:Notify("Error playing main menu music: " .. tostring(errorID) .. " (" .. tostring(errorName) .. ")", NOTIFY_ERROR)
-        end
-    end)
-end
-
-function PANEL:OnRemove()
-    if ( IsValid(self.station) ) then
-        self.station:Stop()
-        self.station = nil
-    end
-
-    if ( timer.Exists("ax.mainmenu.music") ) then
-        timer.Remove("ax.mainmenu.music")
-    end
-
-    ax.gui.mainmenu = nil
 end
 
 function PANEL:Paint(width, height)

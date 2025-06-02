@@ -12,9 +12,17 @@ function GM:PlayerReady(client)
 
     client:KillSilent()
 
+    local activeGamemode = engine.ActiveGamemode()
+    if ( activeGamemode == "parallax" ) then
+        -- Sometimes people might forget to actually set their startup gamemode to their schema rather than the actual framework... so we check for that
+        ax.util:PrintError("You are running Parallax without a schema! Please set your startup gamemode to your schema (e.g. 'parallax-skeleton' instead of 'parallax').")
+        ax.net:Start(client, "splash")
+        return
+    end
+
     ax.character:CacheAll(client, function()
         ax.util:SendChatText(nil, Color(25, 75, 150), client:SteamName() .. " has joined the server.")
-        ax.net:Start(client, "mainmenu")
+        ax.net:Start(client, "splash")
 
         client:SetNoDraw(true)
         client:SetNotSolid(true)

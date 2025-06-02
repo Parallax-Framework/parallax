@@ -14,6 +14,89 @@ function GM:PlayerEndVoice(client)
     ax.net:Start("client.voice.end", client)
 end
 
+function GM:ShouldRenderMainMenu()
+    local client = ax.client
+    if ( !IsValid(client) ) then return false end
+
+    return IsValid(ax.gui.splash) or IsValid(ax.gui.mainmenu)
+end
+
+function GM:GetMainMenuMusic()
+    return ax.config:Get("mainmenu.music", "music/hl2_song20_submix0.mp3")
+end
+
+local currentStation = nil
+local panels = {
+    "mainmenu",
+    "splash"
+}
+function GM:ShouldPlayMainMenuMusic()
+    if ( !ax.config:Get("mainmenu.music", true) ) then return false end
+
+    local client = ax.client
+    if ( !IsValid(client) ) then return false end
+
+    local exists = false
+    for _, v in ipairs(panels) do
+        if ( IsValid(ax.gui[v]) ) then
+            exists = true
+            break
+        end
+    end
+
+    if ( !exists ) then
+        return false
+    end
+
+    return true
+end
+
+local function PlayTrack()
+    local music = hook.Run("GetMainMenuMusic")
+    if ( !music or music == "" ) then
+        return
+    end
+
+    local shouldPlay = hook.Run("ShouldPlayMainMenuMusic")
+    if ( !IsValid(currentStation) and shouldPlay ) then
+        sound.PlayFile("sound/" .. music, "noblock", function(station, errorID, errorName)
+            if ( IsValid(station) ) then
+                station:SetVolume(ax.option:Get("mainmenu.music.volume", 75) / 100)
+                station:EnableLooping(ax.option:Get("mainmenu.music.loop", true))
+
+                currentStation = station
+            else
+                ax.util:PrintError("Failed to play main menu music: " .. errorName)
+            end
+        end)
+    elseif ( IsValid(currentStation) and shouldPlay ) then
+        local volume = ax.option:Get("mainmenu.music.volume", 75) / 100
+        if ( currentStation:GetVolume() != volume ) then
+            currentStation:SetVolume(volume)
+        end
+    end
+end
+
+local nextThink = 0
+function GM:Think()
+    if ( nextThink > CurTime() ) then return end
+    nextThink = CurTime() + 0.1
+
+    if ( IsValid(currentStation) ) then
+        if ( currentStation:GetVolume() <= 0 ) then
+            currentStation:Stop()
+            currentStation = nil
+        else
+            local shouldPlay = hook.Run("ShouldPlayMainMenuMusic")
+            local from, to = currentStation:GetVolume(), shouldPlay and (ax.option:Get("mainmenu.music.volume", 75) / 100) or 0
+            local output = math.Approach(from, to, FrameTime() * 8)
+            currentStation:SetVolume(output)
+        end
+    end
+
+    PlayTrack()
+end
+
 function GM:ScoreboardShow()
     if ( IsValid(ax.gui.mainmenu) ) then return false end
 
@@ -43,6 +126,11 @@ function GM:OnReloaded()
     if ( _reloaded ) then return end
     _reloaded = true
 
+    if ( IsValid(currentStation) ) then
+        currentStation:Stop()
+        currentStation = nil
+    end
+
     ax.module:LoadFolder("parallax/modules")
     ax.item:LoadFolder("parallax/gamemode/items")
     ax.schema:Initialize()
@@ -69,7 +157,7 @@ end
 local eyeTraceHullMin = Vector(-2, -2, -2)
 local eyeTraceHullMax = Vector(2, 2, 2)
 function GM:CalcView(client, pos, angles, fov)
-    if ( IsValid(ax.gui.mainmenu) ) then
+    if ( hook.Run("ShouldRenderMainMenu") ) then
         local mainmenuPos = ax.config:Get("mainmenu.pos", vector_origin)
         local mainmenuAng = ax.config:Get("mainmenu.ang", angle_zero)
         local mainmenuFov = ax.config:Get("mainmenu.fov", 90)

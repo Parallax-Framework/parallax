@@ -306,6 +306,10 @@ ax.net:Hook("gesture.play", function(client, name)
     client:AddVCDSequenceToGestureSlot(GESTURE_SLOT_CUSTOM, client:LookupSequence(name), 0, true)
 end)
 
+ax.net:Hook("splash", function()
+    ax.gui.splash = vgui.Create("ax.splash")
+end)
+
 ax.net:Hook("mainmenu", function()
     ax.gui.mainmenu = vgui.Create("ax.mainmenu")
 end)
