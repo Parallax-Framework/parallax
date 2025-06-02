@@ -98,7 +98,9 @@ function GM:Think()
 end
 
 function GM:ScoreboardShow()
-    if ( IsValid(ax.gui.mainmenu) ) then return false end
+    if ( hook.Run("ShouldRenderMainMenu") ) then
+        return false
+    end
 
     if ( !IsValid(ax.gui.tab) ) then
         vgui.Create("ax.tab")

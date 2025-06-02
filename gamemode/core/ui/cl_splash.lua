@@ -66,6 +66,16 @@ function PANEL:Init()
     end
 end
 
+function PANEL:OnRemove()
+    if ( IsValid(ax.gui.splash) ) then
+        ax.gui.splash = nil
+    end
+
+    if ( !IsValid(ax.gui.mainmenu) ) then
+        vgui.Create("ax.mainmenu")
+    end
+end
+
 function PANEL:Paint(width, height)
     surface.SetDrawColor(0, 0, 0, 255)
     surface.SetMaterial(gradientTop)
@@ -76,8 +86,16 @@ vgui.Register("ax.splash", PANEL, "EditablePanel")
 
 if ( IsValid(ax.gui.splash) ) then
     ax.gui.splash:Remove()
-
-    timer.Simple(0.1, function()
-        vgui.Create("ax.splash")
-    end)
 end
+
+concommand.Add("ax_splash", function(client, command, arguments)
+    if ( client:Team() == 0 ) then
+        return
+    end
+
+    if ( IsValid(ax.gui.splash) ) then
+        ax.gui.splash:Remove()
+    end
+
+    vgui.Create("ax.splash")
+end, nil, "Open the splash screen", FCVAR_CLIENTCMD_CAN_EXECUTE)

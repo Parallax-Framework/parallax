@@ -245,3 +245,15 @@ if ( IsValid(ax.gui.mainmenu) ) then
         vgui.Create("ax.mainmenu")
     end)
 end
+
+concommand.Add("ax_mainmenu", function(client, command, arguments)
+    if ( client:Team() == 0 ) then
+        return
+    end
+
+    if ( IsValid(ax.gui.mainmenu) ) then
+        ax.gui.mainmenu:Remove()
+    end
+
+    vgui.Create("ax.mainmenu")
+end, nil, "Opens the main menu.", FCVAR_CLIENTCMD_CAN_EXECUTE)
