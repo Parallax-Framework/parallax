@@ -83,7 +83,7 @@ function PANEL:Init()
         end
 
         -- Prevent the chat type from being set to the same value
-        if ( ax.util:FindString(self.chatType:GetText(), chatType) ) then
+        if ( ax.util:FindString(self.chatType.fullText, chatType) ) then
             return
         end
 

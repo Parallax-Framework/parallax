@@ -68,11 +68,11 @@ function GM:PlayerSpawn(client)
 end
 
 function GM:PlayerLoadout(client)
-    if ( hook.Run("PlayerGetToolgun", client) ) then client:Give("gmod_tool") end
-    if ( hook.Run("PlayerGetPhysgun", client) ) then client:Give("weapon_physgun") end
-
     client:StripAmmo()
     client:StripWeapons()
+
+    if ( hook.Run("PlayerGetToolgun", client) ) then client:Give("gmod_tool") end
+    if ( hook.Run("PlayerGetPhysgun", client) ) then client:Give("weapon_physgun") end
 
     client:Give("ax_hands")
     client:SelectWeapon("ax_hands")

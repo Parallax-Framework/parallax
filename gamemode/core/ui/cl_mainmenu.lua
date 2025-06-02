@@ -114,9 +114,17 @@ function PANEL:Populate()
     subtitle:Dock(TOP)
     subtitle:DockMargin(padding / 4, -padding / 8, 0, 0)
     subtitle:SetFont("parallax.subtitle")
-    local schemaName = string.upper(SCHEMA.Name) or "UNKNOWN SCHEMA"
-    if ( isfunction(SCHEMA.GetMenuTitle) ) then
-        schemaName = SCHEMA:GetMenuTitle()
+
+    local schemaName = "UNKNOWN SCHEMA"
+    if ( SCHEMA ) then
+        schemaName = SCHEMA.Name
+        if ( isfunction(SCHEMA.GetMenuTitle) ) then
+            schemaName = SCHEMA:GetMenuTitle()
+        end
+
+        schemaName = string.upper(schemaName)
+    else
+        ax.uti:PrintError("SCHEMA is not defined! Please ensure that your schema is properly set up.")
     end
 
     subtitle:SetText(schemaName)

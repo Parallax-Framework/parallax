@@ -21,6 +21,17 @@ function PANEL:Init()
     self.container:GetVBar():SetWide(0)
     self.container.Paint = nil
 
+    self.search = self:Add("ax.text.entry")
+    self.search:Dock(TOP)
+    self.search:SetUpdateOnType(true)
+    self.search.OnValueChange = function(this, value)
+        if ( value and value != "" ) then
+            self:PopulateCategory(nil, value)
+        else
+            self:PopulateCategory(ax.gui.settingsLast)
+        end
+    end
+
     local categories = {}
     for k, v in pairs(ax.option.stored) do
         if ( table.HasValue(categories, v.Category) ) then continue end
@@ -48,16 +59,24 @@ function PANEL:Init()
     end
 end
 
-function PANEL:PopulateCategory(category)
-    ax.gui.settingsLast = category
+function PANEL:PopulateCategory(category, toSearch)
+    if ( category ) then
+        ax.gui.settingsLast = category
+    end
 
     self.container:Clear()
 
     local settings = {}
     for k, v in pairs(ax.option.stored) do
-        if ( string.lower(v.Category) == string.lower(category) ) then
-            table.insert(settings, v)
+        if ( category and ax.util:FindString(v.Category, category) == false ) then
+            continue
         end
+
+        if ( toSearch and ax.util:FindString(ax.localization:GetPhrase(v.Name), toSearch) == false ) then
+            continue
+        end
+
+        table.insert(settings, v)
     end
 
     table.sort(settings, function(a, b)
