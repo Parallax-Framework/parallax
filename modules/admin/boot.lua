@@ -21,7 +21,10 @@ function MODULE:RegisterGroup(name, privilege)
     CAMI.RegisterUsergroup(group, "Parallax")
 
     self.Groups[name] = group
-    self:SaveData()
+
+    if ( SERVER ) then
+        self:SaveData()
+    end
 end
 
 --- Registers a permission and stores it persistently.
@@ -37,7 +40,10 @@ function MODULE:RegisterPermission(name, minAccess)
     CAMI.RegisterPrivilege(permission)
 
     self.Permissions[name] = permission
-    self:SaveData()
+
+    if ( SERVER ) then
+        self:SaveData()
+    end
 end
 
 function MODULE:GetGroups()
