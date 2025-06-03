@@ -29,7 +29,8 @@ function PANEL:Init()
     end
 
     local inventories = ax.inventory:GetByCharacterID(ax.client:GetCharacter():GetID())
-    if ( #inventories == 0 ) then
+    local firstInv = inventories[1]
+    if ( firstInv == nil ) then
         local label = self.buttons:Add("ax.text")
         label:Dock(FILL)
         label:SetFont("parallax.large")
@@ -51,9 +52,8 @@ function PANEL:Init()
     end
 
     -- Pick the first inventory by default
-    local firstInventory = inventories[1]
-    if ( firstInventory ) then
-        self:SetInventory(firstInventory:GetID())
+    if ( inventories[1] ) then
+        self:SetInventory(inventories[1]:GetID())
     end
 end
 

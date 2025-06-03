@@ -222,7 +222,7 @@ function ax.inventory:AddItem(inventoryID, itemID, uniqueID, data)
     end
 
     local item = ax.item:Get(itemID)
-    if ( !item ) then
+    if ( !istable(item) ) then
         ax.util:PrintError("Invalid item ID " .. itemID .. " for addition.")
         return false
     end
