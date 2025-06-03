@@ -1,12 +1,27 @@
 local time = CurTime()
 function GM:PlayerInitialSpawn(client)
+    if ( client:IsBot() ) then
+        local factionBot = math.random(#ax.faction.instances)
+
+        local models = {}
+        for k, v in ipairs(ax.faction:Get(factionBot):GetModels()) do
+            if ( istable(v) ) then
+                table.insert(models, v[1])
+            else
+                table.insert(models, v)
+            end
+        end
+
+        client:SetModel(models[math.random(#models)])
+        client:SetTeam(factionBot)
+        return
+    end
+
     time = CurTime()
     ax.util:Print("Starting to load player " .. client:SteamName() .. " (" .. client:SteamID64() .. ")")
 end
 
 function GM:PlayerReady(client)
-    if ( !IsValid(client) or client:IsBot() ) then return end
-
     client:SetTeam(0)
     client:SetModel("models/player/kleiner.mdl")
 
@@ -272,7 +287,7 @@ function GM:Think()
         nextThink = CurTime() + 1
 
         for _, client in player.Iterator() do
-            if ( !IsValid(client) or !client:Alive() ) then continue end
+            if ( !client:Alive() ) then continue end
             if ( client:Team() == 0 ) then continue end
 
             -- Voice chat listeners
