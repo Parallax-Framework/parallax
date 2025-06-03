@@ -349,3 +349,12 @@ ax.config:Register("debug.preview", {
     Type = ax.types.bool,
     Default = false
 })
+
+ax.config:Register("time.respawn", {
+    Name = "config.time.respawn",
+    Description = "config.time.respawn.help",
+    Type = ax.types.number,
+    Default = 60,
+    Min = 0,
+    Max = 300,
+})

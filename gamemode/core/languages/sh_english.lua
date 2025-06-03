@@ -141,5 +141,7 @@ localization["tab.inventory"] = "Inventory"
 localization["tab.mainmenu"] = "Main Menu"
 localization["tab.scoreboard"] = "Scoreboard"
 localization["tab.settings"] = "Settings"
+localization["config.time.respawn"] = "Respawn Time"
+localization["config.time.respawn.help"] = "The time it takes for a player to respawn after death."
 
 ax.localization:Register("en", localization)

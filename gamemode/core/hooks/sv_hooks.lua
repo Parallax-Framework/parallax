@@ -151,7 +151,7 @@ function GM:PlayerDeathThink(client)
     end
 
     -- TODO: uh, some happy day this should be replaced
-    if ( client:KeyPressed(IN_ATTACK) or client:KeyPressed(IN_ATTACK2) or client:KeyPressed(IN_JUMP) or client:IsBot() ) then
+    if ( client:GetRelay("respawnTime", CurTime()) < CurTime() or client:IsBot() ) then
         client:Spawn()
     end
 end
@@ -434,6 +434,8 @@ function GM:PlayerDeath(client, inflictor, attacker)
 
             client:EmitSound(deathSound, 75, 100, 1, CHAN_VOICE)
         end
+
+        client:SetRelay("respawnTime", CurTime() + ax.config:Get("respawn.time", 60))
     end
 end
 
