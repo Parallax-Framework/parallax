@@ -7,11 +7,7 @@ function MODULE:DoPlayerDeath(client, attacker, dmginfo)
     local weaponName = "world"
 
     if ( IsValid(attacker) ) then
-        if ( attacker:IsPlayer() ) then
-            attackerName = self:Format(attacker)
-        else
-            attackerName = attacker:GetClass()
-        end
+        attackerName = self:Format(attacker)
 
         if ( attacker.GetActiveWeapon and IsValid(attacker:GetActiveWeapon()) ) then
             weaponName = attacker:GetActiveWeapon():GetClass()
