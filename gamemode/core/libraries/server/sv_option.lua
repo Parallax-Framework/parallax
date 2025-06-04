@@ -12,8 +12,6 @@ function ax.option:Set(client, key, value, bNoNetworking)
         return false
     end
 
-    if ( !IsValid(client) ) then return false end
-
     if ( ax.util:DetectType(value) != stored.Type ) then
         ax.util:PrintError("Attempted to set option \"" .. key .. "\" with invalid type!")
         return false

@@ -89,7 +89,7 @@ function ax.module:LoadFolder(path)
         MODULE = nil
     end
 
-    if ( #files > 0 or #folders > 0 ) then
+    if ( files[1] != nil or folders[1] != nil ) then
         ax.util:Print("Loaded " .. #files .. " files and " .. #folders .. " folders from \"" .. path .. "\", total " .. (#files + #folders) .. " modules.")
     end
 

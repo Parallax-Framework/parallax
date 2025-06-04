@@ -166,7 +166,7 @@ function ax.util:PrintError(...)
 	end
 
 	if ( line != "" ) then
-		if ( #arguments > 0 and type(arguments[#arguments]) == "string" ) then
+		if ( arguments[1] != nil and type(arguments[#arguments]) == "string" ) then
 			arguments[#arguments] = string.Trim(arguments[#arguments])
 		end
 

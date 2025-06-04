@@ -340,11 +340,6 @@ end
 function GM:PlayerHurt(client, attacker, healthRemaining, damageTaken)
     local painSound = hook.Run("GetPlayerPainSound", client, attacker, healthRemaining, damageTaken)
     if ( painSound and painSound != "" and !client:InObserver() ) then
-        if ( !file.Exists("sound/" .. painSound, "GAME") ) then
-            ax.util:PrintWarning("PlayerPainSound: Sound file does not exist! " .. painSound)
-            return false
-        end
-
         client:EmitSound(painSound, 75, 100, 1, CHAN_VOICE)
     end
 end
@@ -372,7 +367,7 @@ function GM:GetPlayerPainSound(client, attacker, healthRemaining, damageTaken)
 
     local factionData = character:GetFactionData()
     if ( client:IsOnFire() ) then
-        if ( factionData and factionData.FirePainSounds and #factionData.FirePainSounds > 0 ) then
+        if ( factionData and factionData.FirePainSounds and factionData.FirePainSounds[1] != nil ) then
             local sound = factionData.FirePainSounds[math.random(#factionData.FirePainSounds)]
             if ( sound and sound != "" ) then
                 return sound
@@ -387,7 +382,7 @@ function GM:GetPlayerPainSound(client, attacker, healthRemaining, damageTaken)
             client:Extinguish()
         end
 
-        if ( factionData and factionData.DrownSounds and #factionData.DrownSounds > 0 ) then
+        if ( factionData and factionData.DrownSounds and factionData.DrownSounds[1] != nil ) then
             local sound = factionData.DrownSounds[math.random(#factionData.DrownSounds)]
             if ( sound and sound != "" ) then
                 return sound
@@ -398,9 +393,9 @@ function GM:GetPlayerPainSound(client, attacker, healthRemaining, damageTaken)
     end
 
     if ( damageTaken > 0 ) then
-        if ( factionData and factionData.PainSounds and #factionData.PainSounds > 0 ) then
+        if ( factionData and factionData.PainSounds and factionData.PainSounds[1] != nil ) then
             local sound = factionData.PainSounds[math.random(#factionData.PainSounds)]
-            if ( sound and sound != "" ) then
+            if ( isstring(sound) and sound != "" ) then
                 return sound
             end
         end
@@ -427,10 +422,7 @@ function GM:PlayerDeath(client, inflictor, attacker)
 
         local deathSound = hook.Run("GetPlayerDeathSound", client, inflictor, attacker)
         if ( deathSound and deathSound != "" and !client:InObserver() ) then
-            if ( !file.Exists("sound/" .. deathSound, "GAME") ) then
-                ax.util:PrintWarning("PlayerDeathSound: Sound file does not exist! " .. deathSound)
-                return false
-            end
+            -- don't use file exists, a soundscript could be used.
 
             client:EmitSound(deathSound, 75, 100, 1, CHAN_VOICE)
         end
@@ -447,7 +439,7 @@ local deathSounds = {
 
 function GM:GetPlayerDeathSound(client, inflictor, attacker)
     local factionData = client:GetFactionData()
-    if ( factionData and factionData.DeathSounds and #factionData.DeathSounds > 0 ) then
+    if ( factionData and factionData.DeathSounds and factionData.DeathSounds[1] != nil ) then
         local sound = factionData.DeathSounds[math.random(#factionData.DeathSounds)]
         if ( sound and sound != "" ) then
             return sound

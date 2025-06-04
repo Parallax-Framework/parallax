@@ -41,7 +41,7 @@ function ax.faction:Get(identifier)
     end
 
     if ( isnumber(identifier) ) then
-        if ( identifier < 1 ) then
+        if ( identifier < 1 or identifier > #self.instances ) then
             ax.util:PrintError("Attempted to get a faction with an invalid ID!")
             return false, "Attempted to get a faction with an invalid ID!"
         end
@@ -93,10 +93,6 @@ function ax.faction:CanSwitchTo(client, factionID, oldFactionID)
 
     if ( !faction.IsDefault and !client:HasWhitelist(faction.UniqueID) ) then
         return false, "You do not have permission to join this faction."
-    end
-
-    if ( isfunction(faction.OnSwitch) ) then
-        faction:OnSwitch(client)
     end
 
     return true

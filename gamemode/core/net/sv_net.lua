@@ -112,6 +112,12 @@ ax.net:Hook("option.set", function(client, key, value)
     local bResult = hook.Run("PreOptionChanged", client, key, value)
     if ( bResult == false ) then return false end
 
+    local STORED = ax.option.stored[key]
+    if ( !istable(STORED) ) then
+        ax.util:PrintError("Option \"" .. key .. "\" does not exist!")
+        return false
+    end
+
     ax.option:Set(client, key, value, true)
 
     hook.Run("PostOptionChanged", client, key, value)

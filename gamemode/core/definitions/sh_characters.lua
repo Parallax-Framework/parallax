@@ -83,7 +83,7 @@ ax.character:RegisterVariable("model", {
     OnValidate = function(self, parent, payload, client)
         local faction = ax.faction:Get(payload.faction)
         local models = faction and faction:GetModels() or {}
-        if ( faction and #models > 0 ) then
+        if ( faction and models[1] != nil ) then
             local found = false
             for _, v in SortedPairs(models) do
                 if ( v == payload.model ) then

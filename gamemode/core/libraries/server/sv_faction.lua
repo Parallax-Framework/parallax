@@ -13,13 +13,13 @@ function ax.faction:Join(client, factionID, bBypass)
     end
 
     local oldFaction = self:Get(client:Team())
-    if ( oldFaction.OnLeave ) then
+    if ( istable(oldFaction) and isfunction(oldFaction.OnLeave) ) then
         oldFaction:OnLeave(client)
     end
 
     client:SetTeam(faction:GetID())
 
-    if ( faction.OnJoin ) then
+    if ( isfunction(faction.OnJoin) ) then
         faction:OnJoin(client)
     end
 

@@ -47,9 +47,6 @@ end
 function GM:GetPlayerPainSound(client)
 end
 
-function GM:GetPlayerDeathSound(client)
-end
-
 function GM:PreOptionChanged(client, key, value)
 end
 

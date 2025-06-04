@@ -11,6 +11,7 @@ function PANEL:Init()
     self:SetPos(0, 0)
     self:SetVisible(false)
 
+    self.factions = ax.faction:GetAll()
     self.currentCreatePage = 0
 end
 
@@ -88,8 +89,7 @@ function PANEL:PopulateFactionSelect()
     factionList.btnLeft:SetAlpha(0)
     factionList.btnRight:SetAlpha(0)
 
-    local factions = table.Copy(ax.faction:GetAll())
-    table.sort(factions, function(a, b)
+    table.sort(self.factions, function(a, b)
         local aSort = a.SortOrder or 100
         local bSort = b.SortOrder or 100
 
@@ -101,7 +101,7 @@ function PANEL:PopulateFactionSelect()
         return aSort < bSort
     end)
 
-    for k, v in ipairs(factions) do
+    for k, v in ipairs(self.factions) do
         if ( !ax.faction:CanSwitchTo(ax.client, v:GetID()) ) then continue end
 
         local name = (v.Name and string.upper(v.Name)) or "UNKNOWN FACTION"
@@ -169,9 +169,8 @@ function PANEL:PopulateCreateCharacter()
 
     -- If we have no faction select the 1st one available
     if ( !self.currentCreatePayload.faction or self.currentCreatePayload.faction == 0 ) then
-        local factions = ax.faction:GetAll()
-        if ( #factions > 0 ) then
-            self.currentCreatePayload.faction = factions[1]:GetID()
+        if ( self.factions[1] != nil ) then
+            self.currentCreatePayload.faction = self.factions[1]:GetID()
         else
             ax.util:PrintError("No factions available for character creation!")
             return
@@ -207,7 +206,7 @@ function PANEL:PopulateCreateCharacter()
     backButton.DoClick = function()
         if ( self.currentCreatePage == 0 ) then
             local availableFactions = 0
-            for k, v in ipairs(ax.faction:GetAll()) do
+            for k, v in ipairs(self.factions) do
                 if ( ax.faction:CanSwitchTo(ax.client, v:GetID()) ) then
                     availableFactions = availableFactions + 1
                 end
