@@ -14,7 +14,7 @@ local default = {
 -- @return boolean Returns true if the schema was successfully initialized, false otherwise.
 -- @internal
 function ax.schema:Initialize()
-    SCHEMA = {}
+    SCHEMA = SCHEMA or {}
 
     local folder = engine.ActiveGamemode()
     local schema = folder .. "/schema/boot.lua"
