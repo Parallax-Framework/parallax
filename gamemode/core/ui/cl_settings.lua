@@ -24,6 +24,7 @@ function PANEL:Init()
     self.search = self:Add("ax.text.entry")
     self.search:Dock(TOP)
     self.search:SetUpdateOnType(true)
+    self.search:SetPlaceholderText(ax.localization:GetPhrase("search.description.options"))
     self.search.OnValueChange = function(this, value)
         if ( value and value != "" ) then
             self:PopulateCategory(nil, value)
