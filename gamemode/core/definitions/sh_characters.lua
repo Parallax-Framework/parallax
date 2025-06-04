@@ -161,7 +161,7 @@ ax.character:RegisterVariable("faction", {
 
     OnSet = function(this, character, value)
         local faction = ax.faction:Get(value)
-        if ( faction and faction.OnSet ) then
+        if ( faction and isfunction(faction.OnSet) ) then
             faction:OnSet(character, value)
         end
 
