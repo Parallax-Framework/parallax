@@ -150,6 +150,12 @@ function GM:PlayerDeathThink(client)
         return true
     end
 
+    local respawnTime = ax.config:Get("time.respawn", 60)
+    if ( respawnTime <= 0 ) then
+        -- If the respawn time is set to 0, we want to respawn the player immediately
+        return true
+    end
+
     -- TODO: uh, some happy day this should be replaced
     if ( client:GetRelay("respawnTime", CurTime()) < CurTime() or client:IsBot() ) then
         client:Spawn()
@@ -427,7 +433,7 @@ function GM:PlayerDeath(client, inflictor, attacker)
             client:EmitSound(deathSound, 75, 100, 1, CHAN_VOICE)
         end
 
-        client:SetRelay("respawnTime", CurTime() + ax.config:Get("respawn.time", 60))
+        client:SetRelay("respawnTime", CurTime() + ax.config:Get("time.respawn", 60))
     end
 end
 
