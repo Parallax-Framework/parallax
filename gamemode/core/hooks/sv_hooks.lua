@@ -146,14 +146,12 @@ end
 
 function GM:PlayerDeathThink(client)
     if ( client:Team() == 0 ) then
-        -- If the player is in the main menu, we don't want to do anything
-        return true
+        return
     end
 
     local respawnTime = ax.config:Get("time.respawn", 60)
     if ( respawnTime <= 0 ) then
-        -- If the respawn time is set to 0, we want to respawn the player immediately
-        return true
+        client:Spawn()
     end
 
     -- TODO: uh, some happy day this should be replaced
