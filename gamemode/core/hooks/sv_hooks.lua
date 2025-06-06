@@ -281,6 +281,11 @@ function GM:PostPlayerLoadedCharacter(client, character, previousCharacter)
 
         client:SetBodygroup(id, value)
     end
+
+    local classData = character:GetClassData()
+    if ( istable(classData) and isfunction(classData.OnLoaded) ) then
+        classData:OnLoaded(client, character)
+    end
 end
 
 local nextThink = CurTime() + 1

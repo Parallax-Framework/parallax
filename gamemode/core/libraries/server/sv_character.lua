@@ -100,6 +100,12 @@ function ax.character:Load(client, characterID)
 
             client:SetModel(character:GetModel())
             client:SetTeam(character:GetFaction())
+
+            local class = character:GetClass()
+            if ( isnumber(class) and class != 0 ) then
+                character:SetClass(class)
+            end
+
             client:Spawn()
 
             ax.inventory:CacheAll(characterID, function(inventory)
