@@ -75,7 +75,7 @@ function ax.faction:CanSwitchTo(client, factionID, oldFactionID)
 
     if ( isnumber(oldFactionID) ) then
         local oldFaction = self:Get(oldFactionID)
-        if ( oldFaction ) then
+        if ( istable(oldFaction) ) then
             if ( oldFaction.ID == faction.ID ) then return false end
 
             if ( isfunction(oldFaction.CanLeave) and !oldFaction:CanLeave(client) ) then
