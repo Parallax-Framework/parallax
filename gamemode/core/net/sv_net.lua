@@ -219,3 +219,15 @@ end)
 ax.net:Hook("client.voice.end", function(client, prevSpeaker)
     hook.Run("PlayerEndVoice", prevSpeaker)
 end)
+
+ax.net:Hook("client.chatbox.text.changed", function(client, text)
+    if ( !IsValid(client) or !text ) then return end
+
+    hook.Run("PlayerChatTextChanged", client, text)
+end)
+
+ax.net:Hook("client.chatbox.type.changed", function(client, newType, oldType)
+    if ( !IsValid(client) or !newType or !oldType ) then return end
+
+    hook.Run("PlayerChatTypeChanged", client, newType, oldType)
+end)

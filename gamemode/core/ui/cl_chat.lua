@@ -82,13 +82,18 @@ function PANEL:Init()
             self:PopulateRecommendations()
         end
 
+        hook.Run("ChatboxOnTextChanged", text, chatType)
+
         -- Prevent the chat type from being set to the same value
         if ( ax.util:FindString(self.chatType.fullText, chatType) ) then
             return
         end
 
+        self.chatType.previousChatType = chatType or self.chatType.previousChatType or "IC"
         self.chatType:SetText(chatType, true, true)
         self.chatType:RestartTyping()
+
+        hook.Run("ChatboxOnChatTypeChanged", chatType, self.chatType.previousChatType)
     end
 
     self.entry.OnKeyCode = function(this, key)

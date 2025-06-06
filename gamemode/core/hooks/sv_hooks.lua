@@ -80,6 +80,9 @@ function GM:PlayerDisconnected(client)
 
         local character = client:GetCharacter()
         if ( character ) then
+            character:SetData("last_pos", client:GetPos())
+            character:SetData("last_ang", client:GetAngles())
+            character:SetData("health", client:Health())
             character:SetPlayTime(character:GetPlayTime() + (os.time() - character:GetLastPlayed()))
             character:SetLastPlayed(os.time())
         end
@@ -116,8 +119,6 @@ function GM:PlayerLoadout(client)
 
             client:SetBodygroup(id, value)
         end
-
-        client:SetHealth(character:GetData("health", 100))
     end
 
     hook.Run("PostPlayerLoadout", client)
@@ -142,6 +143,31 @@ function GM:PrePlayerLoadedCharacter(client, character, previousCharacter)
     end
 
     previousCharacter:SetData("groups", groups)
+    previousCharacter:SetData("last_pos", client:GetPos())
+    previousCharacter:SetData("last_ang", client:GetAngles())
+    previousCharacter:SetPlayTime(previousCharacter:GetPlayTime() + (os.time() - previousCharacter:GetLastPlayed()))
+    previousCharacter:SetLastPlayed(os.time())
+end
+
+function GM:PostPlayerLoadedCharacter(client, character, previousCharacter)
+    if ( !client:Alive() or !character ) then return end
+
+    -- Restore character state
+    local lastPos = character:GetData("last_pos")
+    local lastAng = character:GetData("last_ang")
+    if ( lastPos and lastAng ) then
+        client:SetPos(lastPos)
+        client:SetAngles(lastAng)
+    end
+
+    client:SetHealth(character:GetData("health", 100))
+
+    -- And now wipe it
+    character:SetData("last_pos", nil)
+    character:SetData("last_ang", nil)
+    character:SetData("health", nil)
+
+    hook.Run("PostPlayerLoadedCharacter", client, character, previousCharacter)
 end
 
 function GM:PlayerDeathThink(client)

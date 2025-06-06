@@ -886,6 +886,38 @@ function GM:GetChatboxPos()
     return x, y
 end
 
+function GM:ChatboxOnTextChanged(text)
+    ax.net:Start("client.chatbox.text.changed", text)
+
+    -- Notify the command system about the text change
+    local command = ax.command:Get(ax.gui.chatbox:GetChatType())
+    if ( command and command.OnChatTextChanged ) then
+        command:OnTextChanged(text)
+    end
+
+    -- Notify the chat system about the text change
+    local chat = ax.chat:Get(ax.gui.chatbox:GetChatType())
+    if ( chat and chat.OnChatTextChanged ) then
+        chat:OnTextChanged(text)
+    end
+end
+
+function GM:ChatboxOnChatTypeChanged(newType, oldType)
+    ax.net:Start("client.chatbox.type.changed", newType, oldType)
+
+    -- Notify the command system about the chat type change
+    local command = ax.command:Get(newType)
+    if ( command and command.OnChatTypeChanged ) then
+        command:OnChatTypeChanged(newType, oldType)
+    end
+
+    -- Notify the chat system about the chat type change
+    local chat = ax.chat:Get(newType)
+    if ( chat and chat.OnChatTypeChanged ) then
+        chat:OnChatTypeChanged(newType, oldType)
+    end
+end
+
 function GM:PlayerBindPress(client, bind, pressed)
     bind = bind:lower()
 
