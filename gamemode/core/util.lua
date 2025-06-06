@@ -35,11 +35,11 @@ function ax.util:CoerceType(typeID, value)
 			return value
 		end
 	elseif ( typeID == ax.types.steamid ) then
-		if ( isstring(value) and #value == 17 and string.match(value, "^%d+$") ) then
+		if ( isstring(value) and #value == 19 and string.match(value, "STEAM_%d:%d:%d+") ) then
 			return value
 		end
 	elseif ( typeID == ax.types.steamid64 ) then
-		if ( isstring(value) and #value == 17 and string.match(value, "^7656119%d+$") ) then
+		if ( isstring(value) and #value == 17 and ( string.match(value, "7656119%d+") != nil or string.match(value, "9007199%d+") != nil ) ) then
 			return value
 		end
 	end
@@ -60,8 +60,8 @@ local checkTypeMap = {
 		return IsColor(val) or ( istable(val) and isnumber(val.r) and isnumber(val.g) and isnumber(val.b) and isnumber(val.a) )
 	end,
 	[ax.types.character] = function(val) return getmetatable(val) == ax.character.meta end,
-	[ax.types.steamid] = function(val) return isstring(val) and #val == 17 and string.match(val, "^%d+$") end,
-	[ax.types.steamid64] = function(val) return isstring(val) and #val == 17 and string.match(val, "^7656119%d+$") end
+	[ax.types.steamid] = function(val) return isstring(val) and #val == 19 and string.match(val, "STEAM_%d:%d:%d+") != nil end,
+	[ax.types.steamid64] = function(val) return isstring(val) and #val == 17 and ( string.match(val, "7656119%d+") != nil or string.match(val, "9007199%d+") != nil ) end
 }
 
 --- Attempts to identify the framework type of a given value.
@@ -356,9 +356,9 @@ function ax.util:FindPlayer(identifier)
 	end
 
 	if ( isstring(identifier) ) then
-		if (string.find(identifier, "STEAM_(%d+):(%d+):(%d+)")) then
+		if ( string.match(identifier, "STEAM_(%d+):(%d+):(%d+)") != nil ) then
 			return player.GetBySteamID(identifier)
-		elseif (string.find(identifier, "7656119%d+")) then
+		elseif ( string.match(identifier, "7656119%d+") != nil or string.match(identifier, "9007199%d+") != nil ) then
 			return player.GetBySteamID64(identifier)
 		end
 
