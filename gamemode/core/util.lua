@@ -60,8 +60,8 @@ local checkTypeMap = {
 		return IsColor(val) or ( istable(val) and isnumber(val.r) and isnumber(val.g) and isnumber(val.b) and isnumber(val.a) )
 	end,
 	[ax.types.character] = function(val) return getmetatable(val) == ax.character.meta end,
-	[ax.types.steamid] = function(val) return isstring(val) and #val == 17 and string.match(value, "^%d+$") end,
-	[ax.types.steamid64] = function(val) return isstring(val) and #val == 17 and string.match(value, "^7656119%d+$") end
+	[ax.types.steamid] = function(val) return isstring(val) and #val == 17 and string.match(val, "^%d+$") end,
+	[ax.types.steamid64] = function(val) return isstring(val) and #val == 17 and string.match(val, "^7656119%d+$") end
 }
 
 --- Attempts to identify the framework type of a given value.
