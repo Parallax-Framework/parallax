@@ -73,12 +73,12 @@ function ax.faction:CanSwitchTo(client, factionID, oldFactionID)
         return false, "Faction does not exist."
     end
 
-    if ( oldFactionID ) then
+    if ( isnumber(oldFactionID) ) then
         local oldFaction = self:Get(oldFactionID)
         if ( oldFaction ) then
             if ( oldFaction.ID == faction.ID ) then return false end
 
-            if ( oldFaction.CanLeave and !oldFaction:CanLeave(client) ) then
+            if ( isfunction(oldFaction.CanLeave) and !oldFaction:CanLeave(client) ) then
                 return false, "You cannot leave this faction."
             end
         end
@@ -87,7 +87,7 @@ function ax.faction:CanSwitchTo(client, factionID, oldFactionID)
     local hookRun = hook.Run("CanPlayerJoinFaction", client, factionID)
     if ( hookRun != nil and hookRun == false ) then return false end
 
-    if ( faction.CanSwitchTo and !faction:CanSwitchTo(client) ) then
+    if ( isfunction(faction.CanSwitchTo) and !faction:CanSwitchTo(client) ) then
         return false, "You cannot switch to this faction."
     end
 
