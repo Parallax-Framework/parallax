@@ -197,3 +197,9 @@ ax.character:RegisterVariable("last_played", {
     Alias = "LastPlayed",
     Default = 0
 })
+
+ax.character:RegisterVariable("skin", {
+    Type = ax.types.number,
+    Field = "skin",
+    Default = 0
+})

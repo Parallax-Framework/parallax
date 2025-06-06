@@ -286,6 +286,11 @@ function GM:PostPlayerLoadedCharacter(client, character, previousCharacter)
     if ( istable(classData) and isfunction(classData.OnLoaded) ) then
         classData:OnLoaded(client, character)
     end
+
+    local skin = character:GetSkin()
+    if ( isnumber(skin) ) then
+        client:SetSkin(skin)
+    end
 end
 
 local nextThink = CurTime() + 1
