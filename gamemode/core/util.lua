@@ -636,10 +636,8 @@ function ax.util:LoadEntityFolder(basePath, folder, globalKey, registerFn, defau
 		_G[globalKey] = table.Copy(default)
 		_G[globalKey].ClassName = dir
 
-		if ( self:LoadEntityFile(subPath, clientOnly) ) then
-			if ( !clientOnly or CLIENT ) then
-				registerFn(_G[globalKey], dir)
-			end
+		if ( self:LoadEntityFile(subPath, clientOnly) and !clientOnly or CLIENT ) then
+			registerFn(_G[globalKey], dir)
 		end
 
 		_G[globalKey] = nil
