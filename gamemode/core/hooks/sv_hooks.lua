@@ -325,7 +325,7 @@ function GM:PostPlayerLoadedCharacter(client, character, previousCharacter)
     end
 
     local skin = character:GetSkin()
-    if ( isnumber(skin) ) then
+    if ( isnumber(skin) and skin > 0 ) then
         client:SetSkin(skin)
     end
 end
