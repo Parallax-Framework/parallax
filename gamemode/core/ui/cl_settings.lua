@@ -124,7 +124,9 @@ function PANEL:AddSetting(settingData)
     panel:SetTextInset(ScreenScale(6), 0)
 
     local enabled = ax.localization:GetPhrase("enabled")
+    local enable = ax.localization:GetPhrase("enable")
     local disabled = ax.localization:GetPhrase("disabled")
+    local disable = ax.localization:GetPhrase("disable")
     local unknown = ax.localization:GetPhrase("unknown")
 
     local label
@@ -156,6 +158,13 @@ function PANEL:AddSetting(settingData)
 
                 label:SetText(value and enabled or disabled, true)
             end):SetIcon("icon16/arrow_refresh.png")
+            menu:AddSpacer()
+            menu:AddOption(value and disable or enable, function()
+                ax.option:Set(settingData.UniqueID, !value)
+                value = !value
+
+                label:SetText(value and "< " .. enabled .. " >" or "< " .. disabled .. " >", true)
+            end):SetIcon(value and "icon16/cross.png" or "icon16/tick.png")
             menu:Open()
         end
     elseif ( settingData.Type == ax.types.number ) then
@@ -243,6 +252,26 @@ function PANEL:AddSetting(settingData)
                     settingData:OnReset(oldValue, value)
                 end
             end):SetIcon("icon16/arrow_refresh.png")
+            menu:AddSpacer()
+            menu:AddOption(ax.localization:GetPhrase("set", settingData.Name), function()
+                local newValue = Derma_StringRequest(
+                    ax.localization:GetPhrase("set", settingData.Name),
+                    ax.localization:GetPhrase("set.description.options", settingData.Name),
+                    value,
+                    function(text)
+                        if ( text and text != "" ) then
+                            local num = tonumber(text)
+                            if ( num ) then
+                                ax.option:Set(settingData.UniqueID, num)
+                                value = num
+
+                                slider:SetValue(value, true)
+                                label:SetText(value, true, true, true)
+                            end
+                        end
+                    end
+                )
+            end):SetIcon("icon16/pencil.png")
             menu:Open()
         end
     elseif ( settingData.Type == ax.types.array ) then
@@ -284,7 +313,7 @@ function PANEL:AddSetting(settingData)
             ax.option:Set(settingData.UniqueID, nextKey)
             value = nextKey
 
-            label:SetText("< " .. (options and options[value] or "Unknown") .. " >", true)
+            label:SetText("< " .. (options and options[value] or unknown) .. " >", true)
         end
 
         panel.DoRightClick = function()
@@ -293,7 +322,7 @@ function PANEL:AddSetting(settingData)
                 ax.option:Reset(settingData.UniqueID)
                 value = ax.option:Get(settingData.UniqueID)
 
-                label:SetText("< " .. (options and options[value] or "Unknown") .. " >", true)
+                label:SetText("< " .. (options and options[value] or unknown) .. " >", true)
             end):SetIcon("icon16/arrow_refresh.png")
             menu:AddSpacer()
             for k2, v2 in SortedPairs(options) do
@@ -303,7 +332,7 @@ function PANEL:AddSetting(settingData)
 
                     phrase = (options and options[value]) and ax.localization:GetPhrase(options[value]) or unknown
                     label:SetText(panel:IsHovered() and "< " .. phrase .. " >" or phrase, true)
-                end)
+                end):SetIcon("icon16/tick.png")
             end
             menu:Open()
         end
@@ -387,7 +416,7 @@ function PANEL:AddSetting(settingData)
             ax.client:EmitSound("ui/buttonclickrelease.wav", 60, pitch, 0.1, CHAN_STATIC)
         end
 
-        panel.DoClick = function()
+        panel.DoRightClick = function()
             local menu = DermaMenu()
             menu:AddOption(ax.localization:GetPhrase("reset"), function()
                 ax.option:Reset(settingData.UniqueID)
@@ -395,6 +424,22 @@ function PANEL:AddSetting(settingData)
 
                 text:SetText(value)
             end):SetIcon("icon16/arrow_refresh.png")
+            menu:AddSpacer()
+            menu:AddOption(ax.localization:GetPhrase("set", settingData.Name), function()
+                local newValue = Derma_StringRequest(
+                    ax.localization:GetPhrase("set", settingData.Name),
+                    ax.localization:GetPhrase("set.description.options", settingData.Name),
+                    value,
+                    function(text)
+                        if ( text and text != "" ) then
+                            ax.option:Set(settingData.UniqueID, text)
+                            value = text
+
+                            text:SetText(value)
+                        end
+                    end
+                )
+            end):SetIcon("icon16/pencil.png")
             menu:Open()
         end
     end

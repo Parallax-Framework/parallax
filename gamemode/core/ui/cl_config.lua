@@ -126,7 +126,9 @@ function PANEL:AddConfig(configData)
     panel:SetTextInset(ScreenScale(6), 0)
 
     local enabled = ax.localization:GetPhrase("enabled")
+    local enable = ax.localization:GetPhrase("enable")
     local disabled = ax.localization:GetPhrase("disabled")
+    local disable = ax.localization:GetPhrase("disable")
     local unknown = ax.localization:GetPhrase("unknown")
 
     local label
@@ -158,7 +160,15 @@ function PANEL:AddConfig(configData)
 
                 value = ax.config:GetDefault(configData.UniqueID)
                 label:SetText(value and enabled or disabled, true)
-            end)
+            end):SetIcon("icon16/arrow_refresh.png")
+            menu:AddSpacer()
+            menu:AddOption(value and disable or enable, function()
+                ax.net:Start("config.set", configData.UniqueID, !value)
+
+                value = !value
+
+                label:SetText(value and "< " .. enabled .. " >" or "< " .. disabled .. " >", true)
+            end):SetIcon(value and "icon16/cross.png" or "icon16/tick.png")
             menu:Open()
         end
     elseif ( configData.Type == ax.types.number ) then
@@ -233,7 +243,30 @@ function PANEL:AddConfig(configData)
                 value = ax.config:GetDefault(configData.UniqueID)
                 slider:SetValue(value)
                 label:SetText(value)
-            end)
+            end):SetIcon("icon16/arrow_refresh.png")
+            menu:AddSpacer()
+            menu:AddOption(ax.localization:GetPhrase("set"), function()
+                Derma_StringRequest(
+                    ax.localization:GetPhrase("set", configData.Name),
+                    ax.localization:GetPhrase("set.description.config", configData.Name),
+                    value,
+                    function(text)
+                        if ( text == "" ) then return end
+
+                        local num = tonumber(text)
+                        if ( !num ) then
+                            Derma_Message(ax.localization:GetPhrase("invalid.number"), "Error", "OK")
+                            return
+                        end
+
+                        ax.net:Start("config.set", configData.UniqueID, num)
+
+                        value = num
+                        slider:SetValue(value)
+                        label:SetText(value)
+                    end
+                )
+            end):SetIcon("icon16/pencil.png")
             menu:Open()
         end
     elseif ( configData.Type == ax.types.array ) then
@@ -276,7 +309,7 @@ function PANEL:AddConfig(configData)
 
             value = nextKey
 
-            label:SetText("< " .. (configs and configs[value] or "Unknown") .. " >", true)
+            label:SetText("< " .. (configs and configs[value] or unknown) .. " >", true)
         end
 
         panel.DoRightClick = function()
@@ -286,7 +319,7 @@ function PANEL:AddConfig(configData)
 
                 value = ax.config:GetDefault(configData.UniqueID)
                 label:SetText(configs and configs[value] or unknown, true)
-            end)
+            end):SetIcon("icon16/arrow_refresh.png")
             menu:AddSpacer()
             for k2, v2 in SortedPairs(configs) do
                 menu:AddOption(v2, function()
@@ -296,7 +329,7 @@ function PANEL:AddConfig(configData)
 
                     phrase = (configs and configs[value]) and ax.localization:GetPhrase(configs[value]) or unknown
                     label:SetText(panel:IsHovered() and "< " .. phrase .. " >" or phrase, true)
-                end)
+                end):SetIcon("icon16/tick.png")
             end
             menu:Open()
         end
@@ -360,7 +393,7 @@ function PANEL:AddConfig(configData)
 
                 value = ax.config:GetDefault(configData.UniqueID)
                 color.color = value
-            end)
+            end):SetIcon("icon16/arrow_refresh.png")
             menu:Open()
         end
     elseif ( configData.Type == ax.types.string ) then
@@ -381,14 +414,30 @@ function PANEL:AddConfig(configData)
             ax.client:EmitSound("ui/buttonclickrelease.wav", 60, pitch, 0.1, CHAN_STATIC)
         end
 
-        panel.DoClick = function()
+        panel.DoRightClick = function()
             local menu = DermaMenu()
             menu:AddOption(ax.localization:GetPhrase("reset"), function()
                 ax.net:Start("config.reset", configData.UniqueID)
 
                 value = ax.config:GetDefault(configData.UniqueID)
                 text:SetText(value)
-            end)
+            end):SetIcon("icon16/arrow_refresh.png")
+            menu:AddSpacer()
+            menu:AddOption(ax.localization:GetPhrase("set"), function()
+                Derma_StringRequest(
+                    ax.localization:GetPhrase("set", configData.Name),
+                    ax.localization:GetPhrase("set.description.config", configData.Name),
+                    value,
+                    function(text)
+                        if ( text == "" ) then return end
+
+                        ax.net:Start("config.set", configData.UniqueID, text)
+
+                        value = text
+                        text:SetText(value)
+                    end
+                )
+            end):SetIcon("icon16/pencil.png")
             menu:Open()
         end
     end
