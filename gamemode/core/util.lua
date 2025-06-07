@@ -664,6 +664,11 @@ end
 -- @param path string Path to the folder containing tool files.
 -- @realm shared
 function ax.util:LoadTools(path)
+	if ( !weapons.GetStored("gmod_tool") ) then
+		ErrorNoHalt("gmod_tool base not found; skipping tool initialisation\n")
+		return
+	end
+
 	local files, folders = file.Find(path .. "/*.lua", "LUA")
 
 	for _, fileName in ipairs(files) do
@@ -679,12 +684,6 @@ function ax.util:LoadTools(path)
 		}
 
 		self:LoadFile(toolPath, "shared")
-
-		if ( !weapons.GetStored("gmod_tool") ) then
-			ErrorNoHalt("gmod_tool base not found; skipping tool '" .. toolID .. "'\n")
-			TOOL = nil
-			continue
-		end
 
 		weapons.GetStored("gmod_tool").Tool = weapons.GetStored("gmod_tool").Tool or {}
 		weapons.GetStored("gmod_tool").Tool[toolID] = TOOL
