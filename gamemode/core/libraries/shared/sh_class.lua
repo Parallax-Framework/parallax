@@ -97,8 +97,18 @@ function ax.class:OnSwitch(client, classID)
     local class = self:Get(classID)
     if ( !class ) then return false end
 
-    local hookRun = hook.Run("CanPlayerJoinClass", client, classID)
-    if ( hookRun != nil and hookRun == false ) then return false end
+    local character = client:GetCharacter()
+    if ( !character ) then
+        ax.util:PrintError("Attempted to switch to a class without a character!")
+        return false
+    end
+
+    if ( !self:CanSwitchTo(client, classID) ) then
+        ax.util:PrintError("Attempted to switch to a class that the player cannot switch to!")
+        return false
+    end
+
+    character:SetClass(classID)
 
     if ( isfunction(class.OnSwitch) ) then
         class:OnSwitch(client)
