@@ -330,6 +330,11 @@ function GM:Think()
     if ( CurTime() >= nextThink ) then
         nextThink = CurTime() + 1
 
+        if ( !ax.config:Get("voice", true) ) then
+            playerVoiceListeners = {}
+            return
+        end
+
         for _, client in player.Iterator() do
             if ( !client:Alive() ) then continue end
             if ( client:Team() == 0 ) then continue end
@@ -344,12 +349,7 @@ function GM:Think()
                 voiceListeners[listener] = true
             end
 
-            -- Overwrite the voice listeners if the config is disabled
-            if ( ax.config:Get("voice", true) ) then
-                playerVoiceListeners[client] = voiceListeners
-            else
-                playerVoiceListeners = {}
-            end
+            playerVoiceListeners[client] = voiceListeners
         end
     end
 
