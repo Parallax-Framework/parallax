@@ -127,6 +127,13 @@ function GM:PlayerLoadout(client)
 end
 
 function GM:PostPlayerLoadout(client)
+    local character = client:GetCharacter()
+    if ( !character ) then return end
+
+    local classData = character:GetClassData()
+    if ( istable(classData) and isfunction(classData.OnLoadout) ) then
+        classData:OnLoadout(client)
+    end
 end
 
 function GM:PrePlayerLoadedCharacter(client, character, previousCharacter)

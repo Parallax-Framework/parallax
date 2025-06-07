@@ -104,6 +104,11 @@ function ax.character:Load(client, characterID)
             local class = character:GetClass()
             if ( isnumber(class) and class != 0 ) then
                 character:SetClass(class)
+
+                local classData = character:GetClassData()
+                if ( istable(classData) and isfunction(classData.OnSpawn) ) then
+                    classData:OnSpawn(client)
+                end
             end
 
             client:Spawn()
