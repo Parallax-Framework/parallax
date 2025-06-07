@@ -8,7 +8,7 @@ function PANEL:Init()
     self:SetFont("parallax.button")
     self:SetTextColorProperty(ax.color:Get("white"))
     self:SetContentAlignment(4)
-    self:SetTall(ScreenScale(18))
+    self:SetTall(ScreenScaleH(18))
     self:SetTextInset(ScreenScale(2), 0)
 
     self.inertia = 0
@@ -139,7 +139,7 @@ function PANEL:Init()
     self:SetFont("parallax.button.small")
     self:SetTextColorProperty(ax.color:Get("white"))
     self:SetContentAlignment(5)
-    self:SetTall(ScreenScale(12))
+    self:SetTall(ScreenScaleH(12))
     self:SetTextInset(0, 0)
 
     self:SetWide(ScreenScale(64))

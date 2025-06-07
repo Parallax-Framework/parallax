@@ -39,10 +39,3 @@ ax.color:Register("error", Color(255, 75, 75))
 ax.color:Register("info", Color(75, 165, 255))
 ax.color:Register("success", Color(50, 255, 120))
 ax.color:Register("warning", Color(255, 215, 60))
-
--- Garry's Mod colors
-ax.color:Register("gmod.console.error.server", Color(136, 221, 255, 255))
-ax.color:Register("gmod.console.error.client", Color(255, 221, 102, 255))
-
-ax.color:Register("gmod.console.msg.server", Color(156, 241, 255, 200))
-ax.color:Register("gmod.console.msg.client", Color(255, 241, 122, 200))

@@ -27,8 +27,8 @@ function ax.inventory:CreateObject(data)
     return inventory
 end
 
-function ax.inventory:Get(index)
-    return self.stored[index]
+function ax.inventory:Get(id)
+    return tonumber(id) and self.stored[id] or nil
 end
 
 function ax.inventory:GetAll()

@@ -1,0 +1,37 @@
+name: Generate Version JSON
+
+on:
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: write  # <-- allow pushing changes
+
+jobs:
+  generate-version:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true  # <-- needed to push
+
+      - name: Generate parallax-version.json
+        run: |
+          echo "{" > parallax-version.json
+          echo "  \"commitCount\": $(git rev-list --count HEAD)," >> parallax-version.json
+          echo "  \"commitHash\": \"$(git rev-parse --short HEAD)\"," >> parallax-version.json
+          echo "  \"branch\": \"$(git rev-parse --abbrev-ref HEAD)\"" >> parallax-version.json
+          echo "}" >> parallax-version.json
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+
+      - name: Commit and push version file
+        run: |
+          git add parallax-version.json
+          git commit -m "[hide] Update parallax-version.json" || echo "No changes to commit"
+          git push

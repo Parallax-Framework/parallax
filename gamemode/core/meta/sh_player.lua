@@ -184,3 +184,17 @@ function PLAYER:GetClassData()
 
     return class
 end
+
+function PLAYER:GetInventory(name)
+    local character = self:GetCharacter()
+    if ( !character ) then return end
+
+    return character:GetInventory(name)
+end
+
+function PLAYER:GetInventoryByID(id)
+    local character = self:GetCharacter()
+    if ( !character ) then return end
+
+    return character:GetInventoryByID(id)
+end

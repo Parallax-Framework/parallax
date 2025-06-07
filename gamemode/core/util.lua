@@ -97,7 +97,7 @@ function ax.util:SendChatText(client, ...)
 	end
 end
 
---- Prepares a package for printing to either the chat or console. This is useful for chat messages that need to be colored.
+--- Prepares a package of arguments for printing.
 -- @realm shared
 -- @param ... any The package to prepare.
 -- @return any The prepared package.
@@ -106,9 +106,12 @@ function ax.util:PreparePackage(...)
 	local package = {}
 
 	for k, v in ipairs(arguments) do
-		if ( type(v) == "Player" ) then
-			table.insert(package, team.GetColor(v:Team()))
-			table.insert(package, v:Name())
+		if ( type(v) == "Entity" or type(v) == "Player" ) then
+			table.insert(package, tostring(v))
+
+			if ( type(v) == "Player" ) then
+				table.insert(package, "[" .. v:SteamID64() .. "]")
+			end
 		else
 			table.insert(package, v)
 		end
@@ -119,10 +122,12 @@ function ax.util:PreparePackage(...)
 	return package
 end
 
-local violetColor = Color(142, 68, 255)
-
-local serverMsgColor = Color(156, 241, 255, 200)
-local clientMsgColor = Color(255, 241, 122, 200)
+local frameworkColor = Color(142, 68, 255)
+local serverMessageColor = Color(156, 241, 255, 200)
+local clientMessageColor = Color(255, 241, 122, 200)
+local errorColor = Color(255, 120, 120)
+local warningColor = Color(255, 200, 120)
+local successColor = Color(120, 255, 120)
 
 --- Prints a message to the console.
 -- @realm shared
@@ -130,11 +135,15 @@ local clientMsgColor = Color(255, 241, 122, 200)
 function ax.util:Print(...)
 	local arguments = self:PreparePackage(...)
 
-	local realmColor = SERVER and serverMsgColor or clientMsgColor
-	MsgC(violetColor, "[Parallax] ", realmColor, unpack(arguments))
+	local tagColor = ax.config:Get("color.framework", frameworkColor)
+	local serverColor = ax.config:Get("color.server.message", serverMessageColor)
+	local clientColor = ax.config:Get("color.client.message", clientMessageColor)
+
+	local realmColor = SERVER and serverColor or clientColor
+	MsgC(tagColor, "[Parallax] ", realmColor, unpack(arguments))
 
 	if ( CLIENT and ax.config and ax.config.Get and ax.config:Get("debug.developer") ) then
-		chat.AddText(violetColor, "[Parallax] ", realmColor, unpack(arguments))
+		chat.AddText(tagColor, "[Parallax] ", realmColor, unpack(arguments))
 	end
 
 	return arguments
@@ -143,8 +152,6 @@ end
 --- Prints an error message to the console.
 -- @realm shared
 -- @param ... any The message to print.
-local f = "[%s Error] "
-local colorError = Color(255, 120, 120)
 local _printingError = false
 function ax.util:PrintError(...)
 	if ( _printingError ) then return end
@@ -175,10 +182,13 @@ function ax.util:PrintError(...)
 		table.insert(arguments, "\n")
 	end
 
-	MsgC(violetColor, "[Parallax] ", colorError, string.format(f, SERVER and "Server" or "Client"), unpack(arguments))
+	local tagColor = ax.config:Get("color.framework", violetColor)
+	local batchColor = ax.config:Get("color.error", errorColor)
+
+	MsgC(tagColor, "[Parallax] ", colorError, "[Error] ", unpack(arguments))
 
 	if ( CLIENT and ax.config and ax.config.Get and ax.config:Get("debug.developer") ) then
-		chat.AddText(violetColor, "[Parallax] ", colorError, "[Error] ", unpack(arguments))
+		chat.AddText(tagColor, "[Parallax] ", batchColor, "[Error] ", unpack(arguments))
 	end
 
 	if ( ax.config and ax.config.Get and ax.config:Get("debug.developer") ) then
@@ -192,7 +202,7 @@ function ax.util:PrintError(...)
 			table.insert(log, string.format("%s:%d", file, lineNum) .. "\n")
 		end
 		log = table.concat(log, " -> ")
-		MsgC(violetColor, "[Parallax] ", colorError, "[Error] [Traceback] ", log, "\n")
+		MsgC(tagColor, "[Parallax] ", batchColor, "[Error] [Traceback] ", log, "\n")
 	end
 
 	_printingError = false
@@ -202,14 +212,16 @@ end
 --- Prints a warning message to the console.
 -- @realm shared
 -- @param ... any The message to print.
-local colorWarning = Color(255, 200, 120)
 function ax.util:PrintWarning(...)
 	local arguments = self:PreparePackage(...)
 
-	MsgC(violetColor, "[Parallax] ", colorWarning, "[Warning] ", unpack(arguments))
+	local tagColor = ax.config:Get("color.framework", violetColor)
+	local batchColor = ax.config:Get("color.warning", warningColor)
+
+	MsgC(tagColor, "[Parallax] ", batchColor, "[Warning] ", unpack(arguments))
 
 	if ( CLIENT and ax.config and ax.config.Get and ax.config:Get("debug.developer") ) then
-		chat.AddText(violetColor, "[Parallax] ", colorWarning, "[Warning] ", unpack(arguments))
+		chat.AddText(tagColor, "[Parallax] ", batchColor, "[Warning] ", unpack(arguments))
 	end
 
 	return arguments
@@ -218,14 +230,16 @@ end
 --- Prints a success message to the console.
 -- @realm shared
 -- @param ... any The message to print.
-local colorSuccess = Color(120, 255, 120)
 function ax.util:PrintSuccess(...)
 	local arguments = self:PreparePackage(...)
 
-	MsgC(violetColor, "[Parallax] ", colorSuccess, "[Success] ", unpack(arguments))
+	local tagColor = ax.config:Get("color.framework", violetColor)
+	local batchColor = ax.config:Get("color.success", successColor)
+
+	MsgC(tagColor, "[Parallax] ", batchColor, "[Success] ", unpack(arguments))
 
 	if ( CLIENT and ax.config:Get("debug.developer") ) then
-		chat.AddText(violetColor, "[Parallax] ", colorSuccess, "[Success] ", unpack(arguments))
+		chat.AddText(tagColor, "[Parallax] ", batchColor, "[Success] ", unpack(arguments))
 	end
 
 	return arguments

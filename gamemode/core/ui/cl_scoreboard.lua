@@ -1,4 +1,3 @@
-local padding = ScreenScale(32)
 local gradientLeft = ax.util:GetMaterial("vgui/gradient-l")
 local gradientBottom = ax.util:GetMaterial("vgui/gradient-d")
 
@@ -9,7 +8,7 @@ local PANEL = {}
 function PANEL:Init()
     self.container = self:Add("ax.scroller.vertical")
     self.container:Dock(FILL)
-    self.container:DockMargin(0, padding / 8, 0, 0)
+    self.container:DockMargin(0, ScreenScaleH(4), 0, 0)
 
     self.cache = {}
     self.cache.players = {}
@@ -70,13 +69,13 @@ PANEL = {}
 
 function PANEL:Init()
     self:Dock(TOP)
-    self:DockMargin(0, 0, 0, ScreenScale(8))
+    self:DockMargin(0, 0, 0, ScreenScaleH(8))
 
     self.teamID = 0
     self.players = {}
 
     self.teamName = self:Add("ax.text")
-    self.teamName:SetTall(ScreenScale(10))
+    self.teamName:SetTall(ScreenScaleH(12))
     self.teamName:Dock(TOP)
     self.teamName:DockMargin(ScreenScale(2), 0, 0, 0)
     self.teamName:SetFont("parallax.italic.bold")
@@ -128,7 +127,7 @@ PANEL = {}
 
 function PANEL:Init()
     self:Dock(TOP)
-    self:SetTall(ScreenScale(16))
+    self:SetTall(ScreenScaleH(16))
 
     self.avatar = self:Add("AvatarImage")
     self.avatar:SetSize(self:GetTall(), self:GetTall())

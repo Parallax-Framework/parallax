@@ -55,6 +55,19 @@ function CHAR:GetInventory(name)
     return nil
 end
 
+function CHAR:GetInventoryByID(id)
+    local inventories = ax.inventory:GetByCharacterID(self:GetID())
+    if ( !inventories or #inventories == 0 ) then return end
+
+    for _, inventory in pairs(inventories) do
+        if ( inventory:GetID() == id ) then
+            return inventory
+        end
+    end
+
+    return nil
+end
+
 function CHAR:GiveMoney(amount)
     if ( amount < 0 ) then
         amount = math.abs(amount)

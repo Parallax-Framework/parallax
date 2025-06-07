@@ -1,5 +1,3 @@
-local padding = ScreenScale(32)
-
 DEFINE_BASECLASS("EditablePanel")
 
 local PANEL = {}
@@ -11,8 +9,8 @@ function PANEL:Init()
 
     self.buttons = self:Add("ax.scroller.horizontal")
     self.buttons:Dock(TOP)
-    self.buttons:DockMargin(0, padding / 8, 0, 0)
-    self.buttons:SetTall(ScreenScale(24))
+    self.buttons:DockMargin(0, ScreenScaleH(4), 0, 0)
+    self.buttons:SetTall(ScreenScaleH(24))
     self.buttons.Paint = nil
 
     self.container = self:Add("ax.scroller.vertical")
@@ -22,7 +20,7 @@ function PANEL:Init()
 
     self.info = self:Add("EditablePanel")
     self.info:Dock(RIGHT)
-    self.info:DockPadding(16, 16, 16, 16)
+    self.info:DockPadding(ScreenScale(4), ScreenScaleH(4), ScreenScale(4), ScreenScaleH(4))
     self.info:SetWide(ScreenScale(128))
     self.info.Paint = function(this, width, height)
         draw.RoundedBox(0, 0, 0, width, height, Color(0, 0, 0, 150))
@@ -71,7 +69,7 @@ function PANEL:SetInventory(id)
     progress:Dock(TOP)
     progress:SetFraction(total)
     progress:SetTall(ScreenScale(12))
-    progress:DockMargin(0, 0, 5, 0)
+    progress:DockMargin(0, 0, ScreenScale(8), 0)
     progress.Paint = function(this, width, height)
         draw.RoundedBox(0, 0, 0, width, height, Color(0, 0, 0, 150))
 
@@ -95,6 +93,8 @@ function PANEL:SetInventory(id)
         label:SetFont("parallax.large")
         label:SetText("inventory.empty")
         label:SetContentAlignment(5)
+
+        self:SetInfo()
 
         return
     end
@@ -129,17 +129,38 @@ function PANEL:SetInventory(id)
         local itemPanel = self.container:Add("ax.item")
         itemPanel:SetItem(itemData)
         itemPanel:Dock(TOP)
-        itemPanel:DockMargin(0, 0, 5, 0)
+        itemPanel:DockMargin(0, 0, ScreenScale(8), 0)
+    end
+
+    if ( ax.gui.inventoryItemIDLast and self:IsValidItemID(ax.gui.inventoryItemIDLast) ) then
+        self:SetInfo(ax.gui.inventoryItemIDLast)
+    else
+        self:SetInfo(sortedItems[1])
     end
 end
 
-function PANEL:SetInfo(id)
-    if ( !id ) then return end
+function PANEL:IsValidItemID(id)
+    if ( !id or !tonumber(id) ) then return false end
 
     local item = ax.item:Get(id)
-    if ( !item ) then return end
+    if ( !item ) then return false end
 
+    local inventory = ax.client:GetInventoryByID(item:GetInventory())
+    if ( !inventory ) then return false end
+
+    return true
+end
+
+function PANEL:SetInfo(id)
     self.info:Clear()
+
+    if ( !self:IsValidItemID(id) ) then
+        return
+    end
+
+    ax.gui.inventoryItemIDLast = id
+
+    local item = ax.item:Get(id)
 
     local icon = self.info:Add("DAdjustableModelPanel")
     icon:Dock(TOP)
@@ -158,7 +179,7 @@ function PANEL:SetInfo(id)
 
     local name = self.info:Add("ax.text")
     name:Dock(TOP)
-    name:DockMargin(0, 0, 0, -padding / 8)
+    name:DockMargin(0, 0, 0, -ScreenScaleH(4))
     name:SetFont("parallax.huge.bold")
     name:SetText(item:GetName(), true)
 
@@ -167,9 +188,34 @@ function PANEL:SetInfo(id)
     for k, v in pairs(descriptionWrapped) do
         local text = self.info:Add("ax.text")
         text:Dock(TOP)
-        text:SetFont("parallax")
+        text:DockMargin(0, 0, 0, -ScreenScaleH(4))
         text:SetText(v, true)
     end
+
+    local actions = self.info:Add("DIconLayout")
+    actions:Dock(BOTTOM)
+    actions:DockMargin(-ScreenScale(4), ScreenScaleH(4), -ScreenScale(4), -ScreenScaleH(4))
+    actions:SetSpaceX(0)
+    actions:SetSpaceY(0)
+    actions.Paint = nil
+
+    timer.Simple(0.1, function()
+        for actionName, actionData in pairs(item.Actions or {}) do
+            if ( actionName == "Take" ) then continue end
+            if ( isfunction(actionData.OnCanRun) and actionData:OnCanRun(item, ax.client) == false ) then continue end
+
+            local button = actions:Add("ax.button.small")
+            button:SetText(actionData.Name or actionName)
+            button:SizeToContents()
+            button.DoClick = function()
+                ax.net:Start("item.perform", id, actionName)
+            end
+
+            if ( actionData.Icon ) then
+                button:SetIcon(actionData.Icon)
+            end
+        end
+    end)
 end
 
 vgui.Register("ax.inventory", PANEL, "EditablePanel")
@@ -188,7 +234,7 @@ function PANEL:Init()
 
     self.icon = self:Add("DModelPanel")
     self.icon:Dock(LEFT)
-    self.icon:DockMargin(0, 0, padding / 8, 0)
+    self.icon:DockMargin(0, 0, ScreenScale(4), 0)
     self.icon:SetSize(self:GetTall(), self:GetTall())
     self.icon:SetMouseInputEnabled(false)
     self.icon.LayoutEntity = function(this, entity)
@@ -204,7 +250,7 @@ function PANEL:Init()
 
     self.weight = self:Add("ax.text")
     self.weight:Dock(RIGHT)
-    self.weight:DockMargin(0, 0, padding / 8, 0)
+    self.weight:DockMargin(0, 0, ScreenScale(4), 0)
     self.weight:SetFont("parallax")
     self.weight:SetContentAlignment(6)
     self.weight:SetWide(ScreenScale(64))

@@ -108,13 +108,10 @@ if ( SERVER ) then
     end
 end
 
-function ITEM:SetInventory(InventoryID)
-    if ( !InventoryID ) then return end
+function ITEM:SetInventory(id)
+    if ( !id ) then return end
 
-    local inventory = ax.inventory:Get(InventoryID)
-    if ( !inventory ) then return end
-
-    self.InventoryID = InventoryID
+    self.InventoryID = id
 end
 
 function ITEM:GetEntity()

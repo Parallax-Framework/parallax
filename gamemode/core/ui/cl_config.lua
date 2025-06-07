@@ -1,5 +1,3 @@
-local padding = ScreenScale(32)
-
 DEFINE_BASECLASS("EditablePanel")
 
 local PANEL = {}
@@ -9,7 +7,7 @@ function PANEL:Init()
 
     self.buttons = self:Add("ax.scroller.horizontal")
     self.buttons:Dock(TOP)
-    self.buttons:DockMargin(0, padding / 8, 0, 0)
+    self.buttons:DockMargin(0, ScreenScaleH(4), 0, 0)
     self.buttons:SetTall(ScreenScale(24))
     self.buttons.Paint = nil
 
@@ -98,7 +96,7 @@ function PANEL:PopulateCategory(category, toSearch)
         for k, v in SortedPairs(subCategories) do
             local label = self.container:Add("ax.text")
             label:Dock(TOP)
-            label:DockMargin(0, 0, 0, ScreenScale(4))
+            label:DockMargin(0, 0, 0, ScreenScaleH(4))
             label:SetFont("parallax.title")
             label:SetText(string.upper(k))
 
@@ -121,7 +119,7 @@ function PANEL:AddConfig(configData)
     local panel = self.container:Add("ax.button.small")
     panel:Dock(TOP)
     panel:SetText(configData.Name)
-    panel:SetTall(ScreenScale(20))
+    panel:SetTall(ScreenScaleH(26))
     panel:SetContentAlignment(4)
     panel:SetTextInset(ScreenScale(6), 0)
 
@@ -174,7 +172,7 @@ function PANEL:AddConfig(configData)
     elseif ( configData.Type == ax.types.number ) then
         local slider = panel:Add("ax.slider")
         slider:Dock(RIGHT)
-        slider:DockMargin(ScreenScale(8), ScreenScale(6), ScreenScale(8), ScreenScale(6))
+        slider:DockMargin(ScreenScale(8), ScreenScaleH(8), ScreenScale(8), ScreenScaleH(8))
         slider:SetWide(ScreenScale(128))
         slider:SetMouseInputEnabled(false)
 
@@ -336,7 +334,7 @@ function PANEL:AddConfig(configData)
     elseif ( configData.Type == ax.types.color ) then
         local color = panel:Add("EditablePanel")
         color:Dock(RIGHT)
-        color:DockMargin(ScreenScale(8), ScreenScale(6), ScreenScale(8), ScreenScale(6))
+        color:DockMargin(ScreenScale(8), ScreenScaleH(8), ScreenScale(8), ScreenScaleH(8))
         color:SetWide(ScreenScale(128))
         color:SetMouseInputEnabled(false)
         color.color = value
@@ -399,7 +397,7 @@ function PANEL:AddConfig(configData)
     elseif ( configData.Type == ax.types.string ) then
         local text = panel:Add("ax.text.entry")
         text:Dock(RIGHT)
-        text:DockMargin(ScreenScale(8), ScreenScale(6), ScreenScale(8), ScreenScale(6))
+        text:DockMargin(ScreenScale(8), ScreenScaleH(8), ScreenScale(8), ScreenScaleH(8))
         text:SetWide(ScreenScale(128))
         text:SetText(value)
 

@@ -53,11 +53,13 @@ function ax.item:Load(path)
                 local prevent = hook.Run("PrePlayerDropItem", client, item, pos)
                 if ( prevent == false ) then return end
 
-                ax.item:Spawn(item:GetID(), item:GetUniqueID(), pos, Angle(0, 0, 0), function(entity)
-                    ax.inventory:RemoveItem(item:GetInventory(), item:GetID())
-
-                    hook.Run("PostPlayerDropItem", client, item, entity)
-                end, item:GetData())
+                ax.item:Transfer(item:GetID(), item:GetInventory(), 0, function(success)
+                    if ( success ) then
+                        ax.item:Spawn(item:GetID(), item:GetUniqueID(), pos, Angle(0, 0, 0), function(entity)
+                            hook.Run("PostPlayerDropItem", client, item, entity)
+                        end, item:GetData())
+                    end
+                end)
             end,
             OnCanRun = function(this, item, client)
                 return !IsValid(item:GetEntity())
@@ -99,7 +101,7 @@ function ax.item:Load(path)
                 end)
             end,
             OnCanRun = function(this, item, client)
-                return true
+                return IsValid(item:GetEntity())
             end
         }
 

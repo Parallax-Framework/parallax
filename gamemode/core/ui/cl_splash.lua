@@ -1,8 +1,4 @@
-local padding = ScreenScale(32)
-local gradientLeft = ax.util:GetMaterial("vgui/gradient-l")
-local gradientRight = ax.util:GetMaterial("vgui/gradient-r")
 local gradientTop = ax.util:GetMaterial("vgui/gradient-u")
-local gradientBottom = ax.util:GetMaterial("vgui/gradient-d")
 
 DEFINE_BASECLASS("EditablePanel")
 
@@ -25,7 +21,7 @@ function PANEL:Init()
 
     local title = self:Add("DLabel")
     title:Dock(TOP)
-    title:DockMargin(0, padding, 0, 0)
+    title:DockMargin(0, ScreenScaleH(32), 0, 0)
     title:SetContentAlignment(5)
     title:SetFont("parallax.title")
     title:SetText("PARALLAX")
@@ -34,7 +30,7 @@ function PANEL:Init()
 
     local subtitle = self:Add("DLabel")
     subtitle:Dock(TOP)
-    subtitle:DockMargin(0, -padding / 8, 0, 0)
+    subtitle:DockMargin(0, -ScreenScaleH(4), 0, 0)
     subtitle:SetContentAlignment(5)
     subtitle:SetFont("parallax.subtitle")
 

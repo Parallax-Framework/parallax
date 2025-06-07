@@ -116,11 +116,11 @@ function GM:ScoreboardHide()
 end
 
 function GM:Initialize()
+    hook.Run("LoadFonts")
+
     ax.module:LoadFolder("parallax/modules")
     ax.item:LoadFolder("parallax/gamemode/items")
     ax.schema:Initialize()
-
-    hook.Run("LoadFonts")
 end
 
 local _reloaded = false
@@ -133,12 +133,12 @@ function GM:OnReloaded()
         currentStation = nil
     end
 
+    hook.Run("LoadFonts")
+
     ax.module:LoadFolder("parallax/modules")
     ax.item:LoadFolder("parallax/gamemode/items")
     ax.schema:Initialize()
     ax.option:Load()
-
-    hook.Run("LoadFonts")
 end
 
 function GM:InitPostEntity()
@@ -454,14 +454,14 @@ function GM:HUDShouldDraw(name)
 end
 
 function GM:LoadFonts()
-    local scale4 = ScreenScale(4)
-    local scale6 = ScreenScale(6)
-    local scale8 = ScreenScale(8)
-    local scale10 = ScreenScale(10)
-    local scale12 = ScreenScale(12)
-    local scale16 = ScreenScale(16)
-    local scale20 = ScreenScale(20)
-    local scale24 = ScreenScale(24)
+    local scale4 = ScreenScaleH(6)
+    local scale6 = ScreenScaleH(8)
+    local scale8 = ScreenScaleH(10)
+    local scale10 = ScreenScaleH(12)
+    local scale12 = ScreenScaleH(16)
+    local scale16 = ScreenScaleH(20)
+    local scale20 = ScreenScaleH(24)
+    local scale32 = ScreenScaleH(32)
 
     surface.CreateFont("parallax.tiny", {
         font = "GorDIN Regular",
@@ -655,7 +655,7 @@ function GM:LoadFonts()
 
     surface.CreateFont("parallax.title", {
         font = "GorDIN Bold",
-        size = scale24,
+        size = scale32,
         weight = 700,
         antialias = true,
     })

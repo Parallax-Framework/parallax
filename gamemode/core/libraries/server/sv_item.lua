@@ -121,7 +121,7 @@ function ax.item:Transfer(itemID, fromInventoryID, toInventoryID, callback)
 end
 
 function ax.item:PerformAction(itemID, actionName, callback)
-    local item = self.instances[itemID]
+    local item = self:Get(itemID)
     if ( !item or !actionName ) then
         ax.util:PrintError("Invalid parameters for item action: itemID=" .. tostring(itemID) .. ", actionName=" .. tostring(actionName))
         return false
@@ -143,6 +143,23 @@ function ax.item:PerformAction(itemID, actionName, callback)
     if ( !IsValid(client) ) then
         ax.util:PrintError("Invalid client for item action: " .. tostring(item:GetOwner()))
         return false
+    end
+
+    local character = ax.character:Get(item:GetOwner())
+    if ( !character ) then
+        ax.util:PrintError("Invalid character for item action: " .. tostring(item:GetOwner()))
+        return false
+    end
+
+    local inventoryID = item:GetInventory()
+    if ( inventoryID != character:GetInventory():GetID() ) then
+        if ( inventoryID == 0 and actionName != "Take" ) then
+            ax.util:PrintWarning(client, " attempted to perform action '" .. actionName .. "' on item '" .. item:GetUniqueID() .. "' without a valid inventory.")
+            return false
+        elseif ( inventoryID != 0 and actionName == "Take" ) then
+            ax.util:PrintWarning(client, " attempted to perform action '" .. actionName .. "' on item '" .. item:GetUniqueID() .. "' in inventory ID " .. inventoryID .. ", but the action is not allowed.")
+            return false
+        end
     end
 
     if ( action.OnCanRun and !action:OnCanRun(item, client) ) then
@@ -171,7 +188,7 @@ function ax.item:PerformAction(itemID, actionName, callback)
         end
     end
 
-    ax.net:Start(client, "inventory.refresh", item:GetInventory())
+    ax.net:Start(client, "inventory.refresh", inventoryID)
 
     hook.Run("PostPlayerItemAction", client, actionName, item)
 
