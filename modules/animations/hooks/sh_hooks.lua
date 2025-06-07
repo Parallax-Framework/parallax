@@ -295,6 +295,8 @@ function MODULE:CalcMainActivity(client, velocity)
             clientTable.CalcIdeal = ACT_MP_RUN
         elseif ( len2d > 0.25 ) then
             clientTable.CalcIdeal = ACT_MP_WALK
+        else
+            clientTable.CalcIdeal = ACT_MP_STAND_IDLE
         end
     end
 
