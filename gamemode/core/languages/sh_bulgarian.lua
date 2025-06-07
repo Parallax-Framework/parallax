@@ -157,4 +157,4 @@ localization["tab.settings"] = "Настройки"
 localization["config.time.respawn"] = "Време за възраждане"
 localization["config.time.respawn.help"] = "Времето, необходимо за възраждане на играча след смърт."
 
-ax.localization.Register("bg", localization)
+ax.localization:Register("bg", localization)
