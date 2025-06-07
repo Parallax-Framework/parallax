@@ -18,10 +18,23 @@ jobs:
           persist-credentials: true
           fetch-depth: 0
 
+      - name: Skip if commit is a version bump
+        if: contains(github.event.head_commit.message, '[ci version bump]')
+        run: |
+          echo "Skipping workflow due to [ci version bump] commit"
+          exit 0
+
       - name: Generate parallax-version.json
         run: |
+          COUNT=$(git rev-list --count HEAD)
+          MAJOR=$((COUNT / 1000))
+          MINOR=$(((COUNT % 1000) / 100))
+          PATCH=$((COUNT % 100))
+          VERSION="$MAJOR.$MINOR.$PATCH"
+
           echo "{" > parallax-version.json
-          echo "  \"commitCount\": $(git rev-list --count HEAD)," >> parallax-version.json
+          echo "  \"version\": \"$VERSION\"," >> parallax-version.json
+          echo "  \"commitCount\": $COUNT," >> parallax-version.json
           echo "  \"commitHash\": \"$(git rev-parse --short HEAD)\"," >> parallax-version.json
           echo "  \"branch\": \"$(git rev-parse --abbrev-ref HEAD)\"" >> parallax-version.json
           echo "}" >> parallax-version.json
@@ -31,8 +44,14 @@ jobs:
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
 
-      - name: Commit and push version file
+      - name: Commit and push version file (if changed)
         run: |
           git add -f parallax-version.json
-          git commit -m "[skip] Update parallax-version.json [ci skip]" || echo "No changes to commit"
+
+          if git diff --cached --quiet; then
+            echo "No changes to version file. Skipping commit."
+            exit 0
+          fi
+
+          git commit -m "[skip] [ci version bump] Update parallax-version.json"
           git push
