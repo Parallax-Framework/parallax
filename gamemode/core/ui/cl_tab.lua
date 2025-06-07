@@ -157,6 +157,7 @@ function PANEL:Close(callback)
         end
     end)
 
+    self:SetFadeStart(CurTime())
     self.buttons.posTarget = {-self.buttons:GetWide() * 2, paddingSmall}
     self.container.posTarget = {self:GetWide() * 2, paddingSmall}
     self.buttons:AlphaTo(0, fadeDuration / 2, 0)
