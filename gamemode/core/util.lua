@@ -664,7 +664,8 @@ end
 -- @param path string Path to the folder containing tool files.
 -- @realm shared
 function ax.util:LoadTools(path)
-	if ( !weapons.GetStored("gmod_tool") ) then
+	local gmodTool = weapons.GetStored("gmod_tool")
+	if ( !gmodTool ) then
 		ErrorNoHalt("gmod_tool base not found; skipping tool initialisation\n")
 		return
 	end
@@ -685,8 +686,8 @@ function ax.util:LoadTools(path)
 
 		self:LoadFile(toolPath, "shared")
 
-		weapons.GetStored("gmod_tool").Tool = weapons.GetStored("gmod_tool").Tool or {}
-		weapons.GetStored("gmod_tool").Tool[toolID] = TOOL
+		gmodTool.Tool = gmodTool.Tool or {}
+		gmodTool.Tool[toolID] = TOOL
 
 		TOOL = nil
 	end

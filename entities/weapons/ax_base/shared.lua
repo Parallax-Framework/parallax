@@ -201,6 +201,8 @@ end
 function SWEP:ThrowGrenade()
     local owner = self:GetOwner()
     local ent = ents.Create("npc_grenade_frag")
+    if ( !IsValid(ent) ) then return end
+
     ent:SetPos(owner:GetShootPos())
     ent:SetAngles(owner:EyeAngles())
     ent:SetOwner(owner)
