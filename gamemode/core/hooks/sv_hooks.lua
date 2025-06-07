@@ -320,8 +320,8 @@ function GM:PostPlayerLoadedCharacter(client, character, previousCharacter)
     end
 
     local classData = character:GetClassData()
-    if ( istable(classData) and isfunction(classData.OnLoaded) ) then
-        classData:OnLoaded(client, character)
+    if ( istable(classData) and isfunction(classData.OnCharacterLoaded) ) then
+        classData:OnCharacterLoaded(client, character)
     end
 
     local skin = character:GetSkin()
