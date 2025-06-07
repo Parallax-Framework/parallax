@@ -33,6 +33,6 @@ jobs:
 
       - name: Commit and push version file
         run: |
-          git add parallax-version.json
+          git add -f parallax-version.json
           git commit -m "[skip] Update parallax-version.json [ci skip]" || echo "No changes to commit"
           git push

@@ -246,6 +246,8 @@ function GM:Initialize()
         RunConsoleCommand("sv_mincmdrate", "30")
         RunConsoleCommand("sv_allowcslua", "1")
     end
+
+    ax.util:VerifyVersion()
 end
 
 local _reloaded = false
@@ -262,6 +264,8 @@ function GM:OnReloaded()
     ax.schema:Initialize()
 
     ax.config:Synchronize()
+
+    ax.util:VerifyVersion()
 end
 
 function GM:DatabaseConnected()
