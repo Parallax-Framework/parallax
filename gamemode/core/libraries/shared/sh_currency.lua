@@ -23,10 +23,15 @@ end
 
 if ( SERVER ) then
     function ax.currency:Spawn(amount, pos, ang)
+        if ( !isvector(pos) ) then
+            ax.util:PrintError("Attempted to spawn currency with an invalid position (" .. tostring(pos) .. ")")
+            return
+        end
+
         local ent = ents.Create("ax_currency")
         if ( !IsValid(ent) ) then return end
 
-        ent:SetPos(pos or vector_origin)
+        ent:SetPos(pos)
         ent:SetAngles(ang or angle_zero)
         ent:SetAmount(amount or 1)
         ent:Spawn()
