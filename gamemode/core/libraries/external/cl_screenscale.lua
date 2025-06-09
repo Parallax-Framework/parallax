@@ -1,31 +1,21 @@
 --- Cached Screen Scale
--- Caches the results of ScreenScale && ScreenScaleH to improve performance.
+-- Caches ScrW && ScrH to improve performance.
 -- @Winkarst
 
-local cached = {
-    width = {},
-    height = {},
-}
+-- TODO: Remove after https://github.com/Facepunch/garrysmod/pull/2309 is merged.
 
-local scrW, scrH = ScrW() / 640, ScrH() / 480
+local scrW, scrH = ScrW() / 640.0, ScrH() / 480.0
 
 function ScreenScale(width)
-    cached.width[width] = cached.width[width] or width * scrW
-
-    return cached.width[width]
+	return width * scrW
 end
 
 function ScreenScaleH(height)
-    cached.height[height] = cached.height[height] or height * scrH
-
-    return cached.height[height]
+	return height * scrH
 end
 
-hook.Add("OnScreenSizeChanged", "CachedScreenScale", function(oldWidth, oldHeight, newWidth, newHeight)
-    scrW, scrH = newWidth / 640, newHeight / 480
+SScale = ScreenScale
 
-    cached = {
-        width = {},
-        height = {},
-    }
+hook.Add("OnScreenSizeChanged", "CachedScreenScale", function(oldWidth, oldHeight, newWidth, newHeight)
+	scrW, scrH = newWidth / 640, newHeight / 480
 end)
