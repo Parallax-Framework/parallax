@@ -112,4 +112,27 @@ if (CLIENT) then
         ["options.thirdperson.traceplayercheck"] = "Trace Player Check",
         ["options.thirdperson.traceplayercheck.help"] = "Draw only the players that the person would see as if they were in firstperson.",
     })
+
+    ax.localization:Register("ru", {
+        ["category.thirdperson"] = "Третье лицо",
+        ["option.thirdperson"] = "Третье лицо",
+        ["option.thirdperson.enable"] = "Включение третьего лицо",
+        ["option.thirdperson.enable.help"] = "Должно ли третье лицо быть включено?",
+        ["options.thirdperson.follax.head"] = "Следовать за головой",
+        ["options.thirdperson.follax.head.help"] = "Должен ли вид от третьего лица следовать за головой игрока?",
+        ["options.thirdperson.follax.hit.angles"] = "Следовать за углом удара",
+        ["options.thirdperson.follax.hit.angles.help"] = "Должен ли вид от третьего лица следовать за углом удара игрока?",
+        ["options.thirdperson.follax.hit.fov"] = "Следовать FOV удара",
+        ["options.thirdperson.follax.hit.fov.help"] = "Должен ли вид от третьего лица следовать за FOV удара игрока?",
+        ["options.thirdperson.position.x"] = "Позиция по X",
+        ["options.thirdperson.position.x.help"] = "Устанавливает позицию по X для вида от третьего лица.",
+        ["options.thirdperson.position.y"] = "Позиция по Y",
+        ["options.thirdperson.position.y.help"] = "Устанавливает позицию по Y для вида от третьего лица.",
+        ["options.thirdperson.position.z"] = "Позиция по Z",
+        ["options.thirdperson.position.z.help"] = "Устанавливает позицию по Z для вида от третьего лица.",
+        ["options.thirdperson.reset"] = "Сбросить позицию вида от третьего лица.",
+        ["options.thirdperson.toggle"] = "Переключить вид от третьего лица.",
+        ["options.thirdperson.traceplayercheck"] = "Проверка через трасировку",
+        ["options.thirdperson.traceplayercheck.help"] = "Отрисовывать только тех игроков, которых игрок бы мог увидеть в виде от первого лица.",
+    })
 end

@@ -159,8 +159,21 @@ if ( CLIENT ) then
     enLocalization["config.stamina.tick"] = "Stamina Tick Rate"
     enLocalization["config.stamina.tick.help"] = "The rate at which the player's stamina is updated."
 
+    local ruLocalization = {}
+    ruLocalization["config.stamina"] = "Выносливость"
+    ruLocalization["config.stamina.drain"] = "Скорость поглощения выносливости"
+    ruLocalization["config.stamina.drain.help"] = "Скорость с которой поглащается выносливость игрока."
+    ruLocalization["config.stamina.help"] = "Должна ли выносливость быть включена?"
+    ruLocalization["config.stamina.max"] = "Максимальная выносливость"
+    ruLocalization["config.stamina.max.help"] = "Максимальное кол-во выносливости которое может иметь игрок, для принятия эффекта игрок должен перевозродиться."
+    ruLocalization["config.stamina.regen"] = "Скорость восстановления выносливости"
+    ruLocalization["config.stamina.regen.help"] = "Скорость с которой восстанавливается выносливость игрока."
+    ruLocalization["config.stamina.tick"] = "Интервал обновления выносливости"
+    ruLocalization["config.stamina.tick.help"] = "Интервал, с которым обновляется выносливость игрока."
+
     ax.localization:Register("de", deLocalization)
     ax.localization:Register("en", enLocalization)
+    ax.localization:Register("ru", ruLocalization)
 
     --- Gets the local player's stamina from relay
     -- @return number

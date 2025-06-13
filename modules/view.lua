@@ -117,6 +117,26 @@ if ( CLIENT ) then
         ["option.view.roll.speed.help"] = "Speed at which the view roll adjusts to mouse movement."
     })
 
+     ax.localization:Register("ru", {
+        ["category.view"] = "Взгляд",
+        ["option.view"] = "Эффекты взгляда",
+        ["option.view.help"] = "Eвключить или отключить эффекты вгляда, такие как тряска и наклоны.",
+        ["option.view.intensity"] = "Интенсивность",
+        ["option.view.intensity.help"] = "Интенсивность эффекта смещения взгляда.",
+        ["option.view.max.roll"] = "Максимальное вращение",
+        ["option.view.max.roll.help"] = "Максимальный угол вращения взгляда.",
+        ["option.view.max.tilt"] = "Максимальный наклон",
+        ["option.view.max.tilt.help"] = "Максимальный угол наклона взгляда.",
+        ["option.view.multiplier"] = "Множитель взгляда",
+        ["option.view.multiplier.help"] = "Множитель эффектов взгляда.",
+        ["option.view.multiplier.sprint"] = "Множитель взгляда при беге",
+        ["option.view.multiplier.sprint.help"] = "Множитель эффектов взгляда при беге.",
+        ["option.view.pitch.speed"] = "Скорость наклона",
+        ["option.view.pitch.speed.help"] = "Скорость с которой изменяется наклон взгляда игрока при движении мышкой.",
+        ["option.view.roll.speed"] = "Скорость вращения",
+        ["option.view.roll.speed.help"] = "Скорость с которой изменяется вращение взгляда игрока при движении мышкой."
+    })
+
     local SideMove = 0
     local JumpMove = 0
 
