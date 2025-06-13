@@ -17,19 +17,16 @@ ax.command:Register("ChangeVoiceMode", {
             return
         end
 
-        local hashMap = {}
-        for k, v in ipairs(MODULE.Modes) do
-            hashMap[v] = true
-        end
-
         local mode = arguments[1]
-        if ( hashMap[mode] ) then
-            client:SetRelay("voiceMode", table.KeyFromValue(MODULE.Modes, mode))
-        else
-            client:Notify("Invalid voice chat mode! Valid modes are: " .. table.concat(MODULE.Modes, ", ") .. ".")
-            return
+        for k, v in ipairs(MODULE.Modes) do
+            if ( k == mode ) then
+                client:SetRelay("voiceMode", v)
+                client:Notify("Your voice chat mode has been changed to " .. mode .. ".")
+
+                return
+            end
         end
 
-        client:Notify("Your voice chat mode has been changed to " .. mode .. ".")
+        client:Notify("Invalid voice chat mode! Valid modes are: " .. table.concat(MODULE.Modes, ", ") .. ".")
     end
 })
