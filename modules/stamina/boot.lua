@@ -9,33 +9,6 @@ MODULE.Description = "Stamina library."
 
 ax.stamina = ax.stamina or {}
 
-local deLocalization = {}
-deLocalization["config.stamina"] = "Ausdauer"
-deLocalization["config.stamina.drain"] = "Ausdauerabflussrate"
-deLocalization["config.stamina.drain.help"] = "Die Rate, mit der die Ausdauer des Spielers abfließt."
-deLocalization["config.stamina.help"] = "Aktivieren oder deaktivieren Sie die Ausdauer."
-deLocalization["config.stamina.max"] = "Maximale Ausdauer"
-deLocalization["config.stamina.max.help"] = "Die maximale Menge an Ausdauer, die der Spieler haben kann. Spieler müssen sich neu spawn, um dies anzuwenden."
-deLocalization["config.stamina.regen"] = "Ausdauerregenerationsrate"
-deLocalization["config.stamina.regen.help"] = "Die Rate, mit der die Ausdauer des Spielers regeneriert wird."
-deLocalization["config.stamina.tick"] = "Ausdauer-Tickrate"
-deLocalization["config.stamina.tick.help"] = "Die Rate, mit der die Ausdauer des Spielers aktualisiert wird."
-
-local enLocalization = {}
-enLocalization["config.stamina"] = "Stamina"
-enLocalization["config.stamina.drain"] = "Stamina Drain Rate"
-enLocalization["config.stamina.drain.help"] = "The rate at which the player's stamina drains."
-enLocalization["config.stamina.help"] = "Enable or disable stamina."
-enLocalization["config.stamina.max"] = "Max Stamina"
-enLocalization["config.stamina.max.help"] = "The maximum amount of stamina the player can have, players need to respawn to apply this."
-enLocalization["config.stamina.regen"] = "Stamina Regen Rate"
-enLocalization["config.stamina.regen.help"] = "The rate at which the player's stamina regenerates."
-enLocalization["config.stamina.tick"] = "Stamina Tick Rate"
-enLocalization["config.stamina.tick.help"] = "The rate at which the player's stamina is updated."
-
-ax.localization:Register("de", deLocalization)
-ax.localization:Register("en", enLocalization)
-
 ax.config:Register("stamina.drain", {
     Name = "config.stamina.drain",
     Description = "config.stamina.drain.help",
@@ -162,6 +135,33 @@ if ( SERVER ) then
 end
 
 if ( CLIENT ) then
+    local deLocalization = {}
+    deLocalization["config.stamina"] = "Ausdauer"
+    deLocalization["config.stamina.drain"] = "Ausdauerabflussrate"
+    deLocalization["config.stamina.drain.help"] = "Die Rate, mit der die Ausdauer des Spielers abfließt."
+    deLocalization["config.stamina.help"] = "Aktivieren oder deaktivieren Sie die Ausdauer."
+    deLocalization["config.stamina.max"] = "Maximale Ausdauer"
+    deLocalization["config.stamina.max.help"] = "Die maximale Menge an Ausdauer, die der Spieler haben kann. Spieler müssen sich neu spawn, um dies anzuwenden."
+    deLocalization["config.stamina.regen"] = "Ausdauerregenerationsrate"
+    deLocalization["config.stamina.regen.help"] = "Die Rate, mit der die Ausdauer des Spielers regeneriert wird."
+    deLocalization["config.stamina.tick"] = "Ausdauer-Tickrate"
+    deLocalization["config.stamina.tick.help"] = "Die Rate, mit der die Ausdauer des Spielers aktualisiert wird."
+
+    local enLocalization = {}
+    enLocalization["config.stamina"] = "Stamina"
+    enLocalization["config.stamina.drain"] = "Stamina Drain Rate"
+    enLocalization["config.stamina.drain.help"] = "The rate at which the player's stamina drains."
+    enLocalization["config.stamina.help"] = "Enable or disable stamina."
+    enLocalization["config.stamina.max"] = "Max Stamina"
+    enLocalization["config.stamina.max.help"] = "The maximum amount of stamina the player can have, players need to respawn to apply this."
+    enLocalization["config.stamina.regen"] = "Stamina Regen Rate"
+    enLocalization["config.stamina.regen.help"] = "The rate at which the player's stamina regenerates."
+    enLocalization["config.stamina.tick"] = "Stamina Tick Rate"
+    enLocalization["config.stamina.tick.help"] = "The rate at which the player's stamina is updated."
+
+    ax.localization:Register("de", deLocalization)
+    ax.localization:Register("en", enLocalization)
+
     --- Gets the local player's stamina from relay
     -- @return number
     function ax.stamina:Get()

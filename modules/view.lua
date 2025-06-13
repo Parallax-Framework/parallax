@@ -4,26 +4,6 @@ MODULE.Name = "View"
 MODULE.Description = "Implements a swaying effect ported over from ARC9, while also adding own implementations for view bobbing and camera roll."
 MODULE.Author = "Riggs"
 
-ax.localization:Register("en", {
-    ["category.view"] = "View",
-    ["option.view"] = "View Effects",
-    ["option.view.help"] = "Enable or disable view effects such as sway and bobbing.",
-    ["option.view.intensity"] = "Intensity",
-    ["option.view.intensity.help"] = "Intensity of the view offset effect.",
-    ["option.view.max.roll"] = "Max Roll",
-    ["option.view.max.roll.help"] = "Maximum roll angle for the view.",
-    ["option.view.max.tilt"] = "Max Tilt",
-    ["option.view.max.tilt.help"] = "Maximum tilt angle for the view.",
-    ["option.view.multiplier"] = "View Multiplier",
-    ["option.view.multiplier.help"] = "Set the view multiplier.",
-    ["option.view.multiplier.sprint"] = "View Multiplier Sprint",
-    ["option.view.multiplier.sprint.help"] = "Set the view multiplier while sprinting.",
-    ["option.view.pitch.speed"] = "Pitch Speed",
-    ["option.view.pitch.speed.help"] = "Speed at which the view pitch adjusts to mouse movement.",
-    ["option.view.roll.speed"] = "Roll Speed",
-    ["option.view.roll.speed.help"] = "Speed at which the view roll adjusts to mouse movement."
-})
-
 ax.option:Register("view", {
     Name = "option.view",
     Type = ax.types.bool,
@@ -117,6 +97,26 @@ ax.option:Register("view.intensity", {
 })
 
 if ( CLIENT ) then
+    ax.localization:Register("en", {
+        ["category.view"] = "View",
+        ["option.view"] = "View Effects",
+        ["option.view.help"] = "Enable or disable view effects such as sway and bobbing.",
+        ["option.view.intensity"] = "Intensity",
+        ["option.view.intensity.help"] = "Intensity of the view offset effect.",
+        ["option.view.max.roll"] = "Max Roll",
+        ["option.view.max.roll.help"] = "Maximum roll angle for the view.",
+        ["option.view.max.tilt"] = "Max Tilt",
+        ["option.view.max.tilt.help"] = "Maximum tilt angle for the view.",
+        ["option.view.multiplier"] = "View Multiplier",
+        ["option.view.multiplier.help"] = "Set the view multiplier.",
+        ["option.view.multiplier.sprint"] = "View Multiplier Sprint",
+        ["option.view.multiplier.sprint.help"] = "Set the view multiplier while sprinting.",
+        ["option.view.pitch.speed"] = "Pitch Speed",
+        ["option.view.pitch.speed.help"] = "Speed at which the view pitch adjusts to mouse movement.",
+        ["option.view.roll.speed"] = "Roll Speed",
+        ["option.view.roll.speed.help"] = "Speed at which the view roll adjusts to mouse movement."
+    })
+
     local SideMove = 0
     local JumpMove = 0
 
