@@ -50,10 +50,10 @@ function PANEL:Init()
     self:SetOverlap(0)
 
     self.btnLeft = self:Add("ax.button.small", self)
-    self.btnLeft:SetText("")
+    self.btnLeft:SetText("", true)
 
     self.btnRight = self:Add("ax.button.small", self)
-    self.btnRight:SetText("")
+    self.btnRight:SetText("", true)
 end
 
 function PANEL:GetCanvas()

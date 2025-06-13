@@ -69,7 +69,7 @@ function PANEL:PopulateFactionSelect()
 
     local backButton = navigation:Add("ax.button.small")
     backButton:Dock(LEFT)
-    backButton:SetText("BACK")
+    backButton:SetText("BACK", true)
     backButton.DoClick = function()
         self.currentCreatePage = 0
         self:ResetPayload()
@@ -113,7 +113,7 @@ function PANEL:PopulateFactionSelect()
         local factionButton = factionList:Add("ax.button.small")
         factionButton:Dock(LEFT)
         factionButton:DockMargin(0, 0, 16, 0)
-        factionButton:SetText(v.Name or "Unknown Faction")
+        factionButton:SetText(v.Name or "Unknown Faction", true)
         factionButton:SetWide(factionList:GetTall() * 1.5)
 
         factionButton.DoClick = function()
@@ -204,7 +204,7 @@ function PANEL:PopulateCreateCharacter()
 
     local backButton = navigation:Add("ax.button.small")
     backButton:Dock(LEFT)
-    backButton:SetText("BACK")
+    backButton:SetText("BACK", true)
 
     backButton.DoClick = function()
         if ( self.currentCreatePage == 0 ) then
@@ -231,7 +231,7 @@ function PANEL:PopulateCreateCharacter()
 
     local nextButton = navigation:Add("ax.button.small")
     nextButton:Dock(RIGHT)
-    nextButton:SetText("NEXT")
+    nextButton:SetText("NEXT", true)
 
     nextButton.DoClick = function()
         local isNextEmpty = true
