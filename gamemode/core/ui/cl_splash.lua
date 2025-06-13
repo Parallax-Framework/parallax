@@ -51,7 +51,7 @@ function PANEL:Init()
     subtitle:SizeToContents()
 
     local button = self:Add("ax.button.small")
-    button:SetText("Click to continue")
+    button:SetText("splash.continue")
     button:Center()
     button.DoClick = function()
         self:AlphaTo(0, 0.5, 0, function()
