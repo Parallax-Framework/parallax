@@ -23,6 +23,8 @@ for k, v in ipairs(engine.GetAddons()) do
     end
 end
 
+resource.AddWorkshop("3479969076")
+
 resource.AddFile("resource/fonts/gordin-black.ttf")
 resource.AddFile("resource/fonts/gordin-bold.ttf")
 resource.AddFile("resource/fonts/gordin-light.ttf")
