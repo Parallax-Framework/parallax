@@ -19,7 +19,7 @@ function PANEL:SetText(text, bNoTranslate, bNoSizeToContents)
         text = ax.localization:GetPhrase(string.lower(text))
 
         if ( isUpper ) then
-            text = string.upper(text)
+            text = ax.utf8:Upper(text)
         end
     end
 

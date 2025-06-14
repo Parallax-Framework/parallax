@@ -104,8 +104,8 @@ function PANEL:PopulateFactionSelect()
     for k, v in ipairs(factions) do
         if ( !ax.faction:CanSwitchTo(ax.client, v:GetID()) ) then continue end
 
-        local name = (v.Name and string.upper(v.Name)) or "UNKNOWN FACTION"
-        local description = (v.Description and string.upper(v.Description)) or "UNKNOWN FACTION DESCRIPTION"
+        local name = (v.Name and ax.utf8:Upper(v.Name)) or "UNKNOWN FACTION"
+        local description = (v.Description and ax.utf8:Upper(v.Description)) or "UNKNOWN FACTION DESCRIPTION"
         description = ax.util:CapTextWord(description, factionList:GetTall() / 4) -- Unreliable, but it works for now
 
         local descriptionWrapped = ax.util:GetWrappedText(description, "parallax.button.small", factionList:GetTall() * 1.5)

@@ -35,7 +35,7 @@ function PANEL:SetText(text, bNoTranslate, bNoSizeToContents, bNoUppercase)
     end
 
     if ( !bNoUppercase ) then
-        text = string.upper(text)
+        text = ax.utf8:Upper(text)
     end
 
     BaseClass.SetText(self, text)

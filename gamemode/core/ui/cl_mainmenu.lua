@@ -117,7 +117,7 @@ function PANEL:Populate()
             schemaName = SCHEMA:GetMenuTitle()
         end
 
-        schemaName = string.upper(schemaName)
+        schemaName = ax.utf8:Upper(schemaName)
     else
         ax.util:PrintError("SCHEMA is not defined! Please ensure that your schema is properly set up.")
     end
