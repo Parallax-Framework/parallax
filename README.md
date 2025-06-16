@@ -121,3 +121,7 @@ For questions, help, or to stay updated on development:
 
 - Open an issue or pull request on the GitHub repository
 - Join the [community Discord server](https://discord.gg/yekEvSszW3)
+
+<p align="center">
+  <img src="https://i.imgur.com/Xw1YITj.png" alt="Centered Image" />
+</p>
