@@ -53,4 +53,8 @@ function INVENTORY:GetItems()
     return self.Items
 end
 
+function INVENTORY:GetData()
+    return self.Data
+end
+
 ax.inventory.meta = INVENTORY
