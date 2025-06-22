@@ -45,7 +45,7 @@ function ax.inventory:Create(data)
     instance.MaxWeight = tonumber(data.max_weight) or 0
     instance.CharacterID = tonumber(data.character_id) or 0
 
-    self.instances[instance:GetID()] = instance
+    self.instances[invID] = instance
 
     return instance
 end

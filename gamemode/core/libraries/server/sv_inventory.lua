@@ -250,7 +250,7 @@ function ax.inventory:LoadInventories(characterID)
 
                 ax.inventory:Create(invResult[1])
 
-                ax.util:PrintSuccess("Loaded inventory with ID " .. invID)
+                ax.util:PrintSuccess("Loaded inventory with ID " .. inventoryID .. " for character ID " .. characterID)
             end)
         end
     end)
