@@ -29,7 +29,6 @@ ITEM.NoStack = ITEM.NoStack or false
 ITEM.Skin = ITEM.Skin or 0
 ITEM.UniqueID = ITEM.UniqueID or "undefined"
 ITEM.Weight = ITEM.Weight or 0
-ITEM.Actions = ITEM.Actions or {}
 
 --- Returns the unique identifier of the item.
 -- @return string The unique identifier of the item
