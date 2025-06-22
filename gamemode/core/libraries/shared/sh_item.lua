@@ -62,7 +62,7 @@ function ax.item:Instance()
 end
 
 function ax.item:Get(input)
-    if ( !input ) then
+    if ( input == nil ) then
         ax.util:PrintError("Invalid unique ID provided to ax.item:Get()")
         return false
     end
