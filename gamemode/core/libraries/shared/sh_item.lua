@@ -15,7 +15,50 @@ ax.item.stored = ax.item.stored or {}
 ax.item.instances = ax.item.instances or {}
 
 function ax.item:Instance()
-    return setmetatable({}, self.meta)
+    local object = {}
+
+    local path = debug.getinfo(2, "S").source
+    local uniqueID = string.GetFileFromFilename(path)
+    uniqueID = string.StripExtension(uniqueID)
+    uniqueID = string.lower(uniqueID)
+    uniqueID = string.gsub(uniqueID, "^sh_", "")
+
+    if ( !uniqueID or uniqueID == "" ) then
+        ax.util:PrintError("Invalid unique ID for item instance.")
+        return false
+    end
+
+    if ( string.find(path, "/base/") ) then
+        object.IsBase = true
+    else
+        local baseItems = {}
+        for k, v in pairs(ax.item.stored) do
+            if ( v.IsBase == true ) then
+                baseItems[v.UniqueID] = v
+            end
+        end
+
+        for baseUniqueID, baseItem in pairs(baseItems) do
+            if ( string.find(path, baseUniqueID) ) then
+                object.Base = baseItem
+                break
+            end
+        end
+
+        if ( object.Base ) then
+            table.Merge(object, object.Base)
+            object.BaseClass = nil
+            object.Base = nil
+            object.IsBase = nil
+        end
+    end
+
+    object.UniqueID = uniqueID
+    object = setmetatable(object, self.meta)
+
+    object:AddDefaultActions()
+
+    return object
 end
 
 function ax.item:Get(input)
@@ -52,8 +95,6 @@ function ax.item:Load(path)
     local files, _ = file.Find(path .. "/*.lua", "LUA")
     if ( !files or files[1] == nil ) then return end
 
-    print("Loading item files from: " .. path)
-    -- Recursively include all files in the folder.
     for i = 1, #files do
         local v = files[i]
         if ( v:sub(-4) == ".lua" ) then

@@ -271,51 +271,10 @@ function ITEM:Register()
         return false, "Attempted to register a faction that was blocked by a hook!"
     end
 
-    local uniqueID = debug.getinfo(2, "S").source
-    uniqueID = string.GetFileFromFilename(uniqueID)
-    uniqueID = string.StripExtension(uniqueID)
-    uniqueID = string.lower(uniqueID)
-    uniqueID = string.gsub(uniqueID, "^sh_", "")
-
-    if ( !uniqueID or uniqueID == "" ) then
-        ax.util:PrintError("Invalid unique ID for item instance.")
-        return false
-    end
-
-    -- Set the unique ID for the instance
-    self.UniqueID = uniqueID
-
-    -- If we are in a /base/ folder, we need to set the IsBase flag to true
-    if ( string.find(uniqueID, "/base/") ) then
-        self.IsBase = true
-    end
-
-    -- Available Base Items
-    local baseItems = {}
-    for k, v in pairs(ax.item.stored) do
-        if ( v.IsBase ) then
-            baseItems[v.UniqueID] = v
-        end
-    end
-
-    -- If this item is not a base item, but it is in the /*basename*/ folder, we need to inherit from the base item
-    for baseUniqueID, baseItem in pairs(baseItems) do
-        if ( string.find(uniqueID, baseUniqueID) ) then
-            self.Base = baseItem
-            break
-        end
-    end
-
-    -- If we have a base item, we need to inherit its properties
-    if ( self.Base and istable(self.Base) ) then
-        table.Inherit(self, self.Base)
-        self.Base = nil -- Clear the base item to avoid circular references
-    end
-
     hook.Run("PostItemRegistered", self)
 
     -- Register the item in the stored items table
-    ax.item.stored[uniqueID] = self
+    ax.item.stored[self.UniqueID] = self
 end
 
 function ITEM:Hook(name, func)
