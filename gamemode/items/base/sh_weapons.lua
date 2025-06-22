@@ -19,6 +19,20 @@ ITEM:SetModel(Model("models/weapons/w_smg1.mdl"))
 ITEM:SetWeight(5)
 ITEM:SetNoStack(true)
 
+function ITEM:GetWeaponClass()
+    return self.WeaponClass or "weapon_base"
+end
+
+function ITEM:SetWeaponClass(class)
+    if ( !isstring(class) or class == "" ) then
+        ax.util:PrintError("Invalid weapon class provided to ITEM:SetWeaponClass()")
+        return false
+    end
+
+    self.WeaponClass = class
+    return true
+end
+
 ITEM:SetWeaponClass("weapon_base")
 
 ITEM:AddAction({
