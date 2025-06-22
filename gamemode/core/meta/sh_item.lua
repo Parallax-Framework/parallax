@@ -40,7 +40,23 @@ function ITEM:GetID()
 end
 
 function ITEM:GetInventoryID()
-    return self.InventoryID
+    if ( IsValid(self:GetEntity()) ) then
+        return 0
+    end
+
+    if ( isnumber(self.InventoryID) and self.InventoryID > 0 ) then
+        return self.InventoryID
+    end
+
+    for invID, invObject in pairs(ax.inventory.instances) do
+        if invObject:HasItem(self) then
+            self.InventoryID = invID
+            return invID
+        end
+    end
+
+    ax.util:PrintWarning(tostring(self) .. " is not in an inventory or in the world! How??")
+    return -1
 end
 
 function ITEM:GetName()
