@@ -172,7 +172,7 @@ end
 -- @param number maxWeight The maximum weight capacity of the inventory
 -- @param[opt] table data Initial data for the inventory (optional)
 -- @param function[opt] callback Callback function to execute after creating the inventory (optional)
-function ax.inventory:CreateInventory(characterID, maxWeight data, callback)
+function ax.inventory:CreateInventory(characterID, maxWeight, data, callback)
     if ( !characterID or !maxWeight ) then
         ax.util:PrintError("Invalid parameters for ax.inventory:CreateInventory")
         return false
