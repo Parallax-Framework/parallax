@@ -173,9 +173,13 @@ end
 -- @param[opt] table data Initial data for the inventory (optional)
 -- @param function[opt] callback Callback function to execute after creating the inventory (optional)
 function ax.inventory:CreateInventory(characterID, maxWeight, data, callback)
-    if ( !characterID or !maxWeight ) then
-        ax.util:PrintError("Invalid parameters for ax.inventory:CreateInventory")
+    if ( !characterID ) then
+        ax.util:PrintError("Invalid character ID for inventory creation.")
         return false
+    end
+
+    if ( !maxWeight or maxWeight <= 0 ) then
+        maxWeight = ax.config:Get("inventory.max.weight", 20)
     end
 
     if ( !data or type(data) != "table" ) then
@@ -309,3 +313,26 @@ function ax.inventory:GetCharacterInventories(characterID, callback)
 
     return true
 end
+
+--[[
+    Testing Commands
+    These commands are for testing purposes only and should not be used in production.
+]]
+
+concommand.Add("ax_inventory_create", function(ply, cmd, args)
+    if ( !ply:IsAdmin() ) then
+        return
+    end
+
+    local characterID = tonumber(args[1])
+    local maxWeight = tonumber(args[2])
+    local data = util.JSONToTable(args[3] or "{}")
+
+    ax.inventory:CreateInventory(characterID, maxWeight, data, function(inventory)
+        if ( inventory ) then
+            ply:Notify("Created inventory with ID " .. inventory.id)
+        else
+            ply:Notify("Failed to create inventory.")
+        end
+    end)
+end)
