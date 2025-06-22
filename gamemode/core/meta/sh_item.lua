@@ -26,6 +26,7 @@ ITEM.Name = "Undefined"
 ITEM.Skin = ITEM.Skin or 0
 ITEM.UniqueID = ITEM.UniqueID or "undefined"
 ITEM.Weight = ITEM.Weight or 0
+ITEM.Actions = ITEM.Actions or {}
 
 --- Returns the unique identifier of the item.
 -- @return string The unique identifier of the item
@@ -246,5 +247,20 @@ function ITEM:SetUniqueID(uniqueID)
     end
 
     self.UniqueID = uniqueID
+    return true
+end
+
+function ITEM:AddAction(actionTable)
+    if ( !istable(actionTable) ) then
+        ax.util:PrintError("Attempted to add an action to an item without a valid table!")
+        return false, "Attempted to add an action to an item without a valid table!"
+    end
+
+    if ( !isfunction(actionTable.OnCanRun) or !isfunction(actionTable.OnRun) ) then
+        ax.util:PrintError("Action table must contain OnCanRun and OnRun functions!")
+        return false, "Action table must contain OnCanRun and OnRun functions!"
+    end
+
+    self.Actions[actionTable.Name] = actionTable
     return true
 end
