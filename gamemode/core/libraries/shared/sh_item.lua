@@ -13,3 +13,7 @@ ax.item = ax.item or {}
 ax.item.meta = ax.item.meta or {}
 ax.item.stored = ax.item.stored or {}
 ax.item.instances = ax.item.instances or {}
+
+function ax.item:Instance()
+    return setmetatable({}, self.meta)
+end

@@ -13,3 +13,7 @@ ax.inventory = ax.inventory or {}
 ax.inventory.meta = ax.inventory.meta or {}
 ax.inventory.stored = ax.inventory.stored or {}
 ax.inventory.instances = ax.inventory.instances or {}
+
+function ax.inventory:Instance()
+    return setmetatable({}, self.meta)
+end
