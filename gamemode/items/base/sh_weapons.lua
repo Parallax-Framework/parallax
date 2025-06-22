@@ -76,3 +76,5 @@ end)
 function ITEM:OnCache()
     self:SetData("equipped", self:GetData("equipped", false))
 end
+
+ITEM:Register()
