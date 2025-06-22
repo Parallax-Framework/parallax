@@ -11,9 +11,9 @@
 
 --- UTF8 library
 -- Helper functions to use on strings that may contain non-English characters.
--- @module Parallax.Utf8
+-- @module ax.utf8
 
-Parallax.Utf8 = Parallax.Utf8 or {}
+ax.utf8 = ax.utf8 or {}
 
 -- Source: https://www.unicode.org/Public/UCD/latest/ucd/UnicodeData.txt
 -- Automatically generated using Python script.
@@ -2930,7 +2930,7 @@ local casings = {
 -- @realm shared
 -- @param str string The string to convert.
 -- @return string Returns a string representing the value of a string converted to lower-case.
-function Parallax.Utf8:Lower(str)
+function ax.utf8:Lower(str)
     local lowercase = ""
     for i = 1, utf8.len(str) do
         local char = utf8.GetChar(str, i)
@@ -2944,7 +2944,7 @@ end
 -- @realm shared
 -- @param str string The string to convert.
 -- @return string Returns a string representing the value of a string converted to upper-case.
-function Parallax.Utf8:Upper(str)
+function ax.utf8:Upper(str)
     local uppercase = ""
     for i = 1, utf8.len(str) do
         local char = utf8.GetChar(str, i)
