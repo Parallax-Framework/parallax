@@ -108,3 +108,143 @@ end
 function ITEM:GetInventory()
     return ax.inventory.instances[self.InventoryID]
 end
+
+function ITEM:SetName(name)
+    if ( !isstring(name) ) then
+        ax.util:PrintError("Attempted to set an item's name without a valid name!")
+        return false, "Attempted to set an item's name without a valid name!"
+    end
+
+    self.Name = name
+    return true
+end
+
+function ITEM:SetDescription(description)
+    if ( !isstring(description) ) then
+        ax.util:PrintError("Attempted to set an item's description without a valid description!")
+        return false, "Attempted to set an item's description without a valid description!"
+    end
+
+    self.Description = description
+    return true
+end
+
+function ITEM:SetModel(model)
+    if ( !isstring(model) and !IsValid(model) ) then
+        ax.util:PrintError("Attempted to set an item's model without a valid model!")
+        return false, "Attempted to set an item's model without a valid model!"
+    end
+
+    self.Model = model
+    return true
+end
+
+function ITEM:SetMaterial(material)
+    if ( !isstring(material) ) then
+        ax.util:PrintError("Attempted to set an item's material without a valid material!")
+        return false, "Attempted to set an item's material without a valid material!"
+    end
+
+    self.Material = material
+    return true
+end
+
+function ITEM:SetSkin(skin)
+    if ( !isnumber(skin) ) then
+        ax.util:PrintError("Attempted to set an item's skin without a valid skin!")
+        return false, "Attempted to set an item's skin without a valid skin!"
+    end
+
+    self.Skin = skin
+    return true
+end
+
+function ITEM:SetWeight(weight)
+    if ( !isnumber(weight) ) then
+        ax.util:PrintError("Attempted to set an item's weight without a valid weight!")
+        return false, "Attempted to set an item's weight without a valid weight!"
+    end
+
+    self.Weight = weight
+    return true
+end
+
+function ITEM:SetCategory(category)
+    if ( !isstring(category) ) then
+        ax.util:PrintError("Attempted to set an item's category without a valid category!")
+        return false, "Attempted to set an item's category without a valid category!"
+    end
+
+    self.Category = category
+    return true
+end
+
+function ITEM:SetData(data)
+    if ( !istable(data) ) then
+        ax.util:PrintError("Attempted to set an item's data without a valid table!")
+        return false, "Attempted to set an item's data without a valid table!"
+    end
+
+    self.Data = data
+    return true
+end
+
+function ITEM:SetEntity(entity)
+    if ( !IsValid(entity) ) then
+        ax.util:PrintError("Attempted to set an item's entity without a valid entity!")
+        return false, "Attempted to set an item's entity without a valid entity!"
+    end
+
+    self.Entity = entity
+    return true
+end
+
+function ITEM:SetInventoryID(inventoryID)
+    if ( !isnumber(inventoryID) or inventoryID < 0 ) then
+        ax.util:PrintError("Attempted to set an item's InventoryID without a valid number!")
+        return false, "Attempted to set an item's InventoryID without a valid number!"
+    end
+
+    self.InventoryID = inventory
+    return true
+end
+
+function ITEM:SetIsBase(isBase)
+    if ( !isbool(isBase) ) then
+        ax.util:PrintError("Attempted to set an item's base status without a valid boolean!")
+        return false, "Attempted to set an item's base status without a valid boolean!"
+    end
+
+    self.IsBase = isBase
+    return true
+end
+
+function ITEM:SetHooks(hooks)
+    if ( !istable(hooks) ) then
+        ax.util:PrintError("Attempted to set an item's hooks without a valid table!")
+        return false, "Attempted to set an item's hooks without a valid table!"
+    end
+
+    self.Hooks = hooks
+    return true
+end
+
+function ITEM:SetID(id)
+    if ( !isnumber(id) or id < 0 ) then
+        ax.util:PrintError("Attempted to set an item's ID without a valid number!")
+        return false, "Attempted to set an item's ID without a valid number!"
+    end
+
+    self.ID = id
+    return true
+end
+
+function ITEM:SetUniqueID(uniqueID)
+    if ( !isstring(uniqueID) or uniqueID == "" ) then
+        ax.util:PrintError("Attempted to set an item's UniqueID without a valid string!")
+        return false, "Attempted to set an item's UniqueID without a valid string!"
+    end
+
+    self.UniqueID = uniqueID
+    return true
+end
