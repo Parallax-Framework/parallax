@@ -289,6 +289,20 @@ function ITEM:Register()
     return #ax.item.instances
 end
 
+function ITEM:Hook(name, func)
+    if ( !isstring(name) or !isfunction(func) ) then return end
+
+    if ( !istable(self.Hooks) ) then
+        self.Hooks = {}
+    end
+
+    if ( !istable(self.Hooks[name]) ) then
+        self.Hooks[name] = {}
+    end
+
+    table.insert(self.Hooks[name], func)
+end
+
 function ITEM:GetActions()
     self.Actions = self.Actions or {}
     return self.Actions
