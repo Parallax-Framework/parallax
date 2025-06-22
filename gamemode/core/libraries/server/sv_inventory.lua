@@ -149,7 +149,7 @@ end
 --- Initializes the inventory system by loading existing inventories from the database.
 -- This function should be called during the server startup process.
 function ax.inventory:Initialize()
-    ax.util:PrintInfo("Initializing inventory system...")
+    ax.util:Print("Initializing inventory system...")
 
     ax.database:Select("ax_inventories", {}, function(inventories)
         if ( !inventories or #inventories == 0 ) then
