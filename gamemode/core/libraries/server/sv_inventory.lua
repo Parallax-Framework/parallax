@@ -24,6 +24,11 @@ function ax.inventory:AddItem(inventoryID, uniqueID, data, callback)
         return false
     end
 
+    if ( !ax.item:Get(uniqueID) ) then
+        ax.util:PrintError("Item with unique ID '" .. uniqueID .. "' does not exist.")
+        return false
+    end
+
     if ( !data or type(data) != "table" ) then
         data = {}
     end
