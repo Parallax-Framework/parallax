@@ -16,10 +16,11 @@ ITEM.Description = ITEM.Description or "An item that is undefined."
 ITEM.Entity = ITEM.Entity or NULL
 ITEM.Hooks = ITEM.Hooks or {}
 ITEM.ID = ITEM.ID or 0
+-- NOTE! InventoryID should always be updated when the item is moved to a: different inventory or dropped in the world.
 ITEM.InventoryID = ITEM.InventoryID or 0
 ITEM.IsBase = ITEM.IsBase or false
 ITEM.Material = ITEM.Material or ""
-ITEM.Model = ITEM.Model or "models/props_c17/oildrum001.mdl"
+ITEM.Model = ITEM.Model or Model("models/props_c17/oildrum001.mdl")
 ITEM.Name = "Undefined"
 ITEM.Skin = ITEM.Skin or 0
 ITEM.UniqueID = ITEM.UniqueID or "undefined"
