@@ -58,7 +58,7 @@ function ax.character:Create(client, query, callback)
         self.stored[characterID] = character
 
         ax.net:Start(client, "character.cache", character)
-        ax.inventory:Register({characterID = characterID})
+        ax.inventory:CreateInventory(characterID)
 
         hook.Run("PostPlayerCreatedCharacter", client, character, query)
 
@@ -114,9 +114,7 @@ function ax.character:Load(client, characterID)
             client:SetSkin(character:GetSkin())
             client:Spawn()
 
-            ax.inventory:CacheAll(characterID, function(inventory)
-                ax.item:Cache(characterID)
-            end)
+            ax.inventory:LoadInventories(characterID)
 
             hook.Run("PostPlayerLoadedCharacter", client, character, currentCharacter)
 

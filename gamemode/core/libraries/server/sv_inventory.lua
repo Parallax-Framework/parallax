@@ -32,6 +32,7 @@ function ax.inventory:AddItem(inventoryID, uniqueID, data, callback)
     ax.database:Insert("ax_items", {
         inventory_id = inventoryID,
         unique_id = uniqueID,
+        items = {},
         data = util.TableToJSON(data)
     }, function(itemID)
         if ( !itemID ) then
@@ -60,12 +61,13 @@ function ax.inventory:RemoveItem(inventoryID, itemID, callback)
         return false
     end
 
-    ax.database:Delete("ax_items", {
-        inventory_id = inventoryID,
-        id = itemID
-    }, function(success)
-        if ( !success ) then
+    ax.database:Delete("ax_items", "inventory_id = " .. inventoryID .. " AND id = " .. itemID, function(result)
+        if ( !result ) then
             ax.util:PrintError("Failed to remove item from inventory.")
+
+            if ( callback ) then
+                callback(false)
+            end
 
             return false
         end
@@ -73,7 +75,7 @@ function ax.inventory:RemoveItem(inventoryID, itemID, callback)
         ax.util:PrintSuccess("Item removed from inventory successfully.")
 
         if ( callback ) then
-            callback(true)
+            callback(result[1])
         end
 
         return true
@@ -89,10 +91,8 @@ function ax.inventory:GetItems(inventoryID, callback)
         return false
     end
 
-    ax.database:Select("ax_items", {
-        inventory_id = inventoryID
-    }, function(items)
-        if ( !items or #items == 0 ) then
+    ax.database:Select("ax_items", nil, "inventory_id = " .. inventoryID, function(result)
+        if ( !result or !result[1] ) then
             ax.util:PrintError("No items found in inventory.")
 
             if ( callback ) then
@@ -102,8 +102,10 @@ function ax.inventory:GetItems(inventoryID, callback)
             return false
         end
 
+        PrintTable(result)
+
         local itemList = {}
-        for _, item in ipairs(items) do
+        for _, item in ipairs(result) do
             item.data = util.JSONToTable(item.data) or {}
             table.insert(itemList, item)
         end
@@ -140,27 +142,6 @@ function ax.inventory:ClearInventory(inventoryID, callback)
 
         if ( callback ) then
             callback(true)
-        end
-
-        return true
-    end)
-end
-
---- Initializes the inventory system by loading existing inventories from the database.
--- This function should be called during the server startup process.
-function ax.inventory:Initialize()
-    ax.util:Print("Initializing inventory system...")
-
-    ax.database:Select("ax_inventories", {}, function(inventories)
-        if ( !inventories or #inventories == 0 ) then
-            ax.util:PrintWarning("No inventories found in the database.")
-            return false
-        end
-
-        for _, inventory in ipairs(inventories) do
-            inventory.data = util.JSONToTable(inventory.data) or {}
-            self.instances[inventory.id] = inventory
-            ax.util:PrintSuccess("Loaded inventory ID " .. inventory.id)
         end
 
         return true
@@ -206,6 +187,32 @@ function ax.inventory:CreateInventory(characterID, maxWeight, data, callback)
 
         self.instances[inventoryID] = inventory
 
+        local inventories = {}
+        ax.database:Select("ax_characters", nil, "id = " .. characterID, function(result)
+            if ( !result or !result[1] ) then
+                ax.util:PrintError("No character found with ID " .. characterID)
+                return false
+            end
+
+            local output = result[1]
+            inventories = util.JSONToTable(output.inventories) or {}
+
+            if ( !inventories ) then
+                inventories = {}
+            end
+
+            table.insert(inventories, inventoryID)
+
+            ax.database:Update("ax_characters", {
+                inventories = util.TableToJSON(inventories)
+            }, "id = " .. characterID, function(success)
+                if ( !success ) then
+                    ax.util:PrintError("Failed to update character inventories.")
+                    return false
+                end
+            end)
+        end)
+
         ax.util:PrintSuccess("Inventory created successfully with ID " .. inventoryID)
 
         if ( callback ) then
@@ -213,6 +220,53 @@ function ax.inventory:CreateInventory(characterID, maxWeight, data, callback)
         end
 
         return true
+    end)
+end
+
+--- Loads all inventories from the database into memory via the character ID.
+-- @param number characterID The ID of the character to load inventories for
+function ax.inventory:LoadInventories(characterID)
+    if ( !characterID ) then
+        ax.util:PrintError("Invalid character ID for loading inventories.")
+        return false
+    end
+
+    ax.database:Select("ax_characters", nil, "id = " .. characterID, function(result)
+        if ( !result or !result[1] ) then
+            ax.util:PrintError("No character found with ID " .. characterID)
+            return false
+        end
+
+        local output = result[1]
+        local inventories = util.JSONToTable(output.inventories) or {}
+        if ( #inventories == 0 ) then
+            ax.util:PrintWarning("No inventories found for character ID " .. characterID)
+            return false
+        end
+
+        ax.util:PrintSuccess("Loading inventories for character ID " .. characterID)
+
+        for _, inventoryID in ipairs(inventories) do
+            ax.database:Select("ax_inventories", nil, "id = " .. inventoryID, function(invResult)
+                if ( !invResult or !invResult[1] ) then
+                    ax.util:PrintError("No inventory found with ID " .. inventoryID)
+                    return false
+                end
+
+                local invData = invResult[1]
+                PrintTable(invData)
+                invData.data = util.JSONToTable(invData.data) or {}
+
+                local invID = tonumber(invData.id)
+                if ( !invID ) then
+                    ax.util:PrintError("Invalid inventory ID: " .. tostring(invData.id))
+                    return false
+                end
+
+                self.instances[invID] = invData
+                ax.util:PrintSuccess("Loaded inventory with ID " .. invID)
+            end)
+        end
     end)
 end
 
@@ -274,41 +328,6 @@ function ax.inventory:GetInventory(inventoryID, callback)
 
     if ( callback ) then
         callback(inventory)
-    end
-
-    return true
-end
-
---- Retrieves all inventories for a character.
--- @param number characterID The ID of the character to retrieve inventories for
--- @param function[opt] callback Callback function to execute with the retrieved inventories (optional)
-function ax.inventory:GetCharacterInventories(characterID, callback)
-    if ( !characterID ) then
-        ax.util:PrintError("Invalid parameters for ax.inventory:GetCharacterInventories")
-        return false
-    end
-
-    local inventories = {}
-    for _, inventory in pairs(self.instances) do
-        if ( inventory.character_id == characterID ) then
-            table.insert(inventories, inventory)
-        end
-    end
-
-    if ( #inventories == 0 ) then
-        ax.util:PrintWarning("No inventories found for character ID " .. characterID)
-
-        if ( callback ) then
-            callback({})
-        end
-
-        return false
-    end
-
-    ax.util:PrintSuccess("Retrieved " .. #inventories .. " inventories for character ID " .. characterID)
-
-    if ( callback ) then
-        callback(inventories)
     end
 
     return true
