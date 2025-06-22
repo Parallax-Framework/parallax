@@ -10,6 +10,7 @@
 ]]
 
 local INVENTORY = ax.inventory.meta or {}
+INVENTORY.__index = INVENTORY
 INVENTORY.Data = INVENTORY.Data or {}
 INVENTORY.ID = INVENTORY.ID or 0
 INVENTORY.Items = INVENTORY.Items or {}

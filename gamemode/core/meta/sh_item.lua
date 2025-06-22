@@ -10,6 +10,7 @@
 ]]
 
 local ITEM = ax.item.meta or {}
+ITEM.__index = ITEM
 ITEM.Category = ITEM.Category or "Miscellaneous"
 ITEM.Data = ITEM.Data or {}
 ITEM.Description = ITEM.Description or "An item that is undefined."
