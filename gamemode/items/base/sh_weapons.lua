@@ -9,31 +9,33 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
-ITEM.Name = "Weapon Base"
-ITEM.Description = "A base for all weapons."
-ITEM.Category = "Weapons"
-ITEM.Model = Model("models/weapons/w_smg1.mdl")
+local ITEM = ax.item:Instance()
 
-ITEM.Weight = 5
-ITEM.NoStack = true
+ITEM:SetName("Weapon Base")
+ITEM:SetDescription("A base for all weapons.")
+ITEM:SetCategory("Weapons")
+ITEM:SetModel(Model("models/weapons/w_smg1.mdl"))
 
-ITEM.WeaponClass = "weapon_base"
+ITEM:SetWeight(5)
+ITEM:SetNoStack(true)
+
+ITEM:SetWeaponClass("weapon_base")
 
 ITEM:AddAction({
     Name = "Equip",
     OnCanRun = function(this, item, client)
         local axWeapons = client:GetRelay("weapons", {})
-        return !axWeapons[item.WeaponClass] and !client:HasWeapon(item.WeaponClass)
+        return !axWeapons[item:GetWeaponClass()] and !client:HasWeapon(item:GetWeaponClass())
     end,
     OnRun = function(this, item, client)
-        local weapon = client:Give(item.WeaponClass)
+        local weapon = client:Give(item:GetWeaponClass())
         if ( !IsValid(weapon) ) then return end
 
         local axWeapons = client:GetRelay("weapons", {})
-        axWeapons[item.WeaponClass] = item:GetID()
+        axWeapons[item:GetWeaponClass()] = item:GetID()
         client:SetRelay("weapons", axWeapons)
 
-        client:SelectWeapon(item.WeaponClass)
+        client:SelectWeapon(item:GetWeaponClass())
 
         item:SetData("equipped", true)
     end
@@ -43,15 +45,15 @@ ITEM:AddAction({
     Name = "Unequip",
     OnCanRun = function(this, item, client)
         local axWeapons = client:GetRelay("weapons", {})
-        local axWeaponID = axWeapons[item.WeaponClass]
-        return tobool(axWeaponID and client:HasWeapon(item.WeaponClass) and axWeaponID == item:GetID())
+        local axWeaponID = axWeapons[item:GetWeaponClass()]
+        return tobool(axWeaponID and client:HasWeapon(item:GetWeaponClass()) and axWeaponID == item:GetID())
     end,
     OnRun = function(this, item, client)
-        client:StripWeapon(item.WeaponClass)
+        client:StripWeapon(item:GetWeaponClass())
         client:SelectWeapon("ax_hands")
 
         local axWeapons = client:GetRelay("weapons", {})
-        axWeapons[item.WeaponClass] = nil
+        axWeapons[item:GetWeaponClass()] = nil
         client:SetRelay("weapons", axWeapons)
 
         item:SetData("equipped", false)
@@ -60,11 +62,11 @@ ITEM:AddAction({
 
 ITEM:Hook("Drop", function(item, client)
     local axWeapons = client:GetRelay("weapons", {})
-    if ( client:HasWeapon(item.WeaponClass) and axWeapons[item.WeaponClass] == item:GetID() ) then
-        client:StripWeapon(item.WeaponClass)
+    if ( client:HasWeapon(item:GetWeaponClass()) and axWeapons[item:GetWeaponClass()] == item:GetID() ) then
+        client:StripWeapon(item:GetWeaponClass())
         client:SelectWeapon("ax_hands")
 
-        axWeapons[item.WeaponClass] = nil
+        axWeapons[item:GetWeaponClass()] = nil
         client:SetRelay("weapons", axWeapons)
 
         item:SetData("equipped", false)
@@ -74,3 +76,5 @@ end)
 function ITEM:OnCache()
     self:SetData("equipped", self:GetData("equipped", false))
 end
+
+ITEM:Register()
