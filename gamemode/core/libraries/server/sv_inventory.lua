@@ -177,14 +177,12 @@ function ax.inventory:CreateInventory(characterID, maxWeight, data, callback)
             return false
         end
 
-        local inventory = {
+        local inventory = ax.inventory:Create({
             id = inventoryID,
             character_id = characterID,
             max_weight = maxWeight,
             data = data
-        }
-
-        self.instances[inventoryID] = inventory
+        })
 
         local inventories = {}
         ax.database:Select("ax_characters", nil, "id = " .. characterID, function(result)
@@ -209,16 +207,14 @@ function ax.inventory:CreateInventory(characterID, maxWeight, data, callback)
                     ax.util:PrintError("Failed to update character inventories.")
                     return false
                 end
+
+                ax.util:PrintSuccess("Inventory created successfully with ID " .. inventoryID)
+
+                if ( callback ) then
+                    callback(inventory)
+                end
             end)
         end)
-
-        ax.util:PrintSuccess("Inventory created successfully with ID " .. inventoryID)
-
-        if ( callback ) then
-            callback(inventory)
-        end
-
-        return true
     end)
 end
 
@@ -252,17 +248,8 @@ function ax.inventory:LoadInventories(characterID)
                     return false
                 end
 
-                local invData = invResult[1]
-                PrintTable(invData)
-                invData.data = util.JSONToTable(invData.data) or {}
+                ax.inventory:Create(invResult[1])
 
-                local invID = tonumber(invData.id)
-                if ( !invID ) then
-                    ax.util:PrintError("Invalid inventory ID: " .. tostring(invData.id))
-                    return false
-                end
-
-                self.instances[invID] = invData
                 ax.util:PrintSuccess("Loaded inventory with ID " .. invID)
             end)
         end
@@ -301,35 +288,6 @@ function ax.inventory:DeleteInventory(inventoryID, callback)
 
         return true
     end)
-end
-
---- Retrieves an inventory by its ID.
--- @param number inventoryID The ID of the inventory to retrieve
--- @param function[opt] callback Callback function to execute with the retrieved inventory (optional)
-function ax.inventory:GetInventory(inventoryID, callback)
-    if ( !inventoryID ) then
-        ax.util:PrintError("Invalid parameters for ax.inventory:GetInventory")
-        return false
-    end
-
-    local inventory = self.instances[inventoryID]
-    if ( !inventory ) then
-        ax.util:PrintError("Inventory with ID " .. inventoryID .. " not found.")
-
-        if ( callback ) then
-            callback()
-        end
-
-        return false
-    end
-
-    ax.util:PrintSuccess("Retrieved inventory with ID " .. inventoryID)
-
-    if ( callback ) then
-        callback(inventory)
-    end
-
-    return true
 end
 
 --[[
