@@ -13,12 +13,10 @@
 
 local ITEM = ax.item.meta or {}
 ITEM.__index = ITEM
-ITEM.Actions = ITEM.Actions or {}
 ITEM.Category = ITEM.Category or "Miscellaneous"
 ITEM.Data = ITEM.Data or {}
 ITEM.Description = ITEM.Description or "An item that is undefined."
 ITEM.Entity = ITEM.Entity or NULL
-ITEM.Hooks = ITEM.Hooks or {}
 ITEM.ID = ITEM.ID or 0
 ITEM.InventoryID = ITEM.InventoryID or 0
 ITEM.IsBase = ITEM.IsBase or false
@@ -273,9 +271,12 @@ function ITEM:Register()
         return false, "Attempted to register a faction that was blocked by a hook!"
     end
 
-    -- Get the unique ID by retrieving the file name without the extension
-    local uniqueID = string.StripExtension(debug.getinfo(2, "S").source)
-    uniqueID = uniqueID:sub(2) -- Remove the leading '@' character
+    local uniqueID = debug.getinfo(2, "S").source
+    uniqueID = string.GetFileFromFilename(uniqueID)
+    uniqueID = string.StripExtension(uniqueID)
+    uniqueID = string.lower(uniqueID)
+    uniqueID = string.gsub(uniqueID, "^sh_", "")
+
     if ( !uniqueID or uniqueID == "" ) then
         ax.util:PrintError("Invalid unique ID for item instance.")
         return false
@@ -284,9 +285,37 @@ function ITEM:Register()
     -- Set the unique ID for the instance
     self.UniqueID = uniqueID
 
+    -- If we are in a /base/ folder, we need to set the IsBase flag to true
+    if ( string.find(uniqueID, "/base/") ) then
+        self.IsBase = true
+    end
+
+    -- Available Base Items
+    local baseItems = {}
+    for k, v in pairs(ax.item.stored) do
+        if ( v.IsBase ) then
+            baseItems[v.UniqueID] = v
+        end
+    end
+
+    -- If this item is not a base item, but it is in the /*basename*/ folder, we need to inherit from the base item
+    for baseUniqueID, baseItem in pairs(baseItems) do
+        if ( string.find(uniqueID, baseUniqueID) ) then
+            self.Base = baseItem
+            break
+        end
+    end
+
+    -- If we have a base item, we need to inherit its properties
+    if ( self.Base and istable(self.Base) ) then
+        table.Inherit(self, self.Base)
+        self.Base = nil -- Clear the base item to avoid circular references
+    end
+
     hook.Run("PostItemRegistered", self)
 
-    return #ax.item.instances
+    -- Register the item in the stored items table
+    ax.item.stored[uniqueID] = self
 end
 
 function ITEM:Hook(name, func)
