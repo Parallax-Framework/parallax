@@ -125,7 +125,6 @@ function ax.database:LoadTables()
     self:InitializeTable("ax_inventories", {
         id = "INTEGER PRIMARY KEY AUTOINCREMENT",
         character_id = "INT",
-        name = "TEXT",
         max_weight = "INT",
         data = "TEXT"
     })
