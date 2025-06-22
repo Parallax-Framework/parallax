@@ -90,7 +90,7 @@ function ax.item:Get(input)
 end
 
 function ax.item:Load(path)
-    if ( !path or !isstring(path) ) then return end
+    if ( !isstring(path) ) then return end
 
     local files, _ = file.Find(path .. "/*.lua", "LUA")
     if ( !files or files[1] == nil ) then return end
