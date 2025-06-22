@@ -10,17 +10,17 @@
 ]]
 
 --- Character library.
--- @module Parallax.Character
+-- @module ax.character
 
-Parallax.Character = Parallax.Character or {} -- Character library.
-Parallax.Character.Meta = Parallax.Character.Meta or {} -- All currently registered character meta functions.
-Parallax.Character.variables = Parallax.Character.variables or {} -- All currently registered variables.
-Parallax.Character.fields = Parallax.Character.fields or {} -- All currently registered fields.
-Parallax.Character.Stored = Parallax.Character.Stored or {} -- All currently stored characters which are in use.
+ax.character = ax.character or {} -- Character library.
+ax.character.meta = ax.character.meta or {} -- All currently registered character meta functions.
+ax.character.variables = ax.character.variables or {} -- All currently registered variables.
+ax.character.fields = ax.character.fields or {} -- All currently registered fields.
+ax.character.stored = ax.character.stored or {} -- All currently stored characters which are in use.
 
 --- Registers a variable for the character.
 -- @realm shared
-function Parallax.Character:RegisterVariable(key, data)
+function ax.character:RegisterVariable(key, data)
     data.Index = table.Count(self.variables) + 1
 
     if ( data.Alias != nil ) then
@@ -30,18 +30,18 @@ function Parallax.Character:RegisterVariable(key, data)
 
         for i = 1, #data.Alias do
             local v = data.Alias[i]
-            self.Meta["Get" .. v] = function(character)
+            self.meta["Get" .. v] = function(character)
                 return self:GetVariable(character:GetID(), key)
             end
 
             if ( SERVER ) then
-                self.Meta["Set" .. v] = function(character, value)
+                self.meta["Set" .. v] = function(character, value)
                     self:SetVariable(character:GetID(), key, value)
                 end
 
                 local field = data.Field
                 if ( field ) then
-                    Parallax.Database:RegisterVar("ax_characters", key, data.Default or nil)
+                    ax.database:RegisterVar("ax_characters", key, data.Default or nil)
                     self.fields[key] = field
                 end
             end
@@ -49,18 +49,18 @@ function Parallax.Character:RegisterVariable(key, data)
     else
         local upperKey = string.upper(key:sub(1, 1)) .. key:sub(2)
 
-        self.Meta["Get" .. upperKey] = function(character)
+        self.meta["Get" .. upperKey] = function(character)
             return self:GetVariable(character:GetID(), key)
         end
 
         if ( SERVER ) then
-            self.Meta["Set" .. upperKey] = function(character, value)
+            self.meta["Set" .. upperKey] = function(character, value)
                 self:SetVariable(character:GetID(), key, value)
             end
 
             local field = data.Field
             if ( field ) then
-                Parallax.Database:RegisterVar("ax_characters", key, data.Default or nil)
+                ax.database:RegisterVar("ax_characters", key, data.Default or nil)
                 self.fields[key] = field
             end
         end
@@ -69,15 +69,15 @@ function Parallax.Character:RegisterVariable(key, data)
     self.variables[key] = data
 end
 
-function Parallax.Character:SetVariable(id, key, value)
+function ax.character:SetVariable(id, key, value)
     if ( !self.variables[key] ) then
-        Parallax.Util:PrintError("Attempted to set a variable that does not exist!")
+        ax.util:PrintError("Attempted to set a variable that does not exist!")
         return false, "Attempted to set a variable that does not exist!"
     end
 
-    local character = self.Stored[id]
+    local character = self.stored[id]
     if ( !character ) then
-        Parallax.Util:PrintError("Attempted to set a variable for a character that does not exist!")
+        ax.util:PrintError("Attempted to set a variable for a character that does not exist!")
         return false, "Attempted to set a variable for a character that does not exist!"
     end
 
@@ -89,32 +89,32 @@ function Parallax.Character:SetVariable(id, key, value)
     character[key] = value
 
     if ( SERVER ) then
-        Parallax.Database:Update("ax_characters", { [key] = value }, "id = " .. id)
+        ax.database:Update("ax_characters", { [key] = value }, "id = " .. id)
 
         if ( data.Field ) then
             local field = data.Field
             if ( field ) then
-                Parallax.Database:Update("ax_characters", { [field] = value }, "id = " .. id)
+                ax.database:Update("ax_characters", { [field] = value }, "id = " .. id)
             end
         end
 
         if ( !data.NoNetworking ) then
-            Parallax.Net:Start(nil, "character.variable.set", id, key, value)
+            ax.net:Start(nil, "character.variable.set", id, key, value)
         end
     end
 end
 
-function Parallax.Character:GetVariable(id, key)
-    local character = self.Stored[id]
+function ax.character:GetVariable(id, key)
+    local character = self.stored[id]
     if ( !character ) then
-        Parallax.Util:PrintError("Attempted to get a variable for a character that does not exist!")
+        ax.util:PrintError("Attempted to get a variable for a character that does not exist!")
         return false, "Attempted to get a variable for a character that does not exist!"
     end
 
     local variable = self.variables[key]
     if ( !variable ) then return end
 
-    local output = Parallax.Util:CoerceType(variable.Type, character[key])
+    local output = ax.util:CoerceType(variable.Type, character[key])
     if ( variable.OnGet ) then
         return variable:OnGet(character, output)
     end
@@ -122,20 +122,20 @@ function Parallax.Character:GetVariable(id, key)
     return output
 end
 
-function Parallax.Character:CreateObject(characterID, data, client)
+function ax.character:CreateObject(characterID, data, client)
     if ( !characterID or !data ) then
-        Parallax.Util:PrintError("Attempted to create a character object with invalid data!")
+        ax.util:PrintError("Attempted to create a character object with invalid data!")
         return false, "Invalid data provided"
     end
 
-    if ( self.Stored[characterID] ) then
-        Parallax.Util:PrintWarning("Attempted to create a character object that already exists!")
-        return self.Stored[characterID], "Character already exists"
+    if ( self.stored[characterID] ) then
+        ax.util:PrintWarning("Attempted to create a character object that already exists!")
+        return self.stored[characterID], "Character already exists"
     end
 
     characterID = tonumber(characterID)
 
-    local character = setmetatable({}, self.Meta)
+    local character = setmetatable({}, self.meta)
     character.ID = characterID
     character.Player = client or NULL
     character.Schema = SCHEMA.Folder
@@ -157,12 +157,12 @@ function Parallax.Character:CreateObject(characterID, data, client)
         end
     end
 
-    self.Stored[characterID] = character
+    self.stored[characterID] = character
 
     return character
 end
 
-function Parallax.Character:GetPlayerByCharacter(id)
+function ax.character:GetPlayerByCharacter(id)
     for _, client in player.Iterator() do
         if ( client:GetCharacterID() == tonumber(id) ) then
             return client
@@ -172,14 +172,14 @@ function Parallax.Character:GetPlayerByCharacter(id)
     return false, "Player not found"
 end
 
-function Parallax.Character:Get(id)
-    return self.Stored[id]
+function ax.character:Get(id)
+    return self.stored[id]
 end
 
-function Parallax.Character:GetAll()
-    return self.Stored
+function ax.character:GetAll()
+    return self.stored
 end
 
-function Parallax.Character:GetAllVariables()
+function ax.character:GetAllVariables()
     return self.variables
 end

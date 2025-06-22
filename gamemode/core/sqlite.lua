@@ -11,21 +11,21 @@
 
 --- Parallax Sqlite Database Wrapper
 -- Provides a wrapper around the Garry's Mod SQLite system.
--- @module Parallax.SQLite
+-- @module ax.sqlite
 
-Parallax.SQLite = Parallax.SQLite or {}
-Parallax.SQLite.tables = Parallax.SQLite.tables or {}
+ax.sqlite = ax.sqlite or {}
+ax.sqlite.tables = ax.sqlite.tables or {}
 
 --- Executes a raw SQL query and optionally handles success/failure callbacks.
 -- @realm shared
 -- @tparam string query SQL query string
 -- @tparam function[opt] onSuccess Callback with query result (table)
 -- @tparam function[opt] onError Callback with error message (string)
-function Parallax.SQLite:Query(query, onSuccess, onError)
+function ax.sqlite:Query(query, onSuccess, onError)
     local result = sql.Query(query)
     if ( result == false ) then
         local err = sql.LastError()
-        Parallax.Util:PrintError("SQLite query failed: " .. query .. " :: " .. (err or "unknown"))
+        ax.util:PrintError("SQLite query failed: " .. query .. " :: " .. (err or "unknown"))
         if ( onError ) then onError(err) end
     else
         if ( onSuccess ) then onSuccess(result) end
@@ -36,8 +36,8 @@ end
 
 --- Registers a variable/column for the specified table and sets its default value.
 -- @realm shared
--- @usage Parallax.SQLite:RegisterVar
-function Parallax.SQLite:RegisterVar(tableName, key, default)
+-- @usage ax.sqlite:RegisterVar
+function ax.sqlite:RegisterVar(tableName, key, default)
     self.tables[tableName] = self.tables[tableName] or {}
     self.tables[tableName][key] = default
 
@@ -46,8 +46,8 @@ end
 
 --- Creates a SQL table with the registered and extra schema fields.
 -- @realm shared
--- @usage Parallax.SQLite:InitializeTable
-function Parallax.SQLite:InitializeTable(tableName, extraSchema)
+-- @usage ax.sqlite:InitializeTable
+function ax.sqlite:InitializeTable(tableName, extraSchema)
     local schema = {}
 
     -- Check if any primary key is defined in user schema
@@ -93,8 +93,8 @@ end
 
 --- Adds a column to a table if it doesn't exist already.
 -- @realm shared
--- @usage Parallax.SQLite:AddColumn
-function Parallax.SQLite:AddColumn(tableName, columnName, columnType, defaultValue)
+-- @usage ax.sqlite:AddColumn
+function ax.sqlite:AddColumn(tableName, columnName, columnType, defaultValue)
     local result = sql.Query(string.format("PRAGMA table_info(%s);", tableName))
     if ( result ) then
         local columnExists = false
@@ -122,8 +122,8 @@ end
 
 --- Returns a default row populated with the registered default values.
 -- @realm shared
--- @usage Parallax.SQLite:GetDefaultRow
-function Parallax.SQLite:GetDefaultRow(query, override)
+-- @usage ax.sqlite:GetDefaultRow
+function ax.sqlite:GetDefaultRow(query, override)
     local data = table.Copy(self.tables[query] or {})
     for k, v in pairs(override or {}) do
         data[k] = v
@@ -134,8 +134,8 @@ end
 
 --- Loads a row based on a key/value match or inserts a default if not found.
 -- @realm shared
--- @usage Parallax.SQLite:LoadRow
-function Parallax.SQLite:LoadRow(query, key, value, callback)
+-- @usage ax.sqlite:LoadRow
+function ax.sqlite:LoadRow(query, key, value, callback)
     local condition = string.format("%s = %s", key, sql.SQLStr(value))
     local result = self:Select(query, nil, condition)
 
@@ -148,10 +148,10 @@ function Parallax.SQLite:LoadRow(query, key, value, callback)
 
         if ( callback ) then
             if ( isfunction(callback) ) then
-                Parallax.Util:PrintWarning("Database Row not found, inserting default row")
+                ax.util:PrintWarning("Database Row not found, inserting default row")
                 callback(row)
             else
-                Parallax.Util:PrintError("Database LoadRow Callback must be a function")
+                ax.util:PrintError("Database LoadRow Callback must be a function")
             end
         end
 
@@ -175,8 +175,8 @@ end
 
 --- Saves a row of data into the table using the given key.
 -- @realm shared
--- @usage Parallax.SQLite:SaveRow
-function Parallax.SQLite:SaveRow(query, data, key, callback)
+-- @usage ax.sqlite:SaveRow
+function ax.sqlite:SaveRow(query, data, key, callback)
     local condition = string.format("%s = %s", key, sql.SQLStr(data[key]))
     self:Update(query, data, condition)
 
@@ -187,8 +187,8 @@ end
 
 --- Inserts a new row of data into the table.
 -- @realm shared
--- @usage Parallax.SQLite:Insert
-function Parallax.SQLite:Insert(query, data, callback)
+-- @usage ax.sqlite:Insert
+function ax.sqlite:Insert(query, data, callback)
     local keys, values = {}, {}
 
     for k, v in pairs(data) do
@@ -215,8 +215,8 @@ end
 
 --- Updates existing data in the table matching a given condition.
 -- @realm shared
--- @usage Parallax.SQLite:Update
-function Parallax.SQLite:Update(query, data, condition, callback)
+-- @usage ax.sqlite:Update
+function ax.sqlite:Update(query, data, condition, callback)
     local updates = {}
     for k, v in pairs(data) do
         updates[#updates + 1] = string.format("%s = %s", k, sql.SQLStr(v))
@@ -225,7 +225,7 @@ function Parallax.SQLite:Update(query, data, condition, callback)
     local insertQuery = string.format("UPDATE %s SET %s WHERE %s;", query, table.concat(updates, ", "), condition)
     local result = self:Query(insertQuery)
     if ( result == false ) then
-        Parallax.Util:PrintError("Database Failed to update row: ", insertQuery, sql.LastError())
+        ax.util:PrintError("Database Failed to update row: ", insertQuery, sql.LastError())
         return false
     end
 
@@ -238,12 +238,12 @@ end
 
 --- Deletes rows from the table based on a condition.
 -- @realm shared
--- @usage Parallax.SQLite:Delete
-function Parallax.SQLite:Delete(query, condition, callback)
+-- @usage ax.sqlite:Delete
+function ax.sqlite:Delete(query, condition, callback)
     local insertQuery = string.format("DELETE FROM %s WHERE %s;", query, condition)
     local result = self:Query(insertQuery)
     if ( result == false ) then
-        Parallax.Util:PrintError("Database Failed to delete row: ", insertQuery, sql.LastError())
+        ax.util:PrintError("Database Failed to delete row: ", insertQuery, sql.LastError())
         return false
     end
 
@@ -256,8 +256,8 @@ end
 
 --- Selects rows from the table matching the optional condition.
 -- @realm shared
--- @usage Parallax.SQLite:Select
-function Parallax.SQLite:Select(query, columns, condition, callback)
+-- @usage ax.sqlite:Select
+function ax.sqlite:Select(query, columns, condition, callback)
     local cols = columns and table.concat(columns, ", ") or "*"
     local insertQuery = string.format("SELECT %s FROM %s", cols, query)
 
@@ -267,7 +267,7 @@ function Parallax.SQLite:Select(query, columns, condition, callback)
 
     local result = self:Query(insertQuery)
     if ( result == false ) then
-        Parallax.Util:PrintError("Database Failed to select rows: ", insertQuery, " ", sql.LastError())
+        ax.util:PrintError("Database Failed to select rows: ", insertQuery, " ", sql.LastError())
         return nil
     end
 
@@ -280,8 +280,8 @@ end
 
 --- Counts the number of rows in a table matching an optional condition.
 -- @realm shared
--- @usage Parallax.SQLite:Count
-function Parallax.SQLite:Count(query, condition)
+-- @usage ax.sqlite:Count
+function ax.sqlite:Count(query, condition)
     local insertQuery = string.format("SELECT COUNT(*) FROM %s", query)
 
     if ( condition ) then

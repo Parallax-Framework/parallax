@@ -9,7 +9,7 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
---- Parallax.Stamina
+--- ax.Stamina
 -- Cross-realm stamina library.
 -- Server handles regeneration/consumption; client reads synced relay.
 
@@ -18,54 +18,54 @@ MODULE.Name = "Stamina"
 MODULE.Author = "Riggs"
 MODULE.Description = "Stamina library."
 
-Parallax.Stamina = Parallax.Stamina or {}
+ax.Stamina = ax.Stamina or {}
 
-Parallax.Config:Register("stamina.drain", {
+ax.config:Register("stamina.drain", {
     Name = "config.stamina.drain",
     Description = "config.stamina.drain.help",
     Category = "config.stamina",
-    Type = Parallax.Types.number,
+    Type = ax.types.number,
     Default = 5,
     Min = 0,
     Max = 100,
     Decimals = 1
 })
 
-Parallax.Config:Register("stamina", {
+ax.config:Register("stamina", {
     Name = "config.stamina",
     Description = "config.stamina.help",
     Category = "config.stamina",
-    Type = Parallax.Types.bool,
+    Type = ax.types.bool,
     Default = true
 })
 
-Parallax.Config:Register("stamina.max", {
+ax.config:Register("stamina.max", {
     Name = "config.stamina.max",
     Description = "config.stamina.max.Help",
     Category = "config.stamina",
-    Type = Parallax.Types.number,
+    Type = ax.types.number,
     Default = 100,
     Min = 0,
     Max = 1000,
     Decimals = 0
 })
 
-Parallax.Config:Register("stamina.regen", {
+ax.config:Register("stamina.regen", {
     Name = "config.stamina.regen",
     Description = "config.stamina.regen.help",
     Category = "config.stamina",
-    Type = Parallax.Types.number,
+    Type = ax.types.number,
     Default = 2,
     Min = 0,
     Max = 100,
     Decimals = 1
 })
 
-Parallax.Config:Register("stamina.tick", {
+ax.config:Register("stamina.tick", {
     Name = "config.stamina.tick",
     Description = "config.stamina.tick.help",
     Category = "config.stamina",
-    Type = Parallax.Types.number,
+    Type = ax.types.number,
     Default = 0.1,
     Min = 0,
     Max = 1,
@@ -76,8 +76,8 @@ if ( SERVER ) then
     --- Initializes a stamina object for a player
     -- @param client Player
     -- @param max number
-    function Parallax.Stamina:Initialize(client, max)
-        max = max or Parallax.Config:Get("stamina.max", 100)
+    function ax.Stamina:Initialize(client, max)
+        max = max or ax.config:Get("stamina.max", 100)
 
         client:SetRelay("stamina", {
             max = max,
@@ -92,7 +92,7 @@ if ( SERVER ) then
     -- @param client Player
     -- @param amount number
     -- @return boolean
-    function Parallax.Stamina:Consume(client, amount)
+    function ax.Stamina:Consume(client, amount)
         local st = client:GetRelay("stamina")
         if ( !istable(st) ) then return false end
 
@@ -107,7 +107,7 @@ if ( SERVER ) then
     -- @param client Player
     -- @param amount number
     -- @return boolean
-    function Parallax.Stamina:CanConsume(client, amount)
+    function ax.Stamina:CanConsume(client, amount)
         local st = client:GetRelay("stamina")
         return st and st.current >= amount
     end
@@ -116,7 +116,7 @@ if ( SERVER ) then
     -- @param client Player
     -- @param amount number
     -- @return boolean
-    function Parallax.Stamina:Add(client, amount)
+    function ax.Stamina:Add(client, amount)
         local st = client:GetRelay("stamina")
         if ( !istable(st) ) then return false end
 
@@ -128,7 +128,7 @@ if ( SERVER ) then
     --- Gets current stamina
     -- @param client Player
     -- @return number
-    function Parallax.Stamina:Get(client)
+    function ax.Stamina:Get(client)
         local st = client:GetRelay("stamina")
         return istable(st) and st.current or 0
     end
@@ -136,7 +136,7 @@ if ( SERVER ) then
     --- Sets current stamina
     -- @param client Player
     -- @param value number
-    function Parallax.Stamina:Set(client, value)
+    function ax.Stamina:Set(client, value)
         local st = client:GetRelay("stamina")
         if ( !istable(st) or st.current == value ) then return end
 
@@ -182,20 +182,20 @@ if ( CLIENT ) then
     ruLocalization["config.stamina.tick"] = "Интервал обновления выносливости"
     ruLocalization["config.stamina.tick.help"] = "Интервал, с которым обновляется выносливость игрока."
 
-    Parallax.Localization:Register("de", deLocalization)
-    Parallax.Localization:Register("en", enLocalization)
-    Parallax.Localization:Register("ru", ruLocalization)
+    ax.localization:Register("de", deLocalization)
+    ax.localization:Register("en", enLocalization)
+    ax.localization:Register("ru", ruLocalization)
 
     --- Gets the local player's stamina from relay
     -- @return number
-    function Parallax.Stamina:Get()
-        return Parallax.Client:GetRelay("stamina").current
+    function ax.Stamina:Get()
+        return ax.client:GetRelay("stamina").current
     end
 
     --- Gets the local player's stamina as a fraction [0–1]
     -- @return number
-    function Parallax.Stamina:GetFraction()
-        local max = Parallax.Client:GetRelay("stamina").max
+    function ax.Stamina:GetFraction()
+        local max = ax.client:GetRelay("stamina").max
         return self:Get() / max
     end
 end

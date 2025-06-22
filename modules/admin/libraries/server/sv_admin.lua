@@ -12,8 +12,8 @@
 local MODULE = MODULE
 
 function MODULE:PostDatabaseTablesLoaded()
-    Parallax.Database:RegisterVar("ax_players", "usergroup", "user")
-    Parallax.Database:InitializeTable("ax_admin_groups", {
+    ax.database:RegisterVar("ax_players", "usergroup", "user")
+    ax.database:InitializeTable("ax_admin_groups", {
         name = "VARCHAR(64) PRIMARY KEY",
         inherits = "TEXT",
         privilege = "INTEGER"
@@ -36,13 +36,13 @@ local savedPerms
 
 --- Saves groups and permissions using the data system.
 function MODULE:SaveData()
-    --Parallax.Data:Set("admin_groups", self.Groups)
-    --Parallax.Data:Set("admin_permissions", self.Permissions)
+    --ax.data:Set("admin_groups", self.Groups)
+    --ax.data:Set("admin_permissions", self.Permissions)
 end
 
 --- Loads groups and permissions, or registers defaults if none exist.
 function MODULE:LoadData()
-    local result = Parallax.Database:Select("ax_admin_groups")
+    local result = ax.database:Select("ax_admin_groups")
     if ( result ) then
         for i = 1, #result do
             local row = result[i]
@@ -56,7 +56,7 @@ function MODULE:LoadData()
         end
     end
 
-    result = Parallax.Database:Select("ax_admin_permissions")
+    result = ax.database:Select("ax_admin_permissions")
     if ( result ) then
         for i = 1, #result do
             local row = result[i]

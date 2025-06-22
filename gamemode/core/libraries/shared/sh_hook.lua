@@ -10,16 +10,16 @@
 ]]
 
 --- Custom function based hooks.
--- @module Parallax.Hooks
+-- @module ax.hooks
 
-Parallax.Hooks = {}
-Parallax.Hooks.Stored = {}
+ax.hooks = {}
+ax.hooks.stored = {}
 
 --- Registers a new hook type.
 -- @realm shared
 -- @string name The name of the hook type.
-function Parallax.Hooks:Register(name)
-    self.Stored[name] = true
+function ax.hooks:Register(name)
+    self.stored[name] = true
     hook.Run("OnHookRegistered", name)
 end
 
@@ -27,15 +27,15 @@ end
 -- @realm shared
 -- @string name The name of the hook type.
 -- @internal
-function Parallax.Hooks:UnRegister(name)
-    self.Stored[name] = nil
+function ax.hooks:UnRegister(name)
+    self.stored[name] = nil
     hook.Run("OnHookUnRegistered", name)
 end
 
 hook.axCall = hook.axCall or hook.Call
 
 function hook.Call(name, gm, ...)
-    for k, v in pairs(Parallax.Hooks.Stored) do
+    for k, v in pairs(ax.hooks.stored) do
         local tab = _G[k]
         if ( !tab ) then continue end
 
@@ -49,7 +49,7 @@ function hook.Call(name, gm, ...)
         end
     end
 
-    for k, v in pairs(Parallax.Module.Stored) do
+    for k, v in pairs(ax.module.stored) do
         for k2, v2 in pairs(v) do
             if ( isfunction(v2) and k2 == name ) then
                 local a, b, c, d, e, f = v2(v, ...)

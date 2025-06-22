@@ -9,8 +9,8 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
-Parallax.Derma = Parallax.Derma or {}
-Parallax.Derma.open = Parallax.Derma.open or {}
+ax.Derma = ax.Derma or {}
+ax.Derma.open = ax.Derma.open or {}
 
 local matBlurScreen = Material("pp/blurscreen")
 
@@ -64,19 +64,19 @@ function Derma_Message(text, title, buttonText)
         end
     end
 
-    table.insert(Parallax.Derma.open, frame)
+    table.insert(ax.Derma.open, frame)
 
-    local label = frame:Add("Parallax.Text")
+    local label = frame:Add("ax.text")
     label:Dock(TOP)
     label:DockMargin(0, ScreenScaleH(8), 0, 0)
-    label:SetFont("Parallax.Huge.Bold")
+    label:SetFont("ax.huge.bold")
     label:SetText(string.upper(title), true)
 
-    local wrapped = Parallax.Util:GetWrappedText(text, "parallax", frame:GetWide() - ScreenScale(16))
+    local wrapped = ax.util:GetWrappedText(text, "parallax", frame:GetWide() - ScreenScale(16))
     local textHeight = 0
     for i = 1, #wrapped do
         local line = wrapped[i]
-        local textLabel = frame:Add("Parallax.Text")
+        local textLabel = frame:Add("ax.text")
         textLabel:Dock(TOP)
         textLabel:SetText(line, true)
         textHeight = textHeight + textLabel:GetTall()
@@ -85,7 +85,7 @@ function Derma_Message(text, title, buttonText)
     local btnPanel = frame:Add("EditablePanel")
     btnPanel:Dock(BOTTOM)
 
-    local btn = btnPanel:Add("Parallax.Button.Flat")
+    local btn = btnPanel:Add("ax.button.flat")
     btn:Dock(FILL)
     btn:SetText(buttonText)
     btn.DoClick = function()
@@ -123,19 +123,19 @@ function Derma_Query(text, title, ...)
         end
     end
 
-    table.insert(Parallax.Derma.open, frame)
+    table.insert(ax.Derma.open, frame)
 
-    local label = frame:Add("Parallax.Text")
+    local label = frame:Add("ax.text")
     label:Dock(TOP)
     label:DockMargin(0, ScreenScaleH(8), 0, 0)
-    label:SetFont("Parallax.Huge.Bold")
+    label:SetFont("ax.huge.bold")
     label:SetText(string.upper(title), true)
 
-    local wrapped = Parallax.Util:GetWrappedText(text, "parallax", frame:GetWide() - ScreenScale(16))
+    local wrapped = ax.util:GetWrappedText(text, "parallax", frame:GetWide() - ScreenScale(16))
     local textHeight = 0
     for i = 1, #wrapped do
         local line = wrapped[i]
-        local textLabel = frame:Add("Parallax.Text")
+        local textLabel = frame:Add("ax.text")
         textLabel:Dock(TOP)
         textLabel:SetText(line, true)
         textHeight = textHeight + textLabel:GetTall()
@@ -153,7 +153,7 @@ function Derma_Query(text, title, ...)
 
         local fn = select(i + 1, ...) or function() end
 
-        local btn = btnPanel:Add("Parallax.Button.Flat")
+        local btn = btnPanel:Add("ax.button.flat")
         btn:Dock(LEFT)
         btn:DockMargin(0, 0, ScreenScale(4), 0)
         btn:SetText(txt, true)
@@ -202,26 +202,26 @@ function Derma_StringRequest(title, text, defaultText, onEnter, onCancel, okText
         end
     end
 
-    table.insert(Parallax.Derma.open, frame)
+    table.insert(ax.Derma.open, frame)
 
-    local label = frame:Add("Parallax.Text")
+    local label = frame:Add("ax.text")
     label:Dock(TOP)
     label:DockMargin(0, ScreenScaleH(8), 0, 0)
-    label:SetFont("Parallax.Huge.Bold")
+    label:SetFont("ax.huge.bold")
     label:SetText(string.upper(title), true)
 
-    local wrapped = Parallax.Util:GetWrappedText(text, "parallax", frame:GetWide() - ScreenScale(16))
+    local wrapped = ax.util:GetWrappedText(text, "parallax", frame:GetWide() - ScreenScale(16))
     local textHeight = 0
     for i = 1, #wrapped do
         local line = wrapped[i]
-        local textLabel = frame:Add("Parallax.Text")
+        local textLabel = frame:Add("ax.text")
         textLabel:Dock(TOP)
         textLabel:SetText(line, true)
 
         textHeight = textHeight + textLabel:GetTall()
     end
 
-    local entry = frame:Add("Parallax.Text.Entry")
+    local entry = frame:Add("ax.text.entry")
     entry:Dock(TOP)
     entry:DockMargin(0, ScreenScaleH(8), 0, ScreenScaleH(8))
     entry:SetText(defaultText)
@@ -233,7 +233,7 @@ function Derma_StringRequest(title, text, defaultText, onEnter, onCancel, okText
     local btnPanel = frame:Add("EditablePanel")
     btnPanel:Dock(BOTTOM)
 
-    local btnOK = btnPanel:Add("Parallax.Button.Flat")
+    local btnOK = btnPanel:Add("ax.button.flat")
     btnOK:Dock(LEFT)
     btnOK:SetText(okText or "OK")
     btnOK.DoClick = function()
@@ -241,7 +241,7 @@ function Derma_StringRequest(title, text, defaultText, onEnter, onCancel, okText
         onEnter(entry:GetValue())
     end
 
-    local btnCancel = btnPanel:Add("Parallax.Button.Flat")
+    local btnCancel = btnPanel:Add("ax.button.flat")
     btnCancel:Dock(RIGHT)
     btnCancel:SetText(cancelText or "Cancel")
     btnCancel.DoClick = function()
@@ -264,15 +264,15 @@ function Derma_StringRequest(title, text, defaultText, onEnter, onCancel, okText
 end
 
 function Derma_HideAll()
-    local openCount = #Parallax.Derma.open
+    local openCount = #ax.Derma.open
     for i = 1, openCount do
-        local frame = Parallax.Derma.open[i]
+        local frame = ax.Derma.open[i]
         if ( IsValid(frame) ) then
             frame:Remove()
         end
     end
 
-    Parallax.Derma.open = {}
+    ax.Derma.open = {}
 end
 
 concommand.Add("ax_derma_hideall", function()

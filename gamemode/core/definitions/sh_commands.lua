@@ -9,12 +9,12 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
-Parallax.Command:Register("PlyRespawn", {
+ax.command:Register("PlyRespawn", {
     Description = "Respawn a player.",
     AdminOnly = true,
     Arguments = {
         {
-            Type = Parallax.Types.player,
+            Type = ax.types.player,
             ErrorMsg = "You must provide a valid player to respawn!"
         }
     },
@@ -33,23 +33,23 @@ Parallax.Command:Register("PlyRespawn", {
     end
 })
 
-Parallax.Command:Register("PlyWhitelist", {
+ax.command:Register("PlyWhitelist", {
     Description = "Whitelist a player to a faction.",
     AdminOnly = true,
     Arguments = {
         {
-            Type = Parallax.Types.player,
+            Type = ax.types.player,
             ErrorMsg = "You must provide a valid player to whitelist!"
         },
         {
-            Type = Parallax.Types.string,
+            Type = ax.types.string,
             ErrorMsg = "You must provide a valid faction to whitelist the player to!"
         }
     },
     Callback = function(info, client, arguments)
         local target = arguments[1]
 
-        local faction = Parallax.Faction:Get(arguments[2])
+        local faction = ax.faction:Get(arguments[2])
         if ( !faction ) then
             client:Notify("You must provide a valid faction to whitelist the player to!")
             return
@@ -65,23 +65,23 @@ Parallax.Command:Register("PlyWhitelist", {
     end
 })
 
-Parallax.Command:Register("PlyUnWhitelist", {
+ax.command:Register("PlyUnWhitelist", {
     Description = "Unwhitelist a player from a faction.",
     AdminOnly = true,
     Arguments = {
         {
-            Type = Parallax.Types.player,
+            Type = ax.types.player,
             ErrorMsg = "You must provide a valid player to unwhitelist!"
         },
         {
-            Type = Parallax.Types.string,
+            Type = ax.types.string,
             ErrorMsg = "You must provide a valid faction to unwhitelist the player from!"
         }
     },
     Callback = function(info, client, arguments)
         local target = arguments[1]
 
-        local faction = Parallax.Faction:Get(arguments[2])
+        local faction = ax.faction:Get(arguments[2])
         if ( !faction ) then
             client:Notify("You must provide a valid faction to unwhitelist the player from!")
             return
@@ -97,16 +97,16 @@ Parallax.Command:Register("PlyUnWhitelist", {
     end
 })
 
-Parallax.Command:Register("CharSetModel", {
+ax.command:Register("CharSetModel", {
     Description = "Set the model of a character.",
     AdminOnly = true,
     Arguments = {
         {
-            Type = Parallax.Types.player,
+            Type = ax.types.player,
             ErrorMsg = "You must provide a valid player to set the model of!"
         },
         {
-            Type = Parallax.Types.string,
+            Type = ax.types.string,
             ErrorMsg = "You must provide a valid model!"
         }
     },
@@ -131,21 +131,21 @@ Parallax.Command:Register("CharSetModel", {
     end
 })
 
-Parallax.Command:Register("CharSetFaction", {
+ax.command:Register("CharSetFaction", {
     Description = "Set the faction of a character.",
     AdminOnly = true,
     Arguments = {
         {
-            Type = Parallax.Types.player,
+            Type = ax.types.player,
             ErrorMsg = "You must provide a valid player to set the faction of!"
         },
         {
-            Type = Parallax.Types.string,
+            Type = ax.types.string,
             ErrorMsg = "You must provide a valid faction to set!"
         }
     },
     Callback = function(info, client, arguments)
-        local faction = Parallax.Faction:Get(arguments[2])
+        local faction = ax.faction:Get(arguments[2])
         if ( !faction ) then
             client:Notify("You must provide a valid faction to set!")
             return
@@ -160,22 +160,22 @@ Parallax.Command:Register("CharSetFaction", {
         end
 
         character:SetFaction(faction:GetID())
-        Parallax.Faction:Join(target, faction:GetID(), true)
+        ax.faction:Join(target, faction:GetID(), true)
 
         client:Notify("You have set the faction of " .. target:Nick() .. " to " .. faction.Name .. ".", NOTIFY_HINT)
     end
 })
 
-Parallax.Command:Register("CharGiveFlags", {
+ax.command:Register("CharGiveFlags", {
     Description = "Give a character a flag.",
     AdminOnly = true,
     Arguments = {
         {
-            Type = Parallax.Types.player,
+            Type = ax.types.player,
             ErrorMsg = "You must provide a valid player to give a flag to!"
         },
         {
-            Type = Parallax.Types.string,
+            Type = ax.types.string,
             Optional = true
         }
     },
@@ -191,13 +191,13 @@ Parallax.Command:Register("CharGiveFlags", {
         local flags = arguments[2]
         if ( flags == nil or flags == "" ) then
             local hasFlags = {}
-            for k, v in pairs(Parallax.Flag:GetAll()) do
+            for k, v in pairs(ax.flag:GetAll()) do
                 if ( character:HasFlag(k) ) then
                     hasFlags[k] = true
                 end
             end
 
-            Parallax.Net:Start(client, "flag.list", target, hasFlags)
+            ax.net:Start(client, "flag.list", target, hasFlags)
 
             return
         end
@@ -212,7 +212,7 @@ Parallax.Command:Register("CharGiveFlags", {
         local validFlags = true
         for i = 1, #given do
             local flag = given[i]
-            if ( !Parallax.Flag:Get(flag) ) then
+            if ( !ax.flag:Get(flag) ) then
                 validFlags = false
                 break
             end
@@ -247,16 +247,16 @@ Parallax.Command:Register("CharGiveFlags", {
     end
 })
 
-Parallax.Command:Register("CharTakeFlags", {
+ax.command:Register("CharTakeFlags", {
     Description = "Take a flag from a character.",
     AdminOnly = true,
     Arguments = {
         {
-            Type = Parallax.Types.player,
+            Type = ax.types.player,
             ErrorMsg = "You must provide a valid player to take a flag from!"
         },
         {
-            Type = Parallax.Types.string,
+            Type = ax.types.string,
             ErrorMsg = "You must provide either single flag or a set of flags!"
         }
     },
@@ -281,7 +281,7 @@ Parallax.Command:Register("CharTakeFlags", {
         local validFlags = true
         for i = 1, #taken do
             local flag = taken[i]
-            if ( !Parallax.Flag:Get(flag) ) then
+            if ( !ax.flag:Get(flag) ) then
                 validFlags = false
                 break
             end
@@ -316,8 +316,25 @@ Parallax.Command:Register("CharTakeFlags", {
     end
 })
 
-Parallax.Command:Register("ToggleRaise", {
+ax.command:Register("ToggleRaise", {
     Callback = function(info, client, arguments)
         client:ToggleWeaponRaise()
+    end
+})
+
+ax.command:Register("FallOver", {
+    Arguments = {
+        {
+            Type = ax.types.number,
+            ErrorMsg = "You must provide a valid player to make fall over!",
+            Optional = true
+        }
+    },
+
+    Callback = function(info, client, arguments)
+        local character = client:GetCharacter()
+        if ( !character ) then return end
+
+        client:SetRagdolled(true, arguments[1] or 5)
     end
 })

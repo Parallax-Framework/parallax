@@ -30,7 +30,7 @@ function SWEP:PlayAnimation(anim, rate)
         vm:SendViewModelMatchingSequence(seq)
         vm:SetPlaybackRate(rate or 1)
     else
-        Parallax.Util:PrintError("Invalid animation sequence: " .. tostring(anim))
+        ax.util:PrintError("Invalid animation sequence: " .. tostring(anim))
     end
 end
 

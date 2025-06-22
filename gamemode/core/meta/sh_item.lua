@@ -9,7 +9,7 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
-local ITEM = Parallax.Item.Meta or {}
+local ITEM = ax.item.meta or {}
 ITEM.Category = ITEM.Category or "Miscellaneous"
 ITEM.CharacterID = ITEM.CharacterID or 0
 ITEM.Data = ITEM.Data or {}
@@ -169,10 +169,10 @@ if ( SERVER ) then
     -- @tparam string key The key of the data to send.
     -- @param value The value of the data to send.
     function ITEM:SendData(key, value)
-        local client = Parallax.Character:GetPlayerByCharacter(self:GetOwner())
+        local client = ax.character:GetPlayerByCharacter(self:GetOwner())
         if ( !IsValid(client) ) then return end
 
-        Parallax.Net:Start(client, "item.data", self:GetID(), key, value)
+        ax.net:Start(client, "item.data", self:GetID(), key, value)
     end
 end
 
@@ -202,13 +202,13 @@ end
 -- @tparam Vector position The position to spawn the item at.
 -- @tparam Angle angles The angles to spawn the item with.
 function ITEM:Spawn(position, angles)
-    local client = Parallax.Character:GetPlayerByCharacter(self:GetOwner())
+    local client = ax.character:GetPlayerByCharacter(self:GetOwner())
     if ( !IsValid(client) ) then return end
 
     position = position or client:GetDropPosition()
     if ( !position ) then return end
 
-    local item = Parallax.Item:Spawn(nil, uniqueID, position, angles, function()
+    local item = ax.item:Spawn(nil, uniqueID, position, angles, function()
         if ( self.OnSpawned ) then
             self:OnSpawned(item)
         end
@@ -250,7 +250,7 @@ function ITEM:Remove()
         self:OnRemoved()
     end
 
-    Parallax.Item:Remove(self:GetID(), callback)
+    ax.item:Remove(self:GetID(), callback)
 end
 
 --- Gets the item's actions.
@@ -319,9 +319,9 @@ function ITEM:AddDefaultActions()
             local prevent = hook.Run("PrePlayerDropItem", client, item, pos)
             if ( prevent == false ) then return end
 
-            Parallax.Item:Transfer(item:GetID(), item:GetInventory(), 0, function(success)
+            ax.item:Transfer(item:GetID(), item:GetInventory(), 0, function(success)
                 if ( success ) then
-                    Parallax.Item:Spawn(item:GetID(), item:GetUniqueID(), pos, Angle(0, 0, 0), function(entity)
+                    ax.item:Spawn(item:GetID(), item:GetUniqueID(), pos, Angle(0, 0, 0), function(entity)
                         hook.Run("PostPlayerDropItem", client, item, entity)
                     end, item:GetData())
                 end
@@ -337,7 +337,7 @@ function ITEM:AddDefaultActions()
         OnRun = function(this, item, client)
             if ( !IsValid(client) ) then return end
 
-            local char = Parallax.Character:Get(item:GetOwner())
+            local char = ax.character:Get(item:GetOwner())
             local inventoryMain = char and char:GetInventory()
             if ( !inventoryMain ) then return end
 
@@ -353,7 +353,7 @@ function ITEM:AddDefaultActions()
             local prevent = hook.Run("PrePlayerTakeItem", client, item, entity)
             if ( prevent == false ) then return end
 
-            Parallax.Item:Transfer(item:GetID(), 0, inventoryMain:GetID(), function(success)
+            ax.item:Transfer(item:GetID(), 0, inventoryMain:GetID(), function(success)
                 if ( success ) then
                     if ( item.OnTaken ) then
                         item:OnTaken(entity)
@@ -369,4 +369,4 @@ function ITEM:AddDefaultActions()
     })
 end
 
-Parallax.Item.Meta = ITEM
+ax.item.meta = ITEM

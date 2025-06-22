@@ -226,4 +226,4 @@ localization["tab.mainmenu"] = "Главно меню"
 localization["tab.options"] = "Опции"
 localization["tab.scoreboard"] = "Играчи"
 
-Parallax.Localization:Register("bg", localization)
+ax.localization:Register("bg", localization)

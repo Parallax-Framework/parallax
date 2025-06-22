@@ -34,5 +34,5 @@ function ENT:SetupDataTables()
 end
 
 function ENT:GetItemData()
-    return Parallax.Item:Get(self:GetItemID())
+    return ax.item:Get(self:GetItemID())
 end

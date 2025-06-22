@@ -12,13 +12,13 @@
 local time = CurTime()
 function GM:PlayerInitialSpawn(client)
     time = CurTime()
-    Parallax.Util:Print("Starting to load player " .. client:SteamName() .. " (" .. client:SteamID64() .. ")")
+    ax.util:Print("Starting to load player " .. client:SteamName() .. " (" .. client:SteamID64() .. ")")
 
     if ( client:IsBot() ) then
-        local factionBot = math.random(#Parallax.Faction.Instances)
+        local factionBot = math.random(#ax.faction.instances)
 
         local models = {}
-        local factionModels = Parallax.Faction:Get(factionBot):GetModels()
+        local factionModels = ax.faction:Get(factionBot):GetModels()
         for i = 1, #factionModels do
             local v = factionModels[i]
             if ( istable(v) ) then
@@ -42,14 +42,14 @@ function GM:PlayerReady(client)
     local activeGamemode = engine.ActiveGamemode()
     if ( activeGamemode == "parallax" ) then
         -- Sometimes people might forget to actually set their startup gamemode to their schema rather than the actual framework... so we check for that
-        Parallax.Util:PrintError("You are running Parallax without a schema! Please set your startup gamemode to your schema (e.g. 'parallax-skeleton' instead of 'parallax').")
-        Parallax.Net:Start(client, "splash")
+        ax.util:PrintError("You are running Parallax without a schema! Please set your startup gamemode to your schema (e.g. 'parallax-skeleton' instead of 'parallax').")
+        ax.net:Start(client, "splash")
         return
     end
 
-    Parallax.Character:CacheAll(client, function()
-        Parallax.Util:SendChatText(nil, Color(25, 75, 150), client:SteamName() .. " has joined the server.")
-        Parallax.Net:Start(client, "splash")
+    ax.character:CacheAll(client, function()
+        ax.util:SendChatText(nil, Color(25, 75, 150), client:SteamName() .. " has joined the server.")
+        ax.net:Start(client, "splash")
 
         client:SetNoDraw(true)
         client:SetNotSolid(true)
@@ -57,7 +57,7 @@ function GM:PlayerReady(client)
 
         hook.Run("PostPlayerInitialSpawn", client)
 
-        Parallax.Util:Print("Finished loading player " .. client:SteamName() .. " (" .. client:SteamID64() .. ") in " .. math.Round(CurTime() - time, 2) .. " seconds.")
+        ax.util:Print("Finished loading player " .. client:SteamName() .. " (" .. client:SteamID64() .. ") in " .. math.Round(CurTime() - time, 2) .. " seconds.")
         time = CurTime()
     end)
 end
@@ -65,7 +65,7 @@ end
 function GM:PostPlayerInitialSpawn(client)
     if ( !IsValid(client) or client:IsBot() ) then return end
 
-    Parallax.Database:LoadRow("ax_players", "steamid", client:SteamID64(), function(data)
+    ax.database:LoadRow("ax_players", "steamid", client:SteamID64(), function(data)
         local clientTable = client:GetTable()
         clientTable.axDatabase = data or {}
 
@@ -75,10 +75,10 @@ function GM:PostPlayerInitialSpawn(client)
         client:SetDBVar("data", data != nil and data.data or "[]")
         client:SaveDB()
 
-        Parallax.Util:Print("Loaded player " .. client:SteamName() .. " (" .. client:SteamID64() .. ") in " .. math.Round(CurTime() - time, 2) .. " seconds.")
+        ax.util:Print("Loaded player " .. client:SteamName() .. " (" .. client:SteamID64() .. ") in " .. math.Round(CurTime() - time, 2) .. " seconds.")
         time = CurTime()
 
-        Parallax.Config:Synchronize(client)
+        ax.config:Synchronize(client)
 
         hook.Run("PostPlayerReady", client)
     end)
@@ -99,7 +99,7 @@ function GM:PlayerDisconnected(client)
             character:SetLastPlayed(os.time())
         end
 
-        local clientOptions = Parallax.Option.clients[client:EntIndex()]
+        local clientOptions = ax.option.clients[client:EntIndex()]
         if ( istable(clientOptions) ) then
             clientOptions = nil
         end
@@ -119,9 +119,9 @@ function GM:PlayerLoadout(client)
     client:Give("ax_hands")
     client:SelectWeapon("ax_hands")
 
-    client:SetWalkSpeed(Parallax.Config:Get("speed.walk", 80))
-    client:SetRunSpeed(Parallax.Config:Get("speed.run", 180))
-    client:SetJumpPower(Parallax.Config:Get("jump.power", 160))
+    client:SetWalkSpeed(ax.config:Get("speed.walk", 80))
+    client:SetRunSpeed(ax.config:Get("speed.run", 180))
+    client:SetJumpPower(ax.config:Get("jump.power", 160))
 
     client:SetupHands()
 
@@ -178,7 +178,7 @@ function GM:PostPlayerLoadedCharacter(client, character, previousCharacter)
     -- Restore character state
     local lastPos = character:GetData("last_pos")
     local lastAng = character:GetData("last_ang")
-    if ( isvector(lastPos) and isangle(lastAng) and Parallax.Config:Get("characters.restorepos", true) ) then
+    if ( isvector(lastPos) and isangle(lastAng) and ax.config:Get("characters.restorepos", true) ) then
         client:SetPos(lastPos)
         client:SetEyeAngles(lastAng)
     end
@@ -213,7 +213,7 @@ function GM:PlayerDeathThink(client)
         return true
     end
 
-    local respawnTime = Parallax.Config:Get("time.respawn", 60)
+    local respawnTime = ax.config:Get("time.respawn", 60)
     if ( respawnTime <= 0 ) then
         client:Spawn()
     end
@@ -229,17 +229,17 @@ function GM:PlayerSay(client, text, teamChat)
         local message = string.Explode(" ", string.sub(text, 4))
         table.remove(message, 1)
 
-        Parallax.Command:Run(client, "looc", message)
+        ax.command:Run(client, "looc", message)
     elseif ( string.sub(text, 1, 1) == "/" ) then
         -- This is a command, so we need to parse it
         local arguments = string.Explode(" ", string.sub(text, 2))
         local command = arguments[1]
         table.remove(arguments, 1)
 
-        Parallax.Command:Run(client, command, arguments)
+        ax.command:Run(client, command, arguments)
     else
         -- Everything else is a normal chat message
-        Parallax.Chat:SendSpeaker(client, "ic", text)
+        ax.chat:SendSpeaker(client, "ic", text)
     end
 
     return ""
@@ -250,9 +250,9 @@ function GM:PlayerUseSpawnSaver(client)
 end
 
 function GM:Initialize()
-    Parallax.Item:LoadFolder("parallax/gamemode/items")
-    Parallax.Module:LoadFolder("parallax/modules")
-    Parallax.Schema:Initialize()
+    ax.item:LoadFolder("parallax/gamemode/items")
+    ax.module:LoadFolder("parallax/modules")
+    ax.schema:Initialize()
 
     if ( game.IsDedicated() ) then
         -- Production (dedicated server)
@@ -274,7 +274,7 @@ function GM:Initialize()
         RunConsoleCommand("sv_allowcslua", "1")
     end
 
-    Parallax.Util:VerifyVersion()
+    ax.util:VerifyVersion()
 end
 
 local _reloaded = false
@@ -282,14 +282,14 @@ function GM:OnReloaded()
     if ( _reloaded ) then return end
     _reloaded = true
 
-    Parallax.Item:LoadFolder("parallax/gamemode/items")
-    Parallax.Module:LoadFolder("parallax/modules")
-    Parallax.Schema:Initialize()
+    ax.item:LoadFolder("parallax/gamemode/items")
+    ax.module:LoadFolder("parallax/modules")
+    ax.schema:Initialize()
 
-    Parallax.Util:Print("Core reloaded in " .. math.Round(SysTime() - GM.RefreshTimeStart, 2) .. " seconds.")
+    ax.util:Print("Core reloaded in " .. math.Round(SysTime() - GM.RefreshTimeStart, 2) .. " seconds.")
 
-    Parallax.Config:Synchronize()
-    Parallax.Util:VerifyVersion()
+    ax.config:Synchronize()
+    ax.util:VerifyVersion()
 end
 
 function GM:DatabaseConnected()
@@ -302,25 +302,25 @@ local maxRetries = 5
 function GM:DatabaseConnectionFailed()
     if ( retryCount < maxRetries ) then
         retryCount = retryCount + 1
-        Parallax.Util:PrintWarning("Database connection failed, retrying... (" .. retryCount .. "/" .. maxRetries .. ")")
+        ax.util:PrintWarning("Database connection failed, retrying... (" .. retryCount .. "/" .. maxRetries .. ")")
 
         timer.Simple(2, function()
-            Parallax.Database:Initialize()
+            ax.database:Initialize()
         end)
     else
-        Parallax.Util:PrintError("Database connection failed after " .. maxRetries .. " retries, falling back to SQLite.")
-        Parallax.Database:Fallback()
+        ax.util:PrintError("Database connection failed after " .. maxRetries .. " retries, falling back to SQLite.")
+        ax.database:Fallback()
     end
 end
 
 function GM:DatabaseFallback(reason)
-    Parallax.Database:LoadTables()
+    ax.database:LoadTables()
     hook.Run("LoadData")
 end
 
 function GM:SetupPlayerVisibility(client, viewEntity)
     if ( client:Team() == 0 ) then
-        AddOriginToPVS(Parallax.Config:Get("mainmenu.pos", vector_origin))
+        AddOriginToPVS(ax.config:Get("mainmenu.pos", vector_origin))
     end
 end
 
@@ -337,7 +337,7 @@ function GM:GetFallDamage(client, speed)
 end
 
 local nextThink = CurTime() + 1
-local nextSave = CurTime() + Parallax.Config:Get("save.interval", 300)
+local nextSave = CurTime() + ax.config:Get("save.interval", 300)
 local playerVoiceListeners = {}
 function GM:Think()
     if ( CurTime() >= nextThink ) then
@@ -352,13 +352,13 @@ function GM:Think()
 
             for _, listener in player.Iterator() do
                 if ( listener == client ) then continue end
-                if ( listener:EyePos():DistToSqr(client:EyePos()) > Parallax.Config:Get("voice.distance", 384) ^ 2 ) then continue end
+                if ( listener:EyePos():DistToSqr(client:EyePos()) > ax.config:Get("voice.distance", 384) ^ 2 ) then continue end
 
                 voiceListeners[listener] = true
             end
 
             -- Overwrite the voice listeners if the config is disabled
-            if ( Parallax.Config:Get("voice", true) ) then
+            if ( ax.config:Get("voice", true) ) then
                 playerVoiceListeners[client] = voiceListeners
             else
                 playerVoiceListeners = {}
@@ -367,14 +367,14 @@ function GM:Think()
     end
 
     if ( CurTime() >= nextSave ) then
-        nextSave = CurTime() + Parallax.Config:Get("save.interval", 300)
+        nextSave = CurTime() + ax.config:Get("save.interval", 300)
         hook.Run("SaveData")
     end
 end
 
 function GM:ShutDown()
-    Parallax.Util:Print("Shutting down Parallax...")
-    Parallax.ShutDown = true
+    ax.util:Print("Shutting down ax...")
+    ax.ShutDown = true
 
     hook.Run("SaveData")
 end
@@ -454,15 +454,10 @@ function GM:PlayerDeath(client, inflictor, attacker)
 
         local deathSound = hook.Run("GetPlayerDeathSound", client, inflictor, attacker)
         if ( deathSound and deathSound != "" and !client:InObserver() ) then
-            if ( !file.Exists("sound/" .. deathSound, "GAME") ) then
-                Parallax.Util:PrintWarning("PlayerDeathSound: Sound file does not exist! " .. deathSound)
-                return false
-            end
-
             client:EmitSound(deathSound, 75, 100, 1, CHAN_VOICE)
         end
 
-        client:SetRelay("respawnTime", CurTime() + Parallax.Config:Get("time.respawn", 60))
+        client:SetRelay("respawnTime", CurTime() + ax.config:Get("time.respawn", 60))
     end
 end
 
@@ -500,7 +495,7 @@ function GM:PrePlayerConfigChanged(client, key, value, oldValue)
 end
 
 gameevent.Listen("OnRequestFullUpdate")
-hook.Add("OnRequestFullUpdate", "Parallax.OnRequestFullUpdate", function(data)
+hook.Add("OnRequestFullUpdate", "ax.OnRequestFullUpdate", function(data)
     if ( !istable(data) or !isnumber(data.userid) ) then return end
 
     local client = Player(data.userid)
@@ -538,7 +533,7 @@ function GM:PlayerSpawnNPC(client, npc_type, weapon)
 end
 
 function GM:PrePlayerCreatedCharacter(client, payload)
-    local maxCharacters = Parallax.Config:Get("characters.maxCount")
+    local maxCharacters = ax.config:Get("characters.maxCount")
     if ( table.Count(client:GetCharacters()) >= maxCharacters ) then
         return false, "You have reached the maximum number of characters! (" .. maxCharacters .. ")"
     end

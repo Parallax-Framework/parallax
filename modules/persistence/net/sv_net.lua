@@ -11,7 +11,7 @@
 
 local MODULE = MODULE
 
-Parallax.Net:Hook("persistence.mark", function(client, ent)
+ax.net:Hook("persistence.mark", function(client, ent)
     if ( !IsValid(client) or !client:IsAdmin() ) then return end
 
     if ( ent:GetRelay("persistent") == true ) then
@@ -20,13 +20,13 @@ Parallax.Net:Hook("persistence.mark", function(client, ent)
     end
 
     ent:SetRelay("persistent", true)
-    Parallax.Log:Send(Parallax.Log:Format(client) .. " marked entity " .. tostring(ent) .. " as persistent.")
+    ax.Log:Send(ax.Log:Format(client) .. " marked entity " .. tostring(ent) .. " as persistent.")
     client:Notify("Marked entity " .. tostring(ent) .. " as persistent.")
 
     MODULE:SaveEntities()
 end)
 
-Parallax.Net:Hook("persistence.unmark", function(client, ent)
+ax.net:Hook("persistence.unmark", function(client, ent)
     if ( !IsValid(client) or !client:IsAdmin() ) then return end
 
     if ( ent:GetRelay("persistent") != true ) then
@@ -35,7 +35,7 @@ Parallax.Net:Hook("persistence.unmark", function(client, ent)
     end
 
     ent:SetRelay("persistent", false)
-    Parallax.Log:Send(Parallax.Log:Format(client) .. " unmarked entity " .. tostring(ent) .. " as persistent.")
+    ax.Log:Send(ax.Log:Format(client) .. " unmarked entity " .. tostring(ent) .. " as persistent.")
     client:Notify("Unmarked entity " .. tostring(ent) .. " as persistent.")
 
     MODULE:SaveEntities()

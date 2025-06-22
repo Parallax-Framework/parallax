@@ -119,7 +119,7 @@ local function VelocityRemove(entity, normalize)
     else
         local physicsObject = entity:GetPhysicsObject()
         local vel = IsValid(physicsObject) and physicsObject:GetVelocity() or entity:GetVelocity()
-        local len = math.min(Parallax.Config:Get("hands.max.throw", 150), vel:Length2D())
+        local len = math.min(ax.config:Get("hands.max.throw", 150), vel:Length2D())
 
         vel:Normalize()
         vel = vel * len
@@ -288,7 +288,7 @@ function SWEP:SecondaryAttack()
 
     local data = {}
     data.start = owner:GetShootPos()
-    data.endpos = data.start + owner:GetAimVector() * Parallax.Config:Get("hands.range", 96)
+    data.endpos = data.start + owner:GetAimVector() * ax.config:Get("hands.range", 96)
     data.mask = MASK_SHOT
     data.filter = {self, owner}
     local traceData = util.TraceLine(data)
@@ -356,7 +356,7 @@ function SWEP:AllowPickup(target)
     local physicsObject = target:GetPhysicsObject()
     local owner = self:GetOwner()
 
-    return ( IsValid(physicsObject) and IsValid(owner) and !physicsObject:HasGameFlag(FVPHYSICS_NO_PLAYER_PICKUP) and physicsObject:GetMass() < Parallax.Config:Get("hands.max.Carry", 160) and !self:IsEntityStoodOn(target) and target.CanPickup != false )
+    return ( IsValid(physicsObject) and IsValid(owner) and !physicsObject:HasGameFlag(FVPHYSICS_NO_PLAYER_PICKUP) and physicsObject:GetMass() < ax.config:Get("hands.max.Carry", 160) and !self:IsEntityStoodOn(target) and target.CanPickup != false )
 end
 
 function SWEP:DoPickup(throw)
@@ -396,8 +396,8 @@ function SWEP:DoPunch()
     local owner = self:GetOwner()
     if ( !IsValid(owner) ) then return end
 
-    if ( Parallax.Stamina ) then
-        local stamina = Parallax.Stamina:Get(owner)
+    if ( ax.Stamina ) then
+        local stamina = ax.Stamina:Get(owner)
         if ( stamina < 5 ) then
             if ( CLIENT ) then
                 owner:ChatText("You are too tired to punch.")
@@ -485,8 +485,8 @@ function SWEP:DoPunch()
                 end
             end
 
-            if ( Parallax.Stamina ) then
-                Parallax.Stamina:Consume(owner, 5)
+            if ( ax.Stamina ) then
+                ax.Stamina:Consume(owner, 5)
             end
         elseif ( trace.HitWorld ) then
             owner:EmitSound(Sound("Flesh.ImpactHard"))

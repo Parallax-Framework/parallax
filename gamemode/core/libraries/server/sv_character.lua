@@ -10,9 +10,9 @@
 ]]
 
 --- Character library.
--- @module Parallax.Character
+-- @module ax.character
 
-function Parallax.Character:Create(client, query, callback)
+function ax.character:Create(client, query, callback)
     if ( !IsValid(client) or !client:IsPlayer() ) then
         return callback(false, "Invalid player!")
     end
@@ -35,7 +35,7 @@ function Parallax.Character:Create(client, query, callback)
     insertQuery.play_time = 0
     insertQuery.last_played = os.time()
 
-    Parallax.Database:Insert("ax_characters", insertQuery, function(characterID)
+    ax.database:Insert("ax_characters", insertQuery, function(characterID)
         if ( !characterID ) then
             return callback(false, "Failed to insert character into database!")
         end
@@ -55,10 +55,10 @@ function Parallax.Character:Create(client, query, callback)
         clientTable.axCharacters = clientTable.axCharacters or {}
         clientTable.axCharacters[characterID] = character
 
-        self.Stored[characterID] = character
+        self.stored[characterID] = character
 
-        Parallax.Net:Start(client, "character.cache", character)
-        Parallax.Inventory:Register({characterID = characterID})
+        ax.net:Start(client, "character.cache", character)
+        ax.inventory:Register({characterID = characterID})
 
         hook.Run("PostPlayerCreatedCharacter", client, character, query)
 
@@ -66,9 +66,9 @@ function Parallax.Character:Create(client, query, callback)
     end)
 end
 
-function Parallax.Character:Load(client, characterID)
+function ax.character:Load(client, characterID)
     if ( !IsValid(client) or !client:IsPlayer() ) then
-        Parallax.Util:PrintError("Attempted to load character for invalid player (" .. tostring(client) .. ")")
+        ax.util:PrintError("Attempted to load character for invalid player (" .. tostring(client) .. ")")
         return false
     end
 
@@ -90,7 +90,7 @@ function Parallax.Character:Load(client, characterID)
     local steamID = client:SteamID64()
     local condition = string.format("steamid = %s AND id = %s", sql.SQLStr(steamID), sql.SQLStr(characterID))
 
-    Parallax.Database:Select("ax_characters", nil, condition, function(result)
+    ax.database:Select("ax_characters", nil, condition, function(result)
         if ( result and result[1] ) then
             local character = self:CreateObject(characterID, result[1], client)
             if ( !character ) then
@@ -98,11 +98,11 @@ function Parallax.Character:Load(client, characterID)
                 return
             end
 
-            self.Stored[characterID] = character
+            self.stored[characterID] = character
 
             hook.Run("PrePlayerLoadedCharacter", client, character, currentCharacter)
 
-            Parallax.Net:Start(client, "character.load", characterID, character)
+            ax.net:Start(client, "character.load", characterID, character)
 
             local clientTable = client:GetTable()
             clientTable.axCharacters = clientTable.axCharacters or {}
@@ -114,29 +114,29 @@ function Parallax.Character:Load(client, characterID)
             client:SetSkin(character:GetSkin())
             client:Spawn()
 
-            Parallax.Inventory:CacheAll(characterID, function(inventory)
-                Parallax.Item:Cache(characterID)
+            ax.inventory:CacheAll(characterID, function(inventory)
+                ax.item:Cache(characterID)
             end)
 
             hook.Run("PostPlayerLoadedCharacter", client, character, currentCharacter)
 
             return character
         else
-            Parallax.Util:PrintError("Failed to load character with ID " .. characterID .. " for player " .. tostring(client))
+            ax.util:PrintError("Failed to load character with ID " .. characterID .. " for player " .. tostring(client))
             return
         end
     end)
 end
 
-function Parallax.Character:Delete(characterID, callback)
+function ax.character:Delete(characterID, callback)
     if ( !isnumber(characterID) ) then
-        Parallax.Util:PrintError("Attempted to delete character with invalid ID (" .. tostring(characterID) .. ")")
+        ax.util:PrintError("Attempted to delete character with invalid ID (" .. tostring(characterID) .. ")")
         return false
     end
 
-    local character = self.Stored[characterID]
+    local character = self.stored[characterID]
     if ( !character ) then
-        Parallax.Util:PrintError("Attempted to delete character that does not exist (" .. characterID .. ")")
+        ax.util:PrintError("Attempted to delete character that does not exist (" .. characterID .. ")")
         return false
     end
 
@@ -155,33 +155,33 @@ function Parallax.Character:Delete(characterID, callback)
 
         client:KillSilent()
 
-        Parallax.Net:Start(client, "character.delete", characterID)
+        ax.net:Start(client, "character.delete", characterID)
     end
 
-    self.Stored[characterID] = nil
+    self.stored[characterID] = nil
 
     -- Delete all related inventories and items for this character
-    Parallax.Database:Delete("ax_inventories", string.format("character_id = %s", sql.SQLStr(characterID)))
-    Parallax.Database:Delete("ax_items", string.format("character_id = %s", sql.SQLStr(characterID)))
+    ax.database:Delete("ax_inventories", string.format("character_id = %s", sql.SQLStr(characterID)))
+    ax.database:Delete("ax_items", string.format("character_id = %s", sql.SQLStr(characterID)))
 
     -- Finally, delete the character from the database
-    Parallax.Database:Delete("ax_characters", string.format("id = %s", sql.SQLStr(characterID)), function(result)
+    ax.database:Delete("ax_characters", string.format("id = %s", sql.SQLStr(characterID)), function(result)
         if ( callback ) then
             callback(tobool(result))
         end
     end)
 end
 
-function Parallax.Character:Cache(client, characterID, callback)
+function ax.character:Cache(client, characterID, callback)
     if ( !IsValid(client) or !client:IsPlayer() ) then
-        Parallax.Util:PrintError("Attempted to cache character for invalid player (" .. tostring(client) .. ")")
+        ax.util:PrintError("Attempted to cache character for invalid player (" .. tostring(client) .. ")")
         return false
     end
 
     local condition = string.format("steamid = %s AND id = %s", sql.SQLStr(client:SteamID64()), sql.SQLStr(characterID))
-    Parallax.Database:Select("ax_characters", nil, condition, function(result)
+    ax.database:Select("ax_characters", nil, condition, function(result)
         if ( !result or !result[1] ) then
-            Parallax.Util:PrintError("Failed to cache character with ID " .. characterID .. " for player " .. tostring(client))
+            ax.util:PrintError("Failed to cache character with ID " .. characterID .. " for player " .. tostring(client))
 
             if ( callback ) then
                 callback(false)
@@ -192,7 +192,7 @@ function Parallax.Character:Cache(client, characterID, callback)
 
         characterID = tonumber(characterID)
         if ( !characterID ) then
-            Parallax.Util:PrintError("Failed to convert character ID " .. characterID .. " to number for player " .. tostring(client))
+            ax.util:PrintError("Failed to convert character ID " .. characterID .. " to number for player " .. tostring(client))
             return false
         end
 
@@ -204,9 +204,9 @@ function Parallax.Character:Cache(client, characterID, callback)
         local clientTable = client:GetTable()
         clientTable.axCharacters = clientTable.axCharacters or {}
         clientTable.axCharacters[characterID] = result[1]
-        self.Stored[characterID] = result[1]
+        self.stored[characterID] = result[1]
 
-        Parallax.Net:Start(client, "character.cache", result[1])
+        ax.net:Start(client, "character.cache", result[1])
 
         if ( callback ) then
             callback(true, result[1])
@@ -214,9 +214,9 @@ function Parallax.Character:Cache(client, characterID, callback)
     end)
 end
 
-function Parallax.Character:CacheAll(client, callback)
+function ax.character:CacheAll(client, callback)
     if ( !IsValid(client) or !client:IsPlayer() ) then
-        Parallax.Util:PrintError("Attempted to load characters for invalid player (" .. tostring(client) .. ")")
+        ax.util:PrintError("Attempted to load characters for invalid player (" .. tostring(client) .. ")")
 
         if ( callback ) then
             callback(false)
@@ -230,33 +230,33 @@ function Parallax.Character:CacheAll(client, callback)
     clientTable.axCharacters = {}
 
     local condition = string.format("steamid = %s", sql.SQLStr(client:SteamID64()))
-    Parallax.Database:Select("ax_characters", nil, condition, function(result)
+    ax.database:Select("ax_characters", nil, condition, function(result)
         if ( result ) then
             for i = 1, #result do
                 local row = result[i]
                 local id = tonumber(row.id)
                 if ( !id ) then
-                    Parallax.Util:PrintError("Failed to convert character ID " .. tostring(row.id) .. " to number for player " .. tostring(client))
+                    ax.util:PrintError("Failed to convert character ID " .. tostring(row.id) .. " to number for player " .. tostring(client))
                     continue
                 end
 
                 -- Make sure we are not loading a character from a different schema
                 if ( row.schema != SCHEMA.Folder ) then
-                    Parallax.Util:PrintWarning("Character with ID " .. id .. " does not belong to the current schema (" .. SCHEMA.Folder .. ") for player " .. tostring(client))
+                    ax.util:PrintWarning("Character with ID " .. id .. " does not belong to the current schema (" .. SCHEMA.Folder .. ") for player " .. tostring(client))
                     continue
                 end
 
                 local character = self:CreateObject(id, row, client)
                 if ( !character ) then
-                    Parallax.Util:PrintError("Failed to create character object for ID " .. id .. " for player " .. tostring(client))
+                    ax.util:PrintError("Failed to create character object for ID " .. id .. " for player " .. tostring(client))
                     continue
                 end
 
-                self.Stored[id] = character
+                self.stored[id] = character
                 clientTable.axCharacters[id] = character
             end
 
-            Parallax.Net:Start(client, "character.cache.all", clientTable.axCharacters)
+            ax.net:Start(client, "character.cache.all", clientTable.axCharacters)
 
             if ( callback ) then
                 callback(true, clientTable.axCharacters)
@@ -264,7 +264,7 @@ function Parallax.Character:CacheAll(client, callback)
 
             hook.Run("PlayerLoadedAllCharacters", client, clientTable.axCharacters)
         else
-            Parallax.Util:PrintError("Failed to load characters for player " .. tostring(client) .. "\n")
+            ax.util:PrintError("Failed to load characters for player " .. tostring(client) .. "\n")
 
             if ( callback ) then
                 callback(false)
@@ -274,7 +274,9 @@ function Parallax.Character:CacheAll(client, callback)
 end
 
 concommand.Add("ax_character_test_create", function(client, cmd, arguments)
-    Parallax.Character:Create(client, {
+    ax.character:Create(client, {
         name = "Test Character"
     })
 end)
+
+ax.character = ax.character

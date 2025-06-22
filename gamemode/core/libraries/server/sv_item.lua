@@ -10,7 +10,7 @@
 ]]
 
 -- server-side item logic
--- @module Parallax.Item
+-- @module ax.item
 
 --- Adds a new item to a character's inventory.
 -- This function handles inventory lookup, database insertion, instance creation, and syncing.
@@ -19,26 +19,26 @@
 -- @tparam string uniqueID The registered unique ID of the item
 -- @tparam[opt] table data Optional custom item data
 -- @tparam[opt] function callback Optional callback called with (itemID, data)
--- @within Parallax.Item
-function Parallax.Item:Add(characterID, inventoryID, uniqueID, data, callback)
-    if ( !characterID or !uniqueID or !self.Stored[uniqueID] ) then
-        Parallax.Util:PrintError("Invalid parameters for item addition: characterID=" .. tostring(characterID) .. ", uniqueID=" .. tostring(uniqueID))
+-- @within ax.item
+function ax.item:Add(characterID, inventoryID, uniqueID, data, callback)
+    if ( !characterID or !uniqueID or !self.stored[uniqueID] ) then
+        ax.util:PrintError("Invalid parameters for item addition: characterID=" .. tostring(characterID) .. ", uniqueID=" .. tostring(uniqueID))
         return
     end
 
-    local character = Parallax.Character:Get(characterID)
+    local character = ax.character:Get(characterID)
     if ( character and !inventoryID ) then
         inventoryID = character:GetInventory()
     end
 
-    local inventory = Parallax.Inventory:Get(inventoryID)
-    if ( inventory and !inventory:HasSpaceFor(self.Stored[uniqueID].Weight) ) then
+    local inventory = ax.inventory:Get(inventoryID)
+    if ( inventory and !inventory:HasSpaceFor(self.stored[uniqueID].Weight) ) then
         return
     end
 
     data = data or {}
 
-    Parallax.Database:Insert("ax_items", {
+    ax.database:Insert("ax_items", {
         inventory_id = inventoryID,
         character_id = characterID,
         unique_id = uniqueID,
@@ -46,7 +46,7 @@ function Parallax.Item:Add(characterID, inventoryID, uniqueID, data, callback)
     }, function(result)
         local itemID = tonumber(result)
         if ( !itemID ) then
-            Parallax.Util:PrintError("Failed to create item in database: " .. tostring(result))
+            ax.util:PrintError("Failed to create item in database: " .. tostring(result))
             return
         end
 
@@ -59,11 +59,11 @@ function Parallax.Item:Add(characterID, inventoryID, uniqueID, data, callback)
         })
 
         if ( !item ) then
-            Parallax.Util:PrintError("Failed to create item object for item ID " .. itemID)
+            ax.util:PrintError("Failed to create item object for item ID " .. itemID)
             return
         end
 
-        self.Instances[itemID] = item
+        self.instances[itemID] = item
 
         if ( inventory ) then
             local items = inventory:GetItems()
@@ -81,9 +81,9 @@ function Parallax.Item:Add(characterID, inventoryID, uniqueID, data, callback)
             end
         end
 
-        local receiver = Parallax.Character:GetPlayerByCharacter(characterID)
+        local receiver = ax.character:GetPlayerByCharacter(characterID)
         if ( IsValid(receiver) ) then
-            Parallax.Net:Start(receiver, "item.add", itemID, inventoryID, uniqueID, data)
+            ax.net:Start(receiver, "item.add", itemID, inventoryID, uniqueID, data)
         end
 
         if ( callback ) then
@@ -94,17 +94,17 @@ function Parallax.Item:Add(characterID, inventoryID, uniqueID, data, callback)
     end)
 end
 
-function Parallax.Item:Transfer(itemID, fromInventoryID, toInventoryID, callback)
+function ax.item:Transfer(itemID, fromInventoryID, toInventoryID, callback)
     if ( !itemID or !fromInventoryID or !toInventoryID ) then return false end
 
-    local item = self.Instances[itemID]
+    local item = self.instances[itemID]
     if ( !item ) then return false end
 
-    local fromInventory = Parallax.Inventory:Get(fromInventoryID)
-    local toInventory = Parallax.Inventory:Get(toInventoryID)
+    local fromInventory = ax.inventory:Get(fromInventoryID)
+    local toInventory = ax.inventory:Get(toInventoryID)
 
     if ( toInventory and !toInventory:HasSpaceFor(item:GetWeight()) ) then
-        local receiver = Parallax.Character:GetPlayerByCharacter(item:GetOwner())
+        local receiver = ax.character:GetPlayerByCharacter(item:GetOwner())
         if ( IsValid(receiver) ) then
             receiver:Notify("Inventory is too full to transfer this item.")
         end
@@ -127,7 +127,7 @@ function Parallax.Item:Transfer(itemID, fromInventoryID, toInventoryID, callback
 
     item:SetInventory(toInventoryID)
 
-    Parallax.Database:Update("ax_items", {
+    ax.database:Update("ax_items", {
         inventory_id = toInventoryID
     }, "id = " .. itemID)
 
@@ -140,44 +140,44 @@ function Parallax.Item:Transfer(itemID, fromInventoryID, toInventoryID, callback
     return true
 end
 
-function Parallax.Item:PerformAction(itemID, actionName, callback)
+function ax.item:PerformAction(itemID, actionName, callback)
     local item = self:Get(itemID)
     if ( !item or !actionName ) then
-        Parallax.Util:PrintError("Invalid parameters for item action: itemID=" .. tostring(itemID) .. ", actionName=" .. tostring(actionName))
+        ax.util:PrintError("Invalid parameters for item action: itemID=" .. tostring(itemID) .. ", actionName=" .. tostring(actionName))
         return false
     end
 
-    local base = self.Stored[item:GetUniqueID()]
+    local base = self.stored[item:GetUniqueID()]
     if ( !base or !base.Actions ) then
-        Parallax.Util:PrintError("Item '" .. item:GetUniqueID() .. "' does not have actions defined.")
+        ax.util:PrintError("Item '" .. item:GetUniqueID() .. "' does not have actions defined.")
         return false
     end
 
     local action = base.Actions[actionName]
     if ( !action ) then
-        Parallax.Util:PrintError("Action '" .. actionName .. "' not found for item '" .. item:GetUniqueID() .. "'.")
+        ax.util:PrintError("Action '" .. actionName .. "' not found for item '" .. item:GetUniqueID() .. "'.")
         return false
     end
 
-    local client = Parallax.Character:GetPlayerByCharacter(item:GetOwner())
+    local client = ax.character:GetPlayerByCharacter(item:GetOwner())
     if ( !IsValid(client) ) then
-        Parallax.Util:PrintError("Invalid client for item action: " .. tostring(item:GetOwner()))
+        ax.util:PrintError("Invalid client for item action: " .. tostring(item:GetOwner()))
         return false
     end
 
-    local character = Parallax.Character:Get(item:GetOwner())
+    local character = ax.character:Get(item:GetOwner())
     if ( !character ) then
-        Parallax.Util:PrintError("Invalid character for item action: " .. tostring(item:GetOwner()))
+        ax.util:PrintError("Invalid character for item action: " .. tostring(item:GetOwner()))
         return false
     end
 
     local inventoryID = item:GetInventory()
     if ( inventoryID != character:GetInventory():GetID() ) then
         if ( inventoryID == 0 and actionName != "Take" ) then
-            Parallax.Util:PrintWarning(client, " attempted to perform action '" .. actionName .. "' on item '" .. item:GetUniqueID() .. "' without a valid inventory.")
+            ax.util:PrintWarning(client, " attempted to perform action '" .. actionName .. "' on item '" .. item:GetUniqueID() .. "' without a valid inventory.")
             return false
         elseif ( inventoryID != 0 and actionName == "Take" ) then
-            Parallax.Util:PrintWarning(client, " attempted to perform action '" .. actionName .. "' on item '" .. item:GetUniqueID() .. "' in inventory ID " .. inventoryID .. ", but the action is not allowed.")
+            ax.util:PrintWarning(client, " attempted to perform action '" .. actionName .. "' on item '" .. item:GetUniqueID() .. "' in inventory ID " .. inventoryID .. ", but the action is not allowed.")
             return false
         end
     end
@@ -208,22 +208,22 @@ function Parallax.Item:PerformAction(itemID, actionName, callback)
         end
     end
 
-    Parallax.Net:Start(client, "inventory.refresh", inventoryID)
+    ax.net:Start(client, "inventory.refresh", inventoryID)
 
     hook.Run("PostPlayerItemAction", client, actionName, item)
 
     return true
 end
 
-function Parallax.Item:Cache(characterID, callback)
-    if ( !Parallax.Character:Get(characterID) ) then
-        Parallax.Util:PrintError("Invalid character ID for item cache: " .. tostring(characterID))
+function ax.item:Cache(characterID, callback)
+    if ( !ax.character:Get(characterID) ) then
+        ax.util:PrintError("Invalid character ID for item cache: " .. tostring(characterID))
         return
     end
 
-    Parallax.Database:Select("ax_items", nil, "character_id = " .. characterID .. " OR character_id = 0", function(result)
+    ax.database:Select("ax_items", nil, "character_id = " .. characterID .. " OR character_id = 0", function(result)
         if ( !result or #result == 0 ) then
-            Parallax.Util:PrintWarning("No items found for character ID " .. characterID)
+            ax.util:PrintWarning("No items found for character ID " .. characterID)
             if ( callback ) then
                 callback({})
             end
@@ -235,41 +235,41 @@ function Parallax.Item:Cache(characterID, callback)
             local itemID = tonumber(row.id)
             local uniqueID = row.unique_id
 
-            if ( self.Stored[uniqueID] ) then
+            if ( self.stored[uniqueID] ) then
                 local item = self:CreateObject(row)
                 if ( !item ) then
-                    Parallax.Util:PrintError("Failed to create object for item #" .. itemID .. ", skipping")
+                    ax.util:PrintError("Failed to create object for item #" .. itemID .. ", skipping")
                     continue
                 end
 
                 if ( item:GetOwner() == 0 ) then
-                    local inventory = Parallax.Inventory:Get(item:GetInventory())
+                    local inventory = ax.inventory:Get(item:GetInventory())
                     if ( inventory ) then
                         local newCharID = inventory:GetOwner()
                         item:SetOwner(newCharID)
 
-                        Parallax.Database:Update("ax_items", {
+                        ax.database:Update("ax_items", {
                             character_id = newCharID
                         }, "id = " .. itemID)
                     else
-                        Parallax.Util:PrintError("Invalid orphaned item #" .. itemID .. " (no inventory)")
-                        Parallax.Database:Delete("ax_items", "id = " .. itemID)
+                        ax.util:PrintError("Invalid orphaned item #" .. itemID .. " (no inventory)")
+                        ax.database:Delete("ax_items", "id = " .. itemID)
                         continue
                     end
                 end
 
-                self.Instances[itemID] = item
+                self.instances[itemID] = item
 
                 if ( item.OnCache ) then
                     item:OnCache()
                 end
             else
-                Parallax.Util:PrintError("Unknown item unique ID '" .. tostring(uniqueID) .. "' in DB, skipping")
+                ax.util:PrintError("Unknown item unique ID '" .. tostring(uniqueID) .. "' in DB, skipping")
             end
         end
 
         local instanceList = {}
-        for _, item in pairs(self.Instances) do
+        for _, item in pairs(self.instances) do
             if ( item:GetOwner() == characterID ) then
                 table.insert(instanceList, {
                     ID = item:GetID(),
@@ -280,9 +280,9 @@ function Parallax.Item:Cache(characterID, callback)
             end
         end
 
-        local client = Parallax.Character:GetPlayerByCharacter(characterID)
+        local client = ax.character:GetPlayerByCharacter(characterID)
         if ( IsValid(client) ) then
-            Parallax.Net:Start(client, "item.cache", instanceList)
+            ax.net:Start(client, "item.cache", instanceList)
         end
 
         if ( callback ) then
@@ -295,32 +295,32 @@ end
 -- Deletes the item from the database, removes it from inventory, and clears it from memory.
 -- @param itemID The item ID to remove.
 -- @param callback Optional function to call after removal.
-function Parallax.Item:Remove(itemID, callback)
-    local item = self.Instances[itemID]
+function ax.item:Remove(itemID, callback)
+    local item = self.instances[itemID]
     if ( !item ) then
-        Parallax.Util:PrintError("Invalid item ID for removal: " .. tostring(itemID))
+        ax.util:PrintError("Invalid item ID for removal: " .. tostring(itemID))
         return false
     end
 
     local inventoryID = item:GetInventory()
-    local inventory = Parallax.Inventory:Get(inventoryID)
+    local inventory = ax.inventory:Get(inventoryID)
 
     -- Remove from inventory object
     if ( inventory ) then
-        Parallax.Inventory:RemoveItem(inventoryID, itemID)
+        ax.inventory:RemoveItem(inventoryID, itemID)
     end
 
     -- Delete from database
-    Parallax.Database:Delete("ax_items", "id = " .. itemID)
+    ax.database:Delete("ax_items", "id = " .. itemID)
 
     -- Notify client
-    local client = Parallax.Character:GetPlayerByCharacter(item:GetOwner())
+    local client = ax.character:GetPlayerByCharacter(item:GetOwner())
     if ( IsValid(client) ) then
-        Parallax.Net:Start(client, "inventory.item.remove", inventoryID, itemID)
+        ax.net:Start(client, "inventory.item.remove", inventoryID, itemID)
     end
 
     -- Remove from memory
-    self.Instances[itemID] = nil
+    self.instances[itemID] = nil
 
     hook.Run("OnItemRemovedPermanently", itemID)
 
@@ -331,15 +331,15 @@ function Parallax.Item:Remove(itemID, callback)
     return true
 end
 
-function Parallax.Item:Spawn(itemID, uniqueID, position, angles, callback, data)
-    if ( !uniqueID or !position or !self.Stored[uniqueID] ) then
-        Parallax.Util:PrintError("Invalid parameters for item spawn.")
+function ax.item:Spawn(itemID, uniqueID, position, angles, callback, data)
+    if ( !uniqueID or !position or !self.stored[uniqueID] ) then
+        ax.util:PrintError("Invalid parameters for item spawn.")
         return nil
     end
 
     local entity = ents.Create("ax_item")
     if ( !IsValid(entity) ) then
-        Parallax.Util:PrintError("Failed to create item entity for unique ID '" .. uniqueID .. "'.")
+        ax.util:PrintError("Failed to create item entity for unique ID '" .. uniqueID .. "'.")
         return nil
     end
 
@@ -347,7 +347,7 @@ function Parallax.Item:Spawn(itemID, uniqueID, position, angles, callback, data)
         position = position:GetDropPosition()
         angles = position:GetAngles()
     elseif ( !isvector(position) ) then
-        Parallax.Util:PrintError("Invalid position provided for item spawn: " .. tostring(position))
+        ax.util:PrintError("Invalid position provided for item spawn: " .. tostring(position))
         return nil
     end
 
@@ -373,13 +373,13 @@ concommand.Add("ax_item_add", function(client, cmd, arguments)
     end
 
     local uniqueID = arguments[1]
-    if ( !uniqueID or !Parallax.Item.Stored[uniqueID] ) then
+    if ( !uniqueID or !ax.item.stored[uniqueID] ) then
         client:Notify("Invalid item unique ID specified.")
         return
     end
 
     local characterID = client:GetCharacterID()
-    local inventories = Parallax.Inventory:GetByCharacterID(characterID)
+    local inventories = ax.inventory:GetByCharacterID(characterID)
     if ( #inventories == 0 ) then
         client:Notify("No inventories found for character ID " .. characterID .. ".")
         return
@@ -387,7 +387,7 @@ concommand.Add("ax_item_add", function(client, cmd, arguments)
 
     local inventoryID = inventories[1]:GetID()
 
-    Parallax.Item:Add(characterID, inventoryID, uniqueID, nil, function(itemID)
+    ax.item:Add(characterID, inventoryID, uniqueID, nil, function(itemID)
         client:Notify("Item " .. uniqueID .. " added to inventory " .. inventoryID .. ".")
     end)
 end)
@@ -406,7 +406,7 @@ concommand.Add("ax_item_spawn", function(client, cmd, arguments)
 
     local pos = client:GetEyeTrace().HitPos + vector_up * 10
 
-    Parallax.Item:Spawn(nil, uniqueID, pos, nil, function(ent)
+    ax.item:Spawn(nil, uniqueID, pos, nil, function(ent)
         if ( IsValid(ent) ) then
             client:Notify("Item " .. uniqueID .. " spawned.")
         else
@@ -414,3 +414,5 @@ concommand.Add("ax_item_spawn", function(client, cmd, arguments)
         end
     end)
 end)
+
+ax.item = ax.item

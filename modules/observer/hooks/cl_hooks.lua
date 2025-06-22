@@ -18,7 +18,7 @@ function MODULE:DrawPhysgunBeam(client, physgun, enabled, target, physBone, hitP
 end
 
 function MODULE:HUDPaint()
-    local client = Parallax.Client
+    local client = ax.client
     if ( !IsValid(client) or !client:InObserver() or !client:Alive() or !client:GetNoDraw() ) then return end
 
     if ( hook.Run("ShouldDrawObserverHUD", client) == false ) then return end
@@ -44,7 +44,7 @@ function MODULE:HUDPaint()
         if ( !screenPos.visible ) then continue end
 
         local y = screenPos.y
-        local _, h = draw.SimpleText(v:Name(), "DermaDefault", screenPos.x, y, Parallax.Color:Get("text"))
+        local _, h = draw.SimpleText(v:Name(), "DermaDefault", screenPos.x, y, ax.color:Get("text"))
         y = y + h + 2
 
         local health = v:Health()
@@ -54,7 +54,7 @@ function MODULE:HUDPaint()
             healthText = "DEAD"
         end
 
-        _, h = draw.SimpleText(healthText, "DermaDefault", screenPos.x, y, Parallax.Color:Get("text"))
+        _, h = draw.SimpleText(healthText, "DermaDefault", screenPos.x, y, ax.color:Get("text"))
         y = y + h + 2
 
         local faction = v:GetFactionData()
@@ -66,10 +66,10 @@ function MODULE:HUDPaint()
 
     local y = 10
 
-    local _, h = draw.SimpleText("Players: " .. playerCount, "DermaDefault", 10, y, Parallax.Color:Get("text"))
+    local _, h = draw.SimpleText("Players: " .. playerCount, "DermaDefault", 10, y, ax.color:Get("text"))
     y = y + h + 2
 
-    _, h = draw.SimpleText("Admins: " .. admins, "DermaDefault", 10, y, Parallax.Color:Get("text"))
+    _, h = draw.SimpleText("Admins: " .. admins, "DermaDefault", 10, y, ax.color:Get("text"))
     y = y + h + 2
 
     hook.Run("PostDrawObserverHUD", client)

@@ -11,13 +11,13 @@
 
 local MODULE = MODULE
 
-properties.Add("Parallax.Admin.sethealth", {
+properties.Add("ax.admin.sethealth", {
     MenuLabel = "Set Health",
     Order = 100,
     MenuIcon = "icon16/heart.png",
     Filter = function(self, ent, client)
         if ( !IsValid(ent) or !ent:IsPlayer() ) then return false end
-        if ( !hook.Run( "CanProperty", client, "Parallax.Admin.sethealth", ent) ) then return false end
+        if ( !hook.Run( "CanProperty", client, "ax.admin.sethealth", ent) ) then return false end
 
         return MODULE:HasPermission(client, "Parallax - Manage Health", nil)
     end,
@@ -39,7 +39,7 @@ properties.Add("Parallax.Admin.sethealth", {
         for i = 0, 100, 25 do
             local health = i
             subMenu:AddOption(health .. " HP", function()
-                if ( !self:Filter(ent, Parallax.Client) ) then return end
+                if ( !self:Filter(ent, ax.client) ) then return end
 
                 self:MsgStart()
                     net.WritePlayer(ent)

@@ -15,7 +15,7 @@ SWEP.IronSightsProgress = 0
 
 function SWEP:Think()
     local owner = self:GetOwner()
-    if ( owner != Parallax.Client ) then return end
+    if ( owner != ax.client ) then return end
 
     local aim = self:GetIronSights()
     self.IronSightsProgress = Lerp(FrameTime() * 10, self.IronSightsProgress, aim and 1 or 0)

@@ -67,7 +67,7 @@ local function isObstructed(eyePos, hitPos, ignoredEntity, ignoreParent)
     local q = traceQueryTable
     q.start = eyePos
     q.endpos = hitPos
-    q.filter[1] = Parallax.Client
+    q.filter[1] = ax.client
     q.filter[2] = ignoredEntity
     if ignoreParent and IsValid(ignoredEntity) then
         local parent = ignoredEntity:GetParent()
@@ -104,7 +104,7 @@ function imgui.Start3D2D(pos, angles, scale, distanceHide, distanceFadeStart)
 
     _devMode = imgui.IsDeveloperMode()
 
-    local eyePos = Parallax.Client:EyePos()
+    local eyePos = ax.client:EyePos()
     local eyePosToPos = pos - eyePos
 
     -- OPTIMIZATION: Test that we are in front of the UI
@@ -148,7 +148,7 @@ function imgui.Start3D2D(pos, angles, scale, distanceHide, distanceFadeStart)
 
     -- calculate mousepos
     if not vgui.CursorVisible() or vgui.IsHoveringWorld() then
-        local tr = Parallax.Client:GetEyeTrace()
+        local tr = ax.client:GetEyeTrace()
         local eyepos = tr.StartPos
         local eyenormal
 
@@ -278,7 +278,7 @@ local function developerText(str, x, y, clr)
 end
 
 local function drawDeveloperInfo()
-    local camAng = Parallax.Client:EyeAngles()
+    local camAng = ax.client:EyeAngles()
     camAng:RotateAroundAxis(camAng:Right(), 90)
     camAng:RotateAroundAxis(camAng:Up(), -90)
 
@@ -323,7 +323,7 @@ local function drawDeveloperInfo()
     developerText(string.format("ang: %.2f %.2f %.2f", ang.p, ang.y, ang.r), 0, 75, devColours["ang"])
     developerText(string.format("dot %d", gState._devDot or 0), 0, 88, devColours["dot"])
 
-    local angToEye = (pos - Parallax.Client:EyePos()):Angle()
+    local angToEye = (pos - ax.client:EyePos()):Angle()
     angToEye:RotateAroundAxis(ang:Up(), -90)
     angToEye:RotateAroundAxis(ang:Right(), 90)
 
@@ -514,4 +514,4 @@ function imgui.Button(x, y, w, h, paint, callbackPress, callbackHover, callbackU
     return true
 end
 
-Parallax.Imgui = imgui
+ax.Imgui = imgui

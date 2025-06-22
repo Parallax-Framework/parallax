@@ -51,15 +51,15 @@ function PLAYER:SaveDB(callback)
             clientTable.axDatabase.data = util.TableToJSON(clientTable.axDatabase.data)
         end
 
-        Parallax.Database:SaveRow("ax_players", clientTable.axDatabase, "steamid", function(data)
+        ax.database:SaveRow("ax_players", clientTable.axDatabase, "steamid", function(data)
             if ( callback and isfunction(callback) ) then
                 callback(data)
             end
         end)
 
-        Parallax.Net:Start(self, "database.save", clientTable.axDatabase or {})
+        ax.net:Start(self, "database.save", clientTable.axDatabase or {})
     else
-        Parallax.Util:PrintError("Player database not initialized, cannot save")
+        ax.util:PrintError("Player database not initialized, cannot save")
     end
 end
 
@@ -205,7 +205,7 @@ function PLAYER:SetRagdolled(bState, duration)
             ragdoll:SetRelay("owner", self)
             self:SetRelay("ragdoll", ragdoll)
 
-            local timerID = "Parallax.Client." .. self:SteamID64() .. ".ragdollRestore"
+            local timerID = "ax.client." .. self:SteamID64() .. ".ragdollRestore"
             timer.Create(timerID, 0.1, 0, function()
                 if ( !IsValid(self) or !IsValid(ragdoll) ) then timer.Remove(timerID) return end
 
@@ -213,7 +213,7 @@ function PLAYER:SetRagdolled(bState, duration)
                 self:SetVelocity(ragdoll:GetVelocity())
             end)
 
-            ragdoll:CallOnRemove("Parallax.Client.restore" .. self:SteamID64(), function(this)
+            ragdoll:CallOnRemove("ax.client.restore" .. self:SteamID64(), function(this)
                 timer.Remove(timerID)
 
                 if ( !IsValid(self) ) then return end

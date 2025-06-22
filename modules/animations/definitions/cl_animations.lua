@@ -9,7 +9,7 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
-Parallax.Net:Hook("animations.update", function(client, animations, holdType)
+ax.net:Hook("animations.update", function(client, animations, holdType)
     if ( !IsValid(client) ) then return end
 
     local clientTable = client:GetTable()

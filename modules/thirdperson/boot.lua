@@ -15,45 +15,45 @@ MODULE.Name = "Third Person"
 MODULE.Description = "Allows players to view themselves in third person."
 MODULE.Author = "Riggs"
 
-Parallax.Option:Register("thirdperson", {
+ax.option:Register("thirdperson", {
     Name = "option.thirdperson",
-    Type = Parallax.Types.bool,
+    Type = ax.types.bool,
     Default = false,
     Description = "option.thirdperson.enable.help",
     NoNetworking = true,
     Category = "category.thirdperson"
 })
 
-Parallax.Option:Register("thirdperson.follParallax.Head", {
-    Name = "options.thirdperson.follParallax.Head",
-    Type = Parallax.Types.bool,
+ax.option:Register("thirdperson.follax.Head", {
+    Name = "options.thirdperson.follax.Head",
+    Type = ax.types.bool,
     Default = false,
-    Description = "options.thirdperson.follParallax.Head.help",
+    Description = "options.thirdperson.follax.Head.help",
     NoNetworking = true,
     Category = "category.thirdperson"
 })
 
-Parallax.Option:Register("thirdperson.follParallax.Hit.angles", {
-    Name = "options.thirdperson.follParallax.Hit.angles",
-    Type = Parallax.Types.bool,
+ax.option:Register("thirdperson.follax.Hit.angles", {
+    Name = "options.thirdperson.follax.Hit.angles",
+    Type = ax.types.bool,
     Default = true,
-    Description = "options.thirdperson.follParallax.Hit.angles.help",
+    Description = "options.thirdperson.follax.Hit.angles.help",
     NoNetworking = true,
     Category = "category.thirdperson"
 })
 
-Parallax.Option:Register("thirdperson.follParallax.Hit.fov", {
-    Name = "options.thirdperson.follParallax.Hit.fov",
-    Type = Parallax.Types.bool,
+ax.option:Register("thirdperson.follax.Hit.fov", {
+    Name = "options.thirdperson.follax.Hit.fov",
+    Type = ax.types.bool,
     Default = true,
-    Description = "options.thirdperson.follParallax.Hit.fov.help",
+    Description = "options.thirdperson.follax.Hit.fov.help",
     NoNetworking = true,
     Category = "category.thirdperson"
 })
 
-Parallax.Option:Register("thirdperson.position.x", {
+ax.option:Register("thirdperson.position.x", {
     Name = "options.thirdperson.position.x",
-    Type = Parallax.Types.number,
+    Type = ax.types.number,
     Default = 50,
     Min = -100,
     Max = 100,
@@ -63,9 +63,9 @@ Parallax.Option:Register("thirdperson.position.x", {
     Category = "category.thirdperson"
 })
 
-Parallax.Option:Register("thirdperson.position.y", {
+ax.option:Register("thirdperson.position.y", {
     Name = "options.thirdperson.position.y",
-    Type = Parallax.Types.number,
+    Type = ax.types.number,
     Default = 25,
     Min = -100,
     Max = 100,
@@ -75,9 +75,9 @@ Parallax.Option:Register("thirdperson.position.y", {
     Category = "category.thirdperson"
 })
 
-Parallax.Option:Register("thirdperson.position.z", {
+ax.option:Register("thirdperson.position.z", {
     Name = "options.thirdperson.position.z",
-    Type = Parallax.Types.number,
+    Type = ax.types.number,
     Default = 0,
     Min = -100,
     Max = 100,
@@ -87,19 +87,19 @@ Parallax.Option:Register("thirdperson.position.z", {
     Category = "category.thirdperson"
 })
 
-Parallax.Config:Register("thirdperson.tracecheck", {
+ax.config:Register("thirdperson.tracecheck", {
     Name = "options.thirdperson.traceplayercheck",
-    Type = Parallax.Types.bool,
+    Type = ax.types.bool,
     Default = false,
     Description = "options.thirdperson.traceplayercheck.help",
     Category = "category.thirdperson"
 })
 
-Parallax.Option:Register("thirdperson.toggle", {
+ax.option:Register("thirdperson.toggle", {
     Name = "options.thirdperson.toggle",
     Description = "options.thirdperson.toggle.help",
     Category = "category.thirdperson",
-    Type = Parallax.Types.number,
+    Type = ax.types.number,
     Default = KEY_K,
     NoNetworking = true,
     IsKeybind = true,
@@ -110,21 +110,21 @@ Parallax.Option:Register("thirdperson.toggle", {
 
 local meta = FindMetaTable("Player")
 function meta:InThirdperson()
-    return SERVER and Parallax.Option:Get(self, "thirdperson", false) or Parallax.Option:Get("thirdperson", false)
+    return SERVER and ax.option:Get(self, "thirdperson", false) or ax.option:Get("thirdperson", false)
 end
 
 if (CLIENT) then
-    Parallax.Localization:Register("en", {
+    ax.localization:Register("en", {
         ["category.thirdperson"] = "Third Person",
         ["option.thirdperson"] = "Third Person",
         ["option.thirdperson.enable"] = "Enable Third Person",
         ["option.thirdperson.enable.help"] = "Enable or disable third person view.",
-        ["options.thirdperson.follParallax.Head"] = "Follow Head",
-        ["options.thirdperson.follParallax.Head.help"] = "Follow the player's head with the third person camera.",
-        ["options.thirdperson.follParallax.Hit.angles"] = "Follow Hit Angles",
-        ["options.thirdperson.follParallax.Hit.angles.help"] = "Follow the hit angles with the third person camera.",
-        ["options.thirdperson.follParallax.Hit.fov"] = "Follow Hit FOV",
-        ["options.thirdperson.follParallax.Hit.fov.help"] = "Follow the hit FOV with the third person camera.",
+        ["options.thirdperson.follax.Head"] = "Follow Head",
+        ["options.thirdperson.follax.Head.help"] = "Follow the player's head with the third person camera.",
+        ["options.thirdperson.follax.Hit.angles"] = "Follow Hit Angles",
+        ["options.thirdperson.follax.Hit.angles.help"] = "Follow the hit angles with the third person camera.",
+        ["options.thirdperson.follax.Hit.fov"] = "Follow Hit FOV",
+        ["options.thirdperson.follax.Hit.fov.help"] = "Follow the hit FOV with the third person camera.",
         ["options.thirdperson.position.x"] = "Position X",
         ["options.thirdperson.position.x.help"] = "Set the X position of the third person camera.",
         ["options.thirdperson.position.y"] = "Position Y",
@@ -138,17 +138,17 @@ if (CLIENT) then
         ["options.thirdperson.toggle.help"] = "Keybind to toggle third person view.",
     })
 
-    Parallax.Localization:Register("ru", {
+    ax.localization:Register("ru", {
         ["category.thirdperson"] = "Третье лицо",
         ["option.thirdperson"] = "Третье лицо",
         ["option.thirdperson.enable"] = "Включение третьего лицо",
         ["option.thirdperson.enable.help"] = "Должно ли третье лицо быть включено?",
-        ["options.thirdperson.follParallax.Head"] = "Следовать за головой",
-        ["options.thirdperson.follParallax.Head.help"] = "Должен ли вид от третьего лица следовать за головой игрока?",
-        ["options.thirdperson.follParallax.Hit.angles"] = "Следовать за углом удара",
-        ["options.thirdperson.follParallax.Hit.angles.help"] = "Должен ли вид от третьего лица следовать за углом удара игрока?",
-        ["options.thirdperson.follParallax.Hit.fov"] = "Следовать FOV удара",
-        ["options.thirdperson.follParallax.Hit.fov.help"] = "Должен ли вид от третьего лица следовать за FOV удара игрока?",
+        ["options.thirdperson.follax.Head"] = "Следовать за головой",
+        ["options.thirdperson.follax.Head.help"] = "Должен ли вид от третьего лица следовать за головой игрока?",
+        ["options.thirdperson.follax.Hit.angles"] = "Следовать за углом удара",
+        ["options.thirdperson.follax.Hit.angles.help"] = "Должен ли вид от третьего лица следовать за углом удара игрока?",
+        ["options.thirdperson.follax.Hit.fov"] = "Следовать FOV удара",
+        ["options.thirdperson.follax.Hit.fov.help"] = "Должен ли вид от третьего лица следовать за FOV удара игрока?",
         ["options.thirdperson.position.x"] = "Позиция по X",
         ["options.thirdperson.position.x.help"] = "Устанавливает позицию по X для вида от третьего лица.",
         ["options.thirdperson.position.y"] = "Позиция по Y",

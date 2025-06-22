@@ -14,7 +14,7 @@ function GM:PlayerStartVoice(client)
         g_VoicePanelList:Remove()
     end
 
-    Parallax.Net:Start("client.voice.start", client)
+    ax.net:Start("client.voice.start", client)
 end
 
 function GM:PlayerEndVoice(client)
@@ -22,18 +22,18 @@ function GM:PlayerEndVoice(client)
         g_VoicePanelList:Remove()
     end
 
-    Parallax.Net:Start("client.voice.end", client)
+    ax.net:Start("client.voice.end", client)
 end
 
 function GM:ShouldRenderMainMenu()
-    local client = Parallax.Client
+    local client = ax.client
     if ( !IsValid(client) ) then return false end
 
-    return IsValid(Parallax.GUI.Splash) or IsValid(Parallax.GUI.Mainmenu)
+    return IsValid(ax.gui.splash) or IsValid(ax.gui.mainmenu)
 end
 
 function GM:GetMainMenuMusic()
-    return Parallax.Config:Get("mainmenu.music", "music/hl2_song20_submix0.mp3")
+    return ax.config:Get("mainmenu.music", "music/hl2_song20_submix0.mp3")
 end
 
 local currentStation = nil
@@ -42,14 +42,14 @@ local panels = {
     "splash"
 }
 function GM:ShouldPlayMainMenuMusic()
-    if ( !Parallax.Config:Get("mainmenu.music", true) ) then return false end
+    if ( !ax.config:Get("mainmenu.music", true) ) then return false end
 
-    local client = Parallax.Client
+    local client = ax.client
     if ( !IsValid(client) ) then return false end
 
     local exists = false
     for i = 1, #panels do
-        if ( IsValid(Parallax.GUI[panels[i]]) ) then
+        if ( IsValid(ax.gui[panels[i]]) ) then
             exists = true
             break
         end
@@ -72,16 +72,16 @@ local function PlayTrack()
     if ( !IsValid(currentStation) and shouldPlay ) then
         sound.PlayFile("sound/" .. music, "noblock", function(station, errorID, errorName)
             if ( IsValid(station) ) then
-                station:SetVolume(Parallax.Option:Get("mainmenu.music.volume", 75) / 100)
-                station:EnableLooping(Parallax.Option:Get("mainmenu.music.loop", true))
+                station:SetVolume(ax.option:Get("mainmenu.music.volume", 75) / 100)
+                station:EnableLooping(ax.option:Get("mainmenu.music.loop", true))
 
                 currentStation = station
             else
-                Parallax.Util:PrintError("Failed to play main menu music: " .. errorName)
+                ax.util:PrintError("Failed to play main menu music: " .. errorName)
             end
         end)
     elseif ( IsValid(currentStation) and shouldPlay ) then
-        local volume = Parallax.Option:Get("mainmenu.music.volume", 75) / 100
+        local volume = ax.option:Get("mainmenu.music.volume", 75) / 100
         if ( currentStation:GetVolume() != volume ) then
             currentStation:SetVolume(volume)
         end
@@ -99,7 +99,7 @@ function GM:Think()
             currentStation = nil
         else
             local shouldPlay = hook.Run("ShouldPlayMainMenuMusic")
-            local from, to = currentStation:GetVolume(), shouldPlay and (Parallax.Option:Get("mainmenu.music.volume", 75) / 100) or 0
+            local from, to = currentStation:GetVolume(), shouldPlay and (ax.option:Get("mainmenu.music.volume", 75) / 100) or 0
             local output = math.Approach(from, to, FrameTime() * 8)
             currentStation:SetVolume(output)
         end
@@ -113,10 +113,10 @@ function GM:ScoreboardShow()
         return false
     end
 
-    if ( !IsValid(Parallax.GUI.Tab) ) then
-        vgui.Create("Parallax.Tab")
+    if ( !IsValid(ax.gui.Tab) ) then
+        vgui.Create("ax.tab")
     else
-        Parallax.GUI.Tab:Remove()
+        ax.gui.Tab:Remove()
     end
 
     return false
@@ -127,9 +127,9 @@ function GM:ScoreboardHide()
 end
 
 function GM:Initialize()
-    Parallax.Item:LoadFolder("parallax/gamemode/items")
-    Parallax.Module:LoadFolder("parallax/modules")
-    Parallax.Schema:Initialize()
+    ax.item:LoadFolder("parallax/gamemode/items")
+    ax.module:LoadFolder("parallax/modules")
+    ax.schema:Initialize()
 
     hook.Run("LoadFonts")
 end
@@ -144,21 +144,21 @@ function GM:OnReloaded()
         currentStation = nil
     end
 
-    Parallax.Item:LoadFolder("parallax/gamemode/items")
-    Parallax.Module:LoadFolder("parallax/modules")
-    Parallax.Schema:Initialize()
-    Parallax.Option:Load()
+    ax.item:LoadFolder("parallax/gamemode/items")
+    ax.module:LoadFolder("parallax/modules")
+    ax.schema:Initialize()
+    ax.option:Load()
 
-    Parallax.Util:Print("Core reloaded in " .. math.Round(SysTime() - GM.RefreshTimeStart, 2) .. " seconds.")
+    ax.util:Print("Core reloaded in " .. math.Round(SysTime() - GM.RefreshTimeStart, 2) .. " seconds.")
     hook.Run("LoadFonts")
 end
 
 function GM:InitPostEntity()
-    Parallax.Client = LocalPlayer()
-    Parallax.Option:Load()
+    ax.client = LocalPlayer()
+    ax.option:Load()
 
-    if ( !IsValid(Parallax.GUI.Chatbox) ) then
-        vgui.Create("Parallax.Chatbox")
+    if ( !IsValid(ax.gui.Chatbox) ) then
+        vgui.Create("ax.chatbox")
     end
 end
 
@@ -170,9 +170,9 @@ local eyeTraceHullMin = Vector(-2, -2, -2)
 local eyeTraceHullMax = Vector(2, 2, 2)
 function GM:CalcView(client, pos, angles, fov)
     if ( hook.Run("ShouldRenderMainMenu") ) then
-        local mainmenuPos = Parallax.Config:Get("mainmenu.pos", vector_origin)
-        local mainmenuAng = Parallax.Config:Get("mainmenu.ang", angle_zero)
-        local mainmenuFov = Parallax.Config:Get("mainmenu.fov", 90)
+        local mainmenuPos = ax.config:Get("mainmenu.pos", vector_origin)
+        local mainmenuAng = ax.config:Get("mainmenu.ang", angle_zero)
+        local mainmenuFov = ax.config:Get("mainmenu.fov", 90)
 
         return {
             origin = mainmenuPos,
@@ -182,7 +182,7 @@ function GM:CalcView(client, pos, angles, fov)
         }
     end
 
-    local ragdoll = !Parallax.Client:Alive() and Parallax.Client:GetRagdollEntity() or Parallax.Client:GetRelay("ragdoll", nil)
+    local ragdoll = !ax.client:Alive() and ax.client:GetRagdollEntity() or ax.client:GetRelay("ragdoll", nil)
     if ( IsValid(ragdoll) ) then
         local eyePos
         local eyeAng
@@ -224,7 +224,7 @@ local LOWERED_POS = Vector(0, 0, 0)
 local LOWERED_ANGLES = Angle(10, 10, 0)
 local LOWERED_LERP = {pos = Vector(0, 0, 0), angles = Angle(0, 0, 0)}
 function GM:CalcViewModelView(weapon, viewModel, oldPos, oldAng, pos, ang)
-    local client = Parallax.Client
+    local client = ax.client
     if ( !IsValid(client) ) then return end
 
     local targetPos = LOWERED_POS
@@ -253,11 +253,11 @@ function GM:CalcViewModelView(weapon, viewModel, oldPos, oldAng, pos, ang)
     return self.BaseClass:CalcViewModelView(weapon, viewModel, oldPos, oldAng, pos, ang)
 end
 
-local vignette = Parallax.Util:GetMaterial("parallax/overlay_vignette.png", "noclamp smooth")
+local vignette = ax.util:GetMaterial("parallax/overlay_vignette.png", "noclamp smooth")
 local vignetteColor = Color(0, 0, 0, 255)
 function GM:HUDPaintBackground()
     if ( tobool(hook.Run("ShouldDrawVignette")) ) then
-        local client = Parallax.Client
+        local client = ax.client
         if ( !IsValid(client) ) then return end
 
         local scrW, scrH = ScrW(), ScrH()
@@ -294,7 +294,7 @@ local healthAlpha = 0
 local healthTime = 0
 local healthLast = 0
 function GM:HUDPaint()
-    local client = Parallax.Client
+    local client = ax.client
     if ( !IsValid(client) ) then return end
 
     local shouldDraw = hook.Run("PreHUDPaint")
@@ -306,8 +306,8 @@ function GM:HUDPaint()
 
     shouldDraw = hook.Run("ShouldDrawDebugHUD")
     if ( shouldDraw != false ) then
-        local green = Parallax.Config:Get("color.framework")
-        local width = math.max(Parallax.Util:GetTextWidth("Parallax.Developer", "Pos: " .. tostring(client:GetPos())), Parallax.Util:GetTextWidth("Parallax.Developer", "Ang: " .. tostring(client:EyeAngles())))
+        local green = ax.config:Get("color.framework")
+        local width = math.max(ax.util:GetTextWidth("ax.developer", "Pos: " .. tostring(client:GetPos())), ax.util:GetTextWidth("ax.developer", "Ang: " .. tostring(client:EyeAngles())))
         local height = 16 * 6
 
         local character = client:GetCharacter()
@@ -315,59 +315,59 @@ function GM:HUDPaint()
             height = height + 16 * 6
         end
 
-        Parallax.Util:DrawBlurRect(x - padding, y - padding, width + padding * 2, height + padding * 2)
+        ax.util:DrawBlurRect(x - padding, y - padding, width + padding * 2, height + padding * 2)
 
         surface.SetDrawColor(backgroundColor)
         surface.DrawRect(x - padding, y - padding, width + padding * 2, height + padding * 2)
 
-        draw.SimpleText("[DEVELOPER HUD]", "Parallax.Developer", x, y, green, TEXT_ALIGN_LEFT)
+        draw.SimpleText("[DEVELOPER HUD]", "ax.developer", x, y, green, TEXT_ALIGN_LEFT)
 
-        draw.SimpleText("Pos: " .. tostring(client:GetPos()), "Parallax.Developer", x, y + 16 * 1, green, TEXT_ALIGN_LEFT)
-        draw.SimpleText("Ang: " .. tostring(client:EyeAngles()), "Parallax.Developer", x, y + 16 * 2, green, TEXT_ALIGN_LEFT)
-        draw.SimpleText("Health: " .. client:Health(), "Parallax.Developer", x, y + 16 * 3, green, TEXT_ALIGN_LEFT)
-        draw.SimpleText("Ping: " .. client:Ping(), "Parallax.Developer", x, y + 16 * 4, green, TEXT_ALIGN_LEFT)
+        draw.SimpleText("Pos: " .. tostring(client:GetPos()), "ax.developer", x, y + 16 * 1, green, TEXT_ALIGN_LEFT)
+        draw.SimpleText("Ang: " .. tostring(client:EyeAngles()), "ax.developer", x, y + 16 * 2, green, TEXT_ALIGN_LEFT)
+        draw.SimpleText("Health: " .. client:Health(), "ax.developer", x, y + 16 * 3, green, TEXT_ALIGN_LEFT)
+        draw.SimpleText("Ping: " .. client:Ping(), "ax.developer", x, y + 16 * 4, green, TEXT_ALIGN_LEFT)
 
         local fps = math.floor(1 / ft)
-        draw.SimpleText("FPS: " .. fps, "Parallax.Developer", x, y + 16 * 5, green, TEXT_ALIGN_LEFT)
+        draw.SimpleText("FPS: " .. fps, "ax.developer", x, y + 16 * 5, green, TEXT_ALIGN_LEFT)
 
         if ( character ) then
             local name = character:GetName()
             local charModel = character:GetModel()
-            local inventories = Parallax.Inventory:GetByCharacterID(character:GetID()) or {}
+            local inventories = ax.inventory:GetByCharacterID(character:GetID()) or {}
             for k, v in pairs(inventories) do
                 inventories[k] = tostring(v)
             end
             local inventoryText = "Inventories: " .. table.concat(inventories, ", ")
 
-            draw.SimpleText("[CHARACTER INFO]", "Parallax.Developer", x, y + 16 * 7, green, TEXT_ALIGN_LEFT)
-            draw.SimpleText("Character: " .. tostring(character), "Parallax.Developer", x, y + 16 * 8, green, TEXT_ALIGN_LEFT)
-            draw.SimpleText("Name: " .. name, "Parallax.Developer", x, y + 16 * 9, green, TEXT_ALIGN_LEFT)
-            draw.SimpleText("Model: " .. charModel, "Parallax.Developer", x, y + 16 * 10, green, TEXT_ALIGN_LEFT)
-            draw.SimpleText(inventoryText, "Parallax.Developer", x, y + 16 * 11, green, TEXT_ALIGN_LEFT)
+            draw.SimpleText("[CHARACTER INFO]", "ax.developer", x, y + 16 * 7, green, TEXT_ALIGN_LEFT)
+            draw.SimpleText("Character: " .. tostring(character), "ax.developer", x, y + 16 * 8, green, TEXT_ALIGN_LEFT)
+            draw.SimpleText("Name: " .. name, "ax.developer", x, y + 16 * 9, green, TEXT_ALIGN_LEFT)
+            draw.SimpleText("Model: " .. charModel, "ax.developer", x, y + 16 * 10, green, TEXT_ALIGN_LEFT)
+            draw.SimpleText(inventoryText, "ax.developer", x, y + 16 * 11, green, TEXT_ALIGN_LEFT)
         end
     end
 
     shouldDraw = hook.Run("ShouldDrawPreviewHUD")
     if ( shouldDraw != false ) then
-        local orange = Parallax.Color:Get("orange")
-        local red = Parallax.Color:Get("red")
+        local orange = ax.color:Get("orange")
+        local red = ax.color:Get("red")
 
-        Parallax.Util:DrawBlurRect(x - padding, y - padding, 410 + padding * 2, 45 + padding * 2)
+        ax.util:DrawBlurRect(x - padding, y - padding, 410 + padding * 2, 45 + padding * 2)
 
         surface.SetDrawColor(backgroundColor)
         surface.DrawRect(x - padding, y - padding, 410 + padding * 2, 45 + padding * 2)
 
-        draw.SimpleText("[PREVIEW MODE]", "Parallax.Developer", x, y, orange, TEXT_ALIGN_LEFT)
-        draw.SimpleText("Warning! Anything you witness is subject to change.", "Parallax.Developer", x, y + 16, red, TEXT_ALIGN_LEFT)
-        draw.SimpleText("This is not the final product.", "Parallax.Developer", x, y + 16 * 2, red, TEXT_ALIGN_LEFT)
+        draw.SimpleText("[PREVIEW MODE]", "ax.developer", x, y, orange, TEXT_ALIGN_LEFT)
+        draw.SimpleText("Warning! Anything you witness is subject to change.", "ax.developer", x, y + 16, red, TEXT_ALIGN_LEFT)
+        draw.SimpleText("This is not the final product.", "ax.developer", x, y + 16 * 2, red, TEXT_ALIGN_LEFT)
     end
 
     shouldDraw = hook.Run("ShouldDrawCrosshair")
-    if ( shouldDraw != false and Parallax.Option:Get("hud.crosshair", true) ) then
-        local crosshairColor = Parallax.Option:Get("hud.crosshair.color", color_white)
-        local crosshairSize = Parallax.Option:Get("hud.crosshair.size", 1)
-        local crosshairThickness = Parallax.Option:Get("hud.crosshair.thickness", 1)
-        local crosshairType = Parallax.Option:Get("hud.crosshair.type", "cross")
+    if ( shouldDraw != false and ax.option:Get("hud.crosshair", true) ) then
+        local crosshairColor = ax.option:Get("hud.crosshair.color", color_white)
+        local crosshairSize = ax.option:Get("hud.crosshair.size", 1)
+        local crosshairThickness = ax.option:Get("hud.crosshair.thickness", 1)
+        local crosshairType = ax.option:Get("hud.crosshair.type", "cross")
 
         local centerX, centerY = ScrW() / 2, ScrH() / 2
         if ( hook.Run("ShouldDrawLocalPlayer", client) ) then
@@ -391,11 +391,11 @@ function GM:HUDPaint()
             surface.SetDrawColor(crosshairColor)
             surface.DrawRect(centerX - size / 2, centerY - size / 2, size, size)
         elseif ( crosshairType == "circle" ) then
-            Parallax.Util:DrawCircleScaled(centerX, centerY, size / 2, 32, crosshairColor)
+            ax.util:DrawCircleScaled(centerX, centerY, size / 2, 32, crosshairColor)
         else
-            Parallax.Util:PrintError("Unknown crosshair type: " .. crosshairType)
-            Parallax.Option:Reset("hud.crosshair.type")
-            Parallax.Client:Notify("Unknown crosshair type: " .. crosshairType .. ". Resetting!")
+            ax.util:PrintError("Unknown crosshair type: " .. crosshairType)
+            ax.option:Reset("hud.crosshair.type")
+            ax.client:Notify("Unknown crosshair type: " .. crosshairType .. ". Resetting!")
         end
     end
 
@@ -408,7 +408,7 @@ function GM:HUDPaint()
         local clip = activeWeapon:Clip1()
         local ammoText = clip .. " / " .. ammo
 
-        draw.SimpleTextOutlined(ammoText, "Parallax.Bold", scrW - 16, scrH - 16, Parallax.Color:Get("white"), TEXT_ALIGN_RIGHT, TEXT_ALIGN_BOTTOM, 1, Parallax.Color:Get("black"))
+        draw.SimpleTextOutlined(ammoText, "ax.bold", scrW - 16, scrH - 16, ax.color:Get("white"), TEXT_ALIGN_RIGHT, TEXT_ALIGN_BOTTOM, 1, ax.color:Get("black"))
     end
 
     shouldDraw = hook.Run("ShouldDrawHealthBar")
@@ -416,7 +416,7 @@ function GM:HUDPaint()
         local healthFraction = client:Health() / client:GetMaxHealth()
         healthLerp = Lerp(ft * 5, healthLerp, healthFraction)
 
-        if ( Parallax.Option:Get("hud.health.bar.always", false) ) then
+        if ( ax.option:Get("hud.health.bar.always", false) ) then
             healthAlpha = 255
         else
             if ( healthLast != healthFraction ) then
@@ -433,16 +433,16 @@ function GM:HUDPaint()
             local barWidth, barHeight = scrW / 6, ScreenScale(4)
             local barX, barY = scrW / 2 - barWidth / 2, scrH / 1.025 - barHeight / 2
 
-            if ( Parallax.Globals.drawingStamina ) then
+            if ( ax.globals.drawingStamina ) then
                 barY = barY - barHeight - padding
             end
 
-            Parallax.Util:DrawBlurRect(barX, barY, barWidth, barHeight, 2, nil, healthAlpha)
+            ax.util:DrawBlurRect(barX, barY, barWidth, barHeight, 2, nil, healthAlpha)
 
-            surface.SetDrawColor(ColorAlpha(Parallax.Color:Get("background.transparent"), healthAlpha / 2))
+            surface.SetDrawColor(ColorAlpha(ax.color:Get("background.transparent"), healthAlpha / 2))
             surface.DrawRect(barX, barY, barWidth, barHeight)
 
-            surface.SetDrawColor(ColorAlpha(Parallax.Color:Get("red.soft"), healthAlpha))
+            surface.SetDrawColor(ColorAlpha(ax.color:Get("red.soft"), healthAlpha))
             surface.DrawRect(barX, barY, barWidth * healthLerp, barHeight)
         end
     end
@@ -451,10 +451,10 @@ function GM:HUDPaint()
 end
 
 function GM:PostDrawTranslucentRenderables(bDrawingDepth, bDrawingSkybox)
-    if ( !Parallax.Config:Get("debug.developer") ) then return end
-    if ( !Parallax.Client:IsDeveloper() ) then return end
+    if ( !ax.config:Get("debug.developer") ) then return end
+    if ( !ax.client:IsDeveloper() ) then return end
 
-    local client = Parallax.Client
+    local client = ax.client
     if ( !IsValid(client) ) then return end
 
     local trace = client:GetEyeTrace()
@@ -469,7 +469,7 @@ function GM:PostDrawTranslucentRenderables(bDrawingDepth, bDrawingSkybox)
 
     local text = string.format("Entity: %s\nClass: %s\nModel: %s\nPosition: %s\nAngles: %s",
         tostring(entity), class, model, tostring(pos), tostring(ang))
-    local markedUp = markup.Parse("<font=Parallax.Developer>" .. text .. "</font>")
+    local markedUp = markup.Parse("<font=ax.developer>" .. text .. "</font>")
     if ( !markedUp ) then return end
 
     local textWidth, textHeight = markedUp:Size()
@@ -525,35 +525,35 @@ function GM:LoadFonts()
     local scale24 = ScreenScaleH(24)
     local scale32 = ScreenScaleH(32)
 
-    surface.CreateFont("Parallax.Tiny", {
+    surface.CreateFont("ax.tiny", {
         font = "GorDIN Regular",
         size = scale6,
         weight = 700,
         antialias = true
     })
 
-    surface.CreateFont("Parallax.Tiny.Bold", {
+    surface.CreateFont("ax.tiny.bold", {
         font = "GorDIN Bold",
         size = scale6,
         weight = 900,
         antialias = true
     })
 
-    surface.CreateFont("Parallax.Small", {
+    surface.CreateFont("ax.small", {
         font = "GorDIN Regular",
         size = scale8,
         weight = 700,
         antialias = true
     })
 
-    surface.CreateFont("Parallax.Small.Bold", {
+    surface.CreateFont("ax.small.bold", {
         font = "GorDIN Bold",
         size = scale8,
         weight = 900,
         antialias = true
     })
 
-    surface.CreateFont("Parallax.Small.Italic", {
+    surface.CreateFont("ax.small.italic", {
         font = "GorDIN Regular",
         size = scale8,
         weight = 700,
@@ -561,7 +561,7 @@ function GM:LoadFonts()
         antialias = true
     })
 
-    surface.CreateFont("Parallax.Small.Italic.Bold", {
+    surface.CreateFont("ax.small.italic.bold", {
         font = "GorDIN Bold",
         size = scale8,
         weight = 900,
@@ -576,14 +576,14 @@ function GM:LoadFonts()
         antialias = true
     })
 
-    surface.CreateFont("Parallax.Bold", {
+    surface.CreateFont("ax.bold", {
         font = "GorDIN Bold",
         size = scale10,
         weight = 900,
         antialias = true
     })
 
-    surface.CreateFont("Parallax.Italic", {
+    surface.CreateFont("ax.italic", {
         font = "GorDIN Regular",
         size = scale10,
         weight = 700,
@@ -591,7 +591,7 @@ function GM:LoadFonts()
         antialias = true
     })
 
-    surface.CreateFont("Parallax.Italic.Bold", {
+    surface.CreateFont("ax.italic.bold", {
         font = "GorDIN Bold",
         size = scale10,
         weight = 900,
@@ -599,21 +599,21 @@ function GM:LoadFonts()
         antialias = true
     })
 
-    surface.CreateFont("Parallax.Large", {
+    surface.CreateFont("ax.large", {
         font = "GorDIN Regular",
         size = scale16,
         weight = 700,
         antialias = true
     })
 
-    surface.CreateFont("Parallax.Large.Bold", {
+    surface.CreateFont("ax.large.bold", {
         font = "GorDIN Bold",
         size = scale16,
         weight = 900,
         antialias = true
     })
 
-    surface.CreateFont("Parallax.Large.Italic", {
+    surface.CreateFont("ax.large.italic", {
         font = "GorDIN Regular",
         size = scale16,
         weight = 700,
@@ -621,7 +621,7 @@ function GM:LoadFonts()
         antialias = true
     })
 
-    surface.CreateFont("Parallax.Large.Italic.Bold", {
+    surface.CreateFont("ax.large.italic.bold", {
         font = "GorDIN Bold",
         size = scale16,
         weight = 900,
@@ -629,21 +629,21 @@ function GM:LoadFonts()
         antialias = true
     })
 
-    surface.CreateFont("Parallax.Massive", {
+    surface.CreateFont("ax.massive", {
         font = "GorDIN Regular",
         size = scale24,
         weight = 700,
         antialias = true
     })
 
-    surface.CreateFont("Parallax.Massive.Bold", {
+    surface.CreateFont("ax.massive.bold", {
         font = "GorDIN Bold",
         size = scale24,
         weight = 900,
         antialias = true
     })
 
-    surface.CreateFont("Parallax.Massive.Italic", {
+    surface.CreateFont("ax.massive.italic", {
         font = "GorDIN Regular",
         size = scale24,
         weight = 700,
@@ -651,7 +651,7 @@ function GM:LoadFonts()
         antialias = true
     })
 
-    surface.CreateFont("Parallax.Massive.Italic.Bold", {
+    surface.CreateFont("ax.massive.italic.bold", {
         font = "GorDIN Bold",
         size = scale24,
         weight = 900,
@@ -659,21 +659,21 @@ function GM:LoadFonts()
         antialias = true
     })
 
-    surface.CreateFont("Parallax.Huge", {
+    surface.CreateFont("ax.huge", {
         font = "GorDIN Regular",
         size = scale32,
         weight = 700,
         antialias = true
     })
 
-    surface.CreateFont("Parallax.Huge.Bold", {
+    surface.CreateFont("ax.huge.bold", {
         font = "GorDIN Bold",
         size = scale32,
         weight = 900,
         antialias = true
     })
 
-    surface.CreateFont("Parallax.Huge.Italic", {
+    surface.CreateFont("ax.huge.italic", {
         font = "GorDIN",
         size = scale32,
         weight = 700,
@@ -681,7 +681,7 @@ function GM:LoadFonts()
         antialias = true
     })
 
-    surface.CreateFont("Parallax.Huge.Italic.Bold", {
+    surface.CreateFont("ax.huge.italic.bold", {
         font = "GorDIN Bold",
         size = scale32,
         weight = 900,
@@ -689,16 +689,16 @@ function GM:LoadFonts()
         antialias = true
     })
 
-    surface.CreateFont("Parallax.Developer", {
+    surface.CreateFont("ax.developer", {
         font = "Courier New",
         size = 16,
         weight = 700,
         antialias = true
     })
 
-    surface.CreateFont("Parallax.Chat", {
+    surface.CreateFont("ax.chat", {
         font = "GorDIN Regular",
-        size = ScreenScale(8) * Parallax.Option:Get("chat.size.font", 1),
+        size = ScreenScale(8) * ax.option:Get("chat.size.font", 1),
         weight = 700,
         antialias = true
     })
@@ -707,21 +707,21 @@ function GM:LoadFonts()
 end
 
 function GM:OnPauseMenuShow()
-    if ( IsValid(Parallax.GUI.Tab) ) then
-        Parallax.GUI.Tab:Close()
+    if ( IsValid(ax.gui.Tab) ) then
+        ax.gui.Tab:Close()
         return false
     end
 
-    if ( IsValid(Parallax.GUI.Chatbox) and Parallax.GUI.Chatbox:GetAlpha() == 255 ) then
-        Parallax.GUI.Chatbox:SetVisible(false)
+    if ( IsValid(ax.gui.Chatbox) and ax.gui.Chatbox:GetAlpha() == 255 ) then
+        ax.gui.Chatbox:SetVisible(false)
         return false
     end
 
-    if ( !IsValid(Parallax.GUI.Mainmenu) ) then
-        vgui.Create("Parallax.Mainmenu")
+    if ( !IsValid(ax.gui.mainmenu) ) then
+        vgui.Create("ax.mainmenu")
     else
-        if ( Parallax.Client:GetCharacter() ) then
-            Parallax.GUI.Mainmenu:Remove()
+        if ( ax.client:GetCharacter() ) then
+            ax.gui.mainmenu:Remove()
             return
         end
     end
@@ -736,17 +736,17 @@ function GM:PostHUDPaint()
 end
 
 function GM:ShouldDrawCrosshair()
-    if ( IsValid(Parallax.GUI.Mainmenu) ) then return false end
-    if ( IsValid(Parallax.GUI.Tab) ) then return false end
+    if ( IsValid(ax.gui.mainmenu) ) then return false end
+    if ( IsValid(ax.gui.Tab) ) then return false end
 
     return true
 end
 
 function GM:ShouldDrawAmmoBox()
-    if ( IsValid(Parallax.GUI.Mainmenu) ) then return false end
-    if ( IsValid(Parallax.GUI.Tab) ) then return false end
+    if ( IsValid(ax.gui.mainmenu) ) then return false end
+    if ( IsValid(ax.gui.Tab) ) then return false end
 
-    local client = Parallax.Client
+    local client = ax.client
     local activeWeapon = client:GetActiveWeapon()
     if ( !IsValid(activeWeapon) ) then return false end
 
@@ -763,35 +763,35 @@ function GM:ShouldDrawAmmoBox()
 end
 
 function GM:ShouldDrawHealthBar()
-    if ( IsValid(Parallax.GUI.Mainmenu) ) then return false end
-    if ( IsValid(Parallax.GUI.Tab) ) then return false end
+    if ( IsValid(ax.gui.mainmenu) ) then return false end
+    if ( IsValid(ax.gui.Tab) ) then return false end
 
-    local client = Parallax.Client
+    local client = ax.client
     if ( !IsValid(client) or !client:Alive() ) then return false end
 
-    return Parallax.Option:Get("hud.health.bar", true)
+    return ax.option:Get("hud.health.bar", true)
 end
 
 function GM:ShouldDrawDebugHUD()
-    if ( !Parallax.Config:Get("debug.developer") ) then return false end
-    if ( IsValid(Parallax.GUI.Mainmenu) ) then return false end
-    if ( IsValid(Parallax.GUI.Tab) ) then return false end
+    if ( !ax.config:Get("debug.developer") ) then return false end
+    if ( IsValid(ax.gui.mainmenu) ) then return false end
+    if ( IsValid(ax.gui.Tab) ) then return false end
 
-    return Parallax.Client:IsDeveloper()
+    return ax.client:IsDeveloper()
 end
 
 function GM:ShouldDrawPreviewHUD()
-    if ( !Parallax.Config:Get("debug.preview") ) then return false end
-    if ( IsValid(Parallax.GUI.Mainmenu) ) then return false end
-    if ( IsValid(Parallax.GUI.Tab) ) then return false end
+    if ( !ax.config:Get("debug.preview") ) then return false end
+    if ( IsValid(ax.gui.mainmenu) ) then return false end
+    if ( IsValid(ax.gui.Tab) ) then return false end
 
     return !hook.Run("ShouldDrawDebugHUD")
 end
 
 function GM:ShouldDrawVignette()
-    if ( IsValid(Parallax.GUI.Mainmenu) ) then return false end
+    if ( IsValid(ax.gui.mainmenu) ) then return false end
 
-    return Parallax.Option:Get("hud.vignette", true)
+    return ax.option:Get("hud.vignette", true)
 end
 
 function GM:ShouldDrawDefaultVignette()
@@ -807,43 +807,43 @@ function GM:GetCharacterName(client, target)
 end
 
 function GM:PopulateTabButtons(buttons)
-    if ( CAMI.PlayerHasAccess(Parallax.Client, "Parallax - Manage Config", nil) ) then
+    if ( CAMI.PlayerHasAccess(ax.client, "Parallax - Manage Config", nil) ) then
         buttons["tab.config"] = {
             Populate = function(this, container)
-                container:Add("Parallax.Tab.config")
+                container:Add("ax.tab.config")
             end
         }
     end
 
     buttons["tab.help"] = {
         Populate = function(this, container)
-            container:Add("Parallax.Tab.Help")
+            container:Add("ax.tab.help")
         end
     }
 
     if ( hook.Run("ShouldShowInventory") != false ) then
         buttons["tab.inventory"] = {
             Populate = function(this, container)
-                container:Add("Parallax.Tab.Inventory")
+                container:Add("ax.tab.inventory")
             end
         }
     end
 
     buttons["tab.inventory"] = {
         Populate = function(this, container)
-            container:Add("Parallax.Tab.Inventory")
+            container:Add("ax.tab.inventory")
         end
     }
 
     buttons["tab.scoreboard"] = {
         Populate = function(this, container)
-            container:Add("Parallax.Tab.Scoreboard")
+            container:Add("ax.tab.scoreboard")
         end
     }
 
     buttons["tab.options"] = {
         Populate = function(this, container)
-            container:Add("Parallax.Tab.Options")
+            container:Add("ax.tab.options")
         end
     }
 end
@@ -855,66 +855,66 @@ function GM:PopulateHelpCategories(categories)
     end
 
     categories["flags"] = function(container)
-        local scroller = container:Add("Parallax.Scroller.Vertical")
+        local scroller = container:Add("ax.scroller.vertical")
         scroller:Dock(FILL)
         scroller:GetVBar():SetWide(0)
         scroller.Paint = nil
 
-        for k, v in SortedPairs(Parallax.Flag.Stored) do
-            local char = Parallax.Client:GetCharacter()
+        for k, v in SortedPairs(ax.flag.stored) do
+            local char = ax.client:GetCharacter()
             if ( !char ) then return end
 
             local hasFlag = char:HasFlag(k)
 
-            local button = scroller:Add("Parallax.Button.Flat")
+            local button = scroller:Add("ax.button.flat")
             button:Dock(TOP)
-            button:SetFont("Parallax.Large.Bold")
+            button:SetFont("ax.large.bold")
             button:SetText("")
             button:SetBackgroundAlphaHovered(1)
             button:SetBackgroundAlphaUnHovered(0.5)
-            button:SetBackgroundColor(hasFlag and Parallax.Config:Get("color.success") or Parallax.Config:Get("color.error"))
+            button:SetBackgroundColor(hasFlag and ax.config:Get("color.success") or ax.config:Get("color.error"))
             button.DoRightClick = function(this)
-                if ( !CAMI.PlayerHasAccess(Parallax.Client, "Parallax - Manage Flags", nil) ) then return end
+                if ( !CAMI.PlayerHasAccess(ax.client, "Parallax - Manage Flags", nil) ) then return end
 
                 local menu = DermaMenu()
                 menu:AddOption("Give Flag", function()
-                    Parallax.Command:Run("CharGiveFlags", Parallax.Client:SteamID64(), k)
+                    ax.command:Run("CharGiveFlags", ax.client:SteamID64(), k)
                 end)
 
                 menu:AddOption("Remove Flag", function()
-                    Parallax.Command:Run("CharTakeFlags", Parallax.Client:SteamID64(), k)
+                    ax.command:Run("CharTakeFlags", ax.client:SteamID64(), k)
                 end)
 
                 for _, target in player.Iterator() do
-                    if ( target == Parallax.Client ) then continue end
+                    if ( target == ax.client ) then continue end
 
                     menu:AddSpacer()
 
                     menu:AddOption("Give Flag to " .. target:Nick(), function()
-                        Parallax.Command:Run("CharGiveFlags", target:SteamID64(), k)
+                        ax.command:Run("CharGiveFlags", target:SteamID64(), k)
                     end)
                     menu:AddOption("Remove Flag from " .. target:Nick(), function()
-                        Parallax.Command:Run("CharTakeFlags", target:SteamID64(), k)
+                        ax.command:Run("CharTakeFlags", target:SteamID64(), k)
                     end)
                 end
 
                 menu:Open()
             end
 
-            local key = button:Add("Parallax.Text")
+            local key = button:Add("ax.text")
             key:Dock(LEFT)
             key:DockMargin(ScreenScale(8), 0, 0, 0)
-            key:SetFont("Parallax.Large.Bold")
+            key:SetFont("ax.large.bold")
             key:SetText(k)
 
-            local seperator = button:Add("Parallax.Text")
+            local seperator = button:Add("ax.text")
             seperator:Dock(LEFT)
-            seperator:SetFont("Parallax.Large")
+            seperator:SetFont("ax.large")
             seperator:SetText(" - ")
 
-            local description = button:Add("Parallax.Text")
+            local description = button:Add("ax.text")
             description:Dock(LEFT)
-            description:SetFont("Parallax.Large")
+            description:SetFont("ax.large")
             description:SetText(v.description)
 
             local function Think(this)
@@ -928,18 +928,18 @@ function GM:PopulateHelpCategories(categories)
     end
 
     categories["commands"] = function(container)
-        local scroller = container:Add("Parallax.Scroller.Vertical")
+        local scroller = container:Add("ax.scroller.vertical")
         scroller:Dock(FILL)
         scroller:GetVBar():SetWide(0)
         scroller.Paint = nil
 
-        for commandName, commandInfo in SortedPairs(Parallax.Command:GetAll()) do
+        for commandName, commandInfo in SortedPairs(ax.command:GetAll()) do
             if ( !istable(commandInfo) ) then
-                Parallax.Util:PrintError("Command '" .. commandName .. "' is not a valid table.")
+                ax.util:PrintError("Command '" .. commandName .. "' is not a valid table.")
                 continue
             end
 
-            if ( commandInfo.ChatType and Parallax.Chat:Get(commandInfo.ChatType) ) then
+            if ( commandInfo.ChatType and ax.chat:Get(commandInfo.ChatType) ) then
                 continue -- Skip commands that are chat types
             end
 
@@ -951,8 +951,8 @@ function GM:PopulateHelpCategories(categories)
                 surface.DrawRect(0, 0, width, height)
             end
 
-            local nameLabel = panel:Add("Parallax.Text")
-            nameLabel:SetFont("Parallax.Bold")
+            local nameLabel = panel:Add("ax.text")
+            nameLabel:SetFont("ax.bold")
             nameLabel:SetText(commandName, true)
             nameLabel:Dock(TOP)
             nameLabel:DockMargin(8, 0, 8, 0)
@@ -962,15 +962,15 @@ function GM:PopulateHelpCategories(categories)
                 description = "No description provided."
             end
 
-            local descriptionLabel = panel:Add("Parallax.Text")
-            descriptionLabel:SetFont("Parallax.Small")
+            local descriptionLabel = panel:Add("ax.text")
+            descriptionLabel:SetFont("ax.small")
             descriptionLabel:SetText(description, true)
             descriptionLabel:Dock(TOP)
             descriptionLabel:DockMargin(8, -4, 8, 0)
 
             if ( istable(commandInfo.Arguments) ) then
-                local argumentsLabel = panel:Add("Parallax.Text")
-                argumentsLabel:SetFont("Parallax.Small")
+                local argumentsLabel = panel:Add("ax.text")
+                argumentsLabel:SetFont("ax.small")
                 argumentsLabel:SetText("Useable Arguments:", true)
                 argumentsLabel:Dock(TOP)
                 argumentsLabel:DockMargin(8, -4, 8, 0)
@@ -978,13 +978,13 @@ function GM:PopulateHelpCategories(categories)
                 for i = 1, #commandInfo.Arguments do
                     local data = commandInfo.Arguments[i]
                     if ( !istable(data) ) then
-                        Parallax.Util:PrintError("Command argument at index " .. i .. " from command '" .. commandName .. "' is not a table. Expected a table with 'Type' and 'ErrorMsg' fields.")
+                        ax.util:PrintError("Command argument at index " .. i .. " from command '" .. commandName .. "' is not a table. Expected a table with 'Type' and 'ErrorMsg' fields.")
                         data = { Type = "Unknown", ErrorMsg = "No error message provided." }
                     end
 
-                    local argLabel = panel:Add("Parallax.Text")
-                    argLabel:SetFont("Parallax.Small")
-                    argLabel:SetText(i .. ": " .. Parallax.Util:FormatType(data.Type) .. " - " .. (data.ErrorMsg or "No error message provided."), true)
+                    local argLabel = panel:Add("ax.text")
+                    argLabel:SetFont("ax.small")
+                    argLabel:SetText(i .. ": " .. ax.util:FormatType(data.Type) .. " - " .. (data.ErrorMsg or "No error message provided."), true)
                     if ( data.Optional ) then
                         argLabel:SetText(argLabel:GetText() .. " (Optional)", true)
                     end
@@ -1024,32 +1024,32 @@ function GM:GetChatboxPos()
 end
 
 function GM:ChatboxOnTextChanged(text)
-    Parallax.Net:Start("client.chatbox.text.changed", text)
+    ax.net:Start("client.chatbox.text.changed", text)
 
     -- Notify the command system about the text change
-    local command = Parallax.Command:Get(Parallax.GUI.Chatbox:GetChatType())
+    local command = ax.command:Get(ax.gui.Chatbox:GetChatType())
     if ( command and command.OnChatTextChanged ) then
         command:OnTextChanged(text)
     end
 
     -- Notify the chat system about the text change
-    local chat = Parallax.Chat:Get(Parallax.GUI.Chatbox:GetChatType())
+    local chat = ax.chat:Get(ax.gui.Chatbox:GetChatType())
     if ( chat and chat.OnChatTextChanged ) then
         chat:OnTextChanged(text)
     end
 end
 
 function GM:ChatboxOnChatTypeChanged(newType, oldType)
-    Parallax.Net:Start("client.chatbox.type.changed", newType, oldType)
+    ax.net:Start("client.chatbox.type.changed", newType, oldType)
 
     -- Notify the command system about the chat type change
-    local command = Parallax.Command:Get(newType)
+    local command = ax.command:Get(newType)
     if ( command and command.OnChatTypeChanged ) then
         command:OnChatTypeChanged(newType, oldType)
     end
 
     -- Notify the chat system about the chat type change
-    local chat = Parallax.Chat:Get(newType)
+    local chat = ax.chat:Get(newType)
     if ( chat and chat.OnChatTypeChanged ) then
         chat:OnChatTypeChanged(newType, oldType)
     end
@@ -1059,10 +1059,10 @@ function GM:PlayerBindPress(client, bind, pressed)
     bind = bind:lower()
 
     if ( string.find(bind, "messagemode") and pressed ) then
-        Parallax.GUI.Chatbox:SetVisible(true)
+        ax.gui.Chatbox:SetVisible(true)
 
-        for i = 1, #Parallax.Chat.messages do
-            local pnl = Parallax.Chat.messages[i]
+        for i = 1, #ax.chat.messages do
+            local pnl = ax.chat.messages[i]
             if ( IsValid(pnl) ) then
                 pnl.alpha = 1
             end
@@ -1083,17 +1083,17 @@ function GM:ForceDermaSkin()
 end
 
 function GM:OnScreenSizeChanged(oldWidth, oldHeight, newWidth, newHeight)
-    for i = 1, #Parallax.GUI do
-        local v = Parallax.GUI[i]
+    for i = 1, #ax.gui do
+        local v = ax.gui[i]
         if ( ispanel(v) and IsValid(v) ) then
             local className = v:GetClassName()
             v:Remove()
 
             -- Attempt to recreate the GUI element
-            if ( className == "Parallax.Mainmenu" ) then
-                vgui.Create("Parallax.Mainmenu")
-            elseif ( className == "Parallax.Tab" ) then
-                vgui.Create("Parallax.Tab")
+            if ( className == "ax.mainmenu" ) then
+                vgui.Create("ax.mainmenu")
+            elseif ( className == "ax.tab" ) then
+                vgui.Create("ax.tab")
             end
         end
     end
@@ -1102,7 +1102,7 @@ function GM:OnScreenSizeChanged(oldWidth, oldHeight, newWidth, newHeight)
 end
 
 function GM:SpawnMenuOpen()
-    local character = Parallax.Client:GetCharacter()
+    local character = ax.client:GetCharacter()
     if ( !character ) then return end
 
     if ( !character:HasFlag("s") ) then
@@ -1114,11 +1114,11 @@ end
 
 function GM:PostOptionsLoad(instancesTable)
     for optionName, value in pairs(instancesTable) do
-        local optionData = Parallax.Option.Stored[optionName]
+        local optionData = ax.option.stored[optionName]
         if ( !istable(optionData) ) then continue end
 
-        if ( optionData.Type == Parallax.Types.number and optionData.IsKeybind ) then
-            Parallax.Binds[optionName] = value
+        if ( optionData.Type == ax.types.number and optionData.IsKeybind ) then
+            ax.binds[value] = optionName
         end
     end
 end

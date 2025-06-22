@@ -14,15 +14,15 @@ AddCSLuaFile("shared.lua")
 include("shared.lua")
 
 function ENT:SetItem(itemID, uniqueID)
-    local itemDef = Parallax.Item:Get(uniqueID)
+    local itemDef = ax.item:Get(uniqueID)
     if ( !istable(itemDef) ) then
-        Parallax.Util:PrintError("Attempted to set item with an invalid item definition for entity " .. self:EntIndex() .. "!")
+        ax.util:PrintError("Attempted to set item with an invalid item definition for entity " .. self:EntIndex() .. "!")
         return
     end
 
     self:SetModel(Model(itemDef.Model))
     self:SetSkin(isfunction(itemDef.GetSkin) and itemDef:GetSkin(self) or (itemDef.Skin or 0))
-    self:SetColor(isfunction(itemDef.GetColor) and itemDef:GetColor(self) or (itemDef.Color or Parallax.Color:Get("white")))
+    self:SetColor(isfunction(itemDef.GetColor) and itemDef:GetColor(self) or (itemDef.Color or ax.color:Get("white")))
     self:SetMaterial(isfunction(itemDef.GetMaterial) and itemDef:GetMaterial(self) or (itemDef.Material or ""))
     self:SetModelScale(isfunction(itemDef.GetScale) and itemDef:GetScale(self) or (itemDef.Scale or 1))
     self:SetHealth(itemDef.Health or 25)
@@ -52,31 +52,31 @@ function ENT:SetItem(itemID, uniqueID)
 
     if ( !itemID or itemID == 0 ) then
         -- Register world item instance
-        Parallax.Item:Add(0, 0, uniqueID, {}, function(newID)
+        ax.item:Add(0, 0, uniqueID, {}, function(newID)
             self:SetItemID(newID)
 
-            local item = Parallax.Item:Get(newID)
+            local item = ax.item:Get(newID)
             if ( item ) then
                 item:SetEntity(self)
                 self:SetData(item:GetData() or {})
 
                 -- Notify clients
-                Parallax.Net:Start(nil, "item.entity", self, newID)
+                ax.net:Start(nil, "item.entity", self, newID)
             end
         end)
     else
         self:SetItemID(itemID)
 
-        local item = Parallax.Item:Get(itemID)
+        local item = ax.item:Get(itemID)
         if ( item ) then
             item:SetEntity(self)
             self:SetData(item:GetData() or {})
         end
 
-        Parallax.Net:Start(nil, "item.entity", self, newID)
+        ax.net:Start(nil, "item.entity", self, newID)
     end
 
-    Parallax.Net:Start(nil, "item.entity", self, newID)
+    ax.net:Start(nil, "item.entity", self, newID)
 end
 
 function ENT:GetData()
@@ -91,8 +91,8 @@ function ENT:Use(client)
     if ( !IsValid(client) or !client:IsPlayer() ) then return end
     if ( hook.Run("CanPlayerTakeItem", client, self) == false ) then return end
 
-    local itemDef = Parallax.Item:Get(self:GetUniqueID())
-    local itemInst = Parallax.Item:Get(self:GetItemID())
+    local itemDef = ax.item:Get(self:GetUniqueID())
+    local itemInst = ax.item:Get(self:GetItemID())
 
     if ( !itemDef or !itemInst ) then return end
 
@@ -100,18 +100,18 @@ function ENT:Use(client)
     itemInst:SetOwner(client:GetCharacterID())
 
     self:SetCooldown("take", 0.5)
-    Parallax.Item:PerformAction(itemInst:GetID(), "Take")
+    ax.item:PerformAction(itemInst:GetID(), "Take")
 end
 
 function ENT:OnRemove()
-    local item = Parallax.Item:Get(self:GetItemID())
+    local item = ax.item:Get(self:GetItemID())
     if ( item and item.OnRemoved ) then
         item:OnRemoved(self)
     end
 end
 
 function ENT:OnTakeDamage(dmg)
-    local item = Parallax.Item:Get(self:GetItemID())
+    local item = ax.item:Get(self:GetItemID())
     if ( !item ) then return end
 
     self:SetHealth(self:Health() - dmg:GetDamage())
@@ -126,7 +126,7 @@ function ENT:OnTakeDamage(dmg)
         effect:SetScale(3)
         util.Effect("GlassImpact", effect)
 
-        local itemDef = Parallax.Item:Get(self:GetUniqueID())
+        local itemDef = ax.item:Get(self:GetUniqueID())
         if ( itemDef and itemDef.OnDestroyed ) then
             itemDef:OnDestroyed(self)
         end
@@ -136,13 +136,13 @@ function ENT:OnTakeDamage(dmg)
 end
 
 function ENT:OnRemove()
-    if ( Parallax.ShutDown ) then return end
+    if ( ax.ShutDown ) then return end
     if ( self:OnCooldown("take") ) then return end
 
-    local item = Parallax.Item:Get(self:GetItemID())
+    local item = ax.item:Get(self:GetItemID())
     if ( item and item.OnRemoved ) then
         item:OnRemoved(self)
     end
 
-    Parallax.Database:Delete("ax_items", string.format("id = %s", sql.SQLStr(self:GetItemID())))
+    ax.database:Delete("ax_items", string.format("id = %s", sql.SQLStr(self:GetItemID())))
 end

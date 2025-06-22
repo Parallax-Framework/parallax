@@ -10,34 +10,34 @@
 ]]
 
 --- Class library
--- @module Parallax.Class
+-- @module ax.class
 
-Parallax.Class = Parallax.Class or {}
-Parallax.Class.Stored = {}
-Parallax.Class.Instances = {}
-Parallax.Class.Meta = Parallax.Class.Meta or {}
+ax.class = ax.class or {}
+ax.class.stored = {}
+ax.class.instances = {}
+ax.class.meta = ax.class.meta or {}
 
-function Parallax.Class:Instance()
-    return setmetatable({}, self.Meta)
+function ax.class:Instance()
+    return setmetatable({}, self.meta)
 end
 
-function Parallax.Class:Get(identifier)
+function ax.class:Get(identifier)
     if ( identifier == nil ) then
-        Parallax.Util:PrintError("Attempted to get a faction with an invalid identifier!")
+        ax.util:PrintError("Attempted to get a faction with an invalid identifier!")
         return false
     end
 
     if ( isnumber(identifier) ) then
-        return self.Instances[identifier]
+        return self.instances[identifier]
     end
 
-    if ( self.Stored[identifier] ) then
-        return self.Stored[identifier]
+    if ( self.stored[identifier] ) then
+        return self.stored[identifier]
     end
 
-    for i = 1, #self.Instances do
-        local v = self.Instances[i]
-        if ( Parallax.Util:FindString(v.Name, identifier) or Parallax.Util:FindString(v.UniqueID, identifier) ) then
+    for i = 1, #self.instances do
+        local v = self.instances[i]
+        if ( ax.util:FindString(v.Name, identifier) or ax.util:FindString(v.UniqueID, identifier) ) then
             return v
         end
     end
@@ -45,7 +45,7 @@ function Parallax.Class:Get(identifier)
     return nil
 end
 
-function Parallax.Class:CanSwitchTo(client, classID)
+function ax.class:CanSwitchTo(client, classID)
     local class = self:Get(classID)
     if ( !class ) then return false end
 
@@ -63,13 +63,13 @@ function Parallax.Class:CanSwitchTo(client, classID)
     return true
 end
 
-function Parallax.Class:OnSwitch(client, classID)
+function ax.class:OnSwitch(client, classID)
     local class = self:Get(classID)
     if ( !class ) then return false end
 
     local character = client:GetCharacter()
     if ( !character ) then
-        Parallax.Util:PrintError("Attempted to switch class for a player without a character!")
+        ax.util:PrintError("Attempted to switch class for a player without a character!")
         return false
     end
 
@@ -85,6 +85,6 @@ function Parallax.Class:OnSwitch(client, classID)
     return true
 end
 
-function Parallax.Class:GetAll()
-    return self.Instances
+function ax.class:GetAll()
+    return self.instances
 end

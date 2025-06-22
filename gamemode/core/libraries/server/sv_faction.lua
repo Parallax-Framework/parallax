@@ -10,12 +10,12 @@
 ]]
 
 --- Faction library
--- @module Parallax.Faction
+-- @module ax.faction
 
-function Parallax.Faction:Join(client, factionID, bBypass)
+function ax.faction:Join(client, factionID, bBypass)
     local faction = self:Get(factionID)
     if ( faction == nil or !istable(faction) ) then
-        Parallax.Util:PrintError("Attempted to join an invalid faction!")
+        ax.util:PrintError("Attempted to join an invalid faction!")
         return false
     end
 
@@ -37,3 +37,5 @@ function Parallax.Faction:Join(client, factionID, bBypass)
     hook.Run("PlayerJoinedFaction", client, factionID, oldFaction.GetID and oldFaction:GetID())
     return true
 end
+
+ax.faction = ax.faction

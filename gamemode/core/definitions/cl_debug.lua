@@ -17,17 +17,17 @@ concommand.Add("ax_debug_pos", function(client, cmd, args)
 
     if ( args[1] == "hitpos" ) then
         local hitPos = client:GetEyeTrace().HitPos
-        Parallax.Util:Print(string.format(posFormat, hitPos.x, hitPos.y, hitPoss.z))
+        ax.util:Print(string.format(posFormat, hitPos.x, hitPos.y, hitPoss.z))
     elseif ( args[1] == "local" ) then
         local localPos = client:GetPos()
-        Parallax.Util:Print(string.format(posFormat, localPos.x, localPos.y, localPos.z))
+        ax.util:Print(string.format(posFormat, localPos.x, localPos.y, localPos.z))
     elseif ( args[1] == "entity" ) then
         local ent = client:GetEyeTrace().Entity
         if ( IsValid(ent) ) then
             local entPos = ent:GetPos()
-            Parallax.Util:Print(string.format(posFormat, entPos.x, entPos.y, entPos.z))
+            ax.util:Print(string.format(posFormat, entPos.x, entPos.y, entPos.z))
         else
-            Parallax.Util:Print("No valid entity under cursor.")
+            ax.util:Print("No valid entity under cursor.")
         end
     end
 end)
@@ -40,17 +40,17 @@ concommand.Add("ax_debug_ang", function(client, cmd, args)
 
     if ( args[1] == "hitang" ) then
         local hitNormal = client:GetEyeTrace().HitNormal
-        Parallax.Util:Print(string.format(angFormat, hitNormal.p, hitNormal.y, hitNormal.r))
+        ax.util:Print(string.format(angFormat, hitNormal.p, hitNormal.y, hitNormal.r))
     elseif ( args[1] == "local" ) then
         local eyeAngles = client:EyeAngles()
-        Parallax.Util:Print(string.format(angFormat, eyeAngles.p, eyeAngles.y, eyeAngles.r))
+        ax.util:Print(string.format(angFormat, eyeAngles.p, eyeAngles.y, eyeAngles.r))
     elseif ( args[1] == "entity" ) then
         local ent = client:GetEyeTrace().Entity
         if ( IsValid(ent) ) then
             local entAngs = ent:GetAngles()
-            Parallax.Util:Print(string.format(angFormat, entAngs.p, entAngs.y, entAngs.r))
+            ax.util:Print(string.format(angFormat, entAngs.p, entAngs.y, entAngs.r))
         else
-            Parallax.Util:Print("No valid entity under cursor.")
+            ax.util:Print("No valid entity under cursor.")
         end
     end
 end)

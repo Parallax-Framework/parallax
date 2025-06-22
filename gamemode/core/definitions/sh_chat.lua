@@ -9,81 +9,81 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
-Parallax.Chat:Register("ic", {
+ax.chat:Register("ic", {
     CanHear = function(self, speaker, listener)
-        local radius = Parallax.Config:Get("chat.radius.ic", 384)
+        local radius = ax.config:Get("chat.radius.ic", 384)
         return speaker:GetPos():DistToSqr(listener:GetPos()) < radius ^ 2
     end,
     OnChatAdd = function(self, speaker, text)
-        chat.AddText(Parallax.Color:Get("chat"), speaker:Name() .. " says \"" .. text .. "\"")
+        chat.AddText(ax.color:Get("chat"), speaker:Name() .. " says \"" .. text .. "\"")
         chat.PlaySound()
     end
 })
 
-Parallax.Chat:Register("whisper", {
+ax.chat:Register("whisper", {
     Prefixes = {"W", "Whisper"},
     CanHear = function(self, speaker, listener)
-        local radius = Parallax.Config:Get("chat.radius.whisper", 96)
+        local radius = ax.config:Get("chat.radius.whisper", 96)
         return speaker:GetPos():DistToSqr(listener:GetPos()) < radius ^ 2
     end,
     OnChatAdd = function(self, speaker, text)
-        chat.AddText(Parallax.Color:Get("chat.whisper"), speaker:Name() .. " whispers \"" .. text .. "\"")
+        chat.AddText(ax.color:Get("chat.whisper"), speaker:Name() .. " whispers \"" .. text .. "\"")
         chat.PlaySound()
     end
 })
 
-Parallax.Chat:Register("yell", {
+ax.chat:Register("yell", {
     Prefixes = {"Y", "Yell"},
     CanHear = function(self, speaker, listener)
-        local radius = Parallax.Config:Get("chat.radius.yell", 1024)
+        local radius = ax.config:Get("chat.radius.yell", 1024)
         return speaker:GetPos():DistToSqr(listener:GetPos()) < radius ^ 2
     end,
     OnChatAdd = function(self, speaker, text)
-        chat.AddText(Parallax.Color:Get("chat.yell"), speaker:Name() .. " yells \"" .. text .. "\"")
+        chat.AddText(ax.color:Get("chat.yell"), speaker:Name() .. " yells \"" .. text .. "\"")
         chat.PlaySound()
     end
 })
 
-Parallax.Chat:Register("me", {
+ax.chat:Register("me", {
     Prefixes = {"Me", "Action"},
     CanHear = function(self, speaker, listener)
-        local radius = Parallax.Config:Get("chat.radius.me", 512)
+        local radius = ax.config:Get("chat.radius.me", 512)
         return speaker:GetPos():DistToSqr(listener:GetPos()) < radius ^ 2
     end,
     OnChatAdd = function(self, speaker, text)
-        chat.AddText(Parallax.Color:Get("chat.action"), speaker:Name() .. " " .. text)
+        chat.AddText(ax.color:Get("chat.action"), speaker:Name() .. " " .. text)
     end
 })
 
-Parallax.Chat:Register("it", {
+ax.chat:Register("it", {
     Prefixes = {"It"},
     CanHear = function(self, speaker, listener)
-        local radius = Parallax.Config:Get("chat.radius.it", 512)
+        local radius = ax.config:Get("chat.radius.it", 512)
         return speaker:GetPos():DistToSqr(listener:GetPos()) < radius ^ 2
     end,
     OnChatAdd = function(self, speaker, text)
-        chat.AddText(Parallax.Color:Get("chat.action"), text)
+        chat.AddText(ax.color:Get("chat.action"), text)
     end
 })
 
-Parallax.Chat:Register("ooc", {
+ax.chat:Register("ooc", {
     Prefixes = {"/", "OOC"},
     CanHear = function(self, speaker, listener)
-        return Parallax.Config:Get("chat.ooc")
+        return ax.config:Get("chat.ooc")
     end,
     OnChatAdd = function(self, speaker, text)
-        chat.AddText(Parallax.Color:Get("chat.ooc"), "(OOC) ", Parallax.Color:Get("text"), speaker:SteamName() .. ": " .. text)
+        chat.AddText(ax.color:Get("chat.ooc"), "(OOC) ", ax.color:Get("text"), speaker:SteamName() .. ": " .. text)
     end
 })
 
-Parallax.Chat:Register("looc", {
+ax.chat:Register("looc", {
     Prefixes = {"LOOC"},
     CanHear = function(self, speaker, listener)
-        local radius = Parallax.Config:Get("chat.radius.looc", 512)
+        local radius = ax.config:Get("chat.radius.looc", 512)
         return speaker:GetPos():DistToSqr(listener:GetPos()) < radius ^ 2
     end,
     OnChatAdd = function(self, speaker, text)
-        chat.AddText(Parallax.Color:Get("chat.ooc"), "(LOOC) ", Parallax.Color:Get("text"), speaker:SteamName() .. ": " .. text)
+        chat.AddText(ax.color:Get("chat.ooc"), "(LOOC) ", ax.color:Get("text"), speaker:SteamName() .. ": " .. text)
     end
 })
 

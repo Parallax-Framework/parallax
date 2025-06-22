@@ -9,7 +9,7 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
-Parallax.Notification = Parallax.Notification or {}
+ax.notification = ax.notification or {}
 
 NOTIFY_GENERIC = 0
 NOTIFY_ERROR = 1
@@ -17,7 +17,7 @@ NOTIFY_HINT = 2
 NOTIFY_UNDO = 3
 NOTIFY_CLEANUP = 4
 
-function Parallax.Notification:Send(client, text, iType, duration)
+function ax.notification:Send(client, text, iType, duration)
     if ( !text or text == "" ) then return end
 
     if ( !iType and string.EndsWith(text, "!") ) then
@@ -31,7 +31,7 @@ function Parallax.Notification:Send(client, text, iType, duration)
     duration = duration or 3
 
     if ( SERVER ) then
-        Parallax.Net:Start(client, "notification.send", text, iType, duration)
+        ax.net:Start(client, "notification.send", text, iType, duration)
     else
         notification.AddLegacy(text, iType, duration)
     end

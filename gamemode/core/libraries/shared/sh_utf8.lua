@@ -15,9 +15,6 @@
 
 ax.utf8 = ax.utf8 or {}
 
--- Source: https://www.unicode.org/Public/UCD/latest/ucd/UnicodeData.txt
--- Automatically generated using Python script.
-
 local casings = {
     -- Uppercase to lowercase mapping
     upperToLower = {
@@ -56,9 +53,6 @@ local casings = {
         𞤟 = "𞥁",
         𞤠 = "𞥂",
         𞤡 = "𞥃",
-
-        -- ANGSTROM characters
-        Å = "å",
 
         -- ARMENIAN characters
         Ա = "ա",

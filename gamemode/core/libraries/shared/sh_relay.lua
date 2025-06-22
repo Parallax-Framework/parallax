@@ -12,50 +12,50 @@
 --- Relay
 -- A secure value distribution system using SFS for packing and syncing values.
 -- Provides shared (global), user (per-player), and entity (per-entity) scopes.
--- @module Parallax.Relay
+-- @module ax.relay
 
-Parallax.Relay = Parallax.Relay or {}
-Parallax.Relay.shared = Parallax.Relay.shared  or {}
-Parallax.Relay.user = Parallax.Relay.user or {}
-Parallax.Relay.entity = Parallax.Relay.entity or {}
+ax.relay = ax.relay or {}
+ax.relay.shared = ax.relay.shared  or {}
+ax.relay.user = ax.relay.user or {}
+ax.relay.entity = ax.relay.entity or {}
 
 local playerMeta = FindMetaTable("Player")
 local entityMeta = FindMetaTable("Entity")
 
-function Parallax.Relay:SetRelay(key, value, recipient)
+function ax.relay:SetRelay(key, value, recipient)
     self.shared[key] = value
 
     if ( SERVER ) then
-        Parallax.Net:Start(recipient, "relay.shared", key, value)
+        ax.net:Start(recipient, "relay.shared", key, value)
     end
 end
 
-function Parallax.Relay:GetRelay(key, default)
+function ax.relay:GetRelay(key, default)
     local v = self.shared[key]
     return v != nil and v or default
 end
 
 if ( CLIENT ) then
-    Parallax.Net:Hook("relay.shared", function(key, value)
+    ax.net:Hook("relay.shared", function(key, value)
         if ( value == nil ) then return end
 
-        Parallax.Relay.shared[key] = value
+        ax.relay.shared[key] = value
     end)
 end
 
 function playerMeta:SetRelay(key, value, recipient)
     if ( SERVER ) then
         local index = self:EntIndex()
-        Parallax.Relay.user[index] = Parallax.Relay.user[index] or {}
-        Parallax.Relay.user[index][key] = value
+        ax.relay.user[index] = ax.relay.user[index] or {}
+        ax.relay.user[index][key] = value
 
-        Parallax.Net:Start(recipient, "relay.user", index, key, value)
+        ax.net:Start(recipient, "relay.user", index, key, value)
     end
 end
 
 function playerMeta:GetRelay(key, default)
     local index = self:EntIndex()
-    local t = Parallax.Relay.user[index]
+    local t = ax.relay.user[index]
     if ( t == nil ) then
         return default
     end
@@ -64,27 +64,27 @@ function playerMeta:GetRelay(key, default)
 end
 
 if ( CLIENT ) then
-    Parallax.Net:Hook("relay.user", function(index, key, value)
+    ax.net:Hook("relay.user", function(index, key, value)
         if ( value == nil ) then return end
 
-        Parallax.Relay.user[index] = Parallax.Relay.user[index] or {}
-        Parallax.Relay.user[index][key] = value
+        ax.relay.user[index] = ax.relay.user[index] or {}
+        ax.relay.user[index][key] = value
     end)
 end
 
 function entityMeta:SetRelay(key, value, recipient)
     if ( SERVER ) then
         local index = self:EntIndex()
-        Parallax.Relay.entity[index] = Parallax.Relay.entity[index] or {}
-        Parallax.Relay.entity[index][key] = value
+        ax.relay.entity[index] = ax.relay.entity[index] or {}
+        ax.relay.entity[index][key] = value
 
-        Parallax.Net:Start(recipient, "relay.entity", index, key, value)
+        ax.net:Start(recipient, "relay.entity", index, key, value)
     end
 end
 
 function entityMeta:GetRelay(key, default)
     local index = self:EntIndex()
-    local t = Parallax.Relay.entity[index]
+    local t = ax.relay.entity[index]
     if ( t == nil ) then
         return default
     end
@@ -93,60 +93,60 @@ function entityMeta:GetRelay(key, default)
 end
 
 if ( CLIENT ) then
-    Parallax.Net:Hook("relay.entity", function(index, key, value)
+    ax.net:Hook("relay.entity", function(index, key, value)
         if ( value == nil ) then return end
 
-        Parallax.Relay.entity[index] = Parallax.Relay.entity[index] or {}
-        Parallax.Relay.entity[index][key] = value
+        ax.relay.entity[index] = ax.relay.entity[index] or {}
+        ax.relay.entity[index][key] = value
     end)
 end
 
-hook.Add("EntityRemoved", "Parallax.Relay.cleanup.entity", function(entity)
+hook.Add("EntityRemoved", "ax.relay.cleanup.entity", function(entity)
     local index = entity:EntIndex()
-    if ( SERVER ) then Parallax.Net:Start(nil, "relay.cleanup", index) end
+    if ( SERVER ) then ax.net:Start(nil, "relay.cleanup", index) end
 
     if ( entity:IsPlayer() ) then
-        if ( Parallax.Relay.user[index] ) then
-            Parallax.Relay.user[index] = nil
+        if ( ax.relay.user[index] ) then
+            ax.relay.user[index] = nil
         end
 
         return
     end
 
-    if ( Parallax.Relay.entity[index] ) then
-        Parallax.Relay.entity[index] = nil
+    if ( ax.relay.entity[index] ) then
+        ax.relay.entity[index] = nil
     end
 end)
 
 if ( SERVER ) then
-    hook.Add("SaveData", "Parallax.Relay.cleanup", function()
-        for index, _ in pairs(Parallax.Relay.user) do
+    hook.Add("SaveData", "ax.relay.cleanup", function()
+        for index, _ in pairs(ax.relay.user) do
             if ( !IsValid(Entity(index)) ) then
-                Parallax.Relay.user[index] = nil
+                ax.relay.user[index] = nil
             end
         end
 
-        for index, _ in pairs(Parallax.Relay.entity) do
+        for index, _ in pairs(ax.relay.entity) do
             if ( !IsValid(Entity(index)) ) then
-                Parallax.Relay.entity[index] = nil
+                ax.relay.entity[index] = nil
             end
         end
     end)
 else
-    Parallax.Net:Hook("relay.cleanup", function(index)
+    ax.net:Hook("relay.cleanup", function(index)
         local ent = Entity(index)
         if ( !IsValid(ent) ) then return end
 
         if ( ent:IsPlayer() ) then
-            if ( Parallax.Relay.user[index] ) then
-                Parallax.Relay.user[index] = nil
+            if ( ax.relay.user[index] ) then
+                ax.relay.user[index] = nil
             end
 
             return
         end
 
-        if ( Parallax.Relay.entity[index] ) then
-            Parallax.Relay.entity[index] = nil
+        if ( ax.relay.entity[index] ) then
+            ax.relay.entity[index] = nil
         end
     end)
 end

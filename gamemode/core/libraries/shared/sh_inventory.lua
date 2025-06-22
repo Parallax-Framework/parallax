@@ -10,46 +10,46 @@
 ]]
 
 -- Inventory management library.
--- @module Parallax.Inventory
+-- @module ax.inventory
 
-Parallax.Inventory = Parallax.Inventory or {}
-Parallax.Inventory.Meta = Parallax.Inventory.Meta or {}
-Parallax.Inventory.Stored = Parallax.Inventory.Stored or {}
+ax.inventory = ax.inventory or {}
+ax.inventory.meta = ax.inventory.meta or {}
+ax.inventory.stored = ax.inventory.stored or {}
 
 -- Create an inventory object
-function Parallax.Inventory:CreateObject(data)
+function ax.inventory:CreateObject(data)
     if ( !data or !istable(data) ) then
-        Parallax.Util:PrintError("Invalid data passed to CreateObject")
+        ax.util:PrintError("Invalid data passed to CreateObject")
         return
     end
 
-    local inventory = setmetatable({}, self.Meta)
+    local inventory = setmetatable({}, self.meta)
 
     inventory.ID = tonumber(data.ID or data.id or 0)
     inventory.CharacterID = tonumber(data.CharacterID or data.character_id or 0)
     inventory.Name = data.Name or data.name or "Inventory"
-    inventory.MaxWeight = tonumber(data.MaxWeight or data.max_weight) or Parallax.Config:Get("inventory.max.weight", 20)
-    inventory.Items = Parallax.Util:SafeParseTable(data.Items or data.items)
-    inventory.Data = Parallax.Util:SafeParseTable(data.Data or data.data)
-    inventory.Receivers = Parallax.Util:SafeParseTable(data.Receivers or data.receivers)
+    inventory.MaxWeight = tonumber(data.MaxWeight or data.max_weight) or ax.config:Get("inventory.max.weight", 20)
+    inventory.Items = ax.util:SafeParseTable(data.Items or data.items)
+    inventory.Data = ax.util:SafeParseTable(data.Data or data.data)
+    inventory.Receivers = ax.util:SafeParseTable(data.Receivers or data.receivers)
 
-    self.Stored[inventory.ID] = inventory
+    self.stored[inventory.ID] = inventory
 
     return inventory
 end
 
-function Parallax.Inventory:Get(id)
-    return tonumber(id) and self.Stored[id] or nil
+function ax.inventory:Get(id)
+    return tonumber(id) and self.stored[id] or nil
 end
 
-function Parallax.Inventory:GetAll()
-    return self.Stored
+function ax.inventory:GetAll()
+    return self.stored
 end
 
-function Parallax.Inventory:GetByCharacterID(characterID)
+function ax.inventory:GetByCharacterID(characterID)
     local inventories = {}
 
-    for _, inv in pairs(self.Stored) do
+    for _, inv in pairs(self.stored) do
         if ( inv:GetOwner() == characterID ) then
             table.insert(inventories, inv)
         end

@@ -10,10 +10,10 @@
 ]]
 
 --- Commands library.
--- @module Parallax.Command
+-- @module ax.command
 
-Parallax.Command = {}
-Parallax.Command.Stored = {}
+ax.command = {}
+ax.command.stored = {}
 
 --- Registers a new command.
 -- @realm shared
@@ -25,7 +25,7 @@ Parallax.Command.Stored = {}
 -- @field bool AdminOnly Whether the command is admin only.
 -- @field bool SuperAdminOnly Whether the command is super admin only.
 -- @field string UniqueID The unique identifier of the command.
--- @usage Parallax.Command:Register({
+-- @usage ax.command:Register({
 --     Description = "An example command.",
 --     Callback = function(info, client, arguments)
 --         print("Example command executed!")
@@ -33,16 +33,16 @@ Parallax.Command.Stored = {}
 --     Prefixes = {"example", "ex"},
 --     MinAccess = "user"
 -- })
-function Parallax.Command:Register(commandName, info)
+function ax.command:Register(commandName, info)
     if ( !isstring(commandName) ) then
-        Parallax.Util:PrintError("Attempted to register an invalid command!")
+        ax.util:PrintError("Attempted to register an invalid command!")
         return
     end
 
     commandName = string.gsub(commandName, "%s+", " ")
 
     if ( !isfunction(info.Callback) ) then
-        Parallax.Util:PrintError("Attempted to register a command with no callback!")
+        ax.util:PrintError("Attempted to register a command with no callback!")
         return
     end
 
@@ -53,7 +53,7 @@ function Parallax.Command:Register(commandName, info)
     end
 
     info.UniqueID = commandName
-    self.Stored[commandName] = info
+    self.stored[commandName] = info
 
     if ( CAMI != nil ) then
         CAMI.RegisterPrivilege({
@@ -69,8 +69,8 @@ end
 -- @realm shared
 -- @string name The name of the command.
 -- @internal
-function Parallax.Command:UnRegister(name)
-    self.Stored[name] = nil
+function ax.command:UnRegister(name)
+    self.stored[name] = nil
     hook.Run("OnCommandUnRegistered", name)
 end
 
@@ -78,17 +78,17 @@ end
 -- @realm shared
 -- @string identifier The unique identifier or prefix of the command.
 -- @return table The command.
-function Parallax.Command:Get(identifier)
+function ax.command:Get(identifier)
     if ( !isstring(identifier) ) then
-        Parallax.Util:PrintError("Attempted to get a command with an invalid identifier!")
+        ax.util:PrintError("Attempted to get a command with an invalid identifier!")
         return false
     end
 
-    if ( self.Stored[identifier] ) then
-        return self.Stored[identifier]
+    if ( self.stored[identifier] ) then
+        return self.stored[identifier]
     end
 
-    for k, v in pairs(self.Stored) do
+    for k, v in pairs(self.stored) do
         if ( string.lower(k) == string.lower(identifier) ) then
             return v
         end
@@ -109,8 +109,8 @@ end
 --- Returns all registered commands.
 -- @realm shared
 -- @return table A table containing all registered commands.
-function Parallax.Command:GetAll()
-    return self.Stored
+function ax.command:GetAll()
+    return self.stored
 end
 
 if ( CLIENT ) then
@@ -118,8 +118,8 @@ if ( CLIENT ) then
     -- @realm client
     -- @string command The command to run.
     -- @param ... The arguments of the command.
-    function Parallax.Command:Run(command, ...)
+    function ax.command:Run(command, ...)
         local arguments = {...}
-        Parallax.Net:Start("command.run", command, arguments)
+        ax.net:Start("command.run", command, arguments)
     end
 end

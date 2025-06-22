@@ -15,11 +15,11 @@ local PANEL = {}
 
 function PANEL:Init()
     self:SetFont("parallax")
-    self:SetTextColor(Parallax.Color:Get("text.light"))
+    self:SetTextColor(ax.color:Get("text.light"))
     self:SetPaintBackground(false)
     self:SetUpdateOnType(true)
-    self:SetCursorColor(Parallax.Color:Get("text.light"))
-    self:SetHighlightColor(Parallax.Color:Get("text.light"))
+    self:SetCursorColor(ax.color:Get("text.light"))
+    self:SetHighlightColor(ax.color:Get("text.light"))
 
     self:SetTall(ScreenScale(12))
 end
@@ -32,10 +32,10 @@ function PANEL:SizeToContents()
 end
 
 function PANEL:Paint(width, height)
-    surface.SetDrawColor(Parallax.Color:Get("background.transparent"))
+    surface.SetDrawColor(ax.color:Get("background.transparent"))
     surface.DrawRect(0, 0, width, height)
 
     BaseClass.Paint(self, width, height)
 end
 
-vgui.Register("Parallax.Text.Entry", PANEL, "DTextEntry")
+vgui.Register("ax.text.entry", PANEL, "DTextEntry")

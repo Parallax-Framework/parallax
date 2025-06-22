@@ -9,18 +9,18 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
-local gradientTop = Parallax.Util:GetMaterial("vgui/gradient-u")
+local gradientTop = ax.util:GetMaterial("vgui/gradient-u")
 
 DEFINE_BASECLASS("EditablePanel")
 
 local PANEL = {}
 
 function PANEL:Init()
-    if ( IsValid(Parallax.GUI.Splash) ) then
-        Parallax.GUI.Splash:Remove()
+    if ( IsValid(ax.gui.splash) ) then
+        ax.gui.splash:Remove()
     end
 
-    Parallax.GUI.Splash = self
+    ax.gui.splash = self
 
     if ( system.IsWindows() ) then
         system.FlashWindow()
@@ -34,16 +34,16 @@ function PANEL:Init()
     title:Dock(TOP)
     title:DockMargin(0, ScreenScaleH(32), 0, 0)
     title:SetContentAlignment(5)
-    title:SetFont("Parallax.Huge.Bold")
+    title:SetFont("ax.huge.bold")
     title:SetText("PARALLAX")
-    title:SetTextColor(Parallax.Config:Get("color.framework"))
+    title:SetTextColor(ax.config:Get("color.framework"))
     title:SizeToContents()
 
     local subtitle = self:Add("DLabel")
     subtitle:Dock(TOP)
     subtitle:DockMargin(0, -ScreenScaleH(4), 0, 0)
     subtitle:SetContentAlignment(5)
-    subtitle:SetFont("Parallax.Large.Bold")
+    subtitle:SetFont("ax.large.bold")
 
     local schemaName = "UNKNOWN SCHEMA"
     if ( SCHEMA ) then
@@ -52,16 +52,16 @@ function PANEL:Init()
             schemaName = SCHEMA:GetMenuTitle()
         end
 
-        schemaName = Parallax.Utf8:Upper(schemaName)
+        schemaName = ax.utf8:Upper(schemaName)
     else
-        Parallax.Util:PrintError("SCHEMA is not defined! Please ensure that your schema is properly set up.")
+        ax.util:PrintError("SCHEMA is not defined! Please ensure that your schema is properly set up.")
     end
 
     subtitle:SetText(schemaName)
-    subtitle:SetTextColor(Parallax.Config:Get("color.schema"))
+    subtitle:SetTextColor(ax.config:Get("color.schema"))
     subtitle:SizeToContents()
 
-    local button = self:Add("Parallax.Button.Flat")
+    local button = self:Add("ax.button.flat")
     button:SetText("splash.continue")
     button:Center()
     button.DoClick = function()
@@ -69,17 +69,17 @@ function PANEL:Init()
             self:Remove()
         end)
 
-        vgui.Create("Parallax.Mainmenu")
+        vgui.Create("ax.mainmenu")
     end
 end
 
 function PANEL:OnRemove()
-    if ( IsValid(Parallax.GUI.Splash) ) then
-        Parallax.GUI.Splash = nil
+    if ( IsValid(ax.gui.splash) ) then
+        ax.gui.splash = nil
     end
 
-    if ( !IsValid(Parallax.GUI.Mainmenu) ) then
-        vgui.Create("Parallax.Mainmenu")
+    if ( !IsValid(ax.gui.mainmenu) ) then
+        vgui.Create("ax.mainmenu")
     end
 end
 
@@ -89,10 +89,10 @@ function PANEL:Paint(width, height)
     surface.DrawTexturedRect(0, 0, width, height / 2)
 end
 
-vgui.Register("Parallax.Splash", PANEL, "EditablePanel")
+vgui.Register("ax.splash", PANEL, "EditablePanel")
 
-if ( IsValid(Parallax.GUI.Splash) ) then
-    Parallax.GUI.Splash:Remove()
+if ( IsValid(ax.gui.splash) ) then
+    ax.gui.splash:Remove()
 end
 
 concommand.Add("ax_splash", function(client, command, arguments)
@@ -100,9 +100,9 @@ concommand.Add("ax_splash", function(client, command, arguments)
         return
     end
 
-    if ( IsValid(Parallax.GUI.Splash) ) then
-        Parallax.GUI.Splash:Remove()
+    if ( IsValid(ax.gui.splash) ) then
+        ax.gui.splash:Remove()
     end
 
-    vgui.Create("Parallax.Splash")
+    vgui.Create("ax.splash")
 end, nil, "Open the splash screen", FCVAR_CLIENTCMD_CAN_EXECUTE)

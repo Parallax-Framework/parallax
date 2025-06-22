@@ -24,9 +24,8 @@ end
 --
 
 local internal_type = _G.type
-local IsColor = IsColor
 local function type(v)
-    if IsColor and IsColor(v) then
+    if ax.util:CoerceType(ax.types.color, v) then
         return "Color"
     end
     return internal_type(v)

@@ -9,21 +9,21 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
-Parallax.Currency = Parallax.Currency or {}
+ax.currency = ax.currency or {}
 
-function Parallax.Currency:GetSingular()
-    return Parallax.Config:Get("currency.singular")
+function ax.currency:GetSingular()
+    return ax.config:Get("currency.singular")
 end
 
-function Parallax.Currency:GetPlural()
-    return Parallax.Config:Get("currency.plural")
+function ax.currency:GetPlural()
+    return ax.config:Get("currency.plural")
 end
 
-function Parallax.Currency:GetSymbol()
-    return Parallax.Config:Get("currency.symbol")
+function ax.currency:GetSymbol()
+    return ax.config:Get("currency.symbol")
 end
 
-function Parallax.Currency:Format(amount, bNoSymbol, bComma)
+function ax.currency:Format(amount, bNoSymbol, bComma)
     if ( !isnumber(amount) ) then return amount end
 
     local symbol = bNoSymbol and "" or self:GetSymbol()
@@ -33,9 +33,9 @@ function Parallax.Currency:Format(amount, bNoSymbol, bComma)
 end
 
 if ( SERVER ) then
-    function Parallax.Currency:Spawn(amount, pos, ang)
+    function ax.currency:Spawn(amount, pos, ang)
         if ( !isvector(pos) ) then
-            Parallax.Util:PrintError("Parallax.Currency:Spawn - Invalid position provided!")
+            ax.util:PrintError("ax.currency:Spawn - Invalid position provided!")
             return
         end
 

@@ -218,4 +218,4 @@ localization["tab.mainmenu"] = "Hauptmenü"
 localization["tab.scoreboard"] = "Punktetafel"
 localization["tab.options"] = "Einstellungen"
 
-Parallax.Localization:Register("de", localization)
+ax.localization:Register("de", localization)

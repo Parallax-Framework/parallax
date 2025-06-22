@@ -62,39 +62,39 @@ function GM:GetPlayerDeathSound(client)
 end
 
 function GM:PreOptionChanged(client, key, value)
-    local stored = Parallax.Option.Stored[key]
+    local stored = ax.option.stored[key]
     if ( !istable(stored) ) then
-        Parallax.Util:PrintError("Attempted to set unknown option \"" .. key .. "\"!")
+        ax.util:PrintError("Attempted to set unknown option \"" .. tostring(key) .. "\"!")
         return false
     end
 
-    if ( stored.Type == Parallax.Types.array ) then
+    if ( stored.Type == ax.types.array ) then
         local populate = stored.Populate
         if ( isfunction(populate) ) then
             local options = populate()
             if ( !istable(options) or !options[value] ) then
-                Parallax.Util:PrintError("Attempted to set option \"" .. key .. "\" with invalid value!")
+                ax.util:PrintError("Attempted to set option \"" .. tostring(key) .. "\" with invalid value!")
                 return false
             end
         elseif ( !istable(stored.Values) or !stored.Values[value] ) then
-            Parallax.Util:PrintError("Attempted to set option \"" .. key .. "\" with invalid value!")
+            ax.util:PrintError("Attempted to set option \"" .. tostring(key) .. "\" with invalid value!")
             return false
         end
     else
-        if ( Parallax.Util:DetectType(value) != stored.Type ) then
-            Parallax.Util:PrintError("Attempted to set option \"" .. key .. "\" with invalid type!")
+        if ( ax.util:DetectType(value) != stored.Type ) then
+            ax.util:PrintError("Attempted to set option \"" .. tostring(key) .. "\" with invalid type!")
             return false
         end
     end
 
     if ( isnumber(value) ) then
         if ( isnumber(stored.Min) and value < stored.Min ) then
-            Parallax.Util:PrintError("Option \"" .. key .. "\" is below minimum value!")
+            ax.util:PrintError("Option \"" .. tostring(key) .. "\" is below minimum value!")
             return false
         end
 
         if ( isnumber(stored.Max) and value > stored.Max ) then
-            Parallax.Util:PrintError("Option \"" .. key .. "\" is above maximum value!")
+            ax.util:PrintError("Option \"" .. tostring(key) .. "\" is above maximum value!")
             return false
         end
     end
@@ -103,10 +103,19 @@ function GM:PreOptionChanged(client, key, value)
 end
 
 function GM:PostOptionChanged(client, key, value)
+    local optionData = ax.option.stored[key]
+    if ( !istable(optionData) ) then
+        ax.util:PrintError("Attempted to set unknown option \"" .. tostring(key) .. "\"!")
+        return false
+    end
+
+    if ( optionData.Type == ax.types.number and optionData.IsKeybind ) then
+        ax.binds[value] = key
+    end
 end
 
 function GM:PlayerCanHearChat(client, listener, uniqueID, text)
-    local chatData = Parallax.Chat:Get(uniqueID)
+    local chatData = ax.chat:Get(uniqueID)
     if ( !istable(chatData) ) then return false end
 
     local canHear = chatData.CanHear
@@ -142,7 +151,7 @@ end
 
 function GM:KeyPress(client, key)
     if ( SERVER and key == IN_RELOAD ) then
-        timer.Create("Parallax.Weapon.raise." .. client:SteamID64(), Parallax.Config:Get("weapon.raise.time", 1), 1, function()
+        timer.Create("ax.Weapon.raise." .. client:SteamID64(), ax.config:Get("weapon.raise.time", 1), 1, function()
             if ( IsValid(client) ) then
                 client:ToggleWeaponRaise()
             end
@@ -152,7 +161,7 @@ end
 
 function GM:KeyRelease(client, key)
     if ( SERVER and key == IN_RELOAD ) then
-        timer.Remove("Parallax.Weapon.raise." .. client:SteamID64())
+        timer.Remove("ax.Weapon.raise." .. client:SteamID64())
     end
 end
 
@@ -232,7 +241,7 @@ end
 
 function GM:ShouldCollide(ent1, ent2)
     if ( ent1:GetClass() == "ax_item" ) then
-        local itemDef = Parallax.Item:Get(ent1:GetUniqueID())
+        local itemDef = ax.item:Get(ent1:GetUniqueID())
 
         if ( !itemDef ) then return end
 

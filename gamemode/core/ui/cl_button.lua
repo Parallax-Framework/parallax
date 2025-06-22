@@ -23,14 +23,14 @@ AccessorFunc(PANEL, "textInsetY", "TextInsetY", FORCE_NUMBER)
 AccessorFunc(PANEL, "wasHovered", "WasHovered", FORCE_BOOL)
 
 function PANEL:Init()
-    self:SetFont("Parallax.Large")
-    self:SetTextColorProperty(Parallax.Color:Get("white"))
+    self:SetFont("ax.large")
+    self:SetTextColorProperty(ax.color:Get("white"))
     self:SetContentAlignment(4)
     self:SetTextInset(ScreenScale(2), 0)
 
     self.baseHeight = self:GetTall()
     self.baseTextColor = self:GetTextColor()
-    self.baseTextColorTarget = Parallax.Config:Get("color.schema")
+    self.baseTextColorTarget = ax.config:Get("color.schema")
     self.height = self.baseHeight
     self.inertia = 0
     self.textColor = Color(255, 255, 255, 255)
@@ -43,11 +43,11 @@ function PANEL:SetText(text, bNoTranslate, bNoSizeToContents, bNoUppercase)
     if ( !text ) then return end
 
     if ( !bNoTranslate ) then
-        text = Parallax.Localization:GetPhrase(text)
+        text = ax.localization:GetPhrase(text)
     end
 
     if ( !bNoUppercase ) then
-        text = Parallax.Utf8:Upper(text)
+        text = ax.utf8:Upper(text)
     end
 
     BaseClass.SetText(self, text)
@@ -85,8 +85,8 @@ end
 function PANEL:Think()
     local hovering = self:IsHovered()
     if ( hovering and !self.wasHovered ) then
-        surface.PlaySound("Parallax.Button.Enter")
-        self:SetFont("Parallax.Large.Bold")
+        surface.PlaySound("ax.button.Enter")
+        self:SetFont("ax.large.bold")
         self.wasHovered = true
 
         self:Motion(0.2, {
@@ -125,7 +125,7 @@ function PANEL:Think()
             self:OnHovered()
         end
     elseif ( !hovering and self.wasHovered ) then
-        self:SetFont("Parallax.Large")
+        self:SetFont("ax.large")
         self.wasHovered = false
 
         self:Motion(0.2, {
@@ -137,7 +137,7 @@ function PANEL:Think()
         })
 
         self:Motion(0.2, {
-            Target = {textColor = self.baseTextColor or Parallax.Color:Get("white")},
+            Target = {textColor = self.baseTextColor or ax.color:Get("white")},
             Easing = "OutQuad",
             Think = function(this)
                 self:SetTextColor(self.textColor)
@@ -171,7 +171,7 @@ function PANEL:Think()
 end
 
 function PANEL:OnMousePressed(key)
-    surface.PlaySound("Parallax.Button.Click")
+    surface.PlaySound("ax.button.Click")
 
     if ( key == MOUSE_LEFT ) then
         self:DoClick()
@@ -180,9 +180,9 @@ function PANEL:OnMousePressed(key)
     end
 end
 
-vgui.Register("Parallax.Button", PANEL, "DButton")
+vgui.Register("ax.button", PANEL, "DButton")
 
-DEFINE_BASECLASS("Parallax.Button")
+DEFINE_BASECLASS("ax.button")
 
 PANEL = {}
 
@@ -191,8 +191,8 @@ AccessorFunc(PANEL, "backgroundAlphaUnHovered", "BackgroundAlphaUnHovered", FORC
 AccessorFunc(PANEL, "backgroundColor", "BackgroundColor")
 
 function PANEL:Init()
-    self:SetFont("Parallax.Large")
-    self:SetTextColorProperty(Parallax.Color:Get("white"))
+    self:SetFont("ax.large")
+    self:SetTextColorProperty(ax.color:Get("white"))
     self:SetContentAlignment(5)
     self:SetTall(ScreenScaleH(12))
     self:SetTextInset(0, 0)
@@ -201,10 +201,10 @@ function PANEL:Init()
 
     self.backgroundAlphaHovered = 1
     self.backgroundAlphaUnHovered = 0
-    self.backgroundColor = Parallax.Color:Get("white")
+    self.backgroundColor = ax.color:Get("white")
     self.baseHeight = self:GetTall()
     self.baseTextColor = self:GetTextColor()
-    self.baseTextColorTarget = Parallax.Color:Get("black")
+    self.baseTextColorTarget = ax.color:Get("black")
     self.inertia = 0
     self.wasHovered = false
 end
@@ -223,8 +223,8 @@ end
 function PANEL:Think()
     local hovering = self:IsHovered()
     if ( hovering and !self.wasHovered ) then
-        surface.PlaySound("Parallax.Button.Enter")
-        self:SetFont("Parallax.Large.Bold")
+        surface.PlaySound("ax.button.Enter")
+        self:SetFont("ax.large.bold")
         self.wasHovered = true
 
         self:Motion(0.2, {
@@ -247,11 +247,11 @@ function PANEL:Think()
             self:OnHovered()
         end
     elseif ( !hovering and self.wasHovered ) then
-        self:SetFont("Parallax.Large")
+        self:SetFont("ax.large")
         self.wasHovered = false
 
         self:Motion(0.2, {
-            Target = {textColor = self.baseTextColor or Parallax.Color:Get("white")},
+            Target = {textColor = self.baseTextColor or ax.color:Get("white")},
             Easing = "OutQuad",
             Think = function(this)
                 self:SetTextColor(self.textColor)
@@ -276,10 +276,10 @@ function PANEL:Think()
     end
 end
 
-vgui.Register("Parallax.Button.Flat", PANEL, "Parallax.Button")
+vgui.Register("ax.button.flat", PANEL, "ax.button")
 
 sound.Add({
-    name = "Parallax.Button.Click",
+    name = "ax.button.Click",
     channel = CHAN_STATIC,
     volume = 0.2,
     level = 80,
@@ -288,7 +288,7 @@ sound.Add({
 })
 
 sound.Add({
-    name = "Parallax.Button.Enter",
+    name = "ax.button.Enter",
     channel = CHAN_STATIC,
     volume = 0.1,
     level = 80,

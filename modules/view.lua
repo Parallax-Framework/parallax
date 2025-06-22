@@ -15,17 +15,17 @@ MODULE.Name = "View"
 MODULE.Description = "Implements a swaying effect ported over from ARC9, while also adding own implementations for view bobbing and camera roll."
 MODULE.Author = "Riggs"
 
-Parallax.Option:Register("view", {
+ax.option:Register("view", {
     Name = "option.view",
-    Type = Parallax.Types.bool,
+    Type = ax.types.bool,
     Default = true,
     Description = "option.view.help",
     Category = "category.view"
 })
 
-Parallax.Option:Register("view.multiplier", {
+ax.option:Register("view.multiplier", {
     Name = "option.view.multiplier",
-    Type = Parallax.Types.number,
+    Type = ax.types.number,
     Default = 1,
     Min = 0,
     Max = 10,
@@ -35,9 +35,9 @@ Parallax.Option:Register("view.multiplier", {
     Category = "category.view"
 })
 
-Parallax.Option:Register("view.multiplier.sprint", {
+ax.option:Register("view.multiplier.sprint", {
     Name = "option.view.multiplier.sprint",
-    Type = Parallax.Types.number,
+    Type = ax.types.number,
     Default = 1,
     Min = 0,
     Max = 10,
@@ -47,9 +47,9 @@ Parallax.Option:Register("view.multiplier.sprint", {
     Category = "category.view"
 })
 
-Parallax.Option:Register("view.max.roll", {
+ax.option:Register("view.max.roll", {
     Name = "option.view.max.roll",
-    Type = Parallax.Types.number,
+    Type = ax.types.number,
     Default = 10,
     Min = 0,
     Max = 45,
@@ -59,9 +59,9 @@ Parallax.Option:Register("view.max.roll", {
     Category = "category.view"
 })
 
-Parallax.Option:Register("view.max.tilt", {
+ax.option:Register("view.max.tilt", {
     Name = "option.view.max.tilt",
-    Type = Parallax.Types.number,
+    Type = ax.types.number,
     Default = 10,
     Min = 0,
     Max = 45,
@@ -71,9 +71,9 @@ Parallax.Option:Register("view.max.tilt", {
     Category = "category.view"
 })
 
-Parallax.Option:Register("view.roll.speed", {
+ax.option:Register("view.roll.speed", {
     Name = "option.view.roll.speed",
-    Type = Parallax.Types.number,
+    Type = ax.types.number,
     Default = 5,
     Min = 0,
     Max = 20,
@@ -83,9 +83,9 @@ Parallax.Option:Register("view.roll.speed", {
     Category = "category.view"
 })
 
-Parallax.Option:Register("view.pitch.speed", {
+ax.option:Register("view.pitch.speed", {
     Name = "option.view.pitch.speed",
-    Type = Parallax.Types.number,
+    Type = ax.types.number,
     Default = 5,
     Min = 0,
     Max = 20,
@@ -95,9 +95,9 @@ Parallax.Option:Register("view.pitch.speed", {
     Category = "category.view"
 })
 
-Parallax.Option:Register("view.intensity", {
+ax.option:Register("view.intensity", {
     Name = "option.view.intensity",
-    Type = Parallax.Types.number,
+    Type = ax.types.number,
     Default = 1,
     Min = 0,
     Max = 5,
@@ -108,7 +108,7 @@ Parallax.Option:Register("view.intensity", {
 })
 
 if ( CLIENT ) then
-    Parallax.Localization:Register("en", {
+    ax.localization:Register("en", {
         ["category.view"] = "View",
         ["option.view"] = "View Effects",
         ["option.view.help"] = "Enable or disable view effects such as sway and bobbing.",
@@ -128,7 +128,7 @@ if ( CLIENT ) then
         ["option.view.roll.speed.help"] = "Speed at which the view roll adjusts to mouse movement."
     })
 
-    Parallax.Localization:Register("bg", {
+    ax.localization:Register("bg", {
         ["category.view"] = "Изглед",
         ["option.view"] = "Ефекти на изгледа",
         ["option.view.help"] = "Включване или изключване на ефектите на изгледа, като трептене и наклони.",
@@ -148,7 +148,7 @@ if ( CLIENT ) then
         ["option.view.roll.speed.help"] = "Скорост, с която се променя наклонът на изгледа при движение с мишката."
     })
 
-    Parallax.Localization:Register("ru", {
+    ax.localization:Register("ru", {
         ["category.view"] = "Взгляд",
         ["option.view"] = "Эффекты взгляда",
         ["option.view.help"] = "Eвключить или отключить эффекты вгляда, такие как тряска и наклоны.",
@@ -187,13 +187,13 @@ if ( CLIENT ) then
         local mag = 1
         local ts = 0
 
-        local swayEnabled = Parallax.Option:Get("view")
+        local swayEnabled = ax.option:Get("view")
         if ( !swayEnabled ) then return pos, ang end
 
-        local swayMult = Parallax.Option:Get("view.multiplier")
-        local swayMultSprint = Parallax.Option:Get("view.multiplier.sprint")
+        local swayMult = ax.option:Get("view.multiplier")
+        local swayMultSprint = ax.option:Get("view.multiplier.sprint")
 
-        local client = Parallax.Client
+        local client = ax.client
         local ft = FrameTime()
 
         Multiplier = Lerp(ft * 64, Multiplier, client:IsSprinting() and swayMultSprint or swayMult)
@@ -275,10 +275,10 @@ if ( CLIENT ) then
     local targetVerticalTilt = 0
     local sensitivityY = 0.1
     function MODULE:CreateMove(cmd)
-        if ( !Parallax.Option:Get("view") ) then return end
+        if ( !ax.option:Get("view") ) then return end
 
-        local maxRoll = Parallax.Option:Get("view.max.roll", 10)
-        local maxTilt = Parallax.Option:Get("view.max.tilt", 10)
+        local maxRoll = ax.option:Get("view.max.roll", 10)
+        local maxTilt = ax.option:Get("view.max.tilt", 10)
         local mouseX = cmd:GetMouseX()
         local mouseY = cmd:GetMouseY()
 
@@ -292,7 +292,7 @@ if ( CLIENT ) then
     local lerpPitch = 0
     local lerpFOV = 75
     function MODULE:CalcView(client, origin, angles, fov, znear, zfar)
-        if ( !Parallax.Option:Get("view") ) then return end
+        if ( !ax.option:Get("view") ) then return end
         if ( !IsValid(client) or client:InObserver() or !client:Alive() ) then return end
 
         local view = {
@@ -328,8 +328,8 @@ if ( CLIENT ) then
         -- Up and down pitch when moving forward or backward
         newAngles.pitch = newAngles.pitch + ( ( math.sin( CurTime() ) / 6 * lerpMultiplier ) + lerpPitch )
 
-        local rollSpeed = Parallax.Option:Get("view.roll.speed", 5)
-        local pitchSpeed = Parallax.Option:Get("view.pitch.speed", 5)
+        local rollSpeed = ax.option:Get("view.roll.speed", 5)
+        local pitchSpeed = ax.option:Get("view.pitch.speed", 5)
 
         -- Smoothly interpolate the current values toward the target values.
         horizontalRoll = Lerp(FrameTime() * rollSpeed, horizontalRoll, targetHorizontalRoll)
@@ -358,7 +358,7 @@ if ( CLIENT ) then
                     }
 
                     local offsetAngles = cameraAttachment.Ang - rootAttachment.Ang
-                    local intensity = Parallax.Option:Get("view.intensity", 1)
+                    local intensity = ax.option:Get("view.intensity", 1)
 
                     newAngles = newAngles + offsetAngles * intensity
                 end
@@ -373,9 +373,9 @@ if ( CLIENT ) then
     end
 
     function MODULE:CalcViewModelView(weapon, viewModel, oldEyePos, oldEyeAng, eyePos, eyeAng)
-        if ( !Parallax.Option:Get("view") ) then return end
+        if ( !ax.option:Get("view") ) then return end
         if ( !IsValid(weapon) or !IsValid(viewModel) ) then return end
-        if ( Parallax.Client:InObserver() ) then return end
+        if ( ax.client:InObserver() ) then return end
 
         local newOrigin, newAngles = GAMEMODE.BaseClass:CalcViewModelView(weapon, viewModel, oldEyePos, oldEyeAng, eyePos, eyeAng)
         newOrigin, newAngles = GetViewModelBob(newOrigin, newAngles)
@@ -392,9 +392,9 @@ end
 
 local function HandlePlayerStep(client, side)
     if ( SERVER ) then
-        if ( !Parallax.Option:Get(client, "view") ) then return end
+        if ( !ax.option:Get(client, "view") ) then return end
     else
-        if ( !Parallax.Option:Get("view") ) then return end
+        if ( !ax.option:Get("view") ) then return end
     end
 
     if ( !IsValid(client) or client:InObserver() ) then return end
@@ -415,11 +415,11 @@ end
 
 function MODULE:PlayerFootstep(client, pos, foot, sound, volume, filter)
     if ( SERVER ) then
-        if ( !Parallax.Option:Get(client, "view") ) then
+        if ( !ax.option:Get(client, "view") ) then
             return
         end
     else
-        if ( !Parallax.Option:Get("view") ) then
+        if ( !ax.option:Get("view") ) then
             return
         end
     end

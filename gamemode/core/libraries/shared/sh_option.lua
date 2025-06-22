@@ -10,62 +10,62 @@
 ]]
 
 --- Options library
--- @module Parallax.Option
+-- @module ax.option
 
-Parallax.Option = Parallax.Option or {}
-Parallax.Option.Stored = Parallax.Option.Stored or {}
+ax.option = ax.option or {}
+ax.option.stored = ax.option.stored or {}
 
-function Parallax.Option:SetDefault(key, default)
-    local stored = self.Stored[key]
+function ax.option:SetDefault(key, default)
+    local stored = self.stored[key]
     if ( !istable(stored) ) then
-        Parallax.Util:PrintError("Option \"" .. key .. "\" does not exist!")
+        ax.util:PrintError("Option \"" .. tostring(key) .. "\" does not exist!")
         return false
     end
 
     stored.Default = default
 
     if ( SERVER ) then
-        Parallax.Net:Start(nil, "option.sync", self.Instances)
+        ax.net:Start(nil, "option.sync", self.instances)
     end
 
     return true
 end
 
 if ( CLIENT ) then
-    Parallax.Option.Instances = Parallax.Option.Instances or {}
+    ax.option.instances = ax.option.instances or {}
 
-    function Parallax.Option:Load()
+    function ax.option:Load()
         hook.Run("PreOptionsLoad")
 
-        for k, v in pairs(Parallax.Data:Get("options", {}, true, true)) do
-            local stored = self.Stored[k]
+        for k, v in pairs(ax.data:Get("options", {}, true, true)) do
+            local stored = self.stored[k]
             if ( !istable(stored) ) then
-                Parallax.Util:PrintError("Option \"" .. k .. "\" does not exist!")
+                ax.util:PrintError("Option \"" .. k .. "\" does not exist!")
                 continue
             end
 
-            if ( !istable(self.Instances[k]) ) then
-                self.Instances[k] = nil
+            if ( !istable(self.instances[k]) ) then
+                self.instances[k] = nil
             end
 
             if ( v != nil and v != stored.Default ) then
-                if ( Parallax.Util:DetectType(v) != stored.Type ) then
-                    Parallax.Util:PrintError("Option \"" .. k .. "\" is not of type \"" .. stored.Type .. "\"!")
+                if ( ax.util:DetectType(v) != stored.Type ) then
+                    ax.util:PrintError("Option \"" .. k .. "\" is not of type \"" .. stored.Type .. "\"!")
                     continue
                 end
 
-                self.Instances[k] = v
+                self.instances[k] = v
             end
         end
 
-        Parallax.Net:Start("option.sync", self.Instances)
-        hook.Run("PostOptionsLoad", self.Instances)
+        ax.net:Start("option.sync", self.instances)
+        hook.Run("PostOptionsLoad", self.instances)
     end
 
-    function Parallax.Option:GetSaveData()
+    function ax.option:GetSaveData()
         local data = {}
-        for k, v in pairs(self.Instances) do
-            if ( v != nil and v != self.Stored[k].Default ) then
+        for k, v in pairs(self.instances) do
+            if ( v != nil and v != self.stored[k].Default ) then
                 data[k] = v
             end
         end
@@ -73,51 +73,51 @@ if ( CLIENT ) then
         return data
     end
 
-    function Parallax.Option:Set(key, value, bNoNetworking)
-        local stored = self.Stored[key]
+    function ax.option:Set(key, value, bNoNetworking)
+        local stored = self.stored[key]
         if ( !istable(stored) ) then
-            Parallax.Util:PrintError("Option \"" .. key .. "\" does not exist!")
+            ax.util:PrintError("Option \"" .. tostring(key) .. "\" does not exist!")
             return false
         end
 
         local oldValue = stored.Value != nil and stored.Value or stored.Default
-        local bResult = hook.Run("PreOptionChanged", Parallax.Client, key, value, oldValue)
+        local bResult = hook.Run("PreOptionChanged", ax.client, key, value, oldValue)
         if ( bResult == false ) then return false end
 
-        if ( !istable(self.Instances[key]) ) then
-            self.Instances[key] = nil
+        if ( !istable(self.instances[key]) ) then
+            self.instances[key] = nil
         end
 
         if ( value != nil and value != stored.Default ) then
-            self.Instances[key] = value
+            self.instances[key] = value
         end
 
         if ( stored.NoNetworking != true and !bNoNetworking ) then
-            Parallax.Net:Start("option.set", key, value)
+            ax.net:Start("option.set", key, value)
         end
 
         if ( isfunction(stored.OnChange) ) then
-            stored:OnChange(value, oldValue, Parallax.Client)
+            stored:OnChange(value, oldValue, ax.client)
         end
 
-        Parallax.Data:Set("options", self:GetSaveData(), true, true)
+        ax.data:Set("options", self:GetSaveData(), true, true)
 
-        hook.Run("PostOptionChanged", Parallax.Client, key, value, oldValue)
+        hook.Run("PostOptionChanged", ax.client, key, value, oldValue)
 
         return true
     end
 
-    function Parallax.Option:Get(key, fallback)
-        local optionData = self.Stored[key]
+    function ax.option:Get(key, fallback)
+        local optionData = self.stored[key]
         if ( !istable(optionData) ) then
-            Parallax.Util:PrintError("Option \"" .. key .. "\" does not exist!")
+            ax.util:PrintError("Option \"" .. tostring(key) .. "\" does not exist!")
             return fallback
         end
 
-        local instance = self.Instances[key]
+        local instance = self.instances[key]
         if ( instance == nil ) then
             if ( optionData.Default == nil ) then
-                Parallax.Util:PrintError("Option \"" .. key .. "\" has no value or default set!")
+                ax.util:PrintError("Option \"" .. tostring(key) .. "\" has no value or default set!")
                 return fallback
             end
 
@@ -127,10 +127,10 @@ if ( CLIENT ) then
         return instance
     end
 
-    function Parallax.Option:GetDefault(key)
-        local optionData = self.Stored[key]
+    function ax.option:GetDefault(key)
+        local optionData = self.stored[key]
         if ( !istable(optionData) ) then
-            Parallax.Util:PrintError("Option \"" .. key .. "\" does not exist!")
+            ax.util:PrintError("Option \"" .. tostring(key) .. "\" does not exist!")
             return nil
         end
 
@@ -141,11 +141,11 @@ if ( CLIENT ) then
     -- @realm client
     -- @string key The option key to reset
     -- @treturn boolean Returns true if the option was reset successfully, false otherwise
-    -- @usage Parallax.Option:Reset(key)
-    function Parallax.Option:Reset(key)
-        local optionData = self.Stored[key]
+    -- @usage ax.option:Reset(key)
+    function ax.option:Reset(key)
+        local optionData = self.stored[key]
         if ( !istable(optionData) ) then
-            Parallax.Util:PrintError("Option \"" .. key .. "\" does not exist!")
+            ax.util:PrintError("Option \"" .. tostring(key) .. "\" does not exist!")
             return false
         end
 
@@ -154,11 +154,11 @@ if ( CLIENT ) then
         return true
     end
 
-    function Parallax.Option:ResetAll()
-        self.Instances = {}
+    function ax.option:ResetAll()
+        self.instances = {}
 
-        Parallax.Data:Set("options", {}, true, true)
-        Parallax.Net:Start("option.sync", {})
+        ax.data:Set("options", {}, true, true)
+        ax.net:Start("option.sync", {})
     end
 end
 
@@ -168,22 +168,22 @@ local requiredFields = {
     "Default"
 }
 
-function Parallax.Option:Register(key, data)
+function ax.option:Register(key, data)
     local bResult = hook.Run("PreOptionRegistered", key, data)
     if ( bResult == false ) then return false end
 
     for _, v in pairs(requiredFields) do
         if ( data[v] == nil ) then
-            Parallax.Util:PrintError("Option \"" .. key .. "\" is missing required field \"" .. v .. "\"!\n")
+            ax.util:PrintError("Option \"" .. tostring(key) .. "\" is missing required field \"" .. v .. "\"!\n")
             return false
         end
     end
 
     if ( data.Type == nil ) then
-        data.Type = Parallax.Util:DetectType(data.Default)
+        data.Type = ax.util:DetectType(data.Default)
 
         if ( data.Type == nil ) then
-            Parallax.Util:PrintError("Option \"" .. key .. "\" has an invalid type!")
+            ax.util:PrintError("Option \"" .. tostring(key) .. "\" has an invalid type!")
             return false
         end
     end
@@ -198,7 +198,7 @@ function Parallax.Option:Register(key, data)
 
     data.UniqueID = key
 
-    self.Stored[key] = data
+    self.stored[key] = data
     hook.Run("PostOptionRegistered", key, data)
 
     return true

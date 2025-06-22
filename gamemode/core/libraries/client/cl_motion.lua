@@ -11,19 +11,19 @@
 
 --- Advanced panel animation handler using easing for custom fields.
 -- Supports delays, per-field animation isolation, and cancelation.
--- @module Parallax.Motion
+-- @module ax.motion
 
-Parallax.Motion = Parallax.Motion or {}
-Parallax.Motion.active = Parallax.Motion.active or {}
+ax.motion = ax.motion or {}
+ax.motion.active = ax.motion.active or {}
 
 --- Starts a property animation on a panel.
 -- @tparam Panel panel The target panel.
 -- @tparam number duration Duration in seconds.
 -- @tparam table data Contains Target, Easing, optional Delay, Think, OnComplete.
-function Parallax.Motion:Motion(panel, duration, data)
+function ax.motion:Motion(panel, duration, data)
     if ( !IsValid(panel) or !istable(data) or !istable(data.Target) ) then return end
 
-    if ( !Parallax.Option:Get("performance.animations") ) then
+    if ( !ax.option:Get("performance.animations") ) then
         -- if animations are disabled, set target values immediately
         for key, target in pairs(data.Target) do
             panel[key] = target
@@ -85,7 +85,7 @@ end
 --- Cancels a specific animation on a panel.
 -- @tparam Panel panel The panel whose animation to cancel.
 -- @tparam string key The custom property key to cancel.
-function Parallax.Motion:Cancel(panel, key)
+function ax.motion:Cancel(panel, key)
     for i = #self.active, 1, -1 do
         local a = self.active[i]
         if ( a.panel == panel and a.target[key] ) then
@@ -102,7 +102,7 @@ end
 
 --- Cancels all animations on a panel.
 -- @tparam Panel panel The panel to cancel all animations for.
-function Parallax.Motion:CancelAll(panel)
+function ax.motion:CancelAll(panel)
     for i = #self.active, 1, -1 do
         if ( self.active[i].panel == panel ) then
             table.remove(self.active, i)
@@ -110,13 +110,13 @@ function Parallax.Motion:CancelAll(panel)
     end
 end
 
-hook.Add("Think", "Parallax.Motion.Update", function()
+hook.Add("Think", "ax.motion.Update", function()
     local now = SysTime()
 
-    for i = #Parallax.Motion.active, 1, -1 do
-        local a = Parallax.Motion.active[i]
+    for i = #ax.motion.active, 1, -1 do
+        local a = ax.motion.active[i]
         if ( !IsValid(a.panel) ) then
-            table.remove(Parallax.Motion.active, i)
+            table.remove(ax.motion.active, i)
         elseif ( now >= a.start + a.delay ) then
             local t = (now - a.start - a.delay) / a.duration
             if ( t < 0 ) then
@@ -128,7 +128,7 @@ hook.Add("Think", "Parallax.Motion.Update", function()
             -- update every key
             for key, target in pairs(a.target) do
                 local o = a.origin[key]
-                local v = Parallax.Ease:Lerp(a.easing, t, o, target)
+                local v = ax.ease:Lerp(a.easing, t, o, target)
                 a.current[key] = v
                 a.panel[key]   = v
             end
@@ -149,7 +149,7 @@ hook.Add("Think", "Parallax.Motion.Update", function()
                     a.onComplete(a.panel)
                 end
 
-                table.remove(Parallax.Motion.active, i)
+                table.remove(ax.motion.active, i)
             end
         end
     end
@@ -163,17 +163,17 @@ do
     -- @tparam number duration Duration in seconds.
     -- @tparam table data Table with Target, Easing, Delay, Think, OnComplete.
     function PANEL:Motion(duration, data)
-        Parallax.Motion:Motion(self, duration, data)
+        ax.motion:Motion(self, duration, data)
     end
 
     --- Cancel a specific animation on this panel.
     -- @tparam string key The property key to cancel.
     function PANEL:CancelAnimation(key)
-        Parallax.Motion:Cancel(self, key)
+        ax.motion:Cancel(self, key)
     end
 
     --- Cancel all animations on this panel.
     function PANEL:CancelAllAnimations()
-        Parallax.Motion:CancelAll(self)
+        ax.motion:CancelAll(self)
     end
 end

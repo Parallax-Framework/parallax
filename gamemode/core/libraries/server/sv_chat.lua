@@ -10,9 +10,9 @@
 ]]
 
 --- Chat library
--- @module Parallax.Chat
+-- @module ax.chat
 
-function Parallax.Chat:SendSpeaker(speaker, uniqueID, text)
+function ax.chat:SendSpeaker(speaker, uniqueID, text)
     local players = {}
     for k, v in player.Iterator() do
         if ( !IsValid(v) or !v:Alive() ) then continue end
@@ -22,7 +22,7 @@ function Parallax.Chat:SendSpeaker(speaker, uniqueID, text)
         end
     end
 
-    Parallax.Net:Start(players, "chat.send", {
+    ax.net:Start(players, "chat.send", {
         Speaker = speaker:EntIndex(),
         UniqueID = uniqueID,
         Text = text
@@ -31,11 +31,13 @@ function Parallax.Chat:SendSpeaker(speaker, uniqueID, text)
     hook.Run("OnChatMessageSent", speaker, players, uniqueID, text)
 end
 
-function Parallax.Chat:SendTo(players, uniqueID, text)
+function ax.chat:SendTo(players, uniqueID, text)
     players = players or select(2, player.Iterator())
 
-    Parallax.Net:Start(players, "chat.send", {
+    ax.net:Start(players, "chat.send", {
         UniqueID = uniqueID,
         Text = text
     })
 end
+
+ax.chat = ax.chat

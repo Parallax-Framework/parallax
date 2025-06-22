@@ -9,35 +9,34 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
---- Parallax.Binder
+--- ax.binder
 -- A simple key binder panel for binding a single key input.
--- @panel Parallax.Binder
+-- @panel ax.binder
 
 local PANEL = {}
 
 AccessorFunc(PANEL, "m_iSelectedNumber", "SelectedNumber", FORCE_NUMBER)
 
-Parallax.Binds = Parallax.Binds or {}
+ax.binds = ax.binds or {}
 local release = {}
-hook.Add("Think", "Parallax.Keybinds.logic", function()
+hook.Add("Think", "ax.Keybinds.logic", function()
     if ( !system.HasFocus() or gui.IsConsoleVisible() or gui.IsGameUIVisible() or vgui.CursorVisible() ) then
         -- If the game doesn't have focus, we don't want to process keybinds.
-        for optionName in pairs(release) do
-            release[optionName] = false
+        for keyCode in pairs(release) do
+            release[keyCode] = false
         end
 
         return
     end
 
-
-    for optionName, keyCode in pairs(Parallax.Binds) do
-        local optionData = Parallax.Option.Stored[optionName]
-        if ( !istable(optionData) or optionData.Type != Parallax.Types.number or !optionData.IsKeybind ) then continue end
+    for keyCode, optionName in pairs(ax.binds) do
+        local optionData = ax.option.stored[optionName]
+        if ( !istable(optionData) or optionData.Type != ax.types.number or !optionData.IsKeybind ) then continue end
         if ( !isnumber(keyCode) ) then continue end
 
-        if ( input.IsKeyDown(keyCode) ) then
-            if ( !release[optionName] ) then
-                release[optionName] = true
+        if ( input.IsKeyDown(keyCode) or input.IsMouseDown(keyCode) ) then
+            if ( !release[keyCode] ) then
+                release[keyCode] = true
 
                 local prevent = hook.Run("PreKeybindPressed", optionName, keyCode)
                 if ( prevent == true ) then continue end
@@ -49,7 +48,7 @@ hook.Add("Think", "Parallax.Keybinds.logic", function()
                 hook.Run("PostKeybindPressed", optionName, keyCode)
             end
         else
-            if ( release[optionName] ) then
+            if ( release[keyCode] ) then
                 local prevent = hook.Run("PreKeybindReleased", optionName, keyCode)
                 if ( prevent == true ) then continue end
 
@@ -57,10 +56,9 @@ hook.Add("Think", "Parallax.Keybinds.logic", function()
                     optionData:OnReleased()
                 end
 
+                release[keyCode] = false
                 hook.Run("PostKeybindReleased", optionName, keyCode)
             end
-
-            release[optionName] = false
         end
     end
 end)
@@ -81,7 +79,21 @@ function PANEL:Init()
 end
 
 function PANEL:OnMouseReleased(mouseCode)
-    if ( mouseCode != MOUSE_LEFT ) then return end
+    if ( mouseCode != MOUSE_LEFT ) then
+        self.Trapping = false
+        self:SetKeyboardInputEnabled(false)
+
+        local bind = ax.binds[self:GetSelectedNumber()]
+        if ( isstring(bind) ) then
+            ax.option:Set(bind, KEY_NONE)
+            ax.binds[self:GetSelectedNumber()] = nil
+        end
+
+        self:SetSelectedNumber(0)
+        self:UpdateText()
+        return
+    end
+
     self:GetParent():RequestFocus()
     self:SetText("...")
 
@@ -140,4 +152,4 @@ function PANEL:Think()
     end
 end
 
-vgui.Register("Parallax.Binder", PANEL, "Parallax.Button")
+vgui.Register("ax.binder", PANEL, "ax.button")

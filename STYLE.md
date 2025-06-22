@@ -11,7 +11,7 @@ A strict Lua coding and documentation standard tailored for Garry's Mod and the 
 - Use colon notation (`:`) for object methods.
 - Structure:
   ```lua
-  function Parallax.Util:FunctionName(arg1, arg2)
+  function ax.util:FunctionName(arg1, arg2)
       -- logic
   end
   ```
@@ -24,7 +24,7 @@ A strict Lua coding and documentation standard tailored for Garry's Mod and the 
   ```
 - No extra spaces between function arguments:
   ```lua
-  Parallax.Util:PrintMessage(client, "Text")
+  ax.util:PrintMessage(client, "Text")
   ```
 
 ### 3. Logical Separation
@@ -33,7 +33,7 @@ A strict Lua coding and documentation standard tailored for Garry's Mod and the 
 
 ### 4. Constants & Locals
 - Use `local` for scoped values.
-- Global namespaces should be lowercase (e.g., `Parallax.Util`).
+- Global namespaces should be lowercase (e.g., `ax.util`).
 
 ### 5. Colon Method Notation
 - Always use colon (`:`) for methods expecting `self`.
@@ -55,8 +55,8 @@ Each **global function** must include:
 -- @realm shared
 -- @param client Player The player receiving the message.
 -- @param ... any Message parts.
--- @usage Parallax.Util:SendChatText(ply, "Hello", Color(255, 255, 255), " world!")
-function Parallax.Util:SendChatText(client, ...)
+-- @usage ax.util:SendChatText(ply, "Hello", Color(255, 255, 255), " world!")
+function ax.util:SendChatText(client, ...)
     -- implementation
 end
 ```
@@ -76,4 +76,4 @@ end
 
 ---
 
-**Enforcement**: This style guide applies to all pull requests and code contributions to Parallax.
+**Enforcement**: This style guide applies to all pull requests and code contributions to ax.

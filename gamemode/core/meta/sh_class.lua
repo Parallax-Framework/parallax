@@ -9,7 +9,7 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
-local CLASS = Parallax.Class.Meta or {}
+local CLASS = ax.class.meta or {}
 CLASS.__index = CLASS
 
 --- Converts the class to a string representation.
@@ -35,7 +35,7 @@ CLASS.OnSwitch      = nil
 
 function CLASS:SetName(name)
     if ( !isstring(name) or #name == 0 ) then
-        Parallax.Util:PrintError("Attempted to set a class's name to an invalid value: " .. tostring(name))
+        ax.util:PrintError("Attempted to set a class's name to an invalid value: " .. tostring(name))
         return false
     end
 
@@ -46,7 +46,7 @@ end
 -- @param description The description to set.
 function CLASS:SetDescription(description)
     if ( !isstring(description) ) then
-        Parallax.Util:PrintError("Attempted to set a class's description to an invalid value: " .. tostring(description))
+        ax.util:PrintError("Attempted to set a class's description to an invalid value: " .. tostring(description))
         return false
     end
 
@@ -58,9 +58,9 @@ end
 -- @treturn boolean Whether the faction was set successfully.
 -- @realm shared
 function CLASS:SetFaction(identifier)
-    local factionTable = Parallax.Faction:Get(identifier)
-    if ( !Parallax.Util:IsFaction(factionTable) ) then
-        Parallax.Util:PrintError("Attempted to set a class's faction to an invalid faction: " .. tostring(identifier))
+    local factionTable = ax.faction:Get(identifier)
+    if ( !ax.util:IsFaction(factionTable) ) then
+        ax.util:PrintError("Attempted to set a class's faction to an invalid faction: " .. tostring(identifier))
         return false
     end
 
@@ -117,7 +117,7 @@ end
 --- Gets the faction table for the class.
 -- @treturn table The faction table for the class.
 function CLASS:GetFactionTable()
-    return Parallax.Faction:Get(self.Faction)
+    return ax.faction:Get(self.Faction)
 end
 
 --- Checks if the class is the default class.
@@ -131,19 +131,19 @@ end
 -- @treturn string|nil An error message if the registration failed.
 -- @realm shared
 function CLASS:Register()
-    if ( !Parallax.Util:IsFaction(self:GetFactionTable()) ) then
-        Parallax.Util:PrintError("Attempted to register a class without a valid faction!")
+    if ( !ax.util:IsFaction(self:GetFactionTable()) ) then
+        ax.util:PrintError("Attempted to register a class without a valid faction!")
         return false
     end
 
     local bResult = hook.Run("PreClassRegistered", self)
     if ( bResult == false ) then
-        Parallax.Util:PrintError("Attempted to register a class that was blocked by a hook!")
+        ax.util:PrintError("Attempted to register a class that was blocked by a hook!")
         return false, "Attempted to register a class that was blocked by a hook!"
     end
 
     local uniqueID = string.lower(string.gsub(self:GetName(), "%s+", "_")) .. "_" .. self:GetFaction()
-    local instances = Parallax.Class:GetAll()
+    local instances = ax.class:GetAll()
     for i = 1, #instances do
         if ( instances[i].UniqueID == uniqueID ) then
             return false, "Attempted to register a class that already exists!"
@@ -151,7 +151,7 @@ function CLASS:Register()
     end
 
     self.UniqueID = self.UniqueID or uniqueID
-    Parallax.Class.Stored[self.UniqueID] = self
+    ax.class.stored[self.UniqueID] = self
 
     for i = 1, #instances do
         if ( instances[i].UniqueID == self.UniqueID ) then
@@ -163,7 +163,9 @@ function CLASS:Register()
     self.ID = #instances + 1
 
     table.insert(instances, self)
-    Parallax.Class.Stored[self.UniqueID] = self
+    ax.class.stored[self.UniqueID] = self
 
     hook.Run("PostClassRegistered", self)
+
+    return #instances
 end

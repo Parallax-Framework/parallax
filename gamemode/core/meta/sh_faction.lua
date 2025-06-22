@@ -9,7 +9,7 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
-local FACTION = Parallax.Faction.Meta or {}
+local FACTION = ax.faction.meta or {}
 FACTION.__index = FACTION
 
 local defaultModels = {
@@ -46,8 +46,10 @@ end
 --- Compares the faction with another faction.
 -- @param other The other faction to compare with.
 -- @treturn boolean Whether the factions are equal.
-function FACTION:__eq(other)
-    return self.ID == other.ID
+function FACTION:__eq(other) -- TODO: I don't think this even works lol
+    return isnumber(other) and self:GetID() == other or
+            isstring(other) and self:GetUniqueID() == other or
+            istable(other) and self:GetID() == other:GetID() and self:GetUniqueID() == other:GetUniqueID()
 end
 
 --- Gets the faction's ID.
@@ -83,7 +85,7 @@ end
 --- Gets the faction's color.
 -- @treturn table The faction's color as a color table.
 function FACTION:GetColor()
-    return self.Color or Parallax.Color:Get("white")
+    return self.Color or ax.color:Get("white")
 end
 FACTION.GetColour = FACTION.GetColor
 
@@ -97,9 +99,9 @@ end
 -- @treturn table A table of class instances associated with the faction.
 function FACTION:GetClasses()
     local classes = {}
-    local instanceCount = #Parallax.Class.Instances
+    local instanceCount = #ax.class.instances
     for i = 1, instanceCount do
-        local v = Parallax.Class.Instances[i]
+        local v = ax.class.instances[i]
         if ( v.Faction == self:GetID() ) then
             table.insert(classes, v)
         end
@@ -114,7 +116,7 @@ end
 -- @treturn string|nil An error message if the name was not set successfully.
 function FACTION:SetName(name)
     if ( !isstring(name) ) then
-        Parallax.Util:PrintError("Attempted to set a faction's name without a valid name!")
+        ax.util:PrintError("Attempted to set a faction's name without a valid name!")
         return false, "Attempted to set a faction's name without a valid name!"
     end
 
@@ -128,7 +130,7 @@ end
 -- @treturn string|nil An error message if the description was not set successfully.
 function FACTION:SetDescription(description)
     if ( !isstring(description) ) then
-        Parallax.Util:PrintError("Attempted to set a faction's description without a valid description!")
+        ax.util:PrintError("Attempted to set a faction's description without a valid description!")
         return false, "Attempted to set a faction's description without a valid description!"
     end
 
@@ -140,8 +142,8 @@ end
 -- @param color The color of the faction.
 -- @treturn boolean True if the color was set successfully, false otherwise.
 function FACTION:SetColor(color)
-    if ( !Parallax.Util:CoerceType(Parallax.Types.color, color) ) then
-        Parallax.Util:PrintError("Attempted to set a faction's color without a valid color!")
+    if ( !ax.util:CoerceType(ax.types.color, color) ) then
+        ax.util:PrintError("Attempted to set a faction's color without a valid color!")
         return false, "Attempted to set a faction's color without a valid color!"
     end
 
@@ -156,7 +158,7 @@ FACTION.SetColour = FACTION.SetColor
 -- @treturn boolean True if the models were set successfully, false otherwise.
 function FACTION:SetModels(models)
     if ( !istable(models) and !isstring(models) ) then
-        Parallax.Util:PrintError("Attempted to set a faction's models without a valid table or string!")
+        ax.util:PrintError("Attempted to set a faction's models without a valid table or string!")
         return false, "Attempted to set a faction's models without a valid table or string!"
     end
 
@@ -171,23 +173,25 @@ end
 function FACTION:Register()
     local bResult = hook.Run("PreFactionRegistered", self)
     if ( bResult == false ) then
-        Parallax.Util:PrintError("Attempted to register a faction that was blocked by a hook!")
+        ax.util:PrintError("Attempted to register a faction that was blocked by a hook!")
         return false, "Attempted to register a faction that was blocked by a hook!"
     end
 
     local uniqueID = string.lower(string.gsub(self:GetName(), "%s+", "_"))
-    for i = 1, #Parallax.Faction.Instances do
-        if ( Parallax.Faction.Instances[i].UniqueID == uniqueID ) then
+    for i = 1, #ax.faction.instances do
+        if ( ax.faction.instances[i].UniqueID == uniqueID ) then
             return false, "Attempted to register a faction that already exists!"
         end
     end
 
     self.UniqueID = self.UniqueID or uniqueID
-    self.ID = #Parallax.Faction.Instances + 1
+    self.ID = #ax.faction.instances + 1
 
-    table.insert(Parallax.Faction.Instances, self)
-    Parallax.Faction.Stored[self.UniqueID] = self
+    table.insert(ax.faction.instances, self)
+    ax.faction.stored[self.UniqueID] = self
 
     team.SetUp(self:GetID(), self:GetName(), self:GetColor(), false)
     hook.Run("PostFactionRegistered", self)
+
+    return #ax.faction.instances
 end

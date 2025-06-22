@@ -13,61 +13,61 @@
     Character Networking
 -----------------------------------------------------------------------------]]--
 
-Parallax.Net:Hook("character.load", function(client, characterID)
-    Parallax.Character:Load(client, characterID)
+ax.net:Hook("character.load", function(client, characterID)
+    ax.character:Load(client, characterID)
 end)
 
-Parallax.Net:Hook("character.delete", function(client, characterID)
-    local character = Parallax.Character:Get(characterID)
+ax.net:Hook("character.delete", function(client, characterID)
+    local character = ax.character:Get(characterID)
     if ( !character ) then return end
 
     local bResult = hook.Run("PrePlayerDeletedCharacter", client, characterID)
     if ( bResult == false ) then return end
 
-    Parallax.Character:Delete(characterID)
+    ax.character:Delete(characterID)
 
     hook.Run("PostPlayerDeletedCharacter", client, characterID)
 end)
 
-Parallax.Net:Hook("character.create", function(client, payload)
+ax.net:Hook("character.create", function(client, payload)
     if ( !istable(payload) ) then
-        Parallax.Net:Start(client, "character.create.failed", "Invalid payload!")
+        ax.net:Start(client, "character.create.failed", "Invalid payload!")
         return
     end
 
     local canCreate, reason = hook.Run("PrePlayerCreatedCharacter", client, payload)
     if ( canCreate == false ) then
-        Parallax.Net:Start(client, "character.create.failed", reason or "Failed to create character!")
+        ax.net:Start(client, "character.create.failed", reason or "Failed to create character!")
         return
     end
 
-    for k, v in pairs(Parallax.Character.variables) do
+    for k, v in pairs(ax.character.variables) do
         if ( v.Editable != true ) then continue end
 
         -- This is a bit of a hack, but it works for now.
-        if ( v.Type == Parallax.Types.string or v.Type == Parallax.Types.text ) then
+        if ( v.Type == ax.types.string or v.Type == ax.types.text ) then
             payload[k] = string.Trim(payload[k] or "")
         end
 
         if ( isfunction(v.OnValidate) ) then
             local validate, reasonString = v:OnValidate(nil, payload, client)
             if ( !validate ) then
-                Parallax.Net:Start(client, "character.create.failed", reasonString or "Failed to validate character!")
+                ax.net:Start(client, "character.create.failed", reasonString or "Failed to validate character!")
                 return
             end
         end
     end
 
-    Parallax.Character:Create(client, payload, function(success, result)
+    ax.character:Create(client, payload, function(success, result)
         if ( !success ) then
-            Parallax.Util:PrintError("Failed to create character: " .. result)
-            Parallax.Net:Start(client, "character.create.failed", result or "Failed to create character!")
+            ax.util:PrintError("Failed to create character: " .. result)
+            ax.net:Start(client, "character.create.failed", result or "Failed to create character!")
             return
         end
 
-        Parallax.Character:Load(client, result:GetID())
+        ax.character:Load(client, result:GetID())
 
-        Parallax.Net:Start(client, "character.create")
+        ax.net:Start(client, "character.create")
 
         hook.Run("PostPlayerCreatedCharacter", client, result, payload)
     end)
@@ -83,34 +83,34 @@ end)
     Config Networking
 -----------------------------------------------------------------------------]]--
 
-Parallax.Net:Hook("config.reset", function(client, key)
+ax.net:Hook("config.reset", function(client, key)
     if ( !CAMI.PlayerHasAccess(client, "Parallax - Manage Config", nil) ) then return end
 
-    local stored = Parallax.Config.Stored[key]
+    local stored = ax.config.stored[key]
     if ( !istable(stored) ) then return end
 
     local bResult = hook.Run("PrePlayerConfigReset", client, key)
     if ( bResult == false ) then return end
 
-    Parallax.Config:Reset(key)
+    ax.config:Reset(key)
 
     hook.Run("PostPlayerConfigReset", client, key)
 end)
 
-Parallax.Net:Hook("config.set", function(client, key, value)
+ax.net:Hook("config.set", function(client, key, value)
     if ( !CAMI.PlayerHasAccess(client, "Parallax - Manage Config", nil) ) then return end
 
-    local stored = Parallax.Config.Stored[key]
+    local stored = ax.config.stored[key]
     if ( !istable(stored) ) then return end
 
     if ( value == nil ) then return end
 
-    local oldValue = Parallax.Config:Get(key)
+    local oldValue = ax.config:Get(key)
 
     local bResult = hook.Run("PrePlayerConfigChanged", client, key, value, oldValue)
     if ( bResult == false ) then return end
 
-    Parallax.Config:Set(key, value)
+    ax.config:Set(key, value)
 
     hook.Run("PostPlayerConfigChanged", client, key, value, oldValue)
 end)
@@ -119,39 +119,39 @@ end)
     Option Networking
 -----------------------------------------------------------------------------]]--
 
-Parallax.Net:Hook("option.set", function(client, key, value)
+ax.net:Hook("option.set", function(client, key, value)
     local bResult = hook.Run("PreOptionChanged", client, key, value)
     if ( bResult == false ) then return false end
 
-    Parallax.Option:Set(client, key, value, true)
+    ax.option:Set(client, key, value, true)
 
     hook.Run("PostOptionChanged", client, key, value)
 end)
 
-Parallax.Net:Hook("option.sync", function(client, data)
+ax.net:Hook("option.sync", function(client, data)
     if ( !IsValid(client) or !istable(data) ) then return end
 
-    for k, v in pairs(Parallax.Option.Stored) do
-        local stored = Parallax.Option.Stored[k]
+    for k, v in pairs(ax.option.stored) do
+        local stored = ax.option.stored[k]
         if ( !istable(stored) ) then
-            Parallax.Util:PrintError("Option \"" .. k .. "\" does not exist!")
+            ax.util:PrintError("Option \"" .. k .. "\" does not exist!")
             continue
         end
 
         if ( stored.NoNetworking ) then continue end
 
         if ( data[k] != nil ) then
-            if ( Parallax.Util:DetectType(data[k]) != stored.Type ) then
-                Parallax.Util:PrintError("Option \"" .. k .. "\" is not of type \"" .. stored.Type .. "\"!")
+            if ( ax.util:DetectType(data[k]) != stored.Type ) then
+                ax.util:PrintError("Option \"" .. k .. "\" is not of type \"" .. stored.Type .. "\"!")
                 continue
             end
 
             local cliIndex = client:EntIndex()
-            if ( !istable(Parallax.Option.clients[cliIndex]) ) then
-                Parallax.Option.clients[cliIndex] = {}
+            if ( !istable(ax.option.clients[cliIndex]) ) then
+                ax.option.clients[cliIndex] = {}
             end
 
-            Parallax.Option.clients[cliIndex][k] = data[k]
+            ax.option.clients[cliIndex][k] = data[k]
         end
     end
 end)
@@ -160,40 +160,40 @@ end)
     Inventory Networking
 -----------------------------------------------------------------------------]]--
 
-Parallax.Net:Hook("inventory.cache", function(client, inventoryID)
+ax.net:Hook("inventory.cache", function(client, inventoryID)
     if ( !inventoryID ) then return end
 
-    Parallax.Inventory:Cache(client, inventoryID)
+    ax.inventory:Cache(client, inventoryID)
 end)
 
 --[[-----------------------------------------------------------------------------
     Item Networking
 -----------------------------------------------------------------------------]]--
 
-Parallax.Net:Hook("item.entity", function(client, itemID, entity)
+ax.net:Hook("item.entity", function(client, itemID, entity)
     if ( !IsValid(entity) ) then return end
 
-    local item = Parallax.Item:Get(itemID)
+    local item = ax.item:Get(itemID)
     if ( !item ) then return end
 
     item:SetEntity(entity)
 end)
 
-Parallax.Net:Hook("item.perform", function(client, itemID, actionName)
+ax.net:Hook("item.perform", function(client, itemID, actionName)
     if ( !itemID or !actionName ) then return end
 
-    local item = Parallax.Item:Get(itemID)
+    local item = ax.item:Get(itemID)
     if ( !item or item:GetOwner() != client:GetCharacterID() ) then return end
 
-    Parallax.Item:PerformAction(itemID, actionName)
+    ax.item:PerformAction(itemID, actionName)
 end)
 
-Parallax.Net:Hook("item.spawn", function(client, uniqueID)
-    if ( !isstring(uniqueID) or !istable(Parallax.Item.Stored[uniqueID]) ) then return end
+ax.net:Hook("item.spawn", function(client, uniqueID)
+    if ( !isstring(uniqueID) or !istable(ax.item.stored[uniqueID]) ) then return end
 
     local pos = client:GetEyeTrace().HitPos + vector_up
 
-    Parallax.Item:Spawn(nil, uniqueID, pos, nil, function(entity)
+    ax.item:Spawn(nil, uniqueID, pos, nil, function(entity)
         if ( IsValid(entity) ) then
             client:Notify("Spawned item: " .. uniqueID)
         else
@@ -212,26 +212,26 @@ end)
     Miscellaneous Networking
 -----------------------------------------------------------------------------]]--
 
-Parallax.Net:Hook("client.voice.start", function(client, speaker)
+ax.net:Hook("client.voice.start", function(client, speaker)
     hook.Run("PlayerStartVoice", speaker)
 end)
 
-Parallax.Net:Hook("client.voice.end", function(client, prevSpeaker)
+ax.net:Hook("client.voice.end", function(client, prevSpeaker)
     hook.Run("PlayerEndVoice", prevSpeaker)
 end)
 
-Parallax.Net:Hook("client.chatbox.text.changed", function(client, text)
+ax.net:Hook("client.chatbox.text.changed", function(client, text)
     if ( !IsValid(client) or !text ) then return end
 
     hook.Run("PlayerChatTextChanged", client, text)
 end, true)
 
-Parallax.Net:Hook("client.chatbox.type.changed", function(client, newType, oldType)
+ax.net:Hook("client.chatbox.type.changed", function(client, newType, oldType)
     if ( !IsValid(client) or !newType or !oldType ) then return end
 
     hook.Run("PlayerChatTypeChanged", client, newType, oldType)
 end, true)
 
-Parallax.Net:Hook("command.run", function(client, command, arguments)
-    Parallax.Command:Run(client, command, arguments)
+ax.net:Hook("command.run", function(client, command, arguments)
+    ax.command:Run(client, command, arguments)
 end)

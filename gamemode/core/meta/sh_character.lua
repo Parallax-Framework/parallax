@@ -9,7 +9,7 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
-local CHAR = Parallax.Character.Meta or {}
+local CHAR = ax.character.meta or {}
 CHAR.__index = CHAR
 CHAR.ID = 0
 CHAR.Variables = {}
@@ -72,7 +72,7 @@ end
 function CHAR:GetInventory(name)
     name = name or "Main"
 
-    local inventories = Parallax.Inventory:GetByCharacterID(self:GetID())
+    local inventories = ax.inventory:GetByCharacterID(self:GetID())
     if ( !inventories or #inventories == 0 ) then return end
 
     for inventoryID, inventory in pairs(inventories) do
@@ -88,7 +88,7 @@ end
 -- @tparam number id The ID of the inventory.
 -- @treturn table|nil The inventory if found, or nil if not found.
 function CHAR:GetInventoryByID(id)
-    local inventories = Parallax.Inventory:GetByCharacterID(self:GetID())
+    local inventories = ax.inventory:GetByCharacterID(self:GetID())
     if ( !inventories or #inventories == 0 ) then return end
 
     for _, inventory in pairs(inventories) do
@@ -105,7 +105,7 @@ end
 function CHAR:GiveMoney(amount)
     if ( amount < 0 ) then
         amount = math.abs(amount)
-        Parallax.Util:PrintWarning("Character " .. self:GetID() .. " tried to give negative amount, converted to positive number. Call :TakeMoney instead!")
+        ax.util:PrintWarning("Character " .. self:GetID() .. " tried to give negative amount, converted to positive number. Call :TakeMoney instead!")
     end
 
     self:SetMoney(self:GetMoney() + amount)
@@ -117,7 +117,7 @@ end
 function CHAR:TakeMoney(amount)
     if ( amount < 0 ) then
         amount = math.abs(amount)
-        Parallax.Util:PrintWarning("Character " .. self:GetID() .. " tried to take negative amount, converted to positive number. Call :GiveMoney instead!")
+        ax.util:PrintWarning("Character " .. self:GetID() .. " tried to take negative amount, converted to positive number. Call :GiveMoney instead!")
     end
 
     self:SetMoney(self:GetMoney() - amount)
@@ -128,7 +128,7 @@ end
 -- @tparam string flag The flag to check for.
 -- @treturn boolean Whether the character has the flag.
 function CHAR:HasFlag(flag)
-    if ( !Parallax.Flag:Get(flag) ) then return false end
+    if ( !ax.flag:Get(flag) ) then return false end
 
     local flags = self:GetFlags()
     if ( !isstring(flags) or flags == "" ) then return false end
@@ -144,7 +144,7 @@ function CHAR:GetFactionData()
     local faction = self:GetFaction()
     if ( !faction ) then return end
 
-    local factionData = Parallax.Faction:Get(faction)
+    local factionData = ax.faction:Get(faction)
     if ( !factionData ) then return end
 
     return factionData
@@ -156,7 +156,7 @@ function CHAR:GetClassData()
     local class = self:GetClass()
     if ( !class ) then return end
 
-    local classData = Parallax.Class:Get(class)
+    local classData = ax.class:Get(class)
     if ( !classData ) then return end
 
     return classData
@@ -203,7 +203,7 @@ if ( SERVER ) then
     --- Gives a specific flag to the character.
     -- @tparam string flag The flag to give.
     function CHAR:GiveFlag(flag)
-        if ( !Parallax.Flag:Get(flag) ) then return end
+        if ( !ax.flag:Get(flag) ) then return end
 
         local hasFlag = self:HasFlag(flag)
         if ( hasFlag ) then return end
@@ -217,7 +217,7 @@ if ( SERVER ) then
 
         self:SetFlags(flags)
 
-        local flagInfo = Parallax.Flag:Get(flag)
+        local flagInfo = ax.flag:Get(flag)
         if ( istable(flagInfo) and isfunction(flagInfo.callback) ) then
             flagInfo:callback(self, true)
         end
@@ -226,7 +226,7 @@ if ( SERVER ) then
     --- Removes a specific flag from the character.
     -- @tparam string flag The flag to remove.
     function CHAR:TakeFlag(flag)
-        if ( !Parallax.Flag:Get(flag) ) then return end
+        if ( !ax.flag:Get(flag) ) then return end
 
         local hasFlag = self:HasFlag(flag)
         if ( !hasFlag ) then return end
@@ -238,7 +238,7 @@ if ( SERVER ) then
         flags = string.Trim(flags)
         self:SetFlags(flags)
 
-        local flagInfo = Parallax.Flag:Get(flag)
+        local flagInfo = ax.flag:Get(flag)
         if ( istable(flagInfo) and isfunction(flagInfo.callback) ) then
             flagInfo:callback(self, false)
         end

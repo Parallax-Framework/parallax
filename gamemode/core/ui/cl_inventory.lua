@@ -14,17 +14,17 @@ DEFINE_BASECLASS("EditablePanel")
 local PANEL = {}
 
 function PANEL:Init()
-    Parallax.GUI.Inventory = self
+    ax.gui.Inventory = self
 
     self:Dock(FILL)
 
-    self.buttons = self:Add("Parallax.Scroller.Horizontal")
+    self.buttons = self:Add("ax.scroller.horizontal")
     self.buttons:Dock(TOP)
     self.buttons:DockMargin(0, ScreenScaleH(4), 0, 0)
     self.buttons:SetTall(ScreenScaleH(24))
     self.buttons.Paint = nil
 
-    self.container = self:Add("Parallax.Scroller.Vertical")
+    self.container = self:Add("ax.scroller.vertical")
     self.container:Dock(FILL)
     self.container:GetVBar():SetWide(0)
     self.container.Paint = nil
@@ -37,11 +37,11 @@ function PANEL:Init()
         draw.RoundedBox(0, 0, 0, width, height, Color(0, 0, 0, 150))
     end
 
-    local inventories = Parallax.Inventory:GetByCharacterID(Parallax.Client:GetCharacter():GetID())
+    local inventories = ax.inventory:GetByCharacterID(ax.client:GetCharacter():GetID())
     if ( #inventories == 0 ) then
-        local label = self.buttons:Add("Parallax.Text")
+        local label = self.buttons:Add("ax.text")
         label:Dock(FILL)
-        label:SetFont("Parallax.Large")
+        label:SetFont("ax.large")
         label:SetText("inventory.empty")
         label:SetContentAlignment(5)
 
@@ -49,7 +49,7 @@ function PANEL:Init()
     end
 
     for _, inventory in pairs(inventories) do
-        local button = self.buttons:Add("Parallax.Button.Flat")
+        local button = self.buttons:Add("ax.button.flat")
         button:Dock(LEFT)
         button:SetText(inventory:GetName())
         button:SizeToContents()
@@ -69,12 +69,12 @@ end
 function PANEL:SetInventory(id)
     if ( !id ) then return end
 
-    local inventory = Parallax.Inventory:Get(id)
+    local inventory = ax.inventory:Get(id)
     if ( !inventory ) then return end
 
     self.container:Clear()
 
-    local total = inventory:GetWeight() / Parallax.Config:Get("inventory.max.weight", 20)
+    local total = inventory:GetWeight() / ax.config:Get("inventory.max.weight", 20)
 
     local progress = self.container:Add("DProgress")
     progress:Dock(TOP)
@@ -88,10 +88,10 @@ function PANEL:SetInventory(id)
         draw.RoundedBox(0, 0, 0, width * fraction, height, Color(100, 200, 175, 200))
     end
 
-    local maxWeight = Parallax.Config:Get("inventory.max.weight", 20)
+    local maxWeight = ax.config:Get("inventory.max.weight", 20)
     local weight = math.Round(maxWeight * progress:GetFraction(), 2)
 
-    local label = progress:Add("Parallax.Text")
+    local label = progress:Add("ax.text")
     label:Dock(FILL)
     label:SetFont("parallax")
     label:SetText(weight .. "kg / " .. maxWeight .. "kg")
@@ -99,9 +99,9 @@ function PANEL:SetInventory(id)
 
     local items = inventory:GetItems()
     if ( #items == 0 ) then
-        label = self.container:Add("Parallax.Text")
+        label = self.container:Add("ax.text")
         label:Dock(TOP)
-        label:SetFont("Parallax.Large")
+        label:SetFont("ax.large")
         label:SetText("inventory.empty")
         label:SetContentAlignment(5)
 
@@ -115,16 +115,16 @@ function PANEL:SetInventory(id)
 
     for i = 1, itemsCount do
         local itemID = items[i]
-        local item = Parallax.Item:Get(itemID)
+        local item = ax.item:Get(itemID)
         if ( item ) then
             table.insert(sortedItems, itemID)
         end
     end
 
-    local sortType = Parallax.Option:Get("inventory.sort")
+    local sortType = ax.option:Get("inventory.sort")
     table.sort(sortedItems, function(a, b)
-        local itemA = Parallax.Item:Get(a)
-        local itemB = Parallax.Item:Get(b)
+        local itemA = ax.item:Get(a)
+        local itemB = ax.item:Get(b)
 
         if ( !itemA or !itemB ) then return false end
 
@@ -142,10 +142,10 @@ function PANEL:SetInventory(id)
     local groups = {}
     for i = 1, #sortedItems do
         local itemID = sortedItems[i]
-        local item = Parallax.Item:Get(itemID)
+        local item = ax.item:Get(itemID)
         if ( item ) then
             local uid = item:GetUniqueID()
-            local def = Parallax.Item.Stored[uid] or {}
+            local def = ax.item.stored[uid] or {}
             local stackable = ( !def.NoStack )
             local dataKey = stackable and util.TableToJSON(item:GetData() or {}) or tostring(itemID)
             local key = util.CRC(uid .. dataKey)
@@ -162,15 +162,15 @@ function PANEL:SetInventory(id)
     end
 
     for _, group in pairs(groups) do
-        local pnl = self.container:Add("Parallax.Item")
+        local pnl = self.container:Add("ax.item")
         pnl:Dock(TOP)
         pnl:DockMargin(0, 0, ScreenScale(8), 0)
         pnl:SetItem(group.firstID)
         pnl:SetCount(group.count)
     end
 
-    if ( Parallax.GUI.InventoryItemIDLast and self:IsValidItemID(Parallax.GUI.InventoryItemIDLast) ) then
-        self:SetInfo(Parallax.GUI.InventoryItemIDLast)
+    if ( ax.gui.InventoryItemIDLast and self:IsValidItemID(ax.gui.InventoryItemIDLast) ) then
+        self:SetInfo(ax.gui.InventoryItemIDLast)
     else
         self:SetInfo(sortedItems[1])
     end
@@ -179,10 +179,10 @@ end
 function PANEL:IsValidItemID(id)
     if ( !id or !tonumber(id) ) then return false end
 
-    local item = Parallax.Item:Get(id)
+    local item = ax.item:Get(id)
     if ( !item ) then return false end
 
-    local inventory = Parallax.Client:GetInventoryByID(item:GetInventory())
+    local inventory = ax.client:GetInventoryByID(item:GetInventory())
     if ( !inventory ) then return false end
 
     return true
@@ -195,9 +195,9 @@ function PANEL:SetInfo(id)
         return
     end
 
-    Parallax.GUI.InventoryItemIDLast = id
+    ax.gui.InventoryItemIDLast = id
 
-    local item = Parallax.Item:Get(id)
+    local item = ax.item:Get(id)
 
     local icon = self.info:Add("DAdjustableModelPanel")
     icon:Dock(TOP)
@@ -214,16 +214,16 @@ function PANEL:SetInfo(id)
         icon:SetLookAng(camData.angles)
     end
 
-    local name = self.info:Add("Parallax.Text")
+    local name = self.info:Add("ax.text")
     name:Dock(TOP)
     name:DockMargin(0, 0, 0, -ScreenScaleH(4))
-    name:SetFont("Parallax.Large.Bold")
+    name:SetFont("ax.large.bold")
     name:SetText(item:GetName(), true)
 
     local description = item:GetDescription()
-    local descriptionWrapped = Parallax.Util:GetWrappedText(description, "parallax", self.info:GetWide() - 32)
+    local descriptionWrapped = ax.util:GetWrappedText(description, "parallax", self.info:GetWide() - 32)
     for k, v in pairs(descriptionWrapped) do
-        local text = self.info:Add("Parallax.Text")
+        local text = self.info:Add("ax.text")
         text:Dock(TOP)
         text:DockMargin(0, 0, 0, -ScreenScaleH(4))
         text:SetText(v, true)
@@ -239,13 +239,13 @@ function PANEL:SetInfo(id)
     timer.Simple(0.1, function()
         for actionName, actionData in pairs(item.Actions or {}) do
             if ( actionName == "Take" ) then continue end
-            if ( isfunction(actionData.OnCanRun) and actionData:OnCanRun(item, Parallax.Client) == false ) then continue end
+            if ( isfunction(actionData.OnCanRun) and actionData:OnCanRun(item, ax.client) == false ) then continue end
 
-            local button = actions:Add("Parallax.Button.Flat")
+            local button = actions:Add("ax.button.flat")
             button:SetText(actionData.Name or actionName)
             button:SizeToContents()
             button.DoClick = function()
-                Parallax.Net:Start("item.perform", id, actionName)
+                ax.net:Start("item.perform", id, actionName)
             end
 
             if ( actionData.Icon ) then
@@ -255,4 +255,4 @@ function PANEL:SetInfo(id)
     end)
 end
 
-vgui.Register("Parallax.Inventory", PANEL, "EditablePanel")
+vgui.Register("ax.inventory", PANEL, "EditablePanel")

@@ -9,28 +9,28 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
-Parallax.Character:RegisterVariable("steamid", {
-    Type = Parallax.Types.string,
+ax.character:RegisterVariable("steamid", {
+    Type = ax.types.string,
     Field = "steamid",
     Default = ""
 })
 
-Parallax.Character:RegisterVariable("schema", {
-    Type = Parallax.Types.string,
+ax.character:RegisterVariable("schema", {
+    Type = ax.types.string,
     Field = "schema",
     Default = "parallax"
 })
 
-Parallax.Character:RegisterVariable("data", {
-    Type = Parallax.Types.string,
+ax.character:RegisterVariable("data", {
+    Type = ax.types.string,
     Field = "data",
     Default = "[]",
 
     Alias = "DataInternal"
 })
 
-Parallax.Character:RegisterVariable("name", {
-    Type = Parallax.Types.string,
+ax.character:RegisterVariable("name", {
+    Type = ax.types.string,
     Field = "name",
     Default = "John Doe",
 
@@ -43,9 +43,9 @@ Parallax.Character:RegisterVariable("name", {
 
     OnValidate = function(self, parent, payload, client)
         local name = payload.name or ""
-        local factionData = Parallax.Faction:Get(payload.faction)
-        local lengthMin = factionData.NameLengthMin or Parallax.Config:Get("characters.minNameLength") or 3
-        local lengthMax = factionData.NameLengthMax or Parallax.Config:Get("characters.maxNameLength") or 32
+        local factionData = ax.faction:Get(payload.faction)
+        local lengthMin = factionData.NameLengthMin or ax.config:Get("characters.minNameLength") or 3
+        local lengthMax = factionData.NameLengthMax or ax.config:Get("characters.maxNameLength") or 32
         local trimmed = string.Trim(name)
         if ( string.len(trimmed) < lengthMin ) then
             return false, "Name must be at least " .. lengthMin .. " characters long!"
@@ -65,8 +65,8 @@ Parallax.Character:RegisterVariable("name", {
     end
 })
 
-Parallax.Character:RegisterVariable("description", {
-    Type = Parallax.Types.text,
+ax.character:RegisterVariable("description", {
+    Type = ax.types.text,
     Field = "description",
     Default = "A mysterious person.",
 
@@ -78,12 +78,12 @@ Parallax.Character:RegisterVariable("description", {
         local trimmed = string.Trim(payload.description or "")
         local len = string.len(trimmed)
 
-        local minLength = Parallax.Config:Get("characters.minDescriptionLength")
+        local minLength = ax.config:Get("characters.minDescriptionLength")
         if ( len < minLength ) then
             return false, "Description must be at least " .. minLength .. " characters long!"
         end
 
-        local maxLength = Parallax.Config:Get("characters.maxDescriptionLength")
+        local maxLength = ax.config:Get("characters.maxDescriptionLength")
         if ( len > maxLength ) then
             return false, "Description must be at most " .. maxLength .. " characters long!"
         end
@@ -92,8 +92,8 @@ Parallax.Character:RegisterVariable("description", {
     end
 })
 
-Parallax.Character:RegisterVariable("model", {
-    Type = Parallax.Types.string,
+ax.character:RegisterVariable("model", {
+    Type = ax.types.string,
     Field = "model",
     Default = "models/player/kleiner.mdl",
 
@@ -102,7 +102,7 @@ Parallax.Character:RegisterVariable("model", {
     Name = "character.create.model",
 
     OnValidate = function(self, parent, payload, client)
-        local faction = Parallax.Faction:Get(payload.faction)
+        local faction = ax.faction:Get(payload.faction)
         if ( istable(faction) ) then
             local found = false
             for _, v in SortedPairs(faction:GetModels()) do
@@ -123,26 +123,26 @@ Parallax.Character:RegisterVariable("model", {
     end,
 
     OnPopulate = function(self, parent, payload, client)
-        local label = parent:Add("Parallax.Text")
+        local label = parent:Add("ax.text")
         label:Dock(TOP)
-        label:SetFont("Parallax.Large")
+        label:SetFont("ax.large")
 
-        local translation = Parallax.Localization:GetPhrase(self.Name)
+        local translation = ax.localization:GetPhrase(self.Name)
         local bTranslated = translation != self.Name
 
         label:SetText(bTranslated and translation or self.Name or k)
 
-        local scroller = parent:Add("Parallax.Scroller.Vertical")
+        local scroller = parent:Add("ax.scroller.vertical")
         scroller:Dock(FILL)
 
         local layout = scroller:Add("DIconLayout")
         layout:Dock(FILL)
         layout.Paint = function(this, width, height)
-            surface.SetDrawColor(Parallax.Color:Get("background.transparent"))
+            surface.SetDrawColor(ax.color:Get("background.transparent"))
             surface.DrawRect(0, 0, width, height)
         end
 
-        local faction = Parallax.Faction:Get(payload.faction)
+        local faction = ax.faction:Get(payload.faction)
         if ( istable(faction) ) then
             for _, v in SortedPairs(faction:GetModels()) do
                 local model = istable(v) and v[1] or v
@@ -157,13 +157,13 @@ Parallax.Character:RegisterVariable("model", {
                 icon:SetSize(64, 128)
                 icon:SetTooltip(model)
                 icon.DoClick = function()
-                    Parallax.Client:Notify("You have selected " .. model .. " as your model!", NOTIFY_HINT)
+                    ax.client:Notify("You have selected " .. model .. " as your model!", NOTIFY_HINT)
                     payload.model = model
                     layout.selected = icon
                 end
                 icon.Paint = function(this, w, h)
                     if ( ispanel(layout.selected) and this == layout.selected ) then
-                        surface.SetDrawColor(Parallax.Color:Get("white"))
+                        surface.SetDrawColor(ax.color:Get("white"))
                         surface.DrawRect(0, 0, w, h)
                     end
                 end
@@ -179,27 +179,27 @@ Parallax.Character:RegisterVariable("model", {
     end
 })
 
-Parallax.Character:RegisterVariable("skin", {
-    Type = Parallax.Types.number,
+ax.character:RegisterVariable("skin", {
+    Type = ax.types.number,
     Field = "skin",
     Default = 0
 })
 
-Parallax.Character:RegisterVariable("money", {
-    Type = Parallax.Types.number,
+ax.character:RegisterVariable("money", {
+    Type = ax.types.number,
     Field = "money",
     Default = 0
 })
 
-Parallax.Character:RegisterVariable("faction", {
-    Type = Parallax.Types.number,
+ax.character:RegisterVariable("faction", {
+    Type = ax.types.number,
     Field = "faction",
     Default = 0,
 
     Editable = true,
 
     OnSet = function(this, character, value)
-        local faction = Parallax.Faction:Get(value)
+        local faction = ax.faction:Get(value)
         if ( faction and faction.OnSet ) then
             faction:OnSet(character, value)
         end
@@ -208,30 +208,30 @@ Parallax.Character:RegisterVariable("faction", {
         if ( IsValid(client) ) then
             client:SetTeam(value)
         end
-    end
+    end,
 })
 
-Parallax.Character:RegisterVariable("class", {
-    Type = Parallax.Types.number,
+ax.character:RegisterVariable("class", {
+    Type = ax.types.number,
     Field = "class",
     Default = 0
 })
 
-Parallax.Character:RegisterVariable("flags", {
-    Type = Parallax.Types.string,
+ax.character:RegisterVariable("flags", {
+    Type = ax.types.string,
     Field = "flags",
     Default = "",
 })
 
-Parallax.Character:RegisterVariable("play_time", {
-    Type = Parallax.Types.number,
+ax.character:RegisterVariable("play_time", {
+    Type = ax.types.number,
     Field = "play_time",
     Alias = "PlayTime",
     Default = 0
 })
 
-Parallax.Character:RegisterVariable("last_played", {
-    Type = Parallax.Types.number,
+ax.character:RegisterVariable("last_played", {
+    Type = ax.types.number,
     Field = "last_played",
     Alias = "LastPlayed",
     Default = 0

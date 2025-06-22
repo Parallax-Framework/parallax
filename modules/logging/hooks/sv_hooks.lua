@@ -27,7 +27,7 @@ function MODULE:DoPlayerDeath(client, attacker, dmginfo)
         end
     end
 
-    self:Send(Parallax.Color:Get("red"), self:Format(client) .. " was killed by " .. attackerName .. " using " .. weaponName)
+    self:Send(ax.color:Get("red"), self:Format(client) .. " was killed by " .. attackerName .. " using " .. weaponName)
 end
 
 function MODULE:EntityTakeDamage(ent, dmginfo)
@@ -36,7 +36,7 @@ function MODULE:EntityTakeDamage(ent, dmginfo)
     local attacker = dmginfo:GetAttacker()
     if ( !IsValid(attacker) ) then return end
 
-    self:Send(Parallax.Color:Get("orange"), self:Format(ent) .. " took " .. dmginfo:GetDamage() .. " damage from " .. self:Format(attacker))
+    self:Send(ax.color:Get("orange"), self:Format(ent) .. " took " .. dmginfo:GetDamage() .. " damage from " .. self:Format(attacker))
 end
 
 function MODULE:PlayerInitialSpawn(client)
@@ -98,15 +98,15 @@ MODULE.PlayerGiveSWEP = MODULE.PlayerSpawnedSWEP
 function MODULE:PostPlayerConfigChanged(client, key, value, oldValue)
     if ( key == "logging" ) then
         if ( value == true ) then
-            self:Send(Parallax.Color:Get("green"), self:Format(client) .. " enabled logging")
+            self:Send(ax.color:Get("green"), self:Format(client) .. " enabled logging")
         else
-            self:Send(Parallax.Color:Get("red"), self:Format(client) .. " disabled logging")
+            self:Send(ax.color:Get("red"), self:Format(client) .. " disabled logging")
         end
     else
-        self:Send(Parallax.Color:Get("yellow"), self:Format(client) .. " changed config \"" .. key .. "\" from \"" .. tostring(oldValue) .. "\" to \"" .. tostring(value) .. "\"")
+        self:Send(ax.color:Get("yellow"), self:Format(client) .. " changed config \"" .. tostring(key) .. "\" from \"" .. tostring(oldValue) .. "\" to \"" .. tostring(value) .. "\"")
     end
 end
 
 function MODULE:PostPlayerConfigReset(client, key)
-    self:Send(Parallax.Color:Get("yellow"), self:Format(client) .. " reset config \"" .. key .. "\"")
+    self:Send(ax.color:Get("yellow"), self:Format(client) .. " reset config \"" .. tostring(key) .. "\"")
 end

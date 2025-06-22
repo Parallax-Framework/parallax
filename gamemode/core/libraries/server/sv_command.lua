@@ -10,16 +10,16 @@
 ]]
 
 --- Command library
--- @module Parallax.Command
+-- @module ax.command
 
 --- Runs a command.
 -- @realm server
 -- @player client The player running the command.
 -- @string command The command to run.
 -- @tab arguments The arguments of the command.
-function Parallax.Command:Run(client, command, arguments)
+function ax.command:Run(client, command, arguments)
     if ( !IsValid(client) ) then
-        Parallax.Util:PrintError("Attempted to run a command with no player!")
+        ax.util:PrintError("Attempted to run a command with no player!")
         return false
     end
 
@@ -64,8 +64,8 @@ function Parallax.Command:Run(client, command, arguments)
     if ( info.Arguments ) then
         for i = 1, #info.Arguments do
             local v = info.Arguments[i]
-            local value = Parallax.Util:CoerceType(v.Type, arguments[i])
-            if ( Parallax.Util:DetectType(value) != v.Type and !v.Optional ) then
+            local value = ax.util:CoerceType(v.Type, arguments[i])
+            if ( ax.util:DetectType(value) != v.Type and !v.Optional ) then
                 client:Notify(v.ErrorMsg or "Invalid argument type provided!", NOTIFY_ERROR)
 
                 return false
@@ -84,7 +84,7 @@ end
 
 concommand.Add("ax_command_run", function(client, cmd, arguments)
     if ( !IsValid(client) ) then
-        Parallax.Util:PrintError("Attempted to run a command with no player!")
+        ax.util:PrintError("Attempted to run a command with no player!")
         return
     end
 
@@ -93,37 +93,39 @@ concommand.Add("ax_command_run", function(client, cmd, arguments)
     local command = arguments[1]
     table.remove(arguments, 1)
 
-    Parallax.Command:Run(client, command, arguments)
+    ax.command:Run(client, command, arguments)
 
     client:SetCooldown("command", 1)
 end)
 
 concommand.Add("ax_command", function(client, cmd, arguments)
     if ( !IsValid(client) ) then
-        Parallax.Util:PrintError("Attempted to list commands with no player!")
+        ax.util:PrintError("Attempted to list commands with no player!")
         return
     end
 
     if ( client:OnCooldown("command") ) then return end
 
-    Parallax.Util:Print("Commands:")
+    ax.util:Print("Commands:")
 
-    for k, v in pairs(Parallax.Command.Stored) do
+    for k, v in pairs(ax.command.stored) do
         if ( !CAMI.PlayerHasAccess(client, "Parallax - Commands - " .. k) ) then
             continue
         end
 
-        Parallax.Util:Print("/" .. v.Name .. (v.Description and " - " .. v.Description or ""))
+        ax.util:Print("/" .. v.Name .. (v.Description and " - " .. v.Description or ""))
     end
 
     client:SetCooldown("command", 1)
 end--[[, function(cmd, argStr, arguments)
     local commands = {}
 
-    for k, v in pairs(Parallax.Command.Stored) do
+    for k, v in pairs(ax.command.stored) do
         table.insert(commands, cmd .. " " .. v.Name)
     end
 
     return commands
 end, "Lists all available commands."]])
 -- TODO: Add auto-complete for commands
+
+ax.command = ax.command

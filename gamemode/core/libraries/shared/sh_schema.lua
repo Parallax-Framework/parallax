@@ -10,9 +10,9 @@
 ]]
 
 --- Schema library.
--- @module Parallax.Schema
+-- @module ax.schema
 
-Parallax.Schema = {}
+ax.schema = {}
 
 local default = {
     Name = "Unknown",
@@ -24,7 +24,7 @@ local default = {
 -- @realm shared
 -- @return boolean Returns true if the schema was successfully initialized, false otherwise.
 -- @internal
-function Parallax.Schema:Initialize()
+function ax.schema:Initialize()
     SCHEMA = SCHEMA or {}
 
     local folder = engine.ActiveGamemode()
@@ -32,16 +32,16 @@ function Parallax.Schema:Initialize()
 
     file.CreateDir("parallax/" .. folder)
 
-    Parallax.Util:Print("Searching for schema...")
+    ax.util:Print("Searching for schema...")
 
     local bSuccess = file.Exists(schema, "LUA")
     if ( !bSuccess ) then
-        Parallax.Util:PrintError("Schema not found!")
+        ax.util:PrintError("Schema not found!")
         return false
     else
         SCHEMA.Folder = folder
 
-        Parallax.Util:Print("Schema found, loading \"" .. SCHEMA.Folder .. "\"...")
+        ax.util:Print("Schema found, loading \"" .. SCHEMA.Folder .. "\"...")
     end
 
     hook.Run("PreInitializeSchema", SCHEMA, schema)
@@ -52,59 +52,59 @@ function Parallax.Schema:Initialize()
         end
     end
 
-    Parallax.Hooks:Register("SCHEMA")
-    Parallax.Util:LoadFolder(folder .. "/schema/libraries/external", true)
-    Parallax.Util:LoadFolder(folder .. "/schema/libraries/client", true)
-    Parallax.Util:LoadFolder(folder .. "/schema/libraries/shared", true)
-    Parallax.Util:LoadFolder(folder .. "/schema/libraries/server", true)
-    Parallax.Util:LoadFolder(folder .. "/schema/factions", true)
-    Parallax.Util:LoadFolder(folder .. "/schema/classes", true)
-    Parallax.Util:LoadFolder(folder .. "/schema/definitions", true)
-    Parallax.Util:LoadFolder(folder .. "/schema/meta", true)
-    Parallax.Util:LoadFolder(folder .. "/schema/ui", true)
-    Parallax.Util:LoadFolder(folder .. "/schema/hooks", true)
-    Parallax.Util:LoadFolder(folder .. "/schema/net", true)
-    Parallax.Util:LoadFolder(folder .. "/schema/languages", true)
-    Parallax.Item:LoadFolder(folder .. "/schema/items")
-    Parallax.Util:LoadFolder(folder .. "/schema/config", true)
+    ax.hooks:Register("SCHEMA")
+    ax.util:LoadFolder(folder .. "/schema/libraries/external", true)
+    ax.util:LoadFolder(folder .. "/schema/libraries/client", true)
+    ax.util:LoadFolder(folder .. "/schema/libraries/shared", true)
+    ax.util:LoadFolder(folder .. "/schema/libraries/server", true)
+    ax.util:LoadFolder(folder .. "/schema/factions", true)
+    ax.util:LoadFolder(folder .. "/schema/classes", true)
+    ax.util:LoadFolder(folder .. "/schema/definitions", true)
+    ax.util:LoadFolder(folder .. "/schema/meta", true)
+    ax.util:LoadFolder(folder .. "/schema/ui", true)
+    ax.util:LoadFolder(folder .. "/schema/hooks", true)
+    ax.util:LoadFolder(folder .. "/schema/net", true)
+    ax.util:LoadFolder(folder .. "/schema/languages", true)
+    ax.item:LoadFolder(folder .. "/schema/items")
+    ax.util:LoadFolder(folder .. "/schema/config", true)
 
     -- Load the current map config if it exists
     local map = game.GetMap()
     local path = folder .. "/schema/config/maps/" .. map .. ".lua"
     if ( file.Exists(path, "LUA") ) then
         hook.Run("PreInitializeMapConfig", SCHEMA, path, map)
-        Parallax.Util:Print("Loading map config for \"" .. map .. "\"...")
-        Parallax.Util:LoadFile(path, "shared")
-        Parallax.Util:Print("Loaded map config for \"" .. map .. "\".")
+        ax.util:Print("Loading map config for \"" .. map .. "\"...")
+        ax.util:LoadFile(path, "shared")
+        ax.util:Print("Loaded map config for \"" .. map .. "\".")
         hook.Run("PostInitializeMapConfig", SCHEMA, path, map)
     else
-        Parallax.Util:PrintWarning("Failed to find map config for \"" .. map .. "\".")
+        ax.util:PrintWarning("Failed to find map config for \"" .. map .. "\".")
     end
 
     if ( SERVER ) then
-        Parallax.Config:Load()
+        ax.config:Load()
     end
 
     -- Load the sh_schema.lua file after we load all necessary files
-    Parallax.Util:LoadFile(schema, "shared")
+    ax.util:LoadFile(schema, "shared")
 
     -- Load the modules after the schema file is loaded
-    Parallax.Module:LoadFolder(folder .. "/modules")
+    ax.module:LoadFolder(folder .. "/modules")
 
     -- Load the database configuration
     if ( SERVER ) then
         local database = folder .. "/schema/database.lua"
         if ( file.Exists(database, "LUA") ) then
-            Parallax.Util:Print("Loading database config...")
-            Parallax.Util:LoadFile(folder .. "/schema/database.lua", "server")
-            Parallax.Util:Print("Loaded database config.")
+            ax.util:Print("Loading database config...")
+            ax.util:LoadFile(folder .. "/schema/database.lua", "server")
+            ax.util:Print("Loaded database config.")
         else
-            Parallax.Util:PrintWarning("Failed to find database config, using SQLite.")
-            Parallax.Database:Initialize()
+            ax.util:PrintWarning("Failed to find database config, using SQLite.")
+            ax.database:Initialize()
         end
     end
 
-    Parallax.Util:Print("Loaded schema " .. SCHEMA.Name)
+    ax.util:Print("Loaded schema " .. SCHEMA.Name)
 
     hook.Run("PostInitializeSchema", SCHEMA, path)
 

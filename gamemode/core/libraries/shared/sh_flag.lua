@@ -9,16 +9,16 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
-Parallax.Flag = Parallax.Flag or {}
-Parallax.Flag.Stored = {}
+ax.flag = ax.flag or {}
+ax.flag.stored = {}
 
-function Parallax.Flag:Register(flag, description, callback)
+function ax.flag:Register(flag, description, callback)
     if ( !isstring(flag) or #flag != 1 ) then
-        Parallax.Util:PrintError("Attempted to register a flag without a flag character!")
+        ax.util:PrintError("Attempted to register a flag without a flag character!")
         return false
     end
 
-    self.Stored[flag] = {
+    self.stored[flag] = {
         description = description or "No description provided",
         callback = callback or nil
     }
@@ -26,10 +26,10 @@ function Parallax.Flag:Register(flag, description, callback)
     return true
 end
 
-function Parallax.Flag:Get(flag)
-    return self.Stored[flag]
+function ax.flag:Get(flag)
+    return self.stored[flag]
 end
 
-function Parallax.Flag:GetAll()
-    return self.Stored
+function ax.flag:GetAll()
+    return self.stored
 end

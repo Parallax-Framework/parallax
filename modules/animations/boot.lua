@@ -32,11 +32,11 @@ HOLDTYPE_TRANSLATOR["camera"] = "smg"
 HOLDTYPE_TRANSLATOR["magic"] = "normal"
 HOLDTYPE_TRANSLATOR["revolver"] = "pistol"
 
-Parallax.Animations = Parallax.Animations or {}
-Parallax.Animations.Stored = Parallax.Animations.Stored or {}
-Parallax.Animations.translations = Parallax.Animations.translations or {}
+ax.animations = ax.animations or {}
+ax.animations.stored = ax.animations.stored or {}
+ax.animations.translations = ax.animations.translations or {}
 
-Parallax.Animations.Stored["citizen_male"] = {
+ax.animations.stored["citizen_male"] = {
     normal = {
         [ACT_MP_STAND_IDLE] = {ACT_IDLE, ACT_IDLE_ANGRY_SMG1},
         [ACT_MP_WALK] = {ACT_WALK, ACT_WALK_AIM_RIFLE_STIMULATED},
@@ -96,7 +96,7 @@ Parallax.Animations.Stored["citizen_male"] = {
     }
 }
 
-Parallax.Animations.Stored["citizen_female"] = {
+ax.animations.stored["citizen_female"] = {
     normal = {
         [ACT_MP_STAND_IDLE] = {ACT_IDLE, ACT_IDLE_ANGRY_SMG1},
         [ACT_MP_WALK] = {ACT_WALK, ACT_WALK_AIM_RIFLE_STIMULATED},
@@ -156,7 +156,7 @@ Parallax.Animations.Stored["citizen_female"] = {
     }
 }
 
-Parallax.Animations.Stored["overwatch"] = {
+ax.animations.stored["overwatch"] = {
     normal = {
         [ACT_MP_STAND_IDLE] = {"idle_unarmed", ACT_IDLE_ANGRY},
         [ACT_MP_WALK] = {"walkunarmed_all", ACT_WALK_RIFLE},
@@ -216,7 +216,7 @@ Parallax.Animations.Stored["overwatch"] = {
     }
 }
 
-Parallax.Animations.Stored["metrocop"] = {
+ax.animations.stored["metrocop"] = {
     normal = {
         [ACT_MP_STAND_IDLE] = {ACT_IDLE, ACT_IDLE_ANGRY_SMG1},
         [ACT_MP_WALK] = {ACT_WALK, ACT_WALK_ANGRY},
@@ -277,7 +277,7 @@ Parallax.Animations.Stored["metrocop"] = {
     }
 }
 
-Parallax.Animations.Stored["vortigaunt"] = {
+ax.animations.stored["vortigaunt"] = {
     normal = {
         [ACT_MP_STAND_IDLE] = {ACT_IDLE, ACT_IDLE_ANGRY},
         [ACT_MP_WALK] = {ACT_WALK, ACT_WALK_AIM},
@@ -329,13 +329,13 @@ Parallax.Animations.Stored["vortigaunt"] = {
     }
 }
 
-function Parallax.Animations:SetModelClass(model, class)
+function ax.animations:SetModelClass(model, class)
     if ( !model or !class ) then return end
 
     class = string.lower(class)
 
-    if ( !self.Stored[class] ) then
-        Parallax.Util:PrintError("Animation class '" .. class .. "' does not exist!")
+    if ( !self.stored[class] ) then
+        ax.util:PrintError("Animation class '" .. class .. "' does not exist!")
         return false
     end
 
@@ -344,7 +344,7 @@ function Parallax.Animations:SetModelClass(model, class)
     self.translations[model] = class
 end
 
-function Parallax.Animations:GetModelClass(model)
+function ax.animations:GetModelClass(model)
     if ( !model ) then return end
 
     model = string.lower(model)
@@ -355,9 +355,9 @@ function Parallax.Animations:GetModelClass(model)
     end
 
     -- Otherwise check the model name
-    if ( Parallax.Util:FindString(model, "player") or Parallax.Util:FindString(model, "pm") ) then
+    if ( ax.util:FindString(model, "player") or ax.util:FindString(model, "pm") ) then
         return "player"
-    elseif ( Parallax.Util:FindString(model, "female") ) then
+    elseif ( ax.util:FindString(model, "female") ) then
         return "citizen_female"
     end
 
@@ -365,25 +365,25 @@ function Parallax.Animations:GetModelClass(model)
     return "citizen_male"
 end
 
-Parallax.Animations:SetModelClass("models/combine_soldier.mdl", "overwatch")
-Parallax.Animations:SetModelClass("models/combine_soldier_prisonGuard.mdl", "overwatch")
-Parallax.Animations:SetModelClass("models/combine_super_soldier.mdl", "overwatch")
-Parallax.Animations:SetModelClass("models/police.mdl", "metrocop")
-Parallax.Animations:SetModelClass("models/vortigaunt.mdl", "vortigaunt")
-Parallax.Animations:SetModelClass("models/vortigaunt_blue.mdl", "vortigaunt")
-Parallax.Animations:SetModelClass("models/vortigaunt_doctor.mdl", "vortigaunt")
-Parallax.Animations:SetModelClass("models/vortigaunt_slave.mdl", "vortigaunt")
+ax.animations:SetModelClass("models/combine_soldier.mdl", "overwatch")
+ax.animations:SetModelClass("models/combine_soldier_prisonGuard.mdl", "overwatch")
+ax.animations:SetModelClass("models/combine_super_soldier.mdl", "overwatch")
+ax.animations:SetModelClass("models/police.mdl", "metrocop")
+ax.animations:SetModelClass("models/vortigaunt.mdl", "vortigaunt")
+ax.animations:SetModelClass("models/vortigaunt_blue.mdl", "vortigaunt")
+ax.animations:SetModelClass("models/vortigaunt_doctor.mdl", "vortigaunt")
+ax.animations:SetModelClass("models/vortigaunt_slave.mdl", "vortigaunt")
 
 local playerMeta = FindMetaTable("Player")
 local _isFemale = playerMeta.IsFemale
 
 function playerMeta:IsFemale()
-    local modelClass = Parallax.Animations:GetModelClass(self:GetModel())
+    local modelClass = ax.animations:GetModelClass(self:GetModel())
     if ( !isstring(modelClass) or modelClass == "" ) then
         return _isFemale(self)
     end
 
-    if ( Parallax.Util:FindString(modelClass, "female") ) then
+    if ( ax.util:FindString(modelClass, "female") ) then
         return true
     end
 
@@ -395,7 +395,7 @@ if ( SERVER ) then
         local prevent = hook.Run("PrePlayerLeaveSequence", self)
         if ( prevent != nil and prevent == false ) then return end
 
-        Parallax.Net:Start(nil, "sequence.reset", self)
+        ax.net:Start(nil, "sequence.reset", self)
 
         self:SetRelay("sequence.callback", nil)
         self:SetRelay("sequence.forced", nil)
@@ -414,13 +414,13 @@ if ( SERVER ) then
         if ( prevent != nil and prevent == false ) then return end
 
         if ( sequence == nil ) then
-            Parallax.Net:Start(nil, "sequence.reset", self)
+            ax.net:Start(nil, "sequence.reset", self)
             return
         end
 
         local sequenceID = self:LookupSequence(sequence)
         if ( sequenceID == -1 ) then
-            Parallax.Util:PrintError("Invalid sequence \"" .. sequence .. "\"!")
+            ax.util:PrintError("Invalid sequence \"" .. sequence .. "\"!")
             return
         end
 
@@ -436,7 +436,7 @@ if ( SERVER ) then
         end
 
         if ( sequenceTime > 0 ) then
-            timer.Create("Parallax.Sequence." .. self:SteamID64(), sequenceTime, 1, function()
+            timer.Create("ax.Sequence." .. self:SteamID64(), sequenceTime, 1, function()
                 self:LeaveSequence()
             end)
 
@@ -446,13 +446,13 @@ if ( SERVER ) then
         hook.Run("PostPlayerForceSequence", self, sequence, callback, time, noFreeze)
     end
 else
-    Parallax.Net:Hook("sequence.set", function(client)
+    ax.net:Hook("sequence.set", function(client)
         if ( !IsValid(client) ) then return end
 
         hook.Run("PostPlayerForceSequence", client)
     end)
 
-    Parallax.Net:Hook("sequence.reset", function(client)
+    ax.net:Hook("sequence.reset", function(client)
         if ( !IsValid(client) ) then return end
 
         hook.Run("PostPlayerLeaveSequence", client)

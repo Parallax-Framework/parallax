@@ -12,7 +12,7 @@
 local MODULE = MODULE
 
 function MODULE:Send(...)
-    if ( !Parallax.Config:Get("logging", true) ) then return end
+    if ( !ax.config:Get("logging", true) ) then return end
 
     local receivers = {}
     for k, v in player.Iterator() do
@@ -23,8 +23,8 @@ function MODULE:Send(...)
 
     -- Send to the remote console if we are in a dedicated server
     if ( game.IsDedicated() ) then
-        Parallax.Util:Print("[Logging] ", ...)
+        ax.util:Print("[Logging] ", ...)
     end
 
-    Parallax.Net:Start(receivers, "logging.send", {...})
+    ax.net:Start(receivers, "logging.send", {...})
 end

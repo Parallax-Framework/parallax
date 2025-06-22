@@ -59,10 +59,10 @@ PLAYER.Nick = PLAYER.Name
 -- @realm shared
 -- @param ... The message components to send.
 function PLAYER:ChatText(...)
-    local arguments = {Parallax.Color:Get("text"), ...}
+    local arguments = {ax.color:Get("text"), ...}
 
     if ( SERVER ) then
-        Parallax.Net:Start(self, "chat.text", arguments)
+        ax.net:Start(self, "chat.text", arguments)
     else
         chat.AddText(unpack(arguments))
     end
@@ -75,7 +75,7 @@ PLAYER.ChatPrint = PLAYER.ChatText
 -- @param arguments The caption arguments.
 function PLAYER:Caption(arguments)
     if ( SERVER ) then
-        Parallax.Net:Start(self, "caption", arguments)
+        ax.net:Start(self, "caption", arguments)
     else
         gui.AddCaption(arguments)
     end
@@ -86,7 +86,7 @@ end
 -- @string name The name of the gesture to play.
 function PLAYER:GesturePlay(name)
     if ( SERVER ) then
-        Parallax.Net:Start(self:GetPos(), "gesture.play", name)
+        ax.net:Start(self:GetPos(), "gesture.play", name)
     else
         self:AddVCDSequenceToGestureSlot(GESTURE_SLOT_CUSTOM, self:LookupSequence(name), 0, true)
     end
@@ -137,22 +137,22 @@ function PLAYER:Notify(text, iType, duration)
 
     duration = duration or 3
 
-    Parallax.Notification:Send(self, text, iType, duration)
+    ax.notification:Send(self, text, iType, duration)
 end
 
-Parallax.AlwaysRaised = Parallax.AlwaysRaised or {}
-Parallax.AlwaysRaised["gmod_tool"] = true
-Parallax.AlwaysRaised["gmod_camera"] = true
-Parallax.AlwaysRaised["weapon_physgun"] = true
+ax.alwaysRaised = ax.alwaysRaised or {}
+ax.alwaysRaised["gmod_tool"] = true
+ax.alwaysRaised["gmod_camera"] = true
+ax.alwaysRaised["weapon_physgun"] = true
 
 --- Checks if the player's weapon is raised.
 -- @realm shared
 -- @treturn boolean Whether the player's weapon is raised.
 function PLAYER:IsWeaponRaised()
-    if ( Parallax.Config:Get("weapon.raise.alwaysraised", false) ) then return true end
+    if ( ax.config:Get("weapon.raise.alwaysraised", false) ) then return true end
 
     local weapon = self:GetActiveWeapon()
-    if ( IsValid(weapon) and ( Parallax.AlwaysRaised[weapon:GetClass()] or weapon.AlwaysRaised ) ) then return true end
+    if ( IsValid(weapon) and ( ax.alwaysRaised[weapon:GetClass()] or weapon.AlwaysRaised ) ) then return true end
 
     return self:GetRelay("bWeaponRaised", false)
 end
@@ -189,7 +189,7 @@ function PLAYER:IsFemale()
     local model = string.lower(self:GetModel())
     if ( !isstring(model) or model == "" ) then return false end
 
-    if ( Parallax.Util:FindString(model, "female") or Parallax.Util:FindString(model, "alyx") or Parallax.Util:FindString(model, "mossman") ) then
+    if ( ax.util:FindString(model, "female") or ax.util:FindString(model, "alyx") or ax.util:FindString(model, "mossman") ) then
         return true
     end
 

@@ -10,10 +10,10 @@
 ]]
 
 local padding = ScreenScale(32)
-local gradientLeft = Parallax.Util:GetMaterial("vgui/gradient-l")
-local gradientRight = Parallax.Util:GetMaterial("vgui/gradient-r")
-local gradientTop = Parallax.Util:GetMaterial("vgui/gradient-u")
-local gradientBottom = Parallax.Util:GetMaterial("vgui/gradient-d")
+local gradientLeft = ax.util:GetMaterial("vgui/gradient-l")
+local gradientRight = ax.util:GetMaterial("vgui/gradient-r")
+local gradientTop = ax.util:GetMaterial("vgui/gradient-u")
+local gradientBottom = ax.util:GetMaterial("vgui/gradient-d")
 
 DEFINE_BASECLASS("EditablePanel")
 
@@ -36,13 +36,13 @@ AccessorFunc(PANEL, "dim", "Dim", FORCE_NUMBER)
 AccessorFunc(PANEL, "dimTarget", "DimTarget", FORCE_NUMBER)
 
 function PANEL:Init()
-    if ( IsValid(Parallax.GUI.Mainmenu) ) then
-        Parallax.GUI.Mainmenu:Remove()
+    if ( IsValid(ax.gui.mainmenu) ) then
+        ax.gui.mainmenu:Remove()
     end
 
-    Parallax.GUI.Mainmenu = self
+    ax.gui.mainmenu = self
 
-    local client = Parallax.Client
+    local client = ax.client
     if ( IsValid(client) and client:IsTyping() ) then
         chat.Close()
     end
@@ -66,16 +66,16 @@ function PANEL:Init()
     self:SetPos(0, 0)
     self:MakePopup()
 
-    self.createPanel = self:Add("Parallax.Mainmenu.Create")
-    self.selectPanel = self:Add("Parallax.Mainmenu.Load")
-    self.optionsPanel = self:Add("Parallax.Mainmenu.Options")
+    self.createPanel = self:Add("ax.mainmenu.create")
+    self.selectPanel = self:Add("ax.mainmenu.load")
+    self.optionsPanel = self:Add("ax.mainmenu.options")
 
     self.container = self:Add("EditablePanel")
     self.container:SetSize(self:GetWide(), self:GetTall())
     self.container:SetPos(0, 0)
 
-    if ( Parallax.Config:Get("mainmenu.branchwarning") and BRANCH != "x86-64" )  then
-        Derma_Query(Parallax.Localization:GetPhrase("mainmenu.branchwarning"), "Parallax", "I acknowledge")
+    if ( ax.config:Get("mainmenu.branchwarning") and BRANCH != "x86-64" )  then
+        Derma_Query(ax.localization:GetPhrase("mainmenu.branchwarning"), "Parallax", "I acknowledge")
     end
 
     self:Populate()
@@ -111,15 +111,15 @@ function PANEL:Populate()
     local title = sideButtons:Add("DLabel")
     title:Dock(TOP)
     title:DockMargin(0, 0, padding, 0)
-    title:SetFont("Parallax.Huge.Bold")
+    title:SetFont("ax.huge.bold")
     title:SetText("PARALLAX")
-    title:SetTextColor(Parallax.Config:Get("color.framework"))
+    title:SetTextColor(ax.config:Get("color.framework"))
     title:SizeToContents()
 
     local subtitle = sideButtons:Add("DLabel")
     subtitle:Dock(TOP)
     subtitle:DockMargin(padding / 4, -padding / 8, 0, 0)
-    subtitle:SetFont("Parallax.Large.Bold")
+    subtitle:SetFont("ax.large.bold")
 
     local schemaName = "UNKNOWN SCHEMA"
     if ( SCHEMA ) then
@@ -128,23 +128,23 @@ function PANEL:Populate()
             schemaName = SCHEMA:GetMenuTitle()
         end
 
-        schemaName = Parallax.Utf8:Upper(schemaName)
+        schemaName = ax.utf8:Upper(schemaName)
     else
-        Parallax.Util:PrintError("SCHEMA is not defined! Please ensure that your schema is properly set up.")
+        ax.util:PrintError("SCHEMA is not defined! Please ensure that your schema is properly set up.")
     end
 
     subtitle:SetText(schemaName)
-    subtitle:SetTextColor(Parallax.Config:Get("color.schema"))
+    subtitle:SetTextColor(ax.config:Get("color.schema"))
     subtitle:SizeToContents()
 
     local buttons = sideButtons:Add("EditablePanel")
     buttons:Dock(FILL)
     buttons:DockMargin(0, padding / 4, 0, padding)
 
-    local client = Parallax.Client
+    local client = ax.client
     local clientTable = client:GetTable()
     if ( clientTable.axCharacter ) then -- client:GetCharacter() isn't validated yet, since it this panel is created before the meta tables are loaded
-        local playButton = buttons:Add("Parallax.Button")
+        local playButton = buttons:Add("ax.button")
         playButton:Dock(TOP)
         playButton:DockMargin(0, 0, 0, 16)
         playButton:SetText("mainmenu.play")
@@ -154,16 +154,16 @@ function PANEL:Populate()
         end
     end
 
-    local createButton = buttons:Add("Parallax.Button")
+    local createButton = buttons:Add("ax.button")
     createButton:Dock(TOP)
     createButton:DockMargin(0, 0, 0, 16)
     createButton:SetText("mainmenu.create.character")
 
     createButton.DoClick = function(this)
         local availableFactions = 0
-        for i = 1, #Parallax.Faction:GetAll() do
-            local v = Parallax.Faction:GetAll()[i]
-            if ( Parallax.Faction:CanSwitchTo(Parallax.Client, v:GetID()) ) then
+        for i = 1, #ax.faction:GetAll() do
+            local v = ax.faction:GetAll()[i]
+            if ( ax.faction:CanSwitchTo(ax.client, v:GetID()) ) then
                 availableFactions = availableFactions + 1
             end
         end
@@ -173,14 +173,14 @@ function PANEL:Populate()
         elseif ( availableFactions == 1 ) then
             self.createPanel:PopulateCreateCharacter()
         else
-            Parallax.Client:Notify("You do not have any factions available to create a character for.", NOTIFY_ERROR)
+            ax.client:Notify("You do not have any factions available to create a character for.", NOTIFY_ERROR)
             return
         end
     end
 
     local bHasCharacters = table.Count(clientTable.axCharacters or {}) > 0
     if ( bHasCharacters ) then
-        local selectButton = buttons:Add("Parallax.Button")
+        local selectButton = buttons:Add("ax.button")
         selectButton:Dock(TOP)
         selectButton:DockMargin(0, 0, 0, 16)
         selectButton:SetText("mainmenu.select.character")
@@ -190,7 +190,7 @@ function PANEL:Populate()
         end
     end
 
-    local optionsButton = buttons:Add("Parallax.Button")
+    local optionsButton = buttons:Add("ax.button")
     optionsButton:Dock(TOP)
     optionsButton:DockMargin(0, 0, 0, 16)
     optionsButton:SetText("mainmenu.options")
@@ -199,14 +199,14 @@ function PANEL:Populate()
         self.optionsPanel:Populate()
     end
 
-    local disconnectButton = buttons:Add("Parallax.Button")
+    local disconnectButton = buttons:Add("ax.button")
     disconnectButton:Dock(TOP)
     disconnectButton:DockMargin(0, 0, 0, 16)
     disconnectButton:SetText("mainmenu.leave")
-    disconnectButton:SetTextColorProperty(Parallax.Color:Get("maroon"))
+    disconnectButton:SetTextColorProperty(ax.color:Get("maroon"))
 
     disconnectButton.DoClick = function()
-        Derma_Query(Parallax.Localization:GetPhrase("mainmenu.disconnect.confirmation"), "Disconnect", "Yes", function()
+        Derma_Query(ax.localization:GetPhrase("mainmenu.disconnect.confirmation"), "Disconnect", "Yes", function()
             RunConsoleCommand("disconnect")
         end, "No")
     end
@@ -216,7 +216,7 @@ function PANEL:Paint(width, height)
     local ft = FrameTime()
     local time = ft * 5
 
-    local performanceAnimations = Parallax.Option:Get("performance.animations", true)
+    local performanceAnimations = ax.option:Get("performance.animations", true)
     if ( !performanceAnimations ) then
         time = 1
     end
@@ -248,13 +248,13 @@ function PANEL:Paint(width, height)
     surface.DrawTexturedRect(0, 0, width, height)
 end
 
-vgui.Register("Parallax.Mainmenu", PANEL, "EditablePanel")
+vgui.Register("ax.mainmenu", PANEL, "EditablePanel")
 
-if ( IsValid(Parallax.GUI.Mainmenu) ) then
-    Parallax.GUI.Mainmenu:Remove()
+if ( IsValid(ax.gui.mainmenu) ) then
+    ax.gui.mainmenu:Remove()
 
     timer.Simple(0.1, function()
-        vgui.Create("Parallax.Mainmenu")
+        vgui.Create("ax.mainmenu")
     end)
 end
 
@@ -263,9 +263,9 @@ concommand.Add("ax_mainmenu", function(client, command, arguments)
         return
     end
 
-    if ( IsValid(Parallax.GUI.Mainmenu) ) then
-        Parallax.GUI.Mainmenu:Remove()
+    if ( IsValid(ax.gui.mainmenu) ) then
+        ax.gui.mainmenu:Remove()
     end
 
-    vgui.Create("Parallax.Mainmenu")
+    vgui.Create("ax.mainmenu")
 end, nil, "Opens the main menu.", FCVAR_CLIENTCMD_CAN_EXECUTE)

@@ -11,26 +11,26 @@
 
 --- Hybrid SQL Wrapper for Parallax (MySQL/SQLite)
 -- Uses MySQLOO if configured, otherwise falls back to SQLite.
--- @module Parallax.Database
+-- @module ax.database
 
-Parallax.Database = Parallax.Database or {}
-Parallax.Database.backend = Parallax.Database.backend or Parallax.SQLite -- Default to SQLite if MySQL is not available
+ax.database = ax.database or {}
+ax.database.backend = ax.database.backend or ax.sqlite -- Default to SQLite if MySQL is not available
 
 --- Initializes the hybrid database system.
 -- @tparam table[opt] config MySQL connection config
--- @usage Parallax.Database:Initialize({ host = "localhost", username = "root", password = "", database = "gmod", port = 3306 })
-function Parallax.Database:Initialize(config)
-    if ( Parallax.Util:HasMysqlooBinary() and Parallax.SQLOO ) then
+-- @usage ax.database:Initialize({ host = "localhost", username = "root", password = "", database = "gmod", port = 3306 })
+function ax.database:Initialize(config)
+    if ( ax.util:HasMysqlooBinary() and ax.sqloo ) then
         if ( config ) then
-            Parallax.Util:Print("Initializing MySQL connection...")
-            Parallax.SQLOO:Initialize(config, function()
-                Parallax.Util:PrintSuccess("MySQL connection established.")
-                self.backend = Parallax.SQLOO
+            ax.util:Print("Initializing MySQL connection...")
+            ax.sqloo:Initialize(config, function()
+                ax.util:PrintSuccess("MySQL connection established.")
+                self.backend = ax.sqloo
                 self:LoadTables()
 
                 hook.Run("DatabaseConnected")
             end, function(err)
-                Parallax.Util:PrintError("MySQL connection failed: " .. err)
+                ax.util:PrintError("MySQL connection failed: " .. err)
                 self:Fallback(err)
 
                 hook.Run("DatabaseConnectionFailed", err)
@@ -45,17 +45,17 @@ end
 
 --- Fallback to SQLite if MySQL is unavailable.
 -- @tparam string reason Reason for fallback
--- @usage Parallax.Database:Fallback("MySQL connection failed")
-function Parallax.Database:Fallback(reason)
-    self.backend = Parallax.SQLite
-    Parallax.Util:PrintWarning((reason or "MySQL unavailable") .. ". Falling back to SQLite.")
+-- @usage ax.database:Fallback("MySQL connection failed")
+function ax.database:Fallback(reason)
+    self.backend = ax.sqlite
+    ax.util:PrintWarning((reason or "MySQL unavailable") .. ". Falling back to SQLite.")
 
     hook.Run("DatabaseFallback", reason)
 end
 
 --- Returns current backend object.
--- @treturn table Either Parallax.SQLOO or Parallax.SQLite
-function Parallax.Database:GetBackend()
+-- @treturn table Either ax.sqloo or ax.sqlite
+function ax.database:GetBackend()
     return self.backend
 end
 
@@ -64,13 +64,13 @@ end
 -- @tparam ... Arguments
 -- @return Returns backend function result
 local function dispatch(fn, ...)
-    if ( Parallax.Database.backend and Parallax.Database.backend[fn] ) then
-        return Parallax.Database.backend[fn](Parallax.Database.backend, ...)
+    if ( ax.database.backend and ax.database.backend[fn] ) then
+        return ax.database.backend[fn](ax.database.backend, ...)
     else
-        if ( Parallax.Database.backend == nil ) then
-            Parallax.Util:PrintError("Database backend not initialized, cannot call: " .. fn .. " from " .. debug.getinfo(2, "S").source)
+        if ( ax.database.backend == nil ) then
+            ax.util:PrintError("Database backend not initialized, cannot call: " .. fn .. " from " .. debug.getinfo(2, "S").source)
         else
-            Parallax.Util:PrintError("Database backend missing method: " .. fn)
+            ax.util:PrintError("Database backend missing method: " .. fn)
         end
 
         return false
@@ -92,12 +92,12 @@ local proxies = {
 
 for i = 1, #proxies do
     local fn = proxies[i]
-    Parallax.Database[fn] = function(self, ...)
+    ax.database[fn] = function(self, ...)
         return dispatch(fn, ...)
     end
 end
 
-function Parallax.Database:LoadTables()
+function ax.database:LoadTables()
     hook.Run("PreDatabaseTablesLoaded")
 
     self:RegisterVar("ax_players", "name", "")
@@ -142,15 +142,15 @@ function Parallax.Database:LoadTables()
 end
 
 --- Prints which database backend is currently in use. Used for debugging purposes.
--- @usage Parallax.Database:PrintBackend()
+-- @usage ax.database:PrintBackend()
 -- @return "Using MySQL backend." or "Using SQLite backend."
-function Parallax.Database:PrintBackend()
-    if ( self.backend == Parallax.SQLOO ) then
-        Parallax.Util:Print("Using MySQL backend.")
-    elseif ( self.backend == Parallax.SQLite ) then
-        Parallax.Util:Print("Using SQLite backend.")
+function ax.database:PrintBackend()
+    if ( self.backend == ax.sqloo ) then
+        ax.util:Print("Using MySQL backend.")
+    elseif ( self.backend == ax.sqlite ) then
+        ax.util:Print("Using SQLite backend.")
     else
         -- Quite unlikely, but just in case
-        Parallax.Util:PrintError("Unknown database backend in use!")
+        ax.util:PrintError("Unknown database backend in use!")
     end
 end

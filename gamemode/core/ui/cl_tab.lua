@@ -12,10 +12,10 @@
 local padding = ScreenScale(32)
 local paddingSmall = ScreenScale(16)
 local paddingTiny = ScreenScale(8)
-local gradientLeft = Parallax.Util:GetMaterial("vgui/gradient-l")
-local gradientRight = Parallax.Util:GetMaterial("vgui/gradient-r")
-local gradientTop = Parallax.Util:GetMaterial("vgui/gradient-u")
-local gradientBottom = Parallax.Util:GetMaterial("vgui/gradient-d")
+local gradientLeft = ax.util:GetMaterial("vgui/gradient-l")
+local gradientRight = ax.util:GetMaterial("vgui/gradient-r")
+local gradientTop = ax.util:GetMaterial("vgui/gradient-u")
+local gradientBottom = ax.util:GetMaterial("vgui/gradient-d")
 
 DEFINE_BASECLASS("EditablePanel")
 
@@ -35,13 +35,13 @@ AccessorFunc(PANEL, "anchorTime", "AnchorTime", FORCE_NUMBER)
 AccessorFunc(PANEL, "anchorEnabled", "AnchorEnabled", FORCE_BOOL)
 
 function PANEL:Init()
-    if ( IsValid(Parallax.GUI.Tab) ) then
-        Parallax.GUI.Tab:Remove()
+    if ( IsValid(ax.gui.Tab) ) then
+        ax.gui.Tab:Remove()
     end
 
-    Parallax.GUI.Tab = self
+    ax.gui.Tab = self
 
-    local client = Parallax.Client
+    local client = ax.client
     if ( IsValid(client) and client:IsTyping() ) then
         chat.Close()
     end
@@ -66,14 +66,14 @@ function PANEL:Init()
     self.gradientTopTarget = 0
     self.gradientBottomTarget = 0
 
-    self.anchorTime = CurTime() + Parallax.Option:Get("tab.anchor.time", 0.4)
+    self.anchorTime = CurTime() + ax.option:Get("tab.anchor.time", 0.4)
     self.anchorEnabled = true
 
     self:SetSize(ScrW(), ScrH())
     self:SetPos(0, 0)
     self:MakePopup()
 
-    self:Motion(Parallax.Option:Get("tab.fade.time", 0.2), {
+    self:Motion(ax.option:Get("tab.fade.time", 0.2), {
         Target = {alpha = 255},
         Easing = "OutQuad",
         Think = function(this)
@@ -90,7 +90,7 @@ function PANEL:Init()
 
     self.buttons.alpha = 0
     self.buttons:SetAlpha(0)
-    self.buttons:Motion(Parallax.Option:Get("tab.fade.time", 0.2), {
+    self.buttons:Motion(ax.option:Get("tab.fade.time", 0.2), {
         Target = {x = paddingTiny, y = paddingSmall, alpha = 255},
         Easing = "OutQuad",
         Think = function(vars)
@@ -110,7 +110,7 @@ function PANEL:Init()
 
     self.container.alpha = 0
     self.container:SetAlpha(0)
-    self.container:Motion(Parallax.Option:Get("tab.fade.time", 0.2), {
+    self.container:Motion(ax.option:Get("tab.fade.time", 0.2), {
         Target = {x = self:GetWide() - self.container:GetWide() - paddingTiny, y = paddingSmall, alpha = 255},
         Easing = "OutQuad",
         Think = function(this)
@@ -121,13 +121,13 @@ function PANEL:Init()
     local buttons = {}
     hook.Run("PopulateTabButtons", buttons)
     for k, v in SortedPairs(buttons) do
-        local button = buttonSizeable:Add("Parallax.Button")
+        local button = buttonSizeable:Add("ax.button")
         button:Dock(TOP)
         button:DockMargin(0, 8, 0, 8)
         button:SetText(k)
 
         button.DoClick = function()
-            Parallax.GUI.TabLast = k
+            ax.gui.TabLast = k
 
             self:Populate(v)
         end
@@ -147,8 +147,8 @@ function PANEL:Init()
         this:CenterVertical()
     end
 
-    if ( Parallax.GUI.TabLast and buttons[Parallax.GUI.TabLast] ) then
-        self:Populate(buttons[Parallax.GUI.TabLast])
+    if ( ax.gui.TabLast and buttons[ax.gui.TabLast] ) then
+        self:Populate(buttons[ax.gui.TabLast])
     else
         for k, v in SortedPairs(buttons) do
             self:Populate(v)
@@ -173,7 +173,7 @@ function PANEL:Populate(data)
         end
 
         if ( data.OnClose ) then
-            self:CallOnRemove("Parallax.Tab." .. data.name, function()
+            self:CallOnRemove("ax.tab." .. data.name, function()
                 data.OnClose()
             end)
         end
@@ -197,7 +197,7 @@ function PANEL:Close(callback)
     self:SetGradientTopTarget(0)
     self:SetGradientBottomTarget(0)
 
-    local fadeDuration = Parallax.Option:Get("tab.fade.time", 0.2)
+    local fadeDuration = ax.option:Get("tab.fade.time", 0.2)
 
     self:AlphaTo(0, fadeDuration, 0, function()
         self:Remove()
@@ -266,13 +266,13 @@ function PANEL:Paint(width, height)
     local ft = FrameTime()
     local time = ft * 5
 
-    local performanceAnimations = Parallax.Option:Get("performance.animations", true)
+    local performanceAnimations = ax.option:Get("performance.animations", true)
     if ( !performanceAnimations ) then
         time = 1
     end
 
     local fraction = self:GetAlpha() / 255
-    Parallax.Util:DrawBlur(self, 1 * fraction, 0.5 * fraction, 255 * fraction)
+    ax.util:DrawBlur(self, 1 * fraction, 0.5 * fraction, 255 * fraction)
 
     self:SetGradientLeft(Lerp(time, self:GetGradientLeft(), self:GetGradientLeftTarget()))
     self:SetGradientRight(Lerp(time, self:GetGradientRight(), self:GetGradientRightTarget()))
@@ -296,10 +296,10 @@ function PANEL:Paint(width, height)
     surface.DrawTexturedRect(0, height / 2, width, height / 2)
 end
 
-vgui.Register("Parallax.Tab", PANEL, "EditablePanel")
+vgui.Register("ax.tab", PANEL, "EditablePanel")
 
-if ( IsValid(Parallax.GUI.Tab) ) then
-    Parallax.GUI.Tab:Remove()
+if ( IsValid(ax.gui.Tab) ) then
+    ax.gui.Tab:Remove()
 end
 
-Parallax.GUI.TabLast = nil
+ax.gui.TabLast = nil

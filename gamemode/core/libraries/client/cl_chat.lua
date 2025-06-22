@@ -10,29 +10,29 @@
 ]]
 
 --- Chat library
--- @module Parallax.Chat
+-- @module ax.chat
 
-Parallax.Chat = Parallax.Chat or {}
-Parallax.Chat.messages = Parallax.Chat.messages or {}
+ax.chat = ax.chat or {}
+ax.chat.messages = ax.chat.messages or {}
 
 chat.AddTextInternal = chat.AddTextInternal or chat.AddText
 
 function chat.AddText(...)
-    if ( !IsValid(Parallax.GUI.Chatbox) ) then
+    if ( !IsValid(ax.gui.Chatbox) ) then
         chat.AddTextInternal(...)
         return
     end
 
     local arguments = {...}
-    local currentColor = Parallax.Color:Get("text")
-    local font = "Parallax.Chat"
-    local maxWidth = Parallax.GUI.Chatbox:GetWide() - 20
+    local currentColor = ax.color:Get("text")
+    local font = "ax.chat"
+    local maxWidth = ax.gui.Chatbox:GetWide() - 20
 
     local markupStr = ""
 
     for i = 1, #arguments do
         local v = arguments[i]
-        if ( Parallax.Util:CoerceType(Parallax.Types.color, v) ) then
+        if ( ax.util:CoerceType(ax.types.color, v) ) then
             currentColor = v
         elseif ( IsValid(v) and v:IsPlayer() ) then
             local c = team.GetColor(v:Team())
@@ -47,7 +47,7 @@ function chat.AddText(...)
 
     local rich = markup.Parse("<font=" .. font .. ">" .. markupStr .. "</font>", maxWidth)
 
-    local panel = Parallax.GUI.Chatbox.history:Add("EditablePanel")
+    local panel = ax.gui.Chatbox.history:Add("EditablePanel")
     panel:SetTall(rich:GetHeight())
     panel:Dock(TOP)
 
@@ -66,7 +66,7 @@ function chat.AddText(...)
     end
 
     function panel:Think()
-        if ( Parallax.GUI.Chatbox:GetAlpha() != 255 ) then
+        if ( ax.gui.Chatbox:GetAlpha() != 255 ) then
             local dt = CurTime() - self.created
             if ( dt >= 8 ) then
                 self.alpha = math.max(0, 1 - (dt - 8) / 4)
@@ -76,12 +76,12 @@ function chat.AddText(...)
         end
     end
 
-    table.insert(Parallax.Chat.messages, panel)
+    table.insert(ax.chat.messages, panel)
 
     timer.Simple(0.1, function()
         if ( !IsValid(panel) ) then return end
 
-        local scrollBar = Parallax.GUI.Chatbox.history:GetVBar()
+        local scrollBar = ax.gui.Chatbox.history:GetVBar()
         if ( scrollBar ) then
             scrollBar:AnimateTo(scrollBar.CanvasSize, 0.2, 0, 0.2)
         end

@@ -10,15 +10,15 @@
 ]]
 
 -- Item management library.
--- @module Parallax.Item
+-- @module ax.item
 
-Parallax.Item = Parallax.Item or {}
-Parallax.Item.base = Parallax.Item.base or {}
-Parallax.Item.Meta = Parallax.Item.Meta or {}
-Parallax.Item.Stored = Parallax.Item.Stored or {}
-Parallax.Item.Instances = Parallax.Item.Instances or {}
+ax.item = ax.item or {}
+ax.item.base = ax.item.base or {}
+ax.item.meta = ax.item.meta or {}
+ax.item.stored = ax.item.stored or {}
+ax.item.instances = ax.item.instances or {}
 
-function Parallax.Item:Load(path)
+function ax.item:Load(path)
     if ( !path or !isstring(path) ) then return end
 
     local files, _ = file.Find(path .. "/*.lua", "LUA")
@@ -27,7 +27,7 @@ function Parallax.Item:Load(path)
     for i = 1, #files do
         local v = files[i]
         local filePath = path .. "/" .. v
-        ITEM = setmetatable({}, self.Meta)
+        ITEM = setmetatable({}, self.meta)
 
         ITEM.UniqueID = string.StripExtension(v):sub(4)
 
@@ -38,7 +38,7 @@ function Parallax.Item:Load(path)
             self.base[ITEM.UniqueID] = ITEM
         end
 
-        -- If we are inside of a folder that is in the Parallax.Item.base table, we need to set the base of the item to the base of the folder.
+        -- If we are inside of a folder that is in the ax.item.base table, we need to set the base of the item to the base of the folder.
         -- This allows us to inherit from the base item.
         for k, _ in pairs(self.base) do
             if ( string.find(path, "/" .. k) and !ITEM.Base and !ITEM.IsBase ) then
@@ -67,13 +67,13 @@ function Parallax.Item:Load(path)
                 local mergeTable = table.Copy(baseTable)
                 ITEM = table.Merge(mergeTable, ITEM)
             else
-                Parallax.Util:PrintError("Item base '" .. ITEM.Base .. "' not found for item '" .. ITEM.UniqueID .. "'.")
+                ax.util:PrintError("Item base '" .. ITEM.Base .. "' not found for item '" .. ITEM.UniqueID .. "'.")
             end
         end
 
-        Parallax.Util:LoadFile(filePath, "shared")
+        ax.util:LoadFile(filePath, "shared")
 
-        self.Stored[ITEM.UniqueID] = ITEM
+        self.stored[ITEM.UniqueID] = ITEM
 
         if ( isfunction(ITEM.OnRegistered) ) then
             ITEM:OnRegistered()
@@ -84,7 +84,7 @@ function Parallax.Item:Load(path)
     end
 end
 
-function Parallax.Item:LoadFolder(path)
+function ax.item:LoadFolder(path)
     if ( !path or !isstring(path) ) then return end
 
     local _, folders = file.Find(path .. "/*", "LUA")
@@ -114,37 +114,37 @@ function Parallax.Item:LoadFolder(path)
     self:Load(path)
 end
 
-function Parallax.Item:Get(identifier)
+function ax.item:Get(identifier)
     if ( isstring(identifier) ) then
-        return self.Stored[identifier]
+        return self.stored[identifier]
     elseif ( isnumber(identifier) ) then
-        return self.Instances[identifier]
+        return self.instances[identifier]
     end
 
     return nil
 end
 
-function Parallax.Item:GetAll()
-    return self.Stored
+function ax.item:GetAll()
+    return self.stored
 end
 
-function Parallax.Item:GetInstances()
-    return self.Instances
+function ax.item:GetInstances()
+    return self.instances
 end
 
-function Parallax.Item:CreateObject(data)
+function ax.item:CreateObject(data)
     if ( !istable(data) ) then return end
 
     local id = tonumber(data.ID or data.id)
     local uniqueID = data.UniqueID or data.unique_id
     local characterID = tonumber(data.CharacterID or data.character_id or 0)
     local inventoryID = tonumber(data.InventoryID or data.inventory_id or 0)
-    local itemData = Parallax.Util:SafeParseTable(data.Data or data.data)
+    local itemData = ax.util:SafeParseTable(data.Data or data.data)
 
-    local base = self.Stored[uniqueID]
+    local base = self.stored[uniqueID]
     if ( !base ) then return end
 
-    local item = setmetatable({}, self.Meta)
+    local item = setmetatable({}, self.meta)
 
     for k, v in pairs(base) do
         item[k] = v
@@ -161,8 +161,8 @@ end
 
 -- client-side addition
 if ( CLIENT ) then
-    function Parallax.Item:Add(itemID, inventoryID, uniqueID, data, callback)
-        if ( !itemID or !uniqueID or !self.Stored[uniqueID] ) then return end
+    function ax.item:Add(itemID, inventoryID, uniqueID, data, callback)
+        if ( !itemID or !uniqueID or !self.stored[uniqueID] ) then return end
 
         data = data or {}
 
@@ -171,14 +171,14 @@ if ( CLIENT ) then
             UniqueID = uniqueID,
             Data = data,
             InventoryID = inventoryID,
-            CharacterID = Parallax.Client and Parallax.Client:GetCharacterID() or 0
+            CharacterID = ax.client and ax.client:GetCharacterID() or 0
         })
 
         if ( !item ) then return end
 
-        self.Instances[itemID] = item
+        self.instances[itemID] = item
 
-        local inventory = Parallax.Inventory:Get(inventoryID)
+        local inventory = ax.inventory:Get(inventoryID)
         if ( inventory ) then
             local items = inventory:GetItems()
             local found = false

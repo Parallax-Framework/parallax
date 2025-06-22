@@ -10,33 +10,33 @@
 ]]
 
 --- Localization library
--- @module Parallax.Localization
+-- @module ax.localization
 
-Parallax.Localization = {}
-Parallax.Localization.Stored = {}
+ax.localization = {}
+ax.localization.stored = {}
 
 --- Register a new language.
 -- @realm client
 -- @param language The language code.
 -- @param data The language data.
-function Parallax.Localization:Register(languageName, data)
+function ax.localization:Register(languageName, data)
     if ( !isstring(languageName) ) then
-        Parallax.Util:PrintError("Attempted to register a language without a language code!")
+        ax.util:PrintError("Attempted to register a language without a language code!")
         return false
     end
 
     if ( !istable(data) ) then
-        Parallax.Util:PrintError("Attempted to register a language without data!")
+        ax.util:PrintError("Attempted to register a language without data!")
         return false
     end
 
-    local stored = self.Stored[languageName]
+    local stored = self.stored[languageName]
     if ( !istable(stored) ) then
-        self.Stored[languageName] = {}
+        self.stored[languageName] = {}
     end
 
     for phrase, translation in pairs(data) do
-        self.Stored[languageName][phrase] = translation
+        self.stored[languageName][phrase] = translation
     end
 
     hook.Run("OnLanguageRegistered", languageName, data)
@@ -46,14 +46,14 @@ end
 -- @realm client
 -- @param language The language code.
 -- @return The language data.
-function Parallax.Localization:Get(languageName)
-    local stored = self.Stored[languageName]
+function ax.localization:Get(languageName)
+    local stored = self.stored[languageName]
     if ( !istable(stored) ) then
-        Parallax.Util:PrintError("Attempted to get localisation data that doesn't exist! Language: " .. languageName)
+        ax.util:PrintError("Attempted to get localisation data that doesn't exist! Language: " .. languageName)
         return false
     end
 
-    return self.Stored[languageName]
+    return self.stored[languageName]
 end
 
 --- Get a localized string.
@@ -63,7 +63,7 @@ end
 -- @return The localized string.
 
 local gmod_language = GetConVar("gmod_language")
-function Parallax.Localization:GetPhrase(key, ...)
+function ax.localization:GetPhrase(key, ...)
     local languageName = ( gmod_language and gmod_language:GetString() ) or "en"
 
     local data = self:Get(languageName)
@@ -99,11 +99,11 @@ function Parallax.Localization:GetPhrase(key, ...)
 end
 
 concommand.Add("ax_localization_check", function(client, command, arguments)
-    local enLocalisation = Parallax.Localization.Stored.en
+    local enLocalisation = ax.localization.stored.en
     local enCount = table.Count(enLocalisation)
-    Parallax.Util:Print("English Localisation has " .. enCount .. " phrases.")
+    ax.util:Print("English Localisation has " .. enCount .. " phrases.")
 
-    for languageName, data in pairs(Parallax.Localization.Stored) do
+    for languageName, data in pairs(ax.localization.stored) do
         if ( languageName == "en" ) then continue end
 
         local missingPhrases = {}
@@ -115,16 +115,16 @@ concommand.Add("ax_localization_check", function(client, command, arguments)
 
         local dataCount = table.Count(data)
         if ( dataCount != enCount ) then
-            Parallax.Util:Print("Language '" .. languageName .. "' has " .. ( dataCount > enCount and "more" or "less" ) .. " phrases (" .. dataCount .. ") than English! (" .. enCount .. ")")
+            ax.util:Print("Language '" .. languageName .. "' has " .. ( dataCount > enCount and "more" or "less" ) .. " phrases (" .. dataCount .. ") than English! (" .. enCount .. ")")
         end
 
         if ( missingPhrases[1] != nil ) then
-            Parallax.Util:PrintWarning("Language \"" .. languageName .. "\" is missing the following phrases: (" .. #missingPhrases .. ")")
+            ax.util:PrintWarning("Language \"" .. languageName .. "\" is missing the following phrases: (" .. #missingPhrases .. ")")
             for i = 1, #missingPhrases do
-                Parallax.Util:PrintWarning("\t\t" .. missingPhrases[i])
+                ax.util:PrintWarning("\t" .. missingPhrases[i])
             end
         end
     end
 end)
 
-Parallax.Localisation = Parallax.Localization
+ax.localisation = ax.localization -- tea

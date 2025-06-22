@@ -12,8 +12,7 @@
 DeriveGamemode("sandbox")
 GM.RefreshTimeStart = SysTime()
 
-Parallax = Parallax or {Util = {}, Meta = {}, Config = {}, Globals = {}}
-ax = ax or Parallax
+ax = ax or {util = {}, meta = {}, config = {}, globals = {}}
 
 AddCSLuaFile("cl_init.lua")
 
@@ -29,6 +28,7 @@ include("core/database.lua")
 
 AddCSLuaFile("core/boot.lua")
 include("core/boot.lua")
+
 
 local addons = engine.GetAddons()
 for i = 1, #addons do

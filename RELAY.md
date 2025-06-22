@@ -1,6 +1,6 @@
-# Parallax.Relay
+# ax.relay
 
-`Parallax.Relay` is a secure value sync system built around [SFS](https://github.com/Srlion/sfs). It lets you transmit values safely between server and clients across three scopes: global, per-player, and per-entity.
+`ax.relay` is a secure value sync system built around [SFS](https://github.com/Srlion/sfs). It lets you transmit values safely between server and clients across three scopes: global, per-player, and per-entity.
 
 ---
 
@@ -10,10 +10,10 @@
 
 ```lua
 -- SERVER
-Parallax.Relay:SetShared("weather", "storm")
+ax.relay:SetShared("weather", "storm")
 
 -- CLIENT
-print(Parallax.Relay:GetShared("weather", "clear")) -- Outputs: storm
+print(ax.relay:GetShared("weather", "clear")) -- Outputs: storm
 ```
 
 ---
@@ -46,9 +46,9 @@ print(someDoor:GetEntity("locked", false)) -- Outputs: true if synced
 ## 🌐 Internals
 
 - Uses net messages:
-  - `Parallax.Relay.shared`
-  - `Parallax.Relay.user`
-  - `Parallax.Relay.entity`
+  - `ax.relay.shared`
+  - `ax.relay.user`
+  - `ax.relay.entity`
 - Data is serialized, compressed, and encrypted via [SFS](https://github.com/Srlion/sfs).
 
 ---

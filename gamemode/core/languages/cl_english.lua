@@ -227,4 +227,4 @@ localization["tab.mainmenu"] = "Main Menu"
 localization["tab.options"] = "Options"
 localization["tab.scoreboard"] = "Scoreboard"
 
-Parallax.Localization:Register("en", localization)
+ax.localization:Register("en", localization)

@@ -13,7 +13,7 @@ AddCSLuaFile("cl_init.lua")
 AddCSLuaFile("shared.lua")
 include("shared.lua")
 
-Parallax.Net:Hook("hands.reset", function(client)
+ax.net:Hook("hands.reset", function(client)
     if ( client:OnCooldown("hands") ) then return end
     client:SetCooldown("hands", 0.5)
 
@@ -155,8 +155,8 @@ function SWEP:Pickup()
                 self.axCarry:SetAngles(grabAngle)
             else
                 local ang = self:GetOwner():GetAngles()
-                self.axCarry.StoredAng = LerpAngle(FrameTime() * 2, self.axCarry.StoredAng or ang, ang)
-                self.axCarry:SetAngles(self.axCarry.StoredAng)
+                self.axCarry.storedAng = LerpAngle(FrameTime() * 2, self.axCarry.storedAng or ang, ang)
+                self.axCarry:SetAngles(self.axCarry.storedAng)
             end
 
             self.axCarry:Spawn()
@@ -180,7 +180,7 @@ function SWEP:Pickup()
 
             holdingPhysicsObject:AddGameFlag(FVPHYSICS_PLAYER_HELD)
 
-            local maxForce = Parallax.Config:Get("hands.max.Force", 16500)
+            local maxForce = ax.config:Get("hands.max.Force", 16500)
             local vSize = self.axHoldingEntity:OBBMaxs() - self.axHoldingEntity:OBBMins()
             if ( self.axHoldingEntity:IsRagdoll() or math.max(vSize.x, vSize.y, vSize.z) > 60 ) then
                 self.axConstraint = constraint.Ballsocket(self.axCarry, self.axHoldingEntity, 0, bone, holdingPhysicsObject:WorldToLocal(pos), maxForce / 3, 0, 1)

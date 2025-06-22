@@ -26,14 +26,14 @@ function MODULE:PostEntitySetModel(ent, model)
 
     holdType = HOLDTYPE_TRANSLATOR[holdType] or holdType
 
-    local animTable = Parallax.Animations.Stored[Parallax.Animations:GetModelClass(model)]
+    local animTable = ax.animations.stored[ax.animations:GetModelClass(model)]
     if ( animTable and animTable[holdType] ) then
         clientTable.axAnimations = animTable[holdType]
     else
         clientTable.axAnimations = {}
     end
 
-    Parallax.Net:Start(nil, "animations.update", client, clientTable.axAnimations, holdType)
+    ax.net:Start(nil, "animations.update", client, clientTable.axAnimations, holdType)
 end
 
 function MODULE:PlayerSpawn(client)
@@ -49,14 +49,14 @@ function MODULE:PlayerSpawn(client)
 
     holdType = HOLDTYPE_TRANSLATOR[holdType] or holdType
 
-    local animTable = Parallax.Animations.Stored[Parallax.Animations:GetModelClass(client:GetModel())]
+    local animTable = ax.animations.stored[ax.animations:GetModelClass(client:GetModel())]
     if ( animTable and animTable[holdType] ) then
         clientTable.axAnimations = animTable[holdType]
     else
         clientTable.axAnimations = {}
     end
 
-    Parallax.Net:Start(nil, "animations.update", client, clientTable.axAnimations, holdType)
+    ax.net:Start(nil, "animations.update", client, clientTable.axAnimations, holdType)
 end
 
 function MODULE:PlayerSwitchWeapon(client, oldWeapon, newWeapon)
@@ -70,12 +70,12 @@ function MODULE:PlayerSwitchWeapon(client, oldWeapon, newWeapon)
 
     holdType = HOLDTYPE_TRANSLATOR[holdType] or holdType
 
-    local animTable = Parallax.Animations.Stored[Parallax.Animations:GetModelClass(client:GetModel())]
+    local animTable = ax.animations.stored[ax.animations:GetModelClass(client:GetModel())]
     if ( animTable and animTable[holdType] ) then
         clientTable.axAnimations = animTable[holdType]
     else
         clientTable.axAnimations = {}
     end
 
-    Parallax.Net:Start(nil, "animations.update", client, clientTable.axAnimations, holdType)
+    ax.net:Start(nil, "animations.update", client, clientTable.axAnimations, holdType)
 end

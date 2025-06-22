@@ -9,7 +9,7 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
-local INV = Parallax.Inventory.Meta
+local INV = ax.inventory.meta
 INV.__index = INV
 INV.ID = 0
 INV.Items = {}
@@ -57,7 +57,7 @@ function INV:GetMaxWeight()
     local override = hook.Run("GetInventoryMaxWeight", self)
     if ( isnumber(override) ) then return override end
 
-    return self.MaxWeight or Parallax.Config:Get("inventory.max.weight", 20)
+    return self.MaxWeight or ax.config:Get("inventory.max.weight", 20)
 end
 
 --- Gets the current weight of the inventory.
@@ -69,7 +69,7 @@ function INV:GetWeight()
     local itemCount = #items
     for i = 1, itemCount do
         local itemID = items[i]
-        local item = Parallax.Item:Get(itemID)
+        local item = ax.item:Get(itemID)
         if ( item ) then
             local itemWeight = item:GetWeight() or 0
             if ( itemWeight >= 0 ) then
@@ -99,20 +99,20 @@ end
 -- @tparam string uniqueID The unique ID of the item.
 -- @tparam table data Optional data associated with the item.
 function INV:AddItem(itemID, uniqueID, data)
-    Parallax.Inventory:AddItem(self:GetID(), itemID, uniqueID, data)
+    ax.inventory:AddItem(self:GetID(), itemID, uniqueID, data)
 end
 
 --- Removes an item from the inventory.
 -- @tparam number itemID The ID of the item to remove.
 function INV:RemoveItem(itemID)
-    Parallax.Inventory:RemoveItem(self:GetID(), itemID)
+    ax.inventory:RemoveItem(self:GetID(), itemID)
 end
 
 --- Gets the receivers of the inventory.
 -- @treturn table A table of players who can receive updates about the inventory.
 function INV:GetReceivers()
     local receivers = {}
-    local owner = Parallax.Character:GetPlayerByCharacter(self.CharacterID)
+    local owner = ax.character:GetPlayerByCharacter(self.CharacterID)
 
     if ( IsValid(owner) ) then
         table.insert(receivers, owner)
@@ -163,7 +163,7 @@ end
 --- Clears all receivers from the inventory.
 function INV:ClearReceivers()
     self.Receivers = {}
-    local owner = Parallax.Character:GetPlayerByCharacter(self.CharacterID)
+    local owner = ax.character:GetPlayerByCharacter(self.CharacterID)
 
     if ( IsValid(owner) ) then
         table.insert(self.Receivers, owner)
@@ -179,7 +179,7 @@ function INV:HasItem(itemUniqueID)
     local items = self:GetItems()
     for i = 1, #items do
         local itemID = items[i]
-        local item = Parallax.Item:Get(itemID)
+        local item = ax.item:Get(itemID)
         if ( item and item:GetUniqueID() == itemUniqueID ) then
             return item
         end
@@ -201,7 +201,7 @@ function INV:HasItemQuantity(itemUniqueID, quantity)
     local itemsCount = #items
     for i = 1, itemsCount do
         local itemID = items[i]
-        local item = Parallax.Item:Get(itemID)
+        local item = ax.item:Get(itemID)
         if ( item and item:GetUniqueID() == itemUniqueID ) then
             count = count + 1
         end

@@ -12,7 +12,7 @@
 local MODULE = MODULE
 
 function MODULE:SetupMove(client, mv, cmd)
-    if ( !Parallax.Config:Get("stamina", true) ) then return end
+    if ( !ax.config:Get("stamina", true) ) then return end
 
     local st = client:GetRelay("stamina")
     if ( istable(st) and st.current <= 0 ) then

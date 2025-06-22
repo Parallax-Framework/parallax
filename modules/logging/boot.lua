@@ -15,10 +15,10 @@ MODULE.Name = "Logging"
 MODULE.Description = "Adds some sort of logging system."
 MODULE.Author = "Riggs"
 
-Parallax.Config:Register("logging", {
+ax.config:Register("logging", {
     Name = "Logging",
     Description = "Enable or disable the logging system.",
-    Type = Parallax.Types.bool,
+    Type = ax.types.bool,
     Default = true
 })
 
@@ -53,4 +53,4 @@ function MODULE:Format(ent)
     return ent:GetClass() .. " [" .. ent:EntIndex() .. "][" .. tag .. "]"
 end
 
-Parallax.Log = MODULE
+ax.Log = MODULE

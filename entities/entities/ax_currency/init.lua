@@ -14,7 +14,7 @@ AddCSLuaFile("shared.lua")
 include("shared.lua")
 
 function ENT:Initialize()
-    self:SetModel(Model(Parallax.Config:Get("currency.model")))
+    self:SetModel(Model(ax.config:Get("currency.model")))
     self:SetSolid(SOLID_VPHYSICS)
     self:PhysicsInit(SOLID_VPHYSICS)
     self:SetUseType(SIMPLE_USE)
@@ -40,7 +40,7 @@ function ENT:Use(client)
 
     character:GiveMoney(amount)
 
-    Parallax.Net:Start(client, "currency.give", self, amount)
+    ax.net:Start(client, "currency.give", self, amount)
     hook.Run("PostPlayerTakeMoney", client, self, amount)
 
     SafeRemoveEntity(self)

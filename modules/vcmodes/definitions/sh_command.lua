@@ -11,12 +11,12 @@
 
 local MODULE = MODULE
 
-Parallax.Command:Register("ChangeVoiceMode", {
+ax.command:Register("ChangeVoiceMode", {
     Description = "Change your voice chat mode.",
     AdminOnly = false,
     Arguments = {
         {
-            Type = Parallax.Types.number,
+            Type = ax.types.number,
             ErrorMsg = "You must provide a valid player to take a flag from!"
         }
     },
