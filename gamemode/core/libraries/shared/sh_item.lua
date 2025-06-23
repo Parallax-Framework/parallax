@@ -14,8 +14,19 @@ ax.item.meta = ax.item.meta or {}
 ax.item.stored = ax.item.stored or {}
 ax.item.instances = ax.item.instances or {}
 
-function ax.item:Instance()
+function ax.item:Instance(itemToInstance)
     local object = {}
+
+    if ( isstring(itemToInstance) ) then
+        local instanceTable = ax.item:Get(itemToInstance)
+        if ( istable(instanceTable) ) then
+            for k, v in pairs(instanceTable) do
+                object[k] = v
+            end
+        end
+
+        return setmetatable(object, self.meta)
+    end
 
     local path = debug.getinfo(2, "S").source
     local uniqueID = string.GetFileFromFilename(path)
@@ -45,8 +56,13 @@ function ax.item:Instance()
             end
         end
 
-        if ( object.Base ) then
-            table.Merge(object, object.Base)
+        if ( istable(object.Base) ) then
+            for k, v in pairs(object.Base) do
+                if ( k != "UniqueID" and k != "Base" and k != "BaseClass" and k != "IsBase" ) then
+                    object[k] = v
+                end
+            end
+
             object.BaseClass = nil
             object.Base = nil
             object.IsBase = nil
@@ -69,7 +85,13 @@ function ax.item:Get(input)
 
     if ( isstring(input) ) then -- Search through the stored items by unique ID
         local item = self.stored[input]
-        if ( !item ) then
+        if ( !istable(item) ) then
+            for uniqueID, itemData in pairs(self.stored) do
+                if ( ax.util:FindString(uniqueID, input) or ax.util:FindString(itemData.Name, input) ) then
+                    return itemData
+                end
+            end
+
             ax.util:PrintError("Item with unique ID '" .. input .. "' not found.")
             return false
         end

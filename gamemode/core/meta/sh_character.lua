@@ -45,59 +45,23 @@ function CHAR:GetPlayer()
     return self.Player
 end
 
---- Gets the inventories associated with the character.
--- @treturn table A table of inventory data.
-function CHAR:GetInventories()
-    local parsed = {}
-
-    if ( isstring(self.Inventories) ) then
-        parsed = util.JSONToTable(self.Inventories) or {}
-        self.Inventories = parsed
-    elseif ( istable(self.Inventories) ) then
-        parsed = self.Inventories
-    end
-
-    return parsed
-end
-
---- Sets the inventories associated with the character.
--- @tparam table inventories The inventories to set.
-function CHAR:SetInventories(inventories)
-    self.Inventories = inventories
-end
-
 --- Gets a specific inventory by name.
 -- @tparam string name The name of the inventory (default: "Main").
 -- @treturn table|nil The inventory if found, or nil if not found.
-function CHAR:GetInventory(name)
-    name = name or "Main"
-
-    local inventories = ax.inventory:GetByCharacterID(self:GetID())
-    if ( !inventories or #inventories == 0 ) then return end
-
-    for inventoryID, inventory in pairs(inventories) do
-        if ( inventory:GetName() == name ) then
-            return inventory
-        end
-    end
-
-    return nil
+function CHAR:GetInventoryID()
+    return self.InventoryID
 end
 
---- Gets a specific inventory by ID.
--- @tparam number id The ID of the inventory.
--- @treturn table|nil The inventory if found, or nil if not found.
-function CHAR:GetInventoryByID(id)
-    local inventories = ax.inventory:GetByCharacterID(self:GetID())
-    if ( !inventories or #inventories == 0 ) then return end
-
-    for _, inventory in pairs(inventories) do
-        if ( inventory:GetID() == id ) then
-            return inventory
-        end
+--- Gets the character's inventory instance.
+-- @treturn table|nil The inventory instance if found, or nil if not found.
+function CHAR:GetInventory()
+    local invID = self:GetInventoryID()
+    if ( !isnumber(invID) or invID <= 0 ) then
+        ax.util:PrintError("Invalid inventory ID for character " .. self:GetID())
+        return nil
     end
 
-    return nil
+    return ax.inventory:GetInventory(invID)
 end
 
 --- Gives money to the character.
@@ -180,6 +144,15 @@ function CHAR:GetData(key, default)
     end
 
     return value
+end
+
+function CHAR:SetInventory(inventory)
+    if ( !inventory or !isnumber(inventory:GetID()) or inventory:GetID() <= 0 ) then
+        ax.util:PrintError("Invalid inventory provided to CHAR:SetInventory()")
+        return
+    end
+
+    self.InventoryID = inventory:GetID()
 end
 
 if ( SERVER ) then

@@ -43,7 +43,6 @@ function ax.inventory:Create(data)
     instance.Items = ax.util:SafeParseTable(data.items)
     instance.Data = ax.util:SafeParseTable(data.data)
     instance.MaxWeight = tonumber(data.max_weight) or 0
-    instance.CharacterID = tonumber(data.character_id) or 0
 
     self.instances[invID] = instance
 

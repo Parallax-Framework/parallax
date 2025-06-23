@@ -37,8 +37,10 @@ function PANEL:Init()
         draw.RoundedBox(0, 0, 0, width, height, Color(0, 0, 0, 150))
     end
 
-    local inventories = ax.inventory:GetByCharacterID(ax.client:GetCharacter():GetID())
-    if ( #inventories == 0 ) then
+    -- TODO: Bags or smth
+    /*
+    local inventories = ax.inventory:GetInventoryies(ax.client:GetCharacterID())
+    if ( inventories <= 0 ) then
         local label = self.buttons:Add("ax.text")
         label:Dock(FILL)
         label:SetFont("ax.large")
@@ -64,6 +66,7 @@ function PANEL:Init()
     if ( firstInventory ) then
         self:SetInventory(firstInventory:GetID())
     end
+    */
 end
 
 function PANEL:SetInventory(id)
