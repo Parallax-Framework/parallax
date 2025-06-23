@@ -163,12 +163,6 @@ function ax.inventory:CreateInventory(characterID, maxWeight, data, callback)
         return false
     end
 
-    local character = ax.character:Get(characterID)
-    if ( !character ) then
-        ax.util:PrintError("Character with ID " .. characterID .. " does not exist.")
-        return false
-    end
-
     if ( !maxWeight or maxWeight <= 0 ) then
         maxWeight = ax.config:Get("inventory.max.weight", 20)
     end
@@ -178,6 +172,7 @@ function ax.inventory:CreateInventory(characterID, maxWeight, data, callback)
     end
 
     ax.database:Insert("ax_inventories", {
+        character_id = characterID,
         max_weight = maxWeight,
         data = util.TableToJSON(data)
     }, function(inventoryID)
@@ -194,16 +189,24 @@ function ax.inventory:CreateInventory(characterID, maxWeight, data, callback)
             data = data
         })
 
-        charactey:SetInventory(inventory:GetID())
-
+        local inventories = {}
         ax.database:Select("ax_characters", nil, "id = " .. characterID, function(result)
             if ( !result or !result[1] ) then
                 ax.util:PrintError("No character found with ID " .. characterID)
                 return false
             end
 
+            local output = result[1]
+            inventories = util.JSONToTable(output.inventories) or {}
+
+            if ( !inventories ) then
+                inventories = {}
+            end
+
+            table.insert(inventories, inventoryID)
+
             ax.database:Update("ax_characters", {
-                inventory = inventoryID,
+                inventories = util.TableToJSON(inventories)
             }, "id = " .. characterID, function(success)
                 if ( !success ) then
                     ax.util:PrintError("Failed to update character inventories.")
@@ -235,24 +238,26 @@ function ax.inventory:LoadInventories(characterID)
         end
 
         local output = result[1]
-        local inventory = tonumber(output.inventory) or -1
-        if ( inventory <= 0 ) then
-            ax.util:PrintWarning("Character ID " .. characterID .. " has no inventory associated.")
+        local inventories = util.JSONToTable(output.inventories) or {}
+        if ( #inventories == 0 ) then
+            ax.util:PrintWarning("No inventories found for character ID " .. characterID)
             return false
         end
 
         ax.util:PrintSuccess("Loading inventories for character ID " .. characterID)
 
-        ax.database:Select("ax_inventories", nil, "id = " .. inventory, function(invResult)
-            if ( !invResult or !invResult[1] ) then
-                ax.util:PrintError("No inventory found with ID " .. inventory)
-                return false
-            end
+        for _, inventoryID in ipairs(inventories) do
+            ax.database:Select("ax_inventories", nil, "id = " .. inventoryID, function(invResult)
+                if ( !invResult or !invResult[1] ) then
+                    ax.util:PrintError("No inventory found with ID " .. inventoryID)
+                    return false
+                end
 
-            ax.inventory:Create(invResult[1])
+                ax.inventory:Create(invResult[1])
 
-            ax.util:PrintSuccess("Loaded inventory with ID " .. inventory .. " for character ID " .. characterID)
-        end)
+                ax.util:PrintSuccess("Loaded inventory with ID " .. inventoryID .. " for character ID " .. characterID)
+            end)
+        end
     end)
 end
 

@@ -15,6 +15,7 @@ INVENTORY.Data = INVENTORY.Data or {}
 INVENTORY.ID = INVENTORY.ID or 0
 INVENTORY.Items = INVENTORY.Items or {}
 INVENTORY.MaxWeight = INVENTORY.MaxWeight or 0
+INVENTORY.CharacterID = INVENTORY.CharacterID or 0
 
 function INVENTORY:__tostring()
     return "inventory[" .. self:GetID() .. "]"
@@ -43,38 +44,10 @@ function INVENTORY:GetWeight()
             weight = weight + item:GetWeight()
         else
             ax.util:PrintWarning("Invalid item found in inventory " .. self:GetID() .. ": " .. tostring(item))
-
         end
     end
 
     return weight
-end
-
-function INVENTORY:CanAddItem(item)
-    if ( !ax.util:IsItem(item) ) then
-        ax.util:PrintError("Invalid item provided to INVENTORY:CanAddItem()")
-        return false
-    end
-
-    return self:GetWeight() + item:GetWeight() <= self:GetMaxWeight()
-end
-
-function INVENTORY:AddItem(item, callback)
-    if ( !ax.util:IsItem(item) ) then
-        ax.util:PrintError("Invalid item provided to INVENTORY:AddItem()")
-        return false
-    end
-
-    table.insert(self.Items, item)
-    item:SetInventoryID(self:GetID())
-
-    -- TODO: database
-
-    if ( isfunction(callback) ) then
-        callback(item)
-    end
-
-    return true
 end
 
 function INVENTORY:GetItems()
