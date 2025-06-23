@@ -37,6 +37,9 @@ function MODULE:PreRenderThirdpersonView(client, pos, angles, fov)
     return true
 end
 
+local traceVector = Vector(4, 4, 4)
+local dataTraceVector = Vector(8, 8, 8)
+
 function MODULE:CalcView(client, pos, angles, fov)
     if ( !Parallax.Option:Get("thirdperson", false) or hook.Run("PreRenderThirdpersonView", client, pos, angles, fov) == false ) then
         fakePos = nil
@@ -72,8 +75,8 @@ function MODULE:CalcView(client, pos, angles, fov)
         endpos = pos - (angles:Forward() * Parallax.Option:Get("thirdperson.position.x", 0)) + (angles:Right() * Parallax.Option:Get("thirdperson.position.y", 0)) + (angles:Up() * Parallax.Option:Get("thirdperson.position.z", 0)),
         filter = client,
         mask = MASK_SHOT,
-        mins = Vector(-4, -4, -4),
-        maxs = Vector(4, 4, 4)
+        mins = -traceVector,
+        maxs = traceVector
     })
 
     local traceData = util.TraceHull({
@@ -81,8 +84,8 @@ function MODULE:CalcView(client, pos, angles, fov)
         endpos = pos + (angles:Forward() * 32768),
         filter = client,
         mask = MASK_SHOT,
-        mins = Vector(-8, -8, -8),
-        maxs = Vector(8, 8, 8)
+        mins = -dataTraceVector,
+        maxs = dataTraceVector
     })
 
     local shootPos = traceData.HitPos

@@ -25,6 +25,9 @@ function MODULE:CalcView(ply, pos, ang, fov)
     }
 end
 
+local offsetVector = Vector()
+local orangeColor = Color(255, 150, 0)
+
 function MODULE:PostDrawTranslucentRenderables()
     if ( !Parallax.Cinematic.Debug ) then return end
 
@@ -44,10 +47,12 @@ function MODULE:PostDrawTranslucentRenderables()
 
                 -- Layered line thickness by offsetting
                 for offset = -1, 1 do
+                    offsetVector.z = offset
+
                     render.DrawLine(
-                        last + Vector(0, 0, offset),
-                        pos + Vector(0, 0, offset),
-                        Color(255, 150, 0), true
+                        last + offsetVector,
+                        pos + offsetVector,
+                        orangeColor, true
                     )
                 end
 

@@ -450,6 +450,8 @@ function GM:HUDPaint()
     hook.Run("PostHUDPaint")
 end
 
+local textAngle = Angle(0, 0, 90)
+
 function GM:PostDrawTranslucentRenderables(bDrawingDepth, bDrawingSkybox)
     if ( !Parallax.Config:Get("debug.developer") ) then return end
     if ( !Parallax.Client:IsDeveloper() ) then return end
@@ -483,9 +485,11 @@ function GM:PostDrawTranslucentRenderables(bDrawingDepth, bDrawingSkybox)
 
     local scale = math.Clamp(0 + (distance / 1024), 0.1, 1)
 
+    textAngle.y = client:EyeAngles().y - 90
+
     -- Draw a background for the text
     cam.IgnoreZ(true)
-    cam.Start3D2D(center, Angle(0, client:EyeAngles().y - 90, 90), scale)
+    cam.Start3D2D(center, textAngle, scale)
         surface.SetDrawColor(0, 0, 0, 200)
         surface.DrawRect(x - padding, y - padding, textWidth + padding, textHeight + padding)
 

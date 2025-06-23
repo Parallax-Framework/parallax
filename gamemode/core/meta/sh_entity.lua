@@ -66,11 +66,13 @@ function ENTITY:ResetBodygroups()
     end
 end
 
+local zeroScale = Vector(1, 1, 1)
+
 --- Resets all bone manipulations this entity's model has to their defaults.
 -- @realm shared
 function ENTITY:ResetBoneMatrix()
     for i = 0, self:GetBoneCount() - 1 do
-        self:ManipulateBoneScale(i, Vector(1, 1, 1))
+        self:ManipulateBoneScale(i, zeroScale)
         self:ManipulateBoneAngles(i, angle_zero)
         self:ManipulateBonePosition(i, vector_origin)
     end

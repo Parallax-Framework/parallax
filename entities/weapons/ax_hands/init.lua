@@ -140,7 +140,7 @@ function SWEP:Pickup()
 
             local preferredAngles = hook.Run("GetPreferredCarryAngles", self.axHoldingEntity)
             if ( self:GetOwner():KeyDown(IN_RELOAD) and !preferredAngles ) then
-                preferredAngles = Angle()
+                preferredAngles = angle_zero
             end
 
             if ( preferredAngles ) then

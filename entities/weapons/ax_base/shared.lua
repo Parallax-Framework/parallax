@@ -50,8 +50,8 @@ SWEP.ViewModelFOV = 65
 SWEP.Sensitivity = 1
 
 SWEP.IronSightsEnabled = true
-SWEP.IronSightsPos = Vector(0, 0, 0)
-SWEP.IronSightsAng = Angle(0, 0, 0)
+SWEP.IronSightsPos = vector_origin
+SWEP.IronSightsAng = angle_zero
 SWEP.IronSightsFOV = 0.8
 SWEP.IronSightsSensitivity = 0.5
 SWEP.IronSightsToggle = false
@@ -131,6 +131,8 @@ function SWEP:CanPrimaryAttack()
     return true
 end
 
+local viewPunchAngle = Angle()
+
 function SWEP:PrimaryAttack()
     if ( CurTime() < self:GetNextPrimaryFire() ) then return end
 
@@ -148,13 +150,13 @@ function SWEP:PrimaryAttack()
 
     -- Client-side: visuals and effects
     if ( CLIENT and IsFirstTimePredicted() ) then
+        viewPunchAngle.x = -self.Primary.Recoil
+        viewPunchAngle.y = math.Rand(-self.Primary.Recoil, self.Primary.Recoil)
+        viewPunchAngle.z = math.Rand(-self.Primary.Recoil, self.Primary.Recoil)
+
         self:EmitSound(self.Primary.Sound)
         owner:MuzzleFlash()
-        owner:ViewPunch(Angle(
-            -self.Primary.Recoil,
-            math.Rand(-self.Primary.Recoil, self.Primary.Recoil),
-            math.Rand(-self.Primary.Recoil, self.Primary.Recoil)
-        ))
+        owner:ViewPunch(viewPunchAngle)
     end
 
     -- Shared or server-side: shooting logic
@@ -176,22 +178,31 @@ function SWEP:SecondaryAttack()
     -- Secondary attack logic can be implemented here
 end
 
+local spreadVector = Vector()
+
 function SWEP:ShootBullet(damage, num, cone)
     local owner = self:GetOwner()
     owner:LagCompensation(true)
+
+    spreadVector.x = cone
+    spreadVector.y = cone
 
     local bullet = {
         Num = num,
         Src = owner:GetShootPos(),
         Dir = owner:GetAimVector(),
-        Spread = Vector(cone, cone, 0),
+        Spread = spreadVector,
         Tracer = 1,
         Damage = damage,
         AmmoType = self.Primary.Ammo
     }
 
+    viewPunchAngle.x = -self.Primary.Recoil
+    viewPunchAngle.y = math.Rand(-self.Primary.Recoil, self.Primary.Recoil)
+    viewPunchAngle.z = math.Rand(-self.Primary.Recoil, self.Primary.Recoil)
+
     owner:FireBullets(bullet)
-    owner:ViewPunch(Angle(-self.Primary.Recoil, math.Rand(-self.Primary.Recoil, self.Primary.Recoil), math.Rand(-self.Primary.Recoil, self.Primary.Recoil)))
+    owner:ViewPunch(viewPunchAngle)
     owner:LagCompensation(false)
 end
 

@@ -354,7 +354,7 @@ if ( CLIENT ) then
 
                     local rootAttachment = rootAttachmentIndex > 0 and viewModel:GetAttachment(rootAttachmentIndex) or {
                         Pos = cameraAttachment.Pos,
-                        Ang = Angle(0, 0, 0)
+                        Ang = angle_zero
                     }
 
                     local offsetAngles = cameraAttachment.Ang - rootAttachment.Ang
