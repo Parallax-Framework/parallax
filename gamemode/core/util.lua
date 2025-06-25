@@ -1160,3 +1160,7 @@ end
 function ax.util:IsItem(object)
     return getmetatable(object) == ax.item.meta
 end
+
+function ax.util:IsInventory(object)
+    return getmetatable(object) == ax.inventory.meta
+end
