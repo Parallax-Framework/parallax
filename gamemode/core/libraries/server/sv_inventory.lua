@@ -108,12 +108,11 @@ function ax.inventory:GetItems(inventoryID, callback)
 
         PrintTable(result)
 
-        local itemList = {}
-        for _, item in ipairs(result) do
+        for i = 1, #result do
+            local item = result[i]
             item.data = util.JSONToTable(item.data) or {}
-            table.insert(itemList, item)
+            itemList[i] = item
         end
-
         ax.util:PrintSuccess("Items retrieved from inventory successfully.")
 
         if ( callback ) then
