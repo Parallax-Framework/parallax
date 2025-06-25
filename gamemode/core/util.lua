@@ -723,7 +723,10 @@ end
 -- @param path string Path to the folder containing tool files.
 -- @realm shared
 function ax.util:LoadTools(path)
-    for _, val in ipairs(file.Find(path .. "/*.lua", "LUA")) do
+    local files = file.Find(path .. "/*.lua", "LUA")
+    for i = 1, #files do
+        local val = files[i]
+
         local _, _, toolmode = string.find(val, "([%w_]*).lua")
         toolmode = toolmode:lower()
 
