@@ -25,15 +25,21 @@ function INVENTORY:GetID()
     return self.ID
 end
 
+function INVENTORY:GetCharacterID()
+    return self.CharacterID
+end
+
+function INVENTORY:GetCharacter()
+    return ax.character:Get(self.CharacterID)
+end
+
 function INVENTORY:GetMaxWeight()
     return self.MaxWeight
 end
 
 function INVENTORY:GetWeight()
     local weight = 0
-    local items = self:GetItems()
-    for i = 1, #items do
-        local item = items[i]
+    for _, item in ipairs(self:GetItems()) do
         if ( item ) then
             weight = weight + item:GetWeight()
         else
