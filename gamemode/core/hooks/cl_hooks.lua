@@ -333,17 +333,20 @@ function GM:HUDPaint()
         if ( character ) then
             local name = character:GetName()
             local charModel = character:GetModel()
+            -- TODO INV RE-WORK
+            /*
             local inventories = ax.inventory:GetByCharacterID(character:GetID()) or {}
             for k, v in pairs(inventories) do
                 inventories[k] = tostring(v)
             end
             local inventoryText = "Inventories: " .. table.concat(inventories, ", ")
+            */
 
             draw.SimpleText("[CHARACTER INFO]", "ax.developer", x, y + 16 * 7, green, TEXT_ALIGN_LEFT)
             draw.SimpleText("Character: " .. tostring(character), "ax.developer", x, y + 16 * 8, green, TEXT_ALIGN_LEFT)
             draw.SimpleText("Name: " .. name, "ax.developer", x, y + 16 * 9, green, TEXT_ALIGN_LEFT)
             draw.SimpleText("Model: " .. charModel, "ax.developer", x, y + 16 * 10, green, TEXT_ALIGN_LEFT)
-            draw.SimpleText(inventoryText, "ax.developer", x, y + 16 * 11, green, TEXT_ALIGN_LEFT)
+            --draw.SimpleText(inventoryText, "ax.developer", x, y + 16 * 11, green, TEXT_ALIGN_LEFT)
         end
     end
 

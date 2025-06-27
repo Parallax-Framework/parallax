@@ -215,6 +215,8 @@ ax.config:Register("inventory.max.weight", {
     Max = 100,
     Decimals = 2,
     OnChange = function(_, value)
+        -- TODO INV RE-WORK
+        /*
         for _, client in player.Iterator() do
             local character = client:GetCharacter()
             if ( character ) then
@@ -224,6 +226,7 @@ ax.config:Register("inventory.max.weight", {
                 end
             end
         end
+        */
     end
 })
 

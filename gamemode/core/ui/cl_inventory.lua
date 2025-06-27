@@ -37,6 +37,8 @@ function PANEL:Init()
         draw.RoundedBox(0, 0, 0, width, height, Color(0, 0, 0, 150))
     end
 
+    -- TODO INV RE-WORK
+    /*
     local inventories = ax.inventory:GetByCharacterID(ax.client:GetCharacter():GetID())
     if ( #inventories == 0 ) then
         local label = self.buttons:Add("ax.text")
@@ -64,8 +66,10 @@ function PANEL:Init()
     if ( firstInventory ) then
         self:SetInventory(firstInventory:GetID())
     end
+    */
 end
-
+-- TODO INV RE-WORK
+/*
 function PANEL:SetInventory(id)
     if ( !id ) then return end
 
@@ -187,6 +191,7 @@ function PANEL:IsValidItemID(id)
 
     return true
 end
+*/
 
 function PANEL:SetInfo(id)
     self.info:Clear()

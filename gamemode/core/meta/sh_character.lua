@@ -72,6 +72,8 @@ end
 function CHAR:GetInventory(name)
     name = name or "Main"
 
+    -- TODO INV RE-WORK
+    /*
     local inventories = ax.inventory:GetByCharacterID(self:GetID())
     if ( !inventories or #inventories == 0 ) then return end
 
@@ -80,6 +82,7 @@ function CHAR:GetInventory(name)
             return inventory
         end
     end
+    */
 
     return nil
 end
@@ -88,6 +91,8 @@ end
 -- @tparam number id The ID of the inventory.
 -- @treturn table|nil The inventory if found, or nil if not found.
 function CHAR:GetInventoryByID(id)
+    -- TODO INV RE-WORK
+    /*
     local inventories = ax.inventory:GetByCharacterID(self:GetID())
     if ( !inventories or #inventories == 0 ) then return end
 
@@ -96,6 +101,7 @@ function CHAR:GetInventoryByID(id)
             return inventory
         end
     end
+    */
 
     return nil
 end
