@@ -18,7 +18,7 @@ ax.chat.messages = ax.chat.messages or {}
 chat.AddTextInternal = chat.AddTextInternal or chat.AddText
 
 function chat.AddText(...)
-    if ( !IsValid(ax.gui.Chatbox) ) then
+    if ( !IsValid(ax.gui.chatbox) ) then
         chat.AddTextInternal(...)
         return
     end
@@ -26,7 +26,7 @@ function chat.AddText(...)
     local arguments = {...}
     local currentColor = ax.color:Get("text")
     local font = "ax.chat"
-    local maxWidth = ax.gui.Chatbox:GetWide() - 20
+    local maxWidth = ax.gui.chatbox:GetWide() - 20
 
     local markupStr = ""
 
@@ -47,7 +47,7 @@ function chat.AddText(...)
 
     local rich = markup.Parse("<font=" .. font .. ">" .. markupStr .. "</font>", maxWidth)
 
-    local panel = ax.gui.Chatbox.history:Add("EditablePanel")
+    local panel = ax.gui.chatbox.history:Add("EditablePanel")
     panel:SetTall(rich:GetHeight())
     panel:Dock(TOP)
 
@@ -66,7 +66,7 @@ function chat.AddText(...)
     end
 
     function panel:Think()
-        if ( ax.gui.Chatbox:GetAlpha() != 255 ) then
+        if ( ax.gui.chatbox:GetAlpha() != 255 ) then
             local dt = CurTime() - self.created
             if ( dt >= 8 ) then
                 self.alpha = math.max(0, 1 - (dt - 8) / 4)
@@ -76,12 +76,12 @@ function chat.AddText(...)
         end
     end
 
-    table.insert(ax.chat.messages, panel)
+    ax.chat.messages[#ax.chat.messages + 1] = panel
 
     timer.Simple(0.1, function()
         if ( !IsValid(panel) ) then return end
 
-        local scrollBar = ax.gui.Chatbox.history:GetVBar()
+        local scrollBar = ax.gui.chatbox.history:GetVBar()
         if ( scrollBar ) then
             scrollBar:AnimateTo(scrollBar.CanvasSize, 0.2, 0, 0.2)
         end

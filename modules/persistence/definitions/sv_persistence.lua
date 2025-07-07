@@ -15,7 +15,7 @@ local savedEntities = {}
 
 --- Saves all persistent entities and their custom data.
 function MODULE:SaveEntities()
-    ax.Log:Send("Saving persistent entities...")
+    ax.log:Send("Saving persistent entities...")
 
     savedEntities = {}    -- Iterate through all possible persistent entity classes and mark them
     -- as persistent. This is done to ensure that all entities are marked
@@ -35,44 +35,48 @@ function MODULE:SaveEntities()
     -- Not sure if this is a fast way to do this, but it works.
     -- If it becomes a problem, we can always optimize it later.
     for _, ent in ents.Iterator() do
-        if ( !IsValid(ent) or ent:IsPlayer() ) then continue end
+        if ( ent:IsPlayer() ) then continue end
 
-        local class = ent:GetClass()
         local relay = ent:GetRelay("persistent")
         if ( relay != true ) then continue end
+
+        local class = ent:GetClass()
 
         local methods = self.PersistentEntities[class]
         local data = methods and methods.Save and methods.Save(ent) or {}
 
-        table.insert(savedEntities, {
+        savedEntities[#savedEntities + 1] = {
             class = class,
             pos = ent:GetPos(),
             ang = ent:GetAngles(),
             mdl = ent:GetModel(),
             data = data
-        })
+        }
     end
 
-    ax.Log:Send("Saved " .. #savedEntities .. " persistent entities.")
-    ax.data:Set("persistent_entities", savedEntities)
+    if ( savedEntities[1] != nil ) then
+        ax.log:Send("Saved " .. #savedEntities .. " persistent entities.")
+        ax.data:Set("persistent_entities", savedEntities)
+    end
 end
 
 --- Loads all previously saved persistent entities.
 function MODULE:LoadEntities()
-    ax.Log:Send("Loading persistent entities...")
+    ax.log:Send("Loading persistent entities...")
 
     for k, v in pairs(savedEntities) do
         local entities = ents.FindByClass(v.class)
         local entityCount = #entities
         for i = 1, entityCount do
             local ent = entities[i]
-            if ( ent:GetRelay("persistent") != true ) then continue end
+            if ( IsValid(ent) and ent:GetRelay("persistent") != true ) then continue end
 
             SafeRemoveEntity(ent)
         end
     end
 
     savedEntities = ax.data:Get("persistent_entities", {})
+    if ( savedEntities[1] == nil ) then return end
 
     local entityCount = #savedEntities
     for i = 1, entityCount do
@@ -98,7 +102,7 @@ function MODULE:LoadEntities()
         ent:SetRelay("persistent", true)
     end
 
-    ax.Log:Send("Loaded " .. #savedEntities .. " persistent entities.")
+    ax.log:Send("Loaded " .. entityCount .. " persistent entities.")
 end
 
 concommand.Add("ax_persistence_save", function(client, cmd, arguments)
@@ -108,7 +112,7 @@ concommand.Add("ax_persistence_save", function(client, cmd, arguments)
     end
 
     MODULE:SaveEntities()
-    ax.Log:Send(ax.Log:Format(client) .. " manually saved all persistent entities.")
+    ax.log:Send(ax.log:Format(client) .. " manually saved all persistent entities.")
     client:Notify("Saved all persistent entities.")
 end)
 
@@ -119,7 +123,7 @@ concommand.Add("ax_persistence_load", function(client, cmd, arguments)
     end
 
     MODULE:LoadEntities()
-    ax.Log:Send(ax.Log:Format(client) .. " manually loaded all persistent entities.")
+    ax.log:Send(ax.log:Format(client) .. " manually loaded all persistent entities.")
     client:Notify("Loaded all persistent entities.")
 end)
 
@@ -138,7 +142,7 @@ concommand.Add("ax_persistence_mark", function(client, cmd, arguments)
     end
 
     ent:SetRelay("persistent", true)
-    ax.Log:Send(ax.Log:Format(client) .. " marked entity " .. tostring(ent) .. " as persistent.")
+    ax.log:Send(ax.log:Format(client) .. " marked entity " .. tostring(ent) .. " as persistent.")
     client:Notify("Marked entity " .. tostring(ent) .. " as persistent.")
 
     MODULE:SaveEntities()
@@ -159,7 +163,7 @@ concommand.Add("ax_persistence_unmark", function(client, cmd, arguments)
     end
 
     ent:SetRelay("persistent", false)
-    ax.Log:Send(ax.Log:Format(client) .. " unmarked entity " .. tostring(ent) .. " as persistent.")
+    ax.log:Send(ax.log:Format(client) .. " unmarked entity " .. tostring(ent) .. " as persistent.")
     client:Notify("Unmarked entity " .. tostring(ent) .. " as persistent.")
 
     MODULE:SaveEntities()

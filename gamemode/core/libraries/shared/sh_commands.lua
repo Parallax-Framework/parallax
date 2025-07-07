@@ -120,6 +120,10 @@ if ( CLIENT ) then
     -- @param ... The arguments of the command.
     function ax.command:Run(command, ...)
         local arguments = {...}
-        ax.net:Start("command.run", command, arguments)
+
+        net.Start("ax.command.run")
+            net.WriteString(command)
+            net.WriteTable(arguments)
+        net.SendToServer()
     end
 end

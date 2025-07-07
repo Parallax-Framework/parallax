@@ -83,7 +83,7 @@ function CLASS:GetPlayers()
     local players = {}
     for _, client in player.Iterator() do
         if ( client:Team() == self:GetFaction() and client:GetClass() == self:GetID() ) then
-            table.insert(players, client)
+            players[#players + 1] = client
         end
     end
 
@@ -162,7 +162,7 @@ function CLASS:Register()
 
     self.ID = #instances + 1
 
-    table.insert(instances, self)
+    instances[#instances + 1] = self
     ax.class.stored[self.UniqueID] = self
 
     hook.Run("PostClassRegistered", self)

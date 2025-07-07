@@ -73,7 +73,9 @@ function PANEL:Populate()
         button:SetTall(characterList:GetWide() / 8)
 
         button.DoClick = function()
-            ax.net:Start("character.load", v:GetID())
+            net.Start("ax.character.load")
+                net.WriteUInt(v:GetID(), 16)
+            net.SendToServer()
         end
 
         local banner = hook.Run("GetCharacterBanner", v:GetID()) or "gamepadui/hl2/chapter14"
@@ -189,7 +191,9 @@ function PANEL:PopulateDelete(characterID)
             "Are you REALLY sure you want to delete this character? This action cannot be undone.",
             "Delete Character",
             "Yes", function()
-                ax.net:Start("character.delete", characterID)
+                net.Start("ax.character.delete")
+                    net.WriteUInt(characterID, 16)
+                net.SendToServer()
             end,
             "No", function() end
         )

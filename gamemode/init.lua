@@ -29,7 +29,6 @@ include("core/database.lua")
 AddCSLuaFile("core/boot.lua")
 include("core/boot.lua")
 
-
 local addons = engine.GetAddons()
 for i = 1, #addons do
     local addon = addons[i]

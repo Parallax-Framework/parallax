@@ -35,11 +35,11 @@ AccessorFunc(PANEL, "anchorTime", "AnchorTime", FORCE_NUMBER)
 AccessorFunc(PANEL, "anchorEnabled", "AnchorEnabled", FORCE_BOOL)
 
 function PANEL:Init()
-    if ( IsValid(ax.gui.Tab) ) then
-        ax.gui.Tab:Remove()
+    if ( IsValid(ax.gui.tab) ) then
+        ax.gui.tab:Remove()
     end
 
-    ax.gui.Tab = self
+    ax.gui.tab = self
 
     local client = ax.client
     if ( IsValid(client) and client:IsTyping() ) then
@@ -127,7 +127,7 @@ function PANEL:Init()
         button:SetText(k)
 
         button.DoClick = function()
-            ax.gui.TabLast = k
+            ax.gui.tabLast = k
 
             self:Populate(v)
         end
@@ -147,8 +147,8 @@ function PANEL:Init()
         this:CenterVertical()
     end
 
-    if ( ax.gui.TabLast and buttons[ax.gui.TabLast] ) then
-        self:Populate(buttons[ax.gui.TabLast])
+    if ( ax.gui.tabLast and buttons[ax.gui.tabLast] ) then
+        self:Populate(buttons[ax.gui.tabLast])
     else
         for k, v in SortedPairs(buttons) do
             self:Populate(v)
@@ -298,8 +298,8 @@ end
 
 vgui.Register("ax.tab", PANEL, "EditablePanel")
 
-if ( IsValid(ax.gui.Tab) ) then
-    ax.gui.Tab:Remove()
+if ( IsValid(ax.gui.tab) ) then
+    ax.gui.tab:Remove()
 end
 
-ax.gui.TabLast = nil
+ax.gui.tabLast = nil

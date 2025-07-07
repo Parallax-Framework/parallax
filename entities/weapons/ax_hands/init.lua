@@ -13,7 +13,8 @@ AddCSLuaFile("cl_init.lua")
 AddCSLuaFile("shared.lua")
 include("shared.lua")
 
-ax.net:Hook("hands.reset", function(client)
+util.AddNetworkString("ax.hands.reset")
+net.Receive("ax.hands.reset", function(length, client)
     if ( client:OnCooldown("hands") ) then return end
     client:SetCooldown("hands", 0.5)
 
@@ -140,7 +141,7 @@ function SWEP:Pickup()
 
             local preferredAngles = hook.Run("GetPreferredCarryAngles", self.axHoldingEntity)
             if ( self:GetOwner():KeyDown(IN_RELOAD) and !preferredAngles ) then
-                preferredAngles = Angle()
+                preferredAngles = angle_zero
             end
 
             if ( preferredAngles ) then

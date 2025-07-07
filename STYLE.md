@@ -38,6 +38,89 @@ A strict Lua coding and documentation standard tailored for Garry's Mod and the 
 ### 5. Colon Method Notation
 - Always use colon (`:`) for methods expecting `self`.
 
+### 6. Comments
+- Use `--` for single-line comments.
+- Use `--[[ ... ]]` for multi-line comments.
+- Place comments above the line they describe, not at the end.
+
+### 7. Control Structures
+- Use `then` on the same line as `if`, `for`, and `while` statements.
+- Use `end` on a new line.
+- Example:
+  ```lua
+  if ( condition ) then
+      -- logic
+  else
+      -- alternative logic
+  end
+  ```
+
+### 8. Tables and Arrays
+- Use `:` for method calls on tables.
+- Use `[]` for array indexing.
+- Example:
+  ```lua
+  local myTable = { key = "value" }
+  print(myTable:key())
+  print(myTable["key"])
+  ```
+
+### 9. String Concatenation
+- Use `..` for string concatenation.
+- Example:
+  ```lua
+  local message = "Hello" .. " " .. "World"
+  ```
+
+### 10. Function Calls
+- Use parentheses for function calls, even if no arguments are passed.
+- Example:
+  ```lua
+  ax.util:PrintMessage(client, "Hello World")
+  ```
+
+### 11. Error Handling
+- Use `ErrorNoHalt` for critical errors.
+- Example:
+  ```lua
+  if ( !success ) then
+      ErrorNoHalt("An error occurred: " .. errorMessage)
+  end
+  ```
+
+### 12. Indentation
+- Use **4 spaces** for indentation.
+- Do not use tabs.
+- Ensure consistent indentation across all files.
+
+```lua
+function ax.util:ExampleFunction()
+    local value = 10
+    if ( value > 5 ) then
+        print("Value is greater than 5")
+    end
+end
+```
+
+```lua
+local value2 = 20
+local value1 = 10
+local unknown = 30
+if ( value1 < value2 ) then
+    print("Value1 is less than Value2")
+end
+
+if ( unknown > value2 ) then
+    print("Unknown is greater than Value2")
+else
+    print("Unknown is not greater than Value2")
+end
+```
+
+### 13. File Naming
+- Use lowercase with underscores for file names (e.g., `chat_util.lua`).
+- Use descriptive names that reflect the file's purpose.
+
 ---
 
 ## ✅ Documentation Rules (LDOC)

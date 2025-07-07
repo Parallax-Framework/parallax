@@ -14,11 +14,11 @@ local PANEL = {}
 DEFINE_BASECLASS("EditablePanel")
 
 function PANEL:Init()
-    if ( IsValid(ax.gui.Chatbox) ) then
-        ax.gui.Chatbox:Remove()
+    if ( IsValid(ax.gui.chatbox) ) then
+        ax.gui.chatbox:Remove()
     end
 
-    ax.gui.Chatbox = self
+    ax.gui.chatbox = self
 
     self:SetSize(hook.Run("GetChatboxSize"))
     self:SetPos(hook.Run("GetChatboxPos"))
@@ -70,7 +70,7 @@ function PANEL:Init()
         self:SetVisible(false)
     end
 
-    self.entry.OnTextChanged = function(this)
+    self.entry.OnChange = function(this)
         local chatType = "IC"
         local text = this:GetValue()
         if ( string.sub(text, 1, 3) == ".//" ) then
@@ -171,7 +171,7 @@ function PANEL:PopulateRecommendations(text)
 
     for key, command in SortedPairsByMemberValue(ax.command:GetAll(), "UniqueID") do
         if ( ax.util:FindString(command.UniqueID, text, true) or ( command.Prefixes and ax.util:FindInTable(command.Prefixes, text, true) ) ) then
-            table.insert(self.recommendations.list, command)
+            self.recommendations.list[#self.recommendations.list + 1] = command
         end
     end
 
@@ -277,7 +277,7 @@ function PANEL:CycleRecommendations()
     self.chatType:SetText(data.UniqueID, true, true)
     self.chatType:RestartTyping()
 
-    surface.PlaySound("ax.button.Enter")
+    surface.PlaySound("ax.button.enter")
 end
 
 function PANEL:SetVisible(visible)
@@ -327,8 +327,8 @@ end
 
 vgui.Register("ax.chatbox", PANEL, "EditablePanel")
 
-if ( IsValid(ax.gui.Chatbox) ) then
-    ax.gui.Chatbox:Remove()
+if ( IsValid(ax.gui.chatbox) ) then
+    ax.gui.chatbox:Remove()
 
     vgui.Create("ax.chatbox")
 end

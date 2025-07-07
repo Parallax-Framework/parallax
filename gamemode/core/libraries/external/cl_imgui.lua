@@ -514,4 +514,4 @@ function imgui.Button(x, y, w, h, paint, callbackPress, callbackHover, callbackU
     return true
 end
 
-ax.Imgui = imgui
+ax.imgui = imgui

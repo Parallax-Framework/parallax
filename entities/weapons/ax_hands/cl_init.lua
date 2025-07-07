@@ -18,7 +18,8 @@ function SWEP:CheckYaw()
         if ( client:OnCooldown("hands") ) then return end
         client:SetCooldown("hands", 0.5)
 
-        ax.net:Start("hands.reset")
+        net.Start("ax.hands.reset")
+        net.SendToServer()
     end
 end
 

@@ -11,8 +11,11 @@
 
 local MODULE = MODULE
 
-ax.net:Hook("persistence.mark", function(client, ent)
-    if ( !IsValid(client) or !client:IsAdmin() ) then return end
+util.AddNetworkString("ax.persistence.mark")
+net.Receive("ax.persistence.mark", function()
+    local client = ax.client
+    local ent = net.ReadEntity()
+    if ( !IsValid(client) or !client:IsAdmin() ) then return end -- TODO: Use CAMI
 
     if ( ent:GetRelay("persistent") == true ) then
         client:Notify("This entity is already marked for persistence.")
@@ -20,13 +23,16 @@ ax.net:Hook("persistence.mark", function(client, ent)
     end
 
     ent:SetRelay("persistent", true)
-    ax.Log:Send(ax.Log:Format(client) .. " marked entity " .. tostring(ent) .. " as persistent.")
+    ax.log:Send(ax.log:Format(client) .. " marked entity " .. tostring(ent) .. " as persistent.")
     client:Notify("Marked entity " .. tostring(ent) .. " as persistent.")
 
     MODULE:SaveEntities()
 end)
 
-ax.net:Hook("persistence.unmark", function(client, ent)
+util.AddNetworkString("ax.persistence.unmark")
+net.Receive("ax.persistence.unmark", function()
+    local client = ax.client
+    local ent = net.ReadEntity()
     if ( !IsValid(client) or !client:IsAdmin() ) then return end
 
     if ( ent:GetRelay("persistent") != true ) then
@@ -35,7 +41,7 @@ ax.net:Hook("persistence.unmark", function(client, ent)
     end
 
     ent:SetRelay("persistent", false)
-    ax.Log:Send(ax.Log:Format(client) .. " unmarked entity " .. tostring(ent) .. " as persistent.")
+    ax.log:Send(ax.log:Format(client) .. " unmarked entity " .. tostring(ent) .. " as persistent.")
     client:Notify("Unmarked entity " .. tostring(ent) .. " as persistent.")
 
     MODULE:SaveEntities()

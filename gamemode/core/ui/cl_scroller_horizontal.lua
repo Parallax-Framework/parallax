@@ -97,7 +97,7 @@ function PANEL:MakeDroppable(name, allowCopy)
 end
 
 function PANEL:AddPanel(panel)
-    table.insert(self.Panels, panel)
+    self.Panels[#self.Panels + 1] = panel
     panel:SetParent(self.pnlCanvas)
     self:InvalidateLayout(true)
 end

@@ -33,7 +33,11 @@ function MODULE:PostEntitySetModel(ent, model)
         clientTable.axAnimations = {}
     end
 
-    ax.net:Start(nil, "animations.update", client, clientTable.axAnimations, holdType)
+    net.Start("ax.animations.update")
+        net.WritePlayer(client)
+        net.WriteTable(clientTable.axAnimations)
+        net.WriteString(holdType)
+    net.Broadcast()
 end
 
 function MODULE:PlayerSpawn(client)
@@ -56,7 +60,11 @@ function MODULE:PlayerSpawn(client)
         clientTable.axAnimations = {}
     end
 
-    ax.net:Start(nil, "animations.update", client, clientTable.axAnimations, holdType)
+    net.Start("ax.animations.update")
+        net.WritePlayer(client)
+        net.WriteTable(clientTable.axAnimations)
+        net.WriteString(holdType)
+    net.Broadcast()
 end
 
 function MODULE:PlayerSwitchWeapon(client, oldWeapon, newWeapon)
@@ -77,5 +85,9 @@ function MODULE:PlayerSwitchWeapon(client, oldWeapon, newWeapon)
         clientTable.axAnimations = {}
     end
 
-    ax.net:Start(nil, "animations.update", client, clientTable.axAnimations, holdType)
+    net.Start("ax.animations.update")
+        net.WritePlayer(client)
+        net.WriteTable(clientTable.axAnimations)
+        net.WriteString(holdType)
+    net.Broadcast()
 end

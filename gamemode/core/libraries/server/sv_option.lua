@@ -30,7 +30,10 @@ function ax.option:Set(client, key, value, bNoNetworking)
 
     if ( stored.NoNetworking != true ) then
         if ( !bNoNetworking ) then
-            ax.net:Start(client, "option.set", key, value)
+            net.Start("ax.option.set")
+                net.WriteString(key)
+                net.WriteType(value)
+            net.Send(client)
         end
 
         local index = client:EntIndex()

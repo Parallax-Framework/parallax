@@ -26,12 +26,14 @@ function player.GetBySteamID64(steamID64)
     local ent = playerSteamID64[steamID64]
     if ( !IsValid(ent) ) then
         local client = intern_getBySteamID64(steamID64)
-        playerSteamID64[steamID64] = client
+        if ( IsValid(client) ) then
+            playerSteamID64[steamID64] = client
+        end
 
-        return client or false
+        return client or NULL
     end
 
-    return ent or false
+    return ent or NULL
 end
 
 function player.GetBySteamID(steamID)
@@ -40,22 +42,26 @@ function player.GetBySteamID(steamID)
     local ent = playerSteamID[steamID]
     if ( !IsValid(ent) ) then
         local client = intern_getBySteamID(steamID)
-        playerSteamID[steamID] = client
+        if ( IsValid(client) ) then
+            playerSteamID[steamID] = client
+        end
 
-        return client or false
+        return client or NULL
     end
 
-    return ent or false
+    return ent or NULL
 end
 
 function player.GetByAccountID(accountID)
     local ent = playerAccountID[accountID]
     if ( !IsValid(ent) ) then
         local client = intern_getByAccountID(accountID)
-        playerAccountID[accountID] = client
+        if ( IsValid(client) ) then
+            playerAccountID[accountID] = client
+        end
 
-        return client or false
+        return client or NULL
     end
 
-    return ent or false
+    return ent or NULL
 end

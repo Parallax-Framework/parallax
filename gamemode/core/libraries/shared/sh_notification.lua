@@ -31,7 +31,11 @@ function ax.notification:Send(client, text, iType, duration)
     duration = duration or 3
 
     if ( SERVER ) then
-        ax.net:Start(client, "notification.send", text, iType, duration)
+        net.Start("ax.notification.send")
+            net.WriteString(text)
+            net.WriteUInt(iType, 8)
+            net.WriteUInt(duration, 16)
+        net.Send(client)
     else
         notification.AddLegacy(text, iType, duration)
     end

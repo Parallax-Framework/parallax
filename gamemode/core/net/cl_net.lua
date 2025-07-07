@@ -13,7 +13,9 @@
     Character Networking
 -----------------------------------------------------------------------------]]--
 
-ax.net:Hook("character.cache.all", function(data)
+net.Receive("ax.character.cache.all", function(len)
+    local data = net.ReadTable()
+
     if ( !istable(data) ) then
         ax.util:PrintError("Invalid data received for character cache!")
         return
@@ -47,7 +49,8 @@ ax.net:Hook("character.cache.all", function(data)
     ax.client:Notify("All characters cached!", NOTIFY_HINT)
 end)
 
-ax.net:Hook("character.cache", function(data)
+net.Receive("ax.character.cache", function()
+    local data = net.ReadTable()
     if ( !istable(data) ) then return end
 
     local client = ax.client
@@ -66,17 +69,19 @@ ax.net:Hook("character.cache", function(data)
     ax.client:Notify("Character " .. characterID .. " cached!", NOTIFY_HINT)
 end)
 
-ax.net:Hook("character.create.failed", function(reason)
+net.Receive("ax.character.create.failed", function(len)
+    local reason = net.ReadString()
     if ( !reason ) then return end
 
     ax.client:Notify(reason)
 end)
 
-ax.net:Hook("character.create", function()
+net.Receive("ax.character.create", function(len)
     -- Do something here...
 end)
 
-ax.net:Hook("character.delete", function(characterID)
+net.Receive("ax.character.delete", function(len)
+    local characterID = net.ReadUInt(16)
     if ( !isnumber(characterID) ) then return end
 
     local character = ax.character.stored[characterID]
@@ -99,13 +104,15 @@ ax.net:Hook("character.delete", function(characterID)
     ax.notification:Add("Character " .. characterID .. " deleted!", 5, ax.config:Get("color.success"))
 end)
 
-ax.net:Hook("character.load.failed", function(reason)
+net.Receive("ax.character.load.failed", function(len)
+    local reason = net.ReadString()
     if ( !reason ) then return end
 
     ax.client:Notify(reason)
 end)
 
-ax.net:Hook("character.load", function(characterID)
+net.Receive("ax.character.load", function(len)
+    local characterID = net.ReadUInt(16)
     if ( characterID == 0 ) then return end
 
     if ( IsValid(ax.gui.mainmenu) ) then
@@ -133,7 +140,11 @@ ax.net:Hook("character.load", function(characterID)
     hook.Run("PlayerLoadedCharacter", character, currentCharacter)
 end)
 
-ax.net:Hook("character.variable.set", function(characterID, key, value)
+net.Receive("ax.character.variable.set", function(len)
+    local characterID = net.ReadUInt(16)
+    local key = net.ReadString()
+    local value = net.ReadType()
+
     if ( !characterID or !key or !value ) then return end
 
     local character = ax.character:Get(characterID)
@@ -146,7 +157,8 @@ end)
     Chat Networking
 -----------------------------------------------------------------------------]]--
 
-ax.net:Hook("chat.send", function(data)
+net.Receive("ax.chat.send", function(len)
+    local data = net.ReadTable()
     if ( !istable(data) ) then return end
 
     local speaker = data.Speaker and Entity(data.Speaker) or nil
@@ -159,7 +171,8 @@ ax.net:Hook("chat.send", function(data)
     end
 end)
 
-ax.net:Hook("chat.text", function(data)
+net.Receive("ax.chat.text", function(len)
+    local data = net.ReadTable()
     if ( !istable(data) ) then return end
 
     chat.AddText(unpack(data))
@@ -169,7 +182,8 @@ end)
     Config Networking
 -----------------------------------------------------------------------------]]--
 
-ax.net:Hook("config.sync", function(data)
+net.Receive("ax.config.sync", function(len)
+    local data = net.ReadTable()
     if ( !istable(data) ) then return end
 
     for key, value in pairs(data) do
@@ -177,7 +191,9 @@ ax.net:Hook("config.sync", function(data)
     end
 end)
 
-ax.net:Hook("config.set", function(key, value)
+net.Receive("ax.config.set", function(len)
+    local key = net.ReadString()
+    local value = net.ReadType()
     ax.config:Set(key, value)
 end)
 
@@ -185,7 +201,9 @@ end)
     Option Networking
 -----------------------------------------------------------------------------]]--
 
-ax.net:Hook("option.set", function(key, value)
+net.Receive("ax.option.set", function(len)
+    local key = net.ReadString()
+    local value = net.ReadType()
     local stored = ax.option.stored[key]
     if ( !istable(stored) ) then return end
 
@@ -196,7 +214,8 @@ end)
     Inventory Networking
 -----------------------------------------------------------------------------]]--
 
-ax.net:Hook("inventory.cache", function(data)
+net.Receive("ax.inventory.cache", function(len)
+    local data = net.ReadTable()
     if ( !istable(data) ) then return end
 
     local inventory = ax.inventory:CreateObject(data)
@@ -224,7 +243,11 @@ ax.net:Hook("inventory.cache", function(data)
     end
 end)
 
-ax.net:Hook("inventory.item.add", function(inventoryID, itemID, uniqueID, data)
+net.Receive("ax.inventory.item.add", function(len)
+    local inventoryID = net.ReadUInt(16)
+    local itemID = net.ReadUInt(16)
+    local uniqueID = net.ReadString()
+    local data = net.ReadTable()
     local item = ax.item:Add(itemID, inventoryID, uniqueID, data)
     if ( !item ) then return end
 
@@ -245,7 +268,9 @@ ax.net:Hook("inventory.item.add", function(inventoryID, itemID, uniqueID, data)
     end
 end)
 
-ax.net:Hook("inventory.item.remove", function(inventoryID, itemID)
+net.Receive("ax.inventory.item.remove", function(len)
+    local inventoryID = net.ReadUInt(16)
+    local itemID = net.ReadUInt(16)
     local inventory = ax.inventory:Get(inventoryID)
     if ( !inventory ) then return end
 
@@ -268,14 +293,16 @@ ax.net:Hook("inventory.item.remove", function(inventoryID, itemID)
     end
 end)
 
-ax.net:Hook("inventory.refresh", function(inventoryID)
+net.Receive("ax.inventory.refresh", function(len)
+    local inventoryID = net.ReadUInt(16)
     local panel = ax.gui.Inventory
     if ( IsValid(panel) ) then
         panel:SetInventory(inventoryID)
     end
 end)
 
-ax.net:Hook("inventory.register", function(data)
+net.Receive("ax.inventory.register", function(len)
+    local data = net.ReadTable()
     if ( !istable(data) ) then return end
 
     local inventory = ax.inventory:CreateObject(data)
@@ -288,11 +315,16 @@ end)
     Item Networking
 -----------------------------------------------------------------------------]]--
 
-ax.net:Hook("item.add", function(itemID, inventoryID, uniqueID, data)
+net.Receive("ax.item.add", function(len)
+    local itemID = net.ReadUInt(16)
+    local inventoryID = net.ReadUInt(16)
+    local uniqueID = net.ReadString()
+    local data = net.ReadTable()
     ax.item:Add(itemID, inventoryID, uniqueID, data)
 end)
 
-ax.net:Hook("item.cache", function(data)
+net.Receive("ax.item.cache", function(len)
+    local data = net.ReadTable()
     if ( !istable(data) ) then return end
 
     for k, v in pairs(data) do
@@ -307,14 +339,19 @@ ax.net:Hook("item.cache", function(data)
     end
 end)
 
-ax.net:Hook("item.data", function(itemID, key, value)
+net.Receive("ax.item.data", function(len)
+    local itemID = net.ReadUInt(16)
+    local key = net.ReadString()
+    local value = net.ReadType()
     local item = ax.item:Get(itemID)
     if ( !item ) then return end
 
     item:SetData(key, value)
 end)
 
-ax.net:Hook("item.entity", function(entity, itemID)
+net.Receive("ax.item.entity", function(len)
+    local entity = net.ReadEntity()
+    local itemID = net.ReadUInt(16)
     if ( !IsValid(entity) ) then return end
 
     local item = ax.item:Get(itemID)
@@ -327,7 +364,9 @@ end)
     Currency Networking
 -----------------------------------------------------------------------------]]--
 
-ax.net:Hook("currency.give", function(entity, amount)
+net.Receive("ax.currency.give", function(len)
+    local entity = net.ReadEntity()
+    local amount = net.ReadUInt(32)
     if ( !IsValid(entity) ) then return end
 
     local phrase = ax.localization:GetPhrase("currency.pickup")
@@ -340,36 +379,44 @@ end)
     Miscellaneous Networking
 -----------------------------------------------------------------------------]]--
 
-ax.net:Hook("database.save", function(data)
+net.Receive("ax.database.save", function(len)
+    local data = net.ReadTable()
     ax.client:GetTable().axDatabase = data
 end)
 
-ax.net:Hook("gesture.play", function(client, name)
+net.Receive("ax.gesture.play", function(len)
+    local client = net.ReadPlayer()
+    local name = net.ReadString()
     if ( !IsValid(client) ) then return end
 
     client:AddVCDSequenceToGestureSlot(GESTURE_SLOT_CUSTOM, client:LookupSequence(name), 0, true)
 end)
 
-ax.net:Hook("splash", function()
+net.Receive("ax.splash", function(len)
     ax.gui.splash = vgui.Create("ax.splash")
 end)
 
-ax.net:Hook("mainmenu", function()
+net.Receive("ax.mainmenu", function(len)
     ax.gui.mainmenu = vgui.Create("ax.mainmenu")
 end)
 
-ax.net:Hook("notification.send", function(text, type, duration)
+net.Receive("ax.notification.send", function(len)
+    local text = net.ReadString()
+    local type = net.ReadUInt(8)
+    local duration = net.ReadUInt(16)
     if ( !text ) then return end
 
     notification.AddLegacy(text, type, duration)
 end)
 
-ax.net:Hook("flag.list", function(target, hasFlags)
+net.Receive("ax.flag.list", function(len)
+    local target = net.ReadPlayer()
+    local hasFlags = net.ReadTable()
     if ( !IsValid(target) or !target:IsPlayer() ) then return end
 
     local query = {}
-    table.insert(query, "Select which flag you want to give to " .. target:Name() .. ".")
-    table.insert(query, "Flag List")
+    query[#query + 1] = "Select which flag you want to give to " .. target:Name() .. "."
+    query[#query + 1] = "Flag List"
 
     local flags = ax.flag:GetAll()
     local availableFlags = {}
@@ -377,12 +424,12 @@ ax.net:Hook("flag.list", function(target, hasFlags)
         if ( !isstring(key) or #key != 1 ) then continue end
         if ( hasFlags[key] ) then continue end
 
-        table.insert(query, key)
-        table.insert(query, function()
+        query[#query + 1] = key
+        query[#query + 1] = function()
             ax.command:Run("CharGiveFlags", target, key)
-        end)
+        end
 
-        table.insert(availableFlags, key)
+        availableFlags[#availableFlags + 1] = key
     end
 
     if ( availableFlags[1] == nil ) then
@@ -390,7 +437,7 @@ ax.net:Hook("flag.list", function(target, hasFlags)
         return
     end
 
-    table.insert(query, "Cancel")
+    query[#query + 1] = "Cancel"
 
     Derma_Query(unpack(query))
 end)
@@ -432,12 +479,12 @@ local function ConvertCaptionToChatArguments(caption)
         text = string.gsub(text, "<cr>", "\n")
         text = string.match(text, "^%s*(.-)%s*$")
 
-        table.insert(segments, {
+        segments[#segments + 1] = {
             len   = tonumber(len_s),
             color = Color(R, G, B),
             text  = text,
             delay = tonumber(delay_s),
-        })
+        }
 
         pos = next_pos
     end
@@ -456,12 +503,12 @@ local function ConvertCaptionToChatArguments(caption)
             :gsub("<cr>", "\n")
             :match("^%s*(.-)%s*$")
 
-        table.insert(segments, {
+        segments[#segments + 1] = {
             len   = tonumber(len_s),
             color = Color(R, G, B),
             text  = text,
             delay = nil,
-        })
+        }
     end
 
     return segments
@@ -491,7 +538,8 @@ local function PrintQueue(data, idx)
 end
 
 -- hook becomes trivial:
-ax.net:Hook("caption", function(arguments)
+net.Receive("ax.caption", function(len)
+    local arguments = net.ReadString()
     if ( !isstring(arguments) or arguments == "" ) then
         ax.util:PrintError("Invalid arguments for caption!")
         return

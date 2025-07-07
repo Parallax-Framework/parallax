@@ -77,7 +77,7 @@ function ax.notification:Add(text, duration, bgColor)
     end
 
     -- Insert at beginning
-    table.insert(self.stored, 1, panel)
+    table.insert(self.stored, 1, panel) -- keeping it as table.insert, so all other indexes are shifted correctly
 
     -- Animate all notifications to new positions
     self:RepositionAll()

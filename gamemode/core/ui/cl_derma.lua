@@ -64,7 +64,7 @@ function Derma_Message(text, title, buttonText)
         end
     end
 
-    table.insert(ax.Derma.open, frame)
+    ax.Derma.open[#ax.Derma.open + 1] = frame
 
     local label = frame:Add("ax.text")
     label:Dock(TOP)
@@ -123,7 +123,7 @@ function Derma_Query(text, title, ...)
         end
     end
 
-    table.insert(ax.Derma.open, frame)
+    ax.Derma.open[#ax.Derma.open + 1] = frame
 
     local label = frame:Add("ax.text")
     label:Dock(TOP)
@@ -202,7 +202,7 @@ function Derma_StringRequest(title, text, defaultText, onEnter, onCancel, okText
         end
     end
 
-    table.insert(ax.Derma.open, frame)
+    ax.Derma.open[#ax.Derma.open + 1] = frame
 
     local label = frame:Add("ax.text")
     label:Dock(TOP)

@@ -200,7 +200,7 @@ function MODULE:UpdateAnimation(client, velocity, maxseqgroundspeed)
             local Vehicle = client:GetVehicle()
             local Velocity = Vehicle:GetVelocity()
             local fwd = Vehicle:GetUp()
-            local dp = fwd:Dot(Vector(0, 0, 1))
+            local dp = fwd:Dot(vector_up)
             client:SetPoseParameter("vertical_velocity", (dp < 0 and dp or 0) + fwd:Dot(Velocity) * 0.005)
 
             local steer = Vehicle:GetPoseParameter("vehicle_steer")

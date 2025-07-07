@@ -61,7 +61,11 @@ function ENT:SetItem(itemID, uniqueID)
                 self:SetData(item:GetData() or {})
 
                 -- Notify clients
-                ax.net:Start(nil, "item.entity", self, newID)
+
+                net.Start("ax.item.entity")
+                    net.WriteEntity(self)
+                    net.WriteUInt(newID, 16)
+                net.Broadcast()
             end
         end)
     else
@@ -73,10 +77,16 @@ function ENT:SetItem(itemID, uniqueID)
             self:SetData(item:GetData() or {})
         end
 
-        ax.net:Start(nil, "item.entity", self, newID)
+        net.Start("ax.item.entity")
+            net.WriteEntity(self)
+            net.WriteUInt(itemID, 16)
+        net.Broadcast()
     end
 
-    ax.net:Start(nil, "item.entity", self, newID)
+    net.Start("ax.item.entity")
+        net.WriteEntity(self)
+        net.WriteUInt(itemID, 16)
+    net.Broadcast()
 end
 
 function ENT:GetData()

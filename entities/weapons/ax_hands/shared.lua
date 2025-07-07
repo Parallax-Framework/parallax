@@ -45,7 +45,7 @@ SWEP.Secondary.Delay = 0.5
 
 SWEP.HoldType = "normal"
 SWEP.FireWhenLowered = true
-SWEP.LoweredAngles = Angle(0, 0, 0)
+SWEP.LoweredAngles = angle_zero
 
 function SWEP:Precache()
     util.PrecacheModel(self.ViewModel)
@@ -133,7 +133,7 @@ local function VelocityRemove(entity, normalize)
             end
 
             entity:SetVelocity(vel)
-            entity:SetLocalAngularVelocity(Angle())
+            entity:SetLocalAngularVelocity(angle_zero)
         end)
     end
 end
@@ -153,7 +153,7 @@ local function VelocityThrow(entity, owner, power)
             end
 
             entity:SetVelocity(vel)
-            entity:SetLocalAngularVelocity(Angle())
+            entity:SetLocalAngularVelocity(angle_zero)
         end
     end)
 end
@@ -258,6 +258,8 @@ function SWEP:IsEntityStoodOn(entity)
     return false
 end
 
+local primaryViewPunch = Angle(2, 5, 0.125)
+
 function SWEP:PrimaryAttack()
     if ( !IsFirstTimePredicted() ) then return end
 
@@ -272,13 +274,16 @@ function SWEP:PrimaryAttack()
         end
 
         owner:SetAnimation(PLAYER_ATTACK1)
-        owner:ViewPunch(Angle(2, 5, 0.125))
+        owner:ViewPunch(primaryViewPunch)
 
         self:DoPickup(true)
     elseif ( owner:IsWeaponRaised() ) then
         self:DoPunch()
     end
 end
+
+local knockViewPunchAngle = Angle(-1.3, 1.8, 0)
+local pushViewPunchAngle = Angle()
 
 function SWEP:SecondaryAttack()
     if ( !IsFirstTimePredicted() ) then return end
@@ -304,7 +309,7 @@ function SWEP:SecondaryAttack()
                 return
             end
 
-            owner:ViewPunch(Angle(-1.3, 1.8, 0))
+            owner:ViewPunch(knockViewPunchAngle)
             owner:EmitSound("physics/wood/wood_crate_impact_hard" .. math.random(2, 3) .. ".wav", 60)
             owner:SetAnimation(PLAYER_ATTACK1)
 
@@ -324,7 +329,11 @@ function SWEP:SecondaryAttack()
                 vDirection.z = 0
                 entity:SetVelocity(vDirection)
 
-                entity:ViewPunch(Angle(math.random(1, 2), math.random(2, 6), math.random(0, -3)))
+                pushViewPunchAngle.x = math.random(1, 2)
+                pushViewPunchAngle.y = math.random(2, 6)
+                pushViewPunchAngle.z = math.random(0, -3)
+
+                entity:ViewPunch(pushViewPunchAngle)
                 entity:EmitSound("physics/flesh/flesh_impact_hard" .. math.random(2, 5) .. ".wav", 60)
             end)
 
@@ -392,6 +401,9 @@ function SWEP:DoPickup(throw)
     end
 end
 
+local punchViewPunchAngle = Angle(-1.3, -1.8, 0)
+local entityViewPunchAngle = Angle(8, 0, 0)
+
 function SWEP:DoPunch()
     local owner = self:GetOwner()
     if ( !IsValid(owner) ) then return end
@@ -425,7 +437,7 @@ function SWEP:DoPunch()
     self:EmitSound(Sound("WeaponFrag.Throw"))
 
     local random = math.random(1, 2)
-    owner:ViewPunch(random == 1 and Angle(-1.3, -1.8, 0) or Angle(-1.3, 1.8, 0))
+    owner:ViewPunch(random == 1 and punchViewPunchAngle or knockViewPunchAngle)
 
     local vm = owner:GetViewModel()
     vm:SendViewModelMatchingSequence(vm:LookupSequence(random == 1 and "fists_left" or "fists_right"))
@@ -480,7 +492,7 @@ function SWEP:DoPunch()
                     random = math.random(0, mass / 10)
                     if ( random > mass / 11 ) then
                         owner:TakeDamage(5, owner, self)
-                        owner:ViewPunch(Angle(8, 0, 0))
+                        owner:ViewPunch(entityViewPunchAngle)
                     end
                 end
             end

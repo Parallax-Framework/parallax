@@ -14,7 +14,7 @@ local TOOL = ax.tool or {}
 function TOOL:Create()
     local tool = {}
 
-    setmetatable(tool, self)
+    tool = setmetatable(tool, self)
     self.__index = self
 
     tool.Mode           = nil
@@ -54,7 +54,7 @@ function TOOL:GetServerInfo(property)
         return self.ServerConVars[property]:GetString()
     end
 
-    return GetConVarString(self:GetMode() .. "_" .. property)
+    return GetConVar(self:GetMode() .. "_" .. property):GetString()
 end
 
 function TOOL:GetClientInfo(property)
@@ -110,7 +110,7 @@ function TOOL:Think()         self:ReleaseGhostEntity() end
 
 function TOOL:CheckObjects()
     for _, v in pairs(self.Objects) do
-        if ( !v.Ent:IsWorld() and IsValid(v.Ent) ) then
+        if ( IsValid(v.Ent) and !v.Ent:IsWorld() ) then
             self:ClearObjects()
         end
     end

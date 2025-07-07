@@ -109,7 +109,7 @@ concommand.Add("ax_localization_check", function(client, command, arguments)
         local missingPhrases = {}
         for phrase, translation in SortedPairs(enLocalisation) do
             if ( !data[phrase] ) then
-                table.insert(missingPhrases, phrase)
+                missingPhrases[#missingPhrases + 1] = phrase
             end
         end
 

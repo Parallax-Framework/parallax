@@ -51,6 +51,12 @@ function ax.data:Get(key, fallback, bGlobal, bMap, bRefresh)
     if ( data != nil ) then
         data = util.JSONToTable(data)
 
+        if ( !istable(data) ) then
+            ax.util:PrintWarning("Data for key '%s' is not a valid table. Expected a table, got %s.", tostring(key), type(data))
+
+            return fallback
+        end
+
         self.stored[key] = data[1]
         return data[1]
     end

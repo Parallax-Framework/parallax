@@ -33,7 +33,10 @@ function ax.config:Load()
     end
 
     local tableToSend = self:GetNetworkData()
-    ax.net:Start(nil, "config.sync", tableToSend)
+
+    net.Start("ax.config.sync")
+        net.WriteTable(tableToSend)
+    net.Broadcast()
 
     ax.util:Print("Configuration loaded.")
     hook.Run("PostConfigLoad", config, tableToSend)
@@ -114,7 +117,9 @@ function ax.config:ResetAll()
         self:Reset(k)
     end
 
-    ax.net:Start(nil, "config.sync", self:GetNetworkData())
+    net.Start("ax.config.sync")
+        net.WriteTable(self:GetNetworkData())
+    net.Broadcast()
 
     self:Save()
     hook.Run("PostConfigReset")
@@ -131,16 +136,21 @@ function ax.config:Synchronize(client)
     local tableToSend = self:GetNetworkData()
 
     if ( !IsValid(client) ) then
-        ax.net:Start(nil, "config.sync", tableToSend)
-        hook.Run("PostConfigSync")
+        net.Start("ax.config.sync")
+            net.WriteTable(tableToSend)
+        net.Broadcast()
 
+        hook.Run("PostConfigSync")
         return
     end
 
     local shouldSend = hook.Run("PreConfigSync", client, tableToSend)
     if ( shouldSend == false ) then return false end
 
-    ax.net:Start(client, "config.sync", tableToSend)
+    net.Start("ax.config.sync")
+        net.WriteTable(tableToSend)
+    net.Send(client)
+
     hook.Run("PostConfigSync", client)
 
     return true

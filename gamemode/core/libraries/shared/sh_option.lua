@@ -25,7 +25,9 @@ function ax.option:SetDefault(key, default)
     stored.Default = default
 
     if ( SERVER ) then
-        ax.net:Start(nil, "option.sync", self.instances)
+        net.Start("ax.option.sync")
+            net.WriteTable(self.instances)
+        net.Broadcast()
     end
 
     return true
@@ -58,7 +60,10 @@ if ( CLIENT ) then
             end
         end
 
-        ax.net:Start("option.sync", self.instances)
+        net.Start("ax.option.sync")
+            net.WriteTable(self.instances)
+        net.SendToServer()
+
         hook.Run("PostOptionsLoad", self.instances)
     end
 
@@ -93,7 +98,10 @@ if ( CLIENT ) then
         end
 
         if ( stored.NoNetworking != true and !bNoNetworking ) then
-            ax.net:Start("option.set", key, value)
+            net.Start("ax.option.set")
+                net.WriteString(key)
+                net.WriteType(value)
+            net.SendToServer()
         end
 
         if ( isfunction(stored.OnChange) ) then
@@ -158,7 +166,10 @@ if ( CLIENT ) then
         self.instances = {}
 
         ax.data:Set("options", {}, true, true)
-        ax.net:Start("option.sync", {})
+
+        net.Start("ax.option.sync")
+            net.WriteTable({})
+        net.SendToServer()
     end
 end
 

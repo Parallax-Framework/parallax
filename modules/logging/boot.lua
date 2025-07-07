@@ -53,4 +53,4 @@ function MODULE:Format(ent)
     return ent:GetClass() .. " [" .. ent:EntIndex() .. "][" .. tag .. "]"
 end
 
-ax.Log = MODULE
+ax.log = MODULE

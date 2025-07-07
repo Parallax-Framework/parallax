@@ -28,8 +28,8 @@ end
 function SWEP:GetViewModelPosition(pos, ang)
     if ( !self.IronSightsEnabled ) then return pos, ang end
 
-    local offset = self.IronSightsPos or Vector(0, 0, 0)
-    local offsetAng = self.IronSightsAng or Angle(0, 0, 0)
+    local offset = self.IronSightsPos
+    local offsetAng = self.IronSightsAng
 
     local progress = self.IronSightsProgress
 

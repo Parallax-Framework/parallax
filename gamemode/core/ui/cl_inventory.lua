@@ -250,7 +250,10 @@ function PANEL:SetInfo(id)
             button:SetText(actionData.Name or actionName)
             button:SizeToContents()
             button.DoClick = function()
-                ax.net:Start("item.perform", id, actionName)
+                net.Start("ax.item.perform")
+                    net.WriteUInt(id, 16)
+                    net.WriteString(actionName)
+                net.SendToServer()
             end
 
             if ( actionData.Icon ) then

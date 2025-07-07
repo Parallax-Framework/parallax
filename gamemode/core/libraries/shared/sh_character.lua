@@ -99,7 +99,11 @@ function ax.character:SetVariable(id, key, value)
         end
 
         if ( !data.NoNetworking ) then
-            ax.net:Start(nil, "character.variable.set", id, key, value)
+            net.Start("ax.character.variable.set")
+                net.WriteUInt(id, 16)
+                net.WriteString(key)
+                net.WriteType(value)
+            net.Broadcast()
         end
     end
 end

@@ -1,19 +1,28 @@
+-- https://github.com/Winkarst-cpu/GMOD-UTF8/blob/main/utf8.lua
+
 --[[
-    Parallax Framework
-    Copyright (c) 2025 Parallax Framework Contributors
+    MIT License
 
-    This file is part of the Parallax Framework and is licensed under the MIT License.
-    You may use, copy, modify, merge, publish, distribute, and sublicense this file
-    under the terms of the LICENSE file included with this project.
+    Copyright (c) 2025 Winkarst
 
-    Attribution is required. If you use or modify this file, you must retain this notice.
+    Permission is hereby granted, free of charge, to any person obtaining a copy
+    of this software and associated documentation files (the "Software"), to deal
+    in the Software without restriction, including without limitation the rights
+    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+    copies of the Software, and to permit persons to whom the Software is
+    furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in all
+    copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+    SOFTWARE.
 ]]
-
---- UTF8 library
--- Helper functions to use on strings that may contain non-English characters.
--- @module ax.utf8
-
-ax.utf8 = ax.utf8 or {}
 
 -- Source: https://www.unicode.org/Public/UCD/latest/ucd/UnicodeData.txt
 -- Automatically generated using Python script.
@@ -1450,6 +1459,8 @@ local casings = {
     𑢾 = "𑣞",
     𑢿 = "𑣟",
 }
+
+ax.utf8 = ax.utf8 or {}
 
 --- Changes any upper-case letters in a string to lower-case letters.
 -- @realm shared

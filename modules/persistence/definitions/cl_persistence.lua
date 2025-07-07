@@ -23,7 +23,9 @@ properties.Add("ax.Persistence.mark", {
         return client:IsAdmin()
     end,
     Action = function(self, ent)
-        ax.net:Start("persistence.mark", ent)
+        net.Start("ax.persistence.mark")
+            net.WriteEntity(ent)
+        net.Broadcast()
     end
 })
 
@@ -39,6 +41,8 @@ properties.Add("ax.Persistence.unmark", {
         return client:IsAdmin()
     end,
     Action = function(self, ent)
-        ax.net:Start("persistence.unmark", ent)
+        net.Start("ax.persistence.unmark")
+            net.WriteEntity(ent)
+        net.Broadcast()
     end
 })

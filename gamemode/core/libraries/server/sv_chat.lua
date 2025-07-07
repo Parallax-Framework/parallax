@@ -18,15 +18,17 @@ function ax.chat:SendSpeaker(speaker, uniqueID, text)
         if ( !IsValid(v) or !v:Alive() ) then continue end
 
         if ( hook.Run("PlayerCanHearChat", speaker, v, uniqueID, text) != false ) then
-            table.insert(players, v)
+            players[#players + 1] = v
         end
     end
 
-    ax.net:Start(players, "chat.send", {
-        Speaker = speaker:EntIndex(),
-        UniqueID = uniqueID,
-        Text = text
-    })
+    net.Start("ax.chat.send")
+        net.WriteTable({
+            Speaker = speaker:EntIndex(),
+            UniqueID = uniqueID,
+            Text = text
+        })
+    net.Send(players)
 
     hook.Run("OnChatMessageSent", speaker, players, uniqueID, text)
 end
@@ -34,10 +36,12 @@ end
 function ax.chat:SendTo(players, uniqueID, text)
     players = players or select(2, player.Iterator())
 
-    ax.net:Start(players, "chat.send", {
-        UniqueID = uniqueID,
-        Text = text
-    })
+    net.Start("ax.chat.send")
+        net.WriteTable({
+            UniqueID = uniqueID,
+            Text = text
+        })
+    net.Send(players)
 end
 
 ax.chat = ax.chat

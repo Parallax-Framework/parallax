@@ -85,7 +85,7 @@ end
 function PANEL:Think()
     local hovering = self:IsHovered()
     if ( hovering and !self.wasHovered ) then
-        surface.PlaySound("ax.button.Enter")
+        surface.PlaySound("ax.button.enter")
         self:SetFont("ax.large.bold")
         self.wasHovered = true
 
@@ -171,7 +171,7 @@ function PANEL:Think()
 end
 
 function PANEL:OnMousePressed(key)
-    surface.PlaySound("ax.button.Click")
+    surface.PlaySound("ax.button.click")
 
     if ( key == MOUSE_LEFT ) then
         self:DoClick()
@@ -223,7 +223,7 @@ end
 function PANEL:Think()
     local hovering = self:IsHovered()
     if ( hovering and !self.wasHovered ) then
-        surface.PlaySound("ax.button.Enter")
+        surface.PlaySound("ax.button.enter")
         self:SetFont("ax.large.bold")
         self.wasHovered = true
 
@@ -279,7 +279,7 @@ end
 vgui.Register("ax.button.flat", PANEL, "ax.button")
 
 sound.Add({
-    name = "ax.button.Click",
+    name = "ax.button.click",
     channel = CHAN_STATIC,
     volume = 0.2,
     level = 80,
@@ -288,7 +288,7 @@ sound.Add({
 })
 
 sound.Add({
-    name = "ax.button.Enter",
+    name = "ax.button.enter",
     channel = CHAN_STATIC,
     volume = 0.1,
     level = 80,

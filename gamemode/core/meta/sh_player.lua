@@ -61,7 +61,9 @@ function PLAYER:ChatText(...)
     local arguments = {ax.color:Get("text"), ...}
 
     if ( SERVER ) then
-        ax.net:Start(self, "chat.text", arguments)
+        net.Start("ax.chat.text")
+            net.WriteTable(arguments)
+        net.Send(self)
     else
         chat.AddText(unpack(arguments))
     end
@@ -74,7 +76,9 @@ PLAYER.ChatPrint = PLAYER.ChatText
 -- @param arguments The caption arguments.
 function PLAYER:Caption(arguments)
     if ( SERVER ) then
-        ax.net:Start(self, "caption", arguments)
+        net.Start("ax.caption")
+            net.WriteTable(arguments)
+        net.Send(self)
     else
         gui.AddCaption(arguments)
     end
@@ -85,7 +89,10 @@ end
 -- @string name The name of the gesture to play.
 function PLAYER:GesturePlay(name)
     if ( SERVER ) then
-        ax.net:Start(self:GetPos(), "gesture.play", name)
+        net.Start("ax.gesture.play")
+            net.WritePlayer(self)
+            net.WriteString(name)
+        net.SendPVS(self:GetPos())
     else
         self:AddVCDSequenceToGestureSlot(GESTURE_SLOT_CUSTOM, self:LookupSequence(name), 0, true)
     end
@@ -95,8 +102,9 @@ end
 -- @realm shared
 -- @tparam[opt=64] number offset The offset distance for the drop position.
 -- @treturn Vector The position where the item will be dropped.
+
 function PLAYER:GetDropPosition(offset)
-    if ( offset == nil ) then offset = 64 end
+    if ( !isnumber(offset) ) then offset = 64 end
 
     local trace = util.TraceLine({
         start = self:GetShootPos(),

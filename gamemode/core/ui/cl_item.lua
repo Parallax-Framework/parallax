@@ -108,7 +108,10 @@ function PANEL:DoRightClick()
         if ( isfunction(actionData.OnCanRun) and actionData:OnCanRun(item, ax.client) == false ) then continue end
 
         menu:AddOption(actionData.Name or actionName, function()
-            ax.net:Start("item.perform", itemID, actionName)
+            net.Start("ax.item.perform")
+                net.WriteUInt(itemID, 16)
+                net.WriteString(actionName)
+            net.SendToServer()
         end)
     end
 

@@ -305,7 +305,7 @@ extraInfoTbl)
     local function onResult(ply, hasAccess, _)
         countdown = countdown - 1
 
-        if hasAccess then table.insert(allowedPlys, ply) end
+        if hasAccess then allowedPlys[#allowedPlys + 1] = ply end
         if countdown == 0 then callback(allowedPlys) end
     end
 

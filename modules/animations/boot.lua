@@ -391,11 +391,17 @@ function playerMeta:IsFemale()
 end
 
 if ( SERVER ) then
+    util.AddNetworkString("ax.sequence.set")
+    util.AddNetworkString("ax.sequence.reset")
+    util.AddNetworkString("ax.animations.update")
+
     function playerMeta:LeaveSequence()
         local prevent = hook.Run("PrePlayerLeaveSequence", self)
         if ( prevent != nil and prevent == false ) then return end
 
-        ax.net:Start(nil, "sequence.reset", self)
+        net.Start("ax.sequence.reset")
+            net.WritePlayer(self)
+        net.Broadcast()
 
         self:SetRelay("sequence.callback", nil)
         self:SetRelay("sequence.forced", nil)
@@ -414,7 +420,10 @@ if ( SERVER ) then
         if ( prevent != nil and prevent == false ) then return end
 
         if ( sequence == nil ) then
-            ax.net:Start(nil, "sequence.reset", self)
+            net.Start("ax.sequence.reset")
+                net.WritePlayer(self)
+            net.Broadcast()
+
             return
         end
 
@@ -446,13 +455,15 @@ if ( SERVER ) then
         hook.Run("PostPlayerForceSequence", self, sequence, callback, time, noFreeze)
     end
 else
-    ax.net:Hook("sequence.set", function(client)
+    net.Receive("ax.sequence.set", function()
+        local client = net.ReadPlayer()
         if ( !IsValid(client) ) then return end
 
         hook.Run("PostPlayerForceSequence", client)
     end)
 
-    ax.net:Hook("sequence.reset", function(client)
+    net.Receive("ax.sequence.reset", function()
+        local client = net.ReadPlayer()
         if ( !IsValid(client) ) then return end
 
         hook.Run("PostPlayerLeaveSequence", client)

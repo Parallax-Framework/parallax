@@ -38,4 +38,10 @@ function PANEL:Paint(width, height)
     BaseClass.Paint(self, width, height)
 end
 
+function PANEL:OnTextChanged(...)
+    BaseClass.OnTextChanged(self, ...)
+
+    surface.PlaySound("common/talk.wav")
+end
+
 vgui.Register("ax.text.entry", PANEL, "DTextEntry")

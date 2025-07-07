@@ -130,6 +130,18 @@ function CHAR:TakeMoney(amount)
     hook.Run("OnCharacterTakeMoney", self, amount)
 end
 
+--- Checks if the character can afford a specific amount of money.
+-- @tparam number amount The amount of money to check.
+-- @treturn boolean Whether the character can afford the amount.
+function CHAR:CanAfford(amount)
+    if ( amount < 0 ) then
+        amount = math.abs(amount)
+        ax.util:PrintWarning("Character " .. self:GetID() .. " tried to check negative amount, converted to positive number. Call :TakeMoney instead!")
+    end
+
+    return self:GetMoney() >= amount
+end
+
 --- Checks if the character has a specific flag.
 -- @tparam string flag The flag to check for.
 -- @treturn boolean Whether the character has the flag.

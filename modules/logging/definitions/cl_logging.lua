@@ -11,7 +11,8 @@
 
 local MODULE = MODULE
 
-ax.net:Hook("logging.send", function(payload)
+net.Receive("ax.logging.send", function()
+    local payload = net.ReadTable()
     if ( !payload ) then return end
 
     ax.util:Print("[Logging] ", unpack(payload))

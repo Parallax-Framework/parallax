@@ -18,7 +18,7 @@ include("core/types.lua")
 include("core/util.lua")
 include("core/boot.lua")
 
-LocalPlayerInternal = LocalPlayer
+LocalPlayerInternal = LocalPlayerInternal or LocalPlayer
 function LocalPlayer()
     if ( IsValid(ax.client) ) then
         return ax.client

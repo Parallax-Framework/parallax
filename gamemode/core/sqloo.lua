@@ -289,7 +289,7 @@ function ax.sqloo:Query(query, onSuccess, onError)
         ax.util:PrintWarning("Database not connected, queuing query. (" .. uniqueID .. ")")
 
         self.queryQueue = self.queryQueue or {}
-        table.insert(self.queryQueue, {query = query, onSuccess = onSuccess, onError = onError})
+        self.queryQueue[#self.queryQueue + 1] = {query = query, onSuccess = onSuccess, onError = onError}
 
         if ( !self.queryTimerStarted ) then
             self.queryTimerStarted = true

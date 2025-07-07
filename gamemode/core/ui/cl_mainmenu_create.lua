@@ -291,7 +291,9 @@ function PANEL:PopulateCreateCharacter()
         end
 
         if ( isNextEmpty ) then
-            ax.net:Start("character.create", self.currentCreatePayload)
+            net.Start("ax.character.create")
+                net.WriteTable(self.currentCreatePayload)
+            net.SendToServer()
         else
             self.currentCreatePage = self.currentCreatePage + 1
             self:PopulateCreateCharacterForm()
@@ -359,7 +361,7 @@ function PANEL:PopulateCreateCharacterForm()
             entry:SetNumeric(v.Numeric or false)
             entry:SetAllowNonAsciiCharacters(v.AllowNonAscii or false)
 
-            entry.OnTextChanged = function(this)
+            entry.OnChange = function(this)
                 local text = this:GetValue()
 
                 if ( isfunction(v.OnChange) ) then
@@ -403,7 +405,7 @@ function PANEL:PopulateCreateCharacterForm()
             entry:SetTall(ScreenScaleH(12) * 4)
             entry:SetZPos(zPos)
 
-            entry.OnTextChanged = function(this)
+            entry.OnChange = function(this)
                 local text = this:GetValue()
 
                 if ( isfunction(v.OnChange) ) then

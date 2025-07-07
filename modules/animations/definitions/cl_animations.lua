@@ -9,7 +9,11 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
-ax.net:Hook("animations.update", function(client, animations, holdType)
+net.Receive("ax.animations.update", function()
+    local client = net.ReadPlayer()
+    local animations = net.ReadTable()
+    local holdType = net.ReadString()
+
     if ( !IsValid(client) ) then return end
 
     local clientTable = client:GetTable()

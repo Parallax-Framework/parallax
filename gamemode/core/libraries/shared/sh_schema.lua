@@ -53,6 +53,7 @@ function ax.schema:Initialize()
     end
 
     ax.hooks:Register("SCHEMA")
+    ax.util:LoadFolder(folder .. "/schema/libraries", true)
     ax.util:LoadFolder(folder .. "/schema/libraries/external", true)
     ax.util:LoadFolder(folder .. "/schema/libraries/client", true)
     ax.util:LoadFolder(folder .. "/schema/libraries/shared", true)

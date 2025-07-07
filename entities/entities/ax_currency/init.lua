@@ -40,8 +40,11 @@ function ENT:Use(client)
 
     character:GiveMoney(amount)
 
-    ax.net:Start(client, "currency.give", self, amount)
-    hook.Run("PostPlayerTakeMoney", client, self, amount)
+    net.Start("ax.currency.give")
+        net.WriteEntity(self)
+        net.WriteUInt(amount, 32)
+    net.Send(client)
 
+    hook.Run("PostPlayerTakeMoney", client, self, amount)
     SafeRemoveEntity(self)
 end

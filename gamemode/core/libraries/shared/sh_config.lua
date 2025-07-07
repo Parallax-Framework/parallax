@@ -94,7 +94,10 @@ function ax.config:Set(key, value)
     self.instances[key] = instance
 
     if ( SERVER and stored.NoNetworking != true ) then
-        ax.net:Start(nil, "config.set", key, value)
+        net.Start("ax.config.set")
+            net.WriteString(key)
+            net.WriteType(value)
+        net.Broadcast()
     end
 
     if ( isfunction(stored.OnChange) ) then

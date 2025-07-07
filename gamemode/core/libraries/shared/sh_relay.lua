@@ -23,10 +23,17 @@ local playerMeta = FindMetaTable("Player")
 local entityMeta = FindMetaTable("Entity")
 
 function ax.relay:SetRelay(key, value, recipient)
+    if ( recipient == nil ) then
+        recipient = select(2, player.Iterator())
+    end
+
     self.shared[key] = value
 
     if ( SERVER ) then
-        ax.net:Start(recipient, "relay.shared", key, value)
+        net.Start("ax.relay.shared")
+            net.WriteString(key)
+            net.WriteType(value)
+        net.Send(recipient)
     end
 end
 
@@ -36,7 +43,10 @@ function ax.relay:GetRelay(key, default)
 end
 
 if ( CLIENT ) then
-    ax.net:Hook("relay.shared", function(key, value)
+    net.Receive("ax.relay.shared", function(len, client)
+        local key = net.ReadString()
+        local value = net.ReadType()
+
         if ( value == nil ) then return end
 
         ax.relay.shared[key] = value
@@ -44,12 +54,20 @@ if ( CLIENT ) then
 end
 
 function playerMeta:SetRelay(key, value, recipient)
+    if ( recipient == nil ) then
+        recipient = select(2, player.Iterator())
+    end
+
     if ( SERVER ) then
         local index = self:EntIndex()
         ax.relay.user[index] = ax.relay.user[index] or {}
         ax.relay.user[index][key] = value
 
-        ax.net:Start(recipient, "relay.user", index, key, value)
+        net.Start("ax.relay.user")
+            net.WriteUInt(index, 16)
+            net.WriteString(key)
+            net.WriteType(value)
+        net.Send(recipient)
     end
 end
 
@@ -64,7 +82,12 @@ function playerMeta:GetRelay(key, default)
 end
 
 if ( CLIENT ) then
-    ax.net:Hook("relay.user", function(index, key, value)
+    net.Receive("ax.relay.user", function(len, client)
+        local index = net.ReadUInt(16)
+        local key = net.ReadString()
+        local value = net.ReadType()
+
+        if ( !IsValid(Entity(index)) ) then return end
         if ( value == nil ) then return end
 
         ax.relay.user[index] = ax.relay.user[index] or {}
@@ -73,12 +96,20 @@ if ( CLIENT ) then
 end
 
 function entityMeta:SetRelay(key, value, recipient)
+    if ( recipient == nil ) then
+        recipient = select(2, player.Iterator())
+    end
+
     if ( SERVER ) then
         local index = self:EntIndex()
         ax.relay.entity[index] = ax.relay.entity[index] or {}
         ax.relay.entity[index][key] = value
 
-        ax.net:Start(recipient, "relay.entity", index, key, value)
+        net.Start("ax.relay.entity")
+            net.WriteUInt(index, 16)
+            net.WriteString(key)
+            net.WriteType(value)
+        net.Send(recipient)
     end
 end
 
@@ -93,7 +124,12 @@ function entityMeta:GetRelay(key, default)
 end
 
 if ( CLIENT ) then
-    ax.net:Hook("relay.entity", function(index, key, value)
+    net.Receive("ax.relay.entity", function(len, client)
+        local index = net.ReadUInt(16)
+        local key = net.ReadString()
+        local value = net.ReadType()
+
+        if ( !IsValid(Entity(index)) ) then return end
         if ( value == nil ) then return end
 
         ax.relay.entity[index] = ax.relay.entity[index] or {}
@@ -103,7 +139,11 @@ end
 
 hook.Add("EntityRemoved", "ax.relay.cleanup.entity", function(entity)
     local index = entity:EntIndex()
-    if ( SERVER ) then ax.net:Start(nil, "relay.cleanup", index) end
+    if ( SERVER ) then
+        net.Start("ax.relay.cleanup")
+            net.WriteUInt(index, 16)
+        net.Broadcast()
+    end
 
     if ( entity:IsPlayer() ) then
         if ( ax.relay.user[index] ) then
@@ -119,6 +159,11 @@ hook.Add("EntityRemoved", "ax.relay.cleanup.entity", function(entity)
 end)
 
 if ( SERVER ) then
+    util.AddNetworkString("ax.relay.cleanup")
+    util.AddNetworkString("ax.relay.user")
+    util.AddNetworkString("ax.relay.entity")
+    util.AddNetworkString("ax.relay.shared")
+
     hook.Add("SaveData", "ax.relay.cleanup", function()
         for index, _ in pairs(ax.relay.user) do
             if ( !IsValid(Entity(index)) ) then
@@ -133,7 +178,8 @@ if ( SERVER ) then
         end
     end)
 else
-    ax.net:Hook("relay.cleanup", function(index)
+    net.Receive("ax.relay.cleanup", function(len, client)
+        local index = net.ReadUInt(16)
         local ent = Entity(index)
         if ( !IsValid(ent) ) then return end
 

@@ -13,11 +13,15 @@
     Character Networking
 -----------------------------------------------------------------------------]]--
 
-ax.net:Hook("character.load", function(client, characterID)
+util.AddNetworkString("ax.character.load")
+net.Receive("ax.character.load", function(len, client)
+    local characterID = net.ReadUInt(16)
     ax.character:Load(client, characterID)
 end)
 
-ax.net:Hook("character.delete", function(client, characterID)
+util.AddNetworkString("ax.character.delete")
+net.Receive("ax.character.delete", function(len, client)
+    local characterID = net.ReadUInt(16)
     local character = ax.character:Get(characterID)
     if ( !character ) then return end
 
@@ -29,15 +33,23 @@ ax.net:Hook("character.delete", function(client, characterID)
     hook.Run("PostPlayerDeletedCharacter", client, characterID)
 end)
 
-ax.net:Hook("character.create", function(client, payload)
+util.AddNetworkString("ax.character.create")
+net.Receive("ax.character.create", function(len, client)
+    local payload = net.ReadTable()
     if ( !istable(payload) ) then
-        ax.net:Start(client, "character.create.failed", "Invalid payload!")
+        net.Start("ax.character.create.failed")
+            net.WriteString("Invalid payload!")
+        net.Send(client)
+
         return
     end
 
     local canCreate, reason = hook.Run("PrePlayerCreatedCharacter", client, payload)
     if ( canCreate == false ) then
-        ax.net:Start(client, "character.create.failed", reason or "Failed to create character!")
+        net.Start("ax.character.create.failed")
+            net.WriteString(reason or "Failed to create character!")
+        net.Send(client)
+
         return
     end
 
@@ -52,7 +64,9 @@ ax.net:Hook("character.create", function(client, payload)
         if ( isfunction(v.OnValidate) ) then
             local validate, reasonString = v:OnValidate(nil, payload, client)
             if ( !validate ) then
-                ax.net:Start(client, "character.create.failed", reasonString or "Failed to validate character!")
+                net.Start("ax.character.create.failed")
+                    net.WriteString(reasonString or "Failed to validate character!")
+                net.Send(client)
                 return
             end
         end
@@ -61,13 +75,17 @@ ax.net:Hook("character.create", function(client, payload)
     ax.character:Create(client, payload, function(success, result)
         if ( !success ) then
             ax.util:PrintError("Failed to create character: " .. result)
-            ax.net:Start(client, "character.create.failed", result or "Failed to create character!")
+            net.Start("ax.character.create.failed")
+                net.WriteString(result or "Failed to create character!")
+            net.Send(client)
+
             return
         end
 
         ax.character:Load(client, result:GetID())
 
-        ax.net:Start(client, "character.create")
+        net.Start("ax.character.create")
+        net.Send(client)
 
         hook.Run("PostPlayerCreatedCharacter", client, result, payload)
     end)
@@ -83,7 +101,9 @@ end)
     Config Networking
 -----------------------------------------------------------------------------]]--
 
-ax.net:Hook("config.reset", function(client, key)
+util.AddNetworkString("ax.config.reset")
+net.Receive("ax.config.reset", function(len, client)
+    local key = net.ReadString()
     if ( !CAMI.PlayerHasAccess(client, "Parallax - Manage Config", nil) ) then return end
 
     local stored = ax.config.stored[key]
@@ -97,7 +117,10 @@ ax.net:Hook("config.reset", function(client, key)
     hook.Run("PostPlayerConfigReset", client, key)
 end)
 
-ax.net:Hook("config.set", function(client, key, value)
+util.AddNetworkString("ax.config.set")
+net.Receive("ax.config.set", function(len, client)
+    local key = net.ReadString()
+    local value = net.ReadType()
     if ( !CAMI.PlayerHasAccess(client, "Parallax - Manage Config", nil) ) then return end
 
     local stored = ax.config.stored[key]
@@ -119,7 +142,10 @@ end)
     Option Networking
 -----------------------------------------------------------------------------]]--
 
-ax.net:Hook("option.set", function(client, key, value)
+util.AddNetworkString("ax.option.set")
+net.Receive("ax.option.set", function(len, client)
+    local key = net.ReadString()
+    local value = net.ReadType()
     local bResult = hook.Run("PreOptionChanged", client, key, value)
     if ( bResult == false ) then return false end
 
@@ -128,7 +154,9 @@ ax.net:Hook("option.set", function(client, key, value)
     hook.Run("PostOptionChanged", client, key, value)
 end)
 
-ax.net:Hook("option.sync", function(client, data)
+util.AddNetworkString("ax.option.sync")
+net.Receive("ax.option.sync", function(len, client)
+    local data = net.ReadTable()
     if ( !IsValid(client) or !istable(data) ) then return end
 
     for k, v in pairs(ax.option.stored) do
@@ -160,7 +188,9 @@ end)
     Inventory Networking
 -----------------------------------------------------------------------------]]--
 
-ax.net:Hook("inventory.cache", function(client, inventoryID)
+util.AddNetworkString("ax.inventory.cache")
+net.Receive("ax.inventory.cache", function(len, client)
+    local inventoryID = net.ReadUInt(16)
     if ( !inventoryID ) then return end
 
     ax.inventory:Cache(client, inventoryID)
@@ -170,16 +200,10 @@ end)
     Item Networking
 -----------------------------------------------------------------------------]]--
 
-ax.net:Hook("item.entity", function(client, itemID, entity)
-    if ( !IsValid(entity) ) then return end
-
-    local item = ax.item:Get(itemID)
-    if ( !item ) then return end
-
-    item:SetEntity(entity)
-end)
-
-ax.net:Hook("item.perform", function(client, itemID, actionName)
+util.AddNetworkString("ax.item.perform")
+net.Receive("ax.item.perform", function(len, client)
+    local itemID = net.ReadUInt(16)
+    local actionName = net.ReadString()
     if ( !itemID or !actionName ) then return end
 
     local item = ax.item:Get(itemID)
@@ -188,7 +212,9 @@ ax.net:Hook("item.perform", function(client, itemID, actionName)
     ax.item:PerformAction(itemID, actionName)
 end)
 
-ax.net:Hook("item.spawn", function(client, uniqueID)
+util.AddNetworkString("ax.item.spawn")
+net.Receive("ax.item.spawn", function(len, client)
+    local uniqueID = net.ReadString()
     if ( !isstring(uniqueID) or !istable(ax.item.stored[uniqueID]) ) then return end
 
     local pos = client:GetEyeTrace().HitPos + vector_up
@@ -212,26 +238,69 @@ end)
     Miscellaneous Networking
 -----------------------------------------------------------------------------]]--
 
-ax.net:Hook("client.voice.start", function(client, speaker)
+util.AddNetworkString("ax.caption")
+util.AddNetworkString("ax.character.cache")
+util.AddNetworkString("ax.character.cache.all")
+util.AddNetworkString("ax.character.create")
+util.AddNetworkString("ax.character.create.failed")
+util.AddNetworkString("ax.character.delete")
+util.AddNetworkString("ax.character.load")
+util.AddNetworkString("ax.character.load.failed")
+util.AddNetworkString("ax.character.variable.set")
+util.AddNetworkString("ax.chat.send")
+util.AddNetworkString("ax.chat.text")
+util.AddNetworkString("ax.config.set")
+util.AddNetworkString("ax.config.sync")
+util.AddNetworkString("ax.currency.give")
+util.AddNetworkString("ax.database.save")
+util.AddNetworkString("ax.flag.list")
+util.AddNetworkString("ax.gesture.play")
+util.AddNetworkString("ax.inventory.cache")
+util.AddNetworkString("ax.inventory.item.add")
+util.AddNetworkString("ax.inventory.item.remove")
+util.AddNetworkString("ax.inventory.refresh")
+util.AddNetworkString("ax.inventory.register")
+util.AddNetworkString("ax.item.add")
+util.AddNetworkString("ax.item.cache")
+util.AddNetworkString("ax.item.data")
+util.AddNetworkString("ax.item.entity")
+util.AddNetworkString("ax.mainmenu")
+util.AddNetworkString("ax.notification.send")
+util.AddNetworkString("ax.option.set")
+util.AddNetworkString("ax.splash")
+
+util.AddNetworkString("ax.client.voice.start")
+net.Receive("ax.client.voice.start", function(len, client)
+    local speaker = net.ReadPlayer()
     hook.Run("PlayerStartVoice", speaker)
 end)
 
-ax.net:Hook("client.voice.end", function(client, prevSpeaker)
+util.AddNetworkString("ax.client.voice.end")
+net.Receive("ax.client.voice.end", function(len, client)
+    local prevSpeaker = net.ReadPlayer()
     hook.Run("PlayerEndVoice", prevSpeaker)
 end)
 
-ax.net:Hook("client.chatbox.text.changed", function(client, text)
-    if ( !IsValid(client) or !text ) then return end
+util.AddNetworkString("ax.client.chatbox.text.changed")
+net.Receive("ax.client.chatbox.text.changed", function(len, client)
+    local text = net.ReadString()
+    if ( !IsValid(client) or !isstring(text) ) then return end
 
     hook.Run("PlayerChatTextChanged", client, text)
-end, true)
+end)
 
-ax.net:Hook("client.chatbox.type.changed", function(client, newType, oldType)
-    if ( !IsValid(client) or !newType or !oldType ) then return end
+util.AddNetworkString("ax.client.chatbox.type.changed")
+net.Receive("ax.client.chatbox.type.changed", function(len, client)
+    local newType = net.ReadString()
+    local oldType = net.ReadString()
+    if ( !IsValid(client) or !isstring(newType) or !isstring(oldType) ) then return end
 
     hook.Run("PlayerChatTypeChanged", client, newType, oldType)
-end, true)
+end)
 
-ax.net:Hook("command.run", function(client, command, arguments)
+util.AddNetworkString("ax.command.run")
+net.Receive("ax.command.run", function(len, client)
+    local command = net.ReadString()
+    local arguments = net.ReadTable()
     ax.command:Run(client, command, arguments)
 end)

@@ -266,7 +266,7 @@ local function checkSubjectAndTargetRecursively(subject, target, path)
   local newPath
   for k,targetValue in pairs(target) do
     newPath = copyTables({}, path)
-    table.insert(newPath, tostring(k))
+    newPath[#newPath + 1] = tostring(k)
     if isnumber(targetValue) then
       assert(isnumber(subject[k]), "Parameter '" .. table.concat(newPath,'/') .. "' is missing from subject or isn't a number")
     elseif istable(targetValue) then

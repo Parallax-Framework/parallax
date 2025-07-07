@@ -54,7 +54,7 @@ function PANEL:Init()
 
         if ( found ) then continue end
 
-        table.insert(categories, v.Category)
+        categories[#categories + 1] = v.Category
     end
 
     for k, v in SortedPairs(categories) do
@@ -94,7 +94,7 @@ function PANEL:PopulateCategory(category, toSearch)
             continue
         end
 
-        table.insert(options, v)
+        options[#options + 1] = v
     end
 
     table.sort(options, function(a, b)
@@ -344,7 +344,7 @@ function PANEL:AddOption(optionData)
         options = optionData:Populate()
         local keys = {}
         for k2, _ in pairs(options) do
-            table.insert(keys, k2)
+            keys[#keys + 1] = k2
         end
 
         local phrase = (options and options[value]) and ax.localization:GetPhrase(options[value]) or unknown

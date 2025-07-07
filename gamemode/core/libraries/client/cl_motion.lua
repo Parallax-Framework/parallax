@@ -68,7 +68,7 @@ function ax.motion:Motion(panel, duration, data)
     end
 
     -- push new grouped animation
-    table.insert(self.active, {
+    self.active[#self.active + 1] = {
         panel = panel,
         duration = duration,
         delay = delay,
@@ -79,7 +79,7 @@ function ax.motion:Motion(panel, duration, data)
         easing = easing,
         think = isfunction(data.Think) and data.Think or nil,
         onComplete = isfunction(data.OnComplete) and data.OnComplete or nil,
-    })
+    }
 end
 
 --- Cancels a specific animation on a panel.

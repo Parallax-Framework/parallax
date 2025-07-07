@@ -22,9 +22,9 @@ function GM:PlayerInitialSpawn(client)
         for i = 1, #factionModels do
             local v = factionModels[i]
             if ( istable(v) ) then
-                table.insert(models, v[1])
+                models[#models + 1] =  v[1]
             else
-                table.insert(models, v)
+                models[#models + 1] = v
             end
         end
 
@@ -43,13 +43,18 @@ function GM:PlayerReady(client)
     if ( activeGamemode == "parallax" ) then
         -- Sometimes people might forget to actually set their startup gamemode to their schema rather than the actual framework... so we check for that
         ax.util:PrintError("You are running Parallax without a schema! Please set your startup gamemode to your schema (e.g. 'parallax-skeleton' instead of 'parallax').")
-        ax.net:Start(client, "splash")
+
+        net.Start("ax.splash")
+        net.Send(client)
+
         return
     end
 
     ax.character:CacheAll(client, function()
         ax.util:SendChatText(nil, Color(25, 75, 150), client:SteamName() .. " has joined the server.")
-        ax.net:Start(client, "splash")
+
+        net.Start("ax.splash")
+        net.Send(client)
 
         client:SetNoDraw(true)
         client:SetNotSolid(true)
@@ -152,24 +157,41 @@ function GM:PostPlayerLoadout(client)
     end
 end
 
-function GM:PrePlayerLoadedCharacter(client, character, previousCharacter)
-    if ( !previousCharacter ) then return end
-
-    previousCharacter:SetData("health", client:Health())
-
-    local groups = {}
-    for i = 0, client:GetNumBodyGroups() - 1 do
-        local name = client:GetBodygroupName(i)
-        if ( name and name != "" ) then
-            groups[name] = client:GetBodygroup(i)
-        end
+function GM:PrePlayerCreatedCharacter(client, payload)
+    local maxCharacters = ax.config:Get("characters.maxCount")
+    if ( table.Count(client:GetCharacters()) >= maxCharacters ) then
+        return false, "You have reached the maximum number of characters! (" .. maxCharacters .. ")"
     end
 
-    previousCharacter:SetData("groups", groups)
-    previousCharacter:SetData("last_pos", client:GetPos())
-    previousCharacter:SetData("last_ang", client:EyeAngles())
-    previousCharacter:SetPlayTime(previousCharacter:GetPlayTime() + (os.time() - previousCharacter:GetLastPlayed()))
-    previousCharacter:SetLastPlayed(os.time())
+    return true
+end
+
+function GM:PrePlayerLoadedCharacter(client, character, previousCharacter)
+    if ( client:OnCooldown("character.switch") ) then
+        return false, "You are on cooldown for switching characters!"
+    end
+
+    if ( !client:Alive() ) then
+        return false, "You cannot switch characters while being dead!"
+    end
+
+    if ( previousCharacter ) then
+        previousCharacter:SetData("health", client:Health())
+
+        local groups = {}
+        for i = 0, client:GetNumBodyGroups() - 1 do
+            local name = client:GetBodygroupName(i)
+            if ( name and name != "" ) then
+                groups[name] = client:GetBodygroup(i)
+            end
+        end
+
+        previousCharacter:SetData("groups", groups)
+        previousCharacter:SetData("last_pos", client:GetPos())
+        previousCharacter:SetData("last_ang", client:EyeAngles())
+        previousCharacter:SetPlayTime(previousCharacter:GetPlayTime() + (os.time() - previousCharacter:GetLastPlayed()))
+        previousCharacter:SetLastPlayed(os.time())
+    end
 end
 
 function GM:PostPlayerLoadedCharacter(client, character, previousCharacter)
@@ -205,6 +227,8 @@ function GM:PostPlayerLoadedCharacter(client, character, previousCharacter)
     if ( istable(classData) and isfunction(classData.OnCharacterLoaded) ) then
         classData:OnCharacterLoaded(client)
     end
+
+    client:SetCooldown("character.switch", 10)
 end
 
 function GM:PlayerDeathThink(client)
@@ -494,6 +518,21 @@ end
 function GM:PrePlayerConfigChanged(client, key, value, oldValue)
 end
 
+function GM:OnEntityCreated(entity)
+    timer.Simple(0.1, function()
+        if ( !IsValid(entity) ) then return end
+
+        if ( entity:IsDoor() ) then
+            entity:SetRelay("locked", entity:IsLocked())
+
+            local master = entity:GetMasterDoor()
+            if ( IsValid(master) ) then
+                entity:SetRelay("master", master:EntIndex())
+            end
+        end
+    end)
+end
+
 gameevent.Listen("OnRequestFullUpdate")
 hook.Add("OnRequestFullUpdate", "ax.OnRequestFullUpdate", function(data)
     if ( !istable(data) or !isnumber(data.userid) ) then return end
@@ -530,13 +569,4 @@ function GM:PlayerSpawnNPC(client, npc_type, weapon)
     if ( !character ) then return end
 
     return character:HasFlag("n") or client:IsAdmin()
-end
-
-function GM:PrePlayerCreatedCharacter(client, payload)
-    local maxCharacters = ax.config:Get("characters.maxCount")
-    if ( table.Count(client:GetCharacters()) >= maxCharacters ) then
-        return false, "You have reached the maximum number of characters! (" .. maxCharacters .. ")"
-    end
-
-    return true
 end

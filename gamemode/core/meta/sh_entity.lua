@@ -13,8 +13,7 @@ local ENTITY = FindMetaTable("Entity")
 
 local CHAIR_CACHE = {}
 local vehicles = list.Get("Vehicles")
-local vehicleCount = #vehicles
-for i = 1, vehicleCount do
+for i = 1, #vehicles do
     local v = vehicles[i]
     if ( v.Category == "Chairs" ) then
         CHAIR_CACHE[v.Model] = true
@@ -66,11 +65,13 @@ function ENTITY:ResetBodygroups()
     end
 end
 
+local zeroScale = Vector(1, 1, 1)
+
 --- Resets all bone manipulations this entity's model has to their defaults.
 -- @realm shared
 function ENTITY:ResetBoneMatrix()
     for i = 0, self:GetBoneCount() - 1 do
-        self:ManipulateBoneScale(i, Vector(1, 1, 1))
+        self:ManipulateBoneScale(i, zeroScale)
         self:ManipulateBoneAngles(i, angle_zero)
         self:ManipulateBonePosition(i, vector_origin)
     end
@@ -117,6 +118,40 @@ function ENTITY:IsLocked()
     return false
 end
 
+--- Returns the master door for this entity, if it is a door that is part of a master-slave relationship.
+-- @realm shared
+function ENTITY:GetMasterDoor()
+    if ( !self:IsDoor() ) then return nil end
+
+    if ( SERVER ) then
+        local master = self:GetInternalVariable("m_hMaster")
+        if ( IsValid(master) ) then
+            return master
+        end
+    else
+        local masterIndex = self:GetRelay("master", 0)
+        if ( masterIndex > 0 ) then
+            return Entity(masterIndex)
+        end
+    end
+
+    return nil
+end
+
+--- Returns the child door for this entity, this is the door that is linked to this entity in a master-slave relationship.
+-- @realm shared
+function ENTITY:GetChildDoor()
+    if ( !self:IsDoor() ) then return nil end
+
+    for _, ent in ipairs(ents.FindByClass("prop_door_rotating")) do
+        if ( ent:GetMasterDoor() == self ) then
+            return ent
+        end
+    end
+
+    return nil
+end
+
 --- Gets whether the entity has a spawn effect.
 -- @realm shared
 -- @treturn bool Whether the entity has a spawn effect.
@@ -145,7 +180,7 @@ function ENTITY:SetCooldown(action, cooldown)
     if ( !isstring(action) or !isnumber(cooldown) ) then return end
 
     local selfTable = self:GetTable()
-    selfTable["ax.Cooldown." .. action] = CurTime() + cooldown
+    selfTable["ax.cooldown." .. action] = CurTime() + cooldown
 end
 
 --- Checks if a specific action is on cooldown for the entity.
@@ -156,10 +191,10 @@ function ENTITY:OnCooldown(action)
     if ( !isstring(action) ) then return false end
 
     local selfTable = self:GetTable()
-    local cooldown = selfTable["ax.Cooldown." .. action]
+    local cooldown = selfTable["ax.cooldown." .. action]
 
     if ( !isnumber(cooldown) or cooldown <= CurTime() ) then
-        selfTable["ax.Cooldown." .. action] = nil
+        selfTable["ax.cooldown." .. action] = nil
         return false
     end
 

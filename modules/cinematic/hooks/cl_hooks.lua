@@ -11,7 +11,7 @@
 
 local MODULE = MODULE
 
-function MODULE:CalcView(ply, pos, ang, fov)
+function MODULE:CalcView(client, pos, ang, fov)
     if ( !ax.Cinematic.Active ) then return end
 
     local camPos, camAng, camFov = ax.Cinematic:GetValue()
@@ -25,6 +25,8 @@ function MODULE:CalcView(ply, pos, ang, fov)
     }
 end
 
+local offsetVector = Vector()
+
 function MODULE:PostDrawTranslucentRenderables()
     if ( !ax.Cinematic.Debug ) then return end
 
@@ -35,7 +37,7 @@ function MODULE:PostDrawTranslucentRenderables()
 
             local points = table.Copy(node.ctrl or {})
             table.insert(points, 1, prev.pos)
-            table.insert(points, node.pos)
+            points[#points + 1] = node.pos
 
             local last = points[1]
             for j = 1, 60 do
@@ -44,10 +46,12 @@ function MODULE:PostDrawTranslucentRenderables()
 
                 -- Layered line thickness by offsetting
                 for offset = -1, 1 do
+                    offsetVector.z = offset
+
                     render.DrawLine(
-                        last + Vector(0, 0, offset),
-                        pos + Vector(0, 0, offset),
-                        Color(255, 150, 0), true
+                        last + offsetVector,
+                        pos + offsetVector,
+                        ax.color:Get("orange"), true
                     )
                 end
 

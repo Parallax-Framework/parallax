@@ -99,15 +99,19 @@ end
 -- @treturn table A table of class instances associated with the faction.
 function FACTION:GetClasses()
     local classes = {}
-    local instanceCount = #ax.class.instances
-    for i = 1, instanceCount do
-        local v = ax.class.instances[i]
+    local instances = ax.class.instances
+    for i = 1, #instances do
+        local v = instances[i]
         if ( v.Faction == self:GetID() ) then
-            table.insert(classes, v)
+            classes[#classes + 1] = v
         end
     end
 
     return classes
+end
+
+function FACTION:GetAnimClass()
+    return self.AnimClass
 end
 
 --- Sets the faction's name.
@@ -170,6 +174,21 @@ function FACTION:MakeDefault()
     self.IsDefault = true
 end
 
+function FACTION:SetAnimClass(animClass)
+    local animModule = ax.animations
+    if ( !istable(animModule) or !istable(animModule.stored) ) then
+        ax.util:PrintError("Attempted to set a faction's animation class without a valid animations module!")
+        return
+    end
+
+    if ( !isstring(animClass) or !istable(animModule.stored[animClass]) ) then
+        ax.util:PrintError("Attempted to set a faction's animation class without a valid animation class!")
+        return
+    end
+
+    self.AnimClass = animClass
+end
+
 function FACTION:Register()
     local bResult = hook.Run("PreFactionRegistered", self)
     if ( bResult == false ) then
@@ -187,11 +206,22 @@ function FACTION:Register()
     self.UniqueID = self.UniqueID or uniqueID
     self.ID = #ax.faction.instances + 1
 
-    table.insert(ax.faction.instances, self)
+    ax.faction.instances[#ax.faction.instances + 1] = self
     ax.faction.stored[self.UniqueID] = self
 
     team.SetUp(self:GetID(), self:GetName(), self:GetColor(), false)
     hook.Run("PostFactionRegistered", self)
+
+    local animClass = self:GetAnimClass()
+    if ( isstring(animClass) ) then
+        local models = self:GetModels()
+        for i = 1, #models do
+            local path = models[i]
+            if ( istable(path) ) then path = path[1] end
+
+            ax.animations:SetModelClass(path, animClass)
+        end
+    end
 
     return #ax.faction.instances
 end

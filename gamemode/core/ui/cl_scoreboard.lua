@@ -42,13 +42,13 @@ function PANEL:Populate()
             teams[teamID] = {}
         end
 
-        table.insert(teams[teamID], client)
+        teams[teamID][#teams[teamID] + 1] = client
     end
 
     -- Sort the teams by their team ID
     local sortedTeams = {}
     for teamID, players in pairs(teams) do
-        table.insert(sortedTeams, { teamID = teamID, players = players })
+        sortedTeams[#sortedTeams + 1] = { teamID = teamID, players = players }
     end
 
     table.sort(sortedTeams, function(a, b) return a.teamID < b.teamID end)    -- Clear the current scoreboard

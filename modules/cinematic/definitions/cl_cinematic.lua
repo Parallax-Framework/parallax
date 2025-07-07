@@ -54,7 +54,7 @@ function ax.Cinematic:Start(duration, path)
             local distance = 0
             local points = table.Copy(ctrl)
             table.insert(points, 1, lastPos)
-            table.insert(points, pos)
+            points[#points + 1] = pos
             segment.points = points
 
             for j = 1, 50 do
@@ -73,7 +73,7 @@ function ax.Cinematic:Start(duration, path)
             segment.points = {}
         end
 
-        table.insert(self.Path, segment)
+        self.Path[#self.Path + 1] = segment
         lastPos = pos
     end
 
@@ -233,17 +233,17 @@ concommand.Add("ax_cinematic_example", function()
 end)
 
 -- Prints a point with the current eye pos, angle and fov, used for adding new points
-concommand.Add("ax_cinematic_print", function(ply, cmd, arguments)
-    local pos = ply:EyePos()
-    local ang = ply:EyeAngles()
+concommand.Add("ax_cinematic_print", function(client, cmd, arguments)
+    local pos = client:EyePos()
+    local ang = client:EyeAngles()
     local fov = 90
 
     local output = string.format("{\n\tpos = Vector(%f, %f, %f),\n\tang = Angle(%f, %f, %f),\n\tfov = %d,\n\tctrl = {\n\t\tVector(%f, %f, %f),\n\t\tVector(%f, %f, %f)\n\t}\n},",
         pos.x, pos.y, pos.z,
         ang.p, ang.y, ang.r,
         fov,
-        pos.x + ply:GetForward().x * 64, pos.y + ply:GetForward().y * 64, pos.z + ply:GetForward().z * 64,
-        pos.x - ply:GetForward().x * 64, pos.y - ply:GetForward().y * 64, pos.z - ply:GetForward().z * 64
+        pos.x + client:GetForward().x * 64, pos.y + client:GetForward().y * 64, pos.z + client:GetForward().z * 64,
+        pos.x - client:GetForward().x * 64, pos.y - client:GetForward().y * 64, pos.z - client:GetForward().z * 64
     )
 
     ax.util:Print(output)
