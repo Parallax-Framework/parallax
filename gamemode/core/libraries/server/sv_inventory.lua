@@ -33,25 +33,60 @@ function ax.inventory:AddItem(inventoryID, uniqueID, data, callback)
         data = {}
     end
 
-    ax.database:Insert("ax_items", {
-        inventory_id = inventoryID,
-        unique_id = uniqueID,
-        items = {},
-        data = util.TableToJSON(data)
-    }, function(itemID)
-        if ( !itemID ) then
-            ax.util:PrintError("Failed to add item to inventory. Item ID is nil.")
+    ax.database:Select("ax_inventories", nil, "id = " .. inventoryID, function(result)
+        if ( !result or !result[1] ) then
+            ax.util:PrintError("No inventory found with ID " .. inventoryID)
+
+            if ( callback ) then
+                callback(false)
+            end
 
             return false
         end
 
-        ax.util:PrintSuccess("Item added to inventory successfully.")
-
-        if ( callback ) then
-            callback(itemID)
+        local items = util.JSONToTable(result[1].items) or {}
+        if ( !items ) then
+            items = {}
         end
 
-        return true
+        ax.database:Insert("ax_items", {
+            unique_id = uniqueID,
+            data = util.TableToJSON(data)
+        }, function(itemID)
+            if ( !itemID ) then
+                ax.util:PrintError("Failed to add item to inventory.")
+
+                if ( callback ) then
+                    callback(false)
+                end
+
+                return false
+            end
+
+            ax.util:PrintSuccess("Item added to inventory successfully with ID " .. itemID)
+
+            -- Add item to the in-memory list
+            items[itemID] = {
+                unique_id = uniqueID,
+                data = data
+            }
+
+            -- Update the inventory items in the database
+            ax.database:Update("ax_inventories", {
+                items = util.TableToJSON(items)
+            }, "id = " .. inventoryID, function(success)
+                if ( !success ) then
+                    ax.util:PrintError("Failed to update inventory items.")
+                    return false
+                end
+
+                if ( callback ) then
+                    callback(itemID)
+                end
+
+                return true
+            end)
+        end)
     end)
 end
 
@@ -65,9 +100,9 @@ function ax.inventory:RemoveItem(inventoryID, itemID, callback)
         return false
     end
 
-    ax.database:Delete("ax_items", "inventory_id = " .. inventoryID .. " AND id = " .. itemID, function(result)
-        if ( !result ) then
-            ax.util:PrintError("Failed to remove item from inventory.")
+    ax.database:Select("ax_inventories", nil, "id = " .. inventoryID, function(result)
+        if ( !result or !result[1] ) then
+            ax.util:PrintError("No inventory found with ID " .. inventoryID)
 
             if ( callback ) then
                 callback(false)
@@ -76,13 +111,46 @@ function ax.inventory:RemoveItem(inventoryID, itemID, callback)
             return false
         end
 
-        ax.util:PrintSuccess("Item removed from inventory successfully.")
+        local items = util.JSONToTable(result[1].items) or {}
+        if ( !items or !items[itemID] ) then
+            ax.util:PrintError("Item with ID " .. itemID .. " not found in inventory.")
 
-        if ( callback ) then
-            callback(result[1])
+            if ( callback ) then
+                callback(false)
+            end
+
+            return false
         end
 
-        return true
+        items[itemID] = nil -- Remove the item from the list
+
+        ax.database:Update("ax_inventories", {
+            items = util.TableToJSON(items)
+        }, "id = " .. inventoryID, function(success)
+            if ( !success ) then
+                ax.util:PrintError("Failed to update inventory items after removal.")
+                return false
+            end
+
+            ax.util:PrintSuccess("Item removed from inventory successfully.")
+
+            if ( callback ) then
+                callback(true)
+            end
+
+            return true
+        end)
+
+        ax.database:Delete("ax_items", {
+            id = itemID
+        }, function(success)
+            if ( !success ) then
+                ax.util:PrintError("Failed to delete item from database.")
+                return false
+            end
+
+            ax.util:PrintSuccess("Item with ID " .. itemID .. " deleted from database successfully.")
+        end)
     end)
 end
 
@@ -95,9 +163,36 @@ function ax.inventory:GetItems(inventoryID, callback)
         return false
     end
 
-    ax.database:Select("ax_items", nil, "inventory_id = " .. inventoryID, function(result)
+    -- ax.database:Select("ax_items", nil, "inventory_id = " .. inventoryID, function(result)
+    --     if ( !result or !result[1] ) then
+    --         ax.util:PrintError("No items found in inventory.")
+-- 
+    --         if ( callback ) then
+    --             callback({})
+    --         end
+-- 
+    --         return false
+    --     end
+-- 
+    --     PrintTable(result)
+-- 
+    --     for i = 1, #result do
+    --         local item = result[i]
+    --         item.data = util.JSONToTable(item.data) or {}
+    --         itemList[i] = item
+    --     end
+    --     ax.util:PrintSuccess("Items retrieved from inventory successfully.")
+-- 
+    --     if ( callback ) then
+    --         callback(itemList)
+    --     end
+-- 
+    --     return true
+    -- end)
+
+    ax.database:Select("ax_inventories", nil, "id = " .. inventoryID, function(result)
         if ( !result or !result[1] ) then
-            ax.util:PrintError("No items found in inventory.")
+            ax.util:PrintError("No inventory found with ID " .. inventoryID)
 
             if ( callback ) then
                 callback({})
@@ -106,17 +201,20 @@ function ax.inventory:GetItems(inventoryID, callback)
             return false
         end
 
-        PrintTable(result)
-
-        for i = 1, #result do
-            local item = result[i]
-            item.data = util.JSONToTable(item.data) or {}
-            itemList[i] = item
+        local items = util.JSONToTable(result[1].items) or {}
+        if ( !items ) then
+            items = {}
         end
+
+        for itemID, itemData in pairs(items) do
+            itemData.data = util.JSONToTable(itemData.data) or {}
+            items[itemID] = itemData
+        end
+
         ax.util:PrintSuccess("Items retrieved from inventory successfully.")
 
         if ( callback ) then
-            callback(itemList)
+            callback(items)
         end
 
         return true
@@ -132,22 +230,52 @@ function ax.inventory:ClearInventory(inventoryID, callback)
         return false
     end
 
-    ax.database:Delete("ax_items", {
-        inventory_id = inventoryID
-    }, function(success)
-        if ( !success ) then
-            ax.util:PrintError("Failed to clear inventory.")
+    -- ax.database:Delete("ax_items", {
+    --     inventory_id = inventoryID
+    -- }, function(success)
+    --     if ( !success ) then
+    --         ax.util:PrintError("Failed to clear inventory.")
+-- 
+    --         return false
+    --     end
+-- 
+    --     ax.util:PrintSuccess("Inventory cleared successfully.")
+-- 
+    --     if ( callback ) then
+    --         callback(true)
+    --     end
+-- 
+    --     return true
+    -- end)
+
+    ax.database:Select("ax_inventories", nil, "id = " .. inventoryID, function(result)
+        if ( !result or !result[1] ) then
+            ax.util:PrintError("No inventory found with ID " .. inventoryID)
+
+            if ( callback ) then
+                callback(false)
+            end
 
             return false
         end
 
-        ax.util:PrintSuccess("Inventory cleared successfully.")
+        local items = {}
+        ax.database:Update("ax_inventories", {
+            items = util.TableToJSON(items)
+        }, "id = " .. inventoryID, function(success)
+            if ( !success ) then
+                ax.util:PrintError("Failed to clear inventory items.")
+                return false
+            end
 
-        if ( callback ) then
-            callback(true)
-        end
+            ax.util:PrintSuccess("Inventory cleared successfully.")
 
-        return true
+            if ( callback ) then
+                callback(true)
+            end
+
+            return true
+        end)
     end)
 end
 
