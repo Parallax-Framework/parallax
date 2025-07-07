@@ -14,7 +14,9 @@ function GM:PlayerStartVoice(client)
         g_VoicePanelList:Remove()
     end
 
-    ax.net:Start("client.voice.start", client)
+    net.Start("ax.client.voice.start")
+        net.WritePlayer(client)
+    net.SendToServer()
 end
 
 function GM:PlayerEndVoice(client)
@@ -22,7 +24,9 @@ function GM:PlayerEndVoice(client)
         g_VoicePanelList:Remove()
     end
 
-    ax.net:Start("client.voice.end", client)
+    net.Start("ax.client.voice.end")
+        net.WritePlayer(client)
+    net.SendToServer()
 end
 
 function GM:ShouldRenderMainMenu()
@@ -113,10 +117,10 @@ function GM:ScoreboardShow()
         return false
     end
 
-    if ( !IsValid(ax.gui.Tab) ) then
+    if ( !IsValid(ax.gui.tab) ) then
         vgui.Create("ax.tab")
     else
-        ax.gui.Tab:Remove()
+        ax.gui.tab:Remove()
     end
 
     return false
@@ -157,7 +161,7 @@ function GM:InitPostEntity()
     ax.client = LocalPlayer()
     ax.option:Load()
 
-    if ( !IsValid(ax.gui.Chatbox) ) then
+    if ( !IsValid(ax.gui.chatbox) ) then
         vgui.Create("ax.chatbox")
     end
 end
@@ -293,6 +297,237 @@ local healthLerp = 0
 local healthAlpha = 0
 local healthTime = 0
 local healthLast = 0
+
+local function DrawDebug()
+    local shouldDraw = hook.Run("ShouldDrawDebugHUD")
+    if ( shouldDraw == false ) then return end
+
+    local client = ax.client
+
+    local green = ax.config:Get("color.framework")
+    local width = math.max(ax.util:GetTextWidth("ax.developer", "Pos: " .. tostring(client:GetPos())), ax.util:GetTextWidth("ax.developer", "Ang: " .. tostring(client:EyeAngles())))
+    local height = 16 * 6
+
+    local character = client:GetCharacter()
+    if ( character ) then
+        height = height + 16 * 6
+    end
+
+    ax.util:DrawBlurRect(x - padding, y - padding, width + padding * 2, height + padding * 2)
+
+    surface.SetDrawColor(backgroundColor)
+    surface.DrawRect(x - padding, y - padding, width + padding * 2, height + padding * 2)
+
+    draw.SimpleText("[DEVELOPER HUD]", "ax.developer", x, y, green, TEXT_ALIGN_LEFT)
+
+    draw.SimpleText("Pos: " .. tostring(client:GetPos()), "ax.developer", x, y + 16 * 1, green, TEXT_ALIGN_LEFT)
+    draw.SimpleText("Ang: " .. tostring(client:EyeAngles()), "ax.developer", x, y + 16 * 2, green, TEXT_ALIGN_LEFT)
+    draw.SimpleText("Health: " .. client:Health(), "ax.developer", x, y + 16 * 3, green, TEXT_ALIGN_LEFT)
+    draw.SimpleText("Ping: " .. client:Ping(), "ax.developer", x, y + 16 * 4, green, TEXT_ALIGN_LEFT)
+
+    local ft = FrameTime()
+    local fps = math.floor(1 / ft)
+    draw.SimpleText("FPS: " .. fps, "ax.developer", x, y + 16 * 5, green, TEXT_ALIGN_LEFT)
+
+    if ( character ) then
+        local name = character:GetName()
+        local charModel = character:GetModel()
+        local inventories = ax.inventory:GetByCharacterID(character:GetID()) or {}
+        for k, v in pairs(inventories) do
+            inventories[k] = tostring(v)
+        end
+        local inventoryText = "Inventories: " .. table.concat(inventories, ", ")
+
+        draw.SimpleText("[CHARACTER INFO]", "ax.developer", x, y + 16 * 7, green, TEXT_ALIGN_LEFT)
+        draw.SimpleText("Character: " .. tostring(character), "ax.developer", x, y + 16 * 8, green, TEXT_ALIGN_LEFT)
+        draw.SimpleText("Name: " .. name, "ax.developer", x, y + 16 * 9, green, TEXT_ALIGN_LEFT)
+        draw.SimpleText("Model: " .. charModel, "ax.developer", x, y + 16 * 10, green, TEXT_ALIGN_LEFT)
+        draw.SimpleText(inventoryText, "ax.developer", x, y + 16 * 11, green, TEXT_ALIGN_LEFT)
+    end
+end
+
+local function DrawPreview()
+    local shouldDraw = hook.Run("ShouldDrawPreviewHUD")
+    if ( shouldDraw == false ) then return end
+
+    local client = ax.client
+    if ( !IsValid(client) ) then return end
+
+    local orange = ax.color:Get("orange")
+    local red = ax.color:Get("red")
+
+    ax.util:DrawBlurRect(x - padding, y - padding, 410 + padding * 2, 45 + padding * 2)
+
+    surface.SetDrawColor(backgroundColor)
+    surface.DrawRect(x - padding, y - padding, 410 + padding * 2, 45 + padding * 2)
+
+    draw.SimpleText("[PREVIEW MODE]", "ax.developer", x, y, orange, TEXT_ALIGN_LEFT)
+    draw.SimpleText("Warning! Anything you witness is subject to change.", "ax.developer", x, y + 16, red, TEXT_ALIGN_LEFT)
+    draw.SimpleText("This is not the final product.", "ax.developer", x, y + 16 * 2, red, TEXT_ALIGN_LEFT)
+end
+
+local function DrawCrosshair()
+    local shouldDraw = hook.Run("ShouldDrawCrosshair")
+    if ( shouldDraw == false ) then return end
+    if ( !ax.option:Get("hud.crosshair", true) ) then return end
+
+    local client = ax.client
+    if ( !IsValid(client) ) then return end
+
+    local crosshairColor = ax.option:Get("hud.crosshair.color", color_white)
+    local crosshairSize = ax.option:Get("hud.crosshair.size", 1)
+    local crosshairThickness = ax.option:Get("hud.crosshair.thickness", 1)
+    local crosshairType = ax.option:Get("hud.crosshair.type", "cross")
+
+    local centerX, centerY = ScrW() / 2, ScrH() / 2
+    if ( hook.Run("ShouldDrawLocalPlayer", client) ) then
+        local trace = util.TraceLine({
+            start = client:GetShootPos(),
+            endpos = client:GetShootPos() + client:GetAimVector() * 8192,
+            filter = client,
+            mask = MASK_SHOT
+        })
+
+        centerX, centerY = trace.HitPos:ToScreen().x, trace.HitPos:ToScreen().y
+    end
+
+    local size = ScreenScale(8) * crosshairSize
+
+    if ( crosshairType == "cross" ) then
+        surface.SetDrawColor(crosshairColor)
+        surface.DrawRect(centerX - size / 2, centerY - crosshairThickness / 2, size, crosshairThickness)
+        surface.DrawRect(centerX - crosshairThickness / 2, centerY - size / 2, crosshairThickness, size)
+    elseif ( crosshairType == "rectangle" ) then
+        surface.SetDrawColor(crosshairColor)
+        surface.DrawRect(centerX - size / 2, centerY - size / 2, size, size)
+    elseif ( crosshairType == "circle" ) then
+        ax.util:DrawCircleScaled(centerX, centerY, size / 2, 32, crosshairColor)
+    else
+        ax.util:PrintError("Unknown crosshair type: " .. crosshairType)
+        ax.option:Reset("hud.crosshair.type")
+        ax.client:Notify("Unknown crosshair type: " .. crosshairType .. ". Resetting!")
+    end
+end
+
+local function DrawAmmo()
+    local shouldDraw = hook.Run("ShouldDrawAmmoBox")
+    if ( shouldDraw == false ) then return end
+
+    local client = ax.client
+    if ( !IsValid(client) ) then return end
+
+    local activeWeapon = client:GetActiveWeapon()
+    if ( !IsValid(activeWeapon) or !activeWeapon:IsWeapon() ) then return end
+
+    local ammoType = activeWeapon:GetPrimaryAmmoType()
+    if ( ammoType == -1 ) then return end
+
+    local ammoCount = client:GetAmmoCount(ammoType)
+    local clipCount = activeWeapon:Clip1()
+
+    local text = string.format("%d / %d", clipCount, ammoCount)
+    draw.SimpleText(text, "ax.bold", ScrW() - 16, ScrH() - 16, ax.color:Get("white"), TEXT_ALIGN_RIGHT, TEXT_ALIGN_BOTTOM)
+end
+
+local function DrawHealth()
+    local shouldDraw = hook.Run("ShouldDrawHealthBar")
+    if ( shouldDraw == false ) then return end
+
+    local client = ax.client
+    if ( !IsValid(client) ) then return end
+
+    local scrW, scrH = ScrW(), ScrH()
+    local ft = FrameTime()
+    local healthFraction = client:Health() / client:GetMaxHealth()
+    healthLerp = Lerp(ft * 5, healthLerp, healthFraction)
+
+    if ( ax.option:Get("hud.health.bar.always", false) ) then
+        healthAlpha = 255
+    else
+        if ( healthLast != healthFraction ) then
+            healthTime = CurTime() + 10
+            healthLast = healthFraction
+        elseif ( healthTime < CurTime() ) then
+            healthAlpha = Lerp(ft * 2, healthAlpha, 0)
+        elseif ( healthAlpha < 255 ) then
+            healthAlpha = Lerp(ft * 8, healthAlpha, 255)
+        end
+    end
+
+    if ( math.Round(healthAlpha) > 0 and healthLerp > 0 ) then
+        local barWidth, barHeight = scrW / 6, ScreenScale(4)
+        local barX, barY = scrW / 2 - barWidth / 2, scrH / 1.025 - barHeight / 2
+
+        if ( ax.globals.drawingStamina ) then
+            barY = barY - barHeight - padding
+        end
+
+        ax.util:DrawBlurRect(barX, barY, barWidth, barHeight, 2, nil, healthAlpha)
+
+        surface.SetDrawColor(ColorAlpha(ax.color:Get("background.transparent"), healthAlpha / 2))
+        surface.DrawRect(barX, barY, barWidth, barHeight)
+
+        surface.SetDrawColor(ColorAlpha(ax.color:Get("red.soft"), healthAlpha))
+        surface.DrawRect(barX, barY, barWidth * healthLerp, barHeight)
+    end
+end
+
+local function DrawTargetInfo(target, alpha)
+    local client = ax.client
+    if ( target:IsPlayer() ) then
+        local targetPos = target:EyePos() + Vector(0, 0, 10)
+        local distToSqr = targetPos:DistToSqr(client:WorldSpaceCenter())
+        local teamColor = team.GetColor(target:Team())
+        cam.Start3D2D(targetPos, Angle(0, client:EyeAngles().y + 270, 90), 0.02 + (distToSqr / 1024 ^ 2))
+            draw.SimpleTextOutlined(target:GetName(), "ax.huge.bold", 0, 0, ColorAlpha(teamColor, alpha), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 4, Color(0, 0, 0, alpha))
+        cam.End3D2D()
+    else
+        hook.Run("DrawTargetInfo", target, alpha)
+    end
+end
+
+local targetAlpha = {}
+local function DrawTargetInfos()
+    local client = ax.client
+    for k, v in ents.Iterator() do
+        if ( !IsValid(v) or v == client ) then continue end
+        if ( hook.Run("ShouldDrawTargetInfo", v) == false ) then continue end
+
+        local index = v:EntIndex()
+        if ( !targetAlpha[index] ) then
+            targetAlpha[index] = 0
+        end
+
+        local alpha = targetAlpha[index] or 0
+        local targetPos = v:WorldSpaceCenter()
+        local distToSqr = targetPos:DistToSqr(client:WorldSpaceCenter())
+        if ( distToSqr > 1024 ^ 2 ) then continue end
+
+        local trace = util.TraceLine({
+            start = client:GetShootPos(),
+            endpos = client:GetShootPos() + client:GetAimVector() * 192,
+            filter = client,
+            mask = MASK_SHOT
+        })
+
+        local ft = FrameTime()
+        if ( distToSqr < 192 ^ 2 and trace.Entity == v ) then
+            alpha = Lerp(ft * 5, alpha, 255)
+        else
+            alpha = Lerp(ft * 5, alpha, 0)
+        end
+
+        alpha = math.floor(alpha)
+        alpha = math.Clamp(alpha, 0, 255)
+
+        targetAlpha[index] = alpha
+
+        if ( alpha > 0 ) then
+            DrawTargetInfo(v, alpha)
+        end
+    end
+end
+
 function GM:HUDPaint()
     local client = ax.client
     if ( !IsValid(client) ) then return end
@@ -300,160 +535,23 @@ function GM:HUDPaint()
     local shouldDraw = hook.Run("PreHUDPaint")
     if ( shouldDraw == false ) then return end
 
-    local x, y = 24, 24
-    local scrW, scrH = ScrW(), ScrH()
-    local ft = FrameTime()
-
-    shouldDraw = hook.Run("ShouldDrawDebugHUD")
-    if ( shouldDraw != false ) then
-        local green = ax.config:Get("color.framework")
-        local width = math.max(ax.util:GetTextWidth("ax.developer", "Pos: " .. tostring(client:GetPos())), ax.util:GetTextWidth("ax.developer", "Ang: " .. tostring(client:EyeAngles())))
-        local height = 16 * 6
-
-        local character = client:GetCharacter()
-        if ( character ) then
-            height = height + 16 * 6
-        end
-
-        ax.util:DrawBlurRect(x - padding, y - padding, width + padding * 2, height + padding * 2)
-
-        surface.SetDrawColor(backgroundColor)
-        surface.DrawRect(x - padding, y - padding, width + padding * 2, height + padding * 2)
-
-        draw.SimpleText("[DEVELOPER HUD]", "ax.developer", x, y, green, TEXT_ALIGN_LEFT)
-
-        draw.SimpleText("Pos: " .. tostring(client:GetPos()), "ax.developer", x, y + 16 * 1, green, TEXT_ALIGN_LEFT)
-        draw.SimpleText("Ang: " .. tostring(client:EyeAngles()), "ax.developer", x, y + 16 * 2, green, TEXT_ALIGN_LEFT)
-        draw.SimpleText("Health: " .. client:Health(), "ax.developer", x, y + 16 * 3, green, TEXT_ALIGN_LEFT)
-        draw.SimpleText("Ping: " .. client:Ping(), "ax.developer", x, y + 16 * 4, green, TEXT_ALIGN_LEFT)
-
-        local fps = math.floor(1 / ft)
-        draw.SimpleText("FPS: " .. fps, "ax.developer", x, y + 16 * 5, green, TEXT_ALIGN_LEFT)
-
-        if ( character ) then
-            local name = character:GetName()
-            local charModel = character:GetModel()
-            -- TODO INV RE-WORK
-            /*
-            local inventories = ax.inventory:GetByCharacterID(character:GetID()) or {}
-            for k, v in pairs(inventories) do
-                inventories[k] = tostring(v)
-            end
-            local inventoryText = "Inventories: " .. table.concat(inventories, ", ")
-            */
-
-            draw.SimpleText("[CHARACTER INFO]", "ax.developer", x, y + 16 * 7, green, TEXT_ALIGN_LEFT)
-            draw.SimpleText("Character: " .. tostring(character), "ax.developer", x, y + 16 * 8, green, TEXT_ALIGN_LEFT)
-            draw.SimpleText("Name: " .. name, "ax.developer", x, y + 16 * 9, green, TEXT_ALIGN_LEFT)
-            draw.SimpleText("Model: " .. charModel, "ax.developer", x, y + 16 * 10, green, TEXT_ALIGN_LEFT)
-            --draw.SimpleText(inventoryText, "ax.developer", x, y + 16 * 11, green, TEXT_ALIGN_LEFT)
-        end
-    end
-
-    shouldDraw = hook.Run("ShouldDrawPreviewHUD")
-    if ( shouldDraw != false ) then
-        local orange = ax.color:Get("orange")
-        local red = ax.color:Get("red")
-
-        ax.util:DrawBlurRect(x - padding, y - padding, 410 + padding * 2, 45 + padding * 2)
-
-        surface.SetDrawColor(backgroundColor)
-        surface.DrawRect(x - padding, y - padding, 410 + padding * 2, 45 + padding * 2)
-
-        draw.SimpleText("[PREVIEW MODE]", "ax.developer", x, y, orange, TEXT_ALIGN_LEFT)
-        draw.SimpleText("Warning! Anything you witness is subject to change.", "ax.developer", x, y + 16, red, TEXT_ALIGN_LEFT)
-        draw.SimpleText("This is not the final product.", "ax.developer", x, y + 16 * 2, red, TEXT_ALIGN_LEFT)
-    end
-
-    shouldDraw = hook.Run("ShouldDrawCrosshair")
-    if ( shouldDraw != false and ax.option:Get("hud.crosshair", true) ) then
-        local crosshairColor = ax.option:Get("hud.crosshair.color", color_white)
-        local crosshairSize = ax.option:Get("hud.crosshair.size", 1)
-        local crosshairThickness = ax.option:Get("hud.crosshair.thickness", 1)
-        local crosshairType = ax.option:Get("hud.crosshair.type", "cross")
-
-        local centerX, centerY = ScrW() / 2, ScrH() / 2
-        if ( hook.Run("ShouldDrawLocalPlayer", client) ) then
-            local trace = util.TraceLine({
-                start = client:GetShootPos(),
-                endpos = client:GetShootPos() + client:GetAimVector() * 8192,
-                filter = client,
-                mask = MASK_SHOT
-            })
-
-            centerX, centerY = trace.HitPos:ToScreen().x, trace.HitPos:ToScreen().y
-        end
-
-        local size = ScreenScale(8) * crosshairSize
-
-        if ( crosshairType == "cross" ) then
-            surface.SetDrawColor(crosshairColor)
-            surface.DrawRect(centerX - size / 2, centerY - crosshairThickness / 2, size, crosshairThickness)
-            surface.DrawRect(centerX - crosshairThickness / 2, centerY - size / 2, crosshairThickness, size)
-        elseif ( crosshairType == "rectangle" ) then
-            surface.SetDrawColor(crosshairColor)
-            surface.DrawRect(centerX - size / 2, centerY - size / 2, size, size)
-        elseif ( crosshairType == "circle" ) then
-            ax.util:DrawCircleScaled(centerX, centerY, size / 2, 32, crosshairColor)
-        else
-            ax.util:PrintError("Unknown crosshair type: " .. crosshairType)
-            ax.option:Reset("hud.crosshair.type")
-            ax.client:Notify("Unknown crosshair type: " .. crosshairType .. ". Resetting!")
-        end
-    end
-
-    shouldDraw = hook.Run("ShouldDrawAmmoBox")
-    if ( shouldDraw != nil and shouldDraw != false ) then
-        local activeWeapon = client:GetActiveWeapon()
-        if ( !IsValid(activeWeapon) ) then return end
-
-        local ammo = client:GetAmmoCount(activeWeapon:GetPrimaryAmmoType())
-        local clip = activeWeapon:Clip1()
-        local ammoText = clip .. " / " .. ammo
-
-        draw.SimpleTextOutlined(ammoText, "ax.bold", scrW - 16, scrH - 16, ax.color:Get("white"), TEXT_ALIGN_RIGHT, TEXT_ALIGN_BOTTOM, 1, ax.color:Get("black"))
-    end
-
-    shouldDraw = hook.Run("ShouldDrawHealthBar")
-    if ( shouldDraw != nil and shouldDraw != false ) then
-        local healthFraction = client:Health() / client:GetMaxHealth()
-        healthLerp = Lerp(ft * 5, healthLerp, healthFraction)
-
-        if ( ax.option:Get("hud.health.bar.always", false) ) then
-            healthAlpha = 255
-        else
-            if ( healthLast != healthFraction ) then
-                healthTime = CurTime() + 10
-                healthLast = healthFraction
-            elseif ( healthTime < CurTime() ) then
-                healthAlpha = Lerp(ft * 2, healthAlpha, 0)
-            elseif ( healthAlpha < 255 ) then
-                healthAlpha = Lerp(ft * 8, healthAlpha, 255)
-            end
-        end
-
-        if ( math.Round(healthAlpha) > 0 and healthLerp > 0 ) then
-            local barWidth, barHeight = scrW / 6, ScreenScale(4)
-            local barX, barY = scrW / 2 - barWidth / 2, scrH / 1.025 - barHeight / 2
-
-            if ( ax.globals.drawingStamina ) then
-                barY = barY - barHeight - padding
-            end
-
-            ax.util:DrawBlurRect(barX, barY, barWidth, barHeight, 2, nil, healthAlpha)
-
-            surface.SetDrawColor(ColorAlpha(ax.color:Get("background.transparent"), healthAlpha / 2))
-            surface.DrawRect(barX, barY, barWidth, barHeight)
-
-            surface.SetDrawColor(ColorAlpha(ax.color:Get("red.soft"), healthAlpha))
-            surface.DrawRect(barX, barY, barWidth * healthLerp, barHeight)
-        end
-    end
+    DrawDebug()
+    DrawPreview()
+    DrawCrosshair()
+    DrawAmmo()
+    DrawHealth()
 
     hook.Run("PostHUDPaint")
 end
 
+local textAngle = Angle(0, 0, 90)
+
 function GM:PostDrawTranslucentRenderables(bDrawingDepth, bDrawingSkybox)
+    local client = ax.client
+    if ( !IsValid(client) ) then return end
+
+    DrawTargetInfos()
+
     if ( !ax.config:Get("debug.developer") ) then return end
     if ( !ax.client:IsDeveloper() ) then return end
 
@@ -486,9 +584,11 @@ function GM:PostDrawTranslucentRenderables(bDrawingDepth, bDrawingSkybox)
 
     local scale = math.Clamp(0 + (distance / 1024), 0.1, 1)
 
+    textAngle.y = client:EyeAngles().y - 90
+
     -- Draw a background for the text
     cam.IgnoreZ(true)
-    cam.Start3D2D(center, Angle(0, client:EyeAngles().y - 90, 90), scale)
+    cam.Start3D2D(center, textAngle, scale)
         surface.SetDrawColor(0, 0, 0, 200)
         surface.DrawRect(x - padding, y - padding, textWidth + padding, textHeight + padding)
 
@@ -710,13 +810,13 @@ function GM:LoadFonts()
 end
 
 function GM:OnPauseMenuShow()
-    if ( IsValid(ax.gui.Tab) ) then
-        ax.gui.Tab:Close()
+    if ( IsValid(ax.gui.tab) ) then
+        ax.gui.tab:Close()
         return false
     end
 
-    if ( IsValid(ax.gui.Chatbox) and ax.gui.Chatbox:GetAlpha() == 255 ) then
-        ax.gui.Chatbox:SetVisible(false)
+    if ( IsValid(ax.gui.chatbox) and ax.gui.chatbox:GetAlpha() == 255 ) then
+        ax.gui.chatbox:SetVisible(false)
         return false
     end
 
@@ -739,15 +839,25 @@ function GM:PostHUDPaint()
 end
 
 function GM:ShouldDrawCrosshair()
-    if ( IsValid(ax.gui.mainmenu) ) then return false end
-    if ( IsValid(ax.gui.Tab) ) then return false end
+    if (
+        IsValid(ax.gui.mainmenu) or
+        IsValid(ax.gui.tab) or
+        IsValid(ax.gui.splash)
+    ) then
+        return false
+    end
 
     return true
 end
 
 function GM:ShouldDrawAmmoBox()
-    if ( IsValid(ax.gui.mainmenu) ) then return false end
-    if ( IsValid(ax.gui.Tab) ) then return false end
+    if (
+        IsValid(ax.gui.mainmenu) or
+        IsValid(ax.gui.tab) or
+        IsValid(ax.gui.splash)
+    ) then
+        return false
+    end
 
     local client = ax.client
     local activeWeapon = client:GetActiveWeapon()
@@ -766,8 +876,13 @@ function GM:ShouldDrawAmmoBox()
 end
 
 function GM:ShouldDrawHealthBar()
-    if ( IsValid(ax.gui.mainmenu) ) then return false end
-    if ( IsValid(ax.gui.Tab) ) then return false end
+    if (
+        IsValid(ax.gui.mainmenu) or
+        IsValid(ax.gui.tab) or
+        IsValid(ax.gui.splash)
+    ) then
+        return false
+    end
 
     local client = ax.client
     if ( !IsValid(client) or !client:Alive() ) then return false end
@@ -775,18 +890,34 @@ function GM:ShouldDrawHealthBar()
     return ax.option:Get("hud.health.bar", true)
 end
 
+function GM:ShouldDrawTargetInfo(entity)
+    if ( entity:IsPlayer() ) then return true end
+
+    return false
+end
+
 function GM:ShouldDrawDebugHUD()
     if ( !ax.config:Get("debug.developer") ) then return false end
-    if ( IsValid(ax.gui.mainmenu) ) then return false end
-    if ( IsValid(ax.gui.Tab) ) then return false end
+    if (
+        IsValid(ax.gui.mainmenu) or
+        IsValid(ax.gui.tab) or
+        IsValid(ax.gui.splash)
+    ) then
+        return false
+    end
 
     return ax.client:IsDeveloper()
 end
 
 function GM:ShouldDrawPreviewHUD()
     if ( !ax.config:Get("debug.preview") ) then return false end
-    if ( IsValid(ax.gui.mainmenu) ) then return false end
-    if ( IsValid(ax.gui.Tab) ) then return false end
+    if (
+        IsValid(ax.gui.mainmenu) or
+        IsValid(ax.gui.tab) or
+        IsValid(ax.gui.splash)
+    ) then
+        return false
+    end
 
     return !hook.Run("ShouldDrawDebugHUD")
 end
@@ -1027,23 +1158,28 @@ function GM:GetChatboxPos()
 end
 
 function GM:ChatboxOnTextChanged(text)
-    ax.net:Start("client.chatbox.text.changed", text)
+    net.Start("ax.client.chatbox.text.changed")
+        net.WriteString(text)
+    net.SendToServer()
 
     -- Notify the command system about the text change
-    local command = ax.command:Get(ax.gui.Chatbox:GetChatType())
+    local command = ax.command:Get(ax.gui.chatbox:GetChatType())
     if ( command and command.OnChatTextChanged ) then
         command:OnTextChanged(text)
     end
 
     -- Notify the chat system about the text change
-    local chat = ax.chat:Get(ax.gui.Chatbox:GetChatType())
+    local chat = ax.chat:Get(ax.gui.chatbox:GetChatType())
     if ( chat and chat.OnChatTextChanged ) then
         chat:OnTextChanged(text)
     end
 end
 
 function GM:ChatboxOnChatTypeChanged(newType, oldType)
-    ax.net:Start("client.chatbox.type.changed", newType, oldType)
+    net.Start("ax.client.chatbox.type.changed")
+        net.WriteString(newType)
+        net.WriteString(oldType)
+    net.SendToServer()
 
     -- Notify the command system about the chat type change
     local command = ax.command:Get(newType)
@@ -1062,7 +1198,7 @@ function GM:PlayerBindPress(client, bind, pressed)
     bind = bind:lower()
 
     if ( string.find(bind, "messagemode") and pressed ) then
-        ax.gui.Chatbox:SetVisible(true)
+        ax.gui.chatbox:SetVisible(true)
 
         for i = 1, #ax.chat.messages do
             local pnl = ax.chat.messages[i]
@@ -1116,6 +1252,12 @@ function GM:SpawnMenuOpen()
 end
 
 function GM:PostOptionsLoad(instancesTable)
+    for uniqueID, data in pairs(ax.option.stored) do
+        if ( data.Type == ax.types.number and data.IsKeybind ) then
+            ax.binds[data.Default] = uniqueID
+        end
+    end
+
     for optionName, value in pairs(instancesTable) do
         local optionData = ax.option.stored[optionName]
         if ( !istable(optionData) ) then continue end

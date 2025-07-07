@@ -131,11 +131,17 @@ end
 -- @param client Player The player to send the message to.
 -- @param ... any The message to send.
 function ax.util:SendChatText(client, ...)
-    if ( SERVER ) then
-        ax.net:Start(client, "chat.text", {...})
-    else
-        chat.AddText(...)
-    end
+	if ( client == nil ) then
+		client = select(2, player.Iterator())
+	end
+
+	if ( SERVER ) then
+		net.Start("ax.chat.text")
+			net.WriteTable({...})
+		net.Send(client)
+	else
+		chat.AddText(...)
+	end
 end
 
 --- Prepares a package of arguments for printing.
@@ -148,18 +154,18 @@ function ax.util:PreparePackage(...)
 
     for i = 1, #arguments do
         local arg = arguments[i]
-        if ( isentity(arg) or type(arg) == "Player" ) then
-            table.insert(package, tostring(arg))
+        if ( isentity(arg) ) then
+            package[#package + 1] = tostring(arg)
 
             if ( type(arg) == "Player" ) then
-                table.insert(package, "[" .. arg:SteamID64() .. "]")
+                package[#package + 1] = "[" .. arg:SteamID64() .. "]"
             end
         else
-            table.insert(package, arg)
+            package[#package + 1] = arg
         end
     end
 
-    table.insert(package, "\n")
+    package[#package + 1] =  "\n"
 
     return package
 end
@@ -207,7 +213,7 @@ function ax.util:PrintError(...)
     for i = 1, 10 do
         local traceInfo = debug.getinfo(i, "Sl")
         if ( !traceInfo ) then break end
-        table.insert(info, traceInfo)
+        info[#info + 1] = traceInfo
     end
 
     local line = ""
@@ -224,8 +230,8 @@ function ax.util:PrintError(...)
         end
 
         line = string.gsub(line, "gamemodes/", "")
-        table.insert(arguments, " (" .. line .. ")")
-        table.insert(arguments, "\n")
+        arguments[#arguments + 1] = " (" .. line .. ")"
+        arguments[#arguments + 1] = "\n"
     end
 
     local bConfigInit = istable(ax.config) and isfunction(ax.config.Get)
@@ -247,7 +253,7 @@ function ax.util:PrintError(...)
 
             local file = traceInfo.short_src or "unknown"
             local lineNum = traceInfo.currentline or 0
-            table.insert(log, string.format("%s:%d", file, lineNum) .. "\n")
+            log[#log + 1] = string.format("%s:%d", file, lineNum) .. "\n"
         end
         log = table.concat(log, " -> ")
         MsgC(tagColor, "[Parallax] ", batchColor, "[Error] [Traceback] ", log, "\n")
@@ -483,7 +489,7 @@ function ax.util:GetWrappedText(text, font, maxWidth)
                 local next = line .. char
 
                 if ( self:GetTextWidth(font, next) > maxWidth ) then
-                    table.insert(lines, line)
+                    lines[#lines + 1] = line
                     line = ""
                 end
 
@@ -497,7 +503,7 @@ function ax.util:GetWrappedText(text, font, maxWidth)
         local next = line .. space .. word
 
         if ( self:GetTextWidth(font, next) > maxWidth ) then
-            table.insert(lines, line)
+            lines[#lines + 1] = line
             line = word
         else
             line = next
@@ -505,7 +511,7 @@ function ax.util:GetWrappedText(text, font, maxWidth)
     end
 
     if ( line != "" ) then
-        table.insert(lines, line)
+        lines[#lines + 1] = line
     end
 
     return lines
@@ -723,7 +729,10 @@ end
 -- @param path string Path to the folder containing tool files.
 -- @realm shared
 function ax.util:LoadTools(path)
-    for _, val in ipairs(file.Find(path .. "/*.lua", "LUA")) do
+    local files = file.Find(path .. "/*.lua", "LUA")
+    for i = 1, #files do
+        local val = files[i]
+
         local _, _, toolmode = string.find(val, "([%w_]*).lua")
         toolmode = toolmode:lower()
 
