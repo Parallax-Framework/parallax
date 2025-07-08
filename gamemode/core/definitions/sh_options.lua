@@ -259,3 +259,12 @@ ax.option:Register("chat.size.font", {
         end
     end
 })
+
+ax.option:Register("chat.typesound", {
+    Name = "options.chat.typesound",
+    Description = "options.chat.typesound.help",
+    Category = "category.chat",
+    Type = ax.types.bool,
+    Default = true,
+    NoNetworking = true
+})

@@ -171,7 +171,7 @@ function GM:PrePlayerLoadedCharacter(client, character, previousCharacter)
         return false, "You are on cooldown for switching characters!"
     end
 
-    if ( !client:Alive() ) then
+    if ( client:GetCharacter() and !client:Alive() ) then
         return false, "You cannot switch characters while being dead!"
     end
 

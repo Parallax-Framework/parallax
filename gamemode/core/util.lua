@@ -18,6 +18,8 @@
 -- @param value any The raw value to sanitize
 -- @return any A validated and converted result
 -- @usage ax.util:CoerceType(ax.types.number, "123") -- returns 123
+
+-- Credit @ Helix :: https://github.com/NebulousCloud/helix/blob/master/gamemode/core/sh_util.lua
 function ax.util:CoerceType(typeID, value)
     if ( typeID == nil or value == nil ) then
         ax.util:PrintError("Attempted to coerce a type with no type ID or value! (" .. tostring(typeID) .. ", " .. tostring(value) .. ")")
@@ -49,7 +51,7 @@ function ax.util:CoerceType(typeID, value)
             return value
         end
     elseif ( typeID == ax.types.steamid ) then
-        if ( isstring(value) and #value == 19 and string.match(value, "STEAM_%d:%d:%d+") ) then
+        if ( isstring(value) and #value == 19 and string.match(value, "STEAM_%d:%d:%d+") != nil ) then
             return value
         end
     elseif ( typeID == ax.types.steamid64 ) then
@@ -82,6 +84,7 @@ local checkTypeMap = {
 -- @param value any The value to analyze
 -- @return number|nil A type constant from ax.types or nil if unknown
 -- @usage local t = ax.util:DetectType(Color(255,0,0)) -- returns ax.types.color
+-- Credit @ Helix :: https://github.com/NebulousCloud/helix/blob/master/gamemode/core/sh_util.lua
 function ax.util:DetectType(value)
     local luaType = type(value)
     local mapped = basicTypeMap[luaType]

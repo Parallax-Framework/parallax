@@ -226,5 +226,9 @@ localization["tab.inventory"] = "Inventory"
 localization["tab.mainmenu"] = "Main Menu"
 localization["tab.options"] = "Options"
 localization["tab.scoreboard"] = "Scoreboard"
+localization["options.chat.typesound"] = "Chat Type Sound"
+localization["options.chat.typesound.help"] = "Enable or disable the sound played when typing in chat."
+localization["config.chat.format"] = "Chat Format"
+localization["config.chat.format.help"] = "Enable or disable the chat format. When enabled, chat messages will be formatted with some changes."
 
 ax.localization:Register("en", localization)

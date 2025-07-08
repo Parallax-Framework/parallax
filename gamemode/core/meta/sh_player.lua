@@ -203,6 +203,23 @@ function PLAYER:IsFemale()
     return false
 end
 
+--- Returns a pretty-printed string representation of the player.
+-- @realm shared
+-- @tparam[opt=false] boolean bIncludeICName Whether to include the in-character name and ID.
+-- @treturn string The pretty-printed string.
+function PLAYER:PrettyPrint(bIncludeICName)
+    if ( bIncludeICName == nil ) then bIncludeICName = false end
+
+    local character = self:GetCharacter()
+
+    return string.format(
+        "%s%s%s",
+        self:SteamName() .. " [#" .. self:EntIndex() .. "]",
+        bIncludeICName and character and " (" .. character:GetName() .. " // " .. character:GetID() .. ")" or "",
+        self:IsBot() and " [BOT]" or " [" .. self:SteamID64() .. "]"
+    )
+end
+
 --- Gets the faction data associated with the player.
 -- @realm shared
 -- @treturn table|nil The faction data if found, or nil.

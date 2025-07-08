@@ -58,3 +58,22 @@ end
 function ax.chat:Get(uniqueID)
     return self.classes[uniqueID]
 end
+
+local hashFinalCharacters = {
+    ["!"] = true,
+    ["."] = true,
+    ["?"] = true
+}
+
+function ax.chat:Format(message)
+    if ( !ax.config:Get("chat.format") ) then return message end
+
+    if ( !hashFinalCharacters[string.sub(message, -1)] ) then
+        message = message .. "."
+    end
+
+    message = string.sub(message, 1, 1):upper() .. string.sub(message, 2)
+    message = string.Trim(message)
+
+    return message
+end

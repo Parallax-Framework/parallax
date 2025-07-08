@@ -17,7 +17,7 @@ MODULE.Description = "Provides a system for observer mode."
 
 local meta = FindMetaTable("Player")
 function meta:InObserver()
-    return self:GetMoveType() == MOVETYPE_NOCLIP and CAMI.PlayerHasAccess(self, "Parallax - Observer", nil)
+    return self:GetMoveType() == MOVETYPE_NOCLIP and CAMI.PlayerHasAccess(self, "Parallax - Observer", nil) and self:GetNoDraw()
 end
 
 CAMI.RegisterPrivilege({

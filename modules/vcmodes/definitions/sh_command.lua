@@ -28,10 +28,9 @@ ax.command:Register("ChangeVoiceMode", {
         end
 
         local mode = arguments[1]
-        local modesCount = #MODULE.Modes
-        for k = 1, modesCount do
+        for k = 1, #MODULE.Modes do
             local v = MODULE.Modes[k]
-            if ( k == mode ) then
+            if ( k == mode or ax.util:FindString(v, mode) ) then
                 client:SetRelay("voiceMode", k)
                 client:Notify("Your voice chat mode has been changed to " .. v .. ".")
 

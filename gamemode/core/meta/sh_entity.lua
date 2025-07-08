@@ -135,7 +135,7 @@ function ENTITY:GetMasterDoor()
         end
     end
 
-    return nil
+    return NULL
 end
 
 --- Returns the child door for this entity, this is the door that is linked to this entity in a master-slave relationship.
@@ -143,13 +143,14 @@ end
 function ENTITY:GetChildDoor()
     if ( !self:IsDoor() ) then return nil end
 
-    for _, ent in ipairs(ents.FindByClass("prop_door_rotating")) do
-        if ( ent:GetMasterDoor() == self ) then
-            return ent
+    local doors = ents.FindByClass("prop_door_rotating")
+    for i = 1, #doors do
+        if ( doors[i]:GetMasterDoor() == self ) then
+            return doors[i]
         end
     end
 
-    return nil
+    return NULL
 end
 
 --- Gets whether the entity has a spawn effect.

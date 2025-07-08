@@ -504,3 +504,11 @@ ax.config:Register("characters.maxDescriptionLength", {
     Min = 1,
     Max = 1024,
 })
+
+ax.config:Register("chat.format", {
+    Name = "config.chat.format",
+    Description = "config.chat.format.help",
+    Category = "category.chat",
+    Type = ax.types.bool,
+    Default = true,
+})

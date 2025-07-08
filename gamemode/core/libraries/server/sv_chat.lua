@@ -15,7 +15,7 @@
 function ax.chat:SendSpeaker(speaker, uniqueID, text)
     local players = {}
     for k, v in player.Iterator() do
-        if ( !IsValid(v) or !v:Alive() ) then continue end
+        if ( !v:Alive() ) then continue end
 
         if ( hook.Run("PlayerCanHearChat", speaker, v, uniqueID, text) != false ) then
             players[#players + 1] = v
