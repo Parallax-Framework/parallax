@@ -127,4 +127,4 @@ concommand.Add("ax_localization_check", function(client, command, arguments)
     end
 end)
 
-ax.localisation = ax.localization -- tea
+ax.localisation = ax.localization

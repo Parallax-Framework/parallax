@@ -27,17 +27,11 @@ CAMI.RegisterPrivilege({
     MinAccess = "admin"
 })
 
-function MODULE:FormatPlayer(client)
-    if ( !IsValid(client) ) then return "Console" end
-
-    return client:SteamName() .. " [" .. client:EntIndex() .. "][" .. client:SteamID64() .. "]"
-end
-
 function MODULE:Format(ent)
-    if ( !IsValid(ent) or ent == Entity(0) ) then return "world" end
+    if ( !IsValid(ent) or ent:IsWorld() ) then return "world" end
 
     if ( ent:IsPlayer() ) then
-        return self:FormatPlayer(ent)
+        return ent:PrettyPrint(true)
     end
 
     local tag = ent:GetModel()

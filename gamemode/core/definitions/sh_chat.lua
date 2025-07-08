@@ -15,7 +15,7 @@ ax.chat:Register("ic", {
         return speaker:GetPos():DistToSqr(listener:GetPos()) < radius ^ 2
     end,
     OnChatAdd = function(self, speaker, text)
-        chat.AddText(ax.color:Get("chat"), speaker:Name() .. " says \"" .. text .. "\"")
+        chat.AddText(ax.color:Get("chat"), speaker:Name() .. " says \"" .. ax.chat:Format(text) .. "\"")
         chat.PlaySound()
     end
 })
@@ -27,7 +27,7 @@ ax.chat:Register("whisper", {
         return speaker:GetPos():DistToSqr(listener:GetPos()) < radius ^ 2
     end,
     OnChatAdd = function(self, speaker, text)
-        chat.AddText(ax.color:Get("chat.whisper"), speaker:Name() .. " whispers \"" .. text .. "\"")
+        chat.AddText(ax.color:Get("chat.whisper"), speaker:Name() .. " whispers \"" .. ax.chat:Format(text) .. "\"")
         chat.PlaySound()
     end
 })
@@ -39,7 +39,7 @@ ax.chat:Register("yell", {
         return speaker:GetPos():DistToSqr(listener:GetPos()) < radius ^ 2
     end,
     OnChatAdd = function(self, speaker, text)
-        chat.AddText(ax.color:Get("chat.yell"), speaker:Name() .. " yells \"" .. text .. "\"")
+        chat.AddText(ax.color:Get("chat.yell"), speaker:Name() .. " yells \"" .. ax.chat:Format(text) .. "\"")
         chat.PlaySound()
     end
 })
@@ -51,7 +51,7 @@ ax.chat:Register("me", {
         return speaker:GetPos():DistToSqr(listener:GetPos()) < radius ^ 2
     end,
     OnChatAdd = function(self, speaker, text)
-        chat.AddText(ax.color:Get("chat.action"), speaker:Name() .. " " .. text)
+        chat.AddText(ax.color:Get("chat.action"), "*", speaker:Name() .. " " .. ax.chat:Format(text), "*") -- TODO: wtf, no italic support?
     end
 })
 
@@ -72,7 +72,7 @@ ax.chat:Register("ooc", {
         return ax.config:Get("chat.ooc")
     end,
     OnChatAdd = function(self, speaker, text)
-        chat.AddText(ax.color:Get("chat.ooc"), "(OOC) ", ax.color:Get("text"), speaker:SteamName() .. ": " .. text)
+        chat.AddText(ax.color:Get("chat.ooc"), "OOC // ", ax.color:Get("text"), speaker:SteamName() .. ": " .. text)
     end
 })
 
@@ -83,7 +83,7 @@ ax.chat:Register("looc", {
         return speaker:GetPos():DistToSqr(listener:GetPos()) < radius ^ 2
     end,
     OnChatAdd = function(self, speaker, text)
-        chat.AddText(ax.color:Get("chat.ooc"), "(LOOC) ", ax.color:Get("text"), speaker:SteamName() .. ": " .. text)
+        chat.AddText(ax.color:Get("chat.ooc"), "LOOC // ", ax.color:Get("text"), speaker:SteamName() .. ": " .. text)
     end
 })
 

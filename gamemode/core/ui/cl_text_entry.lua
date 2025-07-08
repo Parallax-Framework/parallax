@@ -20,6 +20,7 @@ function PANEL:Init()
     self:SetUpdateOnType(true)
     self:SetCursorColor(ax.color:Get("text.light"))
     self:SetHighlightColor(ax.color:Get("text.light"))
+    self._bSndEffectOptional = false
 
     self:SetTall(ScreenScale(12))
 end
@@ -38,10 +39,20 @@ function PANEL:Paint(width, height)
     BaseClass.Paint(self, width, height)
 end
 
+function PANEL:ShouldPlayTypeSound()
+    if ( self._bSndEffectOptional ) then
+        return ax.option:Get("chat.typesound")
+    end
+
+    return BaseClass.ShouldPlayTypeSound(self)
+end
+
 function PANEL:OnTextChanged(...)
     BaseClass.OnTextChanged(self, ...)
 
-    surface.PlaySound("common/talk.wav")
+    if ( self:ShouldPlayTypeSound() ) then
+        surface.PlaySound("common/talk.wav")
+    end
 end
 
 vgui.Register("ax.text.entry", PANEL, "DTextEntry")

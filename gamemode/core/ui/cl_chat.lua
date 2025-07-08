@@ -57,6 +57,7 @@ function PANEL:Init()
     self.entry:SetPlaceholderText("Say something...")
     self.entry:SetDrawLanguageID(false)
     self.entry:SetTabbingDisabled(true)
+    self.entry._bSndEffectOptional = true
 
     bottom:SizeToChildren(false, true)
 

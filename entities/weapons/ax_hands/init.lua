@@ -110,96 +110,97 @@ function SWEP:Pickup()
     local client = self:GetOwner()
     local traceData = client:GetEyeTrace(MASK_SHOT)
     local ent = traceData.Entity
+    if ( !IsValid(ent) ) then return end
+
     local holdingPhysicsObject = ent:GetPhysicsObject()
+    if ( !IsValid(holdingPhysicsObject) ) then return end
 
     if ( ent:GetRelay("disallowPickup", false) ) then return end
     if ( ent:GetMoveType() == MOVETYPE_NONE ) then return end
 
     self.axHoldingEntity = ent
-    if ( IsValid(ent) and IsValid(holdingPhysicsObject) ) then
-        self.axCarry = ents.Create("prop_physics")
+    self.axCarry = ents.Create("prop_physics")
 
-        if ( IsValid(self.axCarry) ) then
-            local pos, obb = self.axHoldingEntity:GetPos(), self.axHoldingEntity:OBBCenter()
-            pos = pos + self.axHoldingEntity:GetForward() * obb.x
-            pos = pos + self.axHoldingEntity:GetRight() * obb.y
-            pos = pos + self.axHoldingEntity:GetUp() * obb.z
-            pos = traceData.HitPos
+    if ( IsValid(self.axCarry) ) then
+        local pos, obb = self.axHoldingEntity:GetPos(), self.axHoldingEntity:OBBCenter()
+        pos = pos + self.axHoldingEntity:GetForward() * obb.x
+        pos = pos + self.axHoldingEntity:GetRight() * obb.y
+        pos = pos + self.axHoldingEntity:GetUp() * obb.z
+        pos = traceData.HitPos
 
-            self.axCarry:SetPos(pos)
-            self.axCarry.distance = math.min(64, client:GetShootPos():Distance(pos))
+        self.axCarry:SetPos(pos)
+        self.axCarry.distance = math.min(64, client:GetShootPos():Distance(pos))
 
-            self.axCarry:SetModel("models/weapons/w_bugbait.mdl")
+        self.axCarry:SetModel("models/weapons/w_bugbait.mdl")
 
-            self.axCarry:SetNoDraw(true)
-            self.axCarry:DrawShadow(false)
+        self.axCarry:SetNoDraw(true)
+        self.axCarry:DrawShadow(false)
 
-            self.axCarry:SetHealth(999)
-            self.axCarry:SetOwner(self.axHoldingEntity:GetOwner())
-            self.axCarry:SetCollisionGroup(COLLISION_GROUP_DEBRIS)
-            self.axCarry:SetSolid(SOLID_NONE)
+        self.axCarry:SetHealth(999)
+        self.axCarry:SetOwner(self.axHoldingEntity:GetOwner())
+        self.axCarry:SetCollisionGroup(COLLISION_GROUP_DEBRIS)
+        self.axCarry:SetSolid(SOLID_NONE)
 
-            local preferredAngles = hook.Run("GetPreferredCarryAngles", self.axHoldingEntity)
-            if ( self:GetOwner():KeyDown(IN_RELOAD) and !preferredAngles ) then
-                preferredAngles = angle_zero
-            end
-
-            if ( preferredAngles ) then
-                local entAngle = self.axHoldingEntity:GetAngles()
-                self.axCarry.preferedAngle = self.axHoldingEntity:GetAngles()
-                local grabAngle = self.axHoldingEntity:GetAngles()
-
-                grabAngle:RotateAroundAxis(entAngle:Right(), preferredAngles[1])
-                grabAngle:RotateAroundAxis(entAngle:Up(), preferredAngles[2])
-                grabAngle:RotateAroundAxis(entAngle:Forward(), preferredAngles[3])
-
-                self.axCarry:SetAngles(grabAngle)
-            else
-                local ang = self:GetOwner():GetAngles()
-                self.axCarry.storedAng = LerpAngle(FrameTime() * 2, self.axCarry.storedAng or ang, ang)
-                self.axCarry:SetAngles(self.axCarry.storedAng)
-            end
-
-            self.axCarry:Spawn()
-
-            local physicsObject = self.axCarry:GetPhysicsObject()
-            if ( IsValid(physicsObject) ) then
-                physicsObject:SetMass(200)
-                physicsObject:SetDamping(0, 1000)
-                physicsObject:EnableGravity(false)
-                physicsObject:EnableCollisions(false)
-                physicsObject:EnableMotion(false)
-                physicsObject:AddGameFlag(FVPHYSICS_PLAYER_HELD)
-            end
-
-            local bone = math.Clamp(traceData.PhysicsBone, 0, 1)
-            if ( ent:GetClass() == "prop_ragdoll" ) then
-                bone = traceData.PhysicsBone
-                self.holdingBone = bone
-                holdingPhysicsObject = self.axHoldingEntity:GetPhysicsObjectNum(bone)
-            end
-
-            holdingPhysicsObject:AddGameFlag(FVPHYSICS_PLAYER_HELD)
-
-            local maxForce = ax.config:Get("hands.max.Force", 16500)
-            local vSize = self.axHoldingEntity:OBBMaxs() - self.axHoldingEntity:OBBMins()
-            if ( self.axHoldingEntity:IsRagdoll() or math.max(vSize.x, vSize.y, vSize.z) > 60 ) then
-                self.axConstraint = constraint.Ballsocket(self.axCarry, self.axHoldingEntity, 0, bone, holdingPhysicsObject:WorldToLocal(pos), maxForce / 3, 0, 1)
-            else
-                self.axConstraint = constraint.Weld(self.axCarry, self.axHoldingEntity, 0, bone, maxForce, true)
-
-                self.axHoldingEntity.HandsConstraint = self.axConstraint
-            end
-
-            self.axHoldingEntity.oldCollisionGroup = self.axHoldingEntity.oldCollisionGroup or self.axHoldingEntity:GetCollisionGroup()
-            self.axHoldingEntity:SetCollisionGroup(COLLISION_GROUP_PASSABLE_DOOR)
-
-            local children = self.axHoldingEntity:GetChildren()
-            for i = 1, #children do
-                children[i]:SetCollisionGroup(COLLISION_GROUP_PASSABLE_DOOR)
-            end
-
-            self:GetOwner():EmitSound("physics/body/body_medium_impact_soft" .. math.random(1, 3) .. ".wav", 60)
+        local preferredAngles = hook.Run("GetPreferredCarryAngles", self.axHoldingEntity)
+        if ( self:GetOwner():KeyDown(IN_RELOAD) and !preferredAngles ) then
+            preferredAngles = angle_zero
         end
+
+        if ( preferredAngles ) then
+            local entAngle = self.axHoldingEntity:GetAngles()
+            self.axCarry.preferedAngle = self.axHoldingEntity:GetAngles()
+            local grabAngle = self.axHoldingEntity:GetAngles()
+
+            grabAngle:RotateAroundAxis(entAngle:Right(), preferredAngles[1])
+            grabAngle:RotateAroundAxis(entAngle:Up(), preferredAngles[2])
+            grabAngle:RotateAroundAxis(entAngle:Forward(), preferredAngles[3])
+
+            self.axCarry:SetAngles(grabAngle)
+        else
+            local ang = self:GetOwner():GetAngles()
+            self.axCarry.storedAng = LerpAngle(FrameTime() * 2, self.axCarry.storedAng or ang, ang)
+            self.axCarry:SetAngles(self.axCarry.storedAng)
+        end
+
+        self.axCarry:Spawn()
+
+        local physicsObject = self.axCarry:GetPhysicsObject()
+        if ( IsValid(physicsObject) ) then
+            physicsObject:SetMass(200)
+            physicsObject:SetDamping(0, 1000)
+            physicsObject:EnableGravity(false)
+            physicsObject:EnableCollisions(false)
+            physicsObject:EnableMotion(false)
+            physicsObject:AddGameFlag(FVPHYSICS_PLAYER_HELD)
+        end
+
+        local bone = math.Clamp(traceData.PhysicsBone, 0, 1)
+        if ( ent:GetClass() == "prop_ragdoll" ) then
+            bone = traceData.PhysicsBone
+            self.holdingBone = bone
+            holdingPhysicsObject = self.axHoldingEntity:GetPhysicsObjectNum(bone)
+        end
+
+        holdingPhysicsObject:AddGameFlag(FVPHYSICS_PLAYER_HELD)
+
+        local maxForce = ax.config:Get("hands.max.Force", 16500)
+        local vSize = self.axHoldingEntity:OBBMaxs() - self.axHoldingEntity:OBBMins()
+        if ( self.axHoldingEntity:IsRagdoll() or math.max(vSize.x, vSize.y, vSize.z) > 60 ) then
+            self.axConstraint = constraint.Ballsocket(self.axCarry, self.axHoldingEntity, 0, bone, holdingPhysicsObject:WorldToLocal(pos), maxForce / 3, 0, 1)
+        else
+            self.axConstraint = constraint.Weld(self.axCarry, self.axHoldingEntity, 0, bone, maxForce, true)
+
+            self.axHoldingEntity.HandsConstraint = self.axConstraint
+        end
+
+        self.axHoldingEntity.oldCollisionGroup = self.axHoldingEntity.oldCollisionGroup or self.axHoldingEntity:GetCollisionGroup()
+        self.axHoldingEntity:SetCollisionGroup(COLLISION_GROUP_PASSABLE_DOOR)
+
+        local children = self.axHoldingEntity:GetChildren()
+        for i = 1, #children do
+            children[i]:SetCollisionGroup(COLLISION_GROUP_PASSABLE_DOOR)
+        end
+
+        self:GetOwner():EmitSound("physics/body/body_medium_impact_soft" .. math.random(1, 3) .. ".wav", 60)
     end
 end

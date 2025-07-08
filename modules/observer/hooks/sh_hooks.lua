@@ -11,14 +11,14 @@
 
 local MODULE = MODULE
 
-function MODULE:CanPlayerObserve(client, state)
+function MODULE:PrePlayerObserve(client, state)
     if ( !CAMI.PlayerHasAccess(client, "Parallax - Observer") ) then return false end
 
     return true
 end
 
 function MODULE:PlayerNoClip(client, desiredState)
-    if ( !hook.Run("CanPlayerObserve", client, desiredState) ) then
+    if ( !hook.Run("PrePlayerObserve", client, desiredState) ) then
         return false
     end
 
@@ -40,18 +40,18 @@ function MODULE:PlayerNoClip(client, desiredState)
         end
     end
 
-    hook.Run("OnPlayerObserver", client, desiredState)
+    hook.Run("PostPlayerObserve", client, desiredState)
 
     return true
 end
 
-function MODULE:OnPlayerObserver(client, state)
+function MODULE:PostPlayerObserve(client, state)
     if ( CLIENT ) then return end
     if ( !IsValid(client) or !client:IsPlayer() ) then return end
 
     local logging = ax.module:Get("logging")
     if ( logging ) then
-        logging:Send(client:Nick() .. " is now " .. (state and "observing" or "no longer observing") .. ".")
+        logging:Send(client:PrettyPrint(true) .. " is now " .. (state and "observing" or "no longer observing") .. ".")
     end
 end
 
