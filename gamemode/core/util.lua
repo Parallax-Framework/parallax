@@ -134,17 +134,17 @@ end
 -- @param client Player The player to send the message to.
 -- @param ... any The message to send.
 function ax.util:SendChatText(client, ...)
-	if ( client == nil ) then
-		client = select(2, player.Iterator())
-	end
+    if ( client == nil ) then
+        client = select(2, player.Iterator())
+    end
 
-	if ( SERVER ) then
-		net.Start("ax.chat.text")
-			net.WriteTable({...})
-		net.Send(client)
-	else
-		chat.AddText(...)
-	end
+    if ( SERVER ) then
+        net.Start("ax.chat.text")
+            net.WriteTable({...})
+        net.Send(client)
+    else
+        chat.AddText(...)
+    end
 end
 
 --- Prepares a package of arguments for printing.
