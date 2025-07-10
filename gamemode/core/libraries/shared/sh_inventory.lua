@@ -67,3 +67,27 @@ function ax.inventory:GetInventory(inventoryID)
 
     return inventory
 end
+
+--- Retrieves an inventory by character ID.
+-- @param number characterID The ID of the character whose inventory to retrieve
+function ax.inventory:GetByCharacterID(characterID)
+    if ( !characterID ) then
+        ax.util:PrintError("Invalid parameters for ax.inventory:GetByCharacterID")
+        return {}
+    end
+
+    if ( !isnumber(characterID) or characterID <= 0 ) then
+        ax.util:PrintError("Invalid character ID provided to ax.inventory:GetByCharacterID")
+        return {}
+    end
+
+    local inventory
+    for _, inv in pairs(self.instances) do
+        if ( inv.CharacterID == characterID ) then
+            inventory = inv
+            break
+        end
+    end
+
+    return inventory
+end

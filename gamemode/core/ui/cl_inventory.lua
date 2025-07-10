@@ -37,39 +37,9 @@ function PANEL:Init()
         draw.RoundedBox(0, 0, 0, width, height, Color(0, 0, 0, 150))
     end
 
-    -- TODO INV RE-WORK
-    /*
-    local inventories = ax.inventory:GetByCharacterID(ax.client:GetCharacter():GetID())
-    if ( #inventories == 0 ) then
-        local label = self.buttons:Add("ax.text")
-        label:Dock(FILL)
-        label:SetFont("ax.large")
-        label:SetText("inventory.empty")
-        label:SetContentAlignment(5)
-
-        return
-    end
-
-    for _, inventory in pairs(inventories) do
-        local button = self.buttons:Add("ax.button.flat")
-        button:Dock(LEFT)
-        button:SetText(inventory:GetName())
-        button:SizeToContents()
-
-        button.DoClick = function()
-            self:SetInventory(inventory:GetID())
-        end
-    end
-
-    -- Pick the first inventory by default
-    local firstInventory = inventories[1]
-    if ( firstInventory ) then
-        self:SetInventory(firstInventory:GetID())
-    end
-    */
+    self:SetInventory(ax.client:GetCharacter():GetInventory():GetID())
 end
--- TODO INV RE-WORK
-/*
+
 function PANEL:SetInventory(id)
     if ( !id ) then return end
 
@@ -191,7 +161,6 @@ function PANEL:IsValidItemID(id)
 
     return true
 end
-*/
 
 function PANEL:SetInfo(id)
     self.info:Clear()

@@ -50,9 +50,6 @@ end
 function CHAR:GetInventory()
     if ( !self.Inventory ) then
         self.Inventory = ax.inventory:GetByCharacterID(self:GetID())
-        if ( !self.Inventory ) then
-            self.Inventory = {}
-        end
     end
 
     return self.Inventory
