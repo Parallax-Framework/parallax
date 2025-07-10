@@ -299,8 +299,8 @@ function ax.inventory:CreateInventory(characterID, maxWeight, data, callback)
     end
 
     ax.database:Insert("ax_inventories", {
-        character_id = characterID,
         max_weight = maxWeight,
+        items = util.TableToJSON({}), -- Start with an empty item list
         data = util.TableToJSON(data)
     }, function(inventoryID)
         if ( !inventoryID ) then
@@ -309,50 +309,32 @@ function ax.inventory:CreateInventory(characterID, maxWeight, data, callback)
             return false
         end
 
-        local inventory = ax.inventory:Create({
+        local inventoryData = {
             id = inventoryID,
-            character_id = characterID,
             max_weight = maxWeight,
+            items = {},
             data = data
-        })
+        }
+        local inventory = ax.inventory:Create(inventoryData)
 
-        local inventories = {}
-        ax.database:Select("ax_characters", nil, "id = " .. characterID, function(result)
-            if ( !result or !result[1] ) then
-                ax.util:PrintError("No character found with ID " .. characterID)
-                return false
-            end
+        ax.database:Update("ax_characters", { inventory_id = inventoryID, }, "id = " .. characterID)
 
-            local output = result[1]
-            inventories = util.JSONToTable(output.inventories) or {}
+        local client = ax.character:GetPlayerByCharacter(characterID)
+        if ( IsValid(client) ) then
+            net.Start("ax.inventory.create")
+                net.WriteTable(inventoryData)
+            net.Send(client)
+        end
 
-            if ( !inventories ) then
-                inventories = {}
-            end
+        ax.util:PrintSuccess("Inventory created successfully with ID " .. inventoryID)
 
-            table.insert(inventories, inventoryID)
-
-            ax.database:Update("ax_characters", {
-                inventories = util.TableToJSON(inventories)
-            }, "id = " .. characterID, function(success)
-                if ( !success ) then
-                    ax.util:PrintError("Failed to update character inventories.")
-                    return false
-                end
-
-                ax.util:PrintSuccess("Inventory created successfully with ID " .. inventoryID)
-
-                if ( callback ) then
-                    callback(inventory)
-                end
-            end)
-        end)
+        if ( callback ) then
+            callback(inventory)
+        end
     end)
 end
 
---- Loads all inventories from the database into memory via the character ID.
--- @param number characterID The ID of the character to load inventories for
-function ax.inventory:LoadInventories(characterID)
+function ax.inventory:LoadInventory(characterID)
     if ( !characterID ) then
         ax.util:PrintError("Invalid character ID for loading inventories.")
         return false
@@ -365,26 +347,38 @@ function ax.inventory:LoadInventories(characterID)
         end
 
         local output = result[1]
-        local inventories = util.JSONToTable(output.inventories) or {}
-        if ( #inventories == 0 ) then
-            ax.util:PrintWarning("No inventories found for character ID " .. characterID)
+
+        local inventoryID = output.inventory_id
+        if ( !inventoryID ) then
+            ax.util:PrintError("No inventory found for character ID " .. characterID)
             return false
         end
 
         ax.util:PrintSuccess("Loading inventories for character ID " .. characterID)
 
-        for _, inventoryID in ipairs(inventories) do
-            ax.database:Select("ax_inventories", nil, "id = " .. inventoryID, function(invResult)
-                if ( !invResult or !invResult[1] ) then
-                    ax.util:PrintError("No inventory found with ID " .. inventoryID)
-                    return false
-                end
+        ax.database:Select("ax_inventories", nil, "id = " .. inventoryID, function(invResult)
+            if ( !invResult or !invResult[1] ) then
+                ax.util:PrintError("No inventory found with ID " .. inventoryID)
+                return false
+            end
 
-                ax.inventory:Create(invResult[1])
+            local inventory = ax.inventory:Create(invResult[1])
 
-                ax.util:PrintSuccess("Loaded inventory with ID " .. inventoryID .. " for character ID " .. characterID)
-            end)
-        end
+            local client = ax.character:GetPlayerByCharacter(characterID)
+            if ( IsValid(client) ) then
+                net.Start("ax.inventory.load")
+                    net.WriteUInt(characterID, 32)
+                    net.WriteTable(invResult[1])
+                net.Send(client)
+            end
+
+            local character = ax.character:Get(characterID)
+            if ( character ) then
+                character:SetInventory(inventory)
+            end
+
+            ax.util:PrintSuccess("Loaded inventory with ID " .. inventoryID .. " for character ID " .. characterID)
+        end)
     end)
 end
 
@@ -438,7 +432,7 @@ concommand.Add("ax_inventory_create", function(ply, cmd, args)
 
     ax.inventory:CreateInventory(characterID, maxWeight, data, function(inventory)
         if ( inventory ) then
-            ply:Notify("Created inventory with ID " .. inventory.id)
+            ply:Notify("Created inventory with ID " .. inventory:GetID() .. " for character ID " .. characterID)
         else
             ply:Notify("Failed to create inventory.")
         end

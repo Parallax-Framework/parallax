@@ -15,22 +15,23 @@ INVENTORY.Data = INVENTORY.Data or {}
 INVENTORY.ID = INVENTORY.ID or 0
 INVENTORY.Items = INVENTORY.Items or {}
 INVENTORY.MaxWeight = INVENTORY.MaxWeight or 0
-INVENTORY.CharacterID = INVENTORY.CharacterID or 0
 
-function INV:__tostring()
-    return "Inventory [" .. self:GetID() .. "][" .. self:GetName() .. "]"
+function INVENTORY:__tostring()
+    return "Inventory [" .. self:GetID() .. "]"
 end
 
 function INVENTORY:GetID()
     return self.ID
 end
 
-function INVENTORY:GetCharacterID()
-    return self.CharacterID
-end
-
 function INVENTORY:GetCharacter()
-    return ax.character:Get(self.CharacterID)
+    for _, character in pairs(ax.character.instances) do
+        if ( character:GetInventory():GetID() == self:GetID() ) then
+            return character
+        end
+    end
+
+    return nil
 end
 
 function INVENTORY:GetMaxWeight()

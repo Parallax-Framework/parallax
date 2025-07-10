@@ -37,7 +37,27 @@ function PANEL:Init()
         draw.RoundedBox(0, 0, 0, width, height, Color(0, 0, 0, 150))
     end
 
-    self:SetInventory(ax.client:GetCharacter():GetInventory():GetID())
+    local client = ax.client
+    if ( !IsValid(client) ) then
+        ax.util:PrintError("Client is not valid, cannot set inventory.")
+        return
+    end
+
+    local character = client:GetCharacter()
+    if ( !character ) then
+        ax.util:PrintError("Client does not have a character, cannot set inventory.")
+        return
+    end
+
+    local inventory = character:GetInventory()
+    if ( !inventory ) then
+        ax.util:PrintError("Client's character does not have an inventory, cannot set inventory.")
+        return
+    end
+
+    -- Set the inventory to the client's character's inventory
+    -- This is done to ensure that the inventory is set correctly when the panel is initialized
+    self:SetInventory(inventory:GetID())
 end
 
 function PANEL:SetInventory(id)

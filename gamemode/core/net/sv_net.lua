@@ -16,12 +16,16 @@
 util.AddNetworkString("ax.character.load")
 net.Receive("ax.character.load", function(len, client)
     local characterID = net.ReadUInt(16)
+    if ( !characterID or characterID <= 0 ) then return end
+
     ax.character:Load(client, characterID)
 end)
 
 util.AddNetworkString("ax.character.delete")
 net.Receive("ax.character.delete", function(len, client)
     local characterID = net.ReadUInt(16)
+    if ( !characterID or characterID <= 0 ) then return end
+
     local character = ax.character:Get(characterID)
     if ( !character ) then return end
 
@@ -259,7 +263,7 @@ util.AddNetworkString("ax.inventory.cache")
 util.AddNetworkString("ax.inventory.item.add")
 util.AddNetworkString("ax.inventory.item.remove")
 util.AddNetworkString("ax.inventory.refresh")
-util.AddNetworkString("ax.inventory.register")
+util.AddNetworkString("ax.inventory.load")
 util.AddNetworkString("ax.item.add")
 util.AddNetworkString("ax.item.cache")
 util.AddNetworkString("ax.item.data")

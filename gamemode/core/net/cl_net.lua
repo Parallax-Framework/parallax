@@ -220,25 +220,11 @@ net.Receive("ax.inventory.cache", function(len)
 
     local inventory = ax.inventory:CreateObject(data)
     if ( inventory ) then
-        ax.inventory.stored[inventory:GetID()] = inventory
+        ax.inventory.instances[inventory:GetID()] = inventory
 
         local character = ax.character.stored[inventory.CharacterID]
         if ( character ) then
-            local inventories = character:GetInventories()
-
-            local found = false
-            for i = 1, #inventories do
-                if ( inventories[i] == inventory ) then
-                    found = true
-                    break
-                end
-            end
-
-            if ( !found ) then
-                table.insert(inventories, inventory)
-            end
-
-            character:SetInventories(inventories)
+            character:SetInventory(inventory)
         end
     end
 end)
@@ -301,14 +287,38 @@ net.Receive("ax.inventory.refresh", function(len)
     end
 end)
 
-net.Receive("ax.inventory.register", function(len)
+net.Receive("ax.inventory.create", function(len)
     local data = net.ReadTable()
     if ( !istable(data) ) then return end
 
-    local inventory = ax.inventory:CreateObject(data)
+    local inventory = ax.inventory:Create(data)
     if ( inventory ) then
-        ax.inventory.stored[inventory.ID] = inventory
+        ax.inventory.instances[inventory.ID] = inventory
     end
+end)
+
+net.Receive("ax.inventory.load", function(len)
+    local characterID = net.ReadUInt(32)
+    if ( !isnumber(characterID) or characterID <= 0 ) then
+        ax.client:Notify("Invalid character ID provided for inventory load!", NOTIFY_ERROR)
+        return
+    end
+
+    local data = net.ReadTable()
+    if ( !istable(data) ) then return end
+
+    local inventory = ax.inventory:Create(data)
+    if ( !inventory ) then
+        ax.client:Notify("Failed to load inventory for character " .. characterID, NOTIFY_ERROR)
+        return
+    end
+
+    local character = ax.character:Get(characterID)
+    if ( character ) then
+        character:SetInventory(inventory)
+    end
+
+    ax.client:Notify("Inventory loaded successfully!", NOTIFY_SUCCESS)
 end)
 
 --[[-----------------------------------------------------------------------------

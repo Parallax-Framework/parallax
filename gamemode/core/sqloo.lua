@@ -246,9 +246,9 @@ function ax.sqloo:Update(tableName, data, condition, callback)
     end
 
     local query = string.format("UPDATE `%s` SET %s WHERE %s;", tableName, table.concat(updates, ", "), condition)
-    self:Query(query, function()
+    self:Query(query, function(result)
         if ( callback ) then
-            callback()
+            callback(result)
         end
     end)
 end

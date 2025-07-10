@@ -55,9 +55,12 @@ function ax.character:Create(client, query, callback)
         clientTable.axCharacters = clientTable.axCharacters or {}
         clientTable.axCharacters[characterID] = character
 
-        self.stored[characterID] = character
+        self.instances[characterID] = character
 
-        ax.net:Start(client, "character.cache", character)
+        net.Start("ax.character.cache")
+            net.WriteTable(character)
+        net.Send(client)
+
         ax.inventory:CreateInventory(characterID)
 
         hook.Run("PostPlayerCreatedCharacter", client, character, query)
@@ -98,11 +101,13 @@ function ax.character:Load(client, characterID)
                 return
             end
 
-            self.stored[characterID] = character
+            self.instances[characterID] = character
 
             hook.Run("PrePlayerLoadedCharacter", client, character, currentCharacter)
 
-            ax.net:Start(client, "character.load", characterID, character)
+            net.Start("ax.character.load")
+                net.WriteUInt(characterID, 32)
+            net.Send(client)
 
             local clientTable = client:GetTable()
             clientTable.axCharacters = clientTable.axCharacters or {}
@@ -114,7 +119,7 @@ function ax.character:Load(client, characterID)
             client:SetSkin(character:GetSkin())
             client:Spawn()
 
-            ax.inventory:LoadInventories(characterID)
+            ax.inventory:LoadInventory(characterID)
 
             hook.Run("PostPlayerLoadedCharacter", client, character, currentCharacter)
 
@@ -132,7 +137,7 @@ function ax.character:Delete(characterID, callback)
         return false
     end
 
-    local character = self.stored[characterID]
+    local character = self.instances[characterID]
     if ( !character ) then
         ax.util:PrintError("Attempted to delete character that does not exist (" .. characterID .. ")")
         return false
@@ -153,10 +158,12 @@ function ax.character:Delete(characterID, callback)
 
         client:KillSilent()
 
-        ax.net:Start(client, "character.delete", characterID)
+        net.Start("ax.character.delete")
+            net.WriteUInt(characterID, 32)
+        net.Send(client)
     end
 
-    self.stored[characterID] = nil
+    self.instances[characterID] = nil
 
     -- Delete all related inventories and items for this character
     ax.database:Delete("ax_inventories", string.format("character_id = %s", sql.SQLStr(characterID)))
@@ -202,9 +209,11 @@ function ax.character:Cache(client, characterID, callback)
         local clientTable = client:GetTable()
         clientTable.axCharacters = clientTable.axCharacters or {}
         clientTable.axCharacters[characterID] = result[1]
-        self.stored[characterID] = result[1]
+        self.instances[characterID] = result[1]
 
-        ax.net:Start(client, "character.cache", result[1])
+        net.Start("ax.character.cache")
+            net.WriteTable(result[1])
+        net.Send(client)
 
         if ( callback ) then
             callback(true, result[1])
@@ -250,11 +259,13 @@ function ax.character:CacheAll(client, callback)
                     continue
                 end
 
-                self.stored[id] = character
+                self.instances[id] = character
                 clientTable.axCharacters[id] = character
             end
 
-            ax.net:Start(client, "character.cache.all", clientTable.axCharacters)
+            net.Start("ax.character.cache.all")
+                net.WriteTable(clientTable.axCharacters)
+            net.Send(client)
 
             if ( callback ) then
                 callback(true, clientTable.axCharacters)
@@ -276,5 +287,3 @@ concommand.Add("ax_character_test_create", function(client, cmd, arguments)
         name = "Test Character"
     })
 end)
-
-ax.character = ax.character

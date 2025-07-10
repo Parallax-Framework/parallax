@@ -35,7 +35,7 @@ function ax.item:Add(invID, uniqueID, data, callback)
         return false
     end
 
-    local inventory = ax.inventory:GetInventory(invID)
+    local inventory = ax.inventory:Get(invID)
     if ( !ax.util:IsInventory(inventory) ) then
         ax.util:PrintError("Inventory with ID '" .. invID .. "' does not exist.")
         return false

@@ -20,7 +20,7 @@ end
 --- Creates a new inventory instance accepting data from the database.
 -- @param table data The data to create the inventory from
 -- @return table The created inventory object
--- @usage local myInventory = ax.inventory:Create({ id = 1, items = '[{"id": 1, "name": "Item1"}]', data = '{"key": "value"}', max_weight = 100, character_id = 123 })
+-- @usage local myInventory = ax.inventory:Create({ id = 1, items = '[{"id": 1, "name": "Item1"}]', data = '{"key": "value"}', max_weight = 100 })
 function ax.inventory:Create(data)
     if ( !data or !istable(data) ) then
         ax.util:PrintError("Invalid data provided to ax.inventory:Create()")
@@ -43,7 +43,6 @@ function ax.inventory:Create(data)
     instance.Items = ax.util:SafeParseTable(data.items)
     instance.Data = ax.util:SafeParseTable(data.data)
     instance.MaxWeight = tonumber(data.max_weight) or 0
-    instance.CharacterID = tonumber(data.character_id) or 0
 
     self.instances[invID] = instance
 
@@ -53,9 +52,9 @@ end
 --- Retrieves an inventory by its ID.
 -- @param number inventoryID The ID of the inventory to retrieve
 -- @return table|false The inventory instance if found, or false if not found
-function ax.inventory:GetInventory(inventoryID)
+function ax.inventory:Get(inventoryID)
     if ( !inventoryID ) then
-        ax.util:PrintError("Invalid parameters for ax.inventory:GetInventory")
+        ax.util:PrintError("Invalid parameters for ax.inventory:Get")
         return false
     end
 

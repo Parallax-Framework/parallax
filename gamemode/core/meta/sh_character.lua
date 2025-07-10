@@ -48,10 +48,6 @@ end
 --- Gets the inventories associated with the character.
 -- @treturn table A table of inventory data.
 function CHAR:GetInventory()
-    if ( !self.Inventory ) then
-        self.Inventory = ax.inventory:GetByCharacterID(self:GetID())
-    end
-
     return self.Inventory
 end
 
@@ -59,22 +55,6 @@ end
 -- @tparam table inventory The inventory to set.
 function CHAR:SetInventory(inventory)
     self.Inventory = inventory
-end
-
---- Gets a specific inventory by ID.
--- @tparam number id The ID of the inventory.
--- @treturn table|nil The inventory if found, or nil if not found.
-function CHAR:GetInventoryByID(id)
-    local inventory = ax.inventory:GetByCharacterID(self:GetID())
-    if ( !inventory ) then return end
-
-    for _, item in pairs(inventory:GetItems()) do
-        if ( item:GetID() == id ) then
-            return item
-        end
-    end
-
-    return nil
 end
 
 --- Gives money to the character.

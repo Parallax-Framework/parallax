@@ -16,7 +16,7 @@ ax.character = ax.character or {} -- Character library.
 ax.character.meta = ax.character.meta or {} -- All currently registered character meta functions.
 ax.character.variables = ax.character.variables or {} -- All currently registered variables.
 ax.character.fields = ax.character.fields or {} -- All currently registered fields.
-ax.character.stored = ax.character.stored or {} -- All currently stored characters which are in use.
+ax.character.instances = ax.character.instances or {} -- All currently stored characters which are in use.
 
 --- Registers a variable for the character.
 -- @realm shared
@@ -75,7 +75,7 @@ function ax.character:SetVariable(id, key, value)
         return false, "Attempted to set a variable that does not exist!"
     end
 
-    local character = self.stored[id]
+    local character = self.instances[id]
     if ( !character ) then
         ax.util:PrintError("Attempted to set a variable for a character that does not exist!")
         return false, "Attempted to set a variable for a character that does not exist!"
@@ -109,7 +109,7 @@ function ax.character:SetVariable(id, key, value)
 end
 
 function ax.character:GetVariable(id, key)
-    local character = self.stored[id]
+    local character = self.instances[id]
     if ( !character ) then
         ax.util:PrintError("Attempted to get a variable for a character that does not exist!")
         return false, "Attempted to get a variable for a character that does not exist!"
@@ -132,9 +132,9 @@ function ax.character:CreateObject(characterID, data, client)
         return false, "Invalid data provided"
     end
 
-    if ( self.stored[characterID] ) then
+    if ( self.instances[characterID] ) then
         ax.util:PrintWarning("Attempted to create a character object that already exists!")
-        return self.stored[characterID], "Character already exists"
+        return self.instances[characterID], "Character already exists"
     end
 
     characterID = tonumber(characterID)
@@ -161,7 +161,7 @@ function ax.character:CreateObject(characterID, data, client)
         end
     end
 
-    self.stored[characterID] = character
+    self.instances[characterID] = character
 
     return character
 end
@@ -177,11 +177,11 @@ function ax.character:GetPlayerByCharacter(id)
 end
 
 function ax.character:Get(id)
-    return self.stored[id]
+    return self.instances[id]
 end
 
 function ax.character:GetAll()
-    return self.stored
+    return self.instances
 end
 
 function ax.character:GetAllVariables()
