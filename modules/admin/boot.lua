@@ -11,56 +11,62 @@
 
 local MODULE = MODULE
 
-MODULE.Name        = "Admin"
-MODULE.ID          = "admin"
-MODULE.Description = "Editable admin system using CAMI and Parallax persistence."
-MODULE.Author      = "Riggs"
+MODULE.Name = "Admin"
+MODULE.Description = "Comprehensive admin system with features similar to other variants of admin systems, including user groups, permissions, logging, and hierarchy management."
+MODULE.Author = "Riggs"
 
-MODULE.Groups      = {}
+MODULE.Groups = {}
 MODULE.Permissions = {}
+MODULE.BannedPlayers = MODULE.BannedPlayers or {}
+MODULE.AdminLogs = MODULE.AdminLogs or {}
 
---- Registers a usergroup and stores it persistently.
--- @string name
--- @number privilege
-function MODULE:RegisterGroup(name, privilege)
-    local group = {
-        Name = name,
-        Inherits = nil,
-        Privilege = privilege
-    }
+-- Default admin groups with hierarchy levels
+MODULE.DefaultGroups = {
+    {name = "user", level = 0, color = Color(255, 255, 255), immunity = 0},
+    {name = "vip", level = 1, color = Color(255, 215, 0), immunity = 10},
+    {name = "moderator", level = 2, color = Color(0, 255, 0), immunity = 50},
+    {name = "admin", level = 3, color = Color(0, 100, 255), immunity = 75},
+    {name = "superadmin", level = 4, color = Color(255, 0, 0), immunity = 100},
+}
 
-    CAMI.RegisterUsergroup(group, "Parallax")
+-- Register default CAMI permissions
+MODULE.DefaultPermissions = {
+    -- Basic admin permissions
+    {name = "Parallax - Admin Menu", level = 2},
+    {name = "Parallax - Kick Players", level = 2},
+    {name = "Parallax - Ban Players", level = 2},
+    {name = "Parallax - Mute Players", level = 2},
+    {name = "Parallax - Teleport", level = 2},
+    {name = "Parallax - Spectate", level = 2},
+    {name = "Parallax - Noclip", level = 2},
+    {name = "Parallax - Godmode", level = 2},
+    {name = "Parallax - Freeze Players", level = 2},
+    {name = "Parallax - Slay Players", level = 2},
+    {name = "Parallax - Bring Players", level = 2},
+    {name = "Parallax - Goto Players", level = 2},
+    {name = "Parallax - Send Players", level = 2},
+    {name = "Parallax - Jail Players", level = 2},
+    {name = "Parallax - Strip Weapons", level = 2},
+    {name = "Parallax - Give Weapons", level = 2},
+    {name = "Parallax - Respawn Players", level = 2},
+    {name = "Parallax - Force Roleplay", level = 2},
+    {name = "Parallax - Warn Players", level = 2},
+    {name = "Parallax - View Logs", level = 2},
 
-    self.Groups[name] = group
+    -- Advanced admin permissions
+    {name = "Parallax - Manage Usergroups", level = 3},
+    {name = "Parallax - Manage Permissions", level = 3},
+    {name = "Parallax - Unban Players", level = 3},
+    {name = "Parallax - Permanent Ban", level = 3},
+    {name = "Parallax - Access Data", level = 3},
+    {name = "Parallax - Map Control", level = 3},
+    {name = "Parallax - Server Commands", level = 3},
+    {name = "Parallax - Cleanup", level = 3},
+    {name = "Parallax - Ban Offline", level = 3},
 
-    if ( SERVER ) then
-        self:SaveData()
-    end
-end
-
---- Registers a permission and stores it persistently.
--- @string name
--- @string minAccess
-function MODULE:RegisterPermission(name, minAccess)
-    local permission = {
-        Name = name,
-        MinAccess = minAccess,
-        HasAccess = nil
-    }
-
-    CAMI.RegisterPrivilege(permission)
-
-    self.Permissions[name] = permission
-
-    if ( SERVER ) then
-        self:SaveData()
-    end
-end
-
-function MODULE:GetGroups()
-    return self.Groups
-end
-
-function MODULE:GetPermissions()
-    return self.Permissions
-end
+    -- Super admin permissions
+    {name = "Parallax - Root Access", level = 4},
+    {name = "Parallax - Console Access", level = 4},
+    {name = "Parallax - Lua Run", level = 4},
+    {name = "Parallax - RCON", level = 4}
+}

@@ -32,10 +32,16 @@ function ax.notification:Send(client, text, iType, duration)
 
     if ( SERVER ) then
         net.Start("ax.notification.send")
-            net.WriteString(text)
-            net.WriteUInt(iType, 8)
-            net.WriteUInt(duration, 16)
-        net.Send(client)
+
+        net.WriteString(text)
+        net.WriteUInt(iType, 8)
+        net.WriteUInt(duration, 16)
+
+        if ( IsValid(client) ) then
+            net.Send(client)
+        else
+            net.Broadcast()
+        end
     else
         notification.AddLegacy(text, iType, duration)
     end

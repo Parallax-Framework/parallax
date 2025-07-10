@@ -353,11 +353,14 @@ function GM:PlayerSwitchFlashlight(client, bEnabled)
 end
 
 function GM:GetFallDamage(client, speed)
-    if ( speed > 100 ) then
+    local damage = speed / 8
+
+    -- Only ragdoll if the player won't die from fall damage
+    if ( speed > 100 and client:Health() > damage ) then
         client:SetRagdolled(true, 5)
     end
 
-    return speed / 8
+    return damage
 end
 
 local nextThink = CurTime() + 1
@@ -461,6 +464,13 @@ function GM:GetPlayerPainSound(client, attacker, healthRemaining, damageTaken)
 end
 
 function GM:DoPlayerDeath(client, attacker, dmgInfo)
+    -- Remove any existing ragdoll before creating a new one
+    local existingRagdoll = client:GetRelay("ragdoll")
+    if ( IsValid(existingRagdoll) ) then
+        existingRagdoll:Remove()
+        client:SetRelay("ragdoll", nil)
+    end
+    
     if ( hook.Run("PreSpawnClientRagdoll", client, attacker, dmgInfo ) != false ) then
         local ragdoll = client:CreateRagdoll()
 

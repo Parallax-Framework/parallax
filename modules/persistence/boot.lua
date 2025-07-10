@@ -11,9 +11,9 @@
 
 local MODULE = MODULE
 
-MODULE.Name        = "Persistence"
+MODULE.Name = "Persistence"
 MODULE.Description = "Saves and restores specific entity classes across map resets with custom data support."
-MODULE.Author      = "Riggs"
+MODULE.Author = "Riggs"
 
 MODULE.PersistentEntities = {}
 MODULE.PersistentEntities["ax_currency"] = {

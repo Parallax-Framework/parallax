@@ -26,14 +26,14 @@ function MODULE:Think()
 
             local st = client:GetRelay("stamina")
             if ( !istable(st) ) then
-                ax.Stamina:Initialize(client)
+                ax.stamina:Initialize(client)
 
                 continue
             end
 
             local isSprinting = client:KeyDown(IN_SPEED) and client:KeyDown(IN_FORWARD) and client:OnGround()
             if ( isSprinting and client:GetVelocity():Length2DSqr() > 1 ) then
-                if ( ax.Stamina:Consume(client, drain) ) then
+                if ( ax.stamina:Consume(client, drain) ) then
                     st.depleted = false
                     st.regenBlockedUntil = CurTime() + 2
                 else
@@ -44,7 +44,7 @@ function MODULE:Think()
                 end
             else
                 if ( st.regenBlockedUntil and CurTime() >= st.regenBlockedUntil ) then
-                    ax.Stamina:Set(client, math.min(st.current + regen, st.max))
+                    ax.stamina:Set(client, math.min(st.current + regen, st.max))
                 end
             end
         end
@@ -56,7 +56,7 @@ function MODULE:OnPlayerHitGround(client, inWater, onFloater, speed)
 
     local st = client:GetRelay("stamina")
     if ( st and st.current > 0 ) then
-        ax.Stamina:Consume(client, speed / 64)
+        ax.stamina:Consume(client, speed / 64)
     end
 end
 
@@ -64,5 +64,5 @@ function MODULE:PlayerSpawn(client)
     if ( !ax.config:Get("stamina", true) ) then return end
 
     -- Initialize stamina when player spawns
-    ax.Stamina:Initialize(client)
+    ax.stamina:Initialize(client)
 end

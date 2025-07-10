@@ -1157,22 +1157,82 @@ function ax.util:VerifyVersion()
     end)
 end
 
+--- Returns whether the given object is a valid faction object.
+-- @realm shared
+-- @param object any The object to check.
+-- @return boolean True if the object is a faction, false otherwise.
 function ax.util:IsFaction(object)
     return getmetatable(object) == ax.faction.meta
 end
 
+--- Returns whether the given object is a valid character object.
+-- @realm shared
+-- @param object any The object to check.
+-- @return boolean True if the object is a character, false otherwise.
 function ax.util:IsCharacter(object)
     return getmetatable(object) == ax.character.meta
 end
 
+--- Returns whether the given object is a valid class object.
+-- @realm shared
+-- @param object any The object to check.
+-- @return boolean True if the object is a class, false otherwise.
 function ax.util:IsClass(object)
     return getmetatable(object) == ax.class.meta
 end
 
+--- Returns whether the given object is a valid item object.
+-- @realm shared
+-- @param object any The object to check.
+-- @return boolean True if the object is an item, false otherwise.
 function ax.util:IsItem(object)
     return getmetatable(object) == ax.item.meta
 end
 
-function ax.util:IsInventory(object)
-    return getmetatable(object) == ax.inventory.meta
+--- Returns whether or not there's empty space in the provided vector.
+-- @realm shared
+-- @param entity Entity The entity to check around.
+-- @param filter Entity|table The entity or table of entities to filter out.
+-- @param spacing number The spacing between checks (default 32).
+-- @param size number The size of the grid to check (default 3).
+-- @param height number The height to check (default 36).
+-- @param tolerance number The tolerance for the trace (default 5).
+function ax.util:FindEmptySpace(entity, filter, spacing, size, height, tolerance)
+    spacing = spacing or 32
+    size = size or 3
+    height = height or 36
+    tolerance = tolerance or 5
+
+    local position = entity:GetPos()
+    local mins, maxs = Vector(-spacing * 0.5, -spacing * 0.5, 0), Vector(spacing * 0.5, spacing * 0.5, height)
+    local output = {}
+
+    for x = -size, size do
+        for y = -size, size do
+            local origin = position + Vector(x * spacing, y * spacing, 0)
+
+            local data = {}
+                data.start = origin + mins + Vector(0, 0, tolerance)
+                data.endpos = origin + maxs
+                data.filter = filter or entity
+            local trace = util.TraceLine(data)
+
+            data.start = origin + Vector(-maxs.x, -maxs.y, tolerance)
+            data.endpos = origin + Vector(mins.x, mins.y, height)
+
+            local trace2 = util.TraceLine(data)
+
+            if (trace.StartSolid or trace.Hit or trace2.StartSolid or trace2.Hit or ( SERVER and !util.IsInWorld(origin) )) then
+                continue
+            end
+
+            output[#output + 1] = origin
+        end
+    end
+
+    table.sort(output, function(a, b)
+        return a:DistToSqr(position) < b:DistToSqr(position)
+    end)
+
+    return output
 end

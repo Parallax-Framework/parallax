@@ -9,10 +9,17 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
-local MODULE = MODULE
+ax.stamina = ax.stamina or {}
 
-MODULE:AddPermission("Parallax - Manage Health", "admin")
-MODULE:AddPermission("Parallax - Spawn NPCs", "admin")
-MODULE:AddPermission("Parallax - Spawn Weapons", "admin")
-MODULE:AddPermission("Parallax - Manage Usergroups", "admin")   -- TODO: Implement usergroup management
-MODULE:AddPermission("Parallax - Manage Permissions", "admin")  -- TODO: Implement permission management
+--- Gets the local player's stamina from relay
+-- @return number
+function ax.stamina:Get()
+    return ax.client:GetRelay("stamina").current
+end
+
+--- Gets the local player's stamina as a fraction [0–1]
+-- @return number
+function ax.stamina:GetFraction()
+    local max = ax.client:GetRelay("stamina").max
+    return self:Get() / max
+end

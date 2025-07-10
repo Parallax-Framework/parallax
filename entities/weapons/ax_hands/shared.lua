@@ -408,8 +408,8 @@ function SWEP:DoPunch()
     local owner = self:GetOwner()
     if ( !IsValid(owner) ) then return end
 
-    if ( ax.Stamina ) then
-        local stamina = ax.Stamina:Get(owner)
+    if ( ax.stamina ) then
+        local stamina = ax.stamina:Get(owner)
         if ( stamina < 5 ) then
             if ( CLIENT ) then
                 owner:ChatText("You are too tired to punch.")
@@ -497,8 +497,8 @@ function SWEP:DoPunch()
                 end
             end
 
-            if ( ax.Stamina ) then
-                ax.Stamina:Consume(owner, 5)
+            if ( ax.stamina ) then
+                ax.stamina:Consume(owner, 5)
             end
         elseif ( trace.HitWorld ) then
             owner:EmitSound(Sound("Flesh.ImpactHard"))

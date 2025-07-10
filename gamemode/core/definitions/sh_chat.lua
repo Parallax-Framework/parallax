@@ -72,7 +72,10 @@ ax.chat:Register("ooc", {
         return ax.config:Get("chat.ooc")
     end,
     OnChatAdd = function(self, speaker, text)
-        chat.AddText(ax.color:Get("chat.ooc"), "OOC // ", ax.color:Get("text"), speaker:SteamName() .. ": " .. text)
+        local tagColor = ax.color:Get("chat.ooc")
+        local textColor = ax.color:Get("text")
+        local nameColor = hook.Run("GetNameColor", speaker) or textColor
+        chat.AddText(tagColor, "[OOC] ", nameColor, speaker:SteamName(), textColor, ": " .. text)
     end
 })
 
@@ -83,7 +86,10 @@ ax.chat:Register("looc", {
         return speaker:GetPos():DistToSqr(listener:GetPos()) < radius ^ 2
     end,
     OnChatAdd = function(self, speaker, text)
-        chat.AddText(ax.color:Get("chat.ooc"), "LOOC // ", ax.color:Get("text"), speaker:SteamName() .. ": " .. text)
+        local tagColor = ax.color:Get("chat.ooc")
+        local textColor = ax.color:Get("text")
+        local nameColor = team.GetColor(speaker:Team()) or textColor
+        chat.AddText(tagColor, "[LOOC] ", nameColor, speaker:Name(), textColor, ": " .. text)
     end
 })
 

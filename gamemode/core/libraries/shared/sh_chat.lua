@@ -72,7 +72,7 @@ function ax.chat:Format(message)
         message = message .. "."
     end
 
-    message = string.sub(message, 1, 1):upper() .. string.sub(message, 2)
+    message = string.upper(string.sub(message, 1, 1)) .. string.sub(message, 2)
     message = string.Trim(message)
 
     return message

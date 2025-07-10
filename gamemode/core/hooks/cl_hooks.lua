@@ -297,6 +297,7 @@ local healthLerp = 0
 local healthAlpha = 0
 local healthTime = 0
 local healthLast = 0
+local x, y = padding, padding
 
 local function DrawDebug()
     local shouldDraw = hook.Run("ShouldDrawDebugHUD")

@@ -9,30 +9,6 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
-ax.command:Register("PlyRespawn", {
-    Description = "Respawn a player.",
-    AdminOnly = true,
-    Arguments = {
-        {
-            Type = ax.types.player,
-            ErrorMsg = "You must provide a valid player to respawn!"
-        }
-    },
-    Callback = function(info, client, arguments)
-        local target = arguments[1]
-
-        if ( !target:GetCharacter() ) then
-            client:Notify("The targeted player does not have a character!")
-            return
-        end
-
-        target:KillSilent()
-        target:Spawn()
-
-        client:Notify("You have respawned " .. target:Nick() .. ".", NOTIFY_HINT)
-    end
-})
-
 ax.command:Register("PlyWhitelist", {
     Description = "Whitelist a player to a faction.",
     AdminOnly = true,

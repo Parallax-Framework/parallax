@@ -9,8 +9,10 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
-local MODULE = MODULE
-
-MODULE.Name = "Cinematic"
-MODULE.Description = "Smoothly interpolates through scene points with support for various easing methods, scene visualization, and developer debugging. Modular and configurable for easy integration."
-MODULE.Author = "Riggs"
+ax.config:Register("thirdperson.tracecheck", {
+    Name = "options.thirdperson.traceplayercheck",
+    Type = ax.types.bool,
+    Default = false,
+    Description = "options.thirdperson.traceplayercheck.help",
+    Category = "category.thirdperson"
+})

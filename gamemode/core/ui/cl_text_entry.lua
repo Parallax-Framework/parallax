@@ -44,7 +44,7 @@ function PANEL:ShouldPlayTypeSound()
         return ax.option:Get("chat.typesound")
     end
 
-    return BaseClass.ShouldPlayTypeSound(self)
+    return true
 end
 
 function PANEL:OnTextChanged(...)

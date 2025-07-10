@@ -161,7 +161,7 @@ function CAMI.InheritanceRoot(usergroupName)
     if not usergroups[usergroupName] then return end
 
     local inherits = usergroups[usergroupName].Inherits
-    while inherits ~= usergroups[usergroupName].Inherits do
+    while inherits != usergroups[usergroupName].Inherits do
         usergroupName = usergroups[usergroupName].Inherits
     end
 
@@ -274,7 +274,7 @@ extraInfoTbl)
     hook.Call("CAMI.PlayerHasAccess", defaultAccessHandler, actorPly,
         privilegeName, callback_, targetPly, extraInfoTbl)
 
-    if callback ~= nil then return end
+    if callback != nil then return end
 
     if hasAccess == nil then
         local err = [[The function CAMI.PlayerHasAccess was used to find out

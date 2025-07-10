@@ -29,7 +29,7 @@ function MODULE:HUDPaint()
         return
     end
 
-    local staminaFraction = ax.Stamina:GetFraction()
+    local staminaFraction = ax.stamina:GetFraction()
     staminaLerp = Lerp(FrameTime() * 5, staminaLerp, staminaFraction)
 
     if ( staminaLast != staminaFraction ) then

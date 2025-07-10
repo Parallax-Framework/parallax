@@ -11,16 +11,6 @@
 
 local MODULE = MODULE
 
-concommand.Add("ax_thirdperson_toggle", function()
-    ax.option:Set("thirdperson", !ax.option:Get("thirdperson", false))
-end, nil, ax.localization:GetPhrase("options.thirdperson.toggle"))
-
-concommand.Add("ax_thirdperson_reset", function()
-    ax.option:Set("thirdperson.position.x", ax.option:GetDefault("thirdperson.position.x"))
-    ax.option:Set("thirdperson.position.y", ax.option:GetDefault("thirdperson.position.y"))
-    ax.option:Set("thirdperson.position.z", ax.option:GetDefault("thirdperson.position.z"))
-end, nil, ax.localization:GetPhrase("options.thirdperson.reset"))
-
 local fakePos
 local fakeAngles
 local fakeFov
@@ -130,23 +120,3 @@ function MODULE:PrePlayerDraw(client, flags)
         end
     end
 end
-
---[[
-function MODULE:AddToolMenuCategories()
-    spawnmenu.AddToolCategory("Parallax", "User", "User")
-end
-
-function MODULE:AddToolMenuTabs()
-    spawnmenu.AddToolTab("Parallax", "Parallax", "icon16/computer.png")
-
-    spawnmenu.AddToolMenuOption("Parallax", "User", "ax_thirdperson", "Third Person", "", "", function(panel)
-        panel:ClearControls()
-
-        panel:AddControl("Header", { Text = ax.localization:GetPhrase("options.thirdperson.title"), Description = ax.localization:GetPhrase("options.thirdperson.description") })
-        panel:CheckBox(ax.localization:GetPhrase("options.thirdperson.enable"), "ax_thirdperson_enable")
-        panel:NumSlider(ax.localization:GetPhrase("options.thirdperson.position.x"), "ax_thirdperson_position_x", -1000, 1000, 0)
-        panel:NumSlider(ax.localization:GetPhrase("options.thirdperson.position.y"), "ax_thirdperson_position_y", -1000, 1000, 0)
-        panel:NumSlider(ax.localization:GetPhrase("options.thirdperson.position.z"), "ax_thirdperson_position_z", -1000, 1000, 0)
-    end)
-end
-]]
