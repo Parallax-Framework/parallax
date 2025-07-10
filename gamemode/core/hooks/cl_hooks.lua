@@ -306,43 +306,70 @@ local function DrawDebug()
 
     local green = ax.config:Get("color.framework")
     local width = math.max(ax.util:GetTextWidth("ax.developer", "Pos: " .. tostring(client:GetPos())), ax.util:GetTextWidth("ax.developer", "Ang: " .. tostring(client:EyeAngles())))
-    local height = 16 * 6
+    local height = 16 * 11
 
     local character = client:GetCharacter()
     if ( character ) then
-        height = height + 16 * 6
+        height = height + 16 * 5
     end
 
-    ax.util:DrawBlurRect(x - padding, y - padding, width + padding * 2, height + padding * 2)
+    local x, y = padding, padding
+    local boxWidth = width + padding * 2
+    local boxHeight = height + padding * 2
+
+    ax.util:DrawBlurRect(x - padding, y - padding, boxWidth, boxHeight)
 
     surface.SetDrawColor(backgroundColor)
-    surface.DrawRect(x - padding, y - padding, width + padding * 2, height + padding * 2)
+    surface.DrawRect(x - padding, y - padding, boxWidth, boxHeight)
 
-    draw.SimpleText("[DEVELOPER HUD]", "ax.developer", x, y, green, TEXT_ALIGN_LEFT)
+    draw.SimpleText(tostring(client), "ax.developer", x, y, green, TEXT_ALIGN_LEFT)
+    y = y + 16
 
-    draw.SimpleText("Pos: " .. tostring(client:GetPos()), "ax.developer", x, y + 16 * 1, green, TEXT_ALIGN_LEFT)
-    draw.SimpleText("Ang: " .. tostring(client:EyeAngles()), "ax.developer", x, y + 16 * 2, green, TEXT_ALIGN_LEFT)
-    draw.SimpleText("Health: " .. client:Health(), "ax.developer", x, y + 16 * 3, green, TEXT_ALIGN_LEFT)
-    draw.SimpleText("Ping: " .. client:Ping(), "ax.developer", x, y + 16 * 4, green, TEXT_ALIGN_LEFT)
+    draw.SimpleText("Pos: " .. tostring(client:GetPos()), "ax.developer", x, y, green, TEXT_ALIGN_LEFT)
+    y = y + 16
+
+    draw.SimpleText("Ang: " .. tostring(client:EyeAngles()), "ax.developer", x, y, green, TEXT_ALIGN_LEFT)
+    y = y + 16
+
+    draw.SimpleText("Health: " .. client:Health(), "ax.developer", x, y, green, TEXT_ALIGN_LEFT)
+    y = y + 16
+
+    draw.SimpleText("Armor: " .. client:Armor(), "ax.developer", x, y, green, TEXT_ALIGN_LEFT)
+    y = y + 16
+
+    draw.SimpleText("Ping: " .. client:Ping(), "ax.developer", x, y, green, TEXT_ALIGN_LEFT)
+    y = y + 16
+
+    draw.SimpleText("SteamID: " .. client:SteamID(), "ax.developer", x, y, green, TEXT_ALIGN_LEFT)
+    y = y + 16
+
+    draw.SimpleText("SteamID64: " .. client:SteamID64(), "ax.developer", x, y, green, TEXT_ALIGN_LEFT)
+    y = y + 16
+
+    draw.SimpleText("User Group: " .. client:GetUserGroup(), "ax.developer", x, y, green, TEXT_ALIGN_LEFT)
+    y = y + 16
 
     local ft = FrameTime()
     local fps = math.floor(1 / ft)
-    draw.SimpleText("FPS: " .. fps, "ax.developer", x, y + 16 * 5, green, TEXT_ALIGN_LEFT)
+    draw.SimpleText("FPS: " .. fps, "ax.developer", x, y, green, TEXT_ALIGN_LEFT)
+    y = y + 16
+
+    y = y + 16
 
     if ( character ) then
-        local name = character:GetName()
-        local charModel = character:GetModel()
-        local inventories = ax.inventory:GetByCharacterID(character:GetID()) or {}
-        for k, v in pairs(inventories) do
-            inventories[k] = tostring(v)
-        end
-        local inventoryText = "Inventories: " .. table.concat(inventories, ", ")
+        draw.SimpleText(tostring(character), "ax.developer", x, y, green, TEXT_ALIGN_LEFT)
+        y = y + 16
 
-        draw.SimpleText("[CHARACTER INFO]", "ax.developer", x, y + 16 * 7, green, TEXT_ALIGN_LEFT)
-        draw.SimpleText("Character: " .. tostring(character), "ax.developer", x, y + 16 * 8, green, TEXT_ALIGN_LEFT)
-        draw.SimpleText("Name: " .. name, "ax.developer", x, y + 16 * 9, green, TEXT_ALIGN_LEFT)
-        draw.SimpleText("Model: " .. charModel, "ax.developer", x, y + 16 * 10, green, TEXT_ALIGN_LEFT)
-        draw.SimpleText(inventoryText, "ax.developer", x, y + 16 * 11, green, TEXT_ALIGN_LEFT)
+        draw.SimpleText("Model: " .. character:GetModel(), "ax.developer", x, y, green, TEXT_ALIGN_LEFT)
+        y = y + 16
+
+        draw.SimpleText("Money: " .. character:GetMoney(), "ax.developer", x, y, green, TEXT_ALIGN_LEFT)
+        y = y + 16
+
+        draw.SimpleText("Flags: " .. (character:GetFlags() != "" and character:GetFlags() or "None"), "ax.developer", x, y, green, TEXT_ALIGN_LEFT)
+        y = y + 16
+
+        draw.SimpleText("Inventory: " .. tostring(character:GetInventory()), "ax.developer", x, y, green, TEXT_ALIGN_LEFT)
     end
 end
 
@@ -574,15 +601,15 @@ function GM:PostDrawTranslucentRenderables(bDrawingDepth, bDrawingSkybox)
     if ( !markedUp ) then return end
 
     local textWidth, textHeight = markedUp:Size()
-    local x = -ScrW() * 0.5 + (ScrW() - textWidth) * 0.5
-    local y = -ScrH() * 0.5 + (ScrH() - textHeight) * 0.5
+    local x = -ScrW() / 2 + (ScrW() - textWidth) / 2
+    local y = -ScrH() / 2 + (ScrH() - textHeight) / 2
 
     local distance = pos:DistToSqr(client:GetPos())
     if ( distance > 1024 ^ 2 ) then
         return
     end
 
-    local scale = math.Clamp(0 + (distance / 1024), 0.1, 1)
+    local scale = math.Clamp(0.1 + (distance / 512 ^ 2), 0.1, 1)
 
     textAngle.y = client:EyeAngles().y - 90
 
@@ -801,7 +828,7 @@ function GM:LoadFonts()
 
     surface.CreateFont("ax.chat", {
         font = "GorDIN Regular",
-        size = ScreenScale(8) * ax.option:Get("chat.size.font", 1),
+        size = scale6 * ax.option:Get("chat.size.font", 1),
         weight = 700,
         antialias = true
     })

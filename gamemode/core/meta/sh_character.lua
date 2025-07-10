@@ -17,7 +17,7 @@ CHAR.Variables = {}
 --- Converts the character to a string representation.
 -- @treturn string The string representation of the character.
 function CHAR:__tostring()
-    return "character[" .. self:GetID() .. "]"
+    return "Character [" .. self:GetID() .. "][" .. self:GetName() .. "]"
 end
 
 --- Compares the character with another character.
@@ -47,61 +47,35 @@ end
 
 --- Gets the inventories associated with the character.
 -- @treturn table A table of inventory data.
-function CHAR:GetInventories()
-    local parsed = {}
-
-    if ( isstring(self.Inventories) ) then
-        parsed = util.JSONToTable(self.Inventories) or {}
-        self.Inventories = parsed
-    elseif ( istable(self.Inventories) ) then
-        parsed = self.Inventories
-    end
-
-    return parsed
-end
-
---- Sets the inventories associated with the character.
--- @tparam table inventories The inventories to set.
-function CHAR:SetInventories(inventories)
-    self.Inventories = inventories
-end
-
---- Gets a specific inventory by name.
--- @tparam string name The name of the inventory (default: "Main").
--- @treturn table|nil The inventory if found, or nil if not found.
-function CHAR:GetInventory(name)
-    name = name or "Main"
-
-    -- TODO INV RE-WORK
-    /*
-    local inventories = ax.inventory:GetByCharacterID(self:GetID())
-    if ( !inventories or #inventories == 0 ) then return end
-
-    for inventoryID, inventory in pairs(inventories) do
-        if ( inventory:GetName() == name ) then
-            return inventory
+function CHAR:GetInventory()
+    if ( !self.Inventory ) then
+        self.Inventory = ax.inventory:GetByCharacterID(self:GetID())
+        if ( !self.Inventory ) then
+            self.Inventory = {}
         end
     end
-    */
 
-    return nil
+    return self.Inventory
+end
+
+--- Sets the inventory associated with the character.
+-- @tparam table inventory The inventory to set.
+function CHAR:SetInventory(inventory)
+    self.Inventory = inventory
 end
 
 --- Gets a specific inventory by ID.
 -- @tparam number id The ID of the inventory.
 -- @treturn table|nil The inventory if found, or nil if not found.
 function CHAR:GetInventoryByID(id)
-    -- TODO INV RE-WORK
-    /*
-    local inventories = ax.inventory:GetByCharacterID(self:GetID())
-    if ( !inventories or #inventories == 0 ) then return end
+    local inventory = ax.inventory:GetByCharacterID(self:GetID())
+    if ( !inventory ) then return end
 
-    for _, inventory in pairs(inventories) do
-        if ( inventory:GetID() == id ) then
-            return inventory
+    for _, item in pairs(inventory:GetItems()) do
+        if ( item:GetID() == id ) then
+            return item
         end
     end
-    */
 
     return nil
 end

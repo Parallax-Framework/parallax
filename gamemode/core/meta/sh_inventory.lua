@@ -17,8 +17,8 @@ INVENTORY.Items = INVENTORY.Items or {}
 INVENTORY.MaxWeight = INVENTORY.MaxWeight or 0
 INVENTORY.CharacterID = INVENTORY.CharacterID or 0
 
-function INVENTORY:__tostring()
-    return "inventory[" .. self:GetID() .. "]"
+function INV:__tostring()
+    return "Inventory [" .. self:GetID() .. "][" .. self:GetName() .. "]"
 end
 
 function INVENTORY:GetID()
