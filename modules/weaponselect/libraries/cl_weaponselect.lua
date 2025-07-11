@@ -182,16 +182,27 @@ if ( CLIENT ) then
             return ax.util:GetMaterial(iconPath)
         end
 
+        -- Check if IconOverride is used on the entity
+        if ( weapon.IconOverride ) then
+            return ax.util:GetMaterial(weapon.IconOverride)
+        end
+
         -- Check the default icon map
         iconPath = iconMap[class]
-        if ( iconPath and file.Exists(iconPath, "GAME") ) then
+        if ( iconPath ) then
             return ax.util:GetMaterial(iconPath)
+        end
+
+        -- Check the game files for a matching icon
+        local iconFile = "materials/entities/" .. class .. ".png"
+        if ( file.Exists(iconFile, "GAME") ) then
+            return ax.util:GetMaterial(iconFile)
         end
 
         -- If no icon found, return a default icon
         return ax.util:GetMaterial("materials/gui/noicon.png")
     end
-
+w
     -- Sound effects for weapon selection
     MODULE.Sounds = MODULE.Sounds or {}
 
