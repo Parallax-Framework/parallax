@@ -202,7 +202,7 @@ if ( CLIENT ) then
         -- If no icon found, return a default icon
         return ax.util:GetMaterial("materials/gui/noicon.png")
     end
-w
+
     -- Sound effects for weapon selection
     MODULE.Sounds = MODULE.Sounds or {}
 
