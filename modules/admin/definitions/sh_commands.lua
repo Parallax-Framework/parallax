@@ -391,11 +391,6 @@ ax.command:Register("PlyRespawn", {
             return
         end
 
-        if ( target:Alive() ) then
-            ax.notification:Send(client, "Player is already alive.")
-            return
-        end
-
         target:Spawn()
 
         MODULE:LogAction(client, "respawned", target)
