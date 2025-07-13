@@ -16,27 +16,35 @@ local PANEL = {}
 AccessorFunc(PANEL, "baseHeight", "BaseHeight", FORCE_NUMBER)
 AccessorFunc(PANEL, "baseTextColor", "BaseTextColor")
 AccessorFunc(PANEL, "baseTextColorTarget", "BaseTextColorTarget")
+AccessorFunc(PANEL, "fontDefault", "FontDefault")
+AccessorFunc(PANEL, "fontHovered", "FontHovered")
 AccessorFunc(PANEL, "height", "Height", FORCE_NUMBER)
 AccessorFunc(PANEL, "inertia", "Inertia", FORCE_NUMBER)
+AccessorFunc(PANEL, "soundClick", "SoundClick")
+AccessorFunc(PANEL, "soundEnter", "SoundEnter")
 AccessorFunc(PANEL, "textInsetX", "TextInsetX", FORCE_NUMBER)
 AccessorFunc(PANEL, "textInsetY", "TextInsetY", FORCE_NUMBER)
 AccessorFunc(PANEL, "wasHovered", "WasHovered", FORCE_BOOL)
 
 function PANEL:Init()
-    self:SetFont("ax.large")
-    self:SetTextColorProperty(ax.color:Get("white"))
-    self:SetContentAlignment(4)
-    self:SetTextInset(ScreenScale(2), 0)
-
     self.baseHeight = self:GetTall()
     self.baseTextColor = self:GetTextColor()
     self.baseTextColorTarget = ax.config:Get("color.schema")
+    self.fontDefault = "ax.large"
+    self.fontHovered = "ax.large.bold"
     self.height = self.baseHeight
     self.inertia = 0
+    self.soundClick = "ax.button.click"
+    self.soundEnter = "ax.button.enter"
     self.textColor = Color(255, 255, 255, 255)
     self.textInsetX = ScreenScale(2)
     self.textInsetY = 0
     self.wasHovered = false
+
+    self:SetFont(self.fontDefault)
+    self:SetTextColorProperty(ax.color:Get("white"))
+    self:SetContentAlignment(4)
+    self:SetTextInset(ScreenScale(2), 0)
 end
 
 function PANEL:SetText(text, bNoTranslate, bNoSizeToContents, bNoUppercase)
@@ -85,8 +93,8 @@ end
 function PANEL:Think()
     local hovering = self:IsHovered()
     if ( hovering and !self.wasHovered ) then
-        surface.PlaySound("ax.button.enter")
-        self:SetFont("ax.large.bold")
+        surface.PlaySound(self.soundEnter)
+        self:SetFont(self.fontHovered)
         self.wasHovered = true
 
         self:Motion(0.2, {
@@ -171,7 +179,7 @@ function PANEL:Think()
 end
 
 function PANEL:OnMousePressed(key)
-    surface.PlaySound("ax.button.click")
+    surface.PlaySound(self.soundClick)
 
     if ( key == MOUSE_LEFT ) then
         self:DoClick()
@@ -191,28 +199,30 @@ AccessorFunc(PANEL, "backgroundAlphaUnHovered", "BackgroundAlphaUnHovered", FORC
 AccessorFunc(PANEL, "backgroundColor", "BackgroundColor")
 
 function PANEL:Init()
-    self:SetFont("ax.large")
-    self:SetTextColorProperty(ax.color:Get("white"))
-    self:SetContentAlignment(5)
-    self:SetTall(ScreenScaleH(12))
-    self:SetTextInset(0, 0)
-
-    self:SetWide(ScreenScale(64))
-
     self.backgroundAlphaHovered = 1
     self.backgroundAlphaUnHovered = 0
     self.backgroundColor = ax.color:Get("white")
     self.baseHeight = self:GetTall()
     self.baseTextColor = self:GetTextColor()
     self.baseTextColorTarget = ax.color:Get("black")
+    self.fontDefault = "ax.large"
+    self.fontHovered = "ax.large.bold"
     self.inertia = 0
     self.wasHovered = false
+
+    self:SetFont(self.fontDefault)
+    self:SetTextColorProperty(ax.color:Get("white"))
+    self:SetContentAlignment(5)
+    self:SetTall(ScreenScaleH(12))
+    self:SetTextInset(0, 0)
+
+    self:SetWide(ScreenScale(64))
 end
 
 function PANEL:SizeToContents()
     BaseClass.SizeToContents(self)
 
-    self:SetSize(self:GetWide() + ScreenScale(16), self:GetTall() + ScreenScale(16))
+    self:SetSize(self:GetWide() + ScreenScale(16), self:GetTall() + ScreenScaleH(16))
 end
 
 function PANEL:Paint(width, height)
@@ -223,8 +233,8 @@ end
 function PANEL:Think()
     local hovering = self:IsHovered()
     if ( hovering and !self.wasHovered ) then
-        surface.PlaySound("ax.button.enter")
-        self:SetFont("ax.large.bold")
+        surface.PlaySound(self.soundEnter)
+        self:SetFont(self.fontHovered)
         self.wasHovered = true
 
         self:Motion(0.2, {
@@ -247,7 +257,7 @@ function PANEL:Think()
             self:OnHovered()
         end
     elseif ( !hovering and self.wasHovered ) then
-        self:SetFont("ax.large")
+        self:SetFont(self.fontDefault)
         self.wasHovered = false
 
         self:Motion(0.2, {
