@@ -195,6 +195,7 @@ function MODULE:LoadData()
             end
         end
     end
+end
 
 -- Ticket cleanup timer
 if (timer.Exists("Parallax.Admin.TicketCleanup")) then
