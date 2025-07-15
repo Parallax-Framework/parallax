@@ -25,7 +25,8 @@ function chat.AddText(...)
 
     local arguments = {...}
     local currentColor = ax.color:Get("text")
-    local font = "ax.chat"
+    local chatType = ax.chat.currentType
+    local font = hook.Run("GetChatFont", chatType) or "ax.chat"
     local maxWidth = ax.gui.chatbox:GetWide() - 20
 
     local markupStr = ""
@@ -77,6 +78,7 @@ function chat.AddText(...)
     end
 
     ax.chat.messages[#ax.chat.messages + 1] = panel
+    ax.chat.currentType = nil -- Reset the current chat type after adding the message
 
     timer.Simple(0.1, function()
         if ( !IsValid(panel) ) then return end

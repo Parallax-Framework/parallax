@@ -14,7 +14,7 @@ DEFINE_BASECLASS("DLabel")
 local PANEL = {}
 
 function PANEL:Init()
-    self:SetFont("parallax")
+    self:SetFont("ax.regular")
     self:SetTextColor(ax.color:Get("text.light"))
 end
 
@@ -58,7 +58,7 @@ AccessorFunc(PANEL, "bTypingEnabled", "TypingEnabled", FORCE_BOOL)
 AccessorFunc(PANEL, "fTypingSpeed", "TypingSpeed", FORCE_NUMBER)
 
 function PANEL:Init()
-    self:SetFont("parallax")
+    self:SetFont("ax.regular")
     self:SetTextColor(ax.color:Get("text.light"))
 
     self.fullText = ""

@@ -53,21 +53,29 @@ if ( CLIENT ) then
     end)
 end
 
-function playerMeta:SetRelay(key, value, recipient)
-    if ( recipient == nil ) then
-        recipient = select(2, player.Iterator())
+function playerMeta:SetRelay(key, value, bNetworked, recipients)
+    if ( bNetworked == nil ) then
+        bNetworked = true
     end
 
-    if ( SERVER ) then
-        local index = self:EntIndex()
-        ax.relay.user[index] = ax.relay.user[index] or {}
-        ax.relay.user[index][key] = value
+    if ( bNetworked == false ) then
+        recipients = self
+    else
+        if ( recipients == nil ) then
+            recipients = select(2, player.Iterator())
+        end
+    end
 
+    local index = self:EntIndex()
+    ax.relay.user[index] = ax.relay.user[index] or {}
+    ax.relay.user[index][key] = value
+
+    if ( SERVER ) then
         net.Start("ax.relay.user")
             net.WriteUInt(index, 16)
             net.WriteString(key)
             net.WriteType(value)
-        net.Send(recipient)
+        net.Send(recipients)
     end
 end
 
@@ -95,21 +103,29 @@ if ( CLIENT ) then
     end)
 end
 
-function entityMeta:SetRelay(key, value, recipient)
-    if ( recipient == nil ) then
-        recipient = select(2, player.Iterator())
+function entityMeta:SetRelay(key, value, bNetworked, recipients)
+    if ( bNetworked == nil ) then
+        bNetworked = true
     end
 
-    if ( SERVER ) then
-        local index = self:EntIndex()
-        ax.relay.entity[index] = ax.relay.entity[index] or {}
-        ax.relay.entity[index][key] = value
+    if ( bNetworked == false ) then
+        recipients = self
+    else
+        if ( recipients == nil ) then
+            recipients = select(2, player.Iterator())
+        end
+    end
 
+    local index = self:EntIndex()
+    ax.relay.entity[index] = ax.relay.entity[index] or {}
+    ax.relay.entity[index][key] = value
+
+    if ( SERVER ) then
         net.Start("ax.relay.entity")
             net.WriteUInt(index, 16)
             net.WriteString(key)
             net.WriteType(value)
-        net.Send(recipient)
+        net.Send(recipients)
     end
 end
 

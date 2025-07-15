@@ -52,7 +52,46 @@ if ( CLIENT ) then
     ruLocalization["config.stamina.tick"] = "Интервал обновления выносливости"
     ruLocalization["config.stamina.tick.help"] = "Интервал, с которым обновляется выносливость игрока."
 
+    local esLocalization = {}
+    esLocalization["config.stamina"] = "Resistencia"
+    esLocalization["config.stamina.drain"] = "Tasa de consumo de resistencia"
+    esLocalization["config.stamina.drain.help"] = "La velocidad a la que disminuye la resistencia del jugador."
+    esLocalization["config.stamina.help"] = "Activar o desactivar la resistencia."
+    esLocalization["config.stamina.max"] = "Resistencia máxima"
+    esLocalization["config.stamina.max.Help"] = "La cantidad máxima de resistencia que puede tener el jugador (debe reaparecer para aplicar este cambio)."
+    esLocalization["config.stamina.regen"] = "Tasa de regeneración de resistencia"
+    esLocalization["config.stamina.regen.help"] = "La velocidad a la que se regenera la resistencia del jugador."
+    esLocalization["config.stamina.tick"] = "Frecuencia de actualización de resistencia"
+    esLocalization["config.stamina.tick.help"] = "La frecuencia con la que se actualiza la resistencia del jugador."
+
+    local ptLocalization = {}
+    ptLocalization["config.stamina"] = "Resistência"
+    ptLocalization["config.stamina.drain"] = "Taxa de consumo de resistência"
+    ptLocalization["config.stamina.drain.help"] = "A velocidade a que a resistência do jogador diminui."
+    ptLocalization["config.stamina.help"] = "Ativar ou desativar a resistência."
+    ptLocalization["config.stamina.max"] = "Resistência máxima"
+    ptLocalization["config.stamina.max.Help"] = "A quantidade máxima de resistência que o jogador pode ter (precisa de renascer para aplicar esta alteração)."
+    ptLocalization["config.stamina.regen"] = "Taxa de regeneração de resistência"
+    ptLocalization["config.stamina.regen.help"] = "A velocidade a que a resistência do jogador se regenera."
+    ptLocalization["config.stamina.tick"] = "Frequência de atualização de resistência"
+    ptLocalization["config.stamina.tick.help"] = "A frequência com que a resistência do jogador é atualizada."
+
+    local bgLocalisation = {}
+    bgLocalisation["config.stamina"] = "Издръжливост"
+    bgLocalisation["config.stamina.drain"] = "Скорост на изразходване на издръжливостта"
+    bgLocalisation["config.stamina.drain.help"] = "Скоростта, с която издръжливостта на играча се изразходва."
+    bgLocalisation["config.stamina.help"] = "Активиране или деактивиране на издръжливостта."
+    bgLocalisation["config.stamina.max"] = "Максимална издръжливост"
+    bgLocalisation["config.stamina.max.Help"] = "Максималното количество издръжливост, което играчът може да има (трябва да се възроди, за да приложи това)."
+    bgLocalisation["config.stamina.regen"] = "Скорост на възстановяване на издръжливостта"
+    bgLocalisation["config.stamina.regen.help"] = "Скоростта, с която издръжливостта на играча се възстановява."
+    bgLocalisation["config.stamina.tick"] = "Честота на актуализация на издръжливостта"
+    bgLocalisation["config.stamina.tick.help"] = "Честотата, с която се актуализира издръжливостта на играча."
+
     ax.localization:Register("de", deLocalization)
     ax.localization:Register("en", enLocalization)
     ax.localization:Register("ru", ruLocalization)
+    ax.localization:Register("es-ES", esLocalization)
+    ax.localization:Register("pt-PT", ptLocalization)
+    ax.localisation:Register("bg", bgLocalisation)
 end

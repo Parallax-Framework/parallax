@@ -13,6 +13,8 @@
     Character Networking
 -----------------------------------------------------------------------------]]--
 
+util.AddNetworkString("ax.character.sync")
+
 util.AddNetworkString("ax.character.load")
 net.Receive("ax.character.load", function(len, client)
     local characterID = net.ReadUInt(16)

@@ -257,7 +257,7 @@ ax.config:Register("chat.radius.yell", {
     Description = "config.chat.radius.yell.help",
     Category = "category.chat",
     Type = ax.types.number,
-    Default = 1024,
+    Default = 1000,
     Min = 0,
     Max = 1000,
     Decimals = 0
@@ -514,4 +514,49 @@ ax.config:Register("chat.format", {
     Category = "category.chat",
     Type = ax.types.bool,
     Default = true,
+})
+
+local languages = {
+    ["bg"] = "Bulgarian",
+    ["cs"] = "Czech",
+    ["da"] = "Danish",
+    ["de"] = "German",
+    ["el"] = "Greek",
+    ["en"] = "English",
+    ["en-PT"] = "English (Pirate)",
+    ["es"] = "Spanish (Spain)",
+    ["fi"] = "Finnish",
+    ["fr"] = "French",
+    ["he"] = "Hebrew",
+    ["hr"] = "Croatian",
+    ["hu"] = "Hungarian",
+    ["it"] = "Italian",
+    ["ja"] = "Japanese",
+    ["ko"] = "Korean",
+    ["nl"] = "Dutch",
+    ["no"] = "Norwegian",
+    ["pl"] = "Polish",
+    ["pt"] = "Portuguese (Portugal)",
+    ["pt-br"] = "Portuguese (Brazil)",
+    ["ro"] = "Romanian",
+    ["ru"] = "Russian",
+    ["sk"] = "Slovak",
+    ["sr"] = "Serbian",
+    ["sv"] = "Swedish",
+    ["th"] = "Thai",
+    ["tr"] = "Turkish",
+    ["uk"] = "Ukrainian",
+    ["vi"] = "Vietnamese",
+    ["zh-cn"] = "Chinese (Simplified)",
+    ["zh-tw"] = "Chinese (Traditional)",
+}
+
+ax.config:Register("language", {
+    Name = "config.language",
+    Description = "config.language.help",
+    Type = ax.types.array,
+    Default = "en",
+    Populate = function()
+        return languages
+    end
 })

@@ -99,7 +99,7 @@ end
 
 function ENT:Use(client)
     if ( !IsValid(client) or !client:IsPlayer() ) then return end
-    if ( hook.Run("CanPlayerTakeItem", client, self) == false ) then return end
+    if ( hook.Run("PrePlayerTakeItem", client, self) == false ) then return end
 
     local itemDef = ax.item:Get(self:GetUniqueID())
     local itemInst = ax.item:Get(self:GetItemID())
@@ -126,7 +126,7 @@ function ENT:OnTakeDamage(dmg)
 
     self:SetHealth(self:Health() - dmg:GetDamage())
 
-    if ( self:Health() <= 0 and hook.Run("ItemCanBeDestroyed", self, dmg) != false ) then
+    if ( self:Health() <= 0 and hook.Run("PreItemDestroy", self, dmg) != false ) then
         self:EmitSound("physics/cardboard/cardboard_box_break" .. math.random(1, 3) .. ".wav")
 
         local position = self:LocalToWorld(self:OBBCenter())
@@ -140,6 +140,8 @@ function ENT:OnTakeDamage(dmg)
         if ( itemDef and itemDef.OnDestroyed ) then
             itemDef:OnDestroyed(self)
         end
+
+        hook.Run("PostItemDestroyed", self, dmg)
 
         SafeRemoveEntity(self)
     end

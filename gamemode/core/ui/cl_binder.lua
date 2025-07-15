@@ -65,7 +65,7 @@ end)
 
 function PANEL:Init()
     self:SetText("")
-    self:SetFont("parallax")
+    self:SetFont("ax.regular")
     self:SetContentAlignment(5)
     self:SetDrawBackground(true)
     self:SetDrawBorder(true)

@@ -128,11 +128,10 @@ net.Receive("ax.character.load", function(len)
     end
 
     local currentCharacter = client:GetCharacter()
-    local clientTable = client:GetTable()
-
     ax.character.stored = ax.character.stored or {}
     ax.character.stored[characterID] = character
 
+    local clientTable = client:GetTable()
     clientTable.axCharacters = clientTable.axCharacters or {}
     clientTable.axCharacters[characterID] = character
     clientTable.axCharacter = character
@@ -151,6 +150,25 @@ net.Receive("ax.character.variable.set", function(len)
     if ( !character ) then return end
 
     character[key] = value
+end)
+
+net.Receive("ax.character.sync", function(len)
+    local client = Entity(net.ReadUInt(16))
+    if ( !IsValid(client) ) then print ("Invalid client for character sync!") return end
+
+    local characterID = net.ReadUInt(16)
+    if ( !characterID ) then return end
+
+    local character = ax.character:CreateObject(characterID, net.ReadTable(), client)
+    if ( !istable(character) ) then return end
+
+    ax.character.stored = ax.character.stored or {}
+    ax.character.stored[characterID] = character
+
+    local clientTable = client:GetTable()
+    clientTable.axCharacters = clientTable.axCharacters or {}
+    clientTable.axCharacters[characterID] = character
+    clientTable.axCharacter = character
 end)
 
 --[[-----------------------------------------------------------------------------
@@ -412,8 +430,8 @@ end)
 
 net.Receive("ax.notification.send", function(len)
     local text = net.ReadString()
-    local type = net.ReadUInt(8)
-    local duration = net.ReadUInt(16)
+    local type = net.ReadUInt(3)
+    local duration = net.ReadUInt(12)
     if ( !text ) then return end
 
     notification.AddLegacy(text, type, duration)
@@ -421,29 +439,35 @@ end)
 
 net.Receive("ax.flag.list", function(len)
     local target = net.ReadPlayer()
+    local character = target:GetCharacter()
+    if ( !character ) then return end
+
     local hasFlags = net.ReadTable()
+    local bGiving = net.ReadBool()
     if ( !IsValid(target) or !target:IsPlayer() ) then return end
 
     local query = {}
-    query[#query + 1] = "Select which flag you want to give to " .. target:Name() .. "."
+    query[#query + 1] = "Select which flag you want to " .. (bGiving and "give to " or "take from ") .. target:Name() .. "."
     query[#query + 1] = "Flag List"
 
     local flags = ax.flag:GetAll()
     local availableFlags = {}
     for key, data in pairs(flags) do
         if ( !isstring(key) or #key != 1 ) then continue end
-        if ( hasFlags[key] ) then continue end
+
+        if ( bGiving and hasFlags[key] ) then continue
+        elseif ( !bGiving and !hasFlags[key] ) then continue end
 
         query[#query + 1] = key
         query[#query + 1] = function()
-            ax.command:Run("CharGiveFlags", target, key)
+            ax.command:Run(bGiving and "CharGiveFlags" or "CharTakeFlags", target, key)
         end
 
         availableFlags[#availableFlags + 1] = key
     end
 
     if ( availableFlags[1] == nil ) then
-        ax.client:Notify("The target player already has all flags, so you cannot give them any more!")
+        ax.client:Notify("The target player " .. (bGiving and "already has all flags" or "doesn't have any flags") .. "!")
         return
     end
 

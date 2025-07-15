@@ -34,8 +34,8 @@ function ax.notification:Send(client, text, iType, duration)
         net.Start("ax.notification.send")
 
         net.WriteString(text)
-        net.WriteUInt(iType, 8)
-        net.WriteUInt(duration, 16)
+        net.WriteUInt(iType, 3)
+        net.WriteUInt(duration, 12)
 
         if ( IsValid(client) ) then
             net.Send(client)

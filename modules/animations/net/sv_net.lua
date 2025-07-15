@@ -9,6 +9,14 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
+<<<<<<<< HEAD:modules/animations/net/sv_net.lua
 util.AddNetworkString("ax.animations.update")
 util.AddNetworkString("ax.sequence.reset")
 util.AddNetworkString("ax.sequence.set")
+========
+local MODULE = MODULE
+
+MODULE.Name = "Doors"
+MODULE.Description = "Handles door entities with custom functionality and persistence."
+MODULE.Author = "Riggs"
+>>>>>>>> main:modules/doors/boot.lua

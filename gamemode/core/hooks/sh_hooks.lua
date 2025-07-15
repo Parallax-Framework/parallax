@@ -27,31 +27,19 @@ end
 
 function GM:PlayerGetToolgun(client)
     local character = client:GetCharacter()
-    return CAMI.PlayerHasAccess(client, "Parallax - Toolgun", nil) or character and character:HasFlag("t")
+    return CAMI.PlayerHasAccess(client, "Parallax - Toolgun", nil) or ( character and character:HasFlag("t") )
 end
 
 function GM:PlayerGetPhysgun(client)
     local character = client:GetCharacter()
-    return CAMI.PlayerHasAccess(client, "Parallax - Physgun", nil) or character and character:HasFlag("p")
+    return CAMI.PlayerHasAccess(client, "Parallax - Physgun", nil) or ( character and character:HasFlag("p") )
 end
 
-function GM:PlayerCanCreateCharacter(client, character)
+function GM:PrePlayerTakeItem(client, item)
     return true
 end
 
-function GM:PlayerCanDeleteCharacter(client, character)
-    return true
-end
-
-function GM:PlayerCanLoadCharacter(client, character, currentCharacter)
-    return true
-end
-
-function GM:CanPlayerTakeItem(client, item)
-    return true
-end
-
-function GM:ItemCanBeDestroyed(item, damageInfo)
+function GM:PreItemDestroy(item, damageInfo)
     return true
 end
 
@@ -131,6 +119,44 @@ function GM:PlayerCanHearChat(client, listener, uniqueID, text)
 end
 
 function GM:PreConfigChanged(key, value, oldValue)
+    local stored = ax.config.stored[key]
+    if ( !istable(stored) ) then
+        ax.util:PrintError("Attempted to set unknown config \"" .. tostring(key) .. "\"!")
+        return false
+    end
+
+    if ( stored.Type == ax.types.array ) then
+        local populate = stored.Populate
+        if ( isfunction(populate) ) then
+            local configs = populate()
+            if ( !istable(configs) or !configs[value] ) then
+                ax.util:PrintError("Attempted to set config \"" .. tostring(key) .. "\" with invalid value!")
+                return false
+            end
+        elseif ( !istable(stored.Values) or !stored.Values[value] ) then
+            ax.util:PrintError("Attempted to set config \"" .. tostring(key) .. "\" with invalid value!")
+            return false
+        end
+    else
+        if ( ax.util:DetectType(value) != stored.Type ) then
+            ax.util:PrintError("Attempted to set config \"" .. tostring(key) .. "\" with invalid type!")
+            return false
+        end
+    end
+
+    if ( isnumber(value) ) then
+        if ( isnumber(stored.Min) and value < stored.Min ) then
+            ax.util:PrintError("Config \"" .. tostring(key) .. "\" is below minimum value!")
+            return false
+        end
+
+        if ( isnumber(stored.Max) and value > stored.Max ) then
+            ax.util:PrintError("Config \"" .. tostring(key) .. "\" is above maximum value!")
+            return false
+        end
+    end
+
+    return true
 end
 
 function GM:PostConfigChanged(key, value, oldValue, client)

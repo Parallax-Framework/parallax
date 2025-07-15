@@ -14,12 +14,14 @@ local MODULE = MODULE
 --- Post-initialization hook for the admin module
 function MODULE:PostInitializeSchema()
     -- Register default groups
-    for _, group in ipairs(self.DefaultGroups) do
+    for i = 1, #self.DefaultGroups do
+        local group = self.DefaultGroups[i]
         self:RegisterGroup(group.name, group.level, group.color, group.immunity, group.inherits)
     end
 
     -- Register default permissions
-    for _, perm in ipairs(self.DefaultPermissions) do
+    for i = 1, #self.DefaultPermissions do
+        local perm = self.DefaultPermissions[i]
         self:RegisterPermission(perm.name, perm.level)
     end
 

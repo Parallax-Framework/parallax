@@ -80,11 +80,6 @@ function ax.config:Set(key, value)
         value = stored.Default
     end
 
-    if ( ax.util:DetectType(value) != stored.Type ) then
-        ax.util:PrintError("Attempted to set config \"" .. tostring(key) .. "\" with invalid type!")
-        return false
-    end
-
     local instance = self.instances[key] or {}
     local oldValue = instance.Value or instance.Default or stored.Default
     local bResult = hook.Run("PreConfigChanged", key, value, oldValue)

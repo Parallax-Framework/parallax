@@ -14,3 +14,9 @@ local MODULE = MODULE
 MODULE.Name = "Weapon Select"
 MODULE.Description = "Advanced weapon selection system with vertical layout and smooth animations."
 MODULE.Author = "Riggs"
+
+if ( SERVER ) then
+    util.AddNetworkString("ax.weaponselect.deathclose")
+end
+
+-- I WROTE THIS IN VR

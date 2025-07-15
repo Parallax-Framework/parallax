@@ -490,7 +490,7 @@ ax.command:Register("CleanupMap", {
             return
         end
 
-        game.CleanUpMap()
+        game.CleanUpMap(false, {"env_fire", "entityflame", "_firesmoke"})
 
         MODULE:LogAction(client, "cleaned up map", nil, arguments[1] or "No reason provided")
 
@@ -575,5 +575,160 @@ ax.command:Register("ViewLogs", {
 
             ax.notification:Send(client, logStr)
         end
+    end
+})
+
+-- Usergroup Management Commands
+
+-- Set User Group Command
+ax.command:Register("PlySetGroup", {
+    Description = "Set a player's usergroup",
+    Arguments = {
+        {
+            Type = ax.types.player,
+            ErrorMsg = "You must provide a valid player!"
+        },
+        {
+            Type = ax.types.string,
+            ErrorMsg = "You must provide a usergroup name!"
+        },
+        {
+            Type = ax.types.number,
+            Optional = true,
+            Default = 0,
+            ErrorMsg = "Duration must be a number (in minutes, 0 = permanent)!"
+        },
+        {
+            Type = ax.types.text,
+            Optional = true,
+            Default = "No reason provided",
+            ErrorMsg = "You must provide a reason!"
+        }
+    },
+    Callback = function(self, client, arguments)
+        if (!CAMI.PlayerHasAccess(client, "Parallax - Manage Usergroups", nil)) then
+            ax.notification:Send(client, "You don't have permission to manage usergroups.")
+            return
+        end
+
+        local target = arguments[1]
+        local groupName = arguments[2]
+        local duration = arguments[3] or 0
+        local reason = arguments[4] or "No reason provided"
+
+        if (!IsValid(target)) then
+            ax.notification:Send(client, "Invalid target player.")
+            return
+        end
+
+        if (!MODULE:CanTarget(client, target)) then
+            ax.notification:Send(client, "You cannot target this player.")
+            return
+        end
+
+        local usergroup = CAMI.GetUsergroup(groupName)
+        if (!usergroup) then
+            ax.notification:Send(client, "Usergroup '" .. groupName .. "' does not exist.")
+            return
+        end
+
+        -- Check if admin can assign this group
+        if (!MODULE:CanAssignGroup(client, groupName)) then
+            ax.notification:Send(client, "You don't have permission to assign this usergroup.")
+            return
+        end
+
+        local oldGroup = target:GetUserGroup()
+        MODULE:SetPlayerUsergroup(target, groupName, duration, reason, client)
+
+        local durationStr = duration > 0 and " for " .. duration .. " minutes" or " permanently"
+        ax.notification:Send(nil, client:SteamName() .. " set " .. target:SteamName() .. "'s usergroup to " .. groupName .. durationStr .. ". Reason: " .. reason)
+    end
+})
+
+-- Remove User Group Command (set to user)
+ax.command:Register("PlyRemoveGroup", {
+    Description = "Remove a player's usergroup (set to user)",
+    Arguments = {
+        {
+            Type = ax.types.player,
+            ErrorMsg = "You must provide a valid player!"
+        },
+        {
+            Type = ax.types.text,
+            Optional = true,
+            Default = "No reason provided",
+            ErrorMsg = "You must provide a reason!"
+        }
+    },
+    Callback = function(self, client, arguments)
+        if (!CAMI.PlayerHasAccess(client, "Parallax - Manage Usergroups", nil)) then
+            ax.notification:Send(client, "You don't have permission to manage usergroups.")
+            return
+        end
+
+        local target = arguments[1]
+        local reason = arguments[2] or "No reason provided"
+
+        if (!IsValid(target)) then
+            ax.notification:Send(client, "Invalid target player.")
+            return
+        end
+
+        if (!MODULE:CanTarget(client, target)) then
+            ax.notification:Send(client, "You cannot target this player.")
+            return
+        end
+
+        local oldGroup = target:GetUserGroup()
+        MODULE:SetPlayerUsergroup(target, "user", 0, reason, client)
+
+        ax.notification:Send(nil, client:SteamName() .. " removed " .. target:SteamName() .. "'s usergroup (was " .. oldGroup .. "). Reason: " .. reason)
+    end
+})
+
+-- Create User Group Command
+ax.command:Register("CreateGroup", {
+    Description = "Create a new usergroup",
+    Arguments = {
+        {
+            Type = ax.types.string,
+            ErrorMsg = "You must provide a group name!"
+        },
+        {
+            Type = ax.types.string,
+            Optional = true,
+            Default = "user",
+            ErrorMsg = "You must provide a valid inherits group!"
+        },
+        {
+            Type = ax.types.number,
+            Optional = true,
+            Default = 1,
+            ErrorMsg = "You must provide a valid level!"
+        }
+    },
+    Callback = function(self, client, arguments)
+        if (!CAMI.PlayerHasAccess(client, "Parallax - Manage Usergroups", nil)) then
+            ax.notification:Send(client, "You don't have permission to manage usergroups.")
+            return
+        end
+
+        local groupName = arguments[1]
+        local inherits = arguments[2] or "user"
+        local level = arguments[3] or 1
+
+        if (CAMI.GetUsergroup(groupName)) then
+            ax.notification:Send(client, "Usergroup '" .. groupName .. "' already exists.")
+            return
+        end
+
+        if (!CAMI.GetUsergroup(inherits)) then
+            ax.notification:Send(client, "Inherits group '" .. inherits .. "' does not exist.")
+            return
+        end
+
+        MODULE:CreateUsergroup(groupName, inherits, level, Color(255, 255, 255), 0, client)
+        ax.notification:Send(client, "Created usergroup '" .. groupName .. "'.")
     end
 })

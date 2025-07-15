@@ -231,5 +231,7 @@ localization["options.chat.typesound"] = "Chat Type Sound"
 localization["options.chat.typesound.help"] = "Enable or disable the sound played when typing in chat."
 localization["config.chat.format"] = "Chat Format"
 localization["config.chat.format.help"] = "Enable or disable the chat format. When enabled, chat messages will be formatted with some changes."
+localization["config.language"] = "Language"
+localization["config.language.help"] = "Select the language for the game. This will change the language of the UI and other text in the game."
 
 ax.localization:Register("en", localization)

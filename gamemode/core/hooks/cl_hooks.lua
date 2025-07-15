@@ -9,6 +9,14 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
+function GM:PlayerButtonDown(client, button)
+    if ( !IsFirstTimePredicted() ) then return end
+
+    if ( button == KEY_F1 and !IsValid(ax.gui.info) ) then
+        vgui.Create("ax.info")
+    end
+end
+
 function GM:PlayerStartVoice(client)
     if ( IsValid(g_VoicePanelList) ) then
         g_VoicePanelList:Remove()
@@ -454,7 +462,7 @@ local function DrawAmmo()
     local clipCount = activeWeapon:Clip1()
 
     local text = string.format("%d / %d", clipCount, ammoCount)
-    draw.SimpleText(text, "ax.bold", ScrW() - 16, ScrH() - 16, ax.color:Get("white"), TEXT_ALIGN_RIGHT, TEXT_ALIGN_BOTTOM)
+    draw.SimpleText(text, "ax.regular.bold", ScrW() - 16, ScrH() - 16, ax.color:Get("white"), TEXT_ALIGN_RIGHT, TEXT_ALIGN_BOTTOM)
 end
 
 local function DrawHealth()
@@ -500,26 +508,28 @@ local function DrawHealth()
     end
 end
 
-local function DrawTargetInfo(target, alpha)
+local function DrawTargetInfo(target, alpha, is3D2D)
     local client = ax.client
-    if ( target:IsPlayer() ) then
+    if ( is3D2D and target:IsPlayer() ) then
         local targetPos = target:EyePos() + Vector(0, 0, 10)
         local distToSqr = targetPos:DistToSqr(client:WorldSpaceCenter())
         local teamColor = team.GetColor(target:Team())
+        local character = target:GetCharacter()
+        local name = hook.Run("GetCharacterName", target, client) or (character and character:GetName() or target:Nick())
         cam.Start3D2D(targetPos, Angle(0, client:EyeAngles().y + 270, 90), 0.02 + (distToSqr / 1024 ^ 2))
-            draw.SimpleTextOutlined(target:GetName(), "ax.huge.bold", 0, 0, ColorAlpha(teamColor, alpha), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 4, Color(0, 0, 0, alpha))
+            draw.SimpleTextOutlined(name, "ax.huge.bold", 0, 0, ColorAlpha(teamColor, alpha), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 4, Color(0, 0, 0, alpha))
         cam.End3D2D()
     else
-        hook.Run("DrawTargetInfo", target, alpha)
+        hook.Run("DrawTargetInfo", target, alpha, is3D2D)
     end
 end
 
 local targetAlpha = {}
-local function DrawTargetInfos()
+local function DrawTargetInfos(is3D2D)
     local client = ax.client
     for k, v in ents.Iterator() do
         if ( !IsValid(v) or v == client ) then continue end
-        if ( hook.Run("ShouldDrawTargetInfo", v) == false ) then continue end
+        if ( hook.Run("ShouldDrawTargetInfo", v, is3D2D) == false ) then continue end
 
         local index = v:EntIndex()
         if ( !targetAlpha[index] ) then
@@ -551,7 +561,7 @@ local function DrawTargetInfos()
         targetAlpha[index] = alpha
 
         if ( alpha > 0 ) then
-            DrawTargetInfo(v, alpha)
+            DrawTargetInfo(v, alpha, is3D2D)
         end
     end
 end
@@ -568,6 +578,7 @@ function GM:HUDPaint()
     DrawCrosshair()
     DrawAmmo()
     DrawHealth()
+    DrawTargetInfos(false)
 
     hook.Run("PostHUDPaint")
 end
@@ -578,7 +589,8 @@ function GM:PostDrawTranslucentRenderables(bDrawingDepth, bDrawingSkybox)
     local client = ax.client
     if ( !IsValid(client) ) then return end
 
-    DrawTargetInfos()
+
+    DrawTargetInfos(true)
 
     if ( !ax.config:Get("debug.developer") ) then return end
     if ( !ax.client:IsDeveloper() ) then return end
@@ -648,193 +660,40 @@ function GM:HUDShouldDraw(name)
     return !elements[name]
 end
 
+local families = {
+    ["regular"] = "GorDIN Regular",
+    ["bold"] = "GorDIN Bold",
+    ["italic"] = "GorDIN Regular",
+    ["italic.bold"] = "GorDIN Bold"
+}
+
 function GM:LoadFonts()
-    local scale6 = ScreenScaleH(6)
-    local scale8 = ScreenScaleH(8)
-    local scale10 = ScreenScaleH(10)
-    local scale16 = ScreenScaleH(16)
-    local scale24 = ScreenScaleH(24)
-    local scale32 = ScreenScaleH(32)
+    hook.Run("PreLoadFonts")
 
-    surface.CreateFont("ax.tiny", {
-        font = "GorDIN Regular",
-        size = scale6,
-        weight = 700,
-        antialias = true
-    })
-
-    surface.CreateFont("ax.tiny.bold", {
-        font = "GorDIN Bold",
-        size = scale6,
-        weight = 900,
-        antialias = true
-    })
-
-    surface.CreateFont("ax.small", {
-        font = "GorDIN Regular",
-        size = scale8,
-        weight = 700,
-        antialias = true
-    })
-
-    surface.CreateFont("ax.small.bold", {
-        font = "GorDIN Bold",
-        size = scale8,
-        weight = 900,
-        antialias = true
-    })
-
-    surface.CreateFont("ax.small.italic", {
-        font = "GorDIN Regular",
-        size = scale8,
-        weight = 700,
-        italic = true,
-        antialias = true
-    })
-
-    surface.CreateFont("ax.small.italic.bold", {
-        font = "GorDIN Bold",
-        size = scale8,
-        weight = 900,
-        italic = true,
-        antialias = true
-    })
-
-    surface.CreateFont("parallax", {
-        font = "GorDIN Regular",
-        size = scale10,
-        weight = 700,
-        antialias = true
-    })
-
-    surface.CreateFont("ax.bold", {
-        font = "GorDIN Bold",
-        size = scale10,
-        weight = 900,
-        antialias = true
-    })
-
-    surface.CreateFont("ax.italic", {
-        font = "GorDIN Regular",
-        size = scale10,
-        weight = 700,
-        italic = true,
-        antialias = true
-    })
-
-    surface.CreateFont("ax.italic.bold", {
-        font = "GorDIN Bold",
-        size = scale10,
-        weight = 900,
-        italic = true,
-        antialias = true
-    })
-
-    surface.CreateFont("ax.large", {
-        font = "GorDIN Regular",
-        size = scale16,
-        weight = 700,
-        antialias = true
-    })
-
-    surface.CreateFont("ax.large.bold", {
-        font = "GorDIN Bold",
-        size = scale16,
-        weight = 900,
-        antialias = true
-    })
-
-    surface.CreateFont("ax.large.italic", {
-        font = "GorDIN Regular",
-        size = scale16,
-        weight = 700,
-        italic = true,
-        antialias = true
-    })
-
-    surface.CreateFont("ax.large.italic.bold", {
-        font = "GorDIN Bold",
-        size = scale16,
-        weight = 900,
-        italic = true,
-        antialias = true
-    })
-
-    surface.CreateFont("ax.massive", {
-        font = "GorDIN Regular",
-        size = scale24,
-        weight = 700,
-        antialias = true
-    })
-
-    surface.CreateFont("ax.massive.bold", {
-        font = "GorDIN Bold",
-        size = scale24,
-        weight = 900,
-        antialias = true
-    })
-
-    surface.CreateFont("ax.massive.italic", {
-        font = "GorDIN Regular",
-        size = scale24,
-        weight = 700,
-        italic = true,
-        antialias = true
-    })
-
-    surface.CreateFont("ax.massive.italic.bold", {
-        font = "GorDIN Bold",
-        size = scale24,
-        weight = 900,
-        italic = true,
-        antialias = true
-    })
-
-    surface.CreateFont("ax.huge", {
-        font = "GorDIN Regular",
-        size = scale32,
-        weight = 700,
-        antialias = true
-    })
-
-    surface.CreateFont("ax.huge.bold", {
-        font = "GorDIN Bold",
-        size = scale32,
-        weight = 900,
-        antialias = true
-    })
-
-    surface.CreateFont("ax.huge.italic", {
-        font = "GorDIN",
-        size = scale32,
-        weight = 700,
-        italic = true,
-        antialias = true
-    })
-
-    surface.CreateFont("ax.huge.italic.bold", {
-        font = "GorDIN Bold",
-        size = scale32,
-        weight = 900,
-        italic = true,
-        antialias = true
-    })
+    ax.util:CreateFontFamily("tiny", "GorDIN Regular", ScreenScaleH(6), families)
+    ax.util:CreateFontFamily("small", "GorDIN Regular", ScreenScaleH(8), families)
+    ax.util:CreateFontFamily("regular", "GorDIN Regular", ScreenScaleH(10), families)
+    ax.util:CreateFontFamily("large", "GorDIN Regular", ScreenScaleH(16), families)
+    ax.util:CreateFontFamily("massive", "GorDIN Regular", ScreenScaleH(24), families)
+    ax.util:CreateFontFamily("huge", "GorDIN Regular", ScreenScaleH(32), families)
 
     surface.CreateFont("ax.developer", {
         font = "Courier New",
-        size = 16,
-        weight = 700,
-        antialias = true
+        size = ScreenScaleH(6)
     })
 
-    surface.CreateFont("ax.chat", {
-        font = "GorDIN Regular",
-        size = scale6 * ax.option:Get("chat.size.font", 1),
-        weight = 700,
-        antialias = true
-    })
+    ax.util:CreateFontFamily("chat", "GorDIN Regular", ScreenScaleH(10) * ax.option:Get("chat.size.font", 1), families)
 
     hook.Run("PostLoadFonts")
+end
+
+function GM:GetChatFont(chatType)
+    local chatData = ax.chat:Get(chatType)
+    if ( chatData and chatData.Font ) then
+        return chatData.Font
+    end
+
+    return "ax.chat"
 end
 
 function GM:OnPauseMenuShow()
@@ -918,8 +777,8 @@ function GM:ShouldDrawHealthBar()
     return ax.option:Get("hud.health.bar", true)
 end
 
-function GM:ShouldDrawTargetInfo(entity)
-    if ( entity:IsPlayer() ) then return true end
+function GM:ShouldDrawTargetInfo(entity, is3D2D)
+    if ( is3D2D and entity:IsPlayer() ) then return true end
 
     return false
 end
@@ -1114,7 +973,7 @@ function GM:PopulateHelpCategories(categories)
             end
 
             local nameLabel = panel:Add("ax.text")
-            nameLabel:SetFont("ax.bold")
+            nameLabel:SetFont("ax.regular.bold")
             nameLabel:SetText(commandName, true)
             nameLabel:Dock(TOP)
             nameLabel:DockMargin(8, 0, 8, 0)
@@ -1191,13 +1050,13 @@ function GM:ChatboxOnTextChanged(text)
     net.SendToServer()
 
     -- Notify the command system about the text change
-    local command = ax.command:Get(ax.gui.chatbox:GetChatType())
+    local command = ax.command:Get(ax.chat.currentType)
     if ( command and command.OnChatTextChanged ) then
         command:OnTextChanged(text)
     end
 
     -- Notify the chat system about the text change
-    local chat = ax.chat:Get(ax.gui.chatbox:GetChatType())
+    local chat = ax.chat:Get(ax.chat.currentType)
     if ( chat and chat.OnChatTextChanged ) then
         chat:OnTextChanged(text)
     end
@@ -1225,7 +1084,7 @@ end
 function GM:PlayerBindPress(client, bind, pressed)
     bind = bind:lower()
 
-    if ( string.find(bind, "messagemode") and pressed ) then
+    if ( ax.util:FindString(bind, "messagemode") and pressed ) then
         ax.gui.chatbox:SetVisible(true)
 
         for i = 1, #ax.chat.messages do

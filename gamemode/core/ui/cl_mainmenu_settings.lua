@@ -9,8 +9,6 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
-local padding = ScreenScale(32)
-
 DEFINE_BASECLASS("EditablePanel")
 
 local PANEL = {}
@@ -35,14 +33,14 @@ function PANEL:Populate()
 
     local title = self:Add("ax.text")
     title:Dock(TOP)
-    title:DockMargin(padding, padding, 0, 0)
-    title:SetFont("ax.large.bold")
-    title:SetText("options")
+    title:DockMargin(ScreenScale(32), ScreenScaleH(32), 0, 0)
+    title:SetFont("ax.huge.bold")
+    title:SetText(string.upper("mainmenu.options"))
 
     local navigation = self:Add("EditablePanel")
     navigation:Dock(BOTTOM)
-    navigation:DockMargin(padding, 0, padding, padding)
-    navigation:SetTall(ScreenScale(24))
+    navigation:DockMargin(ScreenScale(32), 0, ScreenScale(32), ScreenScaleH(32))
+    navigation:SetTall(ScreenScaleH(24))
 
     local backButton = navigation:Add("ax.button.flat")
     backButton:Dock(LEFT)
@@ -56,9 +54,11 @@ function PANEL:Populate()
         self:SetVisible(false)
     end
 
+    navigation:SetTall(backButton:GetTall())
+
     local options = self:Add("ax.options")
     options:Dock(FILL)
-    options:DockMargin(padding, 0, padding, 0)
+    options:DockMargin(ScreenScale(32), 0, ScreenScale(32), 0)
 end
 
 vgui.Register("ax.mainmenu.options", PANEL, "EditablePanel")

@@ -29,3 +29,28 @@ ax.config:Register("admin.hierarchy", {
     Type = ax.types.bool,
     Default = true
 })
+
+ax.config:Register("admin.tickets.enabled", {
+    Name = "Ticket System",
+    Description = "Enable the ticket system",
+    Type = ax.types.bool,
+    Default = true
+})
+
+ax.config:Register("admin.tickets.maxPerPlayer", {
+    Name = "Max Tickets Per Player",
+    Description = "Maximum number of active tickets per player",
+    Type = ax.types.number,
+    Default = 3,
+    Min = 1,
+    Max = 10
+})
+
+ax.config:Register("admin.tickets.autoClose", {
+    Name = "Auto Close Tickets",
+    Description = "Automatically close tickets after X hours of inactivity",
+    Type = ax.types.number,
+    Default = 24,
+    Min = 1,
+    Max = 168
+})

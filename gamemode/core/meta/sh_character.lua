@@ -20,6 +20,16 @@ function CHAR:__tostring()
     return "Character [" .. self:GetID() .. "][" .. self:GetName() .. "]"
 end
 
+function CHAR:PrettyPrint()
+    local player = self:GetPlayer()
+    return string.format(
+        "Character %d SteamID: %s, Player: %s",
+        self:GetID(),
+        self:GetSteamID(),
+        IsValid(player) and player:SteamName() or "N/A"
+    )
+end
+
 --- Compares the character with another character.
 -- @param other The other character to compare with.
 -- @treturn boolean Whether the characters are equal.
@@ -85,12 +95,7 @@ end
 -- @tparam number amount The amount of money to check.
 -- @treturn boolean Whether the character can afford the amount.
 function CHAR:CanAfford(amount)
-    if ( amount < 0 ) then
-        amount = math.abs(amount)
-        ax.util:PrintWarning("Character " .. self:GetID() .. " tried to check negative amount, converted to positive number. Call :TakeMoney instead!")
-    end
-
-    return self:GetMoney() >= amount
+    return self:GetMoney() >= math.abs(amount)
 end
 
 --- Checks if the character has a specific flag.
@@ -102,7 +107,7 @@ function CHAR:HasFlag(flag)
     local flags = self:GetFlags()
     if ( !isstring(flags) or flags == "" ) then return false end
 
-    if ( string.find(flags, flag) ) then return true end
+    if ( ax.util:FindString(flags, flag) ) then return true end
 
     return false
 end

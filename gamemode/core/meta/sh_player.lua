@@ -77,7 +77,7 @@ PLAYER.ChatPrint = PLAYER.ChatText
 function PLAYER:Caption(arguments)
     if ( SERVER ) then
         net.Start("ax.caption")
-            net.WriteTable(arguments)
+            net.WriteTable(arguments, true)
         net.Send(self)
     else
         gui.AddCaption(arguments)

@@ -87,7 +87,7 @@ function PANEL:SetInventory(id)
 
     local label = progress:Add("ax.text")
     label:Dock(FILL)
-    label:SetFont("parallax")
+    label:SetFont("ax.regular")
     label:SetText(weight .. "kg / " .. maxWeight .. "kg")
     label:SetContentAlignment(5)
 
@@ -215,7 +215,7 @@ function PANEL:SetInfo(id)
     name:SetText(item:GetName(), true)
 
     local description = item:GetDescription()
-    local descriptionWrapped = ax.util:GetWrappedText(description, "parallax", self.info:GetWide() - 32)
+    local descriptionWrapped = ax.util:GetWrappedText(description, "ax.regular", self.info:GetWide() - 32)
     for k, v in pairs(descriptionWrapped) do
         local text = self.info:Add("ax.text")
         text:Dock(TOP)

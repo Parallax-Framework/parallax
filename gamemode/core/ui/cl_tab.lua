@@ -9,9 +9,6 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
-local padding = ScreenScale(32)
-local paddingSmall = ScreenScale(16)
-local paddingTiny = ScreenScale(8)
 local gradientLeft = ax.util:GetMaterial("vgui/gradient-l")
 local gradientRight = ax.util:GetMaterial("vgui/gradient-r")
 local gradientTop = ax.util:GetMaterial("vgui/gradient-u")
@@ -82,8 +79,8 @@ function PANEL:Init()
     })
 
     self.buttons = self:Add("EditablePanel")
-    self.buttons:SetSize(ScrW() / 4 - paddingSmall, ScrH() - padding)
-    self.buttons:SetPos(-self.buttons:GetWide(), paddingSmall)
+    self.buttons:SetSize(ScrW() / 4 - ScreenScale(16), ScrH() - ScreenScaleH(32))
+    self.buttons:SetPos(-self.buttons:GetWide(), ScreenScaleH(16))
 
     self.buttons.x = self.buttons:GetX()
     self.buttons.y = self.buttons:GetY()
@@ -91,7 +88,7 @@ function PANEL:Init()
     self.buttons.alpha = 0
     self.buttons:SetAlpha(0)
     self.buttons:Motion(ax.option:Get("tab.fade.time", 0.2), {
-        Target = {x = paddingTiny, y = paddingSmall, alpha = 255},
+        Target = {x = ScreenScale(8), y = ScreenScaleH(16), alpha = 255},
         Easing = "OutQuad",
         Think = function(vars)
             self.buttons:SetPos(vars.x, vars.y)
@@ -102,8 +99,8 @@ function PANEL:Init()
     local buttonSizeable = self.buttons:Add("EditablePanel")
 
     self.container = self:Add("EditablePanel")
-    self.container:SetSize(self:GetWide() - self.buttons:GetWide() - padding - paddingSmall, self:GetTall() - padding)
-    self.container:SetPos(self:GetWide(), paddingSmall)
+    self.container:SetSize(self:GetWide() - self.buttons:GetWide() - ScreenScale(32) - ScreenScale(16), self:GetTall() - ScreenScaleH(32))
+    self.container:SetPos(self:GetWide(), ScreenScaleH(16))
 
     self.container.x = self.container:GetX()
     self.container.y = self.container:GetY()
@@ -111,7 +108,7 @@ function PANEL:Init()
     self.container.alpha = 0
     self.container:SetAlpha(0)
     self.container:Motion(ax.option:Get("tab.fade.time", 0.2), {
-        Target = {x = self:GetWide() - self.container:GetWide() - paddingTiny, y = paddingSmall, alpha = 255},
+        Target = {x = self:GetWide() - self.container:GetWide() - ScreenScale(8), y = ScreenScaleH(16), alpha = 255},
         Easing = "OutQuad",
         Think = function(this)
             self.container:SetAlpha(this.alpha)
@@ -208,7 +205,7 @@ function PANEL:Close(callback)
     end)
 
     self.buttons:Motion(fadeDuration, {
-        Target = {x = -self.buttons:GetWide() * 2, y = paddingSmall, alpha = 0},
+        Target = {x = -self.buttons:GetWide() * 2, y = ScreenScaleH(16), alpha = 0},
         Easing = "OutQuad",
         Think = function(this)
             self.buttons:SetPos(this.x, this.y)
@@ -217,7 +214,7 @@ function PANEL:Close(callback)
     })
 
     self.container:Motion(fadeDuration, {
-        Target = {x = self:GetWide() * 2, y = paddingSmall, alpha = 0},
+        Target = {x = self:GetWide() * 2, y = ScreenScaleH(16), alpha = 0},
         Easing = "OutQuad",
         Think = function(this)
             self.container:SetAlpha(this.alpha)

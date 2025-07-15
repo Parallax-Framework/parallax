@@ -78,6 +78,7 @@ function PANEL:Init()
             -- Check if it's a way of using local out of character chat using .// prefix
             local data = ax.command:Get("looc")
             if ( data ) then
+                ax.chat.currentType = data.UniqueID
                 chatType = string.upper(data.UniqueID)
             end
         elseif ( string.sub(text, 1, 1) == "/" ) then
@@ -86,6 +87,7 @@ function PANEL:Init()
             local command = arguments[1]
             local data = ax.command:Get(command)
             if ( data ) then
+                ax.chat.currentType = data.UniqueID
                 chatType = string.upper(data.UniqueID)
             end
 
@@ -148,7 +150,7 @@ function PANEL:Init()
 end
 
 function PANEL:GetChatType()
-    return self.chatType.fullText or "IC"
+    return self.chatType.previousChatType or "IC"
 end
 
 function PANEL:PopulateRecommendations(text)

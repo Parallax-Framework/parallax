@@ -64,7 +64,12 @@ end
 
 local gmod_language = GetConVar("gmod_language")
 function ax.localization:GetPhrase(key, ...)
-    local languageName = ( gmod_language and gmod_language:GetString() ) or "en"
+    local languageName = "en"
+    if ( SERVER ) then
+        languageName = ax.config:Get("langugage")
+    elseif ( CLIENT and gmod_language and gmod_language:GetString() != "" ) then
+        languageName = gmod_language:GetString()
+    end
 
     local data = self:Get(languageName)
     if ( !istable(data) ) then
@@ -88,7 +93,7 @@ function ax.localization:GetPhrase(key, ...)
         end
 
         value = string.format(value, unpack(args))
-    elseif ( string.find(value, "%%s") ) then
+    elseif ( ax.util:FindString(value, "%%s") ) then
         -- If the string contains a %s but no additional arguments, we remove it.
         value = string.gsub(value, "%%s", "")
     end
@@ -128,3 +133,22 @@ concommand.Add("ax_localization_check", function(client, command, arguments)
 end)
 
 ax.localisation = ax.localization
+
+if ( CLIENT ) then
+    cvars.AddChangeCallback("gmod_language", function(convar, oldValue, newValue)
+        for i = 1, #ax.gui do
+            local v = ax.gui[i]
+            if ( IsValid(v) and ispanel(v) ) then
+                local className = v:GetClassName()
+                v:Remove()
+
+                -- Attempt to recreate the GUI element
+                if ( className == "ax.mainmenu" ) then
+                    vgui.Create("ax.mainmenu")
+                elseif ( className == "ax.tab" ) then
+                    vgui.Create("ax.tab")
+                end
+            end
+        end
+    end, "ax.localisation.gameLangChange")
+end

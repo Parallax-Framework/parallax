@@ -72,15 +72,15 @@ function SWEP:Precache()
 end
 
 local function IncludeFile(path)
-    if ( ( realm == "server" or string.find(path, "sv_") ) and SERVER ) then
+    if ( ( realm == "server" or ax.util:FindString(path, "sv_") ) and SERVER ) then
         include(path)
-    elseif ( realm == "shared" or string.find(path, "shared.lua") or string.find(path, "sh_") ) then
+    elseif ( realm == "shared" or ax.util:FindString(path, "shared.lua") or ax.util:FindString(path, "sh_") ) then
         if ( SERVER ) then
             AddCSLuaFile(path)
         end
 
         include(path)
-    elseif ( realm == "client" or string.find(path, "cl_") ) then
+    elseif ( realm == "client" or ax.util:FindString(path, "cl_") ) then
         if ( SERVER ) then
             AddCSLuaFile(path)
         else

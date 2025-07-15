@@ -18,29 +18,29 @@ ax.option:Register("thirdperson", {
     Category = "category.thirdperson"
 })
 
-ax.option:Register("thirdperson.follax.Head", {
-    Name = "options.thirdperson.follax.Head",
+ax.option:Register("thirdperson.follow.head", {
+    Name = "options.thirdperson.follow.head",
     Type = ax.types.bool,
     Default = false,
-    Description = "options.thirdperson.follax.Head.help",
+    Description = "options.thirdperson.follow.head.help",
     NoNetworking = true,
     Category = "category.thirdperson"
 })
 
-ax.option:Register("thirdperson.follax.Hit.angles", {
-    Name = "options.thirdperson.follax.Hit.angles",
+ax.option:Register("thirdperson.follow.hit.angles", {
+    Name = "options.thirdperson.follow.hit.angles",
     Type = ax.types.bool,
     Default = true,
-    Description = "options.thirdperson.follax.Hit.angles.help",
+    Description = "options.thirdperson.follow.hit.angles.help",
     NoNetworking = true,
     Category = "category.thirdperson"
 })
 
-ax.option:Register("thirdperson.follax.Hit.fov", {
-    Name = "options.thirdperson.follax.Hit.fov",
+ax.option:Register("thirdperson.follow.hit.fov", {
+    Name = "options.thirdperson.follow.hit.fov",
     Type = ax.types.bool,
     Default = true,
-    Description = "options.thirdperson.follax.Hit.fov.help",
+    Description = "options.thirdperson.follow.hit.fov.help",
     NoNetworking = true,
     Category = "category.thirdperson"
 })

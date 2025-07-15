@@ -21,6 +21,7 @@ ax.chat:Register("ic", {
 })
 
 ax.chat:Register("whisper", {
+    Font = "ax.chat.italic",
     Prefixes = {"W", "Whisper"},
     CanHear = function(self, speaker, listener)
         local radius = ax.config:Get("chat.radius.whisper", 96)
@@ -33,6 +34,7 @@ ax.chat:Register("whisper", {
 })
 
 ax.chat:Register("yell", {
+    Font = "ax.chat.bold",
     Prefixes = {"Y", "Yell"},
     CanHear = function(self, speaker, listener)
         local radius = ax.config:Get("chat.radius.yell", 1024)
@@ -51,7 +53,10 @@ ax.chat:Register("me", {
         return speaker:GetPos():DistToSqr(listener:GetPos()) < radius ^ 2
     end,
     OnChatAdd = function(self, speaker, text)
-        chat.AddText(ax.color:Get("chat.action"), "*", speaker:Name() .. " " .. ax.chat:Format(text), "*") -- TODO: wtf, no italic support?
+        local formattedText = ax.chat:Format(text)
+        formattedText = string.lower(string.sub(formattedText, 1, 1)) .. string.sub(formattedText, 2)
+        chat.AddText(ax.color:Get("chat.action"), speaker:Name() .. " " .. formattedText)
+        chat.PlaySound()
     end
 })
 
@@ -62,7 +67,8 @@ ax.chat:Register("it", {
         return speaker:GetPos():DistToSqr(listener:GetPos()) < radius ^ 2
     end,
     OnChatAdd = function(self, speaker, text)
-        chat.AddText(ax.color:Get("chat.action"), text)
+        chat.AddText(ax.color:Get("chat.action"), ax.chat:Format(text))
+        chat.PlaySound()
     end
 })
 
@@ -75,7 +81,7 @@ ax.chat:Register("ooc", {
         local tagColor = ax.color:Get("chat.ooc")
         local textColor = ax.color:Get("text")
         local nameColor = hook.Run("GetNameColor", speaker) or textColor
-        chat.AddText(tagColor, "[OOC] ", nameColor, speaker:SteamName(), textColor, ": " .. text)
+        chat.AddText(tagColor, "[OOC] ", nameColor, speaker:SteamName(), textColor, ": " .. ax.chat:Format(text))
     end
 })
 
@@ -89,7 +95,7 @@ ax.chat:Register("looc", {
         local tagColor = ax.color:Get("chat.ooc")
         local textColor = ax.color:Get("text")
         local nameColor = team.GetColor(speaker:Team()) or textColor
-        chat.AddText(tagColor, "[LOOC] ", nameColor, speaker:Name(), textColor, ": " .. text)
+        chat.AddText(tagColor, "[LOOC] ", nameColor, speaker:Name(), textColor, ": " .. ax.chat:Format(text))
     end
 })
 

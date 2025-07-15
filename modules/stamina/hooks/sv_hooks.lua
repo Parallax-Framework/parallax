@@ -24,27 +24,33 @@ function MODULE:Think()
             if ( !IsValid(client) or !client:Alive() ) then continue end
             if ( client:Team() == 0 ) then continue end
 
-            local st = client:GetRelay("stamina")
-            if ( !istable(st) ) then
+            local stamina = client:GetRelay("stamina")
+            if ( !istable(stamina) ) then
                 ax.stamina:Initialize(client)
-
                 continue
             end
 
             local isSprinting = client:KeyDown(IN_SPEED) and client:KeyDown(IN_FORWARD) and client:OnGround()
             if ( isSprinting and client:GetVelocity():Length2DSqr() > 1 ) then
                 if ( ax.stamina:Consume(client, drain) ) then
-                    st.depleted = false
-                    st.regenBlockedUntil = CurTime() + 2
+                    stamina.depleted = false
+                    stamina.regenBlockedUntil = CurTime() + 2
                 else
-                    if ( !st.depleted ) then
-                        st.depleted = true
-                        st.regenBlockedUntil = CurTime() + 10
+                    if ( !stamina.depleted ) then
+                        stamina.depleted = true
+                        stamina.regenBlockedUntil = CurTime() + 10
                     end
                 end
             else
-                if ( st.regenBlockedUntil and CurTime() >= st.regenBlockedUntil ) then
-                    ax.stamina:Set(client, math.min(st.current + regen, st.max))
+                if ( stamina.regenBlockedUntil and CurTime() >= stamina.regenBlockedUntil ) then
+                    local newRegen = regen
+                    if ( client:Crouching() and client:OnGround() ) then
+                        newRegen = newRegen * 1.5
+                    end
+
+                    newRegen = hook.Run("PlayerStaminaRegen", client, newRegen) or newRegen
+                    if ( !newRegen or newRegen <= 0 ) then continue end
+                    ax.stamina:Set(client, math.min(stamina.current + newRegen, stamina.max))
                 end
             end
         end
@@ -54,8 +60,8 @@ end
 function MODULE:OnPlayerHitGround(client, inWater, onFloater, speed)
     if ( !ax.config:Get("stamina", true) ) then return end
 
-    local st = client:GetRelay("stamina")
-    if ( st and st.current > 0 ) then
+    local stamina = client:GetRelay("stamina")
+    if ( stamina and stamina.current > 0 ) then
         ax.stamina:Consume(client, speed / 64)
     end
 end

@@ -41,7 +41,7 @@ function MODULE:CalcView(client, pos, angles, fov)
 
     local view = {}
 
-    if ( ax.option:Get("thirdperson.follax.Head", false) ) then
+    if ( ax.option:Get("thirdperson.follow.head", false) ) then
         local head
 
         for i = 0, client:GetBoneCount() do
@@ -79,8 +79,8 @@ function MODULE:CalcView(client, pos, angles, fov)
     })
 
     local shootPos = traceData.HitPos
-    local followHitAngles = ax.option:Get("thirdperson.follax.Hit.angles", true)
-    local followHitFov = ax.option:Get("thirdperson.follax.Hit.fov", true)
+    local followHitAngles = ax.option:Get("thirdperson.follow.hit.angles", true)
+    local followHitFov = ax.option:Get("thirdperson.follow.hit.fov", true)
 
     local viewBob = angle_zero
     local curTime = CurTime()

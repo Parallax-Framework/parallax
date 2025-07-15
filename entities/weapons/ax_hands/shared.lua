@@ -315,6 +315,8 @@ function SWEP:SecondaryAttack()
 
             self:SetNextSecondaryFire(CurTime() + 0.4)
             self:SetNextPrimaryFire(CurTime() + 1)
+
+            hook.Run("PlayerKnock", owner, entity)
         elseif ( !entity:IsPlayer() and !entity:IsNPC() ) then
             self:DoPickup()
         elseif entity:IsPlayer() and entity:Alive() then
@@ -338,6 +340,11 @@ function SWEP:SecondaryAttack()
             end)
 
             self:SetCooldown("push", 0.5)
+            owner:ViewPunch(pushViewPunchAngle)
+            owner:EmitSound("physics/flesh/flesh_impact_hard" .. math.random(2, 5) .. ".wav", 60)
+            owner:SetAnimation(PLAYER_ATTACK1)
+
+            hook.Run("PlayerPush", owner, entity)
         elseif ( IsValid(self.axHeldEntity) and !self.axHeldEntity:IsPlayerHolding() ) then
             self.axHeldEntity = nil
         end
@@ -365,7 +372,13 @@ function SWEP:AllowPickup(target)
     local physicsObject = target:GetPhysicsObject()
     local owner = self:GetOwner()
 
-    return ( IsValid(physicsObject) and IsValid(owner) and !physicsObject:HasGameFlag(FVPHYSICS_NO_PLAYER_PICKUP) and physicsObject:GetMass() < ax.config:Get("hands.max.Carry", 160) and !self:IsEntityStoodOn(target) and target.CanPickup != false )
+    return ( IsValid(physicsObject)
+    and IsValid(owner)
+    and !physicsObject:HasGameFlag(FVPHYSICS_NO_PLAYER_PICKUP)
+    and physicsObject:GetMass() < ax.config:Get("hands.max.Carry", 160)
+    and !self:IsEntityStoodOn(target)
+    and target.CanPickup != false )
+    and hook.Run("CanPlayerPickup", owner, target) != false
 end
 
 function SWEP:DoPickup(throw)

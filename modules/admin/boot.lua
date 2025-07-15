@@ -15,10 +15,13 @@ MODULE.Name = "Admin"
 MODULE.Description = "Comprehensive admin system with features similar to other variants of admin systems, including user groups, permissions, logging, and hierarchy management."
 MODULE.Author = "Riggs"
 
-MODULE.Groups = {}
-MODULE.Permissions = {}
+MODULE.Groups = MODULE.Groups or {}
+MODULE.Permissions = MODULE.Permissions or {}
 MODULE.BannedPlayers = MODULE.BannedPlayers or {}
 MODULE.AdminLogs = MODULE.AdminLogs or {}
+MODULE.Tickets = MODULE.Tickets or {}
+MODULE.TicketComments = MODULE.TicketComments or {}
+MODULE.NextTicketID = MODULE.NextTicketID or 1
 
 -- Default admin groups with hierarchy levels
 MODULE.DefaultGroups = {
@@ -70,3 +73,27 @@ MODULE.DefaultPermissions = {
     {name = "Parallax - Lua Run", level = 4},
     {name = "Parallax - RCON", level = 4}
 }
+
+-- Ticket system data structure
+-- MODULE.Tickets[ticketID] = {
+--     id = ticketID,
+--     title = "Ticket Title",
+--     description = "Ticket Description",
+--     creator = "STEAM_0:0:123456",
+--     creatorName = "PlayerName",
+--     status = "open", -- open, claimed, closed
+--     claimer = nil, -- SteamID of admin who claimed
+--     claimerName = nil,
+--     timestamp = os.time(),
+--     lastActivity = os.time()
+-- }
+
+-- MODULE.TicketComments[ticketID] = {
+--     {
+--         author = "STEAM_0:0:123456",
+--         authorName = "PlayerName",
+--         message = "Comment text",
+--         timestamp = os.time(),
+--         isAdmin = false
+--     }
+-- }

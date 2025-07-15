@@ -149,6 +149,7 @@ if ( CLIENT ) then
 
     -- Weapon icon helper functions
     MODULE.WeaponIcons = MODULE.WeaponIcons or {}
+    MODULE.WeaponIcons.Cache = {}
 
     -- Default icon map for common weapons
     -- This can be extended with more icons as needed
@@ -176,31 +177,58 @@ if ( CLIENT ) then
         local class = weapon:GetClass()
         if ( !class or class == "" ) then return nil end
 
+        -- Check cache first
+        if ( self.Cache[class] ) then
+            return self.Cache[class]
+        end
+
         -- Check if the weapon has a custom icon defined
         local iconPath = hook.Run("GetWeaponIcon", class)
         if ( iconPath and iconPath != "" ) then
-            return ax.util:GetMaterial(iconPath)
-        end
-
-        -- Check if IconOverride is used on the entity
-        if ( weapon.IconOverride ) then
-            return ax.util:GetMaterial(weapon.IconOverride)
+            self.Cache[class] = ax.util:GetMaterial(iconPath)
+            return self.Cache[class]
         end
 
         -- Check the default icon map
         iconPath = iconMap[class]
-        if ( iconPath ) then
-            return ax.util:GetMaterial(iconPath)
+        if ( iconPath and file.Exists(iconPath, "GAME") ) then
+            self.Cache[class] = ax.util:GetMaterial(iconPath)
+            return self.Cache[class]
         end
 
-        -- Check the game files for a matching icon
-        local iconFile = "materials/entities/" .. class .. ".png"
-        if ( file.Exists(iconFile, "GAME") ) then
-            return ax.util:GetMaterial(iconFile)
+        -- Search the game paths for a matching icon
+        local iconFiles = file.Find("materials/entities/*", "GAME")
+        for _, iconFile in ipairs(iconFiles) do
+            if ( string.find(iconFile, class) ) then
+                if ( string.EndsWith(iconFile, ".vmt") ) then
+                    self.Cache[class] = "entities/" .. iconFile
+                    -- If it's a VMT, we store the path directly
+                    return self.Cache[class]
+                else
+                    self.Cache[class] = ax.util:GetMaterial("materials/entities/" .. iconFile)
+                    return self.Cache[class]
+                end
+            end
+        end
+
+        -- If no icon found, search in HUD materials like TFA does
+        iconFiles = file.Find("materials/vgui/hud/*", "GAME")
+        for _, iconFile in ipairs(iconFiles) do
+            if ( string.find(iconFile, class) ) then
+                if ( string.EndsWith(iconFile, ".vmt") ) then
+                    self.Cache[class] = "vgui/hud/" .. iconFile
+                    -- If it's a VMT, we store the path directly
+                    return self.Cache[class]
+                else
+                    self.Cache[class] = ax.util:GetMaterial("materials/vgui/hud/" .. iconFile)
+                    return self.Cache[class]
+                end
+            end
         end
 
         -- If no icon found, return a default icon
-        return ax.util:GetMaterial("materials/gui/noicon.png")
+        self.Cache[class] = ax.util:GetMaterial("materials/gui/noicon.png")
+        return self.Cache[class]
     end
 
     -- Sound effects for weapon selection

@@ -14,8 +14,8 @@ local MODULE = MODULE
 function MODULE:SetupMove(client, mv, cmd)
     if ( !ax.config:Get("stamina", true) ) then return end
 
-    local st = client:GetRelay("stamina")
-    if ( istable(st) and st.current <= 0 ) then
+    local stamina = client:GetRelay("stamina")
+    if ( istable(stamina) and stamina.current <= 0 ) then
         -- Prevent sprinting input
         if ( mv:KeyDown(IN_SPEED) ) then
             mv:SetButtons(mv:GetButtons() - IN_SPEED)

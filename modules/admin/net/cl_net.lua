@@ -12,9 +12,16 @@
 local MODULE = MODULE
 
 -- Client-side admin data
-MODULE.ClientGroups = {}
-MODULE.ClientBans = {}
-MODULE.ClientLogs = {}
+MODULE.ClientGroups = MODULE.ClientGroups or {}
+MODULE.ClientBans = MODULE.ClientBans or {}
+MODULE.ClientLogs = MODULE.ClientLogs or {}
+
+-- Ticket system client data
+MODULE.ClientTickets = MODULE.ClientTickets or {}
+MODULE.ClientTicketComments = MODULE.ClientTicketComments or {}
+
+-- Client-side usergroup data
+MODULE.ClientTempUsergroups = MODULE.ClientTempUsergroups or {}
 
 -- Receive admin logs from server
 net.Receive("ax.admin.logs.response", function()
@@ -44,14 +51,29 @@ net.Receive("ax.admin.group.update", function()
     local steamid = net.ReadString()
     local group = net.ReadString()
 
-    if ( steamid == "" ) then
+    if (steamid == "" and group == "") then
         -- Full group data update
         MODULE.ClientGroups = net.ReadTable()
-    else
-        -- Single player group update
-        local client = player.GetBySteamID64(steamid)
-        if ( IsValid(client) ) then
-            client:SetUserGroup(group)
+
+        -- Update usergroups panel if open
+        if (IsValid(MODULE.AdminMenu)) then
+            local usergroupsPanel = nil
+            for _, child in pairs(MODULE.AdminMenu:GetChildren()) do
+                if (child:GetName() == "DPropertySheet") then
+                    for _, sheet in pairs(child:GetItems()) do
+                        if (sheet.Name == "Usergroups") then
+                            usergroupsPanel = sheet.Panel
+                            break
+                        end
+                    end
+                    break
+                end
+            end
+
+            if (IsValid(usergroupsPanel) and usergroupsPanel.RefreshGroupsList) then
+                usergroupsPanel:RefreshGroupsList()
+                usergroupsPanel:RefreshPlayersList()
+            end
         end
     end
 end)
@@ -80,5 +102,46 @@ net.Receive("ax.admin.ban.update", function()
             )
             line.ban = ban
         end
+    end
+end)
+
+-- Receive ticket updates
+net.Receive("ax.admin.ticket.update", function()
+    local tickets = net.ReadTable()
+    local comments = net.ReadTable()
+
+    MODULE.ClientTickets = tickets
+    MODULE.ClientTicketComments = comments
+
+    -- Update ticket UI if open
+    if (IsValid(ax.gui.tickets)) then
+        ax.gui.tickets:RefreshTickets()
+    end
+
+    -- Update admin menu if open
+    if (IsValid(ax.gui.admin) and ax.gui.admin.ticketsList) then
+        ax.gui.admin:RefreshTickets()
+    end
+end)
+
+-- Receive ticket notifications
+net.Receive("ax.admin.ticket.notification", function()
+    local type = net.ReadString()
+    local ticketID = net.ReadUInt(32)
+    local playerName = net.ReadString()
+    local message = net.ReadString()
+
+    if (type == "new") then
+        ax.notification:Send(ax.client, "New ticket created by " .. playerName .. ": " .. message)
+        surface.PlaySound("buttons/button15.wav")
+    elseif (type == "comment") then
+        ax.notification:Send(ax.client, playerName .. " commented on ticket #" .. ticketID)
+        surface.PlaySound("buttons/button17.wav")
+    elseif (type == "claimed") then
+        ax.notification:Send(ax.client, "Your ticket #" .. ticketID .. " was claimed by " .. playerName)
+        surface.PlaySound("buttons/button14.wav")
+    elseif (type == "closed") then
+        ax.notification:Send(ax.client, "Ticket #" .. ticketID .. " was closed by " .. playerName)
+        surface.PlaySound("buttons/button18.wav")
     end
 end)

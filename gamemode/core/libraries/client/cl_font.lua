@@ -22,7 +22,7 @@ surface.CreateFontInternal = surface.CreateFontInternal or surface.CreateFont
 -- @string name The name of the font.
 -- @tab data The font data.
 function surface.CreateFont(name, data)
-    if ( string.sub(name, 1, 8) == "parallax" ) then
+    if ( string.sub(name, 1, 3) == "ax." ) then
         ax.font.stored[name] = data
     end
 
@@ -38,7 +38,7 @@ function ax.font:Get(name)
 end
 
 concommand.Add("ax_list_font", function(client)
-    for name, data in pairs(ax.font.stored) do
+    for name, data in SortedPairs(ax.font.stored) do
         ax.util:Print("Font: ", ax.color:Get("cyan"), name)
         PrintTable(data)
     end

@@ -175,7 +175,8 @@ ax.command:Register("CharGiveFlags", {
 
             net.Start("ax.flag.list")
                 net.WritePlayer(target)
-                net.WriteBool(hasFlags)
+                net.WriteTable(hasFlags)
+                net.WriteBool(true)
             net.Send(client)
 
             return
@@ -236,7 +237,7 @@ ax.command:Register("CharTakeFlags", {
         },
         {
             Type = ax.types.string,
-            ErrorMsg = "You must provide either single flag or a set of flags!"
+            Optional = true
         }
     },
     Callback = function(info, client, arguments)
@@ -249,6 +250,22 @@ ax.command:Register("CharTakeFlags", {
         end
 
         local flags = arguments[2]
+        if ( flags == nil or flags == "" ) then
+            local hasFlags = {}
+            for k, v in pairs(ax.flag:GetAll()) do
+                if ( character:HasFlag(k) ) then
+                    hasFlags[k] = true
+                end
+            end
+
+            net.Start("ax.flag.list")
+                net.WritePlayer(target)
+                net.WriteTable(hasFlags)
+                net.WriteBool(false)
+            net.Send(client)
+
+            return
+        end
 
         local taken = {}
         for i = 1, #flags do

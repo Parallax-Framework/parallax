@@ -22,7 +22,10 @@
 -- Credit @ Helix :: https://github.com/NebulousCloud/helix/blob/master/gamemode/core/sh_util.lua
 function ax.util:CoerceType(typeID, value)
     if ( typeID == nil or value == nil ) then
-        ax.util:PrintError("Attempted to coerce a type with no type ID or value! (" .. tostring(typeID) .. ", " .. tostring(value) .. ")")
+        if ( ax.config:Get("debug.developer") ) then
+            ax.util:PrintError("Attempted to coerce a type with no type ID or value! (" .. tostring(typeID) .. ", " .. tostring(value) .. ")")
+        end
+
         return nil
     end
 
@@ -39,13 +42,7 @@ function ax.util:CoerceType(typeID, value)
     elseif ( typeID == ax.types.color ) then
         return ( IsColor(value) or ( istable(value) and isnumber(value.r) and isnumber(value.g) and isnumber(value.b) and isnumber(value.a) ) ) and value
     elseif ( typeID == ax.types.player ) then
-        if ( isstring(value) ) then
-            return ax.util:FindPlayer(value)
-        elseif ( isnumber(value) ) then
-            return Player(value)
-        elseif ( IsValid(value) and value:IsPlayer() ) then
-            return value
-        end
+        return ax.util:FindPlayer(value)
     elseif ( typeID == ax.types.character ) then
         if ( istable(value) and ax.util:IsCharacter(value) ) then
             return value
@@ -193,7 +190,7 @@ function ax.util:Print(...)
     local clientColor = bConfigInit and ax.config:Get("color.client.message", clientMessageColor) or clientMessageColor
 
     local realmColor = SERVER and serverColor or clientColor
-    MsgC(tagColor, "[Parallax] ", realmColor, unpack(arguments))
+    MsgC(tagColor, "[PARALLAX] ", realmColor, unpack(arguments))
 
     if ( CLIENT and bConfigInit and ax.config:Get("debug.developer") ) then
         chat.AddText(tagColor, "[Parallax] ", realmColor, unpack(arguments))
@@ -242,7 +239,7 @@ function ax.util:PrintError(...)
     local tagColor = bConfigInit and ax.config:Get("color.framework", violetColor) or violetColor
     local batchColor = bConfigInit and ax.config:Get("color.error", errorColor) or errorColor
 
-    MsgC(tagColor, "[Parallax] ", batchColor, "[Error] ", unpack(arguments))
+    MsgC(tagColor, "[PARALLAX] ", batchColor, "[Error] ", unpack(arguments))
 
     if ( CLIENT and bConfigInit and ax.config:Get("debug.developer") ) then
         chat.AddText(tagColor, "[Parallax] ", batchColor, "[Error] ", unpack(arguments))
@@ -259,7 +256,7 @@ function ax.util:PrintError(...)
             log[#log + 1] = string.format("%s:%d", file, lineNum) .. "\n"
         end
         log = table.concat(log, " -> ")
-        MsgC(tagColor, "[Parallax] ", batchColor, "[Error] [Traceback] ", log, "\n")
+        MsgC(tagColor, "[PARALLAX] ", batchColor, "[ERROR] [TRACEBACK] ", log, "\n")
     end
 
     _printingError = false
@@ -277,7 +274,7 @@ function ax.util:PrintWarning(...)
     local tagColor = bConfigInit and ax.config:Get("color.framework", violetColor) or violetColor
     local batchColor = bConfigInit and ax.config:Get("color.warning", warningColor) or warningColor
 
-    MsgC(tagColor, "[Parallax] ", batchColor, "[Warning] ", unpack(arguments))
+    MsgC(tagColor, "[PARALLAX] ", batchColor, "[WARNING] ", unpack(arguments))
 
     if ( CLIENT and bConfigInit and ax.config:Get("debug.developer") ) then
         chat.AddText(tagColor, "[Parallax] ", batchColor, "[Warning] ", unpack(arguments))
@@ -297,7 +294,7 @@ function ax.util:PrintSuccess(...)
     local tagColor = bConfigInit and ax.config:Get("color.framework", violetColor) or violetColor
     local batchColor = bConfigInit and ax.config:Get("color.success", successColor) or successColor
 
-    MsgC(tagColor, "[Parallax] ", batchColor, "[Success] ", unpack(arguments))
+    MsgC(tagColor, "[PARALLAX] ", batchColor, "[SUCCESS] ", unpack(arguments))
 
     if ( CLIENT and bConfigInit and ax.config:Get("debug.developer") ) then
         chat.AddText(tagColor, "[Parallax] ", batchColor, "[Success] ", unpack(arguments))
@@ -316,15 +313,15 @@ function ax.util:LoadFile(path, realm)
         return
     end
 
-    if ( ( realm == "server" or string.find(path, "sv_") ) and SERVER ) then
+    if ( ( realm == "server" or ax.util:FindString(path, "sv_") ) and SERVER ) then
         include(path)
-    elseif ( realm == "shared" or string.find(path, "shared.lua") or string.find(path, "sh_") ) then
+    elseif ( realm == "shared" or ax.util:FindString(path, "shared.lua") or ax.util:FindString(path, "sh_") ) then
         if ( SERVER ) then
             AddCSLuaFile(path)
         end
 
         include(path)
-    elseif ( realm == "client" or string.find(path, "cl_") ) then
+    elseif ( realm == "client" or ax.util:FindString(path, "cl_") ) then
         if ( SERVER ) then
             AddCSLuaFile(path)
         else
@@ -440,7 +437,7 @@ function ax.util:FindPlayer(identifier)
         end
 
         for _, v in player.Iterator() do
-            if ( self:FindString(v:Name(), identifier) or self:FindString(v:SteamName(), identifier) or  self:FindString(v:SteamID(), identifier) or self:FindString(v:SteamID64(), identifier) ) then
+            if ( self:FindString(v:Name(), identifier) or self:FindString(v:SteamName(), identifier) or self:FindString(v:SteamID(), identifier) or self:FindString(v:SteamID64(), identifier) ) then
                 return v
             end
         end
@@ -736,7 +733,7 @@ function ax.util:LoadTools(path)
     for i = 1, #files do
         local val = files[i]
 
-        local _, _, toolmode = string.find(val, "([%w_]*).lua")
+        local _, _, toolmode = ax.util:FindString(val, "([%w_]*).lua")
         toolmode = toolmode:lower()
 
         TOOL = ax.tool:Create()
@@ -918,6 +915,77 @@ function ax.util:CapTextWord(text, maxLength)
 end
 
 if ( CLIENT ) then
+    local families = {
+        "regular",
+        "bold",
+        "italic",
+        "italic.bold"
+    }
+
+    --- Creates a font family with the given name, font, and size.
+    -- @realm client
+    -- @param name string The name of the font family.
+    -- @param font string The font to use for the family.
+    -- @param size number The size of the font.
+    -- @param familiesOverride table Optional table of families to override the default ones.
+    -- @usage ax.util:CreateFontFamily("MyFont", "Arial", 16)
+    function ax.util:CreateFontFamily(name, font, size, familiesOverride)
+        if ( !font or font == "" ) then
+            ax.util:PrintError("Failed to create font family '" .. name .. "': Font is not defined.")
+            return
+        end
+
+        if ( !size or size <= 0 ) then
+            ax.util:PrintError("Failed to create font family '" .. name .. "': Size is not defined or invalid.")
+            return
+        end
+
+        -- Create the base font
+        surface.CreateFont("ax." .. name, {
+            font = font,
+            size = size,
+            weight = 700,
+            antialias = true
+        })
+
+        -- Create the font families
+        if ( familiesOverride and istable(familiesOverride) ) then
+            -- If familiesOverride is provided, use it instead of the default families
+            -- Though familiesOverride may use the key as the family name and the value as the font name incase of custom fonts
+            for family, fontName in pairs(familiesOverride) do
+                if ( isstring(family) and isstring(fontName) ) then
+                    surface.CreateFont("ax." .. name .. "." .. family, {
+                        font = fontName,
+                        size = size,
+                        weight = ax.util:FindString(family, "bold") and 900 or 700,
+                        italic = ax.util:FindString(family, "italic"),
+                        antialias = true
+                    })
+                else
+                    surface.CreateFont("ax." .. name .. "." .. family, {
+                        font = font,
+                        size = size,
+                        weight = ax.util:FindString(family, "bold") and 900 or 700,
+                        italic = ax.util:FindString(family, "italic"),
+                        antialias = true
+                    })
+                end
+            end
+        else
+            for _, family in ipairs(families) do
+                surface.CreateFont("ax." .. name .. "." .. family, {
+                    font = font,
+                    size = size,
+                    weight = ax.util:FindString(family, "bold") and 900 or 700,
+                    italic = ax.util:FindString(family, "italic"),
+                    antialias = true
+                })
+            end
+        end
+
+        ax.util:Print("Font family '" .. name .. "' created successfully.")
+    end
+
     --- Returns the given text's width.
     -- @realm client
     -- @param font string The font to use.

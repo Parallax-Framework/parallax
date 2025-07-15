@@ -17,7 +17,7 @@ local PANEL_WIDTH = ScrW() / 2.5
 local PANEL_MARGIN = 8
 local PANEL_SPACING = 4
 local INTERP_SPEED = 8
-local FONT_NAME = "ax.bold"
+local FONT_NAME = "ax.regular.bold"
 
 -- Utility function to create a notification
 function ax.notification:Add(text, duration, bgColor)

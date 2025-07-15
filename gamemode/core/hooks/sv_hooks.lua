@@ -15,21 +15,52 @@ function GM:PlayerInitialSpawn(client)
     ax.util:Print("Starting to load player " .. client:SteamName() .. " (" .. client:SteamID64() .. ")")
 
     if ( client:IsBot() ) then
-        local factionBot = math.random(#ax.faction.instances)
+        timer.Simple(1, function()
+            if ( !IsValid(client) ) then return end
 
-        local models = {}
-        local factionModels = ax.faction:Get(factionBot):GetModels()
-        for i = 1, #factionModels do
-            local v = factionModels[i]
-            if ( istable(v) ) then
-                models[#models + 1] =  v[1]
-            else
-                models[#models + 1] = v
+            ax.util:SendChatText(nil, ax.color:Get("cyan.dark"), client:SteamName() .. " has joined the server.")
+
+            local factionBot = math.random(#ax.faction.instances)
+
+            local models = {}
+            local factionModels = ax.faction:Get(factionBot):GetModels()
+            for i = 1, #factionModels do
+                local v = factionModels[i]
+                if ( istable(v) ) then
+                    models[#models + 1] =  v[1]
+                else
+                    models[#models + 1] = v
+                end
             end
-        end
 
-        client:SetModel(models[math.random(#models)])
-        client:SetTeam(factionBot)
+            client:SetModel(models[math.random(#models)])
+            client:SetTeam(factionBot)
+
+            local characterID = math.random(100000, 999999)
+            local character = ax.character:CreateObject(characterID, {
+                name = client:SteamName(),
+                model = client:GetModel(),
+                faction = factionBot,
+                schema = engine.ActiveGamemode(),
+                steamid = client:SteamID64()
+            }, client)
+            if ( character ) then
+                ax.character.stored[characterID] = character
+
+                local clientTable = client:GetTable()
+                clientTable.axCharacters = clientTable.axCharacters or {}
+                clientTable.axCharacters[characterID] = character
+                clientTable.axCharacter = character
+
+                net.Start("ax.character.cache")
+                    net.WriteTable(character)
+                net.Send(client)
+
+                ax.character:Sync(client, characterID)
+
+                hook.Run("PostPlayerCreatedCharacter", client, character, nil)
+            end
+        end)
     end
 end
 
@@ -39,10 +70,13 @@ function GM:PlayerReady(client)
 
     client:KillSilent()
 
+    print("Player " .. client:SteamName() .. " (" .. client:SteamID64() .. ") is ready.")
+
     local activeGamemode = engine.ActiveGamemode()
     if ( activeGamemode == "parallax" ) then
         -- Sometimes people might forget to actually set their startup gamemode to their schema rather than the actual framework... so we check for that
         ax.util:PrintError("You are running Parallax without a schema! Please set your startup gamemode to your schema (e.g. 'parallax-skeleton' instead of 'parallax').")
+        ax.util:SendChatText(nil, ax.color:Get("red.soft"), "You are running Parallax without a schema! Please set your startup gamemode to your schema (e.g. 'parallax-skeleton' instead of 'parallax').")
 
         net.Start("ax.splash")
         net.Send(client)
@@ -51,7 +85,7 @@ function GM:PlayerReady(client)
     end
 
     ax.character:CacheAll(client, function()
-        ax.util:SendChatText(nil, Color(25, 75, 150), client:SteamName() .. " has joined the server.")
+        ax.util:SendChatText(nil, ax.color:Get("cyan.dark"), client:SteamName() .. " has joined the server.")
 
         net.Start("ax.splash")
         net.Send(client)
@@ -59,6 +93,8 @@ function GM:PlayerReady(client)
         client:SetNoDraw(true)
         client:SetNotSolid(true)
         client:SetMoveType(MOVETYPE_NONE)
+
+        ax.character:SyncAll(client) -- Probably a bad idea, might need to recreate the entire character system too...
 
         hook.Run("PostPlayerInitialSpawn", client)
 
@@ -109,6 +145,8 @@ function GM:PlayerDisconnected(client)
             clientOptions = nil
         end
     end
+
+    ax.util:SendChatText(nil, ax.color:Get("maroon.soft"), client:SteamName() .. " has left the server.")
 end
 
 function GM:PlayerSpawn(client)
@@ -470,7 +508,7 @@ function GM:DoPlayerDeath(client, attacker, dmgInfo)
         existingRagdoll:Remove()
         client:SetRelay("ragdoll", nil)
     end
-    
+
     if ( hook.Run("PreSpawnClientRagdoll", client, attacker, dmgInfo ) != false ) then
         local ragdoll = client:CreateRagdoll()
 
@@ -526,6 +564,10 @@ function GM:PostPlayerTakeItem(client, item, entity)
 end
 
 function GM:PrePlayerConfigChanged(client, key, value, oldValue)
+end
+
+function GM:ShowHelp(client)
+    return false
 end
 
 function GM:OnEntityCreated(entity)

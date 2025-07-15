@@ -67,6 +67,15 @@ function ax.schema:Initialize()
     ax.util:LoadFolder(folder .. "/schema/net", true)
     ax.util:LoadFolder(folder .. "/schema/languages", true)
     ax.item:LoadFolder(folder .. "/schema/items")
+
+    -- Load the sh_schema.lua file after we load all necessary files
+    ax.util:LoadFile(schema, "shared")
+
+    -- Load the modules after the schema file is loaded
+    ax.module:LoadFolder(folder .. "/modules")
+
+    -- Allow modules to register their own config options
+    -- Then load the config options
     ax.util:LoadFolder(folder .. "/schema/config", true)
 
     -- Load the current map config if it exists
@@ -85,12 +94,6 @@ function ax.schema:Initialize()
     if ( SERVER ) then
         ax.config:Load()
     end
-
-    -- Load the sh_schema.lua file after we load all necessary files
-    ax.util:LoadFile(schema, "shared")
-
-    -- Load the modules after the schema file is loaded
-    ax.module:LoadFolder(folder .. "/modules")
 
     -- Load the database configuration
     if ( SERVER ) then

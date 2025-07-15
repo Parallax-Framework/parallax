@@ -14,7 +14,7 @@ DEFINE_BASECLASS("DTextEntry")
 local PANEL = {}
 
 function PANEL:Init()
-    self:SetFont("parallax")
+    self:SetFont("ax.regular")
     self:SetTextColor(ax.color:Get("text.light"))
     self:SetPaintBackground(false)
     self:SetUpdateOnType(true)

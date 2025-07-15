@@ -65,7 +65,7 @@ function ax.command:Run(client, command, arguments)
         for i = 1, #info.Arguments do
             local v = info.Arguments[i]
             local value = ax.util:CoerceType(v.Type, arguments[i])
-            if ( ax.util:DetectType(value) != v.Type and !v.Optional ) then
+            if ( v.Optional != true and ax.util:DetectType(value) != v.Type ) then
                 client:Notify(v.ErrorMsg or "Invalid argument type provided!", NOTIFY_ERROR)
 
                 return false
