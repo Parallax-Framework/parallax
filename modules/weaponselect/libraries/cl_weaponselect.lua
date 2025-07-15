@@ -196,10 +196,9 @@ if ( CLIENT ) then
             return self.Cache[class]
         end
 
-        -- Search the game paths for a matching icon
-        local iconFiles = file.Find("materials/entities/*", "GAME")
-        for _, iconFile in ipairs(iconFiles) do
-            if ( string.find(iconFile, class) ) then
+        for i = 1, #iconFiles do
+            local iconFile = iconFiles[i]
+            if ( ax.util:FindString(iconFile, class) ) then
                 if ( string.EndsWith(iconFile, ".vmt") ) then
                     self.Cache[class] = "entities/" .. iconFile
                     -- If it's a VMT, we store the path directly
@@ -211,10 +210,9 @@ if ( CLIENT ) then
             end
         end
 
-        -- If no icon found, search in HUD materials like TFA does
-        iconFiles = file.Find("materials/vgui/hud/*", "GAME")
-        for _, iconFile in ipairs(iconFiles) do
-            if ( string.find(iconFile, class) ) then
+        for i = 1, #iconFiles do
+            local iconFile = iconFiles[i]
+            if ( ax.util:FindString(iconFile, class) ) then
                 if ( string.EndsWith(iconFile, ".vmt") ) then
                     self.Cache[class] = "vgui/hud/" .. iconFile
                     -- If it's a VMT, we store the path directly
@@ -286,7 +284,7 @@ if ( CLIENT ) then
             type = "selection"
         }
 
-        table.insert(self.effects, effect)
+        self.effects[#self.effects + 1] = effect
     end
 
     -- Update particle effects
@@ -309,7 +307,8 @@ if ( CLIENT ) then
     function MODULE.Particles:Draw()
         if ( !ax.option:Get("weaponselect.particles.enabled", true) ) then return end
 
-        for _, effect in ipairs(self.effects) do
+        for i = 1, #self.effects do
+            local effect = self.effects[i]
             if ( effect.type == "selection" ) then
                 local color = ColorAlpha(effect.color, effect.alpha)
                 draw.RoundedBox(0, effect.x - effect.size * 0.5, effect.y - effect.size * 0.5, effect.size, effect.size, color)
@@ -327,19 +326,19 @@ if ( CLIENT ) then
         local class = weapon:GetClass()
 
         -- Categorize weapons
-        if ( string.find(class, "pistol") or string.find(class, "357") ) then
+        if ( ax.util:FindString(class, "pistol") or ax.util:FindString(class, "357") ) then
             return "Pistols"
-        elseif ( string.find(class, "smg") or string.find(class, "mp5") ) then
+        elseif ( ax.util:FindString(class, "smg") or ax.util:FindString(class, "mp5") ) then
             return "SMGs"
-        elseif ( string.find(class, "ar2") or string.find(class, "rifle") ) then
+        elseif ( ax.util:FindString(class, "ar2") or ax.util:FindString(class, "rifle") ) then
             return "Rifles"
-        elseif ( string.find(class, "shotgun") ) then
+        elseif ( ax.util:FindString(class, "shotgun") ) then
             return "Shotguns"
-        elseif ( string.find(class, "rpg") or string.find(class, "rocket") ) then
+        elseif ( ax.util:FindString(class, "rpg") or ax.util:FindString(class, "rocket") ) then
             return "Explosives"
-        elseif ( string.find(class, "crowbar") or string.find(class, "stunstick") or string.find(class, "knife") ) then
+        elseif ( ax.util:FindString(class, "crowbar") or ax.util:FindString(class, "stunstick") or ax.util:FindString(class, "knife") ) then
             return "Melee"
-        elseif ( string.find(class, "gmod") or string.find(class, "phys") ) then
+        elseif ( ax.util:FindString(class, "gmod") or ax.util:FindString(class, "phys") ) then
             return "Tools"
         else
             return "Other"
@@ -353,15 +352,15 @@ if ( CLIENT ) then
         -- This could be extended with actual weapon data
         local class = weapon:GetClass()
 
-        if ( string.find(class, "crowbar") or string.find(class, "stunstick") ) then
+        if ( ax.util:FindString(class, "crowbar") or ax.util:FindString(class, "stunstick") ) then
             return 1 -- Common
-        elseif ( string.find(class, "pistol") or string.find(class, "smg") ) then
+        elseif ( ax.util:FindString(class, "pistol") or ax.util:FindString(class, "smg") ) then
             return 2 -- Uncommon
-        elseif ( string.find(class, "shotgun") or string.find(class, "ar2") ) then
+        elseif ( ax.util:FindString(class, "shotgun") or ax.util:FindString(class, "ar2") ) then
             return 3 -- Rare
-        elseif ( string.find(class, "357") or string.find(class, "crossbow") ) then
+        elseif ( ax.util:FindString(class, "357") or ax.util:FindString(class, "crossbow") ) then
             return 4 -- Epic
-        elseif ( string.find(class, "rpg") ) then
+        elseif ( ax.util:FindString(class, "rpg") ) then
             return 5 -- Legendary
         else
             return 1 -- Default to common
