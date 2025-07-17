@@ -617,9 +617,6 @@ function GM:PostDrawTranslucentRenderables(bDrawingDepth, bDrawingSkybox)
     if ( !ax.config:Get("debug.developer") ) then return end
     if ( !ax.client:IsDeveloper() ) then return end
 
-    local client = ax.client
-    if ( !IsValid(client) ) then return end
-
     local trace = client:GetEyeTrace()
     if ( !trace.Hit or !IsValid(trace.Entity) ) then return end
 
