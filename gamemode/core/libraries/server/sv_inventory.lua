@@ -128,7 +128,7 @@ function ax.inventory:RemoveItem(inventoryID, itemID, callback)
         ax.database:Update("ax_inventories", {
             items = util.TableToJSON(items),
         }, "id = " .. inventoryID, function(success)
-            if ( !success ) then
+            if ( success == false ) then
                 ax.util:PrintError("Failed to update inventory items after removal.")
                 return false
             end

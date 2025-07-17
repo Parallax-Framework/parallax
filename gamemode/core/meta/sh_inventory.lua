@@ -59,4 +59,77 @@ function INVENTORY:GetData()
     return self.Data
 end
 
+if ( SERVER ) then
+    function INVENTORY:AddItem(uniqueID, amount, data, callback)
+        if ( !isstring(uniqueID) ) then
+            ax.util:PrintError("Invalid uniqueID provided to INVENTORY:AddItem")
+            return false
+        end
+
+        ax.inventory:AddItem(self:GetID(), uniqueID, data, function(itemID)
+            if ( !isnumber(itemID) ) then
+                ax.util:PrintError("Failed to add item to inventory.")
+                if ( callback ) then
+                    callback(false)
+                end
+                return false
+            end
+
+            local item = ax.item:CreateObject(itemID, uniqueID, data)
+            if ( !item ) then
+                ax.util:PrintError("Failed to create item object for inventory.")
+                if ( callback ) then
+                    callback(false)
+                end
+                return false
+            end
+
+            --self.Items[#self.Items + 1] -- TODO: Don't even have the bloody item object funcs
+
+            -- TODO: Network
+
+            if ( callback ) then
+                callback(item)
+            end
+
+            return true
+        end)
+    end
+
+    function INVENTORY:RemoveItem(itemID, callback)
+        if ( !isnumber(itemID) or itemID <= 0 ) then
+            ax.util:PrintError("Invalid item ID provided to INVENTORY:RemoveItem")
+            if ( callback ) then
+                callback(false)
+            end
+            return false
+        end
+
+        if ( ax.util:IsItem(itemID) ) then
+            itemID = itemID:GetID()
+        end
+
+        ax.inventory:RemoveItem(self:GetID(), itemID, function(success)
+            if ( success == false ) then
+                ax.util:PrintError("Failed to remove item from inventory.")
+                if ( callback ) then
+                    callback(false)
+                end
+                return false
+            end
+
+            -- Remove the item from the local items table
+            self.Items[itemID] = nil
+
+            -- TODO: Network
+
+            if ( callback ) then
+                callback(true)
+            end
+
+            return true
+        end)
+    end
+end
+
 ax.inventory.meta = INVENTORY

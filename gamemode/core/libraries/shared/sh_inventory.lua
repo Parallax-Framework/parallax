@@ -72,21 +72,19 @@ end
 function ax.inventory:GetByCharacterID(characterID)
     if ( !characterID ) then
         ax.util:PrintError("Invalid parameters for ax.inventory:GetByCharacterID")
-        return {}
+        return nil
     end
 
     if ( !isnumber(characterID) or characterID <= 0 ) then
         ax.util:PrintError("Invalid character ID provided to ax.inventory:GetByCharacterID")
-        return {}
+        return nil
     end
 
-    local inventory
     for _, inv in pairs(self.instances) do
-        if ( inv.CharacterID == characterID ) then
-            inventory = inv
-            break
+        if ( inv.ID == ax.character.stored[characterID]:GetInventory():GetID() ) then
+            return inv
         end
     end
 
-    return inventory
+    return nil
 end
