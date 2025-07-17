@@ -248,7 +248,7 @@ function ax.util:PrintError(...)
     local tagColor = bConfigInit and ax.config:Get("color.framework", violetColor) or violetColor
     local batchColor = bConfigInit and ax.config:Get("color.error", errorColor) or errorColor
 
-    MsgC(tagColor, "[PARALLAX] ", batchColor, "[Error] ", unpack(arguments))
+    MsgC(tagColor, "[PARALLAX] ", batchColor, "[ERROR] ", unpack(arguments))
 
     if ( CLIENT and bConfigInit and ax.config:Get("debug.developer") ) then
         chat.AddText(tagColor, "[Parallax] ", batchColor, "[Error] ", unpack(arguments))
