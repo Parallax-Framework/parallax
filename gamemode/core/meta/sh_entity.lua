@@ -148,7 +148,7 @@ end
 --- Returns the child door for this entity, this is the door that is linked to this entity in a master-slave relationship.
 -- @realm shared
 function ENTITY:GetChildDoor()
-    if ( !self:IsDoor() ) then return nil end
+    if ( !self:IsDoor() ) then return NULL end
 
     local doors = ents.FindByClass("prop_door_rotating")
     for i = 1, #doors do
