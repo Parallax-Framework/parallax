@@ -32,8 +32,6 @@ concommand.Add("ax_debug_pos", function(client, cmd, args)
     end
 end)
 
--- test
-
 local angFormat = "Angle(%f, %f, %f)"
 concommand.Add("ax_debug_ang", function(client, cmd, args)
     if ( !isstring(args[1]) ) then
