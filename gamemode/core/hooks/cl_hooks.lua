@@ -546,8 +546,6 @@ local function DrawTargetInfos(is3D2D)
 
     for i = 1, #nearbyEntities do
         local v = nearbyEntities[i]
-        if ( !IsValid(v) ) then continue end
-
         if ( hook.Run("ShouldDrawTargetInfo", v, is3D2D) == false ) then continue end
 
         local index = v:EntIndex()
