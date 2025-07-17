@@ -14,7 +14,7 @@ DEFINE_BASECLASS("EditablePanel")
 local PANEL = {}
 
 function PANEL:Init()
-    ax.gui.Inventory = self
+    ax.gui.inventory = self
 
     self:Dock(FILL)
 
@@ -169,8 +169,8 @@ function PANEL:SetInventory(id)
         pnl:SetCount(group.count)
     end
 
-    if ( ax.gui.InventoryItemIDLast and self:IsValidItemID(ax.gui.InventoryItemIDLast) ) then
-        self:SetInfo(ax.gui.InventoryItemIDLast)
+    if ( ax.gui.inventoryItemIDLast and self:IsValidItemID(ax.gui.inventoryItemIDLast) ) then
+        self:SetInfo(ax.gui.inventoryItemIDLast)
     else
         self:SetInfo(sortedItems[1])
     end
@@ -195,7 +195,7 @@ function PANEL:SetInfo(id)
         return
     end
 
-    ax.gui.InventoryItemIDLast = id
+    ax.gui.inventoryItemIDLast = id
 
     local item = ax.item:Get(id)
 

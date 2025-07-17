@@ -337,7 +337,7 @@ end)
 
 net.Receive("ax.inventory.refresh", function(len)
     local inventoryID = net.ReadUInt(16)
-    local panel = ax.gui.Inventory
+    local panel = ax.gui.inventory
     if ( IsValid(panel) ) then
         panel:SetInventory(inventoryID)
     end

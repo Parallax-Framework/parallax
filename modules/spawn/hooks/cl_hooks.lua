@@ -12,10 +12,10 @@
 local MODULE = MODULE
 
 -- Hologram model cache and timing
-MODULE.HologramCache = MODULE.HologramCache or {}
-MODULE.HologramModels = MODULE.HologramModels or {}
-MODULE.HologramEntities = MODULE.HologramEntities or {}
-MODULE.LastModelUpdate = MODULE.LastModelUpdate or 0
+local hologramCache = hologramCache or {}
+local hologramModels = hologramModels or {}
+local hologramEntities = hologramEntities or {}
+local lastModelUpdate = lastModelUpdate or 0
 
 --- Gets a random model from faction models with caching
 -- @param factionID The faction ID
@@ -25,8 +25,8 @@ local function GetRandomFactionModel(factionID)
     if ( !factionData ) then return nil end
 
     -- Check cache first
-    if ( MODULE.HologramCache[factionID] and MODULE.HologramCache[factionID].models ) then
-        local models = MODULE.HologramCache[factionID].models
+    if ( hologramCache[factionID] and hologramCache[factionID].models ) then
+        local models = hologramCache[factionID].models
         if ( #models > 0 ) then
             return models[math.random(#models)]
         end
@@ -35,17 +35,9 @@ local function GetRandomFactionModel(factionID)
     -- Build cache if not exists
     local models = {}
 
-    -- Try to get models from faction data (adjust based on your faction system)
-    if ( factionData and factionData.Models ) then
-        if ( istable(factionData.Models) ) then
-            for i = 1, #factionData.Models do
-                if ( util.IsValidModel(factionData.Models[i]) ) then
-                    models[#models + 1] = factionData.Models[i]
-                end
-            end
-        elseif ( isstring(factionData.Models) and util.IsValidModel(factionData.Models) ) then
-            models[#models + 1] = factionData.Models
-        end
+    local factionModels = factionData:GetModels()
+    for i = 1, #factionModels do
+        table.insert(models, factionModels[i])
     end
 
     -- Fallback to default citizen models if no faction models found
@@ -70,7 +62,7 @@ local function GetRandomFactionModel(factionID)
     end
 
     -- Cache the models
-    MODULE.HologramCache[factionID] = {
+    hologramCache[factionID] = {
         models = models,
         lastUpdate = CurTime()
     }
@@ -110,19 +102,19 @@ local function UpdateHologramModels()
     local currentTime = CurTime()
 
     -- Update every 3-5 seconds
-    if ( currentTime - MODULE.LastModelUpdate < math.random(3, 5) ) then
+    if ( currentTime - lastModelUpdate < math.random(3, 5) ) then
         return
     end
 
-    MODULE.LastModelUpdate = currentTime
+    lastModelUpdate = currentTime
 
     -- Update models for each spawn point
     for id, spawn in pairs(MODULE.SpawnPoints) do
         local model = GetRandomFactionModel(spawn.faction)
         if ( model ) then
             -- Remove old entity if it exists
-            if ( IsValid(MODULE.HologramEntities[id]) ) then
-                MODULE.HologramEntities[id]:Remove()
+            if ( IsValid(hologramEntities[id]) ) then
+                hologramEntities[id]:Remove()
             end
 
             -- Create new hologram entity
@@ -131,8 +123,8 @@ local function UpdateHologramModels()
 
             local ent = CreateHologramEntity(id, model, basePos, baseAng)
             if ( IsValid(ent) ) then
-                MODULE.HologramEntities[id] = ent
-                MODULE.HologramModels[id] = {
+                hologramEntities[id] = ent
+                hologramModels[id] = {
                     model = model,
                     updateTime = currentTime,
                     bobOffset = ent.BobOffset
@@ -146,16 +138,16 @@ end
 local function UpdateHologramEntities()
     local currentTime = CurTime()
 
-    for id, ent in pairs(MODULE.HologramEntities) do
+    for id, ent in pairs(hologramEntities) do
         if ( !IsValid(ent) ) then
-            MODULE.HologramEntities[id] = nil
+            hologramEntities[id] = nil
             continue
         end
 
         local spawn = MODULE.SpawnPoints[id]
         if ( !spawn ) then
             ent:Remove()
-            MODULE.HologramEntities[id] = nil
+            hologramEntities[id] = nil
             continue
         end
 
@@ -191,12 +183,12 @@ end
 
 --- Cleans up all hologram entities
 local function CleanupHologramEntities()
-    for id, ent in pairs(MODULE.HologramEntities) do
+    for id, ent in pairs(hologramEntities) do
         if ( IsValid(ent) ) then
             ent:Remove()
         end
     end
-    MODULE.HologramEntities = {}
+    hologramEntities = {}
 end
 
 --- Render spawn points if enabled
@@ -261,14 +253,15 @@ end
 
 --- Clear hologram cache when spawn points are updated
 function MODULE:OnSpawnPointsUpdated()
-    MODULE.HologramCache = {}
-    MODULE.HologramModels = {}
+    hologramCache = {}
+    hologramModels = {}
     CleanupHologramEntities()
 end
 
+--- Clear hologram cache on code reload
 function MODULE:OnReloaded()
-    MODULE.HologramCache = {}
-    MODULE.HologramModels = {}
+    hologramCache = {}
+    hologramModels = {}
     CleanupHologramEntities()
 end
 
@@ -278,10 +271,10 @@ function MODULE:ShutDown()
 end
 
 --- Handle when the option is disabled
-hook.Add("OnOptionChanged", "ax.spawn.optionChanged", function(key, value)
+function MODULE:OnOptionChanged(key, value)
     if ( key == "spawn.showSpawns" and !value ) then
-        MODULE.HologramCache = {}
-        MODULE.HologramModels = {}
+        hologramCache = {}
+        hologramModels = {}
         CleanupHologramEntities()
     end
-end)
+end

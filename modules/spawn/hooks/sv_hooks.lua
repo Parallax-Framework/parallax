@@ -27,50 +27,28 @@ function MODULE:Initialize()
     })
 
     -- Load all spawn points after table is initialized
-    MODULE.spawn:LoadAll()
+    self.spawn:LoadAll()
 end
 
---- Handle player spawning
-function MODULE:PlayerSpawn(client)
-    if ( !IsValid(client) or client:Team() == 0 ) then return end
-
-    local character = client:GetCharacter()
-    if ( !character ) then return end
-
-    local factionID = character:GetFaction()
-    local spawn = MODULE.spawn:GetRandom(factionID)
-
+--- Called when a player spawns
+function MODULE:PostPlayerLoadout(client)
+    local factionID = client:GetCharacter():GetFaction()
+    local spawn = self.spawn:GetRandom(factionID)
     if ( spawn ) then
-        -- Small delay to ensure proper spawning
-        timer.Simple(0.1, function()
-            if ( !IsValid(client) ) then return end
-
-            client:SetPos(spawn.pos)
-            client:SetAngles(spawn.ang)
-            client:SetVelocity(Vector(0, 0, 0))
-        end)
+        client:SetPos(spawn.pos)
+        client:SetAngles(spawn.ang)
+        client:SetVelocity(Vector(0, 0, 0))
     else
         -- Fallback to default spawn behavior
-        ax.util:PrintError("No spawn points found for faction " .. factionID .. "!")
+        ax.util:PrintWarning("No spawn points found for faction " .. factionID .. "!")
     end
 end
 
 --- Sync spawn points to newly connected players
 function MODULE:PlayerReady(client)
-    MODULE.spawn:Sync(client)
-end
-
---- Handle character switching
-function MODULE:PostPlayerLoadedCharacter(client, character)
-    if ( !IsValid(client) or client:Team() == 0 ) then return end
-
-    -- Respawn the player to use the new faction's spawn points
-    timer.Simple(0.1, function()
-        if ( !IsValid(client) ) then return end
-        client:Spawn()
-    end)
+    self.spawn:Sync(client)
 end
 
 function MODULE:OnReloaded()
-    MODULE.spawn:LoadAll()
+    self.spawn:LoadAll()
 end

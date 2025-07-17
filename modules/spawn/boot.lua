@@ -11,8 +11,7 @@
 
 MODULE.Name = "Spawn System"
 MODULE.Description = "Faction-based spawn system with admin management tools"
-MODULE.Author = "Parallax Framework"
-MODULE.Version = "1.0.0"
+MODULE.Author = "Riggs"
 
 -- Spawn storage
 MODULE.SpawnPoints = {}
@@ -33,15 +32,6 @@ MODULE.Config = {
 -- Register network strings
 if ( SERVER ) then
     util.AddNetworkString("ax.spawn.sync")
-    util.AddNetworkString("ax.spawn.add")
-    util.AddNetworkString("ax.spawn.remove")
-end
-
--- Client-side hologram data
-if ( CLIENT ) then
-    MODULE.HologramCache = {}
-    MODULE.HologramModels = {}
-    MODULE.LastModelUpdate = 0
 end
 
 -- Permissions
@@ -61,26 +51,24 @@ ax.option:Register("spawn.showSpawns", {
 })
 
 -- Precache common models
-if ( SERVER ) then
-    local commonModels = {
-        "models/player/group01/male_01.mdl",
-        "models/player/group01/male_02.mdl",
-        "models/player/group01/male_03.mdl",
-        "models/player/group01/male_04.mdl",
-        "models/player/group01/male_05.mdl",
-        "models/player/group01/male_06.mdl",
-        "models/player/group01/male_07.mdl",
-        "models/player/group01/male_08.mdl",
-        "models/player/group01/male_09.mdl",
-        "models/player/group01/female_01.mdl",
-        "models/player/group01/female_02.mdl",
-        "models/player/group01/female_03.mdl",
-        "models/player/group01/female_04.mdl",
-        "models/player/group01/female_05.mdl",
-        "models/player/group01/female_06.mdl"
-    }
+local commonModels = {
+    "models/player/group01/male_01.mdl",
+    "models/player/group01/male_02.mdl",
+    "models/player/group01/male_03.mdl",
+    "models/player/group01/male_04.mdl",
+    "models/player/group01/male_05.mdl",
+    "models/player/group01/male_06.mdl",
+    "models/player/group01/male_07.mdl",
+    "models/player/group01/male_08.mdl",
+    "models/player/group01/male_09.mdl",
+    "models/player/group01/female_01.mdl",
+    "models/player/group01/female_02.mdl",
+    "models/player/group01/female_03.mdl",
+    "models/player/group01/female_04.mdl",
+    "models/player/group01/female_05.mdl",
+    "models/player/group01/female_06.mdl"
+}
 
-    for i = 1, #commonModels do
-        util.PrecacheModel(commonModels[i])
-    end
+for i = 1, #commonModels do
+    util.PrecacheModel(commonModels[i])
 end

@@ -150,6 +150,9 @@ function GM:PlayerDisconnected(client)
 end
 
 function GM:PlayerSpawn(client)
+    local character = client:GetCharacter()
+    if ( !character ) then return end
+
     hook.Run("PlayerLoadout", client)
 end
 
@@ -169,14 +172,48 @@ function GM:PlayerLoadout(client)
     client:SetupHands()
 
     local character = client:GetCharacter()
-    if ( character ) then
-        -- Restore the character's bodygroups
-        local groups = character:GetData("groups", {})
-        for name, value in pairs(groups) do
-            local id = client:FindBodygroupByName(name)
-            if ( id == -1 ) then continue end
 
-            client:SetBodygroup(id, value)
+    -- Restore the character's skin
+    client:SetSkin(character:GetSkin() or 0)
+
+    -- Restore the character's bodygroups
+    local groups = character:GetData("groups", {})
+    for name, value in pairs(groups) do
+        local id = client:FindBodygroupByName(name)
+        if ( id == -1 ) then continue end
+
+        client:SetBodygroup(id, value)
+    end
+
+    -- Handle faction loadout
+    local factionData = character:GetFactionData()
+    if ( istable(factionData) ) then
+        if ( factionData.Weapons and istable(factionData.Weapons) ) then
+            for _, weapon in ipairs(factionData.Weapons) do
+                if ( !client:HasWeapon(weapon) ) then
+                    client:Give(weapon)
+                end
+            end
+        end
+
+        if ( isfunction(factionData.OnLoadout) ) then
+            factionData:OnLoadout(client)
+        end
+    end
+
+    -- Handle class loadout
+    local classData = character:GetClassData()
+    if ( istable(classData) ) then
+        if ( classData.Weapons and istable(classData.Weapons) ) then
+            for _, weapon in ipairs(classData.Weapons) do
+                if ( !client:HasWeapon(weapon) ) then
+                    client:Give(weapon)
+                end
+            end
+        end
+
+        if ( isfunction(classData.OnLoadout) ) then
+            classData:OnLoadout(client)
         end
     end
 
@@ -186,13 +223,7 @@ function GM:PlayerLoadout(client)
 end
 
 function GM:PostPlayerLoadout(client)
-    local character = client:GetCharacter()
-    if ( !character ) then return end
-
-    local classData = character:GetClassData()
-    if ( istable(classData) and isfunction(classData.OnLoadout) ) then
-        classData:OnLoadout(client)
-    end
+    -- Empty, let modules and schemas use this hook to add additional loadout items or modify the player's state
 end
 
 function GM:PrePlayerCreatedCharacter(client, payload)
@@ -382,7 +413,6 @@ function GM:DatabaseConnectionFailed()
 end
 
 function GM:DatabaseFallback(reason)
-    ax.database:LoadTables()
     hook.Run("LoadData")
 end
 

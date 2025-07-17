@@ -12,6 +12,15 @@
 --- Utility functions
 -- @module ax.util
 
+-- TESTTT
+
+--- Checks if MySQLOO binary is available
+-- @realm server
+-- @treturn boolean True if MySQLOO is available
+function ax.util:HasMysqlooBinary()
+    return util.IsBinaryModuleInstalled("mysqloo")
+end
+
 --- Converts and sanitizes input data into the specified type.
 -- This supports simple type coercion and fallback defaults.
 -- @param typeID number A type constant from ax.types
