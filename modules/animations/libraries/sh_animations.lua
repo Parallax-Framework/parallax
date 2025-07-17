@@ -323,6 +323,23 @@ ax.animations.stored["vortigaunt"] = {
     }
 }
 
+ax.animations.stored["player"] = {
+    normal = {
+        [ACT_MP_STAND_IDLE] = ACT_HL2MP_IDLE,
+        [ACT_MP_CROUCH_IDLE] = ACT_HL2MP_IDLE_CROUCH,
+        [ACT_MP_WALK] = ACT_HL2MP_WALK,
+        [ACT_MP_RUN] = ACT_HL2MP_RUN,
+        [ACT_LAND] = {ACT_RESET, ACT_RESET}
+    },
+    passive = {
+        [ACT_MP_STAND_IDLE] = ACT_HL2MP_IDLE_PASSIVE,
+        [ACT_MP_WALK] = ACT_HL2MP_WALK_PASSIVE,
+        [ACT_MP_CROUCHWALK] = ACT_HL2MP_WALK_CROUCH_PASSIVE,
+        [ACT_MP_RUN] = ACT_HL2MP_RUN_PASSIVE,
+        [ACT_LAND] = {ACT_RESET, ACT_RESET}
+    }
+}
+
 function ax.animations:SetModelClass(model, class)
     if ( !model or !class ) then return end
 
@@ -370,18 +387,18 @@ ax.animations:SetModelClass(Model("models/vortigaunt_doctor.mdl"), "vortigaunt")
 ax.animations:SetModelClass(Model("models/vortigaunt_slave.mdl"), "vortigaunt")
 
 -- Not needed but good to have incase...
-ax.animations:SetModelClass(Model("models/player/group01/female_01.mdl"), "citizen_female")
-ax.animations:SetModelClass(Model("models/player/group01/female_02.mdl"), "citizen_female")
-ax.animations:SetModelClass(Model("models/player/group01/female_03.mdl"), "citizen_female")
-ax.animations:SetModelClass(Model("models/player/group01/female_04.mdl"), "citizen_female")
-ax.animations:SetModelClass(Model("models/player/group01/female_05.mdl"), "citizen_female")
-ax.animations:SetModelClass(Model("models/player/group01/female_06.mdl"), "citizen_female")
-ax.animations:SetModelClass(Model("models/player/group01/male_01.mdl"), "citizen_male")
-ax.animations:SetModelClass(Model("models/player/group01/male_02.mdl"), "citizen_male")
-ax.animations:SetModelClass(Model("models/player/group01/male_03.mdl"), "citizen_male")
-ax.animations:SetModelClass(Model("models/player/group01/male_04.mdl"), "citizen_male")
-ax.animations:SetModelClass(Model("models/player/group01/male_05.mdl"), "citizen_male")
-ax.animations:SetModelClass(Model("models/player/group01/male_06.mdl"), "citizen_male")
-ax.animations:SetModelClass(Model("models/player/group01/male_07.mdl"), "citizen_male")
-ax.animations:SetModelClass(Model("models/player/group01/male_08.mdl"), "citizen_male")
-ax.animations:SetModelClass(Model("models/player/group01/male_09.mdl"), "citizen_male")
+ax.animations:SetModelClass(Model("models/player/group01/female_01.mdl"), "player")
+ax.animations:SetModelClass(Model("models/player/group01/female_02.mdl"), "player")
+ax.animations:SetModelClass(Model("models/player/group01/female_03.mdl"), "player")
+ax.animations:SetModelClass(Model("models/player/group01/female_04.mdl"), "player")
+ax.animations:SetModelClass(Model("models/player/group01/female_05.mdl"), "player")
+ax.animations:SetModelClass(Model("models/player/group01/female_06.mdl"), "player")
+ax.animations:SetModelClass(Model("models/player/group01/male_01.mdl"), "player")
+ax.animations:SetModelClass(Model("models/player/group01/male_02.mdl"), "player")
+ax.animations:SetModelClass(Model("models/player/group01/male_03.mdl"), "player")
+ax.animations:SetModelClass(Model("models/player/group01/male_04.mdl"), "player")
+ax.animations:SetModelClass(Model("models/player/group01/male_05.mdl"), "player")
+ax.animations:SetModelClass(Model("models/player/group01/male_06.mdl"), "player")
+ax.animations:SetModelClass(Model("models/player/group01/male_07.mdl"), "player")
+ax.animations:SetModelClass(Model("models/player/group01/male_08.mdl"), "player")
+ax.animations:SetModelClass(Model("models/player/group01/male_09.mdl"), "player")

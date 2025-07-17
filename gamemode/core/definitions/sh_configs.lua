@@ -508,6 +508,30 @@ ax.config:Register("characters.maxDescriptionLength", {
     Max = 1024,
 })
 
+ax.config:Register("characters.defaultFlags", {
+    Name = "config.characters.defaultFlags",
+    Description = "config.characters.defaultFlags.help",
+    Category = "category.characters",
+    Type = ax.types.string,
+    Default = "",
+
+    OnValidate = function(self, value)
+        if ( !isstring(value) ) then
+            return false, "Default flags must be a string"
+        end
+
+        -- Validate each flag character exists
+        for i = 1, #value do
+            local flag = value[i]
+            if ( !ax.flag:Get(flag) ) then
+                return false, "Invalid flag '" .. flag .. "' - flag does not exist"
+            end
+        end
+
+        return true
+    end
+})
+
 ax.config:Register("chat.format", {
     Name = "config.chat.format",
     Description = "config.chat.format.help",

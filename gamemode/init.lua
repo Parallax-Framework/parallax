@@ -32,7 +32,7 @@ include("core/boot.lua")
 local addons = engine.GetAddons()
 for i = 1, #addons do
     local addon = addons[i]
-    if ( tobool(addon.mounted) and tobool(addon.downloaded) and isnumber(addon.wsid) ) then
+    if ( addon.mounted == true and addon.downloaded == true and addon.wsid != 0 ) then
         resource.AddWorkshop(addon.wsid)
     end
 end

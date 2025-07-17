@@ -66,8 +66,8 @@ function MODULE:ShowUsergroupPanel(panel)
     editButton:SetSize(80, 25)
     editButton:SetText("Edit")
     editButton.DoClick = function()
-        local selected = groupsList:GetSelectedLine()
-        if (selected) then
+        local _, selected = groupsList:GetSelectedLine()
+        if (selected and selected.groupData.Custom) then
             MODULE:ShowEditGroupDialog(selected.groupName, selected.groupData)
         else
             ax.notification:Send(ax.client, "Please select a usergroup to edit.")
@@ -80,7 +80,7 @@ function MODULE:ShowUsergroupPanel(panel)
     deleteButton:SetSize(80, 25)
     deleteButton:SetText("Delete")
     deleteButton.DoClick = function()
-        local selected = groupsList:GetSelectedLine()
+        local _, selected = groupsList:GetSelectedLine()
         if (selected and selected.groupData.Custom) then
             Derma_Query("Are you sure you want to delete the usergroup '" .. selected.groupName .. "'?", "Delete Usergroup", "Yes", function()
                 net.Start("ax.admin.usergroup.delete")

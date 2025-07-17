@@ -14,3 +14,25 @@ local MODULE = MODULE
 MODULE.Name = "Doors"
 MODULE.Description = "Handles door entities with custom functionality and persistence."
 MODULE.Author = "Riggs"
+
+-- Permissions
+CAMI.RegisterPrivilege({
+    Name = "Parallax - Manage Doors",
+    MinAccess = "admin"
+})
+
+function MODULE:PlayerBuyDoor(client, door)
+    -- Code to handle player buying a door
+end
+
+function MODULE:PlayerSellDoor(client, door)
+    -- Code to handle player selling a door
+end
+
+function MODULE:PlayerLockDoor(client, door)
+    -- Code to handle player locking a door
+end
+
+function MODULE:PlayerSetOwnable(client, door, ownable)
+    -- Code to handle setting a door as ownable or unownable
+end

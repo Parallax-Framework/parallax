@@ -16,11 +16,19 @@ local fakeAngles
 local fakeFov
 
 function MODULE:PreRenderThirdpersonView(client, pos, angles, fov)
+    if ( !ax.option:Get("thirdperson", false) ) then
+        return false
+    end
+
     if ( IsValid(ax.gui.mainmenu) ) then
         return false
     end
 
     if ( IsValid(client:GetVehicle()) ) then
+        return false
+    end
+
+    if ( !client:Alive() ) then
         return false
     end
 
@@ -31,11 +39,10 @@ local traceVector = Vector(4, 4, 4)
 local dataTraceVector = Vector(8, 8, 8)
 
 function MODULE:CalcView(client, pos, angles, fov)
-    if ( !ax.option:Get("thirdperson", false) or hook.Run("PreRenderThirdpersonView", client, pos, angles, fov) == false ) then
+    if ( hook.Run("PreRenderThirdpersonView", client, pos, angles, fov) == false ) then
         fakePos = nil
         fakeAngles = nil
         fakeFov = nil
-
         return
     end
 
@@ -104,7 +111,7 @@ function MODULE:CalcView(client, pos, angles, fov)
 end
 
 function MODULE:ShouldDrawLocalPlayer(client)
-    return ax.option:Get("thirdperson", false)
+    return hook.Run("PreRenderThirdpersonView", client)
 end
 
 function MODULE:PrePlayerDraw(client, flags)

@@ -27,12 +27,19 @@ function ENTITY:IsChair()
     return CHAIR_CACHE[self:GetModel()]
 end
 
---- Returns `true` if this entity is a door. Internally, this checks to see if the entity's class has `door` in its name.
+local doorClasses = {
+    ["func_door"] = true,
+    ["func_door_rotating"] = true,
+    ["prop_door_rotating"] = true
+}
+
+--- Returns `true` if this entity is a door.
 -- @realm shared
 -- @treturn bool Whether or not the entity is a door.
 function ENTITY:IsDoor()
-    local class = self:GetClass()
-    return (class and string.match(class, "door") != nil)
+    local class = string.lower(self:GetClass())
+
+    return doorClasses[class] or hook.Run("IsEntityDoor", self, class) or false
 end
 
 --- Inherits the bodygroups of the given entity.
@@ -65,13 +72,13 @@ function ENTITY:ResetBodygroups()
     end
 end
 
-local zeroScale = Vector(1, 1, 1)
+local defBoneScale = Vector(1, 1, 1)
 
 --- Resets all bone manipulations this entity's model has to their defaults.
 -- @realm shared
 function ENTITY:ResetBoneMatrix()
     for i = 0, self:GetBoneCount() - 1 do
-        self:ManipulateBoneScale(i, zeroScale)
+        self:ManipulateBoneScale(i, defBoneScale)
         self:ManipulateBoneAngles(i, angle_zero)
         self:ManipulateBonePosition(i, vector_origin)
     end

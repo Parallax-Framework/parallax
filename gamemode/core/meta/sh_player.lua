@@ -205,17 +205,17 @@ end
 
 --- Returns a pretty-printed string representation of the player.
 -- @realm shared
--- @tparam[opt=false] boolean bIncludeICName Whether to include the in-character name and ID.
+-- @tparam[opt=false] boolean bIncludeCharacterData Whether to include the character's name and ID in the string.
 -- @treturn string The pretty-printed string.
-function PLAYER:PrettyPrint(bIncludeICName)
-    if ( bIncludeICName == nil ) then bIncludeICName = false end
+function PLAYER:PrettyPrint(bIncludeCharacterData)
+    if ( bIncludeCharacterData == nil ) then bIncludeCharacterData = false end
 
     local character = self:GetCharacter()
 
     return string.format(
         "%s%s%s",
         self:SteamName() .. " [#" .. self:EntIndex() .. "]",
-        bIncludeICName and character and " (" .. character:GetName() .. " // " .. character:GetID() .. ")" or "",
+        bIncludeCharacterData and character and " (" .. character:GetName() .. " // " .. character:GetID() .. ")" or "",
         self:IsBot() and " [BOT]" or " [" .. self:SteamID64() .. "]"
     )
 end

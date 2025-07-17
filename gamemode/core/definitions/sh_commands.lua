@@ -319,18 +319,245 @@ ax.command:Register("ToggleRaise", {
 })
 
 ax.command:Register("FallOver", {
+    Description = "Make your character fall over.",
     Arguments = {
         {
             Type = ax.types.number,
-            ErrorMsg = "You must provide a valid player to make fall over!",
+            ErrorMsg = "You must provide a valid duration in seconds!",
             Optional = true
         }
     },
-
     Callback = function(info, client, arguments)
         local character = client:GetCharacter()
         if ( !character ) then return end
 
         client:SetRagdolled(true, arguments[1] or 5)
+    end
+})
+
+ax.command:Register("RefreshDefaultFlags", {
+    Description = "Refresh default flags for all characters or a specific player",
+    AdminOnly = true,
+    Arguments = {
+        {
+            Type = ax.types.player,
+            ErrorMsg = "You must provide a valid player!",
+            Optional = true
+        }
+    },
+    Callback = function(info, client, arguments)
+        local target = arguments[1]
+        if ( target ) then
+            -- Apply to specific player's character
+            local character = target:GetCharacter()
+            if ( !character ) then
+                client:Notify("The targeted player does not have a character!")
+                return
+            end
+
+            ax.character:ApplyDefaultFlags(character)
+            client:Notify("Applied default flags to " .. target:Nick() .. "'s character.", NOTIFY_HINT)
+        else
+            local count = 0
+            for _, v in player.Iterator() do
+                local character = v:GetCharacter()
+                if ( character ) then
+                    ax.character:ApplyDefaultFlags(character)
+                    count = count + 1
+                end
+            end
+
+            client:Notify("Applied default flags to " .. count .. " online characters.", NOTIFY_HINT)
+        end
+    end
+})
+
+ax.command:Register("CharGiveMoney", {
+    Description = "Give money to a character",
+    AdminOnly = true,
+    Arguments = {
+        {
+            Type = ax.types.player,
+            ErrorMsg = "You must provide a valid player to give money to!"
+        },
+        {
+            Type = ax.types.number,
+            ErrorMsg = "You must provide a valid amount of money to give!"
+        }
+    },
+    Callback = function(info, client, arguments)
+        local target = arguments[1]
+        local amount = arguments[2]
+
+        if ( amount <= 0 ) then
+            client:Notify("You must provide a positive amount of money!")
+            return
+        end
+
+        local character = target:GetCharacter()
+        if ( !character ) then
+            client:Notify("The targeted player does not have a character!")
+            return
+        end
+
+        character:GiveMoney(amount)
+
+        client:Notify("You have given " .. ax.currency:Format(amount) .. " to " .. target:Nick() .. ".", NOTIFY_HINT)
+        target:Notify("You have been given " .. ax.currency:Format(amount) .. " by " .. client:Nick() .. "!", NOTIFY_HINT)
+    end
+})
+
+ax.command:Register("CharTakeMoney", {
+    Description = "Take money from a character",
+    AdminOnly = true,
+    Arguments = {
+        {
+            Type = ax.types.player,
+            ErrorMsg = "You must provide a valid player to take money from!"
+        },
+        {
+            Type = ax.types.number,
+            ErrorMsg = "You must provide a valid amount of money to take!"
+        }
+    },
+    Callback = function(info, client, arguments)
+        local target = arguments[1]
+        local amount = arguments[2]
+
+        if ( amount <= 0 ) then
+            client:Notify("You must provide a positive amount of money!")
+            return
+        end
+
+        local character = target:GetCharacter()
+        if ( !character ) then
+            client:Notify("The targeted player does not have a character!")
+            return
+        end
+
+        if ( !character:CanAfford(amount) ) then
+            client:Notify("The targeted player cannot afford to lose " .. ax.currency:Format(amount) .. "! They only have " .. ax.currency:Format(character:GetMoney()) .. ".")
+            return
+        end
+
+        character:TakeMoney(amount)
+
+        client:Notify("You have taken " .. ax.currency:Format(amount) .. " from " .. target:Nick() .. ".", NOTIFY_HINT)
+        target:Notify("You have had " .. ax.currency:Format(amount) .. " taken from you by " .. client:Nick() .. "!", NOTIFY_HINT)
+    end
+})
+
+ax.command:Register("CharSetMoney", {
+    Description = "Set a character's money to a specific amount",
+    AdminOnly = true,
+    Arguments = {
+        {
+            Type = ax.types.player,
+            ErrorMsg = "You must provide a valid player to set money for!"
+        },
+        {
+            Type = ax.types.number,
+            ErrorMsg = "You must provide a valid amount of money to set!"
+        }
+    },
+    Callback = function(info, client, arguments)
+        local target = arguments[1]
+        local amount = arguments[2]
+
+        if ( amount < 0 ) then
+            client:Notify("You cannot set money to a negative amount!")
+            return
+        end
+
+        local character = target:GetCharacter()
+        if ( !character ) then
+            client:Notify("The targeted player does not have a character!")
+            return
+        end
+
+        local oldAmount = character:GetMoney()
+        character:SetMoney(amount)
+
+        client:Notify("You have set " .. target:Nick() .. "'s money from " .. ax.currency:Format(oldAmount) .. " to " .. ax.currency:Format(amount) .. ".", NOTIFY_HINT)
+        target:Notify("Your money has been set to " .. ax.currency:Format(amount) .. " by " .. client:Nick() .. "!", NOTIFY_HINT)
+    end
+})
+
+ax.command:Register("CharCheckMoney", {
+    Description = "Check how much money a character has",
+    AdminOnly = true,
+    Arguments = {
+        {
+            Type = ax.types.player,
+            ErrorMsg = "You must provide a valid player to check money for!"
+        }
+    },
+    Callback = function(info, client, arguments)
+        local target = arguments[1]
+
+        local character = target:GetCharacter()
+        if ( !character ) then
+            client:Notify("The targeted player does not have a character!")
+            return
+        end
+
+        local amount = character:GetMoney()
+        client:Notify(target:Nick() .. " has " .. ax.currency:Format(amount) .. ".", NOTIFY_HINT)
+    end
+})
+
+ax.command:Register("CharResetName", {
+    Description = "Ask a user to reset their character's name",
+    AdminOnly = true,
+    Arguments = {
+        {
+            Type = ax.types.player,
+            ErrorMsg = "You must provide a valid player to reset the name for!"
+        }
+    },
+    Callback = function(info, client, arguments)
+        local target = arguments[1]
+
+        local character = target:GetCharacter()
+        if ( !character ) then
+            client:Notify("The targeted player does not have a character!")
+            return
+        end
+
+        target:GetTable().axResetRequestBy = client
+
+        net.Start("ax.character.namereset")
+        net.Send(target)
+
+        target:Notify("An admin has requested you to reset your character's name.", NOTIFY_HINT)
+        client:Notify("You have requested " .. target:Nick() .. " to reset their character's name.", NOTIFY_HINT)
+    end
+})
+
+ax.command:Register("CharResetDescription", {
+    Description = "Ask a user to reset their character's description",
+    AdminOnly = true,
+    Arguments = {
+        {
+            Type = ax.types.player,
+            ErrorMsg = "You must provide a valid player to reset the name for!"
+        }
+    },
+    Callback = function(info, client, arguments)
+        local target = arguments[1]
+
+        local character = target:GetCharacter()
+        if ( !character ) then
+            client:Notify("The targeted player does not have a character!")
+            return
+        end
+
+        target:GetTable().axResetRequestBy = client
+
+        net.Start("ax.character.descreset")
+        net.Send(target)
+
+        target:Notify("An admin has requested you to reset your character's description.", NOTIFY_HINT)
+        client:Notify("You have requested " .. target:Nick() .. " to reset their character's description.", NOTIFY_HINT)
     end
 })

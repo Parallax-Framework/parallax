@@ -329,6 +329,22 @@ function ax.character:SyncAll(client)
     return true
 end
 
+--- Applies default flags from config to a character
+-- @tparam table character The character object to apply flags to
+function ax.character:ApplyDefaultFlags(character)
+    if ( !istable(character) ) then return end
+
+    local defaultFlags = ax.config:Get("characters.defaultFlags")
+    if ( !isstring(defaultFlags) or defaultFlags == "" ) then return end
+
+    for i = 1, #defaultFlags do
+        local flag = defaultFlags[i]
+        if ( ax.flag:Get(flag) and !character:HasFlag(flag) ) then
+            character:GiveFlag(flag)
+        end
+    end
+end
+
 concommand.Add("ax_character_test_create", function(client, cmd, arguments)
     ax.character:Create(client, {
         name = "Test Character"
