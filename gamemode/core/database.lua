@@ -51,11 +51,11 @@ end
 function ax.database:Fallback(reason)
     self.backend = ax.sqlite
     ax.util:PrintWarning((reason or "MySQL unavailable") .. ". Falling back to SQLite.")
-    
+
     -- Initialize SQLite
     ax.sqlite:Initialize()
     self:LoadTables()
-    
+
     hook.Run("DatabaseFallback", reason)
 end
 
@@ -135,13 +135,6 @@ end
 function ax.database:LoadTables()
     hook.Run("PreDatabaseTablesLoaded")
 
-    -- Register default player variables
-    self:RegisterVar("ax_players", "name", "")
-    self:RegisterVar("ax_players", "ip", "")
-    self:RegisterVar("ax_players", "play_time", 0)
-    self:RegisterVar("ax_players", "last_played", 0)
-    self:RegisterVar("ax_players", "data", "{}")
-
     -- Initialize core tables
     self:InitializeTable("ax_players", {
         steamid = "VARCHAR(32) PRIMARY KEY",
@@ -151,6 +144,13 @@ function ax.database:LoadTables()
         last_played = "INT",
         data = "TEXT"
     })
+
+    -- Register default player variables
+    self:RegisterVar("ax_players", "name", "")
+    self:RegisterVar("ax_players", "ip", "")
+    self:RegisterVar("ax_players", "play_time", 0)
+    self:RegisterVar("ax_players", "last_played", 0)
+    self:RegisterVar("ax_players", "data", "{}")
 
     self:InitializeTable("ax_characters", {
         id = "INTEGER PRIMARY KEY " .. (self.backend == ax.sqloo and "AUTO_INCREMENT" or "AUTOINCREMENT"),
@@ -210,10 +210,10 @@ function ax.database:Shutdown()
     if ( self.backend and self.backend.Cleanup ) then
         self.backend:Cleanup()
     end
-    
+
     self.backend = nil
     self.config = nil
-    
+
     ax.util:Print("Database system shut down.")
 end
 
@@ -231,13 +231,13 @@ function ax.database:SafeQuery(query, onSuccess, onError)
 
     self.backend:Query(query, onSuccess, function(err)
         ax.util:PrintError("Database query failed: " .. (err or "Unknown error"))
-        
+
         -- Try to reconnect if using MySQL
         if ( self.backend == ax.sqloo and !self.backend:IsConnected() ) then
             ax.util:PrintWarning("Attempting to reconnect to MySQL...")
             self.backend:Reconnect()
         end
-        
+
         if ( onError ) then onError(err) end
     end)
 end

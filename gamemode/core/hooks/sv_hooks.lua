@@ -413,7 +413,6 @@ function GM:DatabaseConnectionFailed()
 end
 
 function GM:DatabaseFallback(reason)
-    ax.database:LoadTables()
     hook.Run("LoadData")
 end
 
