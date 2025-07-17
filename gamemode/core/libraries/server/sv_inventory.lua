@@ -51,7 +51,8 @@ function ax.inventory:AddItem(inventoryID, uniqueID, data, callback)
 
         ax.database:Insert("ax_items", {
             unique_id = uniqueID,
-            data = util.TableToJSON(data)
+            data = util.TableToJSON(data),
+            inventory_id = inventoryID
         }, function(itemID)
             if ( !isnumber(itemID) ) then
                 ax.util:PrintError("Failed to add item to inventory.")
@@ -125,7 +126,7 @@ function ax.inventory:RemoveItem(inventoryID, itemID, callback)
         items[itemID] = nil -- Remove the item from the list
 
         ax.database:Update("ax_inventories", {
-            items = util.TableToJSON(items)
+            items = util.TableToJSON(items),
         }, "id = " .. inventoryID, function(success)
             if ( !success ) then
                 ax.util:PrintError("Failed to update inventory items after removal.")
@@ -144,7 +145,7 @@ function ax.inventory:RemoveItem(inventoryID, itemID, callback)
         ax.database:Delete("ax_items", {
             id = itemID
         }, function(success)
-            if ( !success ) then
+            if ( success == false ) then
                 ax.util:PrintError("Failed to delete item from database.")
                 return false
             end
@@ -202,7 +203,7 @@ function ax.inventory:GetItems(inventoryID, callback)
         end
 
         local items = util.JSONToTable(result[1].items) or {}
-        if ( !items ) then
+        if ( !istable(items) ) then
             items = {}
         end
 
