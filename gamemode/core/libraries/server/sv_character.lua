@@ -55,7 +55,7 @@ function ax.character:Create(client, query, callback)
         clientTable.axCharacters = clientTable.axCharacters or {}
         clientTable.axCharacters[characterID] = character
 
-        self.instances[characterID] = character
+        self.stored[characterID] = character
 
         net.Start("ax.character.cache")
             net.WriteTable(character)
@@ -103,7 +103,7 @@ function ax.character:Load(client, characterID)
                 return
             end
 
-            self.instances[characterID] = character
+            self.stored[characterID] = character
 
             hook.Run("PrePlayerLoadedCharacter", client, character, currentCharacter)
 
@@ -141,7 +141,7 @@ function ax.character:Delete(characterID, callback)
         return false
     end
 
-    local character = self.instances[characterID]
+    local character = self.stored[characterID]
     if ( !character ) then
         ax.util:PrintError("Attempted to delete character that does not exist (" .. characterID .. ")")
         return false
@@ -167,12 +167,12 @@ function ax.character:Delete(characterID, callback)
         net.Send(client)
     end
 
-    self.instances[characterID] = nil
+    self.stored[characterID] = nil
 
     ax.character:Sync(client, characterID)
 
     -- Delete all related inventories and items for this character
-    ax.database:Delete("ax_inventories", string.format("character_id = %s", sql.SQLStr(characterID)))
+    ax.database:Delete("ax_inventories", string.format("id = %s", sql.SQLStr(character:GetInventory():GetID())))
     ax.database:Delete("ax_items", string.format("character_id = %s", sql.SQLStr(characterID)))
 
     -- Finally, delete the character from the database
@@ -215,7 +215,7 @@ function ax.character:Cache(client, characterID, callback)
         local clientTable = client:GetTable()
         clientTable.axCharacters = clientTable.axCharacters or {}
         clientTable.axCharacters[characterID] = result[1]
-        self.instances[characterID] = result[1]
+        self.stored[characterID] = result[1]
 
         net.Start("ax.character.cache")
             net.WriteTable(result[1])
@@ -265,7 +265,7 @@ function ax.character:CacheAll(client, callback)
                     continue
                 end
 
-                self.instances[id] = character
+                self.stored[id] = character
                 clientTable.axCharacters[id] = character
             end
 
@@ -327,6 +327,22 @@ function ax.character:SyncAll(client)
     net.Send(client)
 
     return true
+end
+
+--- Applies default flags from config to a character
+-- @tparam table character The character object to apply flags to
+function ax.character:ApplyDefaultFlags(character)
+    if ( !istable(character) ) then return end
+
+    local defaultFlags = ax.config:Get("characters.defaultFlags")
+    if ( !isstring(defaultFlags) or defaultFlags == "" ) then return end
+
+    for i = 1, #defaultFlags do
+        local flag = defaultFlags[i]
+        if ( ax.flag:Get(flag) and !character:HasFlag(flag) ) then
+            character:GiveFlag(flag)
+        end
+    end
 end
 
 concommand.Add("ax_character_test_create", function(client, cmd, arguments)

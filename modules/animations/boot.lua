@@ -16,7 +16,7 @@ MODULE.Description = "Handles player animations."
 MODULE.Author = "Riggs"
 
 local meta = FindMetaTable("Player")
-local IsFemaleInternal = meta.IsFemale
+local IsFemaleInternal = IsFemaleInternal or meta.IsFemale
 
 function meta:IsFemale()
     local modelClass = ax.animations:GetModelClass(self:GetModel())

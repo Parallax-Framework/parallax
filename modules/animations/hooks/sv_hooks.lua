@@ -40,7 +40,7 @@ function MODULE:PostEntitySetModel(ent, model)
     net.Broadcast()
 end
 
-function MODULE:PlayerSpawn(client)
+function MODULE:PlayerLoadout(client)
     if ( !IsValid(client) ) then return end
 
     local weapon = client:GetActiveWeapon()

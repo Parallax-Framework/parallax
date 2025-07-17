@@ -25,7 +25,7 @@ function INVENTORY:GetID()
 end
 
 function INVENTORY:GetCharacter()
-    for _, character in pairs(ax.character.instances) do
+    for _, character in pairs(ax.character.stored) do
         if ( character:GetInventory():GetID() == self:GetID() ) then
             return character
         end

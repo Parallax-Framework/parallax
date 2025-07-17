@@ -92,6 +92,7 @@ A strict Lua coding and documentation standard tailored for Garry's Mod and the 
 - Use **4 spaces** for indentation.
 - Do not use tabs.
 - Ensure consistent indentation across all files.
+- If you are using VSCode, and you have indentation problems, press CTRL+SHIFT+P and press "Convert Indentation to Spaces"
 
 ```lua
 function ax.util:ExampleFunction()

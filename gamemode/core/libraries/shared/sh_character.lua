@@ -16,7 +16,8 @@ ax.character = ax.character or {} -- Character library.
 ax.character.meta = ax.character.meta or {} -- All currently registered character meta functions.
 ax.character.variables = ax.character.variables or {} -- All currently registered variables.
 ax.character.fields = ax.character.fields or {} -- All currently registered fields.
-ax.character.instances = ax.character.instances or {} -- All currently stored characters which are in use.
+ax.character.stored = ax.character.stored or {} -- All currently stored characters which are in use.
+ax.character.pendingDatabaseVars = ax.character.pendingDatabaseVars or {} -- Variables waiting to be registered in the database.
 
 --- Registers a variable for the character.
 -- @realm shared
@@ -39,10 +40,17 @@ function ax.character:RegisterVariable(key, data)
                     self:SetVariable(character:GetID(), key, value)
                 end
 
-                local field = data.Field
-                if ( field ) then
-                    ax.database:RegisterVar("ax_characters", key, data.Default or nil)
-                    self.fields[key] = field
+                local field = data.Field or key
+                -- Store for later registration when database is ready
+                self.pendingDatabaseVars[#self.pendingDatabaseVars + 1] = {
+                    table = "ax_characters",
+                    field = field,
+                    default = data.Default or nil
+                }
+
+                -- Debug: track variable registration
+                if ( ax.util and ax.util.Print ) then
+                    ax.util:Print("Character variable '" .. key .. "' queued for database registration (field: " .. field .. ")")
                 end
             end
         end
@@ -58,15 +66,61 @@ function ax.character:RegisterVariable(key, data)
                 self:SetVariable(character:GetID(), key, value)
             end
 
-            local field = data.Field
-            if ( field ) then
-                ax.database:RegisterVar("ax_characters", key, data.Default or nil)
-                self.fields[key] = field
+            local field = data.Field or key
+            -- Store for later registration when database is ready
+            self.pendingDatabaseVars[#self.pendingDatabaseVars + 1] = {
+                table = "ax_characters",
+                field = field,
+                default = data.Default or nil
+            }
+
+            -- Debug: track variable registration
+            if ( ax.util and ax.util.Print ) then
+                ax.util:Print("Character variable '" .. key .. "' queued for database registration (field: " .. field .. ")")
             end
         end
     end
 
     self.variables[key] = data
+end
+
+--- Registers all pending database variables when the database is ready.
+-- This is called after the database tables are loaded.
+-- @realm server
+function ax.character:RegisterPendingDatabaseVars()
+    if ( !SERVER ) then return end
+
+    -- Ensure database is available and properly initialized
+    if ( !ax.database or !ax.database.RegisterVar ) then
+        ax.util:PrintError("Database not available when trying to register character variables!")
+        return
+    end
+
+    -- Check if database backend is available
+    if ( !ax.database:IsConnected() ) then
+        ax.util:PrintError("Database not connected when trying to register character variables!")
+        return
+    end
+
+    for i = 1, #self.pendingDatabaseVars do
+        local varData = self.pendingDatabaseVars[i]
+        ax.database:RegisterVar(varData.table, varData.field, varData.default)
+    end
+
+    ax.util:Print("Registered " .. #self.pendingDatabaseVars .. " pending character database variables.")
+
+    -- Clear the pending list
+    self.pendingDatabaseVars = {}
+end
+
+-- Debug hook to track character variable registration
+if ( SERVER ) then
+    hook.Add("PostDatabaseTablesLoaded", "ax.character.RegisterVars", function()
+        ax.util:Print("PostDatabaseTablesLoaded hook called - registering character variables...")
+        if ( ax.character and ax.character.RegisterPendingDatabaseVars ) then
+            ax.character:RegisterPendingDatabaseVars()
+        end
+    end)
 end
 
 function ax.character:SetVariable(id, key, value)
@@ -75,7 +129,7 @@ function ax.character:SetVariable(id, key, value)
         return false, "Attempted to set a variable that does not exist!"
     end
 
-    local character = self.instances[id]
+    local character = self.stored[id]
     if ( !character ) then
         ax.util:PrintError("Attempted to set a variable for a character that does not exist!")
         return false, "Attempted to set a variable for a character that does not exist!"
@@ -109,7 +163,7 @@ function ax.character:SetVariable(id, key, value)
 end
 
 function ax.character:GetVariable(id, key)
-    local character = self.instances[id]
+    local character = self.stored[id]
     if ( !character ) then
         ax.util:PrintError("Attempted to get a variable for a character that does not exist!")
         return false, "Attempted to get a variable for a character that does not exist!"
@@ -132,9 +186,9 @@ function ax.character:CreateObject(characterID, data, client)
         return false, "Invalid data provided"
     end
 
-    if ( self.instances[characterID] ) then
+    if ( self.stored[characterID] ) then
         ax.util:PrintWarning("Attempted to create a character object that already exists!")
-        return self.instances[characterID], "Character already exists"
+        return self.stored[characterID], "Character already exists"
     end
 
     characterID = tonumber(characterID)
@@ -161,7 +215,7 @@ function ax.character:CreateObject(characterID, data, client)
         end
     end
 
-    self.instances[characterID] = character
+    self.stored[characterID] = character
 
     return character
 end
@@ -177,11 +231,11 @@ function ax.character:GetPlayerByCharacter(id)
 end
 
 function ax.character:Get(id)
-    return self.instances[id]
+    return self.stored[id]
 end
 
 function ax.character:GetAll()
-    return self.instances
+    return self.stored
 end
 
 function ax.character:GetAllVariables()

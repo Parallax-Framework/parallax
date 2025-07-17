@@ -196,6 +196,7 @@ if ( CLIENT ) then
             return self.Cache[class]
         end
 
+        local iconFiles = file.Find("materials/entities/*", "GAME")
         for i = 1, #iconFiles do
             local iconFile = iconFiles[i]
             if ( ax.util:FindString(iconFile, class) ) then
@@ -210,6 +211,7 @@ if ( CLIENT ) then
             end
         end
 
+        iconFiles = file.Find("materials/vgui/hud/*", "GAME")
         for i = 1, #iconFiles do
             local iconFile = iconFiles[i]
             if ( ax.util:FindString(iconFile, class) ) then

@@ -13,6 +13,30 @@
     Character Networking
 -----------------------------------------------------------------------------]]--
 
+net.Receive("ax.character.namereset", function(len)
+    Derma_StringRequest(
+        "Character Name Reset",
+        "Please enter a new name for your character:",
+        "",
+        function(text)
+            net.Start("ax.character.namereset")
+                net.WriteString(text)
+            net.SendToServer()
+        end)
+end)
+
+net.Receive("ax.character.descreset", function(len)
+    Derma_StringRequest(
+        "Character Description Reset",
+        "Please enter a new description for your character:",
+        "",
+        function(text)
+            net.Start("ax.character.descreset")
+                net.WriteString(text)
+            net.SendToServer()
+        end)
+end)
+
 net.Receive("ax.character.cache.all", function(len)
     local data = net.ReadTable()
 
@@ -299,7 +323,7 @@ end)
 
 net.Receive("ax.inventory.refresh", function(len)
     local inventoryID = net.ReadUInt(16)
-    local panel = ax.gui.Inventory
+    local panel = ax.gui.inventory
     if ( IsValid(panel) ) then
         panel:SetInventory(inventoryID)
     end

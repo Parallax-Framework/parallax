@@ -29,7 +29,7 @@ function ax.inventory:AddItem(inventoryID, uniqueID, data, callback)
         return false
     end
 
-    if ( !data or type(data) != "table" ) then
+    if ( !istable(data) ) then
         data = {}
     end
 
@@ -53,7 +53,7 @@ function ax.inventory:AddItem(inventoryID, uniqueID, data, callback)
             unique_id = uniqueID,
             data = util.TableToJSON(data)
         }, function(itemID)
-            if ( !itemID ) then
+            if ( !isnumber(itemID) ) then
                 ax.util:PrintError("Failed to add item to inventory.")
 
                 if ( callback ) then
@@ -75,7 +75,7 @@ function ax.inventory:AddItem(inventoryID, uniqueID, data, callback)
             ax.database:Update("ax_inventories", {
                 items = util.TableToJSON(items)
             }, "id = " .. inventoryID, function(success)
-                if ( !success ) then
+                if ( success == false ) then -- success if successful returns nil, !var returns true for nil as well :/
                     ax.util:PrintError("Failed to update inventory items.")
                     return false
                 end
@@ -166,27 +166,27 @@ function ax.inventory:GetItems(inventoryID, callback)
     -- ax.database:Select("ax_items", nil, "inventory_id = " .. inventoryID, function(result)
     --     if ( !result or !result[1] ) then
     --         ax.util:PrintError("No items found in inventory.")
--- 
+--
     --         if ( callback ) then
     --             callback({})
     --         end
--- 
+--
     --         return false
     --     end
--- 
+--
     --     PrintTable(result)
--- 
+--
     --     for i = 1, #result do
     --         local item = result[i]
     --         item.data = util.JSONToTable(item.data) or {}
     --         itemList[i] = item
     --     end
     --     ax.util:PrintSuccess("Items retrieved from inventory successfully.")
--- 
+--
     --     if ( callback ) then
     --         callback(itemList)
     --     end
--- 
+--
     --     return true
     -- end)
 
@@ -235,16 +235,16 @@ function ax.inventory:ClearInventory(inventoryID, callback)
     -- }, function(success)
     --     if ( !success ) then
     --         ax.util:PrintError("Failed to clear inventory.")
--- 
+--
     --         return false
     --     end
--- 
+--
     --     ax.util:PrintSuccess("Inventory cleared successfully.")
--- 
+--
     --     if ( callback ) then
     --         callback(true)
     --     end
--- 
+--
     --     return true
     -- end)
 

@@ -42,8 +42,16 @@ ax.character:RegisterVariable("name", {
     Numeric = false,
 
     OnValidate = function(self, parent, payload, client)
+        if ( !isstring(payload.name) ) then
+            return false, "Name must be a string!"
+        end
+
         local name = payload.name or ""
         local factionData = ax.faction:Get(payload.faction)
+        if ( !ax.util:IsFaction(factionData) ) then
+            return false, "Invalid faction!"
+        end
+
         local lengthMin = factionData.NameLengthMin or ax.config:Get("characters.minNameLength") or 3
         local lengthMax = factionData.NameLengthMax or ax.config:Get("characters.maxNameLength") or 32
         local trimmed = string.Trim(name)
@@ -75,6 +83,10 @@ ax.character:RegisterVariable("description", {
     Name = "character.create.description",
 
     OnValidate = function(self, parent, payload, client)
+        if ( !isstring(payload.description) ) then
+            return false, "Description must be a string!"
+        end
+
         local trimmed = string.Trim(payload.description or "")
         local len = string.len(trimmed)
 
@@ -103,23 +115,19 @@ ax.character:RegisterVariable("model", {
 
     OnValidate = function(self, parent, payload, client)
         local faction = ax.faction:Get(payload.faction)
-        if ( istable(faction) ) then
-            local found = false
+        if ( ax.util:IsFaction(faction) ) then
             for _, v in SortedPairs(faction:GetModels()) do
                 local model = istable(v) and v[1] or v
 
                 if ( model == payload.model ) then
-                    found = true
-                    break
+                    return true
                 end
             end
 
-            if ( !found ) then
-                return false, "Model is not valid for this faction!"
-            end
+            return false, "Model is not valid for this faction!"
         end
 
-        return true
+        return false
     end,
 
     OnPopulate = function(self, parent, payload, client)

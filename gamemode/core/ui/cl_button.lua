@@ -133,7 +133,7 @@ function PANEL:Think()
             self:OnHovered()
         end
     elseif ( !hovering and self.wasHovered ) then
-        self:SetFont("ax.large")
+        self:SetFont(self.fontDefault)
         self.wasHovered = false
 
         self:Motion(0.2, {

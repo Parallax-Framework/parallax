@@ -490,7 +490,7 @@ ax.command:Register("CleanupMap", {
             return
         end
 
-        game.CleanUpMap(false, {"env_fire", "entityflame", "_firesmoke"})
+        client:ConCommand("gmod_admin_cleanup")
 
         MODULE:LogAction(client, "cleaned up map", nil, arguments[1] or "No reason provided")
 
@@ -642,7 +642,7 @@ ax.command:Register("PlySetGroup", {
         MODULE:SetPlayerUsergroup(target, groupName, duration, reason, client)
 
         local durationStr = duration > 0 and " for " .. duration .. " minutes" or " permanently"
-        ax.notification:Send(nil, client:SteamName() .. " set " .. target:SteamName() .. "'s usergroup to " .. groupName .. durationStr .. ". Reason: " .. reason)
+        ax.notification:Send(nil, client:SteamName() .. " set " .. target:SteamName() .. "'s usergroup from '" .. oldGroup .. "' to '" .. groupName .. "'" .. durationStr .. ". Reason: " .. reason)
     end
 })
 
