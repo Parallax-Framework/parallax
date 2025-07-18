@@ -31,7 +31,7 @@ concommand.Add("ax_admin_ban", function(client, cmd, args)
         return
     end
 
-    local target = player.GetByUniqueID(args[1])
+    local target = ax.util:FindPlayer(args[1])
     local duration = tonumber(args[2]) or 0
     local reason = args[3] or "No reason provided"
 
