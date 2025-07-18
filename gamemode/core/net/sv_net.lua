@@ -271,25 +271,53 @@ net.Receive("ax.item.perform", function(len, client)
     if ( !itemID or !actionName ) then return end
 
     local item = ax.item:Get(itemID)
-    if ( !item or item:GetOwner() != client:GetCharacterID() ) then return end
+    if ( !item ) then return end
+
+    -- Verify ownership
+    local character = client:GetCharacter()
+    if ( !character ) then return end
+
+    local inventory = character:GetInventory()
+    if ( !inventory or !inventory:HasItem(itemID) ) then
+        -- Check if it's a world item
+        if ( !IsValid(item:GetEntity()) ) then
+            return
+        end
+    end
 
     ax.item:PerformAction(itemID, actionName)
 end)
 
-util.AddNetworkString("ax.item.spawn")
-net.Receive("ax.item.spawn", function(len, client)
-    local uniqueID = net.ReadString()
-    if ( !isstring(uniqueID) or !istable(ax.item.stored[uniqueID]) ) then return end
+util.AddNetworkString("ax.item.data.sync")
+net.Receive("ax.item.data.sync", function(len, client)
+    local itemID = net.ReadUInt(16)
+    local key = net.ReadString()
+    local value = net.ReadType()
 
-    local pos = client:GetEyeTrace().HitPos + vector_up
+    local item = ax.item:Get(itemID)
+    if ( !item ) then return end
 
-    ax.item:Spawn(nil, uniqueID, pos, nil, function(entity)
-        if ( IsValid(entity) ) then
-            client:Notify("Spawned item: " .. uniqueID)
-        else
-            client:Notify("Failed to spawn item.")
-        end
-    end)
+    -- Verify ownership
+    local character = client:GetCharacter()
+    if ( !character ) then return end
+
+    local inventory = character:GetInventory()
+    if ( !inventory or !inventory:HasItem(itemID) ) then return end
+
+    -- Update item data
+    item:SetData(key, value)
+
+    -- Update database
+    ax.database:Update("ax_items", {
+        data = util.TableToJSON(item:GetData())
+    }, "id = " .. itemID)
+
+    -- Network to other clients if needed
+    net.Start("ax.item.data")
+        net.WriteUInt(itemID, 16)
+        net.WriteString(key)
+        net.WriteType(value)
+    net.Send(client)
 end)
 
 --[[-----------------------------------------------------------------------------

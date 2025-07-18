@@ -33,61 +33,60 @@ function ax.inventory:AddItem(inventoryID, uniqueID, data, callback)
         data = {}
     end
 
-    ax.database:Select("ax_inventories", nil, "id = " .. inventoryID, function(result)
-        if ( !result or !result[1] ) then
-            ax.util:PrintError("No inventory found with ID " .. inventoryID)
+    -- Get inventory instance
+    local inventory = self:Get(inventoryID)
+    if ( !inventory ) then
+        ax.util:PrintError("Inventory with ID " .. inventoryID .. " not found in memory.")
+        return false
+    end
 
-            if ( callback ) then
-                callback(false)
-            end
-
+    -- Create item in database
+    ax.database:Insert("ax_items", {
+        unique_id = uniqueID,
+        data = util.TableToJSON(data),
+        inventory_id = inventoryID
+    }, function(itemID)
+        if ( !isnumber(itemID) ) then
+            ax.util:PrintError("Failed to add item to inventory.")
+            if ( callback ) then callback(false) end
             return false
         end
 
-        local items = util.JSONToTable(result[1].items) or {}
-        if ( !items ) then
-            items = {}
+        ax.util:PrintSuccess("Item added to inventory successfully with ID " .. itemID)
+
+        -- Create item instance
+        local item = ax.item:CreateObject(itemID, uniqueID, data)
+        if ( !item ) then
+            ax.util:PrintError("Failed to create item object")
+            if ( callback ) then callback(false) end
+            return false
         end
 
-        ax.database:Insert("ax_items", {
-            unique_id = uniqueID,
-            data = util.TableToJSON(data),
-            inventory_id = inventoryID
-        }, function(itemID)
-            if ( !isnumber(itemID) ) then
-                ax.util:PrintError("Failed to add item to inventory.")
+        item:SetInventoryID(inventoryID)
+        ax.item.instances[itemID] = item
 
-                if ( callback ) then
-                    callback(false)
-                end
+        -- Add to inventory's item list
+        table.insert(inventory.Items, itemID)
 
-                return false
+        -- Network to client
+        local character = inventory:GetCharacter()
+        if ( character ) then
+            local client = character:GetPlayer()
+            if ( IsValid(client) ) then
+                net.Start("ax.inventory.item.add")
+                    net.WriteUInt(inventoryID, 16)
+                    net.WriteUInt(itemID, 16)
+                    net.WriteString(uniqueID)
+                    net.WriteTable(data)
+                net.Send(client)
             end
+        end
 
-            ax.util:PrintSuccess("Item added to inventory successfully with ID " .. itemID)
+        if ( callback ) then
+            callback(itemID)
+        end
 
-            -- Add item to the in-memory list
-            items[itemID] = {
-                unique_id = uniqueID,
-                data = data
-            }
-
-            -- Update the inventory items in the database
-            ax.database:Update("ax_inventories", {
-                items = util.TableToJSON(items)
-            }, "id = " .. inventoryID, function(success)
-                if ( success == false ) then -- success if successful returns nil, !var returns true for nil as well :/
-                    ax.util:PrintError("Failed to update inventory items.")
-                    return false
-                end
-
-                if ( callback ) then
-                    callback(itemID)
-                end
-
-                return true
-            end)
-        end)
+        return true
     end)
 end
 
@@ -101,57 +100,48 @@ function ax.inventory:RemoveItem(inventoryID, itemID, callback)
         return false
     end
 
-    ax.database:Select("ax_inventories", nil, "id = " .. inventoryID, function(result)
-        if ( !result or !result[1] ) then
-            ax.util:PrintError("No inventory found with ID " .. inventoryID)
+    -- Get inventory instance
+    local inventory = self:Get(inventoryID)
+    if ( !inventory ) then
+        ax.util:PrintError("Inventory with ID " .. inventoryID .. " not found in memory.")
+        return false
+    end
 
-            if ( callback ) then
-                callback(false)
-            end
-
+    -- Remove from database
+    ax.database:Delete("ax_items", {
+        id = itemID
+    }, function(success)
+        if ( success == false ) then
+            ax.util:PrintError("Failed to delete item from database.")
+            if ( callback ) then callback(false) end
             return false
         end
 
-        local items = util.JSONToTable(result[1].items) or {}
-        if ( !items or !items[itemID] ) then
-            ax.util:PrintError("Item with ID " .. itemID .. " not found in inventory.")
+        ax.util:PrintSuccess("Item with ID " .. itemID .. " deleted from database successfully.")
 
-            if ( callback ) then
-                callback(false)
+        -- Remove from inventory's item list
+        table.RemoveByValue(inventory.Items, itemID)
+
+        -- Remove from memory
+        ax.item.instances[itemID] = nil
+
+        -- Network to client
+        local character = inventory:GetCharacter()
+        if ( character ) then
+            local client = character:GetPlayer()
+            if ( IsValid(client) ) then
+                net.Start("ax.inventory.item.remove")
+                    net.WriteUInt(inventoryID, 16)
+                    net.WriteUInt(itemID, 16)
+                net.Send(client)
             end
-
-            return false
         end
 
-        items[itemID] = nil -- Remove the item from the list
+        if ( callback ) then
+            callback(true)
+        end
 
-        ax.database:Update("ax_inventories", {
-            items = util.TableToJSON(items),
-        }, "id = " .. inventoryID, function(success)
-            if ( success == false ) then
-                ax.util:PrintError("Failed to update inventory items after removal.")
-                return false
-            end
-
-            ax.util:PrintSuccess("Item removed from inventory successfully.")
-
-            if ( callback ) then
-                callback(true)
-            end
-
-            return true
-        end)
-
-        ax.database:Delete("ax_items", {
-            id = itemID
-        }, function(success)
-            if ( success == false ) then
-                ax.util:PrintError("Failed to delete item from database.")
-                return false
-            end
-
-            ax.util:PrintSuccess("Item with ID " .. itemID .. " deleted from database successfully.")
-        end)
+        return true
     end)
 end
 
@@ -164,52 +154,24 @@ function ax.inventory:GetItems(inventoryID, callback)
         return false
     end
 
-    -- ax.database:Select("ax_items", nil, "inventory_id = " .. inventoryID, function(result)
-    --     if ( !result or !result[1] ) then
-    --         ax.util:PrintError("No items found in inventory.")
---
-    --         if ( callback ) then
-    --             callback({})
-    --         end
---
-    --         return false
-    --     end
---
-    --     PrintTable(result)
---
-    --     for i = 1, #result do
-    --         local item = result[i]
-    --         item.data = util.JSONToTable(item.data) or {}
-    --         itemList[i] = item
-    --     end
-    --     ax.util:PrintSuccess("Items retrieved from inventory successfully.")
---
-    --     if ( callback ) then
-    --         callback(itemList)
-    --     end
---
-    --     return true
-    -- end)
-
-    ax.database:Select("ax_inventories", nil, "id = " .. inventoryID, function(result)
-        if ( !result or !result[1] ) then
-            ax.util:PrintError("No inventory found with ID " .. inventoryID)
-
-            if ( callback ) then
-                callback({})
-            end
-
+    -- Query items directly from ax_items table
+    ax.database:Select("ax_items", nil, "inventory_id = " .. inventoryID, function(result)
+        if ( !result ) then
+            ax.util:PrintError("Database query failed for inventory items.")
+            if ( callback ) then callback({}) end
             return false
         end
 
-        local items = util.JSONToTable(result[1].items) or {}
-        if ( !istable(items) ) then
-            items = {}
-        end
-
-        for itemID, itemData in pairs(items) do
-            itemData.data = util.JSONToTable(itemData.data) or {}
-            items[itemID] = itemData
+        local items = {}
+        for i = 1, #result do
+            local item = result[i]
+            item.data = util.JSONToTable(item.data) or {}
+            items[tonumber(item.id)] = {
+                id = tonumber(item.id),
+                unique_id = item.unique_id,
+                data = item.data,
+                inventory_id = tonumber(item.inventory_id)
+            }
         end
 
         ax.util:PrintSuccess("Items retrieved from inventory successfully.")
@@ -231,52 +193,44 @@ function ax.inventory:ClearInventory(inventoryID, callback)
         return false
     end
 
-    -- ax.database:Delete("ax_items", {
-    --     inventory_id = inventoryID
-    -- }, function(success)
-    --     if ( !success ) then
-    --         ax.util:PrintError("Failed to clear inventory.")
---
-    --         return false
-    --     end
---
-    --     ax.util:PrintSuccess("Inventory cleared successfully.")
---
-    --     if ( callback ) then
-    --         callback(true)
-    --     end
---
-    --     return true
-    -- end)
-
-    ax.database:Select("ax_inventories", nil, "id = " .. inventoryID, function(result)
-        if ( !result or !result[1] ) then
-            ax.util:PrintError("No inventory found with ID " .. inventoryID)
-
-            if ( callback ) then
-                callback(false)
-            end
-
+    -- Delete all items from this inventory
+    ax.database:Delete("ax_items", {
+        inventory_id = inventoryID
+    }, function(success)
+        if ( !success ) then
+            ax.util:PrintError("Failed to clear inventory items.")
+            if ( callback ) then callback(false) end
             return false
         end
 
-        local items = {}
-        ax.database:Update("ax_inventories", {
-            items = util.TableToJSON(items)
-        }, "id = " .. inventoryID, function(success)
-            if ( !success ) then
-                ax.util:PrintError("Failed to clear inventory items.")
-                return false
+        ax.util:PrintSuccess("Inventory cleared successfully.")
+
+        -- Clear from memory
+        local inventory = self:Get(inventoryID)
+        if ( inventory ) then
+            -- Remove all items from memory
+            for _, itemID in ipairs(inventory.Items) do
+                ax.item.instances[itemID] = nil
             end
+            inventory.Items = {}
 
-            ax.util:PrintSuccess("Inventory cleared successfully.")
-
-            if ( callback ) then
-                callback(true)
+            -- Network to client
+            local character = inventory:GetCharacter()
+            if ( character ) then
+                local client = character:GetPlayer()
+                if ( IsValid(client) ) then
+                    net.Start("ax.inventory.refresh")
+                        net.WriteUInt(inventoryID, 16)
+                    net.Send(client)
+                end
             end
+        end
 
-            return true
-        end)
+        if ( callback ) then
+            callback(true)
+        end
+
+        return true
     end)
 end
 
@@ -299,21 +253,19 @@ function ax.inventory:CreateInventory(characterID, maxWeight, data, callback)
         data = {}
     end
 
+    -- Create inventory without items column
     ax.database:Insert("ax_inventories", {
         max_weight = maxWeight,
-        items = util.TableToJSON({}), -- Start with an empty item list
         data = util.TableToJSON(data)
     }, function(inventoryID)
         if ( !inventoryID ) then
             ax.util:PrintError("Failed to create inventory. Inventory ID is nil.")
-
             return false
         end
 
         local inventoryData = {
             id = inventoryID,
             max_weight = maxWeight,
-            items = {},
             data = data
         }
         local inventory = ax.inventory:Create(inventoryData)
@@ -348,15 +300,15 @@ function ax.inventory:LoadInventory(characterID)
         end
 
         local output = result[1]
-
         local inventoryID = output.inventory_id
         if ( !inventoryID ) then
             ax.util:PrintError("No inventory found for character ID " .. characterID)
             return false
         end
 
-        ax.util:PrintSuccess("Loading inventories for character ID " .. characterID)
+        ax.util:PrintSuccess("Loading inventory for character ID " .. characterID)
 
+        -- Load inventory data
         ax.database:Select("ax_inventories", nil, "id = " .. inventoryID, function(invResult)
             if ( !invResult or !invResult[1] ) then
                 ax.util:PrintError("No inventory found with ID " .. inventoryID)
@@ -365,20 +317,39 @@ function ax.inventory:LoadInventory(characterID)
 
             local inventory = ax.inventory:Create(invResult[1])
 
-            local client = ax.character:GetPlayerByCharacter(characterID)
-            if ( IsValid(client) ) then
-                net.Start("ax.inventory.load")
-                    net.WriteUInt(characterID, 32)
-                    net.WriteTable(invResult[1])
-                net.Send(client)
-            end
+            -- Load items from ax_items table
+            ax.database:Select("ax_items", nil, "inventory_id = " .. inventoryID, function(itemsResult)
+                if ( itemsResult ) then
+                    for _, itemData in ipairs(itemsResult) do
+                        local itemID = tonumber(itemData.id)
+                        local uniqueID = itemData.unique_id
+                        local data = util.JSONToTable(itemData.data) or {}
 
-            local character = ax.character:Get(characterID)
-            if ( character ) then
-                character:SetInventory(inventory)
-            end
+                        -- Create item instance
+                        local item = ax.item:CreateObject(itemID, uniqueID, data)
+                        if ( item ) then
+                            item:SetInventoryID(inventoryID)
+                            ax.item.instances[itemID] = item
+                            table.insert(inventory.Items, itemID)
+                        end
+                    end
+                end
 
-            ax.util:PrintSuccess("Loaded inventory with ID " .. inventoryID .. " for character ID " .. characterID)
+                local client = ax.character:GetPlayerByCharacter(characterID)
+                if ( IsValid(client) ) then
+                    net.Start("ax.inventory.load")
+                        net.WriteUInt(characterID, 32)
+                        net.WriteTable(invResult[1])
+                    net.Send(client)
+                end
+
+                local character = ax.character:Get(characterID)
+                if ( character ) then
+                    character:SetInventory(inventory)
+                end
+
+                ax.util:PrintSuccess("Loaded inventory with ID " .. inventoryID .. " for character ID " .. characterID)
+            end)
         end)
     end)
 end
@@ -418,12 +389,19 @@ function ax.inventory:DeleteInventory(inventoryID, callback)
 end
 
 --[[
-    Testing Commands
-    These commands are for testing purposes only and should not be used in production.
+    Developer Commands
+    These commands are for development and testing purposes only.
+    They should only be accessible to administrators.
 ]]
 
-concommand.Add("ax_inventory_create", function(ply, cmd, args)
-    if ( !ply:IsAdmin() ) then
+concommand.Add("ax_inventory_create", function(client, cmd, args)
+    if ( !client:IsSuperAdmin() ) then
+        client:Notify("You must be an administrator to use this command.")
+        return
+    end
+
+    if ( #args < 2 ) then
+        client:Notify("Usage: ax_inventory_create <character_id> <max_weight> [data_json]")
         return
     end
 
@@ -433,9 +411,425 @@ concommand.Add("ax_inventory_create", function(ply, cmd, args)
 
     ax.inventory:CreateInventory(characterID, maxWeight, data, function(inventory)
         if ( inventory ) then
-            ply:Notify("Created inventory with ID " .. inventory:GetID() .. " for character ID " .. characterID)
+            client:Notify("Created inventory with ID " .. inventory:GetID() .. " for character ID " .. characterID)
         else
-            ply:Notify("Failed to create inventory.")
+            client:Notify("Failed to create inventory.")
+        end
+    end)
+end)
+
+-- Command to spawn items in the world
+concommand.Add("ax_item_spawn", function(ply, cmd, args)
+    if ( !ply:IsSuperAdmin() ) then
+        ply:Notify("You must be an administrator to use this command.")
+        return
+    end
+
+    local uniqueID = args[1]
+    if ( !uniqueID ) then
+        ply:Notify("Usage: ax_item_spawn <unique_id> [amount] [data_json]")
+        return
+    end
+
+    local itemDef = ax.item:Get(uniqueID)
+    if ( !itemDef ) then
+        ply:Notify("Item with unique ID '" .. uniqueID .. "' does not exist.")
+        return
+    end
+
+    local amount = tonumber(args[2]) or 1
+    local data = {}
+
+    if ( args[3] ) then
+        data = util.JSONToTable(args[3]) or {}
+    end
+
+    local pos = ply:GetEyeTrace().HitPos + Vector(0, 0, 10)
+    local ang = Angle(0, math.random(0, 360), 0)
+
+    for i = 1, amount do
+        local spawnPos = pos + Vector(math.random(-50, 50), math.random(-50, 50), i * 5)
+
+        ax.item:Spawn(nil, uniqueID, spawnPos, ang, function(entity)
+            if ( IsValid(entity) ) then
+                -- Set custom data if provided
+                if ( istable(data) and table.Count(data) > 0 ) then
+                    entity:SetData(data)
+                end
+            end
+        end, data)
+    end
+
+    ply:Notify("Spawned " .. amount .. " " .. itemDef:GetName() .. "(s) in the world.")
+end, function(cmd, argStr, args)
+    local items = {}
+
+    for uniqueID, _ in pairs(ax.item.stored) do
+        local itemDef = ax.item:Get(uniqueID)
+        if ( !itemDef or itemDef.IsBase == true ) then continue end
+
+        table.insert(items, "ax_item_spawn " .. uniqueID)
+    end
+
+    return items
+end)
+
+-- Command to give items to inventories
+concommand.Add("ax_item_give", function(ply, cmd, args)
+    if ( !ply:IsSuperAdmin() ) then
+        ply:Notify("You must be an administrator to use this command.")
+        return
+    end
+
+    local uniqueID = args[1]
+    local target = args[2]
+    local amount = tonumber(args[3]) or 1
+    local data = {}
+
+    if ( !uniqueID ) then
+        ply:Notify("Usage: ax_item_give <unique_id> [target_name] [amount] [data_json]")
+        return
+    end
+
+    local itemDef = ax.item:Get(uniqueID)
+    if ( !itemDef ) then
+        ply:Notify("Item with unique ID '" .. uniqueID .. "' does not exist.")
+        return
+    end
+
+    if ( args[4] ) then
+        data = util.JSONToTable(args[4]) or {}
+    end
+
+    -- Find target player
+    local targetPlayer = ply
+    if ( target ) then
+        local found = false
+        for _, client in player.Iterator() do
+            if ( string.find(string.lower(client:SteamName()), string.lower(target)) ) then
+                targetPlayer = client
+                found = true
+                break
+            end
+        end
+
+        if ( !found ) then
+            ply:Notify("Player '" .. target .. "' not found.")
+            return
+        end
+    end
+
+    local character = targetPlayer:GetCharacter()
+    if ( !character ) then
+        ply:Notify(targetPlayer:SteamName() .. " does not have a character loaded.")
+        return
+    end
+
+    local inventory = character:GetInventory()
+    if ( !inventory ) then
+        ply:Notify(targetPlayer:SteamName() .. " does not have an inventory.")
+        return
+    end
+
+    -- Check if inventory can fit the items
+    if ( !inventory:CanFitItem(uniqueID, amount) ) then
+        ply:Notify("Inventory cannot fit " .. amount .. " " .. itemDef:GetName() .. "(s). Not enough weight capacity.")
+        return
+    end
+
+    -- Add items to inventory
+    local itemsAdded = 0
+    for i = 1, amount do
+        ax.inventory:AddItem(inventory:GetID(), uniqueID, data, function(result)
+            if ( result ) then
+                itemsAdded = itemsAdded + 1
+
+                if ( itemsAdded == amount ) then
+                    ply:Notify("Gave " .. amount .. " " .. itemDef:GetName() .. "(s) to " .. targetPlayer:SteamName())
+                    if ( targetPlayer != ply ) then
+                        targetPlayer:Notify("You received " .. amount .. " " .. itemDef:GetName() .. "(s)")
+                    end
+                end
+            else
+                ply:Notify("Failed to add item to inventory.")
+            end
+        end)
+    end
+end, function(cmd, argStr, args)
+    local items = {}
+
+    for uniqueID, _ in pairs(ax.item.stored) do
+        local itemDef = ax.item:Get(uniqueID)
+        if ( !itemDef or itemDef.IsBase == true ) then continue end
+
+        table.insert(items, "ax_item_give " .. uniqueID)
+    end
+
+    return items
+end)
+
+-- Command to remove items from inventories
+concommand.Add("ax_item_remove", function(ply, cmd, args)
+    if ( !ply:IsSuperAdmin() ) then
+        ply:Notify("You must be an administrator to use this command.")
+        return
+    end
+
+    local uniqueID = args[1]
+    local target = args[2]
+    local amount = tonumber(args[3]) or 1
+
+    if ( !uniqueID ) then
+        ply:Notify("Usage: ax_item_remove <unique_id> [target_name] [amount]")
+        return
+    end
+
+    local itemDef = ax.item:Get(uniqueID)
+    if ( !itemDef ) then
+        ply:Notify("Item with unique ID '" .. uniqueID .. "' does not exist.")
+        return
+    end
+
+    -- Find target player
+    local targetPlayer = ply
+    if ( target ) then
+        local found = false
+        for _, client in player.Iterator() do
+            if ( string.find(string.lower(client:SteamName()), string.lower(target)) ) then
+                targetPlayer = client
+                found = true
+                break
+            end
+        end
+
+        if ( !found ) then
+            ply:Notify("Player '" .. target .. "' not found.")
+            return
+        end
+    end
+
+    local character = targetPlayer:GetCharacter()
+    if ( !character ) then
+        ply:Notify(targetPlayer:SteamName() .. " does not have a character loaded.")
+        return
+    end
+
+    local inventory = character:GetInventory()
+    if ( !inventory ) then
+        ply:Notify(targetPlayer:SteamName() .. " does not have an inventory.")
+        return
+    end
+
+    -- Find items to remove
+    local itemsToRemove = {}
+    for _, itemID in ipairs(inventory.Items) do
+        local item = ax.item:Get(itemID)
+        if ( item and item:GetUniqueID() == uniqueID ) then
+            table.insert(itemsToRemove, itemID)
+            if ( #itemsToRemove >= amount ) then
+                break
+            end
+        end
+    end
+
+    if ( #itemsToRemove == 0 ) then
+        ply:Notify(targetPlayer:SteamName() .. " does not have any " .. itemDef:GetName() .. "(s) in their inventory.")
+        return
+    end
+
+    local itemsRemoved = 0
+    for _, itemID in ipairs(itemsToRemove) do
+        ax.inventory:RemoveItem(inventory:GetID(), itemID, function(success)
+            if ( success ) then
+                itemsRemoved = itemsRemoved + 1
+
+                -- Remove from memory
+                table.RemoveByValue(inventory.Items, itemID)
+                ax.item.instances[itemID] = nil
+
+                -- Network to client
+                net.Start("ax.inventory.item.remove")
+                    net.WriteUInt(inventory:GetID(), 16)
+                    net.WriteUInt(itemID, 16)
+                net.Send(targetPlayer)
+
+                if ( itemsRemoved == #itemsToRemove ) then
+                    ply:Notify("Removed " .. itemsRemoved .. " " .. itemDef:GetName() .. "(s) from " .. targetPlayer:SteamName())
+                    if ( targetPlayer != ply ) then
+                        targetPlayer:Notify("You lost " .. itemsRemoved .. " " .. itemDef:GetName() .. "(s)")
+                    end
+                end
+            else
+                ply:Notify("Failed to remove item from inventory.")
+            end
+        end)
+    end
+end)
+
+-- Command to list all available items
+concommand.Add("ax_item_list", function(ply, cmd, args)
+    if ( !ply:IsSuperAdmin() ) then
+        ply:Notify("You must be an administrator to use this command.")
+        return
+    end
+
+    local filter = args[1] or ""
+    local items = {}
+
+    for uniqueID, itemDef in pairs(ax.item.stored) do
+        if ( filter == "" or string.find(string.lower(itemDef:GetName()), string.lower(filter)) or string.find(string.lower(uniqueID), string.lower(filter)) ) then
+            table.insert(items, {
+                id = uniqueID,
+                name = itemDef:GetName(),
+                weight = itemDef:GetWeight(),
+                category = itemDef:GetCategory()
+            })
+        end
+    end
+
+    table.sort(items, function(a, b) return a.name < b.name end)
+
+    if ( #items == 0 ) then
+        ply:Notify("No items found" .. (filter != "" and " matching '" .. filter .. "'" or "") .. ".")
+        return
+    end
+
+    print("=== Available Items " .. (filter != "" and "(filtered by '" .. filter .. "')" or "") .. " ===")
+    for _, item in ipairs(items) do
+        print(string.format("%-20s | %-30s | %3.1fkg | %s", item.id, item.name, item.weight, item.category))
+    end
+    print("=== Total: " .. #items .. " items ===")
+
+    ply:Notify("Listed " .. #items .. " items in console.")
+end)
+
+-- Command to inspect player's inventory
+concommand.Add("ax_inventory_inspect", function(ply, cmd, args)
+    if ( !ply:IsSuperAdmin() ) then
+        ply:Notify("You must be an administrator to use this command.")
+        return
+    end
+
+    local target = args[1]
+    local targetPlayer = ply
+
+    if ( target ) then
+        local found = false
+        for _, client in player.Iterator() do
+            if ( string.find(string.lower(client:SteamName()), string.lower(target)) ) then
+                targetPlayer = client
+                found = true
+                break
+            end
+        end
+
+        if ( !found ) then
+            ply:Notify("Player '" .. target .. "' not found.")
+            return
+        end
+    end
+
+    local character = targetPlayer:GetCharacter()
+    if ( !character ) then
+        ply:Notify(targetPlayer:SteamName() .. " does not have a character loaded.")
+        return
+    end
+
+    local inventory = character:GetInventory()
+    if ( !inventory ) then
+        ply:Notify(targetPlayer:SteamName() .. " does not have an inventory.")
+        return
+    end
+
+    local items = {}
+    for _, itemID in ipairs(inventory.Items) do
+        local item = ax.item:Get(itemID)
+        if ( item ) then
+            local uniqueID = item:GetUniqueID()
+            if ( !items[uniqueID] ) then
+                items[uniqueID] = {
+                    name = item:GetName(),
+                    count = 0,
+                    weight = item:GetWeight()
+                }
+            end
+            items[uniqueID].count = items[uniqueID].count + 1
+        end
+    end
+
+    print("=== " .. targetPlayer:SteamName() .. "'s Inventory ===")
+    print(string.format("Weight: %.1f/%.1f kg", inventory:GetWeight(), inventory:GetMaxWeight()))
+    print("Items:")
+
+    local totalItems = 0
+    for uniqueID, itemData in pairs(items) do
+        print(string.format("  %-20s | %dx | %.1fkg each", itemData.name, itemData.count, itemData.weight))
+        totalItems = totalItems + itemData.count
+    end
+
+    if ( totalItems == 0 ) then
+        print("  (Empty)")
+    end
+
+    print("=== Total: " .. totalItems .. " items ===")
+
+    ply:Notify("Inspected " .. targetPlayer:SteamName() .. "'s inventory in console.")
+end)
+
+-- Command to clear inventory
+concommand.Add("ax_inventory_clear", function(ply, cmd, args)
+    if ( !ply:IsSuperAdmin() ) then
+        ply:Notify("You must be an administrator to use this command.")
+        return
+    end
+
+    local target = args[1]
+    local targetPlayer = ply
+
+    if ( target ) then
+        local found = false
+        for _, client in player.Iterator() do
+            if ( string.find(string.lower(client:SteamName()), string.lower(target)) ) then
+                targetPlayer = client
+                found = true
+                break
+            end
+        end
+
+        if ( !found ) then
+            ply:Notify("Player '" .. target .. "' not found.")
+            return
+        end
+    end
+
+    local character = targetPlayer:GetCharacter()
+    if ( !character ) then
+        ply:Notify(targetPlayer:SteamName() .. " does not have a character loaded.")
+        return
+    end
+
+    local inventory = character:GetInventory()
+    if ( !inventory ) then
+        ply:Notify(targetPlayer:SteamName() .. " does not have an inventory.")
+        return
+    end
+
+    ax.inventory:ClearInventory(inventory:GetID(), function(success)
+        if ( success ) then
+            -- Clear memory
+            inventory.Items = {}
+
+            -- Network to client
+            net.Start("ax.inventory.refresh")
+                net.WriteUInt(inventory:GetID(), 16)
+            net.Send(targetPlayer)
+
+            ply:Notify("Cleared " .. targetPlayer:SteamName() .. "'s inventory.")
+            if ( targetPlayer != ply ) then
+                targetPlayer:Notify("Your inventory has been cleared by an administrator.")
+            end
+        else
+            ply:Notify("Failed to clear inventory.")
         end
     end)
 end)

@@ -40,11 +40,16 @@ end
 
 function INVENTORY:GetWeight()
     local weight = 0
-    for _, item in ipairs(self:GetItems()) do
-        if ( item ) then
-            weight = weight + item:GetWeight()
+    for _, itemID in ipairs(self:GetItems()) do
+        if ( isnumber(itemID) ) then
+            local item = ax.item:Get(itemID)
+            if ( item ) then
+                weight = weight + item:GetWeight()
+            else
+                ax.util:PrintWarning("Invalid item ID found in inventory " .. self:GetID() .. ": " .. tostring(itemID))
+            end
         else
-            ax.util:PrintWarning("Invalid item found in inventory " .. self:GetID() .. ": " .. tostring(item))
+            ax.util:PrintWarning("Non-numeric item ID found in inventory " .. self:GetID() .. ": " .. tostring(itemID))
         end
     end
 
@@ -130,6 +135,61 @@ if ( SERVER ) then
             return true
         end)
     end
+end
+
+function INVENTORY:HasItem(itemID)
+    if ( ax.util:IsItem(itemID) ) then
+        itemID = itemID:GetID()
+    end
+
+    if ( !isnumber(itemID) ) then
+        return false
+    end
+
+    for _, id in ipairs(self.Items) do
+        if ( id == itemID ) then
+            return true
+        end
+    end
+
+    return false
+end
+
+function INVENTORY:GetItemsByUniqueID(uniqueID)
+    local items = {}
+
+    for _, itemID in ipairs(self.Items) do
+        local item = ax.item:Get(itemID)
+        if ( item and item:GetUniqueID() == uniqueID ) then
+            table.insert(items, item)
+        end
+    end
+
+    return items
+end
+
+function INVENTORY:GetItemCount(uniqueID)
+    local count = 0
+
+    for _, itemID in ipairs(self.Items) do
+        local item = ax.item:Get(itemID)
+        if ( item and item:GetUniqueID() == uniqueID ) then
+            count = count + 1
+        end
+    end
+
+    return count
+end
+
+function INVENTORY:CanFitItem(uniqueID, amount)
+    amount = amount or 1
+    local itemDef = ax.item:Get(uniqueID)
+    if ( !itemDef ) then
+        return false
+    end
+
+    local totalWeight = itemDef:GetWeight() * amount
+    return (self:GetWeight() + totalWeight) <= self:GetMaxWeight()
 end
 
 ax.inventory.meta = INVENTORY

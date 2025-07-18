@@ -61,7 +61,7 @@ function ax.character:Create(client, query, callback)
             net.WriteTable(character)
         net.Send(client)
 
-        ax.inventory:CreateInventory(characterID)
+        ax.inventory:CreateInventory(characterID, ax.config:Get("inventory.max.weight", 20))
 
         ax.character:Sync(client, characterID)
 

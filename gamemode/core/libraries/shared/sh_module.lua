@@ -85,6 +85,12 @@ function ax.module:LoadFolder(path)
     local fileCount = #files
     for i = 1, fileCount do
         local v = files[i]
+        local extension = string.GetExtensionFromFilename(v)
+        if ( extension != "lua" ) then
+            ax.util:PrintWarning("Module file " .. v .. " is not a Lua file, skipping.")
+            continue
+        end
+
         local ModuleUniqueID = string.StripExtension(v)
         if ( string.sub(v, 1, 3) == "cl_" or string.sub(v, 1, 3) == "sv_" or string.sub(v, 1, 3) == "sh_" ) then
             ModuleUniqueID = string.sub(v, 4)

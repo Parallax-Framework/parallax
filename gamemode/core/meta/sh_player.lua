@@ -251,13 +251,34 @@ function PLAYER:GetInventory(name)
     return character:GetInventory(name)
 end
 
---- Gets a specific inventory by ID.
--- @realm shared
--- @tparam number id The ID of the inventory.
--- @treturn table|nil The inventory if found, or nil.
-function PLAYER:GetInventoryByID(id)
-    local character = self:GetCharacter()
-    if ( !character ) then return end
+--- Gets an inventory by its ID if the player has access to it
+-- @param number inventoryID The ID of the inventory to retrieve
+-- @return table|nil The inventory instance if found and accessible, nil otherwise
+function PLAYER:GetInventoryByID(inventoryID)
+    if ( !isnumber(inventoryID) or inventoryID <= 0 ) then
+        return nil
+    end
 
-    return character:GetInventoryByID(id)
+    local inventory = ax.inventory:Get(inventoryID)
+    if ( !inventory ) then
+        return nil
+    end
+
+    -- Check if this player has access to this inventory
+    local character = self:GetCharacter()
+    if ( !character ) then
+        return nil
+    end
+
+    local playerInventory = character:GetInventory()
+    if ( !playerInventory ) then
+        return nil
+    end
+
+    -- Only return inventory if it belongs to this player's character
+    if ( playerInventory:GetID() == inventoryID ) then
+        return inventory
+    end
+
+    return nil
 end

@@ -29,7 +29,7 @@ This roadmap outlines completed, in-progress, and planned features for the Paral
 
 ## Inventory System
 
-- [x] Inventory persistence backend
+- [ ] Inventory persistence backend
 - [ ] Weight-based capacity and movement impact
 - [ ] UI item dragging and dropzones
 - [ ] Stacking logic and merge rules
@@ -38,10 +38,10 @@ This roadmap outlines completed, in-progress, and planned features for the Paral
 
 ## Item System
 
-- [x] Basic item registration
-- [x] Networked item data sync
-- [x] Item pickup/drop/use logic
-- [x] Item categorization support
+- [ ] Basic item registration
+- [ ] Networked item data sync
+- [ ] Item pickup/drop/use logic
+- [ ] Item categorization support
 
 ---
 

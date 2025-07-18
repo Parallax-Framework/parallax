@@ -184,14 +184,64 @@ function ITEM:SetCategory(category)
     return true
 end
 
-function ITEM:SetData(data)
-    if ( !istable(data) ) then
-        ax.util:PrintError("Attempted to set an item's data without a valid table!")
-        return false, "Attempted to set an item's data without a valid table!"
+function ITEM:SetData(key, value)
+    if ( !isstring(key) or key == "" ) then
+        ax.util:PrintError("Invalid key provided to ITEM:SetData")
+        return false
     end
-
-    self.Data = data
+    
+    if ( !istable(self.Data) ) then
+        self.Data = {}
+    end
+    
+    self.Data[key] = value
+    
+    -- On client, just update locally
+    if ( CLIENT ) then
+        return true
+    end
+    
+    -- On server, update database and network
+    if ( SERVER ) then
+        ax.database:Update("ax_items", {
+            data = util.TableToJSON(self.Data)
+        }, "id = " .. self.ID)
+        
+        -- Network to clients
+        local inventory = ax.inventory:Get(self.InventoryID)
+        if ( inventory ) then
+            local character = inventory:GetCharacter()
+            if ( character ) then
+                local client = character:GetPlayer()
+                if ( IsValid(client) ) then
+                    net.Start("ax.item.data")
+                        net.WriteUInt(self.ID, 16)
+                        net.WriteString(key)
+                        net.WriteType(value)
+                    net.Send(client)
+                end
+            end
+        end
+    end
+    
     return true
+end
+
+function ITEM:GetData(key, default)
+    if ( !istable(self.Data) ) then
+        return default
+    end
+    
+    if ( !isstring(key) or key == "" ) then
+        return self.Data
+    end
+    
+    local value = self.Data[key]
+    if ( value == nil ) then
+        return default
+    end
+    
+    return value
 end
 
 function ITEM:SetEntity(entity)

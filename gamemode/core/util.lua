@@ -574,7 +574,7 @@ end
 function ax.util:SafeParseTable(input)
     if ( istable(input) ) then
         return input
-    elseif ( isstring(input) and input != "" and input != "[]" ) then
+    elseif ( isstring(input) ) then
         return util.JSONToTable(input) or {}
     end
 

@@ -20,7 +20,7 @@ end
 --- Creates a new inventory instance accepting data from the database.
 -- @param table data The data to create the inventory from
 -- @return table The created inventory object
--- @usage local myInventory = ax.inventory:Create({ id = 1, items = '[{"id": 1, "name": "Item1"}]', data = '{"key": "value"}', max_weight = 100 })
+-- @usage local myInventory = ax.inventory:Create({ id = 1, data = '{"key": "value"}', max_weight = 100 })
 function ax.inventory:Create(data)
     if ( !data or !istable(data) ) then
         ax.util:PrintError("Invalid data provided to ax.inventory:Create()")
@@ -40,7 +40,7 @@ function ax.inventory:Create(data)
 
     local instance = self:Instance()
     instance.ID = invID
-    instance.Items = ax.util:SafeParseTable(data.items)
+    instance.Items = {} -- Initialize as empty array, items will be loaded separately
     instance.Data = ax.util:SafeParseTable(data.data)
     instance.MaxWeight = tonumber(data.max_weight) or 0
 
@@ -81,10 +81,39 @@ function ax.inventory:GetByCharacterID(characterID)
     end
 
     for _, inv in pairs(self.instances) do
-        if ( inv.ID == ax.character.stored[characterID]:GetInventory():GetID() ) then
+        local character = inv:GetCharacter()
+        if ( character and character:GetID() == characterID ) then
             return inv
         end
     end
 
     return nil
+end
+
+--- Creates a new inventory object from data
+-- @param table data The inventory data
+-- @return table|false The created inventory object or false on failure
+function ax.inventory:CreateObject(data)
+    if ( !istable(data) ) then
+        ax.util:PrintError("Invalid data provided to ax.inventory:CreateObject")
+        return false
+    end
+    
+    local instance = self:Instance()
+    
+    -- Set basic properties
+    instance.ID = tonumber(data.id) or tonumber(data.ID) or 0
+    instance.MaxWeight = tonumber(data.max_weight) or tonumber(data.MaxWeight) or 0
+    instance.Items = {} -- Initialize as empty array
+    
+    -- Handle data based on format
+    if ( istable(data.data) ) then
+        instance.Data = data.data
+    elseif ( isstring(data.data) ) then
+        instance.Data = util.JSONToTable(data.data) or {}
+    else
+        instance.Data = {}
+    end
+    
+    return instance
 end

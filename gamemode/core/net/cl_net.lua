@@ -276,9 +276,23 @@ net.Receive("ax.inventory.item.add", function(len)
     local itemID = net.ReadUInt(16)
     local uniqueID = net.ReadString()
     local data = net.ReadTable()
-    local item = ax.item:Add(itemID, inventoryID, uniqueID, data)
-    if ( !item ) then return end
-
+    
+    -- Create or get existing item
+    local item = ax.item:Get(itemID)
+    if ( !item ) then
+        item = ax.item:CreateObject(itemID, uniqueID, data)
+        if ( !item ) then
+            ax.util:PrintError("Failed to create item object for inventory add")
+            return
+        end
+        ax.item.instances[itemID] = item
+    end
+    
+    -- Update item data
+    item:SetInventoryID(inventoryID)
+    item.Data = data
+    
+    -- Add to inventory
     local inventory = ax.inventory:Get(inventoryID)
     if ( inventory ) then
         local items = inventory:GetItems()
@@ -294,6 +308,12 @@ net.Receive("ax.inventory.item.add", function(len)
             table.insert(items, itemID)
         end
     end
+
+    -- Refresh inventory UI if open
+    local panel = ax.gui.inventory
+    if ( IsValid(panel) ) then
+        panel:SetInventory(inventoryID)
+    end
 end)
 
 net.Receive("ax.inventory.item.remove", function(len)
@@ -303,21 +323,18 @@ net.Receive("ax.inventory.item.remove", function(len)
     if ( !inventory ) then return end
 
     local items = inventory:GetItems()
-    local found = false
-    for i = 1, #items do
-        if ( items[i] == itemID ) then
-            found = true
-            break
-        end
-    end
-
-    if ( found ) then
-        table.RemoveByValue(items, itemID)
-    end
+    table.RemoveByValue(items, itemID)
 
     local item = ax.item:Get(itemID)
     if ( item ) then
-        item:SetInventory(0)
+        item:SetInventoryID(0)
+        -- Don't remove from instances as it might be a world item now
+    end
+
+    -- Refresh inventory UI if open
+    local panel = ax.gui.inventory
+    if ( IsValid(panel) ) then
+        panel:SetInventory(inventoryID)
     end
 end)
 
@@ -372,7 +389,40 @@ net.Receive("ax.item.add", function(len)
     local inventoryID = net.ReadUInt(16)
     local uniqueID = net.ReadString()
     local data = net.ReadTable()
-    ax.item:Add(itemID, inventoryID, uniqueID, data)
+    
+    -- Create item instance on client
+    local item = ax.item:CreateObject(itemID, uniqueID, data)
+    if ( !item ) then
+        ax.util:PrintError("Failed to create item object for ID " .. itemID)
+        return
+    end
+    
+    item:SetInventoryID(inventoryID)
+    ax.item.instances[itemID] = item
+    
+    -- Add to inventory if it exists
+    if ( inventoryID > 0 ) then
+        local inventory = ax.inventory:Get(inventoryID)
+        if ( inventory ) then
+            local items = inventory:GetItems()
+            local found = false
+            for i = 1, #items do
+                if ( items[i] == itemID ) then
+                    found = true
+                    break
+                end
+            end
+            
+            if ( !found ) then
+                table.insert(items, itemID)
+            end
+        end
+    end
+    
+    -- Call item cache hook
+    if ( item.OnCache ) then
+        item:OnCache()
+    end
 end)
 
 net.Receive("ax.item.cache", function(len)
@@ -380,9 +430,10 @@ net.Receive("ax.item.cache", function(len)
     if ( !istable(data) ) then return end
 
     for k, v in pairs(data) do
-        local item = ax.item:CreateObject(v)
+        local item = ax.item:CreateObject(v.ID, v.UniqueID, v.Data)
         if ( item ) then
-            ax.item.instances[item.ID] = item
+            item:SetInventoryID(v.InventoryID or 0)
+            ax.item.instances[v.ID] = item
 
             if ( item.OnCache ) then
                 item:OnCache()
@@ -398,7 +449,9 @@ net.Receive("ax.item.data", function(len)
     local item = ax.item:Get(itemID)
     if ( !item ) then return end
 
-    item:SetData(key, value)
+    local data = item:GetData() or {}
+    data[key] = value
+    item.Data = data
 end)
 
 net.Receive("ax.item.entity", function(len)
@@ -407,9 +460,21 @@ net.Receive("ax.item.entity", function(len)
     if ( !IsValid(entity) ) then return end
 
     local item = ax.item:Get(itemID)
-    if ( !item ) then return end
-
-    item:SetEntity(entity)
+    if ( !item ) then
+        -- Create a temporary item object to associate with entity
+        local uniqueID = entity:GetUniqueID()
+        if ( uniqueID and uniqueID != "" ) then
+            item = ax.item:CreateObject(itemID, uniqueID, {})
+            if ( item ) then
+                ax.item.instances[itemID] = item
+            end
+        end
+    end
+    
+    if ( item ) then
+        item:SetEntity(entity)
+        item:SetInventoryID(0) -- World items have inventory ID 0
+    end
 end)
 
 --[[-----------------------------------------------------------------------------

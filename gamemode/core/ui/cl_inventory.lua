@@ -100,73 +100,53 @@ function PANEL:SetInventory(id)
         label:SetContentAlignment(5)
 
         self:SetInfo()
-
         return
     end
 
-    local sortedItems = {}
-    local itemsCount = #items
-
-    for i = 1, itemsCount do
-        local itemID = items[i]
+    -- Get actual item instances
+    local itemInstances = {}
+    for _, itemID in ipairs(items) do
         local item = ax.item:Get(itemID)
         if ( item ) then
-            table.insert(sortedItems, itemID)
+            table.insert(itemInstances, item)
         end
     end
 
-    local sortType = ax.option:Get("inventory.sort")
-    table.sort(sortedItems, function(a, b)
-        local itemA = ax.item:Get(a)
-        local itemB = ax.item:Get(b)
-
-        if ( !itemA or !itemB ) then return false end
-
-        if ( sortType == "name" ) then
-            return itemA:GetName() < itemB:GetName()
-        elseif ( sortType == "weight" ) then
-            return itemA:GetWeight() < itemB:GetWeight()
-        elseif ( sortType == "category" ) then
-            return itemA:GetCategory() < itemB:GetCategory()
-        end
-
-        return false
-    end)
-
+    -- Group stackable items
     local groups = {}
-    for i = 1, #sortedItems do
-        local itemID = sortedItems[i]
-        local item = ax.item:Get(itemID)
-        if ( item ) then
-            local uid = item:GetUniqueID()
-            local def = ax.item.stored[uid] or {}
-            local stackable = ( !def.NoStack )
-            local dataKey = stackable and util.TableToJSON(item:GetData() or {}) or tostring(itemID)
-            local key = util.CRC(uid .. dataKey)
+    for _, item in ipairs(itemInstances) do
+        local uid = item:GetUniqueID()
+        local def = ax.item.stored[uid] or {}
+        local stackable = !def.NoStack
+        local dataKey = stackable and util.TableToJSON(item:GetData() or {}) or tostring(item:GetID())
+        local key = util.CRC(uid .. dataKey)
 
-            if ( !groups[key] ) then
-                groups[key] = {
-                    firstID = itemID,
-                    count = 0
-                }
-            end
-
-            groups[key].count = groups[key].count + 1
+        if ( !groups[key] ) then
+            groups[key] = {
+                firstItem = item,
+                count = 0,
+                items = {}
+            }
         end
+
+        groups[key].count = groups[key].count + 1
+        table.insert(groups[key].items, item)
     end
 
+    -- Create UI elements for each group
     for _, group in pairs(groups) do
         local pnl = self.container:Add("ax.item")
         pnl:Dock(TOP)
         pnl:DockMargin(0, 0, ScreenScale(8), 0)
-        pnl:SetItem(group.firstID)
+        pnl:SetItem(group.firstItem:GetID())
         pnl:SetCount(group.count)
+        pnl.ItemGroup = group -- Store reference for actions
     end
 
     if ( ax.gui.inventoryItemIDLast and self:IsValidItemID(ax.gui.inventoryItemIDLast) ) then
         self:SetInfo(ax.gui.inventoryItemIDLast)
     else
-        self:SetInfo(sortedItems[1])
+        self:SetInfo(itemInstances[1] and itemInstances[1]:GetID())
     end
 end
 

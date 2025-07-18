@@ -13,7 +13,7 @@ AddCSLuaFile("cl_init.lua")
 AddCSLuaFile("shared.lua")
 include("shared.lua")
 
-function ENT:SetItem(itemID, uniqueID)
+function ENT:SetItem(itemID, uniqueID, data)
     local itemDef = ax.item:Get(uniqueID)
     if ( !istable(itemDef) ) then
         ax.util:PrintError("Attempted to set item with an invalid item definition for entity " .. self:EntIndex() .. "!")
@@ -33,8 +33,8 @@ function ENT:SetItem(itemID, uniqueID)
 
     if ( itemDef.Bodygroups ) then
         for k, v in pairs(itemDef.Bodygroups) do
-            local idx = isstring(k) and self:GetBodygroupByName(k) or k
-            if ( idx ) then self:SetBodygroup(idx, v) end
+            local idx = isstring(k) and self:FindBodygroupByName(k) or k
+            if ( idx and idx >= 0 ) then self:SetBodygroup(idx, v) end
         end
     end
 
@@ -44,27 +44,32 @@ function ENT:SetItem(itemID, uniqueID)
         end
     end
 
-    if ( itemDef.OnSpawned ) then
-        itemDef:OnSpawned(self)
-    end
-
     self:SetUniqueID(uniqueID)
 
     if ( !itemID or itemID == 0 ) then
-        -- Register world item instance
-        ax.item:Add(0, 0, uniqueID, {}, function(newID)
-            self:SetItemID(newID)
+        -- Create new world item instance
+        ax.database:Insert("ax_items", {
+            unique_id = uniqueID,
+            inventory_id = 0,
+            data = util.TableToJSON(data or {})
+        }, function(newItemID)
+            if ( !IsValid(self) or !newItemID ) then return end
 
-            local item = ax.item:Get(newID)
+            self:SetItemID(newItemID)
+
+            -- Create item instance
+            local item = ax.item:CreateObject(newItemID, uniqueID, data or {})
             if ( item ) then
                 item:SetEntity(self)
+                item:SetInventoryID(0)
+                ax.item.instances[newItemID] = item
+
                 self:SetData(item:GetData() or {})
 
-                -- Notify clients
-
+                -- Network to clients
                 net.Start("ax.item.entity")
                     net.WriteEntity(self)
-                    net.WriteUInt(newID, 16)
+                    net.WriteUInt(newItemID, 16)
                 net.Broadcast()
             end
         end)
@@ -74,19 +79,23 @@ function ENT:SetItem(itemID, uniqueID)
         local item = ax.item:Get(itemID)
         if ( item ) then
             item:SetEntity(self)
+            item:SetInventoryID(0)
             self:SetData(item:GetData() or {})
         end
 
+        -- Network to clients
         net.Start("ax.item.entity")
             net.WriteEntity(self)
             net.WriteUInt(itemID, 16)
         net.Broadcast()
     end
 
-    net.Start("ax.item.entity")
-        net.WriteEntity(self)
-        net.WriteUInt(itemID, 16)
-    net.Broadcast()
+    -- Call item spawn hook
+    if ( itemDef.OnSpawned ) then
+        itemDef:OnSpawned(self)
+    end
+
+    hook.Run("OnItemEntitySpawned", self, itemID, uniqueID)
 end
 
 function ENT:GetData()
@@ -94,30 +103,59 @@ function ENT:GetData()
 end
 
 function ENT:SetData(data)
+    if ( !istable(data) ) then
+        data = {}
+    end
+
     self:GetTable().axItemData = data
+
+    -- Update item instance data
+    local item = ax.item:Get(self:GetItemID())
+    if ( item ) then
+        item.Data = data
+
+        -- Update database
+        ax.database:Update("ax_items", {
+            data = util.TableToJSON(data)
+        }, "id = " .. self:GetItemID())
+    end
 end
 
 function ENT:Use(client)
     if ( !IsValid(client) or !client:IsPlayer() ) then return end
-    if ( hook.Run("PrePlayerTakeItem", client, self) == false ) then return end
+    if ( self:OnCooldown("take") ) then return end
 
-    local itemDef = ax.item:Get(self:GetUniqueID())
-    local itemInst = ax.item:Get(self:GetItemID())
-
-    if ( !itemDef or !itemInst ) then return end
-
-    itemInst:SetEntity(self)
-    itemInst:SetOwner(client:GetCharacterID())
-
-    self:SetCooldown("take", 0.5)
-    ax.item:PerformAction(itemInst:GetID(), "Take")
-end
-
-function ENT:OnRemove()
-    local item = ax.item:Get(self:GetItemID())
-    if ( item and item.OnRemoved ) then
-        item:OnRemoved(self)
+    local character = client:GetCharacter()
+    if ( !character ) then
+        client:Notify("You must have a character to pick up items.")
+        return
     end
+
+    local inventory = character:GetInventory()
+    if ( !inventory ) then
+        client:Notify("You don't have an inventory.")
+        return
+    end
+
+    local itemInst = ax.item:Get(self:GetItemID())
+    if ( !itemInst ) then
+        ax.util:PrintError("Item instance not found for entity " .. self:EntIndex())
+        return
+    end
+
+    -- Check if inventory can fit the item
+    if ( !inventory:CanFitItem(itemInst:GetUniqueID(), 1) ) then
+        client:Notify("Your inventory is too full to take this item.")
+        return
+    end
+
+    if ( hook.Run("PrePlayerTakeItem", client, itemInst, self) == false ) then return end
+
+    -- Set cooldown to prevent spam
+    self:SetCooldown("take", 1)
+
+    -- Perform take action
+    ax.item:PerformAction(itemInst:GetID(), "Take")
 end
 
 function ENT:OnTakeDamage(dmg)
@@ -151,10 +189,75 @@ function ENT:OnRemove()
     if ( ax.ShutDown ) then return end
     if ( self:OnCooldown("take") ) then return end
 
-    local item = ax.item:Get(self:GetItemID())
-    if ( item and item.OnRemoved ) then
-        item:OnRemoved(self)
+    local itemID = self:GetItemID()
+    if ( !itemID or itemID == 0 ) then return end
+
+    local item = ax.item:Get(itemID)
+    if ( item ) then
+        -- Call item remove hook
+        if ( item.OnRemoved ) then
+            item:OnRemoved(self)
+        end
+
+        -- Remove from instances
+        ax.item.instances[itemID] = nil
     end
 
-    ax.database:Delete("ax_items", string.format("id = %s", sql.SQLStr(self:GetItemID())))
+    -- Remove from database
+    ax.database:Delete("ax_items", {
+        id = itemID
+    })
+
+    hook.Run("OnItemEntityRemoved", self, itemID)
+end
+
+function ENT:Think()
+    -- Auto-remove if item definition no longer exists
+    local itemDef = ax.item:Get(self:GetUniqueID())
+    if ( !itemDef ) then
+        SafeRemoveEntity(self)
+        return
+    end
+
+    -- Call item think hook
+    if ( itemDef.Think ) then
+        itemDef:Think(self)
+    end
+
+    self:NextThink(CurTime() + 1)
+    return true
+end
+
+function ENT:StartTouch(entity)
+    local itemDef = ax.item:Get(self:GetUniqueID())
+    if ( itemDef and itemDef.StartTouch ) then
+        itemDef:StartTouch(self, entity)
+    end
+end
+
+function ENT:EndTouch(entity)
+    local itemDef = ax.item:Get(self:GetUniqueID())
+    if ( itemDef and itemDef.EndTouch ) then
+        itemDef:EndTouch(self, entity)
+    end
+end
+
+function ENT:Touch(entity)
+    local itemDef = ax.item:Get(self:GetUniqueID())
+    if ( itemDef and itemDef.Touch ) then
+        itemDef:Touch(self, entity)
+    end
+end
+
+-- Utility function to check if entity is on cooldown
+function ENT:OnCooldown(name)
+    local cooldowns = self:GetTable().axCooldowns or {}
+    return cooldowns[name] and cooldowns[name] > CurTime()
+end
+
+-- Utility function to set cooldown
+function ENT:SetCooldown(name, duration)
+    local cooldowns = self:GetTable().axCooldowns or {}
+    cooldowns[name] = CurTime() + duration
+    self:GetTable().axCooldowns = cooldowns
 end

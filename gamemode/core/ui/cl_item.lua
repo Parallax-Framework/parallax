@@ -103,6 +103,8 @@ function PANEL:DoRightClick()
     if ( !base or !base.Actions ) then return end
 
     local menu = DermaMenu()
+    local hasActions = false
+
     for actionName, actionData in pairs(base.Actions) do
         if ( actionName == "Take" ) then continue end
         if ( isfunction(actionData.OnCanRun) and actionData:OnCanRun(item, ax.client) == false ) then continue end
@@ -113,9 +115,10 @@ function PANEL:DoRightClick()
                 net.WriteString(actionName)
             net.SendToServer()
         end)
+        hasActions = true
     end
 
-    if ( menu:ChildCount() > 0 ) then
+    if ( hasActions ) then
         menu:Open()
     end
 end
