@@ -324,44 +324,4 @@ if ( CLIENT ) then
 
         return baseAlpha * multiplier
     end
-
-    -- Localization for categories
-    ax.localization:Register("en", {
-        ["category.weaponselect"] = "Weapon Selection",
-        ["category.weaponselect.position"] = "Position",
-        ["category.weaponselect.size"] = "Size",
-        ["category.weaponselect.effects"] = "Effects",
-        ["category.weaponselect.audio"] = "Audio",
-        ["category.weaponselect.content"] = "Content",
-        ["category.weaponselect.advanced"] = "Advanced"
-    })
-
-    ax.localization:Register("es-ES", {
-        ["category.weaponselect"] = "Selección de armas",
-        ["category.weaponselect.position"] = "Posición",
-        ["category.weaponselect.size"] = "Tamaño",
-        ["category.weaponselect.effects"] = "Efectos",
-        ["category.weaponselect.audio"] = "Audio",
-        ["category.weaponselect.content"] = "Contenido",
-        ["category.weaponselect.advanced"] = "Avanzado"
-    })
-    ax.localization:Register("pt-PT", {
-        ["category.weaponselect"] = "Seleção de armas",
-        ["category.weaponselect.position"] = "Posição",
-        ["category.weaponselect.size"] = "Tamanho",
-        ["category.weaponselect.effects"] = "Efeitos",
-        ["category.weaponselect.audio"] = "Áudio",
-        ["category.weaponselect.content"] = "Conteúdo",
-        ["category.weaponselect.advanced"] = "Avançado"
-    })
-
-    ax.localisation:Register("bg", {
-        ["category.weaponselect"] = "Избор на оръжие",
-        ["category.weaponselect.position"] = "Позиция",
-        ["category.weaponselect.size"] = "Размер",
-        ["category.weaponselect.effects"] = "Ефекти",
-        ["category.weaponselect.audio"] = "Аудио",
-        ["category.weaponselect.content"] = "Съдържание",
-        ["category.weaponselect.advanced"] = "Разширени"
-    })
 end
