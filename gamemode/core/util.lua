@@ -12,8 +12,6 @@
 --- Utility functions
 -- @module ax.util
 
--- TESTTT
-
 --- Checks if MySQLOO binary is available
 -- @realm server
 -- @treturn boolean True if MySQLOO is available
