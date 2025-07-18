@@ -913,9 +913,8 @@ function GM:PopulateHelpCategories(categories)
             button:SetBackgroundAlphaHovered(1)
             button:SetBackgroundAlphaUnHovered(0.5)
             button:SetBackgroundColor(hasFlag and ax.config:Get("color.success") or ax.config:Get("color.error"))
-            button.DoRightClick = function(this)
-                if ( !CAMI.PlayerHasAccess(ax.client, "Parallax - Manage Flags", nil) ) then return end
 
+            button.DoRightClick = CAMI.PlayerHasAccess(ax.client, "Parallax - Manage Flags", nil) and function(this)
                 local menu = DermaMenu()
                 menu:AddOption("Give Flag", function()
                     ax.command:Run("CharGiveFlags", ax.client:SteamID64(), k)
@@ -939,7 +938,7 @@ function GM:PopulateHelpCategories(categories)
                 end
 
                 menu:Open()
-            end
+            end or nil
 
             local key = button:Add("ax.text")
             key:Dock(LEFT)
