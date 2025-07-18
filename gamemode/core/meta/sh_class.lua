@@ -27,9 +27,13 @@ function CLASS:__eq(other) -- TODO: I don't think this even works lol
             istable(other) and self:GetID() == other:GetID() and self:GetUniqueID() == other:GetUniqueID()
 end
 
+CLASS.ID            = 0
+CLASS.UniqueID      = nil
 CLASS.Name          = "Unknown"
 CLASS.Description   = "No description available."
+CLASS.Faction       = 0
 CLASS.IsDefault     = false
+CLASS.Weapons       = {}
 CLASS.CanSwitchTo   = nil
 CLASS.OnSwitch      = nil
 
@@ -69,6 +73,17 @@ end
 
 function CLASS:MakeDefault()
     self.IsDefault = true
+end
+
+--- Sets the class's weapons.
+-- @param weapons A table of weapon identifiers to set.
+function CLASS:SetWeapons(weapons)
+    if ( !istable(weapons) ) then
+        ax.util:PrintError("Attempted to set a class's weapons to an invalid value: " .. tostring(weapons))
+        return false
+    end
+
+    self.Weapons = weapons
 end
 
 --- Gets the class's ID.
@@ -124,6 +139,12 @@ end
 -- @treturn boolean Whether the class is the default class.
 function CLASS:IsDefault()
     return self.IsDefault
+end
+
+--- Gets the class's weapons.
+-- @treturn table A table of weapon identifiers for the class.
+function CLASS:GetWeapons()
+    return self.Weapons
 end
 
 --- Registers the class.
