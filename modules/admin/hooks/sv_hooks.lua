@@ -181,11 +181,11 @@ function MODULE:LoadData()
             local remainingTime = tempData.expires - os.time()
             if (remainingTime > 0) then
                 timer.Create("TempUsergroup_" .. steamID, remainingTime, 1, function()
-                    local player = player.GetBySteamID64(steamID)
-                    if (IsValid(player)) then
-                        player:SetUserGroup(tempData.originalGroup)
-                        self:LogAction(nil, "temp usergroup expired", player, "Reverted from " .. tempData.tempGroup .. " to " .. tempData.originalGroup)
-                        ax.notification:Send(player, "Your temporary usergroup has expired. Reverted to " .. tempData.originalGroup)
+                    local client = ax.util:FindPlayer(steamID)
+                    if (IsValid(client)) then
+                        client:SetUserGroup(tempData.originalGroup)
+                        self:LogAction(nil, "temp usergroup expired", client, "Reverted from " .. tempData.tempGroup .. " to " .. tempData.originalGroup)
+                        ax.notification:Send(client, "Your temporary usergroup has expired. Reverted to " .. tempData.originalGroup)
                     end
                     self.TempUsergroups[steamID] = nil
                 end)
@@ -207,10 +207,11 @@ timer.Create("Parallax.Admin.TicketCleanup", 3600, 0, function()
 end)
 
 -- Handle player connect for usergroup restoration
-function MODULE:PlayerAuthed(client, steamid)
+function MODULE:PlayerAuthed(steamid)
     -- Restore saved usergroup
+    local client = ax.util:FindPlayer(steamid)
     local savedGroup = self.PlayerUsergroups[steamid]
-    if (savedGroup) then
+    if ( savedGroup ) then
         client:SetUserGroup(savedGroup.group)
     end
 
@@ -237,17 +238,17 @@ function MODULE:PlayerAuthed(client, steamid)
     end
 end
 
-function MODULE:PlayerSpawnNPC(ply, type, weapon)
-    local character = ply:GetCharacter()
+function MODULE:PlayerSpawnNPC(client, type, weapon)
+    local character = client:GetCharacter()
     if ( !character ) then return end
 
-    if ( !CAMI.PlayerHasAccess(ply, "Parallax - Spawn NPCs", nil) ) then
-        ax.notification:Send(ply, "You do not have permission to spawn NPCs.")
+    if ( !CAMI.PlayerHasAccess(client, "Parallax - Spawn NPCs", nil) ) then
+        ax.notification:Send(client, "You do not have permission to spawn NPCs.")
         return false
     end
 
     if ( !character:HasFlag("n") ) then
-        ax.notification:Send(ply, "You do not have the 'n' flag to spawn NPCs.")
+        ax.notification:Send(client, "You do not have the 'n' flag to spawn NPCs.")
         return false
     end
 
