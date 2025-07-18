@@ -10,37 +10,7 @@
 ]]
 
 DeriveGamemode("sandbox")
-GM.RefreshTimeStart = SysTime()
 
 ax = ax or {util = {}, meta = {}, config = {}, globals = {}}
 
 AddCSLuaFile("cl_init.lua")
-
-AddCSLuaFile("core/types.lua")
-include("core/types.lua")
-
-AddCSLuaFile("core/util.lua")
-include("core/util.lua")
-
-include("core/sqlite.lua")
-include("core/sqloo.lua")
-include("core/database.lua")
-
-AddCSLuaFile("core/boot.lua")
-include("core/boot.lua")
-
-local addons = engine.GetAddons()
-for i = 1, #addons do
-    local addon = addons[i]
-    if ( addon.mounted == true and addon.downloaded == true and addon.wsid != 0 ) then
-        resource.AddWorkshop(addon.wsid)
-    end
-end
-
-resource.AddWorkshop("3479969076")
-
-resource.AddFile("resource/fonts/gordin-black.ttf")
-resource.AddFile("resource/fonts/gordin-bold.ttf")
-resource.AddFile("resource/fonts/gordin-light.ttf")
-resource.AddFile("resource/fonts/gordin-regular.ttf")
-resource.AddFile("resource/fonts/gordin-semibold.ttf")
