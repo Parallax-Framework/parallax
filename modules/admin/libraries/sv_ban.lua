@@ -13,7 +13,7 @@ local MODULE = MODULE
 
 -- Handle admin commands from console
 concommand.Add("ax_admin_kick", function(client, cmd, args)
-    if ( !IsValid(client) or !CAMI.PlayerHasAccess(client, "Parallax - Kick Players", nil) ) then
+    if ( IsValid(client) and !CAMI.PlayerHasAccess(client, "Parallax - Kick Players", nil) ) then
         return
     end
 
@@ -27,7 +27,7 @@ concommand.Add("ax_admin_kick", function(client, cmd, args)
 end)
 
 concommand.Add("ax_admin_ban", function(client, cmd, args)
-    if ( !IsValid(client) or !CAMI.PlayerHasAccess(client, "Parallax - Ban Players", nil) ) then
+    if ( IsValid(client) and !CAMI.PlayerHasAccess(client, "Parallax - Ban Players", nil) ) then
         return
     end
 
