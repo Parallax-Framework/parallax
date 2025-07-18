@@ -236,3 +236,20 @@ function MODULE:PlayerAuthed(client, steamid)
         end
     end
 end
+
+function MODULE:PlayerSpawnNPC(ply, type, weapon)
+    local character = ply:GetCharacter()
+    if ( !character ) then return end
+
+    if ( !CAMI.PlayerHasAccess(ply, "Parallax - Spawn NPCs", nil) ) then
+        ax.notification:Send(ply, "You do not have permission to spawn NPCs.")
+        return false
+    end
+
+    if ( !character:HasFlag("n") ) then
+        ax.notification:Send(ply, "You do not have the 'n' flag to spawn NPCs.")
+        return false
+    end
+
+    return true
+end

@@ -66,6 +66,7 @@ MODULE.DefaultPermissions = {
     {name = "Parallax - Server Commands", level = 3},
     {name = "Parallax - Cleanup", level = 3},
     {name = "Parallax - Ban Offline", level = 3},
+    {name = "Parallax - Spawn NPCs", level = 3},
 
     -- Super admin permissions
     {name = "Parallax - Root Access", level = 4},
