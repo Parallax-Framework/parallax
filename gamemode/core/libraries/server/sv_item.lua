@@ -14,24 +14,6 @@ ax.item.meta = ax.item.meta or {}
 ax.item.stored = ax.item.stored or {}
 ax.item.instances = ax.item.instances or {}
 
-function ax.item:CreateObject(itemID, uniqueID, data)
-    local itemDef = self:Get(uniqueID)
-    if ( !itemDef ) then
-        ax.util:PrintError("Item definition not found for: " .. tostring(uniqueID))
-        return false
-    end
-
-    local instance = table.Copy(itemDef)
-    instance.ID = itemID
-    instance.Data = data or {}
-    instance.Entity = NULL
-    instance.InventoryID = 0
-    
-    setmetatable(instance, self.meta)
-    
-    return instance
-end
-
 function ax.item:Add(invID, uniqueID, data, callback)
     if ( ax.util:IsCharacter(invID) ) then
         invID = invID:GetID()

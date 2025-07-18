@@ -134,3 +134,41 @@ function ax.item:LoadFolder(path)
 
     self:Load(path)
 end
+
+--- Creates an item instance on the client
+-- @param number itemID The ID of the item instance
+-- @param string uniqueID The unique identifier of the item type
+-- @param table data The item's data
+-- @return table|false The created item instance or false on failure
+function ax.item:CreateObject(itemID, uniqueID, data)
+    if ( !isnumber(itemID) or itemID <= 0 ) then
+        ax.util:PrintError("Invalid item ID provided to ax.item:CreateObject")
+        return false
+    end
+
+    if ( !isstring(uniqueID) or uniqueID == "" ) then
+        ax.util:PrintError("Invalid unique ID provided to ax.item:CreateObject")
+        return false
+    end
+
+    local itemDef = self:Get(uniqueID)
+    if ( !itemDef ) then
+        ax.util:PrintError("Item definition not found for: " .. uniqueID)
+        return false
+    end
+
+    if ( !istable(data) ) then
+        data = {}
+    end
+
+    -- Create instance based on definition
+    local instance = table.Copy(itemDef)
+    instance.ID = itemID
+    instance.Data = data
+    instance.Entity = NULL
+    instance.InventoryID = 0
+
+    setmetatable(instance, self.meta)
+
+    return instance
+end
