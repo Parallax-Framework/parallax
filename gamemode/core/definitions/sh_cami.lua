@@ -38,3 +38,8 @@ CAMI.RegisterPrivilege({
     Name = "Parallax - Manage Config",
     MinAccess = "superadmin",
 })
+
+CAMI.RegisterPrivilege({
+    Name = "Parallax - Manage Items",
+    MinAccess = "superadmin",
+})

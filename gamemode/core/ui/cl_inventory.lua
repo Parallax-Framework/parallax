@@ -64,11 +64,15 @@ function PANEL:SetInventory(id)
     if ( !id ) then return end
 
     local inventory = ax.inventory:Get(id)
-    if ( !inventory ) then return end
+    if ( !inventory ) then
+        ax.util:PrintError("Inventory not found for ID: " .. tostring(id))
+        return
+    end
 
     self.container:Clear()
 
-    local total = inventory:GetWeight() / ax.config:Get("inventory.max.weight", 20)
+    local maxWeight = inventory:GetMaxWeight()
+    local total = inventory:GetWeight() / maxWeight
 
     local progress = self.container:Add("DProgress")
     progress:Dock(TOP)
@@ -82,7 +86,6 @@ function PANEL:SetInventory(id)
         draw.RoundedBox(0, 0, 0, width * fraction, height, Color(100, 200, 175, 200))
     end
 
-    local maxWeight = ax.config:Get("inventory.max.weight", 20)
     local weight = math.Round(maxWeight * progress:GetFraction(), 2)
 
     local label = progress:Add("ax.text")
@@ -109,7 +112,20 @@ function PANEL:SetInventory(id)
         local item = ax.item:Get(itemID)
         if ( item ) then
             table.insert(itemInstances, item)
+        else
+            ax.util:PrintWarning("Item instance not found for ID: " .. tostring(itemID))
         end
+    end
+
+    if ( #itemInstances == 0 ) then
+        label = self.container:Add("ax.text")
+        label:Dock(TOP)
+        label:SetFont("ax.large")
+        label:SetText("inventory.empty")
+        label:SetContentAlignment(5)
+
+        self:SetInfo()
+        return
     end
 
     -- Group stackable items
@@ -141,6 +157,11 @@ function PANEL:SetInventory(id)
         pnl:SetItem(group.firstItem:GetID())
         pnl:SetCount(group.count)
         pnl.ItemGroup = group -- Store reference for actions
+
+        -- Override click behavior to handle grouped items
+        pnl.DoClick = function()
+            self:SetInfo(group.firstItem:GetID())
+        end
     end
 
     if ( ax.gui.inventoryItemIDLast and self:IsValidItemID(ax.gui.inventoryItemIDLast) ) then
@@ -156,7 +177,7 @@ function PANEL:IsValidItemID(id)
     local item = ax.item:Get(id)
     if ( !item ) then return false end
 
-    local inventory = ax.client:GetInventoryByID(item:GetInventory())
+    local inventory = ax.client:GetInventoryByID(item:GetInventoryID())
     if ( !inventory ) then return false end
 
     return true
@@ -211,9 +232,11 @@ function PANEL:SetInfo(id)
     actions.Paint = nil
 
     timer.Simple(0.1, function()
+        if ( !IsValid(self.info) ) then return end
+
         for actionName, actionData in pairs(item.Actions or {}) do
-            if ( actionName == "Take" ) then continue end
-            if ( isfunction(actionData.OnCanRun) and actionData:OnCanRun(item, ax.client) == false ) then continue end
+            if ( actionName == "Take" ) then continue end -- Take is only for world items
+            if ( isfunction(actionData.OnCanRun) and !actionData:OnCanRun(item, ax.client) ) then continue end
 
             local button = actions:Add("ax.button.flat")
             button:SetText(actionData.Name or actionName)
@@ -223,10 +246,6 @@ function PANEL:SetInfo(id)
                     net.WriteUInt(id, 16)
                     net.WriteString(actionName)
                 net.SendToServer()
-            end
-
-            if ( actionData.Icon ) then
-                button:SetIcon(actionData.Icon)
             end
         end
     end)

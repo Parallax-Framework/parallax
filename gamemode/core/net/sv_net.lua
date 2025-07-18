@@ -273,19 +273,85 @@ net.Receive("ax.item.perform", function(len, client)
     local item = ax.item:Get(itemID)
     if ( !item ) then return end
 
-    -- Verify ownership
+    -- Verify ownership for inventory items
     local character = client:GetCharacter()
     if ( !character ) then return end
 
     local inventory = character:GetInventory()
-    if ( !inventory or !inventory:HasItem(itemID) ) then
-        -- Check if it's a world item
-        if ( !IsValid(item:GetEntity()) ) then
+    if ( !inventory ) then return end
+
+    -- Validate that the item actually exists in the database for inventory items
+    if ( item:GetInventoryID() > 0 ) then
+        -- Check if item is in player's inventory
+        if ( !inventory:HasItem(itemID) ) then
+            ax.util:PrintError("Player tried to perform action on item they don't own")
             return
         end
-    end
 
-    ax.item:PerformAction(itemID, actionName)
+        -- Double-check with database to prevent desync issues
+        ax.database:Select("ax_items", nil, "id = " .. itemID, function(result)
+            if ( !result or !result[1] ) then
+                ax.util:PrintError("Item " .. itemID .. " not found in database during action")
+                client:Notify("Item no longer exists.")
+                return
+            end
+
+            local dbInventoryID = tonumber(result[1].inventory_id)
+            if ( dbInventoryID != inventory:GetID() ) then
+                ax.util:PrintError("Item inventory mismatch. Player inventory: " .. inventory:GetID() .. ", Database: " .. dbInventoryID)
+                client:Notify("Item is not in your inventory.")
+                return
+            end
+
+            -- Proceed with action
+            local actions = item:GetActions()
+            if ( !actions or !actions[actionName] ) then
+                ax.util:PrintError("Action not found: " .. actionName)
+                return
+            end
+
+            local action = actions[actionName]
+            if ( isfunction(action.OnCanRun) and !action:OnCanRun(item, client) ) then
+                client:Notify("You cannot perform this action right now.")
+                return
+            end
+
+            if ( isfunction(action.OnRun) ) then
+                action:OnRun(item, client)
+            end
+
+            hook.Run("PostPlayerItemAction", client, actionName, item)
+        end)
+    else
+        -- For world items, check distance
+        local entity = item:GetEntity()
+        if ( IsValid(entity) ) then
+            local distance = client:GetPos():Distance(entity:GetPos())
+            if ( distance > 200 ) then -- Max interaction distance
+                client:Notify("You are too far away from the item.")
+                return
+            end
+        end
+
+        -- Get the actions and perform the action directly for world items
+        local actions = item:GetActions()
+        if ( !actions or !actions[actionName] ) then
+            ax.util:PrintError("Action not found: " .. actionName)
+            return
+        end
+
+        local action = actions[actionName]
+        if ( isfunction(action.OnCanRun) and !action:OnCanRun(item, client) ) then
+            client:Notify("You cannot perform this action right now.")
+            return
+        end
+
+        if ( isfunction(action.OnRun) ) then
+            action:OnRun(item, client)
+        end
+
+        hook.Run("PostPlayerItemAction", client, actionName, item)
+    end
 end)
 
 util.AddNetworkString("ax.item.data.sync")

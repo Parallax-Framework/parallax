@@ -142,18 +142,18 @@ end
 -- @return table|false The created item instance or false on failure
 function ax.item:CreateObject(itemID, uniqueID, data)
     if ( !isnumber(itemID) or itemID <= 0 ) then
-        ax.util:PrintError("Invalid item ID provided to ax.item:CreateObject")
+        ax.util:PrintError("Invalid item ID provided to ax.item:CreateObject: " .. tostring(itemID) .. " (type: " .. type(itemID) .. ")")
         return false
     end
 
     if ( !isstring(uniqueID) or uniqueID == "" ) then
-        ax.util:PrintError("Invalid unique ID provided to ax.item:CreateObject")
+        ax.util:PrintError("Invalid unique ID provided to ax.item:CreateObject: " .. tostring(uniqueID))
         return false
     end
 
     local itemDef = self:Get(uniqueID)
     if ( !itemDef ) then
-        ax.util:PrintError("Item definition not found for: " .. uniqueID)
+        ax.util:PrintError("Item definition not found for unique ID: " .. uniqueID)
         return false
     end
 
@@ -161,14 +161,19 @@ function ax.item:CreateObject(itemID, uniqueID, data)
         data = {}
     end
 
-    -- Create instance based on definition
-    local instance = table.Copy(itemDef)
-    instance.ID = itemID
-    instance.Data = data
-    instance.Entity = NULL
-    instance.InventoryID = 0
+    -- Create item instance by copying the definition
+    local item = setmetatable({}, { __index = itemDef })
 
-    setmetatable(instance, self.meta)
+    -- Set instance-specific properties with validation
+    item.ID = itemID
+    item.UniqueID = uniqueID
+    item.Data = data
+    item.InventoryID = 0 -- Default to world (0) initially
+    item.Entity = NULL
 
-    return instance
+    -- Initialize actions
+    item.Actions = nil -- Reset actions so they get regenerated with GetActions()
+
+    ax.util:PrintSuccess("Created item instance " .. itemID .. " (" .. uniqueID .. ")")
+    return item
 end

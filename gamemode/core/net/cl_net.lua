@@ -276,7 +276,7 @@ net.Receive("ax.inventory.item.add", function(len)
     local itemID = net.ReadUInt(16)
     local uniqueID = net.ReadString()
     local data = net.ReadTable()
-    
+
     -- Create or get existing item
     local item = ax.item:Get(itemID)
     if ( !item ) then
@@ -287,11 +287,11 @@ net.Receive("ax.inventory.item.add", function(len)
         end
         ax.item.instances[itemID] = item
     end
-    
+
     -- Update item data
     item:SetInventoryID(inventoryID)
     item.Data = data
-    
+
     -- Add to inventory
     local inventory = ax.inventory:Get(inventoryID)
     if ( inventory ) then
@@ -372,6 +372,9 @@ net.Receive("ax.inventory.load", function(len)
         return
     end
 
+    -- Store inventory instance
+    ax.inventory.instances[inventory:GetID()] = inventory
+
     local character = ax.character:Get(characterID)
     if ( character ) then
         character:SetInventory(inventory)
@@ -389,17 +392,17 @@ net.Receive("ax.item.add", function(len)
     local inventoryID = net.ReadUInt(16)
     local uniqueID = net.ReadString()
     local data = net.ReadTable()
-    
+
     -- Create item instance on client
     local item = ax.item:CreateObject(itemID, uniqueID, data)
     if ( !item ) then
         ax.util:PrintError("Failed to create item object for ID " .. itemID)
         return
     end
-    
+
     item:SetInventoryID(inventoryID)
     ax.item.instances[itemID] = item
-    
+
     -- Add to inventory if it exists
     if ( inventoryID > 0 ) then
         local inventory = ax.inventory:Get(inventoryID)
@@ -412,13 +415,13 @@ net.Receive("ax.item.add", function(len)
                     break
                 end
             end
-            
+
             if ( !found ) then
                 table.insert(items, itemID)
             end
         end
     end
-    
+
     -- Call item cache hook
     if ( item.OnCache ) then
         item:OnCache()
@@ -429,14 +432,53 @@ net.Receive("ax.item.cache", function(len)
     local data = net.ReadTable()
     if ( !istable(data) ) then return end
 
-    for k, v in pairs(data) do
-        local item = ax.item:CreateObject(v.ID, v.UniqueID, v.Data)
-        if ( item ) then
-            item:SetInventoryID(v.InventoryID or 0)
-            ax.item.instances[v.ID] = item
+    ax.util:PrintSuccess("Caching " .. table.Count(data) .. " item instances")
 
-            if ( item.OnCache ) then
-                item:OnCache()
+    for itemID, itemData in pairs(data) do
+        if ( istable(itemData) and itemData.ID and itemData.UniqueID ) then
+            local item = ax.item:CreateObject(itemData.ID, itemData.UniqueID, itemData.Data or {})
+            if ( item ) then
+                item:SetInventoryID(itemData.InventoryID or 0)
+                ax.item.instances[itemData.ID] = item
+
+                -- Add to inventory if it's not a world item
+                if ( itemData.InventoryID and itemData.InventoryID > 0 ) then
+                    local inventory = ax.inventory:Get(itemData.InventoryID)
+                    if ( inventory ) then
+                        local items = inventory:GetItems()
+                        local found = false
+                        for i = 1, #items do
+                            if ( items[i] == itemData.ID ) then
+                                found = true
+                                break
+                            end
+                        end
+
+                        if ( !found ) then
+                            table.insert(items, itemData.ID)
+                        end
+                    end
+                end
+
+                if ( item.OnCache ) then
+                    item:OnCache()
+                end
+
+                ax.util:PrintSuccess("Cached item instance " .. itemData.ID .. " (" .. itemData.UniqueID .. ")")
+            else
+                ax.util:PrintError("Failed to create item instance for ID " .. itemData.ID)
+            end
+        end
+    end
+
+    -- Refresh inventory UI if open
+    local panel = ax.gui.inventory
+    if ( IsValid(panel) ) then
+        local character = ax.client:GetCharacter()
+        if ( character ) then
+            local inventory = character:GetInventory()
+            if ( inventory ) then
+                panel:SetInventory(inventory:GetID())
             end
         end
     end
@@ -470,7 +512,7 @@ net.Receive("ax.item.entity", function(len)
             end
         end
     end
-    
+
     if ( item ) then
         item:SetEntity(entity)
         item:SetInventoryID(0) -- World items have inventory ID 0

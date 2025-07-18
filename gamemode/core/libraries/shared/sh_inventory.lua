@@ -29,7 +29,7 @@ function ax.inventory:Create(data)
 
     local invID = tonumber(data.id)
     if ( !invID or invID <= 0 ) then
-        ax.util:PrintError("Invalid ID provided to ax.inventory:Create()")
+        ax.util:PrintError("Invalid ID provided to ax.inventory:Create(): " .. tostring(data.id) .. " (type: " .. type(data.id) .. ")")
         return
     end
 
@@ -39,6 +39,11 @@ function ax.inventory:Create(data)
     end
 
     local instance = self:Instance()
+    if ( !instance ) then
+        ax.util:PrintError("Failed to create inventory instance")
+        return
+    end
+
     instance.ID = invID
     instance.Items = {} -- Initialize as empty array, items will be loaded separately
     instance.Data = ax.util:SafeParseTable(data.data)
@@ -46,6 +51,7 @@ function ax.inventory:Create(data)
 
     self.instances[invID] = instance
 
+    ax.util:PrintSuccess("Created inventory instance with ID " .. invID)
     return instance
 end
 
@@ -98,14 +104,14 @@ function ax.inventory:CreateObject(data)
         ax.util:PrintError("Invalid data provided to ax.inventory:CreateObject")
         return false
     end
-    
+
     local instance = self:Instance()
-    
+
     -- Set basic properties
     instance.ID = tonumber(data.id) or tonumber(data.ID) or 0
     instance.MaxWeight = tonumber(data.max_weight) or tonumber(data.MaxWeight) or 0
     instance.Items = {} -- Initialize as empty array
-    
+
     -- Handle data based on format
     if ( istable(data.data) ) then
         instance.Data = data.data
@@ -114,6 +120,6 @@ function ax.inventory:CreateObject(data)
     else
         instance.Data = {}
     end
-    
+
     return instance
 end

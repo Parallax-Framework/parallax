@@ -73,9 +73,18 @@ function ax.inventory:AddItem(inventoryID, uniqueID, data, callback)
         if ( character ) then
             local client = character:GetPlayer()
             if ( IsValid(client) ) then
+                -- Send item addition notification
                 net.Start("ax.inventory.item.add")
                     net.WriteUInt(inventoryID, 16)
                     net.WriteUInt(itemID, 16)
+                    net.WriteString(uniqueID)
+                    net.WriteTable(data)
+                net.Send(client)
+
+                -- Send item instance data
+                net.Start("ax.item.add")
+                    net.WriteUInt(itemID, 16)
+                    net.WriteUInt(inventoryID, 16)
                     net.WriteString(uniqueID)
                     net.WriteTable(data)
                 net.Send(client)
@@ -300,13 +309,13 @@ function ax.inventory:LoadInventory(characterID)
         end
 
         local output = result[1]
-        local inventoryID = output.inventory_id
-        if ( !inventoryID ) then
-            ax.util:PrintError("No inventory found for character ID " .. characterID)
+        local inventoryID = tonumber(output.inventory_id)
+        if ( !inventoryID or inventoryID <= 0 ) then
+            ax.util:PrintError("No valid inventory found for character ID " .. characterID .. " (inventory_id: " .. tostring(output.inventory_id) .. ")")
             return false
         end
 
-        ax.util:PrintSuccess("Loading inventory for character ID " .. characterID)
+        ax.util:PrintSuccess("Loading inventory " .. inventoryID .. " for character ID " .. characterID)
 
         -- Load inventory data
         ax.database:Select("ax_inventories", nil, "id = " .. inventoryID, function(invResult)
@@ -316,31 +325,79 @@ function ax.inventory:LoadInventory(characterID)
             end
 
             local inventory = ax.inventory:Create(invResult[1])
+            if ( !inventory ) then
+                ax.util:PrintError("Failed to create inventory instance for ID " .. inventoryID)
+                return false
+            end
 
             -- Load items from ax_items table
             ax.database:Select("ax_items", nil, "inventory_id = " .. inventoryID, function(itemsResult)
+                local itemInstances = {}
+
                 if ( itemsResult ) then
                     for _, itemData in ipairs(itemsResult) do
                         local itemID = tonumber(itemData.id)
                         local uniqueID = itemData.unique_id
                         local data = util.JSONToTable(itemData.data) or {}
 
+                        if ( !itemID or itemID <= 0 ) then
+                            ax.util:PrintError("Invalid item ID in database: " .. tostring(itemData.id))
+                            continue
+                        end
+
+                        if ( !uniqueID or uniqueID == "" ) then
+                            ax.util:PrintError("Invalid unique ID in database for item " .. itemID)
+                            continue
+                        end
+
+                        -- Validate that the item definition exists
+                        local itemDef = ax.item:Get(uniqueID)
+                        if ( !itemDef ) then
+                            ax.util:PrintError("Item definition not found for unique ID: " .. uniqueID .. " (item ID: " .. itemID .. ")")
+                            continue
+                        end
+
                         -- Create item instance
                         local item = ax.item:CreateObject(itemID, uniqueID, data)
                         if ( item ) then
-                            item:SetInventoryID(inventoryID)
-                            ax.item.instances[itemID] = item
-                            table.insert(inventory.Items, itemID)
+                            -- Ensure inventoryID is a valid number before setting
+                            if ( isnumber(inventoryID) and inventoryID > 0 ) then
+                                item:SetInventoryID(inventoryID)
+                                ax.item.instances[itemID] = item
+                                table.insert(inventory.Items, itemID)
+
+                                -- Store item data for networking
+                                itemInstances[itemID] = {
+                                    ID = itemID,
+                                    UniqueID = uniqueID,
+                                    Data = data,
+                                    InventoryID = inventoryID
+                                }
+
+                                ax.util:PrintSuccess("Loaded item " .. itemID .. " (" .. uniqueID .. ") into inventory " .. inventoryID)
+                            else
+                                ax.util:PrintError("Invalid inventory ID when setting item inventory: " .. tostring(inventoryID))
+                            end
+                        else
+                            ax.util:PrintError("Failed to create item instance for ID " .. itemID)
                         end
                     end
                 end
 
                 local client = ax.character:GetPlayerByCharacter(characterID)
                 if ( IsValid(client) ) then
+                    -- Send inventory data
                     net.Start("ax.inventory.load")
                         net.WriteUInt(characterID, 32)
                         net.WriteTable(invResult[1])
                     net.Send(client)
+
+                    -- Send item instances
+                    if ( table.Count(itemInstances) > 0 ) then
+                        net.Start("ax.item.cache")
+                            net.WriteTable(itemInstances)
+                        net.Send(client)
+                    end
                 end
 
                 local character = ax.character:Get(characterID)
@@ -348,7 +405,7 @@ function ax.inventory:LoadInventory(characterID)
                     character:SetInventory(inventory)
                 end
 
-                ax.util:PrintSuccess("Loaded inventory with ID " .. inventoryID .. " for character ID " .. characterID)
+                ax.util:PrintSuccess("Loaded inventory with ID " .. inventoryID .. " for character ID " .. characterID .. " with " .. #inventory.Items .. " items")
             end)
         end)
     end)
@@ -666,7 +723,6 @@ concommand.Add("ax_item_remove", function(ply, cmd, args)
     end
 end)
 
--- Command to list all available items
 concommand.Add("ax_item_list", function(ply, cmd, args)
     if ( !ply:IsSuperAdmin() ) then
         ply:Notify("You must be an administrator to use this command.")

@@ -137,14 +137,27 @@ function ENT:Use(client)
         return
     end
 
-    local itemInst = ax.item:Get(self:GetItemID())
+    local itemID = self:GetItemID()
+    if ( !itemID or itemID == 0 ) then
+        ax.util:PrintError("Invalid item ID for entity " .. self:EntIndex())
+        return
+    end
+
+    local itemInst = ax.item:Get(itemID)
     if ( !itemInst ) then
-        ax.util:PrintError("Item instance not found for entity " .. self:EntIndex())
+        ax.util:PrintError("Item instance not found for entity " .. self:EntIndex() .. " with item ID " .. itemID)
+        return
+    end
+
+    -- Verify this is actually a world item
+    if ( itemInst:GetInventoryID() != 0 ) then
+        ax.util:PrintError("Attempted to pick up item " .. itemID .. " that is not in the world (inventory: " .. itemInst:GetInventoryID() .. ")")
         return
     end
 
     -- Check if inventory can fit the item
-    if ( !inventory:CanFitItem(itemInst:GetUniqueID(), 1) ) then
+    local weight = itemInst:GetWeight()
+    if ( inventory:GetWeight() + weight > inventory:GetMaxWeight() ) then
         client:Notify("Your inventory is too full to take this item.")
         return
     end
@@ -154,8 +167,28 @@ function ENT:Use(client)
     -- Set cooldown to prevent spam
     self:SetCooldown("take", 1)
 
-    -- Perform take action
-    ax.item:PerformAction(itemInst:GetID(), "Take")
+    ax.util:PrintSuccess("Player " .. client:SteamName() .. " is taking item " .. itemInst:GetID() .. " from world to inventory " .. inventory:GetID())
+
+    -- Perform transfer with better error handling
+    ax.item:Transfer(itemInst:GetID(), 0, inventory:GetID(), function(success)
+        if ( success ) then
+            ax.util:PrintSuccess("Item transfer successful, removing entity")
+
+            if ( itemInst.OnTaken ) then
+                itemInst:OnTaken(self)
+            end
+
+            hook.Run("PostPlayerTakeItem", client, itemInst, self)
+            SafeRemoveEntity(self)
+        else
+            ax.util:PrintError("Item transfer failed for item " .. itemInst:GetID())
+            client:Notify("Failed to transfer item to inventory.")
+            -- Clear the cooldown since the transfer failed
+            local cooldowns = self:GetTable().axCooldowns or {}
+            cooldowns["take"] = nil
+            self:GetTable().axCooldowns = cooldowns
+        end
+    end)
 end
 
 function ENT:OnTakeDamage(dmg)
