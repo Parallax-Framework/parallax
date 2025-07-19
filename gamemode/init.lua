@@ -11,7 +11,7 @@
 
 DeriveGamemode("sandbox")
 
-ax = ax or {util = {}, meta = {}, config = {}, globals = {}}
+ax = ax or {util = {}, meta = {}, config = {}}
 
 AddCSLuaFile("cl_init.lua")
 
