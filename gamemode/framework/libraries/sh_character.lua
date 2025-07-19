@@ -5,7 +5,11 @@ function ax.character:InstanceObject()
     local character = setmetatable({}, ax.meta.character)
     -- bloodycop6385 @ TODO: Uh, move to character variables?
     character.data = {}
-    character.id = #ax.character.stored + 1
+
+    -- TOOD: Change to DB
+    character.id = #ax.character.instances + 1
+
+    ax.character.stored[character.id] = character
 
     return character
 end
