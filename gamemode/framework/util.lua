@@ -122,7 +122,7 @@ function ax.util:Print(...)
     if ( SERVER ) then
         MsgC("[PARALLAX] ", args)
     else
-        chat.AddText(Color(100, 150, 255), "[PARALLAX] ", Color(255, 255, 255), args)
+        chat.AddText(Color(100, 150, 255), "[PARALLAX] ", color_white, args)
     end
 end
 
@@ -134,7 +134,7 @@ function ax.util:PrintError(...)
         MsgC("[PARALLAX] [ERROR] ", args)
         ErrorNoHalt("[PARALLAX] [ERROR] " .. args .. "\n")
     else
-        chat.AddText(Color(255, 100, 100), "[PARALLAX] [ERROR] ", Color(255, 255, 255), args)
+        chat.AddText(Color(255, 100, 100), "[PARALLAX] [ERROR] ", color_white, args)
     end
 end
 
@@ -145,7 +145,7 @@ function ax.util:PrintWarning(...)
     if ( SERVER ) then
         MsgC("[PARALLAX] [WARNING] " .. args)
     else
-        chat.AddText(Color(255, 200, 100), "[PARALLAX] [WARNING] ", Color(255, 255, 255), args)
+        chat.AddText(Color(255, 200, 100), "[PARALLAX] [WARNING] ", color_white, args)
     end
 end
 
@@ -159,6 +159,69 @@ function ax.util:PrintDebug(...)
     if ( SERVER ) then
         MsgC("[PARALLAX] [DEBUG] ", args)
     else
-        chat.AddText(Color(150, 150, 150), "[PARALLAX] [DEBUG] ", Color(200, 200, 200), args)
+        chat.AddText(Color(150, 150, 150), "[PARALLAX] [DEBUG] ", color_white, args)
     end
+end
+
+function ax.util:FindString(str, find)
+    if ( str == nil or find == nil ) then
+        ax.util:PrintError("Attempted to find a string with no value to find for! (" .. tostring(str) .. ", " .. tostring(find) .. ")")
+        return false
+    end
+
+    str = string.lower(str)
+    find = string.lower(find)
+
+    return string.find(str, find) != nil
+end
+
+function ax.util:FindText(txt, find)
+    if ( txt == nil or find == nil ) then return false end
+
+    local words = string.Explode(" ", txt)
+    for i = 1, #words do
+        if ( self:FindString(words[i], find) ) then
+            return true
+        end
+    end
+
+    return false
+end
+
+function ax.util:FindPlayer(identifier)
+    if ( identifier == nil ) then return NULL end
+
+    if ( IsValid(identifier) and identifier:IsPlayer() ) then
+        return identifier
+    end
+
+    if ( isnumber(identifier) ) then
+        return Player(identifier)
+    end
+
+    if ( isstring(identifier) ) then
+        if ( ax.util:CoerceType(ax.types.steamid, identifier) ) then
+            return player.GetBySteamID(identifier)
+        elseif ( ax.util:CoerceType(ax.types.steamid64, identifier) ) then
+            return player.GetBySteamID64(identifier)
+        end
+
+        for _, v in player.Iterator() do
+            if ( self:FindString(v:Name(), identifier) or self:FindString(v:SteamName(), identifier) or self:FindString(v:SteamID(), identifier) or self:FindString(v:SteamID64(), identifier) ) then
+                return v
+            end
+        end
+    end
+
+    if ( istable(identifier) ) then
+        for i = 1, #identifier do
+            local foundPlayer = self:FindPlayer(identifier[i])
+
+            if ( IsValid(foundPlayer) ) then
+                return foundPlayer
+            end
+        end
+    end
+
+    return NULL
 end
