@@ -117,35 +117,44 @@ end
 
 -- Print a regular message with framework styling
 function ax.util:Print(...)
-    local args = unpack({...})
+    local args = {...}
+    args[#args + 1] = "\n"
+
+    local varArgs = unpack(args)
 
     if ( SERVER ) then
-        MsgC("[PARALLAX] ", args)
+        MsgC("[PARALLAX] ", varArgs)
     else
-        chat.AddText(Color(100, 150, 255), "[PARALLAX] ", color_white, args)
+        chat.AddText(Color(100, 150, 255), "[PARALLAX] ", color_white, varArgs)
     end
 end
 
 -- Print an error message
 function ax.util:PrintError(...)
-    local args = unpack({...})
+    local args = {...}
+    args[#args + 1] = "\n"
+
+    local varArgs = unpack(args)
 
     if ( SERVER ) then
-        MsgC("[PARALLAX] [ERROR] ", args)
-        ErrorNoHalt("[PARALLAX] [ERROR] " .. args .. "\n")
+        MsgC("[PARALLAX] [ERROR] ", varArgs)
+        ErrorNoHalt("[PARALLAX] [ERROR] " .. varArgs .. "\n")
     else
-        chat.AddText(Color(255, 100, 100), "[PARALLAX] [ERROR] ", color_white, args)
+        chat.AddText(Color(255, 100, 100), "[PARALLAX] [ERROR] ", color_white, varArgs)
     end
 end
 
 -- Print a warning message
 function ax.util:PrintWarning(...)
-    local args = unpack({...})
+    local args = {...}
+    args[#args + 1] = "\n"
+
+    local varArgs = unpack(args)
 
     if ( SERVER ) then
-        MsgC("[PARALLAX] [WARNING] " .. args)
+        MsgC("[PARALLAX] [WARNING] " .. varArgs)
     else
-        chat.AddText(Color(255, 200, 100), "[PARALLAX] [WARNING] ", color_white, args)
+        chat.AddText(Color(255, 200, 100), "[PARALLAX] [WARNING] ", color_white, varArgs)
     end
 end
 
@@ -153,13 +162,15 @@ end
 local developer = GetConVar("developer")
 function ax.util:PrintDebug(...)
     if ( developer:GetInt() < 1 ) then return end
+    local args = {...}
+    args[#args + 1] = "\n"
 
-    local args = unpack({...})
+    local varArgs = unpack(args)
 
     if ( SERVER ) then
-        MsgC("[PARALLAX] [DEBUG] ", args)
+        MsgC("[PARALLAX] [DEBUG] ", varArgs)
     else
-        chat.AddText(Color(150, 150, 150), "[PARALLAX] [DEBUG] ", color_white, args)
+        chat.AddText(Color(150, 150, 150), "[PARALLAX] [DEBUG] ", color_white, varArgs)
     end
 end
 
