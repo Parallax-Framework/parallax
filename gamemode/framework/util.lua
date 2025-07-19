@@ -7,20 +7,14 @@ function ax.util:DetectFileRealm(file)
 
     -- Client-side patterns
     if ( string.match(fileName, "^cl_") or
-        string.match(fileName, "/cl_") or
-        string.match(fileName, "client") or
-        string.match(fileName, "/ui/") or
-        string.match(fileName, "/vgui/") or
-        string.match(fileName, "/gui/") ) then
+        string.match(fileName, "/cl_") ) then
+
         return "client"
     end
 
     -- Server-side patterns
     if ( string.match(fileName, "^sv_") or
-        string.match(fileName, "/sv_") or
-        string.match(fileName, "server") or
-        string.match(fileName, "/database") or
-        string.match(fileName, "/sql/") ) then
+        string.match(fileName, "/sv_") ) then
         return "server"
     end
 
