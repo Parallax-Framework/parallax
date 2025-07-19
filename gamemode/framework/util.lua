@@ -7,20 +7,20 @@ function ax.util:DetectFileRealm(file)
 
     -- Client-side patterns
     if ( string.match(fileName, "^cl_") or
-         string.match(fileName, "/cl_") or
-         string.match(fileName, "client") or
-         string.match(fileName, "/ui/") or
-         string.match(fileName, "/vgui/") or
-         string.match(fileName, "/gui/") ) then
+        string.match(fileName, "/cl_") or
+        string.match(fileName, "client") or
+        string.match(fileName, "/ui/") or
+        string.match(fileName, "/vgui/") or
+        string.match(fileName, "/gui/") ) then
         return "client"
     end
 
     -- Server-side patterns
     if ( string.match(fileName, "^sv_") or
-         string.match(fileName, "/sv_") or
-         string.match(fileName, "server") or
-         string.match(fileName, "/database") or
-         string.match(fileName, "/sql/") ) then
+        string.match(fileName, "/sv_") or
+        string.match(fileName, "server") or
+        string.match(fileName, "/database") or
+        string.match(fileName, "/sql/") ) then
         return "server"
     end
 
@@ -29,7 +29,7 @@ function ax.util:DetectFileRealm(file)
 end
 
 function ax.util:Include(path, realm)
-    if ( !path or type(path) != "string" or path == "" ) then
+    if ( !isstring(path) or path == "" ) then
         ax.util:PrintError("Include: Invalid path parameter provided")
         return false
     end
@@ -39,7 +39,7 @@ function ax.util:Include(path, realm)
     path = string.gsub(path, "^/+", "") -- Remove leading slashes
 
     -- Determine the realm if not provided
-    if ( !realm or type(realm) != "string" or realm == "" ) then
+    if ( !isstring(realm) or realm == "" ) then
         realm = ax.util:DetectFileRealm(path)
     end
 
@@ -72,7 +72,7 @@ end
 
 -- Recursively include all files in a directory
 function ax.util:IncludeDirectory(directory)
-    if ( !directory or type(directory) != "string" or directory == "" ) then
+    if ( !isstring(directory) or directory == "" ) then
         ax.util:PrintError("IncludeDirectory: Invalid directory parameter provided")
         return false
     end
@@ -92,24 +92,24 @@ function ax.util:IncludeDirectory(directory)
     end
 
     -- Check if the directory exists
-    if ( !file.Exists(directory, "GAME") ) then
+    if ( !file.IsDir("gamemodes/" .. directory, "GAME") ) then
         ax.util:PrintError("IncludeDirectory: Directory '" .. directory .. "' does not exist")
         return false
     end
 
     -- Get all files in the directory
-    local files, directories = file.Find(directory .. "/*", "GAME")
+    local files, directories = file.Find("gamemodes/" .. directory .. "/*.lua", "GAME")
 
     -- Include all files found in the directory
-    for _, file in ipairs(files) do
-        local filePath = directory .. file
-        ax.util:Include(filePath)
+    for i = 1, #files do
+        ax.util:Include(directory .. "/" .. files[i])
     end
+
     -- Recursively include all subdirectories
-    for _, subdir in ipairs(directories) do
-        local subdirPath = directory .. subdir
-        ax.util:IncludeDirectory(subdirPath)
+    for i = 1, #directories do
+        ax.util:IncludeDirectory(directory .. directories[i] .. "/")
     end
+
     -- Print debug information if developer mode is enabled
     ax.util:PrintDebug("Included directory: " .. directory)
     return true
