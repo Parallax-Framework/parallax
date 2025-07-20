@@ -17,10 +17,10 @@ function ax.schema:Initialize()
     local active = engine.ActiveGamemode()
     local boot = ax.util:Include(active .. "/gamemode/schema/boot.lua", "shared")
     if ( !boot ) then
-        ax.util:PrintError("Failed to load schema boot file for gamemode '" .. active .. "'")
+        ax.util:PrintError("Failed to load schema boot file for \"" .. active .. "\". Please ensure your schema is set up correctly.")
         return false
     end
 
     -- Initialize the schema
-    ax.util:Print("Initializing schema for gamemode '" .. active .. "'")
+    ax.util:PrintSuccess("Schema \"" .. active .. "\" initialized successfully.")
 end
