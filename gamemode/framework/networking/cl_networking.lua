@@ -8,3 +8,12 @@
 
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
+
+net.Receive("ax.player.ready", function(len)
+    local clientTable = ax.client:GetTable()
+    if ( clientTable.axReady ) then return end
+
+    clientTable.axReady = true
+
+    vgui.Create("ax.main")
+end)

@@ -8,3 +8,5 @@
 
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
+
+util.AddNetworkString("ax.player.ready")

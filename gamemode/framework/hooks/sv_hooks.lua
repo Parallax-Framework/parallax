@@ -29,5 +29,6 @@ hook.Add("OnRequestFullUpdate", "ax.OnRequestFullUpdate", function(data)
 end)
 
 function GM:PlayerReady(client)
-    print("Player " .. client:Nick() .. " is ready.")
+    net.Start("ax.player.ready")
+    net.Send(client)
 end
