@@ -216,7 +216,7 @@ function PANEL:AnimateIn()
         local buttons = {self.createButton, self.loadButton, self.optionsButton, self.disconnectButton}
         for i, button in ipairs(buttons) do
             timer.Simple(0.2 + (i-1) * 0.1, function()
-                if IsValid(button) then
+                if ( IsValid(button) ) then
                     button:AlphaTo(255, 0.5, 0)
                 end
             end)
