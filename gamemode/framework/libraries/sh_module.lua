@@ -33,7 +33,8 @@ function ax.module:Include(path)
 
             MODULE = { uniqueID = moduleName }
                 ax.util:Include(path .. "/" .. fileName, "shared")
-                ax.util:PrintSuccess("Module \"" .. MODULE.uniqueID .. "\" initialized successfully.")
+                ax.util:PrintSuccess("Module \"" .. MODULE.Name .. "\" initialized successfully.")
+                ax.module.stored[moduleName] = MODULE
             MODULE = nil
         end
     end
@@ -47,7 +48,8 @@ function ax.module:Include(path)
 
                 ax.util:Include(bootFile, "shared")
                 ax.util:IncludeDirectory(path .. "/" .. dirName, true)
-                ax.util:PrintSuccess("Module \"" .. MODULE.uniqueID .. "\" initialized successfully.")
+                ax.util:PrintSuccess("Module \"" .. MODULE.Name .. "\" initialized successfully.")
+                ax.module.stored[MODULE.uniqueID] = MODULE
 
                 MODULE = nil
             end

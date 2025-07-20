@@ -86,7 +86,7 @@ function ax.util:IncludeDirectory(directory, fromLua)
 
     -- Get the active path if we are not doing it from lua
     local path = ""
-    if ( fromLua == nil or fromLua == true ) then
+    if ( !fromLua ) then
         path = debug.getinfo(2).source
         path = string.sub(path, 2, string.find(path, "/[^/]*$"))
         path = string.gsub(path, "gamemodes/", "")
@@ -117,6 +117,7 @@ function ax.util:IncludeDirectory(directory, fromLua)
 
     -- Recursively include all subdirectories
     for i = 1, #directories do
+        ax.util:PrintDebug("Recursively including directory: " .. directories[i])
         ax.util:IncludeDirectory(directory .. directories[i])
     end
 
