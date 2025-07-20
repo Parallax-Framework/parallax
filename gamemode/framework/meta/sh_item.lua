@@ -13,27 +13,22 @@ local item = ax.meta.item or {}
 item.__index = item
 
 item.id = 0
+item.data = {}
+item.actions = {}
+item.weight = 0.0
 
 function item:GetData(key)
-    return self.data and self.data[key] or nil
+    return self.data[key] or nil
 end
 
 function item:SetData(key, value)
-    if ( !self.data ) then
-        self.data = {}
-    end
-
     self.data[key] = value
 end
 
 function item:GetActions()
-    return self.actions and self.actions or {}
+    return self.actions
 end
 
 function item:AddAction(name, action)
-    if ( !self.actions ) then
-        self.actions = {}
-    end
-
     self.actions[name] = action
 end
