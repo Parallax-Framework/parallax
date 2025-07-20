@@ -1,15 +1,6 @@
 ax.module = ax.module or {}
 ax.module.stored = ax.module.stored or {}
 
---[[
-    for k, v in pairs(MODULE) do
-        if ( isfunction(v) ) then
-            AX_HOOKS_CACHE[k] = AX_HOOKS_CACHE[k] or {}
-            AX_HOOKS_CACHE[k][MODULE] = v
-        end
-    end
-]]
-
 -- bloodycop6385 :: Wanted to use the below code, but I started to re-consider due to schema support.
 --[[
 function ax.module:Initialise()
