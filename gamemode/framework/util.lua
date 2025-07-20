@@ -74,7 +74,7 @@ function ax.util:Include(path, realm)
 end
 
 -- Recursively include all files in a directory
-function ax.util:IncludeDirectory(directory)
+function ax.util:IncludeDirectory(directory, fromLua)
     if ( !isstring(directory) or directory == "" ) then
         ax.util:PrintError("IncludeDirectory: Invalid directory parameter provided")
         return false
@@ -84,17 +84,21 @@ function ax.util:IncludeDirectory(directory)
     directory = string.gsub(directory, "\\", "/")
     directory = string.gsub(directory, "^/+", "") -- Remove leading slashes
 
-    -- Get the active path
-    local path = debug.getinfo(2).source
-    path = string.sub(path, 2, string.find(path, "/[^/]*$"))
-    path = string.gsub(path, "gamemodes/", "")
+    -- Get the active path if we are not doing it from lua
+    local path = ""
+    if ( fromLua == nil or fromLua == true ) then
+        path = debug.getinfo(2).source
+        path = string.sub(path, 2, string.find(path, "/[^/]*$"))
+        path = string.gsub(path, "gamemodes/", "")
+    end
 
     -- Combine the path with the directory
     if ( !string.match(directory, "^/") ) then
         directory = path .. directory
-        if ( !string.EndsWith(directory, "/") ) then
-            directory = directory .. "/"
-        end
+    end
+
+    if ( !string.EndsWith(directory, "/") ) then
+        directory = directory .. "/"
     end
 
     -- Get all files in the directory
@@ -113,8 +117,6 @@ function ax.util:IncludeDirectory(directory)
 
     -- Recursively include all subdirectories
     for i = 1, #directories do
-        print("Recursively including directory: " .. directories[i])
-        print("Directory path: " .. directory)
         ax.util:IncludeDirectory(directory .. directories[i])
     end
 
