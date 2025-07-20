@@ -1,3 +1,5 @@
+-- riggs9162 @ TODO: Rewrite the type library entirely to be independent of Helix.
+
 ax.type = ax.type or {
     [1]         = "string",
     [2]         = "text",
