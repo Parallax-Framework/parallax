@@ -129,7 +129,7 @@ end
 
 function PANEL:CreateButton(text, btnWidth, btnHeight)
     -- Create a reusable button component
-    local button = vgui.Create("DButton")
+    local button = self:Add("DButton")
     button:SetSize(btnWidth, btnHeight)
     button:SetText("")
 
@@ -149,7 +149,7 @@ function PANEL:CreateButton(text, btnWidth, btnHeight)
     button.Paint = function(this, w, h)
         -- Background
         animationProgress = Lerp(FrameTime() * 10, animationProgress, hovered and 1 or 0)
-        local bgColor = LerpColor(animationProgress, colors.buttonNormal, colors.buttonHover)
+        local bgColor = colors.buttonNormal:Lerp(colors.buttonHover, animationProgress)
         draw.RoundedBox(0, 0, 0, w, h, bgColor)
 
         -- Accent line at bottom
@@ -188,16 +188,6 @@ function PANEL:CreateButton(text, btnWidth, btnHeight)
     return button
 end
 
--- Utility function to interpolate between colors
-function LerpColor(t, c1, c2)
-    return Color(
-        Lerp(t, c1.r, c2.r),
-        Lerp(t, c1.g, c2.g),
-        Lerp(t, c1.b, c2.b),
-        Lerp(t, c1.a, c2.a)
-    )
-end
-
 function PANEL:AnimateIn()
     self:AlphaTo(255, 0.5, 0, function()
         -- Animate title and subtitle
@@ -218,6 +208,7 @@ function PANEL:AnimateIn()
             timer.Simple(0.2 + (i-1) * 0.1, function()
                 if ( IsValid(button) ) then
                     button:AlphaTo(255, 0.5, 0)
+                    button:MoveToFront()
                 end
             end)
         end

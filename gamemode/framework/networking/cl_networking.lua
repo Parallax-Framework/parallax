@@ -17,3 +17,18 @@ net.Receive("ax.player.ready", function(len)
 
     vgui.Create("ax.main")
 end)
+
+net.Receive("ax.character.sync", function()
+    local client = net.ReadPlayer()
+    if ( !IsValid(client) ) then return end
+
+    local character = net.ReadTable()
+    if ( !istable(character) ) then
+        ax.util:PrintError("Invalid character data received from server")
+        return
+    end
+
+    client:GetTable().axCharacter = character
+
+    ax.character.instances[character.id] = setmetatable(character, ax.meta.character)
+end)

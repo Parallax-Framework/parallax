@@ -12,9 +12,9 @@
 ax.schema = ax.schema or {}
 
 function ax.schema:Initialize()
-    SCHEMA = SCHEMA or {}
+    SCHEMA = SCHEMA or { Folder = engine.ActiveGamemode() }
 
-    local active = engine.ActiveGamemode()
+    local active = SCHEMA.Folder
     local boot = ax.util:Include(active .. "/gamemode/schema/boot.lua", "shared")
     if ( !boot ) then
         ax.util:PrintError("Failed to load schema boot file for \"" .. active .. "\". Please ensure your schema is set up correctly.")

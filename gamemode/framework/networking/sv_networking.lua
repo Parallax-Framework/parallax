@@ -10,3 +10,4 @@
 ]]
 
 util.AddNetworkString("ax.player.ready")
+util.AddNetworkString("ax.character.sync")

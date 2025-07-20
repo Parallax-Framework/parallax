@@ -28,7 +28,27 @@ hook.Add("OnRequestFullUpdate", "ax.OnRequestFullUpdate", function(data)
     end)
 end)
 
+function GM:PlayerDeathThink(client)
+    local character = client:GetCharacter()
+    if ( !character ) then return true end
+
+end
+
 function GM:PlayerReady(client)
     net.Start("ax.player.ready")
     net.Send(client)
+
+    local character = setmetatable({
+        steamid = client:SteamID64(),
+        name = "John Doe",
+        id = #ax.character.instances + 1,
+
+    }, ax.meta.character)
+
+    client:GetTable().axCharacter = character
+
+    net.Start("ax.character.sync")
+        net.WritePlayer(client)
+        net.WriteTable(character)
+    net.Broadcast()
 end

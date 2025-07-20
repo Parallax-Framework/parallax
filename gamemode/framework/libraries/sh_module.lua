@@ -18,12 +18,11 @@ function ax.module:Initialize()
 end
 
 function ax.module:Include(path)
-    local files, directories = file.Find(path .. "/*", "LUA")
+    local files, directories = file.Find(path .. "/*.lua", "LUA")
 
     if ( files[1] != nil ) then
         for i = 1, #files do
             local fileName = files[i]
-            if ( !string.EndsWith(fileName, ".lua") ) then continue end
 
             local moduleName = string.StripExtension(fileName)
             local prefix = string.sub(moduleName, 1, 3)
@@ -56,7 +55,7 @@ function ax.module:Include(path)
         end
     end
 
-    if ( #files == 0 and #directories == 0 ) then
+    if ( files[1] == nil and directories[1] == nil ) then
         ax.util:PrintWarning("No modules found in path: " .. path)
     end
 end

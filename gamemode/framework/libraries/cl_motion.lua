@@ -56,7 +56,7 @@ function ax.motion:AnimateProperty(panel, property, start, finish, duration, eas
     local endTime = startTime + duration
     local easingFunc = self.easingFunctions[easing] or self.easingFunctions.inOutQuad
 
-    local uniqueIdent = "ax.motion." .. panel:GetTable().__index .. "." .. property .. "." .. SysTime()
+    local uniqueIdent = "ax.motion." .. tostring(panel) .. "." .. property .. "." .. SysTime()
 
     hook.Add("Think", uniqueIdent, function()
         if ( !IsValid(panel) ) then
