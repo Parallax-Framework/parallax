@@ -10,7 +10,7 @@
 ]]
 
 ax.character = ax.character or {}
-ax.character.stored = ax.character.stored or {}
+ax.character.instances = ax.character.instances or {}
 
 function ax.character:InstanceObject()
     local character = setmetatable({}, ax.meta.character)
@@ -20,7 +20,7 @@ function ax.character:InstanceObject()
     -- TOOD: Change to DB
     character.id = #ax.character.instances + 1
 
-    ax.character.stored[character.id] = character
+    ax.character.instances[character.id] = character
 
     return character
 end
@@ -31,5 +31,5 @@ function ax.character:Get(id)
         return nil
     end
 
-    return ax.character.stored[id]
+    return ax.character.instances[id]
 end
