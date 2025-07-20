@@ -11,6 +11,7 @@
 
 function GM:Initialize()
     ax.schema:Initialize()
+    ax.module:Initialize()
 end
 
 local reloaded = false
@@ -19,4 +20,5 @@ function GM:OnReloaded()
     reloaded = true
 
     ax.schema:Initialize()
+    ax.module:Initialize()
 end
