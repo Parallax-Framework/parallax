@@ -38,12 +38,19 @@ function GM:PlayerReady(client)
     net.Start("ax.player.ready")
     net.Send(client)
 
+    local inventory = setmetatable({
+        id = #ax.inventory.instances + 1,
+    }, ax.meta.inventory)
+
     local character = setmetatable({
         steamid = client:SteamID64(),
         name = "John Doe",
         id = #ax.character.instances + 1,
-
+        id_inv = inventory.id,
     }, ax.meta.character)
+
+    ax.inventory.instances[inventory.id] = inventory
+    ax.character.instances[character.id] = character
 
     client:GetTable().axCharacter = character
 

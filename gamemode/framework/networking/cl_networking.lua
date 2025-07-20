@@ -31,4 +31,9 @@ net.Receive("ax.character.sync", function()
     client:GetTable().axCharacter = character
 
     ax.character.instances[character.id] = setmetatable(character, ax.meta.character)
+    ax.inventory.instances[character.id_inv] = setmetatable({
+        id = character.id_inv,
+    }, ax.meta.inventory)
+
+    -- Shitty
 end)
