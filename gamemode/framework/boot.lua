@@ -19,3 +19,13 @@ ax.util:IncludeDirectory("meta")
 ax.util:IncludeDirectory("hooks")
 ax.util:IncludeDirectory("networking")
 ax.util:IncludeDirectory("interface")
+
+local reloaded = false
+function GM:OnReloaded()
+    if ( reloaded ) then return end
+    reloaded = true
+
+    ax.schema:Initialize()
+    ax.module:Initialize()
+    ax.item:Initialize()
+end

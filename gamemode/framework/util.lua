@@ -136,10 +136,10 @@ function ax.util:PreparePackage(...)
 
     for i = 1, #arguments do
         local arg = arguments[i]
-        if ( isentity(arg) ) then
+        if ( isentity(arg) and IsValid(arg) ) then
             package[#package + 1] = tostring(arg)
 
-            if ( type(arg) == "Player" ) then
+            if ( arg:IsPlayer() ) then
                 package[#package + 1] = "[" .. arg:SteamID64() .. "]"
             end
         else
@@ -233,12 +233,12 @@ end
 function ax.util:FindPlayer(identifier)
     if ( identifier == nil ) then return NULL end
 
-    if ( IsValid(identifier) and identifier:IsPlayer() ) then
+    if ( isentity(identifier) and IsValid(identifier) and identifier:IsPlayer() ) then
         return identifier
     end
 
     if ( isnumber(identifier) ) then
-        return Player(identifier)
+        return Entity(identifier)
     end
 
     if ( isstring(identifier) ) then

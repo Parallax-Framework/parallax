@@ -59,3 +59,39 @@ function GM:PlayerReady(client)
         net.WriteTable(character)
     net.Broadcast()
 end
+
+function GM:PlayerSay(client, text, teamChat)
+    if ( text == "" ) then return end
+
+    --[[
+    local firstWord = string.Explode("%s+", text, true)[1]
+    if ( firstWord[1] == "/" ) then
+        firstWord = string.sub(text, 2)
+    end
+
+    local cmd = ax.command:Get(firstWord)
+    print(firstWord)
+    if ( istable(cmd) ) then
+        if ( ax.command:CanRun(firstWord, client) ) then
+            local args = ax.command:ParseArguments(string.sub(text, #firstWord + 2))
+
+            PrintTable(args)
+
+            hook.Run("RunCommand", firstWord, client, args)
+        else
+            ax.util:PrintError("You do not have permission to run this command.")
+        end
+
+        return ""
+    end
+    ]]
+
+    -- a bloody mess
+
+    if ( hook.Run("ShouldFormatMessage", client, text) == false ) then
+        return text
+    end
+
+    text = ax.chat:Format(text)
+    return text
+end

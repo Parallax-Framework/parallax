@@ -8,9 +8,3 @@
 
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
-
-function GM:Initialize()
-    ax.schema:Initialize()
-    ax.module:Initialize()
-    ax.item:Initialize()
-end
