@@ -12,9 +12,6 @@
 local character = ax.meta.character or {}
 character.__index = character
 
-character.data = {}
-character.id = 0
-
 function character:__tostring()
     return "Character: " .. tostring(self.id) .. " (" .. self.name .. ")"
 end
@@ -24,11 +21,15 @@ function character:GetInventory()
 end
 
 function character:GetData(key)
+    if ( !istable(self.data) ) then self.data = {} end
+
     return self.data[key]
 end
 
 function character:SetData(key, value)
+    if ( !istable(self.data) ) then self.data = {} end
+
     self.data[key] = value
 end
 
-ax.meta.character = character -- Keep, character:GetData is nil otherwise.
+ax.meta.character = character -- Keep, funcs don't define otherwise.

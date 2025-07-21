@@ -31,9 +31,27 @@ net.Receive("ax.character.sync", function()
     client:GetTable().axCharacter = character
 
     ax.character.instances[character.id] = setmetatable(character, ax.meta.character)
-    ax.inventory.instances[character.id_inv] = setmetatable({
+    ax.inventory.instances[#ax.inventory.instances + 1] = setmetatable({
         id = character.id_inv,
     }, ax.meta.inventory)
 
     -- Shitty
+end)
+
+net.Receive("ax.character.SetVar", function()
+    local characterId = net.ReadUInt(32)
+    local name = net.ReadString()
+    local value = net.ReadType()
+
+    local character = ax.character:Get(characterId)
+    if ( !character ) then
+        ax.util:PrintError("Character with ID " .. characterId .. " not found")
+        return
+    end
+
+    if ( !istable(character.vars) ) then
+        character.vars = {}
+    end
+
+    character.vars[name] = value
 end)

@@ -12,10 +12,6 @@
 local inventory = ax.meta.inventory or {}
 inventory.__index = inventory
 
-inventory.id = 0
-inventory.items = {}
-inventory.maxWeight = 30.0 -- kg
-
 function inventory:__tostring()
     return "Inventory: " .. tostring(self.id)
 end
