@@ -33,6 +33,8 @@ net.Receive("ax.character.sync", function()
     ax.character.instances[character.id] = setmetatable(character, ax.meta.character)
     ax.inventory.instances[#ax.inventory.instances + 1] = setmetatable({
         id = character.id_inv,
+        items = {},
+        maxWeight = 30.0
     }, ax.meta.inventory)
 
     -- Shitty
