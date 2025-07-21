@@ -9,12 +9,12 @@ function ax.item:Initialize()
     -- Look through modules for items
     local _, modules = file.Find("parallax/gamemode/modules/*", "LUA")
     for i = 1, #modules do
-        self:Include("parallax/gamemode/modules/" .. modules[i])
+        self:Include("parallax/gamemode/modules/" .. modules[i] .. "/items")
     end
 end
 
 function ax.item:Include(path)
-    local files, _ = file.Find(path .. "/items/*.lua", "LUA")
+    local files, _ = file.Find(path .. "/*.lua", "LUA")
 
     for i = 1, #files do
         local fileName = files[i]

@@ -12,16 +12,15 @@
 local item = ax.meta.item or {}
 item.__index = item
 
-item.id = 0
-item.data = {}
-item.actions = {}
-item.weight = 0.0
-
 function item:GetData(key)
-    return self.data[key] or nil
+    if ( !istable(self.data) ) then self.data = {} end
+
+    return self.data[key]
 end
 
 function item:SetData(key, value)
+    if ( !istable(self.data) ) then self.data = {} end
+
     self.data[key] = value
 end
 
@@ -30,5 +29,9 @@ function item:GetActions()
 end
 
 function item:AddAction(name, action)
+    if ( !istable(self.actions) ) then self.actions = {} end
+
     self.actions[name] = action
 end
+
+ax.meta.item = item
