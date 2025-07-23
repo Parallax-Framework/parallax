@@ -74,15 +74,15 @@ end
 
 function ax.faction:CanBecome(faction, client)
     local factionTable = self:Get(faction)
-    local try, err = hook.Run("CanBecomeFaction", factionTable, client)
+    local try, catch = hook.Run("CanBecomeFaction", factionTable, client)
     if ( try == false ) then
-        client:ChatPrint("You cannot become part of this faction: " .. (err or ""))
+        client:ChatPrint("You cannot become part of this faction: " .. (catch or ""))
     end
 
     if ( isfunction(factionTable.CanBecome) ) then
-        try, err = factionTable:CanBecome(client)
+        try, catch = factionTable:CanBecome(client)
         if ( try == false ) then
-            client:ChatPrint("You cannot become part of this faction: " .. (err or ""))
+            client:ChatPrint("You cannot become part of this faction: " .. (catch or ""))
         end
     end
 
