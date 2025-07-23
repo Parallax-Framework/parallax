@@ -26,6 +26,7 @@ function GM:OnReloaded()
     reloaded = true
 
     ax.schema:Initialize()
+    ax.faction:Initialize()
     ax.module:Initialize()
     ax.item:Initialize()
 end
