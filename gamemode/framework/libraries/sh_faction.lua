@@ -53,3 +53,38 @@ function ax.faction:Include(directory)
 
     return true
 end
+
+function ax.faction:Get(id)
+    if ( isstring(id) and self.stored[id] ) then
+        return self.stored[id]
+    elseif ( isnumber(id) and self.instances[id] ) then
+        return self.instances[id]
+    end
+
+    for i = 1, #self.instances do
+        if ( isnumber(id) and self.instances[i].index == id ) then
+            return self.instances[i]
+        elseif ( isstring(id) and ( ax.util:FindString(self.instances[i].Name, id) or ax.util:FindString(self.instances[i].id, id) ) ) then
+            return self.instances[i]
+        end
+    end
+
+    return nil
+end
+
+function ax.faction:CanBecome(faction, client)
+    local factionTable = self:Get(faction)
+    local try, err = hook.Run("CanBecomeFaction", factionTable, client)
+    if ( try == false ) then
+        client:ChatPrint("You cannot become part of this faction: " .. (err or ""))
+    end
+
+    if ( isfunction(factionTable.CanBecome) ) then
+        try, err = factionTable:CanBecome(client)
+        if ( try == false ) then
+            client:ChatPrint("You cannot become part of this faction: " .. (err or ""))
+        end
+    end
+
+    return true, nil
+end

@@ -14,3 +14,7 @@ function GM:Initialize()
     ax.module:Initialize()
     ax.item:Initialize()
 end
+
+function GM:CanBecomeFaction(factionTable, client)
+    return true, nil
+end
