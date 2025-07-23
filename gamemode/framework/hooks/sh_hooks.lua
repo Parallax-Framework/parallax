@@ -18,3 +18,7 @@ end
 function GM:CanBecomeFaction(factionTable, client)
     return true, nil
 end
+
+function GM:CanBecomeClass(classTable, client)
+    return true, nil
+end
