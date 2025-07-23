@@ -5,6 +5,16 @@ ax.faction.stored = ax.faction.stored or {}
 function ax.faction:Initialize()
     self:Include("parallax/gamemode/factions")
     self:Include(engine.ActiveGamemode() .. "/gamemode/schema/factions")
+
+    local _, modules = file.Find("parallax/gamemode/modules/*", "LUA")
+    for i = 1, #modules do
+        self:Include("parallax/gamemode/modules/" .. modules[i] .. "/factions")
+    end
+
+    _, modules = file.Find(engine.ActiveGamemode() .. "/gamemode/modules/*", "LUA")
+    for i = 1, #modules do
+        self:Include(engine.ActiveGamemode() .. "/gamemode/modules/" .. modules[i] .. "/factions")
+    end
 end
 
 function ax.faction:Include(directory)

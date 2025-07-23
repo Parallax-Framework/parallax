@@ -3,8 +3,18 @@ ax.class.instances  = ax.class.instances or {}
 ax.class.stored = ax.class.stored or {}
 
 function ax.class:Initialize()
-    self:Include("parallax/gamemode/factions")
-    self:Include(engine.ActiveGamemode() .. "/gamemode/schema/factions")
+    self:Include("parallax/gamemode/classes")
+    self:Include(engine.ActiveGamemode() .. "/gamemode/schema/classes")
+
+    local _, modules = file.Find("parallax/gamemode/modules/*", "LUA")
+    for i = 1, #modules do
+        self:Include("parallax/gamemode/modules/" .. modules[i] .. "/classes")
+    end
+
+    _, modules = file.Find(engine.ActiveGamemode() .. "/gamemode/modules/*", "LUA")
+    for i = 1, #modules do
+        self:Include(engine.ActiveGamemode() .. "/gamemode/modules/" .. modules[i] .. "/classes")
+    end
 end
 
 function ax.class:Include(directory)
