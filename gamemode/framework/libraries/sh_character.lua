@@ -93,6 +93,8 @@ function ax.character:NewVar(name, data)
     name = string.lower(name)
     name = string.Trim(name)
 
+    data.id = table.Count(self.vars) + 1
+
     self.vars[name] = data
 
     local fancyVarName = string.upper(string.sub(name, 1, 1)) .. string.sub(name, 2)
@@ -103,21 +105,33 @@ function ax.character:NewVar(name, data)
             fancyVarName = string.upper(string.sub(data.Alias[i], 1, 1)) .. string.sub(data.Alias[i], 2)
 
             ax.meta.character["Get" .. fancyVarName] = function(character)
-                return GetVar(character, name)
+                return !isfunction(data.OnGet) and GetVar(character, name) or data:OnGet(character, name, GetVar(character, name))
             end
 
             ax.meta.character["Set" .. fancyVarName] = function(character, value, shouldNetwork, recipients)
-                return SetVar(character, name, value, shouldNetwork, recipients)
+                if ( shouldNetwork == nil ) then shouldNetwork = false end
+
+                if ( !isfunction(data.OnSet) ) then
+                    SetVar(character, name, value, shouldNetwork, recipients)
+                else
+                    data:OnSet(character, name, value, shouldNetwork, recipients)
+                end
             end
         end
     end
 
     ax.meta.character["Get" .. fancyVarName] = function(character)
-        return GetVar(character, name)
+        return !isfunction(data.OnGet) and GetVar(character, name) or data:OnGet(character, name, GetVar(character, name))
     end
 
     ax.meta.character["Set" .. fancyVarName] = function(character, value, shouldNetwork, recipients)
-        return SetVar(character, name, value)
+        if ( shouldNetwork == nil ) then shouldNetwork = false end
+
+        if ( !isfunction(data.OnSet) ) then
+            SetVar(character, name, value, shouldNetwork, recipients)
+        else
+            data:OnSet(character, name, value, shouldNetwork, recipients)
+        end
     end
 
     ax.util:PrintDebug("Variable \"" .. name .. "\" added successfully.")

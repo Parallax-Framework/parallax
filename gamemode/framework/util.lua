@@ -118,7 +118,7 @@ function ax.util:IncludeDirectory(directory, fromLua)
     -- Recursively include all subdirectories
     for i = 1, #directories do
         ax.util:PrintDebug("Recursively including directory: " .. directories[i])
-        ax.util:IncludeDirectory(directory .. directories[i])
+        ax.util:IncludeDirectory(directory .. directories[i] .. "/", true)
     end
 
     -- Print debug information if developer mode is enabled
@@ -266,4 +266,12 @@ function ax.util:FindPlayer(identifier)
     end
 
     return NULL
+end
+
+function ax.util:SafeParseTable(tInput)
+    if ( isstring(tInput) ) then
+        return util.JSONToTable(tInput) or {}
+    end
+
+    return tInput
 end
