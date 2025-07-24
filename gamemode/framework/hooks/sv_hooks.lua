@@ -45,19 +45,34 @@ function GM:PlayerReady(client)
     local character = setmetatable({
         steamid = client:SteamID64(),
         name = "John Doe",
-        id = #ax.character.instances + 1,
         id_inv = inventory.id,
     }, ax.meta.character)
 
     ax.inventory.instances[inventory.id] = inventory
-    ax.character.instances[character.id] = character
 
-    client:GetTable().axCharacter = character
+    local curTime = math.floor(os.time())
 
-    net.Start("ax.character.sync")
-        net.WritePlayer(client)
-        net.WriteTable(character)
-    net.Broadcast()
+    local query = mysql:Insert("ax_characters")
+        query:Insert("schema", engine.ActiveGamemode())
+        query:Callback(function(result)
+            print(result)
+            if ( result == false ) then
+                ax.util:PrintError("Failed to create character for " .. client:SteamID64() .. ": " .. (result and result.error or "Unknown error"))
+                return
+            end
+
+            character.id = result.lastInsertId
+            ax.character.instances[character.id] = character
+
+            -- Set the character on the client
+            client:GetTable().axCharacter = character
+
+            net.Start("ax.character.sync")
+                net.WritePlayer(client)
+                net.WriteTable(character)
+            net.Broadcast()
+        end)
+    query:Execute()
 end
 
 function GM:PlayerSay(client, text, teamChat)
@@ -94,4 +109,10 @@ function GM:PlayerSay(client, text, teamChat)
 
     text = ax.chat:Format(text)
     return text
+end
+
+function GM:DatabaseConnected()
+    ax.database:CreateTables()
+
+    ax.util:PrintDebug("Database connected and tables created. (module: " .. mysql.module .. ")")
 end

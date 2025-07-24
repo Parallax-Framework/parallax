@@ -71,51 +71,48 @@ function QUERY_CLASS:Where(key, value)
 end
 
 function QUERY_CLASS:WhereEqual(key, value)
-    self.whereList[#self.whereList + 1] = "`"..key.."` = '"..self:Escape(value).."'"
+    self.whereList[#self.whereList + 1] = {"`"..key.."` = ?", value}
 end
 
 function QUERY_CLASS:WhereNotEqual(key, value)
-    self.whereList[#self.whereList + 1] = "`"..key.."` != '"..self:Escape(value).."'"
+    self.whereList[#self.whereList + 1] = {"`"..key.."` != ?", value}
 end
 
 function QUERY_CLASS:WhereLike(key, value, format)
     format = format or "%%%s%%"
-    self.whereList[#self.whereList + 1] = "`"..key.."` LIKE '"..string.format(format, self:Escape(value)).."'"
+    self.whereList[#self.whereList + 1] = {"`"..key.."` LIKE ?", string.format(format, value)}
 end
 
 function QUERY_CLASS:WhereNotLike(key, value, format)
     format = format or "%%%s%%"
-    self.whereList[#self.whereList + 1] = "`"..key.."` NOT LIKE '"..string.format(format, self:Escape(value)).."'"
+    self.whereList[#self.whereList + 1] = {"`"..key.."` NOT LIKE ?", string.format(format, value)}
 end
 
 function QUERY_CLASS:WhereGT(key, value)
-    self.whereList[#self.whereList + 1] = "`"..key.."` > '"..self:Escape(value).."'"
+    self.whereList[#self.whereList + 1] = {"`"..key.."` > ?", value}
 end
 
 function QUERY_CLASS:WhereLT(key, value)
-    self.whereList[#self.whereList + 1] = "`"..key.."` < '"..self:Escape(value).."'"
+    self.whereList[#self.whereList + 1] = {"`"..key.."` < ?", value}
 end
 
 function QUERY_CLASS:WhereGTE(key, value)
-    self.whereList[#self.whereList + 1] = "`"..key.."` >= '"..self:Escape(value).."'"
+    self.whereList[#self.whereList + 1] = {"`"..key.."` >= ?", value}
 end
 
 function QUERY_CLASS:WhereLTE(key, value)
-    self.whereList[#self.whereList + 1] = "`"..key.."` <= '"..self:Escape(value).."'"
+    self.whereList[#self.whereList + 1] = {"`"..key.."` <= ?", value}
 end
 
 function QUERY_CLASS:WhereIn(key, value)
     value = istable(value) and value or {value}
 
-    local values = ""
-    local bFirst = true
-
-    for k, v in pairs(value) do
-        values = values .. (bFirst and "" or ", ") .. self:Escape(v)
-        bFirst = false
+    local placeholders = {}
+    for i = 1, #value do
+        placeholders[i] = "?"
     end
 
-    self.whereList[#self.whereList + 1] = "`"..key.."` IN ("..values..")"
+    self.whereList[#self.whereList + 1] = {"`"..key.."` IN ("..table.concat(placeholders, ", ")..")", value}
 end
 
 function QUERY_CLASS:OrderByDesc(key)
@@ -135,11 +132,11 @@ function QUERY_CLASS:Select(fieldName)
 end
 
 function QUERY_CLASS:Insert(key, value)
-    self.insertList[#self.insertList + 1] = {"`"..key.."`", "'"..self:Escape(value).."'"}
+    self.insertList[#self.insertList + 1] = {"`" .. key .. "`", value}
 end
 
 function QUERY_CLASS:Update(key, value)
-    self.updateList[#self.updateList + 1] = {"`"..key.."`", "'"..self:Escape(value).."'"}
+    self.updateList[#self.updateList + 1] = {"`" .. key .. "`", value}
 end
 
 function QUERY_CLASS:Create(key, value)
@@ -183,6 +180,7 @@ end
 
 local function BuildSelectQuery(queryObj)
     local queryString = {"SELECT"}
+    local parameters = {}
 
     if (!istable(queryObj.selectList) or #queryObj.selectList == 0) then
         queryString[#queryString + 1] = " *"
@@ -198,8 +196,24 @@ local function BuildSelectQuery(queryObj)
     end
 
     if (istable(queryObj.whereList) and #queryObj.whereList > 0) then
+        local whereStrings = {}
         queryString[#queryString + 1] = " WHERE "
-        queryString[#queryString + 1] = table.concat(queryObj.whereList, " AND ")
+
+        for i = 1, #queryObj.whereList do
+            local whereClause = queryObj.whereList[i]
+            whereStrings[#whereStrings + 1] = whereClause[1]
+
+            if (istable(whereClause[2])) then
+                -- Handle IN clauses with multiple values
+                for j = 1, #whereClause[2] do
+                    parameters[#parameters + 1] = whereClause[2][j]
+                end
+            else
+                parameters[#parameters + 1] = whereClause[2]
+            end
+        end
+
+        queryString[#queryString + 1] = table.concat(whereStrings, " AND ")
     end
 
     if (istable(queryObj.orderByList) and #queryObj.orderByList > 0) then
@@ -212,7 +226,7 @@ local function BuildSelectQuery(queryObj)
         queryString[#queryString + 1] = queryObj.limit
     end
 
-    return table.concat(queryString)
+    return table.concat(queryString), parameters
 end
 
 local function BuildInsertQuery(queryObj, bIgnore)
@@ -220,6 +234,7 @@ local function BuildInsertQuery(queryObj, bIgnore)
     local queryString = {suffix}
     local keyList = {}
     local valueList = {}
+    local parameters = {}
 
     if (isstring(queryObj.tableName)) then
         queryString[#queryString + 1] = " `"..queryObj.tableName.."`"
@@ -230,7 +245,8 @@ local function BuildInsertQuery(queryObj, bIgnore)
 
     for i = 1, #queryObj.insertList do
         keyList[#keyList + 1] = queryObj.insertList[i][1]
-        valueList[#valueList + 1] = queryObj.insertList[i][2]
+        valueList[#valueList + 1] = "?"
+        parameters[#parameters + 1] = queryObj.insertList[i][2]
     end
 
     if (#keyList == 0) then
@@ -240,11 +256,12 @@ local function BuildInsertQuery(queryObj, bIgnore)
     queryString[#queryString + 1] = " ("..table.concat(keyList, ", ")..")"
     queryString[#queryString + 1] = " VALUES ("..table.concat(valueList, ", ")..")"
 
-    return table.concat(queryString)
+    return table.concat(queryString), parameters
 end
 
 local function BuildUpdateQuery(queryObj)
     local queryString = {"UPDATE"}
+    local parameters = {}
 
     if (isstring(queryObj.tableName)) then
         queryString[#queryString + 1] = " `"..queryObj.tableName.."`"
@@ -255,19 +272,35 @@ local function BuildUpdateQuery(queryObj)
 
     if (istable(queryObj.updateList) and #queryObj.updateList > 0) then
         local updateList = {}
-
         queryString[#queryString + 1] = " SET"
 
         for i = 1, #queryObj.updateList do
-            updateList[#updateList + 1] = queryObj.updateList[i][1].." = "..queryObj.updateList[i][2]
+            updateList[#updateList + 1] = queryObj.updateList[i][1].." = ?"
+            parameters[#parameters + 1] = queryObj.updateList[i][2]
         end
 
         queryString[#queryString + 1] = " "..table.concat(updateList, ", ")
     end
 
     if (istable(queryObj.whereList) and #queryObj.whereList > 0) then
+        local whereStrings = {}
         queryString[#queryString + 1] = " WHERE "
-        queryString[#queryString + 1] = table.concat(queryObj.whereList, " AND ")
+
+        for i = 1, #queryObj.whereList do
+            local whereClause = queryObj.whereList[i]
+            whereStrings[#whereStrings + 1] = whereClause[1]
+
+            if (istable(whereClause[2])) then
+                -- Handle IN clauses with multiple values
+                for j = 1, #whereClause[2] do
+                    parameters[#parameters + 1] = whereClause[2][j]
+                end
+            else
+                parameters[#parameters + 1] = whereClause[2]
+            end
+        end
+
+        queryString[#queryString + 1] = table.concat(whereStrings, " AND ")
     end
 
     if (isnumber(queryObj.offset)) then
@@ -275,7 +308,7 @@ local function BuildUpdateQuery(queryObj)
         queryString[#queryString + 1] = queryObj.offset
     end
 
-    return table.concat(queryString)
+    return table.concat(queryString), parameters
 end
 
 local function BuildDeleteQuery(queryObj)
@@ -389,16 +422,17 @@ end
 
 function QUERY_CLASS:Execute(bQueueQuery)
     local queryString = nil
+    local parameters = nil
     local queryType = string.lower(self.queryType)
 
     if (queryType == "select") then
-        queryString = BuildSelectQuery(self)
+        queryString, parameters = BuildSelectQuery(self)
     elseif (queryType == "insert") then
-        queryString = BuildInsertQuery(self)
+        queryString, parameters = BuildInsertQuery(self)
     elseif (queryType == "insert ignore") then
-        queryString = BuildInsertQuery(self, true)
+        queryString, parameters = BuildInsertQuery(self, true)
     elseif (queryType == "update") then
-        queryString = BuildUpdateQuery(self)
+        queryString, parameters = BuildUpdateQuery(self)
     elseif (queryType == "delete") then
         queryString = BuildDeleteQuery(self)
     elseif (queryType == "drop") then
@@ -413,9 +447,9 @@ function QUERY_CLASS:Execute(bQueueQuery)
 
     if (isstring(queryString)) then
         if (!bQueueQuery) then
-            return mysql:RawQuery(queryString, self.callback)
+            return mysql:RawQuery(queryString, self.callback, nil, parameters)
         else
-            return mysql:Queue(queryString, self.callback)
+            return mysql:Queue(queryString, self.callback, parameters)
         end
     end
 end
@@ -537,7 +571,14 @@ function mysql:RawQuery(query, callback, flags, ...)
 
         queryObj:start()
     elseif (self.module == "sqlite") then
-        local result = sql.Query(query)
+        local result = nil
+        local parameters = select(1, ...)
+
+        if (istable(parameters) and #parameters > 0) then
+            result = sql.QueryTyped(query, parameters)
+        else
+            result = sql.Query(query)
+        end
 
         if (result == false) then
             error(string.format("[mysql] SQL Query Error!\nQuery: %s\n%s\n", query, sql.LastError()))
@@ -556,9 +597,9 @@ function mysql:RawQuery(query, callback, flags, ...)
 end
 
 -- A function to add a query to the queue.
-function mysql:Queue(queryString, callback)
+function mysql:Queue(queryString, callback, parameters)
     if (isstring(queryString)) then
-        QueueTable[#QueueTable + 1] = {queryString, callback}
+        QueueTable[#QueueTable + 1] = {queryString, callback, parameters}
     end
 end
 
@@ -579,13 +620,14 @@ function mysql:Disconnect()
 end
 
 function mysql:Think()
-    if (#QueueTable > 0 and istable(QueueTable[1]) ) then
+    if (#QueueTable > 0 and istable(QueueTable[1])) then
         local queueObj = QueueTable[1]
         local queryString = queueObj[1]
         local callback = queueObj[2]
+        local parameters = queueObj[3]
 
         if (isstring(queryString)) then
-            self:RawQuery(queryString, callback)
+            self:RawQuery(queryString, callback, nil, parameters)
         end
 
         table.remove(QueueTable, 1)
