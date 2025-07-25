@@ -15,6 +15,43 @@ function ax.database:Connect(module, hostname, user, password, database, port)
     mysql:Connect(hostname, user, password, database, port)
 end
 
+function ax.database:AddToSchema(schemaType, field, fieldType)
+    if ( !self.type[fieldType] ) then
+        error(string.format("attempted to add field in schema with invalid type '%s'", fieldType))
+        return
+    end
+
+    if (!mysql:IsConnected() or !self.schema[schemaType]) then
+        self.schemaQueue[#self.schemaQueue + 1] = {schemaType, field, fieldType}
+        return
+    end
+
+    self:InsertSchema(schemaType, field, fieldType)
+end
+
+-- this is only ever used internally
+function ax.database:InsertSchema(schemaType, field, fieldType)
+    local schema = self.schema[schemaType]
+
+    if (!schema) then
+        error(string.format("attempted to insert into schema with invalid schema type '%s'", schemaType))
+        return
+    end
+
+    if (!schema[field]) then
+        schema[field] = true
+
+        local query = mysql:Update("ax_schema")
+            query:Update("columns", util.TableToJSON(schema))
+            query:Where("table", schemaType)
+        query:Execute()
+
+        query = mysql:Alter(schemaType)
+            query:Add(field, self.type[fieldType])
+        query:Execute()
+    end
+end
+
 function ax.database:CreateTables()
     local query
 
@@ -30,6 +67,12 @@ function ax.database:CreateTables()
         query:PrimaryKey("id")
     query:Execute()
 
+    query = mysql:InsertIgnore("ax_schema")
+        query:Insert("table", "ax_characters")
+        query:Insert("columns", util.TableToJSON({}))
+    query:Execute()
+
+    -- load schema from database
     query = mysql:Select("ax_schema")
         query:Callback(function(result)
             if (!istable(result)) then
