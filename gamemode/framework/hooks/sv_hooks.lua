@@ -54,14 +54,15 @@ function GM:PlayerReady(client)
 
     local query = mysql:Insert("ax_characters")
         query:Insert("schema", engine.ActiveGamemode())
-        query:Callback(function(result)
-            print(result)
+        query:Insert("steamid", client:SteamID64())
+        query:Callback(function(result, status, lastID)
             if ( result == false ) then
                 ax.util:PrintError("Failed to create character for " .. client:SteamID64() .. ": " .. (result and result.error or "Unknown error"))
                 return
             end
 
-            character.id = result.lastInsertId
+
+            character.id = lastID
             ax.character.instances[character.id] = character
 
             -- Set the character on the client
