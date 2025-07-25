@@ -15,7 +15,13 @@ GM.Website = "https://project-ordinance.com/parallax/"
 GM.Email = "<email@example.com>"
 
 ax.util:IncludeDirectory("libraries")
+if ( SERVER ) then
+    timer.Simple(0, function()
+        ax.database:Connect("sqlite")
+    end)
+end
 ax.util:IncludeDirectory("meta")
+ax.util:IncludeDirectory("core")
 ax.util:IncludeDirectory("hooks")
 ax.util:IncludeDirectory("networking")
 ax.util:IncludeDirectory("interface")
