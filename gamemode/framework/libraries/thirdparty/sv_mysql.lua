@@ -8,6 +8,8 @@
     http://www.alexgrist.com
 --]]
 
+-- sql.QueryTyped support added by bloodycop6385
+
 mysql = mysql or {
     module = "sqlite"
 }

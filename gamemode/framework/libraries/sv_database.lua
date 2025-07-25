@@ -1,3 +1,16 @@
+--[[
+    Parallax Framework
+    Copyright (c) 2025 Parallax Framework Contributors
+
+    This file is part of the Parallax Framework and is licensed under the MIT License.
+    You may use, copy, modify, merge, publish, distribute, and sublicense this file
+    under the terms of the LICENSE file included with this project.
+
+    Attribution is required. If you use or modify this file, you must retain this notice.
+]]
+
+-- Credits to Helix for the original database library.
+
 ax.database = ax.database or {
     schema = {},
     schemaQueue = {},
@@ -91,7 +104,3 @@ function ax.database:CreateTables()
         end)
     query:Execute()
 end
-
-hook.Add("InitPostEntity", "ax.database.Connect", function()
-    ax.database:Connect("sqlite")
-end)
