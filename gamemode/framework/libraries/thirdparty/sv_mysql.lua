@@ -575,7 +575,7 @@ function mysql:RawQuery(query, callback, flags, ...)
         local parameters = select(1, ...)
 
         if (istable(parameters) and #parameters > 0) then
-            result = sql.QueryTyped(query, parameters)
+            result = sql.QueryTyped(query, unpack(parameters))
         else
             result = sql.Query(query)
         end
