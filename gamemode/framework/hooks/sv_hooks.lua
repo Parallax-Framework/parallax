@@ -31,6 +31,10 @@ end)
 function GM:PlayerDeathThink(client)
     local character = client:GetCharacter()
     if ( !character ) then return true end
+end
+
+function GM:DatabaseConnected()
+    ax.database:CreateTables()
 
 end
 
@@ -60,7 +64,6 @@ function GM:PlayerReady(client)
                 ax.util:PrintError("Failed to create character for " .. client:SteamID64() .. ": " .. (result and result.error or "Unknown error"))
                 return
             end
-
 
             character.id = lastID
             ax.character.instances[character.id] = character
@@ -110,10 +113,4 @@ function GM:PlayerSay(client, text, teamChat)
 
     text = ax.chat:Format(text)
     return text
-end
-
-function GM:DatabaseConnected()
-    ax.database:CreateTables()
-
-    ax.util:PrintDebug("Database connected and tables created. (module: " .. mysql.module .. ")")
 end
