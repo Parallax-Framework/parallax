@@ -16,10 +16,6 @@ function character:__tostring()
     return "Character: " .. tostring(self.id) .. " (" .. self.name .. ")"
 end
 
-function character:GetID()
-    return self.id
-end
-
 function character:GetInventory()
     return ax.inventory.instances[self.id_inv]
 end
