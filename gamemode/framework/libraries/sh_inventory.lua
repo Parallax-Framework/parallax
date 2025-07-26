@@ -11,3 +11,50 @@
 
 ax.inventory = ax.inventory or {}
 ax.inventory.instances = ax.inventory.instances or {}
+
+if ( SERVER ) then
+    function ax.inventory:Create(data, callback)
+        if !istable(data) then return end
+
+        local query = mysql:Insert("ax_inventories")
+            query:Insert("maxWeight", data.maxWeight or 30.0)
+            query:Insert("items", istable(data) and util.TableToJSON(data.items) or isstring(data.items) and data.items or "[]")
+            query:Callback(function(result, status, lastInvId)
+                if ( result == false ) then
+                    if ( isfunction(callback) ) then
+                        callback(false)
+                    end
+
+                    return
+                end
+
+                local inventory = setmetatable({}, ax.meta.inventory)
+                inventory.id = lastInvId
+                inventory.items = ax.util:SafeParseTable(data.items) or {}
+                inventory.maxWeight = data.maxWeight or 30.0
+                inventory.receivers = {}
+
+                ax.inventory.instances[lastInvId] = inventory
+
+                if ( isfunction(callback) ) then
+                    callback(inventory)
+                end
+            end)
+        query:Execute()
+    end
+
+    function ax.inventory:Sync(inventory)
+        if ( isnumber(inventory) ) then
+            inventory = ax.inventory.instances[inventory]
+        end
+
+        if ( getmetatable(inventory) != ax.meta.inventory ) then
+            ax.util:PrintError("Invalid inventory provided to ax.inventory:Sync()")
+            return
+        end
+
+        net.Start("ax.inventory.sync")
+            net.WriteTable(inventory)
+        net.Broadcast()
+    end
+end

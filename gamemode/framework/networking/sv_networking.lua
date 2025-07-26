@@ -13,6 +13,10 @@ util.AddNetworkString("ax.player.ready")
 util.AddNetworkString("ax.character.sync")
 util.AddNetworkString("ax.character.cache")
 
+util.AddNetworkString("ax.inventory.sync")
+util.AddNetworkString("ax.inventory.receiver.add")
+util.AddNetworkString("ax.inventory.receiver.remove")
+
 util.AddNetworkString("ax.character.create")
 net.Receive("ax.character.create", function(length, client)
     local payload = net.ReadTable()
@@ -32,72 +36,36 @@ net.Receive("ax.character.create", function(length, client)
 
     local curTime = math.floor(os.time())
 
-    query = mysql:Insert("ax_characters")
-        query:Insert("schema", engine.ActiveGamemode())
-        query:Insert("steamid", client:SteamID64())
-        query:Insert("name", payload.name)
-        query:Insert("description", payload.description)
-        query:Insert("faction", payload.faction or 0)
-        query:Insert("creationTime", curTime)
-        query:Callback(function(result, status, lastID)
-            if ( result == false ) then
-                ax.util:PrintError("Failed to create character for " .. client:SteamID64() .. ": " .. (result and result.error or "Unknown error"))
-                return
-            end
+    ax.character:Create({
+        steamid = client:SteamID64(),
+        name = payload.name,
+        schema = engine.ActiveGamemode(),
+        data = payload.data or {},
+        inv_id = payload.invID or 0,
+        created_at = curTime,
+        updated_at = curTime
+    },
+    function(character, inventory)
+        inventory.receivers = { client }
 
-            local invQuery = mysql:Insert("ax_inventories")
-                invQuery:Insert("maxWeight", "30.0")
-                invQuery:Insert("items", "[]")
-                invQuery:Callback(function(invResult, invStatus, invLastID)
-                    if ( invResult == false ) then
-                        ax.util:PrintError("Failed to create inventory for character " .. lastID .. ": " .. (invResult and invResult.error or "Unknown error"))
-                        return
-                    end
+        ax.inventory.instances[inventory.id] = inventory
+        ax.character.instances[character.id] = character
 
-                    local inventory = setmetatable({}, ax.meta.inventory)
-                    inventory.id = invLastID
-                    inventory.items = {}
-                    inventory.maxWeight = 30.0
+        if ( !client:GetCharacter() ) then
+            client:SetNoDraw(false)
+            client:SetNotSolid(false)
+            client:SetMoveType(MOVETYPE_WALK)
+        end
 
-                    local character = setmetatable({}, ax.meta.character)
-                    character.id = lastID
-                    character.steamid = client:SteamID64()
-                    character.name = payload.name
+        client:GetTable().axCharacter = character
 
-                    character.invID = inventory.id
+        net.Start("ax.character.sync")
+            net.WritePlayer(client)
+            net.WriteTable(character)
+        net.Broadcast()
 
-                    local updQuery = mysql:Update("ax_characters")
-                        updQuery:Where("id", lastID)
-                        updQuery:Update("inv_id", inventory.id)
-                    updQuery:Execute()
-
-                    character.schema = engine.ActiveGamemode()
-                    character.description = payload.description or ""
-                    character.faction = payload.faction or 0
-                    character.creationTime = curTime
-                    character.vars = {}
-
-                    ax.inventory.instances[inventory.id] = inventory
-                    ax.character.instances[character.id] = character
-
-                    if ( !client:GetCharacter() ) then
-                        client:SetNoDraw(false)
-                        client:SetNotSolid(false)
-                        client:SetMoveType(MOVETYPE_WALK)
-                    end
-
-                    client:GetTable().axCharacter = character
-
-                    net.Start("ax.character.sync")
-                        net.WritePlayer(client)
-                        net.WriteTable(character)
-                    net.Broadcast()
-
-                    hook.Run("OnCharacterCreated", client, character)
-                end)
-            invQuery:Execute()
-        end)
-    query:Execute()
+        hook.Run("OnCharacterCreated", client, character)
+    end)
 end)
 
 util.AddNetworkString("ax.character.load")
@@ -118,6 +86,18 @@ net.Receive("ax.character.load", function(length, client)
         ax.util:PrintError("Character ID " .. charID .. " does not belong to " .. client:SteamID64())
         return
     end
+
+    local prevChar = client:GetCharacter()
+    if ( prevChar ) then
+        if ( prevChar.id == charID ) then
+            ax.util:PrintDebug("Character " .. charID .. " is already loaded for " .. client:SteamID64())
+            return
+        end
+
+        prevChar.player = NULL
+    end
+
+    character.player = client
 
     client:GetTable().axCharacter = character
 

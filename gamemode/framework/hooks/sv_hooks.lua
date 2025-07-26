@@ -82,3 +82,20 @@ function GM:PlayerSay(client, text, teamChat)
     text = ax.chat:Format(text)
     return text
 end
+
+function GM:PlayerDisconnected(client)
+    local invKeys = table.GetKeys(ax.inventory.instances)
+    for i = 1, #invKeys do
+        local inv = ax.inventory.instances[invKeys[i]]
+        if ( !istable(inv) ) then continue end
+
+        if ( inv:IsReceiver(client) ) then
+            inv:RemoveReceiver(client)
+
+            net.Start("ax.inventory.receiver.remove")
+                net.WriteTable(inv)
+                net.WritePlayer(client)
+            net.Broadcast()
+        end
+    end
+end

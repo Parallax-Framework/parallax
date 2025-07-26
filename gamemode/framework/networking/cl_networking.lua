@@ -32,7 +32,7 @@ net.Receive("ax.character.sync", function()
 
     ax.character.instances[character.id] = setmetatable(character, ax.meta.character)
     ax.inventory.instances[character.invID] = setmetatable({
-        id = character.id_inv,
+        id = character.invID,
         items = {},
         maxWeight = 30.0
     }, ax.meta.inventory)
@@ -85,4 +85,28 @@ net.Receive("ax.character.SetVar", function()
     end
 
     character.vars[name] = value
+end)
+
+net.Receive("ax.inventory.sync", function()
+    local inventory = net.ReadTable()
+
+    ax.inventory.instances[inventory.id] = setmetatable({
+        id = inventory.id,
+        items = ax.util:SafeParseTable(inventory.items) or {},
+        maxWeight = inventory.maxWeight or 30.0
+    }, ax.meta.inventory)
+end)
+
+net.Receive("ax.inventory.receiver.add", function()
+    local inventory = net.ReadTable()
+    local receiver = net.ReadPlayer()
+
+    inventory:AddReceiver(receiver)
+end)
+
+net.Receive("ax.inventory.receiver.remove", function()
+    local inventory = net.ReadTable()
+    local receiver = net.ReadPlayer()
+
+    inventory:RemoveReceiver(receiver)
 end)

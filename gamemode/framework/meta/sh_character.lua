@@ -21,7 +21,7 @@ function character:GetID()
 end
 
 function character:GetInventory()
-    return ax.inventory.instances[self.id_inv]
+    return ax.inventory.instances[self.invID]
 end
 
 function character:GetData(key)
@@ -34,6 +34,10 @@ function character:SetData(key, value)
     if ( !istable(self.data) ) then self.data = {} end
 
     self.data[key] = value
+end
+
+function character:GetOwner()
+    return self.player
 end
 
 ax.meta.character = character -- Keep, funcs don't define otherwise.

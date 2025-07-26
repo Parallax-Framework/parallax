@@ -270,7 +270,7 @@ end
 
 function ax.util:SafeParseTable(tInput)
     if ( isstring(tInput) ) then
-        return util.JSONToTable(tInput) or {}
+        return util.JSONToTable(tInput)
     end
 
     return tInput

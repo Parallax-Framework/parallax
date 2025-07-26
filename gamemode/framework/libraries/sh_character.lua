@@ -116,3 +116,117 @@ function ax.character:RegisterVar(name, data)
         ax.database:InsertSchema("ax_characters", data.field, data.fieldType)
     end
 end
+
+if ( SERVER ) then
+    function ax.character:Restore(client, callback)
+        local query = mysql:Select("ax_characters")
+            query:Where("steamid", client:SteamID64())
+            query:Callback(function(result, status)
+                if ( result == false ) then
+                    ax.util:PrintError("Failed to fetch characters for " .. client:SteamID64())
+                    return
+                end
+
+                if ( result[1] == nil ) then
+                    ax.util:PrintDebug("No characters found for " .. client:SteamID64())
+                    return
+                end
+
+                local characters = {}
+
+                for i = 1, #result do
+                    local charData = result[i]
+                    local character = setmetatable({}, ax.meta.character)
+
+                    for k, v in pairs(charData) do
+                        if ( k == "vars" ) then
+                            character.vars = util.JSONToTable(v) or {}
+                        else
+                            character[k] = v
+                        end
+
+                        for vK, vV in pairs(ax.character.vars) do
+                            if ( k == vV.field ) then
+                                character[vK] = v
+                            end
+                        end
+                    end
+
+                    ax.character.instances[character.id] = character
+                    characters[#characters + 1] = character
+                end
+
+                client:GetTable().axCharacters = characters
+
+                ax.util:PrintDebug("Sent character cache to " .. client:SteamID64())
+
+                net.Start("ax.character.cache")
+                    net.WriteTable(characters)
+                net.Send(client)
+
+                if ( isfunction(callback) ) then
+                    callback(characters)
+                end
+            end)
+        query:Execute()
+    end
+
+    function ax.character:Create(data, callback)
+        if ( !istable(data.name) ) then return end
+
+        local creationTime = math.floor(os.time())
+
+        local query = mysql:Insert("ax_characters")
+            query:Insert("schema", data.schema)
+            query:Insert("steamid", data.steamid)
+            query:Insert("name", data.name)
+            query:Insert("description", data.description or "")
+            query:Insert("faction", data.faction or 0)
+            query:Insert("creationTime", data.creationTime or creationTime)
+            query:Insert("inv_id", data.invID or 0)
+            query:Insert("data", istable(data) and util.TableToJSON(data.data) or isstring(data.data) and data.data or "[]")
+            query:Callback(function(result, status, lastID)
+                if ( result == false ) then
+                    if ( isfunction(callback) ) then
+                        callback(false)
+                    end
+
+                    return
+                end
+
+                local character = setmetatable({}, ax.meta.character)
+                character.id = lastID
+                character.steamid = data.steamid
+                character.name = data.name
+                character.description = data.description or ""
+                character.faction = data.faction or 0
+                character.creationTime = data.creationTime or creationTime
+                character.schema = data.schema or engine.ActiveGamemode()
+                character.vars = {}
+                character.data = ax.util:SafeParseTable(data.data) or {}
+
+                ax.character.instances[character.id] = character
+
+                ax.inventory:Create(nil, function(inventory)
+                    if ( inventory == false ) then
+                        ax.util:PrintError("Failed to create inventory for character " .. lastID)
+                        return
+                    end
+
+                    local invQuery = mysql:Update("ax_characters")
+                        invQuery:Where("id", lastID)
+                        invQuery:Update("inv_id", inventory.id)
+                    invQuery:Execute()
+
+                    character.invID = inventory.id
+
+                    if ( isfunction(callback) ) then
+                        callback(character, inventory)
+                    end
+
+                    ax.util:PrintDebug("Character created for " .. data.steamid .. ": " .. character.name)
+                end)
+            end)
+        query:Execute()
+    end
+end
