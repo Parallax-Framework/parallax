@@ -41,54 +41,9 @@ function GM:StartCommand(client, userCmd)
         net.Start("ax.player.ready")
         net.Send(client)
 
-        local query = mysql:Select("ax_characters")
-            query:Where("steamid", client:SteamID64())
-            query:Callback(function(result, status)
-                if ( result == false ) then
-                    ax.util:PrintError("Failed to fetch characters for " .. client:SteamID64())
-                    return
-                end
-
-                if ( result[1] == nil ) then
-                    ax.util:PrintDebug("No characters found for " .. client:SteamID64())
-                    return
-                end
-
-                local characters = {}
-
-                for i = 1, #result do
-                    local charData = result[i]
-                    local character = setmetatable({}, ax.meta.character)
-
-                    for k, v in pairs(charData) do
-                        if ( k == "vars" ) then
-                            character.vars = util.JSONToTable(v) or {}
-                        else
-                            character[k] = v
-                        end
-
-                        for vK, vV in pairs(ax.character.vars) do
-                            if ( k == vV.field ) then
-                                character[vK] = v
-                            end
-                        end
-                    end
-
-                    ax.character.instances[character.id] = character
-                    characters[#characters + 1] = character
-                end
-
-                client:GetTable().axCharacters = characters
-
-                ax.util:PrintDebug("Sent character cache to " .. client:SteamID64())
-
-                net.Start("ax.character.cache")
-                    net.WriteTable(characters)
-                net.Send(client)
-
-                hook.Run("PlayerReady", client, characters)
-            end)
-        query:Execute()
+        ax.character:Restore(client, function(characters)
+            hook.Run("PlayerReady", client)
+        end)
     end
 end
 
