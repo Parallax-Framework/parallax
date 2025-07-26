@@ -23,10 +23,6 @@ function GM:DatabaseConnected()
 end
 
 function GM:PlayerInitialSpawn(client)
-    client:SetNoDraw(true)
-    client:SetNotSolid(true)
-    client:SetMoveType(MOVETYPE_NONE)
-
     ax.util:PrintDebug("Client " .. client:SteamID64() .. " has connected, waiting for full update request...")
 
     AX_CLIENT_QUEUE[client:SteamID64()] = true
@@ -34,16 +30,22 @@ function GM:PlayerInitialSpawn(client)
 end
 
 function GM:StartCommand(client, userCmd)
-    if ( AX_CLIENT_QUEUE[client:SteamID64()] ) then
+    if ( AX_CLIENT_QUEUE[client:SteamID64()] and !userCmd:IsForced() ) then
         AX_CLIENT_QUEUE[client:SteamID64()] = nil
 
-        ax.util:PrintDebug("Client " .. client:SteamID64() .. " requested full update, sending character cache...")
+        client:SetNoDraw(true)
+        client:SetNotSolid(true)
+        client:SetMoveType(MOVETYPE_NONE)
+        client:KillSilent()
+
+        net.Start("ax.player.ready")
+        net.Send(client)
 
         local query = mysql:Select("ax_characters")
             query:Where("steamid", client:SteamID64())
             query:Callback(function(result, status)
                 if ( result == false ) then
-                    ax.util:PrintError("Failed to fetch characters for " .. client:SteamID64() .. ": " .. (result and result.error or "Unknown error"))
+                    ax.util:PrintError("Failed to fetch characters for " .. client:SteamID64())
                     return
                 end
 
@@ -78,13 +80,10 @@ function GM:StartCommand(client, userCmd)
 
                 client:GetTable().axCharacters = characters
 
-                net.Start("ax.character.cache")
-                    net.WriteTable(characters)
-                net.Send(client)
-
                 ax.util:PrintDebug("Sent character cache to " .. client:SteamID64())
 
-                net.Start("ax.player.ready")
+                net.Start("ax.character.cache")
+                    net.WriteTable(characters)
                 net.Send(client)
 
                 hook.Run("PlayerReady", client, characters)
