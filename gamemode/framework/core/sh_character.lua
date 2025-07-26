@@ -74,3 +74,9 @@ ax.character:RegisterVar("invID", {
         return true
     end,
 })
+
+ax.character:RegisterVar("vars", {
+    field = "vars",
+    fieldType = ax.type.string,
+    Default = "[]",
+})

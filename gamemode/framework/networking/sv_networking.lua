@@ -11,6 +11,7 @@
 
 util.AddNetworkString("ax.player.ready")
 util.AddNetworkString("ax.character.sync")
+util.AddNetworkString("ax.character.cache")
 
 util.AddNetworkString("ax.character.create")
 net.Receive("ax.character.create", function(length, client)
@@ -79,6 +80,12 @@ net.Receive("ax.character.create", function(length, client)
                     ax.inventory.instances[inventory.id] = inventory
                     ax.character.instances[character.id] = character
 
+                    if ( !client:GetCharacter() ) then
+                        client:SetNoDraw(false)
+                        client:SetNotSolid(false)
+                        client:SetMoveType(MOVETYPE_WALK)
+                    end
+
                     client:GetTable().axCharacter = character
 
                     net.Start("ax.character.sync")
@@ -91,4 +98,33 @@ net.Receive("ax.character.create", function(length, client)
             invQuery:Execute()
         end)
     query:Execute()
+end)
+
+util.AddNetworkString("ax.character.load")
+net.Receive("ax.character.load", function(length, client)
+    local charID = net.ReadInt(32)
+    if ( !isnumber(charID) or charID < 1 ) then
+        ax.util:Error("Invalid character ID received for loading.")
+        return
+    end
+
+    local character = ax.character.instances[charID]
+    if ( !character ) then
+        ax.util:PrintError("Character with ID " .. charID .. " does not exist.")
+        return
+    end
+
+    if ( character.steamid != client:SteamID64() ) then
+        ax.util:PrintError("Character ID " .. charID .. " does not belong to " .. client:SteamID64())
+        return
+    end
+
+    client:GetTable().axCharacter = character
+
+    net.Start("ax.character.sync")
+        net.WritePlayer(client)
+        net.WriteTable(character)
+    net.Broadcast()
+
+    hook.Run("OnCharacterLoaded", client, character)
 end)

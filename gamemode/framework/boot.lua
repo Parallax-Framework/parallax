@@ -14,6 +14,16 @@ GM.Author = "Parallax Framework Contributors"
 GM.Website = "https://project-ordinance.com/parallax/"
 GM.Email = "<email@example.com>"
 
+local OLD_LP = OLD_LP or LocalPlayer
+function LocalPlayer()
+    if ( IsValid(ax.client) ) then
+        return ax.client
+    end
+
+    ax.client = OLD_LP()
+    return OLD_LP()
+end
+
 ax.util:IncludeDirectory("libraries")
 ax.util:IncludeDirectory("meta")
 ax.util:IncludeDirectory("core")

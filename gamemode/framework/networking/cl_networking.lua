@@ -10,7 +10,7 @@
 ]]
 
 net.Receive("ax.player.ready", function(len)
-    local clientTable = ax.client:GetTable()
+    local clientTable = LocalPlayer():GetTable()
     if ( clientTable.axReady ) then return end
 
     clientTable.axReady = true
@@ -31,13 +31,42 @@ net.Receive("ax.character.sync", function()
     client:GetTable().axCharacter = character
 
     ax.character.instances[character.id] = setmetatable(character, ax.meta.character)
-    ax.inventory.instances[#ax.inventory.instances + 1] = setmetatable({
+    ax.inventory.instances[character.invID] = setmetatable({
         id = character.id_inv,
         items = {},
         maxWeight = 30.0
     }, ax.meta.inventory)
 
     -- Shitty
+end)
+
+net.Receive("ax.character.cache", function()
+    local characters = net.ReadTable()
+    if ( !istable(characters) ) then
+        ax.util:PrintError("Invalid character cache received from server")
+        return
+    end
+
+    local cData = LocalPlayer():GetTable()
+    cData.axCharacters = cData.axCharacters or {}
+
+    for i = 1, #characters do
+        local charData = characters[i]
+        local character = setmetatable({}, ax.meta.character)
+
+        for k, v in pairs(charData) do
+            if ( k == "vars" ) then
+                character.vars = util.JSONToTable(v) or {}
+            else
+                character[k] = v
+            end
+        end
+
+        ax.character.instances[character.id] = character
+        cData.axCharacters[#cData.axCharacters + 1] = character
+    end
+
+    hook.Run("OnCharactersCached", characters)
 end)
 
 net.Receive("ax.character.SetVar", function()
