@@ -33,12 +33,17 @@ function ax.localisation:GetPhrase(phrase, ...)
         return phrase
     end
 
-    local formatted = lang[phrase]
-    if ( ... ) then
-        formatted = string.format(formatted, ...)
+    local translation = lang[phrase]
+    if ( !isstring(translation) or translation == "" ) then
+        ax.util:PrintError("Translation for phrase \"" .. phrase .. "\" is not a valid string")
+        return phrase
     end
 
-    return formatted
+    if ( ... ) then
+        translation = string.format(translation, ...)
+    end
+
+    return translation
 end
 
 function ax.localisation:Initialize()
