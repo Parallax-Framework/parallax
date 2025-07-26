@@ -72,41 +72,43 @@ function ax.character:RegisterVar(name, data)
 
     self.vars[name] = data
 
-    local prettyName = string.upper(string.sub(name, 1, 1)) .. string.sub(name, 2)
-    local nameGet = "Get" .. prettyName
-    local nameSet = "Set" .. prettyName
+    if ( !data.bNoFuncs ) then
+        local prettyName = string.upper(string.sub(name, 1, 1)) .. string.sub(name, 2)
+        local nameGet = "Get" .. prettyName
+        local nameSet = "Set" .. prettyName
 
-    ax.meta.character[nameGet] = function(char, fallback)
-        if ( isfunction(data.Get) ) then
-            if ( !istable(char.vars) ) then char.vars = {} end
-            return data:Get(char, fallback)
-        else
-            return GetVar(char, name, fallback)
+        ax.meta.character[nameGet] = function(char, fallback)
+            if ( isfunction(data.Get) ) then
+                if ( !istable(char.vars) ) then char.vars = {} end
+                return data:Get(char, fallback)
+            else
+                return GetVar(char, name, fallback)
+            end
         end
-    end
 
-    ax.meta.character[nameSet] = function(char, value, isNetworked, recipients)
-        if ( isfunction(data.Set) ) then
-            if ( !istable(char.vars) ) then char.vars = {} end
-            data:Set(char, value)
-        else
-            SetVar(char, name, value, isNetworked, recipients)
+        ax.meta.character[nameSet] = function(char, value, isNetworked, recipients)
+            if ( isfunction(data.Set) ) then
+                if ( !istable(char.vars) ) then char.vars = {} end
+                data:Set(char, value)
+            else
+                SetVar(char, name, value, isNetworked, recipients)
+            end
         end
-    end
 
-    if ( istable(data.Alias) ) then
-        for i = 1, #data.Alias do
-            local alias = data.Alias[i]
-            if ( !isstring(alias) ) then continue end
+        if ( istable(data.Alias) ) then
+            for i = 1, #data.Alias do
+                local alias = data.Alias[i]
+                if ( !isstring(alias) ) then continue end
 
-            self.vars[alias] = data
+                self.vars[alias] = data
 
-            local aliasPrettyName = string.upper(string.sub(alias, 1, 1)) .. string.sub(2)
-            local aliasGet = "Get" .. aliasPrettyName
-            local aliasSet = "Set" .. aliasPrettyName
+                local aliasPrettyName = string.upper(string.sub(alias, 1, 1)) .. string.sub(2)
+                local aliasGet = "Get" .. aliasPrettyName
+                local aliasSet = "Set" .. aliasPrettyName
 
-            ax.meta.character[aliasGet] = ax.meta.character[nameGet]
-            ax.meta.character[aliasSet] = ax.meta.character[nameSet]
+                ax.meta.character[aliasGet] = ax.meta.character[nameGet]
+                ax.meta.character[aliasSet] = ax.meta.character[nameSet]
+            end
         end
     end
 

@@ -107,6 +107,13 @@ function PANEL:CreateMenuButtons()
         -- Add character creation logic
         print("Opening character creation...")
 
+        net.Start("ax.character.create")
+            net.WriteTable({
+                name = "John Doe",
+                description = "A new character",
+            })
+        net.SendToServer()
+
         self:Close()
     end
 

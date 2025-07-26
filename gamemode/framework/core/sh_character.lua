@@ -9,8 +9,68 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
-ax.character:RegisterVar("steamid", {
-    field = "steamid",
+ax.character:RegisterVar("name", {
+    field = "name",
     fieldType = ax.type.string,
     Default = "",
+    Validate = function(self, character, value)
+        if ( !isstring(value) or value == "" ) then
+            return false, "Name cannot be empty"
+        end
+
+        if ( string.len(value) > 32 ) then
+            return false, "Name cannot exceed 32 characters"
+        end
+
+        return true
+    end
+})
+
+ax.character:RegisterVar("description", {
+    field = "description",
+    fieldType = ax.type.string,
+    Default = "",
+    Validate = function(self, character, value)
+        if ( !isstring(value) or value == "" ) then
+            return false, "Description cannot be empty"
+        end
+
+        if ( string.len(value) > 256 ) then
+            return false, "Description cannot exceed 256 characters"
+        end
+
+        return true
+    end
+})
+
+ax.character:RegisterVar("faction", {
+    field = "faction",
+    fieldType = ax.type.number,
+    Default = 0,
+    Validate = function(self, character, value)
+        if ( !isnumber(value) or value <= 0 ) then
+            return false, "Faction cannot be empty"
+        end
+
+        return true
+    end
+})
+
+ax.character:RegisterVar("creationTime", {
+    field = "creationTime",
+    fieldType = ax.type.number,
+    Default = 0,
+})
+
+ax.character:RegisterVar("invID", {
+    field = "inv_id",
+    fieldType = ax.type.number,
+    Default = 0,
+    Validate = function(self, character, value)
+        if ( !isnumber(value) or value <= 0 ) then
+            return false, "Inventory ID must be a positive number"
+        end
+
+        return true
+    end,
 })

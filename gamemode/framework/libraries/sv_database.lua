@@ -77,6 +77,15 @@ function ax.database:CreateTables()
     query = mysql:Create("ax_characters")
         query:Create("id", "INT(11) UNSIGNED NOT NULL AUTO_INCREMENT")
         query:Create("schema", "VARCHAR(64) NOT NULL")
+        query:Create("steamid", "VARCHAR(20) NOT NULL")
+        query:Create("inv_id", "INT(11) UNSIGNED")
+        query:PrimaryKey("id")
+    query:Execute()
+
+    query = mysql:Create("ax_inventories")
+        query:Create("id", "INT(11) UNSIGNED NOT NULL AUTO_INCREMENT")
+        query:Create("items", "TEXT NOT NULL")
+        query:Create("maxWeight", "FLOAT NOT NULL DEFAULT 30.0")
         query:PrimaryKey("id")
     query:Execute()
 
@@ -104,3 +113,7 @@ function ax.database:CreateTables()
         end)
     query:Execute()
 end
+
+timer.Simple(1, function()
+    ax.database:Connect("sqlite")
+end)

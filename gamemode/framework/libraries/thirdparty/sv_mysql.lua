@@ -315,6 +315,7 @@ end
 
 local function BuildDeleteQuery(queryObj)
     local queryString = {"DELETE FROM"}
+    local parameters = {}
 
     if (isstring(queryObj.tableName)) then
         queryString[#queryString + 1] = " `"..queryObj.tableName.."`"
@@ -324,8 +325,24 @@ local function BuildDeleteQuery(queryObj)
     end
 
     if (istable(queryObj.whereList) and #queryObj.whereList > 0) then
+        local whereStrings = {}
         queryString[#queryString + 1] = " WHERE "
-        queryString[#queryString + 1] = table.concat(queryObj.whereList, " AND ")
+
+        for i = 1, #queryObj.whereList do
+            local whereClause = queryObj.whereList[i]
+            whereStrings[#whereStrings + 1] = whereClause[1]
+
+            if (istable(whereClause[2])) then
+                -- Handle IN clauses with multiple values
+                for j = 1, #whereClause[2] do
+                    parameters[#parameters + 1] = whereClause[2][j]
+                end
+            else
+                parameters[#parameters + 1] = whereClause[2]
+            end
+        end
+
+        queryString[#queryString + 1] = table.concat(whereStrings, " AND ")
     end
 
     if (isnumber(queryObj.limit)) then
@@ -333,7 +350,7 @@ local function BuildDeleteQuery(queryObj)
         queryString[#queryString + 1] = queryObj.limit
     end
 
-    return table.concat(queryString)
+    return table.concat(queryString), parameters
 end
 
 local function BuildDropQuery(queryObj)
@@ -346,7 +363,7 @@ local function BuildDropQuery(queryObj)
         return
     end
 
-    return table.concat(queryString)
+    return table.concat(queryString), {}
 end
 
 local function BuildTruncateQuery(queryObj)
@@ -359,7 +376,7 @@ local function BuildTruncateQuery(queryObj)
         return
     end
 
-    return table.concat(queryString)
+    return table.concat(queryString), {}
 end
 
 local function BuildCreateQuery(queryObj)
@@ -395,7 +412,7 @@ local function BuildCreateQuery(queryObj)
 
     queryString[#queryString + 1] = " )"
 
-    return table.concat(queryString)
+    return table.concat(queryString), {}
 end
 
 local function BuildAlterQuery(queryObj)
@@ -419,7 +436,7 @@ local function BuildAlterQuery(queryObj)
         queryString[#queryString + 1] = " DROP COLUMN "..queryObj.drop
     end
 
-    return table.concat(queryString)
+    return table.concat(queryString), {}
 end
 
 function QUERY_CLASS:Execute(bQueueQuery)
@@ -436,15 +453,15 @@ function QUERY_CLASS:Execute(bQueueQuery)
     elseif (queryType == "update") then
         queryString, parameters = BuildUpdateQuery(self)
     elseif (queryType == "delete") then
-        queryString = BuildDeleteQuery(self)
+        queryString, parameters = BuildDeleteQuery(self)
     elseif (queryType == "drop") then
-        queryString = BuildDropQuery(self)
+        queryString, parameters = BuildDropQuery(self)
     elseif (queryType == "truncate") then
-        queryString = BuildTruncateQuery(self)
+        queryString, parameters = BuildTruncateQuery(self)
     elseif (queryType == "create") then
-        queryString = BuildCreateQuery(self)
+        queryString, parameters = BuildCreateQuery(self)
     elseif (queryType == "alter") then
-        queryString = BuildAlterQuery(self)
+        queryString, parameters = BuildAlterQuery(self)
     end
 
     if (isstring(queryString)) then
