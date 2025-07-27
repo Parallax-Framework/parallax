@@ -101,12 +101,16 @@ net.Receive("ax.inventory.receiver.add", function()
     local inventory = net.ReadTable()
     local receiver = net.ReadPlayer()
 
+    ax.inventory.instances[inventory.id] = inventory
+
     inventory:AddReceiver(receiver)
 end)
 
 net.Receive("ax.inventory.receiver.remove", function()
-    local inventory = net.ReadTable()
+    local inventory = net.ReadUInt(32)
     local receiver = net.ReadPlayer()
+
+    ax.inventory.instances[inventory] = nil
 
     inventory:RemoveReceiver(receiver)
 end)

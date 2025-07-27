@@ -93,7 +93,7 @@ function GM:PlayerDisconnected(client)
             inv:RemoveReceiver(client)
 
             net.Start("ax.inventory.receiver.remove")
-                net.WriteTable(inv)
+                net.WriteUInt(inv.id, 32)
                 net.WritePlayer(client)
             net.Broadcast()
         end

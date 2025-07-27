@@ -116,7 +116,7 @@ function inventory:RemoveReceiver(receiver)
 
             if ( SERVER ) then
                 net.Start("ax.inventory.receiver.remove")
-                    net.WriteTable(self)
+                    net.WriteUInt(self.id, 32)
                     net.WritePlayer(receiver)
                 net.Broadcast()
             end
