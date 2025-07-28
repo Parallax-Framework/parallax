@@ -79,6 +79,7 @@ function ax.database:CreateTables()
         query:Create("schema", "VARCHAR(64) NOT NULL")
         query:Create("steamid", "VARCHAR(20) NOT NULL")
         query:Create("data", "LONGTEXT NOT NULL")
+        query:Create("inv_id", "INT(11)")
         query:PrimaryKey("id")
     query:Execute()
 
@@ -112,6 +113,8 @@ function ax.database:CreateTables()
             end
         end)
     query:Execute()
+
+    hook.Run("OnDatabaseTablesCreated")
 end
 
 timer.Simple(1, function()

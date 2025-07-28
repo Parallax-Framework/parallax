@@ -51,7 +51,7 @@ function ax.faction:Include(directory)
             end
 
             if ( self.stored[facUniqueID] ) then
-                ax.util:PrintDebug(Color(255, 79, 43), "Faction \"" .. facUniqueID .. "\" already exists, skipping file: " .. fileName)
+                ax.util:PrintDebug(Color(255, 73, 24), "Faction \"" .. facUniqueID .. "\" already exists, skipping file: " .. fileName)
                 continue
             end
 

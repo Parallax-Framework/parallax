@@ -121,8 +121,13 @@ function PANEL:CreateMenuButtons()
     self.loadButton = self:CreateButton("Load Character", buttonWidth, buttonHeight)
     self.loadButton:SetPos(self.container:GetWide() / 2 - buttonWidth / 2, startY + buttonHeight + buttonSpacing)
     self.loadButton.DoClick = function()
-        -- Add character loading logic
-        print("Opening character selection...")
+        local function loadChar( id )
+            net.Start("ax.character.load")
+                net.WriteUInt(id, 32)
+            net.SendToServer()
+        end
+
+        loadChar(1)
 
         self:Close()
     end

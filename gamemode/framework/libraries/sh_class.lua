@@ -51,19 +51,19 @@ function ax.class:Include(directory)
             end
 
             if ( self.stored[clsUniqueID] ) then
-                ax.util:PrintDebug(Color(255, 79, 43), "Faction \"" .. clsUniqueID .. "\" already exists, skipping file: " .. fileName)
+                ax.util:PrintDebug(Color(255, 73, 24), "Faction \"" .. clsUniqueID .. "\" already exists, skipping file: " .. fileName)
                 continue
             end
 
             CLASS = { id = clsUniqueID, index = #self.instances + 1 }
                 if ( !isnumber(CLASS.Faction) ) then
-                    ax.util:PrintDebug(Color(255, 79, 43), "Class \"" .. CLASS.id .. "\" does not have faction ID, skipping file: " .. fileName)
+                    ax.util:PrintDebug(Color(255, 73, 24), "Class \"" .. CLASS.id .. "\" does not have faction ID, skipping file: " .. fileName)
                     continue
                 end
 
                 local factionTable = ax.faction:Get(CLASS.Faction)
                 if ( !istable(factionTable) ) then
-                    ax.util:PrintDebug(Color(255, 79, 43), "Class \"" .. CLASS.id .. "\" uses an invalid faction ID skipping file: " .. fileName)
+                    ax.util:PrintDebug(Color(255, 73, 24), "Class \"" .. CLASS.id .. "\" uses an invalid faction ID skipping file: " .. fileName)
                     continue
                 end
 

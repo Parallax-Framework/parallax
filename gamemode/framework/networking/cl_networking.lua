@@ -31,13 +31,6 @@ net.Receive("ax.character.sync", function()
     client:GetTable().axCharacter = character
 
     ax.character.instances[character.id] = setmetatable(character, ax.meta.character)
-    ax.inventory.instances[character.invID] = setmetatable({
-        id = character.invID,
-        items = {},
-        maxWeight = 30.0
-    }, ax.meta.inventory)
-
-    -- Shitty
 end)
 
 net.Receive("ax.character.cache", function()
@@ -90,11 +83,7 @@ end)
 net.Receive("ax.inventory.sync", function()
     local inventory = net.ReadTable()
 
-    ax.inventory.instances[inventory.id] = setmetatable({
-        id = inventory.id,
-        items = ax.util:SafeParseTable(inventory.items) or {},
-        maxWeight = inventory.maxWeight or 30.0
-    }, ax.meta.inventory)
+    ax.inventory.instances[inventory.id] = setmetatable(inventory, ax.meta.inventory)
 end)
 
 net.Receive("ax.inventory.receiver.add", function()

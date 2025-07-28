@@ -111,10 +111,6 @@ function ax.character:RegisterVar(name, data)
             end
         end
     end
-
-    if ( SERVER and isstring(data.field) and data.fieldType != nil ) then
-        ax.database:InsertSchema("ax_characters", data.field, data.fieldType)
-    end
 end
 
 if ( SERVER ) then
@@ -169,6 +165,13 @@ if ( SERVER ) then
                 end
             end)
         query:Execute()
+    end
+
+    function ax.character:Sync(client, character)
+        net.Start("ax.character.sync")
+            net.WritePlayer(client)
+            net.WriteTable(character)
+        net.Broadcast()
     end
 
     function ax.character:Create(data, callback)

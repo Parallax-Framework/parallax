@@ -59,10 +59,8 @@ net.Receive("ax.character.create", function(length, client)
 
         client:GetTable().axCharacter = character
 
-        net.Start("ax.character.sync")
-            net.WritePlayer(client)
-            net.WriteTable(character)
-        net.Broadcast()
+        ax.inventory:Sync(inventory)
+        ax.character:Sync(client, character)
 
         hook.Run("OnCharacterCreated", client, character)
     end)
@@ -70,7 +68,7 @@ end)
 
 util.AddNetworkString("ax.character.load")
 net.Receive("ax.character.load", function(length, client)
-    local charID = net.ReadInt(32)
+    local charID = net.ReadUInt(32)
     if ( !isnumber(charID) or charID < 1 ) then
         ax.util:Error("Invalid character ID received for loading.")
         return
@@ -97,14 +95,24 @@ net.Receive("ax.character.load", function(length, client)
         prevChar.player = NULL
     end
 
+    local try, catch = hook.Run("CanLoadCharacter", client, character)
+    if ( try == false ) then
+        if ( isstring(catch) and #catch > 0 ) then
+            client:ChatPrint(catch)
+        end
+
+        return
+    end
+
     character.player = client
 
     client:GetTable().axCharacter = character
+    ax.character:Sync(client, character)
 
-    net.Start("ax.character.sync")
-        net.WritePlayer(client)
-        net.WriteTable(character)
-    net.Broadcast()
+    local inventory = ax.inventory.instances[character.invID]
+    if ( istable(inventory) ) then
+        inventory:AddReceiver(client)
+    end
 
     hook.Run("OnCharacterLoaded", client, character)
 end)

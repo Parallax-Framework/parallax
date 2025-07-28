@@ -9,6 +9,10 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
-function GM:InitPostEntity()
-    ax.client = LocalPlayer()
+function GM:OnEntityCreated(entity)
+    if ( entity == LocalPlayer() and !IsValid(ax.client) ) then
+        ax.client = LocalPlayer()
+
+        hook.Run("OnClientCached", ax.client)
+    end
 end

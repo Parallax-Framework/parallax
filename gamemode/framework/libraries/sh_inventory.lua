@@ -10,6 +10,7 @@
 ]]
 
 ax.inventory = ax.inventory or {}
+ax.meta.inventory = ax.meta.inventory or {}
 ax.inventory.instances = ax.inventory.instances or {}
 
 if ( SERVER ) then
@@ -56,5 +57,35 @@ if ( SERVER ) then
         net.Start("ax.inventory.sync")
             net.WriteTable(inventory)
         net.Broadcast()
+    end
+
+    function ax.inventory:Restore(callback)
+        local query = mysql:Select("ax_inventories")
+            query:Callback(function(result, status)
+                if ( result == false ) then
+                    if ( isfunction(callback) ) then
+                        callback(false)
+                    end
+
+                    return
+                end
+
+                for i = 1, #result do
+                    local data = result[i]
+                    local inventory = setmetatable({}, ax.meta.inventory)
+                    inventory.id = data.id
+                    inventory.items = ax.util:SafeParseTable(data.items) or {}
+                    inventory.maxWeight = data.maxWeight or 30.0
+                    inventory.receivers = {}
+
+                    self.instances[inventory.id] = inventory
+                    self:Sync(inventory)
+                end
+
+                if ( isfunction(callback) ) then
+                    callback(true)
+                end
+            end)
+        query:Execute()
     end
 end

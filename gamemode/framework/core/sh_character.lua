@@ -61,16 +61,3 @@ ax.character:RegisterVar("creationTime", {
     fieldType = ax.type.number,
     Default = 0,
 })
-
-ax.character:RegisterVar("invID", {
-    field = "inv_id",
-    fieldType = ax.type.number,
-    Default = 0,
-    Validate = function(self, character, value)
-        if ( !isnumber(value) or value <= 0 ) then
-            return false, "Inventory ID must be a positive number"
-        end
-
-        return true
-    end,
-})

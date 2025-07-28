@@ -16,11 +16,10 @@ GM.Email = "<email@example.com>"
 
 local OLD_LP = OLD_LP or LocalPlayer
 function LocalPlayer()
-    if ( IsValid(ax.client) ) then
+    if ( ax.client != nil and ax.client:IsValid() ) then
         return ax.client
     end
 
-    ax.client = OLD_LP()
     return OLD_LP()
 end
 

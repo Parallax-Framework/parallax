@@ -41,6 +41,16 @@ function GM:StartCommand(client, userCmd)
         net.Start("ax.player.ready")
         net.Send(client)
 
+        --[[
+        ax.inventory:Restore(client, function(success)
+            if ( success ) then
+                ax.util:PrintDebug(Color(85, 255, 120), "Inventories restored successfully.")
+            else
+                ax.util:PrintDebug(Color(255, 0, 0), "Failed to restore inventories.")
+            end
+        end)
+        ]] -- idk about this
+
         ax.character:Restore(client, function(characters)
             hook.Run("PlayerReady", client)
         end)
@@ -96,6 +106,16 @@ function GM:PlayerDisconnected(client)
                 net.WriteUInt(inv.id, 32)
                 net.WritePlayer(client)
             net.Broadcast()
+        end
+    end
+end
+
+function GM:OnDatabaseTablesCreated()
+    ax.util:PrintDebug("Database tables created, restoring inventories...")
+
+    for name, data in pairs(ax.character.vars) do
+        if ( isstring(data.field) and data.fieldType != nil ) then
+            ax.database:InsertSchema("ax_characters", data.field, data.fieldType)
         end
     end
 end

@@ -22,3 +22,7 @@ end
 function GM:CanBecomeClass(classTable, client)
     return true, nil
 end
+
+function GM:CanLoadCharacter(client, character)
+    return true
+end
