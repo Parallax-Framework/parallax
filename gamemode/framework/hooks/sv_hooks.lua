@@ -13,9 +13,9 @@ AX_CLIENT_QUEUE = AX_CLIENT_QUEUE or {}
 
 function GM:PlayerDeathThink(client)
     local character = client:GetCharacter()
-    if ( !character ) then return true end
+    if ( !character ) then return end
 
-    return false
+    client:Spawn()
 end
 
 function GM:DatabaseConnected()

@@ -103,3 +103,17 @@ net.Receive("ax.inventory.receiver.remove", function()
 
     inventory:RemoveReceiver(receiver)
 end)
+
+net.Receive("ax.inventory.item.add", function()
+    local inventory = net.ReadUInt(32)
+    local item = net.ReadTable()
+
+    local inv = ax.inventory.instances[inventory]
+    if ( !istable(inv) ) then
+        ax.util:PrintError("Invalid inventory ID received for item add.")
+        return
+    end
+
+    inv.items[#inv.items + 1] = item
+    ax.item.instances[item.id] = setmetatable(item, ax.meta.item)
+end)

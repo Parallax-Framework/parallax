@@ -128,4 +128,46 @@ function inventory:RemoveReceiver(receiver)
     return false
 end
 
+if ( SERVER ) then
+    function inventory:AddItem(itemUniqueID, data)
+        if ( !istable(self.items) ) then self.items = {} end
+
+        local item = ax.item.stored[itemUniqueID]
+        if ( !istable(item) ) then
+            ax.util:PrintError("Invalid item provided to ax.inventory:AddItem() (" .. tostring(itemUniqueID) .. ")")
+            return false
+        end
+
+        local query = mysql:Insert("ax_items")
+            query:Insert("inv_id", self.id)
+            query:Insert("data", util.TableToJSON(data))
+            query:Callback(function(result, status, lastID)
+                if result == false then
+                    ax.util:PrintError("Failed to insert item into database for inventory " .. self.id)
+                    return false
+                end
+
+                local itemObject = setmetatable({}, ax.meta.item)
+                for k, v in pairs(item) do
+                    itemObject[k] = v
+                end
+
+                itemObject.id = lastID
+                itemObject.data = data or {}
+                itemObject.invID = self.id
+
+                ax.item.instances[itemObject.id] = itemObject
+
+                self.items[#self.items + 1] = itemObject
+
+                net.Start("ax.inventory.item.add")
+                    net.WriteUInt(self.id, 32)
+                    net.WriteTable(itemObject)
+                net.Send(self:GetReceivers())
+            query:Execute()
+
+        return true
+    end
+end
+
 ax.meta.inventory = inventory  -- Keep, invene:GetData is nil otherwise.

@@ -90,6 +90,12 @@ function ax.database:CreateTables()
         query:PrimaryKey("id")
     query:Execute()
 
+    query = mysql:Create("ax_items")
+        query:Create("id", "INT(11) UNSIGNED NOT NULL AUTO_INCREMENT")
+        query:Create("inv_id", "INT(11) NOT NULL")
+        query:Create("data", "LONGTEXT NOT NULL")
+    query:PrimaryKey("id")
+
     query = mysql:InsertIgnore("ax_schema")
         query:Insert("table", "ax_characters")
         query:Insert("columns", util.TableToJSON({}))

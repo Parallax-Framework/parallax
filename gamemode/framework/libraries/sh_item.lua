@@ -12,6 +12,7 @@
 ax.item = ax.item or {}
 ax.item.stored = ax.item.stored or {}
 ax.item.instances = ax.item.instances or {}
+ax.meta.item = ax.meta.item or {}
 
 function ax.item:Initialize()
     self:Include("parallax/gamemode/items")
@@ -42,4 +43,14 @@ function ax.item:Include(path)
             ax.item.stored[itemName] = ITEM
         ITEM = nil
     end
+end
+
+function ax.item:Get(identifier)
+    if ( isstring(identifier) ) then
+        return self.stored[identifier]
+    elseif ( isnumber(identifier) ) then
+        return self.instances[identifier]
+    end
+
+    return nil
 end
