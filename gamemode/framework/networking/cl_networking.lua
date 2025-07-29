@@ -117,3 +117,22 @@ net.Receive("ax.inventory.item.add", function()
     inv.items[#inv.items + 1] = item
     ax.item.instances[item.id] = setmetatable(item, ax.meta.item)
 end)
+
+net.Receive("ax.inventory.item.remove", function()
+    local inventory = net.ReadUInt(32)
+    local itemId = net.ReadUInt(32)
+
+    local inv = ax.inventory.instances[inventory]
+    if ( !istable(inv) ) then
+        ax.util:PrintError("Invalid inventory ID received for item remove.")
+        return
+    end
+
+    for i = 1, #inv.items do
+        if ( inv.items[i].id == itemId ) then
+            table.remove(inv.items, i)
+            ax.item.instances[itemId] = nil
+            break
+        end
+    end
+end)

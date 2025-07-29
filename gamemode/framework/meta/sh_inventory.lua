@@ -164,9 +164,44 @@ if ( SERVER ) then
                     net.WriteUInt(self.id, 32)
                     net.WriteTable(itemObject)
                 net.Send(self:GetReceivers())
-            query:Execute()
 
-        return true
+                return true
+            end)
+        query:Execute()
+    end
+
+    function inventory:RemoveItem(itemID)
+        if ( !istable(self.items) ) then self.items = {} return end
+
+        for i = 1, #self.items do
+            if ( self.items[i].id == itemID ) then
+                local item = self.items[i]
+
+                local query = mysql:Delete("ax_items")
+                    query:Where("id", item.id)
+                    query:Callback(function(result, status)
+                        if result == false then
+                            ax.util:PrintError("Failed to remove item from database for inventory " .. self.id)
+                            return false
+                        end
+
+                        table.remove(self.items, i)
+
+                        net.Start("ax.inventory.item.remove")
+                            net.WriteUInt(self.id, 32)
+                            net.WriteUInt(item.id, 32)
+                        net.Send(self:GetReceivers())
+
+                        return true
+                    end)
+                query:Execute()
+
+                ax.item.instances[item.id] = nil
+                return true
+            end
+        end
+
+        return false
     end
 end
 
