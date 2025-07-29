@@ -73,6 +73,9 @@ if ( SERVER ) then
                 for i = 1, #result do
                     local data = result[i]
                     local inventory = setmetatable({}, ax.meta.inventory)
+
+                    data.id = tonumber(data.id)
+
                     inventory.id = data.id
                     inventory.items = ax.util:SafeParseTable(data.items) or {}
                     inventory.maxWeight = data.maxWeight or 30.0

@@ -134,6 +134,8 @@ if ( SERVER ) then
                     local charData = result[i]
                     local character = setmetatable({}, ax.meta.character)
 
+                    charData.id = tonumber(charData.id)
+
                     for k, v in pairs(charData) do
                         if ( k == "vars" ) then
                             character.vars = util.JSONToTable(v) or {}

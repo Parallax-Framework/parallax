@@ -51,9 +51,6 @@ net.Receive("ax.character.create", function(length, client)
     function(character, inventory)
         inventory.receivers = { client }
 
-        ax.inventory.instances[inventory.id] = inventory
-        ax.character.instances[character.id] = character
-
         if ( !client:GetCharacter() ) then
             client:SetNoDraw(false)
             client:SetNotSolid(false)
@@ -61,6 +58,9 @@ net.Receive("ax.character.create", function(length, client)
         end
 
         client:GetTable().axCharacter = character
+
+        ax.inventory.instances[inventory.id] = inventory
+        ax.character.instances[character.id] = character
 
         ax.inventory:Sync(inventory)
         ax.character:Sync(client, character)

@@ -138,6 +138,8 @@ if ( SERVER ) then
             return false
         end
 
+        data = data or {}
+
         local query = mysql:Insert("ax_items")
             query:Insert("inv_id", self.id)
             query:Insert("data", util.TableToJSON(data))
