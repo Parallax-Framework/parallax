@@ -124,6 +124,43 @@ function ax.database:CreateTables()
     hook.Run("OnDatabaseTablesCreated")
 end
 
+function ax.database:WipeTables(callback)
+    local query
+
+    query = mysql:Delete("ax_schema")
+    query:Execute()
+
+    query = mysql:Delete("ax_characters")
+    query:Execute()
+
+    query = mysql:Delete("ax_inventories")
+    query:Execute()
+
+    query = mysql:Delete("ax_items")
+        query:Callback(function()
+            if ( isfunction(callback) ) then
+                callback()
+            end
+        end)
+    query:Execute()
+
+    self.schema = {}
+    self.schemaQueue = {}
+
+    hook.Run("OnDatabaseTablesWiped")
+end
+
+concommand.Add("ax_database_wipe", function(client, command, args, argStr)
+    if ( !IsValid(client) or !client:IsSuperAdmin() ) then
+        ax.util:PrintError("You do not have permission to use this command.")
+        return
+    end
+
+    ax.database:WipeTables(function()
+        ax.util:Print("Database tables wiped successfully.")
+    end)
+end)
+
 timer.Simple(1, function()
     ax.database:Connect("sqlite")
 end)
