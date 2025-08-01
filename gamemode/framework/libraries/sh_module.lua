@@ -18,7 +18,7 @@ function ax.module:Initialize()
 end
 
 function ax.module:Include(path)
-    local files, directories = file.Find(path .. "/*.lua", "LUA")
+    local files, directories = file.Find(path .. "/*", "LUA")
 
     if ( files[1] != nil ) then
         for i = 1, #files do
@@ -30,9 +30,9 @@ function ax.module:Include(path)
                 moduleName = string.sub(moduleName, 4)
             end
 
-            MODULE = { uniqueID = moduleName }
+            MODULE = { UniqueID = moduleName }
                 ax.util:Include(path .. "/" .. fileName, "shared")
-                ax.util:PrintSuccess("Module \"" .. MODULE.Name .. "\" initialized successfully.")
+                ax.util:PrintSuccess("Module \"" .. tostring(MODULE.Name) .. "\" initialized successfully.")
                 ax.module.stored[moduleName] = MODULE
             MODULE = nil
         end
@@ -43,12 +43,13 @@ function ax.module:Include(path)
             local dirName = directories[i]
             local bootFile = path .. "/" .. dirName .. "/boot.lua"
             if ( file.Exists(bootFile, "LUA") ) then
-                MODULE = { uniqueID = dirName }
+                MODULE = { UniqueID = dirName }
 
                 ax.util:Include(bootFile, "shared")
                 ax.util:IncludeDirectory(path .. "/" .. dirName, true)
-                ax.util:PrintSuccess("Module \"" .. MODULE.Name .. "\" initialized successfully.")
-                ax.module.stored[MODULE.uniqueID] = MODULE
+
+                ax.util:PrintSuccess("Module \"" .. tostring(MODULE.Name) .. "\" initialized successfully.")
+                ax.module.stored[MODULE.UniqueID] = MODULE
 
                 MODULE = nil
             end
