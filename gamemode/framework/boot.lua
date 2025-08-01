@@ -39,5 +39,5 @@ function GM:OnReloaded()
     ax.faction:Initialize()
     ax.module:Initialize()
     ax.item:Initialize()
-    ax.localisation:Initialize()
+    ax.localization:Initialize()
 end

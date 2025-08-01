@@ -1,33 +1,33 @@
-ax.localisation = ax.localisation or {}
-ax.localisation.langs = ax.localisation.langs or {}
+ax.localization = ax.localization or {}
+ax.localization.langs = ax.localization.langs or {}
 
-function ax.localisation:Register(name, translation)
+function ax.localization:Register(name, translation)
     if ( !isstring(name) or name == "" ) then
-        ax.util:PrintError("Invalid localisation name provided")
+        ax.util:PrintError("Invalid localization name provided")
         return
     end
 
     if ( !istable(translation) ) then
-        ax.util:PrintError("Invalid localisation translation provided for \"" .. name .. "\"")
+        ax.util:PrintError("Invalid localization translation provided for \"" .. name .. "\"")
         return
     end
 
-    if ( istable(ax.localisation.langs[name]) ) then
-        ax.localisation.langs[name] = table.Merge(ax.localisation.langs[name], translation)
+    if ( istable(ax.localization.langs[name]) ) then
+        ax.localization.langs[name] = table.Merge(ax.localization.langs[name], translation)
     end
 
     self.langs[name] = translation
-    ax.util:PrintDebug("Localisation \"" .. name .. "\" registered successfully.")
+    ax.util:PrintDebug("Localization \"" .. name .. "\" registered successfully.")
 end
 
-function ax.localisation:GetPhrase(phrase, ...)
+function ax.localization:GetPhrase(phrase, ...)
     if ( !isstring(phrase) or phrase == "" ) then
-        ax.util:PrintError("Invalid phrase provided to ax.localisation:GetPhrase()")
+        ax.util:PrintError("Invalid phrase provided to ax.localization:GetPhrase()")
         return ""
     end
 
     local langCode = CLIENT and GetConVar("gmod_language"):GetString() or "en"
-    local lang = ax.localisation.langs[langCode]
+    local lang = ax.localization.langs[langCode]
     if ( !istable(lang) or !lang[phrase] ) then
         ax.util:PrintError("Phrase \"" .. phrase .. "\" not found in language \"" .. langCode .. "\"")
         return phrase
@@ -46,7 +46,7 @@ function ax.localisation:GetPhrase(phrase, ...)
     return translation
 end
 
-function ax.localisation:Initialize()
+function ax.localization:Initialize()
     self:Include("parallax/gamemode/localization")
     self:Include(engine.ActiveGamemode() .. "/gamemode/schema/localization")
 
@@ -61,7 +61,7 @@ function ax.localisation:Initialize()
     end
 end
 
-function ax.localisation:Include(directory)
+function ax.localization:Include(directory)
     if ( !isstring(directory) or directory == "" ) then
         ax.util:PrintError("Include: Invalid directory parameter provided")
         return false
@@ -90,4 +90,4 @@ function ax.localisation:Include(directory)
     return true
 end
 
-ax.localization = ax.localisation
+ax.localization = ax.localization

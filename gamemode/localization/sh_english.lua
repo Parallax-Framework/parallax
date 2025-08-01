@@ -3,4 +3,4 @@ local enTranslation = {
     ["ax.test2"] = "this is another test",
 }
 
-ax.localisation:Register("en", enTranslation)
+ax.localization:Register("en", enTranslation)
