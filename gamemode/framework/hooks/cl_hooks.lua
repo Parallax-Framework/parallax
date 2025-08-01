@@ -16,3 +16,9 @@ function GM:OnEntityCreated(entity)
         hook.Run("OnClientCached", ax.client)
     end
 end
+
+function GM:PlayerStartVoice()
+    if ( IsValid(g_VoicePanelList) ) then
+        g_VoicePanelList:Remove()
+    end
+end
