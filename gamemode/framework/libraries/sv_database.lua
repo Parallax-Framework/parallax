@@ -124,6 +124,16 @@ function ax.database:CreateTables()
     hook.Run("OnDatabaseTablesCreated")
 end
 
+concommand.Add("ax_database_create", function(client, command, args, argStr)
+    if ( !IsValid(client) or !client:IsSuperAdmin() ) then
+        ax.util:PrintError("You do not have permission to use this command.")
+        return
+    end
+
+    ax.database:CreateTables()
+    ax.util:Print("Database tables created successfully.")
+end)
+
 function ax.database:WipeTables(callback)
     local query
 
