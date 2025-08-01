@@ -32,10 +32,13 @@ net.Receive("ax.character.create", function(length, client)
     if ( try == false ) then
         if ( isstring(catch) and #catch > 0 ) then
             client:ChatPrint(catch)
+            ax.util:Error("Character creation failed for " .. client:SteamID64() .. ": " .. catch)
         end
 
         return
     end
+
+    ax.util:PrintDebug("Creating character for " .. client:SteamID64() .. " with payload: " .. util.TableToJSON(payload))
 
     local curTime = math.floor(os.time())
 
@@ -64,6 +67,12 @@ net.Receive("ax.character.create", function(length, client)
 
         ax.inventory:Sync(inventory)
         ax.character:Sync(client, character)
+
+        net.Start("ax.character.create")
+            net.WriteUInt(character.id, 32)
+        net.Send(client)
+
+        ax.util:PrintSuccess("Character created for " .. client:SteamID64() .. ": " .. character.name)
 
         hook.Run("OnCharacterCreated", client, character)
     end)
