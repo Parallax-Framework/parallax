@@ -62,7 +62,7 @@ if ( SERVER ) then
     function ax.inventory:Restore(callback)
         local query = mysql:Select("ax_inventories")
             query:Callback(function(result, status)
-                if ( result == false ) then
+                if ( result == nil or status == false ) then
                     if ( isfunction(callback) ) then
                         callback(false)
                     end
