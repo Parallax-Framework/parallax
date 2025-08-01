@@ -18,6 +18,42 @@ net.Receive("ax.player.ready", function(len)
     vgui.Create("ax.main")
 end)
 
+net.Receive("ax.character.create", function(len)
+    local client = ax.client
+    if ( !IsValid(client) ) then
+        ax.util:PrintError("Invalid client received for character creation.")
+        return
+    end
+
+    local clientTable = client:GetTable()
+    if ( !istable(clientTable) ) then
+        ax.util:PrintError("Invalid client table for character creation.")
+        return
+    end
+
+    local characterID = net.ReadUInt(32)
+    if ( !isnumber(characterID) or characterID <= 0 ) then
+        ax.util:PrintError("Invalid character ID received for creation.")
+        return
+    end
+
+    local character = ax.character:Get(characterID)
+    if ( !istable(character) ) then
+        ax.util:PrintError("Character with ID " .. characterID .. " not found.")
+        return
+    end
+
+    if ( !clientTable.axCharacter ) then
+        net.Start("ax.character.load")
+            net.WriteUInt(characterID, 32)
+        net.Send(client)
+
+        if ( IsValid(ax.gui.main) ) then
+            ax.gui.main:Remove()
+        end
+    end
+end)
+
 net.Receive("ax.character.sync", function()
     local client = net.ReadPlayer()
     if ( !IsValid(client) ) then return end
