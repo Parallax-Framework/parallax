@@ -4,9 +4,10 @@ MODULE.Name = "Movement"
 MODULE.Description = "Restricts player movement to a specific set of rules."
 MODULE.Author = "Riggs"
 
--- Anti-Bunnyhop
+local bunnyhopVelocityMultiplier = 0.5
 function MODULE:OnPlayerHitGround(client, inWater)
-    local vel = client:GetVelocity()
-
-    client:SetVelocity(Vector(-(vel.x / 2), -(vel.y / 2), 0))
+    local velocity = client:GetVelocity()
+    local horizontalVelocity = Vector(velocity.x, velocity.y, 0)
+    local reducedVelocity = -horizontalVelocity * bunnyhopVelocityMultiplier
+    client:SetVelocity(reducedVelocity)
 end
