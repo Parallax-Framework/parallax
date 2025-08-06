@@ -29,5 +29,3 @@ function MODULE:ShouldDrawLocalPlayer(client)
 
     return true
 end
-
-print("Third Person module loaded successfully.")
