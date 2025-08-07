@@ -86,7 +86,7 @@ function inventory:AddReceiver(receiver)
                 net.Start("ax.inventory.receiver.add")
                     net.WriteTable(self)
                     net.WritePlayer(receiver)
-                net.Broadcast()
+                net.Send(self:GetReceivers())
             end
 
             return true
@@ -98,7 +98,7 @@ function inventory:AddReceiver(receiver)
             net.Start("ax.inventory.receiver.add")
                 net.WriteTable(self)
                 net.WritePlayer(receiver)
-            net.Broadcast()
+            net.Send(self:GetReceivers())
         end
 
         return true
@@ -118,7 +118,7 @@ function inventory:RemoveReceiver(receiver)
                 net.Start("ax.inventory.receiver.remove")
                     net.WriteUInt(self.id, 32)
                     net.WritePlayer(receiver)
-                net.Broadcast()
+                net.Send(self:GetReceivers())
             end
 
             return true
