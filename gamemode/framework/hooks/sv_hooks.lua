@@ -23,9 +23,10 @@ function GM:DatabaseConnected()
 end
 
 function GM:PlayerInitialSpawn(client)
-    ax.util:PrintDebug("Client " .. client:SteamID64() .. " has connected, waiting for full update request...")
+    local steamID64 = client:SteamID64()
+    ax.util:PrintDebug("Client " .. steamID64 .. " has connected, waiting for full update request...")
 
-    AX_CLIENT_QUEUE[client:SteamID64()] = true
+    AX_CLIENT_QUEUE[steamID64] = true
     hook.Run("PlayerQueued", client)
 end
 
