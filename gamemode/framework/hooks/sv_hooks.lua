@@ -24,6 +24,10 @@ end
 
 function GM:DatabaseConnected()
     ax.database:CreateTables()
+
+    timer.Create("ax.database.think", 1, 0, function()
+        mysql:Think()
+    end)
 end
 
 function GM:PlayerInitialSpawn(client)
