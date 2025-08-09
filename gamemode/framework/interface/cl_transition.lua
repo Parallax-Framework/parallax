@@ -22,6 +22,7 @@ function PANEL:Init()
     self.currentY = self:GetTall()
     self.active = false
     self.easing = "OutBounce"
+    self.navigations = {}
 
     self:HidePanel()
 end
@@ -30,6 +31,8 @@ function PANEL:CreateNavigation(parent, backText, backCallback, nextText, nextCa
     local navigation = parent:Add("EditablePanel")
     navigation:Dock(BOTTOM)
     navigation:DockMargin(ScreenScale(32), 0, ScreenScale(32), ScreenScaleH(32))
+
+    navigation:SetMouseInputEnabled(false)
 
     local backButton = navigation:Add("ax.button.flat")
     backButton:Dock(LEFT)
@@ -44,6 +47,8 @@ function PANEL:CreateNavigation(parent, backText, backCallback, nextText, nextCa
     end
 
     navigation:SetTall(math.max(backButton:GetTall(), nextButton and nextButton:GetTall() or 0))
+
+    table.insert(self.navigations, navigation)
 
     return navigation
 end
@@ -91,6 +96,15 @@ function PANEL:SlideToFront(time)
         Think = function(this)
             self:SetPos(this.currentX, this.currentY)
             self:SetAlpha(this.currentAlpha)
+        end,
+        OnComplete = function(this)
+            if ( this.OnSlideComplete ) then
+                this:OnSlideComplete()
+            end
+
+            for _, nav in ipairs(self.navigations) do
+                nav:SetMouseInputEnabled(true)
+            end
         end
     })
 
@@ -102,6 +116,10 @@ function PANEL:HidePanel()
 
     self:SetZPos(0)
     self:SetVisible(false)
+
+    for _, nav in ipairs(self.navigations) do
+        nav:SetMouseInputEnabled(false)
+    end
 
     self.active = false
 end
