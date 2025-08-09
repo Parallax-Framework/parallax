@@ -25,7 +25,7 @@ function ax.discord.relay:CheckDependencies()
 		return
 	end
 
-	if ( cfg.privateWebhook == "" and cfg.privateWebhook == "" and !(cfg.channels and next(cfg.channels)) and !(cfg.useWebSocket and cfg.webSocketURL != "")) then
+	if ( !(cfg.channels and next(cfg.channels)) and !(cfg.useWebSocket and cfg.webSocketURL != "")) then
 		ax.util:PrintError("No webhook or websocket configured. Set channels map, Public/Private webhooks, or webSocketURL.")
 	end
 end
