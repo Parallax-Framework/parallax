@@ -97,10 +97,9 @@ function PANEL:SlideToFront(time)
     self.active = true
 end
 
--- 4 Variants of transitions of hiding the transition panel
--- left, up, right, down
--- create a helper function to handle the hiding logic, then create the 4 variants
 function PANEL:HidePanel()
+    if ( !self.active ) then return end
+
     self:SetZPos(0)
     self:SetVisible(false)
 
