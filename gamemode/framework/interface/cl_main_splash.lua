@@ -18,7 +18,7 @@ function PANEL:Init()
     self.subtitle:SetTextColor(Color(180, 180, 200, 255))
     self.subtitle:SizeToContents()
 
-    self.buttons = self:Add("DScrollPanel")
+    self.buttons = self:Add("ax.scroller.vertical")
 
     -- Allow for buttons to be created by other scripts
     local buttons = {}
