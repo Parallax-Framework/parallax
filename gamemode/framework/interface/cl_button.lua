@@ -19,7 +19,7 @@ function PANEL:Init()
     self.fontHovered = "ax.large.bold"
     self.textColor = Color(255, 255, 255)
     self.textColorMotion = Color(255, 255, 255)
-    self.textColorHovered = Color(220, 220, 240)
+    self.textColorHovered = Color(200, 200, 240)
     self.inertia = 0
     self.easing = "OutQuint"
 
