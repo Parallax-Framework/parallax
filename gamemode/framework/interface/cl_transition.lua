@@ -26,7 +26,35 @@ function PANEL:Init()
     self:HidePanel() -- quickly hide the panel so it doesn't show up in the middle of the screen
 end
 
-function PANEL:SlideToFront()
+function PANEL:StartAtLeft()
+    self.currentX = -self:GetWide()
+    self.currentY = 0
+
+    self:SetPos(self.currentX, self.currentY)
+end
+
+function PANEL:StartAtTop()
+    self.currentX = 0
+    self.currentY = -self:GetTall()
+
+    self:SetPos(self.currentX, self.currentY)
+end
+
+function PANEL:StartAtRight()
+    self.currentX = ScrW()
+    self.currentY = 0
+
+    self:SetPos(self.currentX, self.currentY)
+end
+
+function PANEL:StartAtBottom()
+    self.currentX = 0
+    self.currentY = ScrH()
+
+    self:SetPos(self.currentX, self.currentY)
+end
+
+function PANEL:SlideToFront(time)
     if ( self.active ) then return end
 
     self:SetZPos(CurTime() / 1000) -- Set a high ZPos to ensure this panel is on top
@@ -34,7 +62,7 @@ function PANEL:SlideToFront()
     self:SetMouseInputEnabled(true)
     self:SetKeyboardInputEnabled(true)
 
-    self:Motion(1, {
+    self:Motion(time or 1, {
         Target = { currentX = 0, currentY = 0, currentAlpha = 255 },
         Easing = self.easing,
         Delay = 0,
@@ -57,11 +85,11 @@ function PANEL:HidePanel()
     self.active = false
 end
 
-function PANEL:SlideLeft()
+function PANEL:SlideLeft(time)
     self:SetMouseInputEnabled(false)
     self:SetKeyboardInputEnabled(false)
 
-    self:Motion(1, {
+    self:Motion(time or 1, {
         Target = { currentX = -self:GetWide(), currentY = 0, currentAlpha = 0 },
         Easing = self.easing,
         Delay = 0,
@@ -75,11 +103,11 @@ function PANEL:SlideLeft()
     })
 end
 
-function PANEL:SlideUp()
+function PANEL:SlideUp(time)
     self:SetMouseInputEnabled(false)
     self:SetKeyboardInputEnabled(false)
 
-    self:Motion(1, {
+    self:Motion(time or 1, {
         Target = { currentX = 0, currentY = -self:GetTall(), currentAlpha = 0 },
         Easing = self.easing,
         Delay = 0,
@@ -93,11 +121,11 @@ function PANEL:SlideUp()
     })
 end
 
-function PANEL:SlideRight()
+function PANEL:SlideRight(time)
     self:SetMouseInputEnabled(false)
     self:SetKeyboardInputEnabled(false)
 
-    self:Motion(1, {
+    self:Motion(time or 1, {
         Target = { currentX = self:GetWide(), currentY = 0, currentAlpha = 0 },
         Easing = self.easing,
         Delay = 0,
@@ -111,11 +139,11 @@ function PANEL:SlideRight()
     })
 end
 
-function PANEL:SlideDown()
+function PANEL:SlideDown(time)
     self:SetMouseInputEnabled(false)
     self:SetKeyboardInputEnabled(false)
 
-    self:Motion(1, {
+    self:Motion(time or 1, {
         Target = { currentX = 0, currentY = self:GetTall(), currentAlpha = 0 },
         Easing = self.easing,
         Delay = 0,
