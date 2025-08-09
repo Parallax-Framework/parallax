@@ -3,12 +3,12 @@ ax.localization.langs = ax.localization.langs or {}
 
 function ax.localization:Register(name, translation)
     if ( !isstring(name) or name == "" ) then
-        ax.util:PrintError("Invalid localization name provided")
+        ax.util:PrintWarning("Invalid localization name provided")
         return
     end
 
     if ( !istable(translation) ) then
-        ax.util:PrintError("Invalid localization translation provided for \"" .. name .. "\"")
+        ax.util:PrintWarning("Invalid localization translation provided for \"" .. name .. "\"")
         return
     end
 
@@ -22,20 +22,20 @@ end
 
 function ax.localization:GetPhrase(phrase, ...)
     if ( !isstring(phrase) or phrase == "" ) then
-        ax.util:PrintError("Invalid phrase provided to ax.localization:GetPhrase()")
+        ax.util:PrintWarning("Invalid phrase provided to ax.localization:GetPhrase()")
         return ""
     end
 
     local langCode = CLIENT and GetConVar("gmod_language"):GetString() or "en"
     local lang = ax.localization.langs[langCode]
     if ( !istable(lang) or !lang[phrase] ) then
-        ax.util:PrintError("Phrase \"" .. phrase .. "\" not found in language \"" .. langCode .. "\"")
+        ax.util:PrintWarning("Phrase \"" .. phrase .. "\" not found in language \"" .. langCode .. "\"")
         return phrase
     end
 
     local translation = lang[phrase]
     if ( !isstring(translation) or translation == "" ) then
-        ax.util:PrintError("Translation for phrase \"" .. phrase .. "\" is not a valid string")
+        ax.util:PrintWarning("Translation for phrase \"" .. phrase .. "\" is not a valid string")
         return phrase
     end
 
@@ -48,12 +48,13 @@ end
 
 function ax.localization:Initialize()
     self:Include("parallax/gamemode/localization")
-    self:Include(engine.ActiveGamemode() .. "/gamemode/schema/localization")
 
     local _, modules = file.Find("parallax/gamemode/modules/*", "LUA")
     for i = 1, #modules do
         self:Include("parallax/gamemode/modules/" .. modules[i] .. "/localization")
     end
+
+    self:Include(engine.ActiveGamemode() .. "/gamemode/schema/localization")
 
     _, modules = file.Find(engine.ActiveGamemode() .. "/gamemode/modules/*", "LUA")
     for i = 1, #modules do
@@ -63,7 +64,7 @@ end
 
 function ax.localization:Include(directory)
     if ( !isstring(directory) or directory == "" ) then
-        ax.util:PrintError("Include: Invalid directory parameter provided")
+        ax.util:PrintWarning("Include: Invalid directory parameter provided")
         return false
     end
 
