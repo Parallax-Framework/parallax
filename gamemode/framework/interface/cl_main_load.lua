@@ -6,35 +6,13 @@ net.Start("ax.character.load")
 net.SendToServer()
 ]]
 
-local function CreateNavigation(parent, backText, backCallback, nextText, nextCallback)
-    local navigation = parent:Add("EditablePanel")
-    navigation:Dock(BOTTOM)
-    navigation:DockMargin(ScreenScale(32), 0, ScreenScale(32), ScreenScaleH(32))
-
-    local backButton = navigation:Add("ax.button.flat")
-    backButton:Dock(LEFT)
-    backButton:SetText(backText)
-    backButton.DoClick = backCallback
-
-    if ( nextText and nextCallback ) then
-        local nextButton = navigation:Add("ax.button.flat")
-        nextButton:Dock(RIGHT)
-        nextButton:SetText(nextText)
-        nextButton.DoClick = nextCallback
-    end
-
-    navigation:SetTall(math.max(backButton:GetTall(), nextButton and nextButton:GetTall() or 0))
-
-    return navigation
-end
-
 function PANEL:Init()
     local parent = self:GetParent()
 
     self:SetPos(0, 0)
     self:SetSize(ScrW(), ScrH())
 
-    CreateNavigation(self, "back", function()
+    self:CreateNavigation(self, "back", function()
         self:SlideDown()
         parent.splash:SlideToFront()
     end)
