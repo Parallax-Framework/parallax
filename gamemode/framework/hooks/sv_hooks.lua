@@ -11,6 +11,10 @@
 
 AX_CLIENT_QUEUE = AX_CLIENT_QUEUE or {}
 
+function GM:InitPostEntity()
+    ax.database:Connect() -- TODO: Allow schemas to connect to their own databases
+end
+
 function GM:PlayerDeathThink(client)
     local character = client:GetCharacter()
     if ( !character ) then return end

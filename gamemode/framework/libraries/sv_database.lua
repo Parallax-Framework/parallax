@@ -24,6 +24,13 @@ ax.database = ax.database or {
 }
 
 function ax.database:Connect(module, hostname, user, password, database, port)
+    module = module or "sqlite"
+    hostname = hostname or "localhost"
+    user = user or "root"
+    password = password or ""
+    database = database or "parallax"
+    port = port or 3306
+
     mysql:SetModule(module)
     mysql:Connect(hostname, user, password, database, port)
 end
@@ -34,7 +41,7 @@ function ax.database:AddToSchema(schemaType, field, fieldType)
         return
     end
 
-    if (!mysql:IsConnected() or !self.schema[schemaType]) then
+    if ( !mysql:IsConnected() or !self.schema[schemaType] ) then
         self.schemaQueue[#self.schemaQueue + 1] = {schemaType, field, fieldType}
         return
     end
@@ -45,13 +52,12 @@ end
 -- this is only ever used internally
 function ax.database:InsertSchema(schemaType, field, fieldType)
     local schema = self.schema[schemaType]
-
-    if (!schema) then
+    if ( !schema ) then
         error(string.format("attempted to insert into schema with invalid schema type '%s'", schemaType))
         return
     end
 
-    if (!schema[field]) then
+    if ( !schema[field] ) then
         schema[field] = true
 
         local query = mysql:Update("ax_schema")
@@ -169,8 +175,4 @@ concommand.Add("ax_database_wipe", function(client, command, args, argStr)
     ax.database:WipeTables(function()
         ax.util:Print("Database tables wiped successfully.")
     end)
-end)
-
-timer.Simple(1, function()
-    ax.database:Connect("sqlite")
 end)
