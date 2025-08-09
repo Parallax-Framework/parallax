@@ -36,8 +36,8 @@ function GM:OnReloaded()
     reloaded = true
 
     ax.schema:Initialize()
-    ax.faction:Initialize()
     ax.module:Initialize()
+    ax.faction:Initialize()
     ax.item:Initialize()
     ax.localization:Initialize()
 end

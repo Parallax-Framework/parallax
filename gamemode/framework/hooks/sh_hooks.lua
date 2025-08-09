@@ -12,7 +12,9 @@
 function GM:Initialize()
     ax.schema:Initialize()
     ax.module:Initialize()
+    ax.faction:Initialize()
     ax.item:Initialize()
+    ax.localization:Initialize()
 end
 
 function GM:CanBecomeFaction(factionTable, client)
