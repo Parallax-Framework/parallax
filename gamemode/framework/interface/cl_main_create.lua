@@ -82,7 +82,7 @@ function PANEL:Init()
 
         local factionButton = factionList:Add("ax.button.flat")
         factionButton:Dock(LEFT)
-        factionButton:DockMargin(0, 0, 0, 0)
+        factionButton:DockMargin(8, 0, 8, 0)
         factionButton:SetText("", true, true)
         factionButton:SetWide(math.min(factionList:GetTall() * 1.25, factionList:GetWide() / 2))
 
@@ -103,14 +103,12 @@ function PANEL:Init()
         image:SetMouseInputEnabled(false)
         image:SetSize(factionButton:GetTall(), factionButton:GetTall())
         image.Paint = function(this, width, height)
-            local x, y = ScreenScale(4), ScreenScaleH(4)
-            width, height = width - x * 2, height - y * 2
             local imageHeight = height * 0.85
             imageHeight = math.Round(imageHeight)
 
             surface.SetDrawColor(color_white)
             surface.SetMaterial(banner)
-            surface.DrawTexturedRect(x, y, width, imageHeight)
+            surface.DrawTexturedRect(0, 0, width, imageHeight)
 
             local inertia = factionButton:GetInertia()
             local boxHeightStatic = (height * 0.15)
@@ -118,7 +116,7 @@ function PANEL:Init()
 
             local boxHeight = boxHeightStatic * inertia
             boxHeight = math.Round(boxHeight)
-            draw.RoundedBox(0, x, imageHeight - boxHeight, width, boxHeight, Color(255, 255, 255, 255 * inertia))
+            draw.RoundedBox(0, 0, imageHeight - boxHeight, width, boxHeight, Color(255, 255, 255, 255 * inertia))
 
             local textColor = factionButton:GetTextColor()
             local hovered = factionButton:IsHovered()
