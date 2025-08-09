@@ -13,13 +13,19 @@ function PANEL:Init()
     self:SetSize(ScrW(), ScrH())
     self:MakePopup()
 
-    -- we are temporarily using ax.transition to showcase the new transition panel and since we dont have much of the UI done yet
     self.splash = self:Add("ax.main.splash")
-    self.create = self:Add("ax.main.create")
-    self.load = self:Add("ax.main.load")
-    self.options = self:Add("ax.main.options")
+    self.splash:StartAtBottom()
 
-    self.splash:SlideToFront() -- this will make this specific panel the active one, rest will be hidden
+    self.create = self:Add("ax.main.create")
+    self.create:StartAtBottom()
+
+    self.load = self:Add("ax.main.load")
+    self.load:StartAtBottom()
+
+    self.options = self:Add("ax.main.options")
+    self.options:StartAtBottom()
+
+    self.splash:SlideToFront()
 end
 
 function PANEL:Paint(width, height)
