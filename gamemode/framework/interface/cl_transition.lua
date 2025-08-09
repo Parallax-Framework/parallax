@@ -23,7 +23,7 @@ function PANEL:Init()
     self.active = false
     self.easing = "OutBounce"
 
-    self:HidePanel() -- quickly hide the panel so it doesn't show up in the middle of the screen
+    self:HidePanel()
 end
 
 function PANEL:CreateNavigation(parent, backText, backCallback, nextText, nextCallback)
