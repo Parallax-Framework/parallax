@@ -9,6 +9,7 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
+-- Detect the realm of a file based on its name
 function ax.util:DetectFileRealm(file)
     if ( !file or type(file) != "string" ) then
         return "shared"
@@ -36,6 +37,7 @@ function ax.util:DetectFileRealm(file)
     return "shared"
 end
 
+-- Include a file with the specified path and realm
 function ax.util:Include(path, realm)
     if ( !isstring(path) or path == "" ) then
         ax.util:PrintError("Include: Invalid path parameter provided")
@@ -127,9 +129,6 @@ function ax.util:IncludeDirectory(directory, fromLua)
 end
 
 -- Prepares a package of arguments for printing.
--- @realm shared
--- @param ... any The package to prepare.
--- @return any The prepared package.
 function ax.util:PreparePackage(...)
     local arguments = {...}
     local package = {}
@@ -205,6 +204,7 @@ function ax.util:PrintDebug(...)
     return args
 end
 
+-- Find a specific piece of text within a larger body of text
 function ax.util:FindString(str, find)
     if ( str == nil or find == nil ) then
         ax.util:PrintError("Attempted to find a string with no value to find for! (" .. tostring(str) .. ", " .. tostring(find) .. ")")
@@ -217,6 +217,7 @@ function ax.util:FindString(str, find)
     return string.find(str, find) != nil
 end
 
+-- Find a specific piece of text within a larger body of text
 function ax.util:FindText(txt, find)
     if ( txt == nil or find == nil ) then return false end
 
@@ -230,6 +231,7 @@ function ax.util:FindText(txt, find)
     return false
 end
 
+-- Find a player by their identifier (SteamID, SteamID64, or name)
 function ax.util:FindPlayer(identifier)
     if ( identifier == nil ) then return NULL end
 
@@ -268,10 +270,150 @@ function ax.util:FindPlayer(identifier)
     return NULL
 end
 
+-- Safely parse a JSON table
 function ax.util:SafeParseTable(tInput)
     if ( isstring(tInput) ) then
         return util.JSONToTable(tInput)
     end
 
     return tInput
+end
+
+-- Cap the text to a certain number of characters
+function ax.util:CapText(text, maxLength)
+    if ( !isstring(text) or !isnumber(maxLength) or maxLength <= 0 ) then
+        ax.util:PrintError("Attempted to cap text with invalid parameters", text, maxLength)
+        return ""
+    end
+
+    if ( #text <= maxLength ) then
+        return text
+    end
+
+    return string.sub(text, 1, maxLength - 3) .. "..."
+end
+
+-- Cap the text at a certain number of characters, but only at word boundaries
+function ax.util:CapTextWord(text, maxLength)
+    if ( !isstring(text) or !isnumber(maxLength) or maxLength <= 0 ) then
+        ax.util:PrintError("Attempted to cap text with invalid parameters", text, maxLength)
+        return ""
+    end
+
+    if ( #text <= maxLength ) then
+        return text
+    end
+
+    local words = string.Explode(" ", text)
+    local cappedText = ""
+
+    for i = 1, #words do
+        local word = words[i]
+        if ( #cappedText + #word + 1 > maxLength ) then
+            break
+        end
+
+        if ( cappedText != "" ) then
+            cappedText = cappedText .. " "
+        end
+
+        cappedText = cappedText .. word
+    end
+
+    return cappedText .. "..."
+end
+
+-- Wrap text to fit within a specified width
+function ax.util:GetWrappedText(text, font, maxWidth)
+    if ( !isstring(text) or !isstring(font) or !isnumber(maxWidth) ) then
+        ax.util:PrintError("Attempted to wrap text with no value", text, font, maxWidth)
+        return false
+    end
+
+    local lines = {}
+    local line = ""
+
+    if ( self:GetTextWidth(font, text) <= maxWidth ) then
+        return {text}
+    end
+
+    local words = string.Explode(" ", text)
+
+    for i = 1, #words do
+        local word = words[i]
+        local wordWidth = self:GetTextWidth(font, word)
+
+        if ( wordWidth > maxWidth ) then
+            for j = 1, string.len(word) do
+                local char = string.sub(word, j, j)
+                local next = line .. char
+
+                if ( self:GetTextWidth(font, next) > maxWidth ) then
+                    lines[#lines + 1] = line
+                    line = ""
+                end
+
+                line = line .. char
+            end
+
+            continue
+        end
+
+        local space = (line == "") and "" or " "
+        local next = line .. space .. word
+
+        if ( self:GetTextWidth(font, next) > maxWidth ) then
+            lines[#lines + 1] = line
+            line = word
+        else
+            line = next
+        end
+    end
+
+    if ( line != "" ) then
+        lines[#lines + 1] = line
+    end
+
+    return lines
+end
+
+-- Returns a material from the cache or creates a new one
+local stored = {}
+function ax.util:GetMaterial(path, parameters)
+    if ( !tostring(path) ) then
+        ax.util:PrintError("Attempted to get a material with no path", path, parameters)
+        return false
+    end
+
+    parameters = tostring(parameters or "")
+    local uniqueID = Format("material.%s.%s", path, parameters)
+
+    if ( stored[uniqueID] ) then
+        return stored[uniqueID]
+    end
+
+    local mat = Material(path, parameters)
+    stored[uniqueID] = mat
+
+    return mat
+end
+
+if ( CLIENT ) then
+    -- Returns the given text's width.
+    function ax.util:GetTextWidth(font, text)
+        surface.SetFont(font)
+        return select(1, surface.GetTextSize(text))
+    end
+
+    -- Returns the given text's height.
+    function ax.util:GetTextHeight(font)
+        surface.SetFont(font)
+        return select(2, surface.GetTextSize("W"))
+    end
+
+    -- Returns the given text's size.
+    function ax.util:GetTextSize(font, text)
+        surface.SetFont(font)
+        return surface.GetTextSize(text)
+    end
 end
