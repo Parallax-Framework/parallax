@@ -15,12 +15,13 @@ ax.faction.stored = ax.faction.stored or {}
 
 function ax.faction:Initialize()
     self:Include("parallax/gamemode/factions")
-    self:Include(engine.ActiveGamemode() .. "/gamemode/schema/factions")
 
     local _, modules = file.Find("parallax/gamemode/modules/*", "LUA")
     for i = 1, #modules do
         self:Include("parallax/gamemode/modules/" .. modules[i] .. "/factions")
     end
+
+    self:Include(engine.ActiveGamemode() .. "/gamemode/schema/factions")
 
     _, modules = file.Find(engine.ActiveGamemode() .. "/gamemode/modules/*", "LUA")
     for i = 1, #modules do
@@ -108,4 +109,8 @@ function ax.faction:CanBecome(faction, client)
     end
 
     return true, nil
+end
+
+function ax.faction:GetAll()
+    return self.instances
 end
