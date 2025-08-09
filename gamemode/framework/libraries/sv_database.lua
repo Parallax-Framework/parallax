@@ -80,6 +80,14 @@ function ax.database:CreateTables()
         query:PrimaryKey("table")
     query:Execute()
 
+    query = mysql:Create("ax_players")
+        query:Create("id", "INT(11) UNSIGNED NOT NULL AUTO_INCREMENT")
+        query:Create("steamid", "VARCHAR(20) NOT NULL")
+        query:Create("name", "VARCHAR(32) NOT NULL")
+        query:Create("data", "LONGTEXT NOT NULL")
+        query:PrimaryKey("id")
+    query:Execute()
+
     query = mysql:Create("ax_characters")
         query:Create("id", "INT(11) UNSIGNED NOT NULL AUTO_INCREMENT")
         query:Create("schema", "VARCHAR(64) NOT NULL")
@@ -144,6 +152,9 @@ function ax.database:WipeTables(callback)
     local query
 
     query = mysql:Delete("ax_schema")
+    query:Execute()
+
+    query = mysql:Delete("ax_players")
     query:Execute()
 
     query = mysql:Delete("ax_characters")
