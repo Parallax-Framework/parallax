@@ -43,5 +43,10 @@ if ( IsValid(ax.gui.main) ) then
 end
 
 concommand.Add("ax_menu", function()
+    if ( IsValid(ax.gui.main) ) then
+        ax.gui.main:Remove()
+        return
+    end
+
     vgui.Create("ax.main")
 end)
