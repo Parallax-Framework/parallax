@@ -78,7 +78,7 @@ function PANEL:Init()
         local description = (v.Description and string.upper(v.Description)) or "UNKNOWN FACTION DESCRIPTION"
         description = ax.util:CapTextWord(description, factionList:GetTall() / 3) -- Unreliable, but it works for now
 
-        local descriptionWrapped = ax.util:GetWrappedText(description, "ax.regular.bold", factionList:GetTall() * 1.25)
+        local descriptionWrapped = ax.util:GetWrappedText(description, "ax.regular.bold", math.min(factionList:GetTall() * 1.125, factionList:GetWide() / 2))
 
         local factionButton = factionList:Add("ax.button.flat")
         factionButton:Dock(LEFT)
