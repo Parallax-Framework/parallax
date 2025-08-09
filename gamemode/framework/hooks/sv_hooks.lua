@@ -30,8 +30,9 @@ function GM:PlayerInitialSpawn(client)
 end
 
 function GM:StartCommand(client, userCmd)
-    if ( AX_CLIENT_QUEUE[client:SteamID64()] and !userCmd:IsForced() ) then
-        AX_CLIENT_QUEUE[client:SteamID64()] = nil
+    local steamID64 = client:SteamID64()
+    if ( AX_CLIENT_QUEUE[steamID64] and !userCmd:IsForced() ) then
+        AX_CLIENT_QUEUE[steamID64] = nil
 
         client:SetNoDraw(true)
         client:SetNotSolid(true)
