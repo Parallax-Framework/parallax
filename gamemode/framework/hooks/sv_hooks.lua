@@ -93,11 +93,10 @@ function GM:PlayerSay(client, text, teamChat)
 
     -- a bloody mess
 
-    if ( hook.Run("ShouldFormatMessage", client, text) == false ) then
-        return text
+    if ( hook.Run("ShouldFormatMessage", client, text) != false ) then
+        text = ax.chat:Format(text)
     end
 
-    text = ax.chat:Format(text)
     return text
 end
 
