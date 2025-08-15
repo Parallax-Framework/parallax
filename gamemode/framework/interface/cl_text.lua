@@ -135,7 +135,7 @@ function PANEL:SizeToContents()
 end
 
 function PANEL:Paint(width, height)
-    surface.SetDrawColor(ax.color:Get("background.transparent"))
+    surface.SetDrawColor(0, 0, 0, 100)
     surface.DrawRect(0, 0, width, height)
 
     BaseClass.Paint(self, width, height)
