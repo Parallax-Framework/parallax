@@ -416,4 +416,78 @@ if ( CLIENT ) then
         surface.SetFont(font)
         return surface.GetTextSize(text)
     end
+
+    local BLUR_MAT = ax.util:GetMaterial("pp/blurscreen")
+    local _ax_blur_last_update = 0
+    function ax.util:DrawPanelBlur(panel, passes, density, alpha, throttle, clip)
+        if ( !IsValid(panel) ) then return end
+
+        passes = math.max(1, math.floor(passes or 3))
+        density = density or 1.0
+        alpha = math.Clamp(tonumber(alpha or 180) or 180, 0, 255)
+        throttle = tonumber(throttle or 0) or 0
+        clip = clip == nil and true or clip
+
+        if ( alpha <= 0 ) then return end
+
+        local sx, sy = panel:LocalToScreen(0, 0)
+        local w, h = panel:GetWide(), panel:GetTall()
+
+        local now = CurTime()
+        local can_update = (throttle <= 0) or (now - _ax_blur_last_update >= throttle)
+
+        surface.SetMaterial(BLUR_MAT)
+        surface.SetDrawColor(255, 255, 255, alpha)
+
+        if ( clip ) then
+            render.SetScissorRect(sx, sy, sx + w, sy + h, true)
+        end
+
+        for i = 1, passes do
+            BLUR_MAT:SetFloat("$blur", i * density)
+            if ( can_update ) then
+                render.UpdateScreenEffectTexture()
+            end
+            surface.DrawTexturedRect(-sx, -sy, ScrW(), ScrH())
+        end
+
+        if ( clip ) then
+            render.SetScissorRect(0, 0, 0, 0, false)
+        end
+
+        if ( can_update ) then
+            _ax_blur_last_update = now
+        end
+    end
+
+    function ax.util:DrawRectBlur(x, y, w, h, passes, density, alpha, throttle)
+        passes = math.max(1, math.floor(passes or 3))
+        density = density or 1.0
+        alpha = math.Clamp(tonumber(alpha or 180) or 180, 0, 255)
+        throttle = tonumber(throttle or 0) or 0
+
+        if ( alpha <= 0 ) then return end
+
+        local now = CurTime()
+        local can_update = ( throttle <= 0 ) or ( now - _ax_screen_blur_last >= throttle )
+
+        surface.SetMaterial(BLUR_MAT)
+        surface.SetDrawColor(255, 255, 255, alpha)
+
+        render.SetScissorRect(x, y, x + w, y + h, true)
+
+        for i = 1, passes do
+            BLUR_MAT:SetFloat("$blur", i * density)
+            if ( can_update ) then
+                render.UpdateScreenEffectTexture()
+            end
+            surface.DrawTexturedRect(0, 0, ScrW(), ScrH())
+        end
+
+        render.SetScissorRect(0, 0, 0, 0, false)
+
+        if ( can_update ) then
+            _ax_screen_blur_last = now
+        end
+    end
 end
