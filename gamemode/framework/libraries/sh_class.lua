@@ -15,12 +15,13 @@ ax.class.stored = ax.class.stored or {}
 
 function ax.class:Initialize()
     self:Include("parallax/gamemode/classes")
-    self:Include(engine.ActiveGamemode() .. "/gamemode/schema/classes")
 
     local _, modules = file.Find("parallax/gamemode/modules/*", "LUA")
     for i = 1, #modules do
         self:Include("parallax/gamemode/modules/" .. modules[i] .. "/classes")
     end
+
+    self:Include(engine.ActiveGamemode() .. "/gamemode/schema/classes")
 
     _, modules = file.Find(engine.ActiveGamemode() .. "/gamemode/modules/*", "LUA")
     for i = 1, #modules do
