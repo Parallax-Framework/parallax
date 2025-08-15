@@ -29,6 +29,31 @@ function ax.faction:Initialize()
     end
 end
 
+local DEFAULT_MODELS = {
+    Model("models/humans/group01/male_01.mdl"),
+    Model("models/humans/group01/male_02.mdl"),
+    Model("models/humans/group01/male_04.mdl"),
+    Model("models/humans/group01/male_05.mdl"),
+    Model("models/humans/group01/male_06.mdl"),
+    Model("models/humans/group01/male_07.mdl"),
+    Model("models/humans/group01/male_08.mdl"),
+    Model("models/humans/group01/male_09.mdl"),
+    Model("models/humans/group02/male_01.mdl"),
+    Model("models/humans/group02/male_03.mdl"),
+    Model("models/humans/group02/male_05.mdl"),
+    Model("models/humans/group02/male_07.mdl"),
+    Model("models/humans/group02/male_09.mdl"),
+    Model("models/humans/group01/female_01.mdl"),
+    Model("models/humans/group01/female_02.mdl"),
+    Model("models/humans/group01/female_03.mdl"),
+    Model("models/humans/group01/female_06.mdl"),
+    Model("models/humans/group01/female_07.mdl"),
+    Model("models/humans/group02/female_01.mdl"),
+    Model("models/humans/group02/female_03.mdl"),
+    Model("models/humans/group02/female_06.mdl"),
+    Model("models/humans/group01/female_04.mdl")
+}
+
 function ax.faction:Include(directory)
     if ( !isstring(directory) or directory == "" ) then
         ax.util:PrintError("Include: Invalid directory parameter provided")
@@ -57,6 +82,10 @@ function ax.faction:Include(directory)
             end
 
             FACTION = { id = facUniqueID, index = #self.instances + 1 }
+                FACTION.GetModels = function(this)
+                    return this.models or DEFAULT_MODELS
+                end
+
                 ax.util:Include(directory .. "/" .. fileName, "shared")
                 ax.util:PrintDebug(Color(85, 255, 120), "Faction \"" .. FACTION.Name .. "\" initialised successfully.")
 

@@ -88,7 +88,7 @@ ax.character:RegisterVar("model", {
             return
         end
 
-        for k, v in pairs(ax.faction:Get(factionID).Models) do
+        for k, v in pairs(ax.faction:Get(factionID):GetModels()) do
             local modelButton = layout:Add("SpawnIcon")
             modelButton:SetModel(v)
             modelButton:SetSize(64, 64)
