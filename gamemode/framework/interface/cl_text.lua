@@ -122,7 +122,6 @@ function PANEL:Init()
     self:SetUpdateOnType(true)
     self:SetCursorColor(color_white)
     self:SetHighlightColor(color_white)
-    self._bSndEffectOptional = false
 
     self:SetTall(ScreenScale(12))
 end
@@ -142,10 +141,6 @@ function PANEL:Paint(width, height)
 end
 
 function PANEL:ShouldPlayTypeSound()
-    if ( self._bSndEffectOptional ) then
-        return ax.option:Get("chat.typesound")
-    end
-
     return true
 end
 
