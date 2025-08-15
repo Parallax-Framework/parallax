@@ -9,7 +9,17 @@ function PANEL:Init()
 
     ax.gui.chatbox = self
 
+    -- Base/default size
     self:SetSize(hook.Run("GetChatboxSize"))
+
+    -- Restore saved size if available
+    local sw = tonumber(cookie.GetString("ax.chatbox.w") or "")
+    local sh = tonumber(cookie.GetString("ax.chatbox.h") or "")
+    if ( sw and sh ) then
+        local minW, minH = 260, 180
+        local maxW, maxH = ScrW(), ScrH()
+        self:SetSize(math.Clamp(sw, minW, maxW), math.Clamp(sh, minH, maxH))
+    end
 
     -- Try to restore last saved position if available, otherwise use hook default
     local cx = tonumber(cookie.GetString("ax.chatbox.x") or "")
@@ -22,29 +32,46 @@ function PANEL:Init()
         self:SetPos(hook.Run("GetChatboxPos"))
     end
 
-    local top = self:Add("ax.text")
-    top:Dock(TOP)
-    top:SetTextInset(8, 0)
-    top:SetFont("ax.chatbox.text")
-    top:SetText(GetHostName(), true)
-    top.Paint = function(this, width, height)
+    self.top = self:Add("ax.text")
+    self.top:Dock(TOP)
+    self.top:SetTextInset(8, 0)
+    self.top:SetFont("ax.chatbox.text")
+    self.top:SetText(GetHostName(), true)
+    self.top.Paint = function(this, width, height)
         surface.SetDrawColor(0, 0, 0, 100)
         surface.DrawRect(0, 0, width, height)
     end
 
     -- Enable dragging the chatbox by grabbing the top bar
-    top:SetMouseInputEnabled(true)
-    top:SetCursor("sizeall")
-    top.OnMousePressed = function(this, code)
+    self.top:SetMouseInputEnabled(true)
+    self.top:SetCursor("sizeall")
+    self.top.OnMousePressed = function(this, code)
         if ( code == MOUSE_LEFT ) then
             local px, py = self:GetPos()
             this.dragOffsetX = gui.MouseX() - px
             this.dragOffsetY = gui.MouseY() - py
             this.dragging = true
             this:MouseCapture(true)
+        elseif ( code == MOUSE_RIGHT ) then
+            local menu = DermaMenu()
+            menu:AddOption("Reset Position", function()
+                local rx, ry = hook.Run("GetChatboxPos")
+                self:SetPos(rx, ry)
+
+                cookie.Set("ax.chatbox.x", tostring(rx))
+                cookie.Set("ax.chatbox.y", tostring(ry))
+            end)
+            menu:AddOption("Reset Size", function()
+                local rw, rh = hook.Run("GetChatboxSize")
+                self:SetSize(rw, rh)
+                cookie.Set("ax.chatbox.w", tostring(rw))
+                cookie.Set("ax.chatbox.h", tostring(rh))
+                self:InvalidateLayout(true)
+            end)
+            menu:Open()
         end
     end
-    top.OnMouseReleased = function(this, code)
+    self.top.OnMouseReleased = function(this, code)
         if ( this.dragging ) then
             this.dragging = false
             this:MouseCapture(false)
@@ -55,7 +82,7 @@ function PANEL:Init()
             cookie.Set("ax.chatbox.y", tostring(y))
         end
     end
-    top.Think = function(this)
+    self.top.Think = function(this)
         if ( this.dragging ) then
             local mx, my = gui.MouseX(), gui.MouseY()
             local nx = mx - (this.dragOffsetX or 0)
@@ -156,14 +183,10 @@ function PANEL:Init()
     end
 
     self.history = self:Add("ax.scroller.vertical")
-    self.history:SetSize(self:GetWide() - 16, self:GetTall() - 9 - top:GetTall() - self.entry:GetTall())
-    self.history:SetPos(8, top:GetTall() + 8)
     self.history:GetVBar():SetWide(0)
     self.history:SetInverted(true)
 
     self.recommendations = self:Add("ax.scroller.vertical")
-    self.recommendations:SetSize(self.history:GetWide(), self.history:GetTall() - 8)
-    self.recommendations:SetPos(8, self.history:GetY() + self.history:GetTall() - self.recommendations:GetTall() - 8)
     self.recommendations:SetVisible(false)
     self.recommendations:SetAlpha(0)
     self.recommendations:GetVBar():SetWide(0)
@@ -178,7 +201,101 @@ function PANEL:Init()
         surface.DrawRect(0, 0, width, height)
     end
 
+    -- Resizer handle (corner-based, position-adaptive)
+    self.sizer = self:Add("DPanel")
+    self.sizer:SetSize(self.top:GetTall(), self.top:GetTall())
+    self.sizer.anchorX = "right"
+    self.sizer.anchorY = "top"
+    self.sizer:SetCursor("sizenesw")
+    self.sizer.Paint = function(this, w, h)
+        surface.SetDrawColor(255, 255, 255, 25)
+        -- simple corner grip
+        for i = 0, 2 do
+            surface.DrawLine(w - 1 - i * 4, h - 1, w - 1, h - 1 - i * 4)
+        end
+    end
+    self.sizer.OnMousePressed = function(this, code)
+        if ( code == MOUSE_LEFT ) then
+            -- Determine which corner the sizer is in at press time
+            local sCx = this.x + this:GetWide() * 0.5
+            local sCy = this.y + this:GetTall() * 0.5
+            local pw = self:GetWide()
+            local ph = self:GetTall()
+            this.anchorX = (sCx > pw * 0.5) and "right" or "left"
+            this.anchorY = (sCy > ph * 0.5) and "bottom" or "top"
+
+            -- Set cursor based on corner
+            local diag = (this.anchorX == "right" and this.anchorY == "bottom") or (this.anchorX == "left" and this.anchorY == "top")
+            this:SetCursor(diag and "sizenwse" or "sizenesw")
+
+            -- Cache starting rect in screen space
+            local px, py = self:GetPos()
+            this.start = {
+                left = px,
+                top = py,
+                right = px + self:GetWide(),
+                bottom = py + self:GetTall()
+            }
+            this.dragging = true
+            this:MouseCapture(true)
+        end
+    end
+    self.sizer.OnMouseReleased = function(this)
+        if ( this.dragging ) then
+            this.dragging = false
+            this:MouseCapture(false)
+
+            local w, h = self:GetSize()
+            cookie.Set("ax.chatbox.w", tostring(w))
+            cookie.Set("ax.chatbox.h", tostring(h))
+        end
+    end
+    self.sizer.Think = function(this)
+        if ( this.dragging ) then
+            local minW, minH = 260, 180
+            local mx, my = gui.MouseX(), gui.MouseY()
+
+            local left = this.start.left
+            local topY = this.start.top
+            local right = this.start.right
+            local sBottom = this.start.bottom
+
+            local newX, newY, newW, newH
+
+            -- Horizontal (left/right anchored)
+            if ( this.anchorX == "right" ) then
+                -- left edge fixed, right follows mouse
+                newX = left
+                newW = math.Clamp(mx - left, minW, ScrW() - left)
+            else
+                -- right edge fixed, left follows mouse
+                local candidateW = math.Clamp(right - mx, minW, right)
+                newX = right - candidateW
+                newX = math.Clamp(newX, 0, right - minW)
+                newW = right - newX
+            end
+
+            -- Vertical (top/bottom anchored)
+            if ( this.anchorY == "bottom" ) then
+                -- top fixed, bottom follows mouse
+                newY = topY
+                newH = math.Clamp(my - topY, minH, ScrH() - topY)
+            else
+                -- bottom fixed, top follows mouse
+                local candidateH = math.Clamp(sBottom - my, minH, sBottom)
+                newY = sBottom - candidateH
+                newY = math.Clamp(newY, 0, sBottom - minH)
+                newH = sBottom - newY
+            end
+
+            self:SetPos(newX, newY)
+            self:SetSize(newW, newH)
+            self:InvalidateLayout(true)
+        end
+    end
+
     self:SetVisible(false)
+    self:InvalidateLayout(true)
 
     chat.GetChatBoxPos = function()
         return self:GetPos()
@@ -187,6 +304,8 @@ function PANEL:Init()
     chat.GetChatBoxSize = function()
         return self:GetSize()
     end
+
+    self:PerformLayout()
 end
 
 function PANEL:GetChatType()
@@ -218,7 +337,7 @@ function PANEL:PopulateRecommendations(text)
         end
     end
 
-    if ( self.recommendations.list[1] != nil ) then
+    if ( self.recommendations.list[1] ~= nil ) then
         self.recommendations:Clear()
         self.recommendations:SetVisible(true)
         self.recommendations:AlphaTo(255, 0.2, 0)
@@ -356,7 +475,7 @@ end
 function PANEL:OnKeyCodePressed(key)
     if ( !self:IsVisible() ) then return end
 
-    if ( key != KEY_TAB ) then
+    if ( key ~= KEY_TAB ) then
         return
     end
 
@@ -368,6 +487,37 @@ function PANEL:Paint(width, height)
 
     surface.SetDrawColor(0, 0, 0, 100)
     surface.DrawRect(0, 0, width, height)
+end
+
+function PANEL:PerformLayout(width, height)
+    -- Recompute dynamic layout on size changes
+    if ( IsValid(self.top) and IsValid(self.entry) and IsValid(self.history) ) then
+        local w, h = self:GetSize()
+        local histW = w - 16
+        local histH = h - 9 - self.top:GetTall() - self.entry:GetTall()
+        self.history:SetSize(math.max(0, histW), math.max(0, histH))
+        self.history:SetPos(8, self.top:GetTall() + 8)
+    end
+
+    if ( IsValid(self.recommendations) and IsValid(self.history) ) then
+        local rw = self.history:GetWide()
+        local rh = math.max(0, self.history:GetTall() - 8)
+        self.recommendations:SetSize(rw, rh)
+        self.recommendations:SetPos(8, self.history:GetY() + self.history:GetTall() - self.recommendations:GetTall() - 8)
+    end
+
+    if ( IsValid(self.sizer) ) then
+        -- Keep sizer sized like the top bar for a clean look
+        local sz = IsValid(self.top) and self.top:GetTall() or self.sizer:GetTall()
+        self.sizer:SetSize(sz, sz)
+
+        local x = (self.sizer.anchorX == "right") and (self:GetWide() - self.sizer:GetWide()) or 0
+        local y = (self.sizer.anchorY == "bottom") and (self:GetTall() - self.sizer:GetTall()) or 0
+        self.sizer:SetPos(x, y)
+
+        local diag = (self.sizer.anchorX == "right" and self.sizer.anchorY == "bottom") or (self.sizer.anchorX == "left" and self.sizer.anchorY == "top")
+        self.sizer:SetCursor(diag and "sizenwse" or "sizenesw")
+    end
 end
 
 vgui.Register("ax.chatbox", PANEL, "EditablePanel")
