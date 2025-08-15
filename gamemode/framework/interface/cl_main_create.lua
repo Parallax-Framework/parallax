@@ -1,14 +1,5 @@
 local PANEL = {}
 
---[[
-net.Start("ax.character.create")
-    net.WriteTable({
-        name = "John Doe",
-        description = "A new character",
-    })
-net.SendToServer()
-]]
-
 function PANEL:Init()
     local parent = self:GetParent()
 
@@ -19,6 +10,11 @@ function PANEL:Init()
 
     self.factionSelection = self:Add("ax.transition")
     self.factionSelection:SlideToFront()
+
+    self:CreateNavigation(self.factionSelection, "back", function()
+        self:SlideDown()
+        parent.splash:SlideToFront()
+    end)
 
     local title = self.factionSelection:Add("ax.text")
     title:Dock(TOP)
@@ -69,6 +65,7 @@ function PANEL:Init()
 
             self.factionSelection:SlideLeft()
             self.characterOptions:SlideToFront()
+            self:PopulateVars()
         end
 
         local banner = v.Image or hook.Run("GetFactionBanner", v.id) or "gamepadui/hl2/chapter14"
@@ -81,7 +78,7 @@ function PANEL:Init()
         image:SetMouseInputEnabled(false)
         image:SetSize(factionButton:GetTall(), factionButton:GetTall())
         image.Paint = function(this, width, height)
-            local imageHeight = height * 0.85
+            local imageHeight = height * 0.75
             imageHeight = math.Round(imageHeight)
 
             surface.SetDrawColor(color_white)
@@ -123,23 +120,81 @@ function PANEL:Init()
     self.characterOptions = self:Add("ax.transition")
     self.characterOptions:StartAtRight()
 
+    self:CreateNavigation(self.characterOptions, "back", function()
+        self.characterOptions:SlideRight()
+        self.factionSelection:SlideToFront()
+
+        self:ClearVars()
+    end, "finish", function()
+        -- temporarily send payload
+        net.Start("ax.character.create")
+            net.WriteTable({
+                name = "John Doe",
+                description = "A new character",
+            })
+        net.SendToServer()
+    end)
+
     title = self.characterOptions:Add("ax.text")
     title:Dock(TOP)
     title:DockMargin(ScreenScale(32), ScreenScaleH(32), 0, 0)
     title:SetFont("ax.huge.bold")
     title:SetText("CUSTOMIZE YOUR CHARACTER")
 
-    self:CreateNavigation(self.factionSelection, "back", function()
-        self:SlideDown()
-        parent.splash:SlideToFront()
-    end)
+    self.characterOptions.container = self.characterOptions:Add("EditablePanel")
+    self.characterOptions.container:Dock(FILL)
+    self.characterOptions.container:DockMargin(ScreenScale(32), ScreenScaleH(32), ScreenScale(32), 0)
+end
 
-    self:CreateNavigation(self.characterOptions, "back", function()
-        self.characterOptions:SlideRight()
-        self.factionSelection:SlideToFront()
-    end, "next", function()
-        -- TODO: Implement character customization options
-    end)
+function PANEL:ClearVars()
+    local container = self.characterOptions.container
+    if ( !container ) then return end
+
+    container:Clear()
+end
+
+function PANEL:PopulateVars()
+    local container = self.characterOptions.container
+    if ( !container ) then return end
+
+    for k, v in pairs(ax.character.vars) do
+        print(k, v)
+
+        if ( isfunction(v.populate) ) then
+            v:populate(container, self.payload)
+            continue
+        end
+
+        if ( v.fieldType == ax.type.string ) then
+            local option = container:Add("ax.text")
+            option:SetText(v.field)
+            option:Dock(TOP)
+
+            local entry = container:Add("ax.text.entry")
+            entry:SetText(v.default)
+            entry:Dock(TOP)
+            entry:DockMargin(0, 0, 0, ScreenScaleH(16))
+
+            entry.OnValueChange = function(this)
+                print(this:GetText())
+            end
+        elseif ( v.fieldType == ax.type.number ) then
+            local option = container:Add("ax.text")
+            option:SetText(v.field)
+            option:Dock(TOP)
+
+            local slider = container:Add("DNumSlider")
+            slider:SetMin(0)
+            slider:SetMax(100)
+            slider:SetValue(v.default)
+            slider:Dock(TOP)
+            slider:DockMargin(0, 0, 0, ScreenScaleH(16))
+
+            slider.OnValueChanged = function(this, value)
+                print(value)
+            end
+        end
+    end
 end
 
 vgui.Register("ax.main.create", PANEL, "ax.transition")

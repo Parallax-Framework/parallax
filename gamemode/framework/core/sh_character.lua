@@ -9,11 +9,24 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
+ax.character:RegisterVar("faction", {
+    field = "faction",
+    fieldType = ax.type.number,
+    default = 0,
+    validate = function(this, character, value)
+        if ( !isnumber(value) or value <= 0 ) then
+            return false, "Invalid faction ID"
+        end
+
+        return true
+    end
+})
+
 ax.character:RegisterVar("name", {
     field = "name",
     fieldType = ax.type.string,
-    Default = "",
-    Validate = function(self, character, value)
+    default = "",
+    validate = function(this, character, value)
         if ( !isstring(value) or value == "" ) then
             return false, "Name cannot be empty"
         end
@@ -29,8 +42,8 @@ ax.character:RegisterVar("name", {
 ax.character:RegisterVar("description", {
     field = "description",
     fieldType = ax.type.string,
-    Default = "",
-    Validate = function(self, character, value)
+    default = "",
+    validate = function(this, character, value)
         if ( !isstring(value) or value == "" ) then
             return false, "Description cannot be empty"
         end
@@ -43,21 +56,57 @@ ax.character:RegisterVar("description", {
     end
 })
 
-ax.character:RegisterVar("faction", {
-    field = "faction",
-    fieldType = ax.type.number,
-    Default = 0,
-    Validate = function(self, character, value)
-        if ( !isnumber(value) or value <= 0 ) then
-            return false, "Faction cannot be empty"
+ax.character:RegisterVar("model", {
+    field = "model",
+    fieldType = ax.type.string,
+    default = "",
+    validate = function(this, character, value)
+        if ( !isstring(value) or value == "" ) then
+            return false, "Model cannot be empty"
+        end
+
+        if ( !util.IsValidModel(value) ) then
+            return false, "Invalid model"
         end
 
         return true
+    end,
+    populate = function(this, container, payload)
+        local option = container:Add("ax.text")
+        option:SetText(this.field)
+        option:Dock(TOP)
+
+        local scroller = container:Add("DScrollPanel")
+        scroller:Dock(TOP)
+
+        local layout = scroller:Add("DIconLayout")
+        layout:Dock(FILL)
+
+        local factionID = payload.faction
+        if ( !factionID or ax.faction:Get(factionID) == nil ) then
+            ax.util:PrintError("Invalid faction ID provided to ax.character:RegisterVar()")
+            return
+        end
+
+        for k, v in pairs(ax.faction:Get(factionID).Models) do
+            local modelButton = layout:Add("SpawnIcon")
+            modelButton:SetModel(v)
+            modelButton:SetSize(64, 64)
+            modelButton:SetTooltip(v)
+
+            modelButton.DoClick = function()
+                payload.model = v
+                print("Selected model:", v)
+            end
+        end
+
+        layout:SizeToContents()
+        scroller:SetTall(layout:GetTall())
     end
 })
 
 ax.character:RegisterVar("creationTime", {
     field = "creationTime",
     fieldType = ax.type.number,
-    Default = 0,
+    default = 0,
 })
