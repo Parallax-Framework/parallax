@@ -31,8 +31,8 @@ local function GetVar(char, name, fallback)
     end
 
 
-    if ( fallback == nil and varTable.Default != nil ) then
-        fallback = varTable.Default
+    if ( fallback == nil and varTable.default != nil ) then
+        fallback = varTable.default
     end
 
     if ( !istable(char.vars) ) then
