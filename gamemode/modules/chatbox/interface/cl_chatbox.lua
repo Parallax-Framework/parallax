@@ -10,16 +10,61 @@ function PANEL:Init()
     ax.gui.chatbox = self
 
     self:SetSize(hook.Run("GetChatboxSize"))
-    self:SetPos(hook.Run("GetChatboxPos"))
 
-    local label = self:Add("ax.text")
-    label:Dock(TOP)
-    label:SetTextInset(8, 0)
-    label:SetFont("ax.chatbox.text")
-    label:SetText(GetHostName(), true)
-    label.Paint = function(this, width, height)
+    -- Try to restore last saved position if available, otherwise use hook default
+    local cx = tonumber(cookie.GetString("ax.chatbox.x") or "")
+    local cy = tonumber(cookie.GetString("ax.chatbox.y") or "")
+    if ( cx and cy ) then
+        local maxX = math.max(0, ScrW() - self:GetWide())
+        local maxY = math.max(0, ScrH() - self:GetTall())
+        self:SetPos(math.Clamp(cx, 0, maxX), math.Clamp(cy, 0, maxY))
+    else
+        self:SetPos(hook.Run("GetChatboxPos"))
+    end
+
+    local top = self:Add("ax.text")
+    top:Dock(TOP)
+    top:SetTextInset(8, 0)
+    top:SetFont("ax.chatbox.text")
+    top:SetText(GetHostName(), true)
+    top.Paint = function(this, width, height)
         surface.SetDrawColor(0, 0, 0, 100)
         surface.DrawRect(0, 0, width, height)
+    end
+
+    -- Enable dragging the chatbox by grabbing the top bar
+    top:SetMouseInputEnabled(true)
+    top:SetCursor("sizeall")
+    top.OnMousePressed = function(this, code)
+        if ( code == MOUSE_LEFT ) then
+            local px, py = self:GetPos()
+            this.dragOffsetX = gui.MouseX() - px
+            this.dragOffsetY = gui.MouseY() - py
+            this.dragging = true
+            this:MouseCapture(true)
+        end
+    end
+    top.OnMouseReleased = function(this, code)
+        if ( this.dragging ) then
+            this.dragging = false
+            this:MouseCapture(false)
+
+            -- Persist new position
+            local x, y = self:GetPos()
+            cookie.Set("ax.chatbox.x", tostring(x))
+            cookie.Set("ax.chatbox.y", tostring(y))
+        end
+    end
+    top.Think = function(this)
+        if ( this.dragging ) then
+            local mx, my = gui.MouseX(), gui.MouseY()
+            local nx = mx - (this.dragOffsetX or 0)
+            local ny = my - (this.dragOffsetY or 0)
+
+            local maxX = math.max(0, ScrW() - self:GetWide())
+            local maxY = math.max(0, ScrH() - self:GetTall())
+            self:SetPos(math.Clamp(nx, 0, maxX), math.Clamp(ny, 0, maxY))
+        end
     end
 
     local bottom = self:Add("EditablePanel")
@@ -111,8 +156,8 @@ function PANEL:Init()
     end
 
     self.history = self:Add("ax.scroller.vertical")
-    self.history:SetSize(self:GetWide() - 16, self:GetTall() - 9 - label:GetTall() - self.entry:GetTall())
-    self.history:SetPos(8, label:GetTall() + 8)
+    self.history:SetSize(self:GetWide() - 16, self:GetTall() - 9 - top:GetTall() - self.entry:GetTall())
+    self.history:SetPos(8, top:GetTall() + 8)
     self.history:GetVBar():SetWide(0)
     self.history:SetInverted(true)
 
