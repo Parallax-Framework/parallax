@@ -13,6 +13,8 @@ local PANEL = {}
 
 AccessorFunc(PANEL, "Padding", "Padding")
 AccessorFunc(PANEL, "pnlCanvas", "Canvas")
+AccessorFunc(PANEL, "m_bInverted", "Inverted", FORCE_BOOL)
+AccessorFunc(PANEL, "m_bStackToTop", "StackToTop", FORCE_BOOL)
 
 function PANEL:Init()
     self.pnlCanvas = vgui.Create("Panel", self)
@@ -41,6 +43,10 @@ end
 
 function PANEL:AddItem(pnl)
     pnl:SetParent(self:GetCanvas())
+
+    if ( self:GetInverted() and self:GetStackToTop() ) then
+        pnl:SetZPos(-#self:GetCanvas():GetChildren()) -- put at top visually
+    end
 end
 
 function PANEL:OnChildAdded(child)
@@ -72,6 +78,10 @@ function PANEL:Rebuild()
 end
 
 function PANEL:OnMouseWheeled(delta)
+    if ( self:GetInverted() ) then
+        delta = -delta
+    end
+
     self.ScrollTarget = self.ScrollTarget - delta * 120
     self.ScrollTarget = math.Clamp(self.ScrollTarget, 0, math.max(0, self.pnlCanvas:GetTall() - self:GetTall()))
     return true
@@ -116,9 +126,13 @@ function PANEL:PerformLayoutInternal()
         wide = wide - self.VBar:GetWide()
     end
 
-    self.pnlCanvas:SetPos(0, -self.ScrollLerp)
-    self.pnlCanvas:SetWide(wide)
+    if ( self:GetInverted() ) then
+        self.pnlCanvas:SetPos(0, self:GetTall() - self.pnlCanvas:GetTall() + self.ScrollLerp)
+    else
+        self.pnlCanvas:SetPos(0, -self.ScrollLerp)
+    end
 
+    self.pnlCanvas:SetWide(wide)
     self:Rebuild()
 end
 
