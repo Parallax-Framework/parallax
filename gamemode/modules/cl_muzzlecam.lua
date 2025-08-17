@@ -4,8 +4,6 @@ MODULE.Name = "Muzzle Cam"
 MODULE.Author = "kek"
 MODULE.Description = "Adds a small muzzle-driven camera sway effect to the player's viewmodel"
 
-if ( SERVER ) then return end
-
 CreateClientConVar("muzzlecam_scale", "1", true, false)
 
 local weapon_exclusion_list = {
