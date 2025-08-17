@@ -337,7 +337,7 @@ function PANEL:PopulateRecommendations(text)
         end
     end
 
-    if ( self.recommendations.list[1] ~= nil ) then
+    if ( self.recommendations.list[1] != nil ) then
         self.recommendations:Clear()
         self.recommendations:SetVisible(true)
         self.recommendations:AlphaTo(255, 0.2, 0)
@@ -475,7 +475,7 @@ end
 function PANEL:OnKeyCodePressed(key)
     if ( !self:IsVisible() ) then return end
 
-    if ( key ~= KEY_TAB ) then
+    if ( key != KEY_TAB ) then
         return
     end
 
