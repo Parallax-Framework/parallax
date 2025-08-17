@@ -16,24 +16,43 @@ function chat.AddText(...)
     local font = hook.Run("GetChatFont", chatType) or "ax.chatbox.text"
     local maxWidth = ax.gui.chatbox:GetWide() - 20
 
-    local markupStr = ""
-
+    -- Build segments so we can reveal text with a typewriter effect safely (keeps tags intact)
+    local segments = {}
     for i = 1, #arguments do
         local v = arguments[i]
         if ( ax.type:Sanitise(ax.type.color, v) ) then
             currentColor = v
         elseif ( IsValid(v) and v:IsPlayer() ) then
             local c = team.GetColor(v:Team())
-            markupStr = markupStr .. string.format("<color=%d %d %d>%s</color>", c.r, c.g, c.b, v:Nick())
+            segments[#segments + 1] = { color = Color(c.r, c.g, c.b), text = v:Nick() }
         else
-            markupStr = markupStr .. string.format(
-                "<color=%d %d %d>%s</color>",
-                currentColor.r, currentColor.g, currentColor.b, tostring(v)
-            )
+            segments[#segments + 1] = { color = Color(currentColor.r, currentColor.g, currentColor.b), text = tostring(v) }
         end
     end
 
-    local rich = markup.Parse("<font=" .. font .. ">" .. markupStr .. "</font>", maxWidth)
+    local function buildMarkup(revealedChars)
+        local out = ""
+        local remaining = revealedChars or 0
+        for _, seg in ipairs(segments) do
+            local t = seg.text or ""
+            local len = #t
+            if remaining >= len then
+                out = out .. string.format("<color=%d %d %d>%s</color>", seg.color.r, seg.color.g, seg.color.b, t)
+                remaining = remaining - len
+            elseif remaining > 0 then
+                out = out .. string.format("<color=%d %d %d>%s</color>", seg.color.r, seg.color.g, seg.color.b, string.sub(t, 1, remaining))
+                break
+            else
+                break
+            end
+        end
+        return out
+    end
+
+    local totalChars = 0
+    for _, seg in ipairs(segments) do totalChars = totalChars + #(seg.text or "") end
+
+    local rich = markup.Parse("<font=" .. font .. ">" .. buildMarkup(0) .. "</font>", maxWidth)
 
     local panel = ax.gui.chatbox.history:Add("EditablePanel")
     panel:SetTall(rich:GetHeight())
@@ -41,19 +60,29 @@ function chat.AddText(...)
 
     panel.alpha = 1
     panel.created = CurTime()
+    panel.revealedChars = 0
+    panel.totalChars = totalChars
+    panel.revealSpeed = 100 -- characters per second, tweakable
 
     function panel:SizeToContents()
-        rich = markup.Parse("<font=" .. font .. ">" .. markupStr .. "</font>", maxWidth)
+        rich = markup.Parse("<font=" .. font .. ">" .. buildMarkup(math.floor(self.revealedChars)) .. "</font>", maxWidth)
         self:SetTall(rich:GetHeight())
     end
 
     function panel:Paint(w, h)
         surface.SetAlphaMultiplier(self.alpha)
-        rich:Draw(0, 0)
+        if rich then rich:Draw(0, 0) end
         surface.SetAlphaMultiplier(1)
     end
 
     function panel:Think()
+        -- Reveal characters over time until fully shown
+        if self.revealedChars < self.totalChars then
+            self.revealedChars = math.min(self.totalChars, self.revealedChars + FrameTime() * self.revealSpeed)
+            rich = markup.Parse("<font=" .. font .. ">" .. buildMarkup(math.floor(self.revealedChars)) .. "</font>", maxWidth)
+            self:SetTall(rich:GetHeight())
+        end
+
         if ( ax.gui.chatbox:GetAlpha() != 255 ) then
             local dt = CurTime() - self.created
             if ( dt >= 8 ) then
