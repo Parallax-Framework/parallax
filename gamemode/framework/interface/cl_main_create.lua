@@ -167,7 +167,7 @@ function PANEL:PopulateVars()
 
         if ( v.fieldType == ax.type.string ) then
             local option = container:Add("ax.text")
-            option:SetText(v.field)
+            option:SetText(ax.util:UniqueIDToName(k))
             option:Dock(TOP)
 
             local entry = container:Add("ax.text.entry")
@@ -180,7 +180,7 @@ function PANEL:PopulateVars()
             end
         elseif ( v.fieldType == ax.type.number ) then
             local option = container:Add("ax.text")
-            option:SetText(v.field)
+            option:SetText(ax.util:UniqueIDToName(k))
             option:Dock(TOP)
 
             local slider = container:Add("DNumSlider")
