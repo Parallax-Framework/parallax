@@ -23,4 +23,6 @@ function ax.schema:Initialize()
 
     -- Initialize the schema
     ax.util:PrintSuccess("Schema \"" .. active .. "\" initialized successfully.")
+
+    hook.Run("PostInitializeSchema")
 end
