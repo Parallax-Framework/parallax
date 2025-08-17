@@ -485,7 +485,7 @@ end
 function PANEL:Paint(width, height)
     ax.util:DrawPanelBlur(self)
 
-    surface.SetDrawColor(0, 0, 0, 100)
+    surface.SetDrawColor(0, 0, 0, 150)
     surface.DrawRect(0, 0, width, height)
 end
 
