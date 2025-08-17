@@ -65,22 +65,22 @@ function MODULE:CalcView(client, pos, ang, fov)
 
     muzzleVel = muzzleVel + delta * 2 * scale
 
-    muzzleVel.p = math.Approach(muzzleVel.p, -viewOffset.p * 2, ft * 20)
+    muzzleVel.p = Lerp(math.Clamp(ft * 20, 0, 1), muzzleVel.p, -viewOffset.p * 2)
     muzzleVel.p = math.Clamp(muzzleVel.p, -scale * 5, scale * 5)
 
-    muzzleVel.y = math.Approach(muzzleVel.y, -viewOffset.y * 2, ft * 20)
+    muzzleVel.y = Lerp(math.Clamp(ft * 20, 0, 1), muzzleVel.y, -viewOffset.y * 2)
     muzzleVel.y = math.Clamp(muzzleVel.y, -scale * 5, scale * 5)
 
-    muzzleVel.r = math.Approach(muzzleVel.r, -viewOffset.r * 2, ft * 20)
+    muzzleVel.r = Lerp(math.Clamp(ft * 20, 0, 1), muzzleVel.r, -viewOffset.r * 2)
     muzzleVel.r = math.Clamp(muzzleVel.r, -scale * 5, scale * 5)
 
     viewOffset.p = math.Clamp(viewOffset.p + muzzleVel.p * ft, -90, 90)
     viewOffset.y = math.Clamp(viewOffset.y + muzzleVel.y * ft, -90, 90)
     viewOffset.r = math.Clamp(viewOffset.r + muzzleVel.r * ft, -90, 90)
 
-    viewOffset.p = math.Approach(viewOffset.p, 0, ft * math.abs(viewOffset.p) * 16)
-    viewOffset.y = math.Approach(viewOffset.y, 0, ft * math.abs(viewOffset.y) * 16)
-    viewOffset.r = math.Approach(viewOffset.r, 0, ft * math.abs(viewOffset.r) * 16)
+    viewOffset.p = Lerp(math.Clamp(ft * math.abs(viewOffset.p) * 16, 0, 1), viewOffset.p, 0)
+    viewOffset.y = Lerp(math.Clamp(ft * math.abs(viewOffset.y) * 16, 0, 1), viewOffset.y, 0)
+    viewOffset.r = Lerp(math.Clamp(ft * math.abs(viewOffset.r) * 16, 0, 1), viewOffset.r, 0)
 
     lastMuzzleAng = muzzleAng
 
