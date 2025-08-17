@@ -29,6 +29,15 @@ function client:GetCharacters()
     return self:GetTable().axCharacters or {}
 end
 
+function client:GetFaction()
+    return self:Team()
+end
+
+function client:GetFactionData()
+    local factionData = ax.faction:Get(self:GetFaction())
+    return factionData
+end
+
 function client:RateLimit(name, delay)
     local data = self:GetTable()
 
