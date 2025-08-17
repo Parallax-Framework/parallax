@@ -1,3 +1,9 @@
+local MODULE = MODULE
+
+MODULE.Name = "Third Person"
+MODULE.Description = "Adds third-person camera functionality to the gamemode."
+MODULE.Author = "Riggs"
+
 local thirdpersonEnable = CreateClientConVar("ax_thirdperson_enable", "0", true, false, "Enable or disable third person mode.", 0, 1)
 local thirdpersonX = CreateClientConVar("ax_thirdperson_x", "25", true, false, "X offset for third person camera.", 0, 100)
 local thirdpersonY = CreateClientConVar("ax_thirdperson_y", "0", true, false, "Y offset for third person camera.", -100, 100)
