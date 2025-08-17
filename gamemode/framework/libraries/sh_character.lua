@@ -70,6 +70,8 @@ function ax.character:RegisterVar(name, data)
         return
     end
 
+    data.key = name
+
     self.vars[name] = data
 
     if ( !data.bNoFuncs ) then
