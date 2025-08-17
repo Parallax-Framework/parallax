@@ -26,6 +26,7 @@ ax.type = ax.type or {
     [512]       = "steamid",
     [1024]      = "steamid64",
     [2048]      = "array",
+    [4096]      = "table",
 
     string      = 1,
     text        = 2,
@@ -39,6 +40,7 @@ ax.type = ax.type or {
     steamid     = 512,
     steamid64   = 1024,
     array       = 2048,
+    table       = 4096,
 }
 
 function ax.type:Sanitise(typeID, value)
@@ -70,6 +72,11 @@ function ax.type:Sanitise(typeID, value)
         if ( isstring(value) and #value == 17 and ( string.match(value, "7656119%d+") != nil or string.match(value, "9007199%d+") != nil ) ) then
             return value
         end
+    elseif ( typeID == ax.type.array ) then
+        -- Arrays are handled by the config/option system with populate() validation
+        return value
+    elseif ( typeID == ax.type.table ) then
+        return istable(value) and value
     end
 
     return nil
@@ -80,7 +87,8 @@ local basicTypeMap = {
     number  = ax.type.number,
     boolean = ax.type.bool,
     Vector  = ax.type.vector,
-    Angle   = ax.type.angle
+    Angle   = ax.type.angle,
+    table   = ax.type.table
 }
 
 local checkTypeMap = {
@@ -122,7 +130,8 @@ local typeNames = {
     [ax.type.character] = "Character",
     [ax.type.steamid] = "SteamID",
     [ax.type.steamid64] = "SteamID64",
-    [ax.type.array] = "Array"
+    [ax.type.array] = "Array",
+    [ax.type.table] = "Table"
 }
 
 --- Formats a type ID into a human-readable string.
