@@ -244,9 +244,9 @@ function ax.util:FindPlayer(identifier)
     end
 
     if ( isstring(identifier) ) then
-        if ( ax.util:CoerceType(ax.types.steamid, identifier) ) then
+        if ( ax.type:Sanitise(ax.type.steamid, identifier) ) then
             return player.GetBySteamID(identifier)
-        elseif ( ax.util:CoerceType(ax.types.steamid64, identifier) ) then
+        elseif ( ax.type:Sanitise(ax.type.steamid64, identifier) ) then
             return player.GetBySteamID64(identifier)
         end
 
