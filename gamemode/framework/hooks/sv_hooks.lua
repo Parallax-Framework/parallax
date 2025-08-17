@@ -126,12 +126,3 @@ function GM:OnDatabaseTablesCreated()
         end
     end
 end
-
-function GM:PlayerNoclip(client)
-    if ( !client:IsAdmin() ) then
-        ax.util:PrintError("You do not have permission to noclip.")
-        return false
-    end
-
-    return true
-end
