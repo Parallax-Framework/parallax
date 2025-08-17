@@ -100,7 +100,7 @@ ax.character:RegisterVar("model", {
             end
         end
 
-        layout:SizeToContents()
+        layout:SizeToChildren(layout:GetStretchWidth(), layout:GetStretchHeight())
         scroller:SetTall(layout:GetTall())
     end
 })
