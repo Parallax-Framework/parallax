@@ -10,15 +10,15 @@
 ]]
 
 --- Custom function based hooks.
--- @module ax.hooks
+-- @module ax.hook
 
-ax.hooks = {}
-ax.hooks.stored = {}
+ax.hook = {}
+ax.hook.stored = {}
 
 --- Registers a new hook type.
 -- @realm shared
 -- @string name The name of the hook type.
-function ax.hooks:Register(name)
+function ax.hook:Register(name)
     self.stored[name] = true
     hook.Run("OnHookRegistered", name)
 end
@@ -27,7 +27,7 @@ end
 -- @realm shared
 -- @string name The name of the hook type.
 -- @internal
-function ax.hooks:UnRegister(name)
+function ax.hook:UnRegister(name)
     self.stored[name] = nil
     hook.Run("OnHookUnRegistered", name)
 end
@@ -35,7 +35,7 @@ end
 hook.axCall = hook.axCall or hook.Call
 
 function hook.Call(name, gm, ...)
-    for k, v in pairs(ax.hooks.stored) do
+    for k, v in pairs(ax.hook.stored) do
         local tab = _G[k]
         if ( !tab ) then continue end
 
