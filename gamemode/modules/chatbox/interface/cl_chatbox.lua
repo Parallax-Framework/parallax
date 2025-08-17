@@ -494,7 +494,7 @@ function PANEL:PerformLayout(width, height)
     if ( IsValid(self.top) and IsValid(self.entry) and IsValid(self.history) ) then
         local w, h = self:GetSize()
         local histW = w - 16
-        local histH = h - 9 - self.top:GetTall() - self.entry:GetTall()
+        local histH = h - 24 - self.top:GetTall() - self.entry:GetTall()
         self.history:SetSize(math.max(0, histW), math.max(0, histH))
         self.history:SetPos(8, self.top:GetTall() + 8)
     end
