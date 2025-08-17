@@ -45,8 +45,8 @@ function ax.module:Include(path)
             if ( file.Exists(bootFile, "LUA") ) then
                 MODULE = { UniqueID = dirName }
 
+                ax.util:IncludeDirectory(path .. "/" .. dirName, true, {["boot.lua"] = true})
                 ax.util:Include(bootFile, "shared")
-                ax.util:IncludeDirectory(path .. "/" .. dirName, true)
 
                 ax.util:PrintSuccess("Module \"" .. tostring(MODULE.Name) .. "\" initialized successfully.")
                 ax.module.stored[MODULE.UniqueID] = MODULE
@@ -59,4 +59,16 @@ function ax.module:Include(path)
     if ( files[1] == nil and directories[1] == nil ) then
         ax.util:PrintDebug(Color(255, 73, 24), "No modules found in path: " .. path)
     end
+end
+
+function ax.module:Get(name)
+    if ( !name or name == "" ) then return nil end
+
+    local module = self.stored[name]
+    if ( !module ) then
+        ax.util:PrintError("Module \"" .. tostring(name) .. "\" not found.")
+        return nil
+    end
+
+    return module
 end
