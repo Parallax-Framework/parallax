@@ -22,3 +22,12 @@ function GM:PlayerStartVoice()
         g_VoicePanelList:Remove()
     end
 end
+
+local hide = {
+    ["CHudHealth"] = true,
+    ["CHudBattery"] = true
+}
+
+function GM:HUDShouldDraw(name)
+    if ( hide[name] ) then return false end
+end
