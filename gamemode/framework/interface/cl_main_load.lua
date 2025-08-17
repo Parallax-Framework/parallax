@@ -68,7 +68,7 @@ function PANEL:Init()
         image:DockMargin(0, 0, ScreenScale(8), 0)
         image:SetSize(button:GetTall() * 1.75, button:GetTall())
         image.Paint = function(this, width, height)
-            surface.SetDrawColor(ax.color:Get("white"))
+            surface.SetDrawColor(color_white)
             surface.SetMaterial(banner)
             surface.DrawTexturedRect(0, 0, width, height)
         end
@@ -80,7 +80,7 @@ function PANEL:Init()
         -- deleteButton:SetTextColorProperty(ax.config:Get("color.error"))
         -- deleteButton:SetSize(0, button:GetTall())
         -- deleteButton:SetContentAlignment(5)
-        -- deleteButton.baseTextColorTarget = ax.color:Get("black")
+        -- deleteButton.baseTextColorTarget = color_black
         -- deleteButton.backgroundColor = ax.config:Get("color.error")
         -- deleteButton.width = 0
         -- deleteButton.DoClick = function()
