@@ -279,6 +279,34 @@ function ax.util:SafeParseTable(tInput)
     return tInput
 end
 
+-- Convert a name to a unique ID
+function ax.util:NameToUniqueID(name)
+    -- Replace spaces with underscores
+    name = name:gsub("%s+", "_")
+
+    -- Remove everything not in A-Z, a-z, or underscore
+    name = name:gsub("[^A-Za-z_]", "")
+
+    -- Convert to lowercase
+    return name:lower()
+end
+
+-- Convert a unique ID to a name
+function ax.util:UniqueIDToName(id)
+    -- Replace underscores with spaces
+    local name = id:gsub("_", " ")
+
+    -- Insert spaces before uppercase letters (for camelCase or PascalCase)
+    name = name:gsub("([a-z])([A-Z])", "%1 %2")
+
+    -- Capitalize the first letter of each word
+    name = name:gsub("(%a)([%w_']*)", function(first, rest)
+        return first:upper() .. rest:lower()
+    end)
+
+    return name
+end
+
 -- Cap the text to a certain number of characters
 function ax.util:CapText(text, maxLength)
     if ( !isstring(text) or !isnumber(maxLength) or maxLength <= 0 ) then
