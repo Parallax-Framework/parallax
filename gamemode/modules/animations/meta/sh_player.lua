@@ -13,6 +13,18 @@ function meta:IsFemale()
     return false
 end
 
+function meta:GetHoldType()
+    if ( !IsValid(self) ) then return "none" end
+
+    local weapon = self:GetActiveWeapon()
+    if ( !IsValid(weapon) ) then return "none" end
+
+    local holdType = weapon:GetHoldType()
+    if ( !holdType ) then return "none" end
+
+    return HOLDTYPE_TRANSLATOR[holdType] or holdType
+end
+
 if ( SERVER ) then
     function meta:LeaveSequence()
         local prevent = hook.Run("PrePlayerLeaveSequence", self)

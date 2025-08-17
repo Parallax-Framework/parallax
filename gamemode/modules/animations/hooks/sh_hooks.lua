@@ -462,7 +462,7 @@ function MODULE:TranslateActivity(client, act)
             net.Start("ax.animations.update")
                 net.WritePlayer(client)
                 net.WriteTable(clientTable.axAnimations)
-                net.WriteString(self:GetHoldType(client))
+                net.WriteString(client:GetHoldType())
             net.Broadcast()
         end
     end
