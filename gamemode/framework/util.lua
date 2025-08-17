@@ -76,7 +76,7 @@ function ax.util:Include(path, realm)
 end
 
 -- Recursively include all files in a directory
-function ax.util:IncludeDirectory(directory, fromLua)
+function ax.util:IncludeDirectory(directory, fromLua, toSkip)
     if ( !isstring(directory) or directory == "" ) then
         ax.util:PrintError("IncludeDirectory: Invalid directory parameter provided")
         return false
@@ -111,6 +111,12 @@ function ax.util:IncludeDirectory(directory, fromLua)
         local fileName = files[i]
         local filePath = directory .. fileName
         if ( string.EndsWith(fileName, ".lua") ) then
+            -- Skip files in the toSkip list
+            if ( toSkip and toSkip[fileName] ) then
+                ax.util:PrintDebug("Skipping file in toSkip list: " .. fileName)
+                continue
+            end
+
             ax.util:Include(filePath)
         else
             ax.util:PrintWarning("Skipping non-Lua file in directory: " .. filePath)
@@ -119,8 +125,14 @@ function ax.util:IncludeDirectory(directory, fromLua)
 
     -- Recursively include all subdirectories
     for i = 1, #directories do
-        ax.util:PrintDebug("Recursively including directory: " .. directories[i])
-        ax.util:IncludeDirectory(directory .. directories[i] .. "/", true)
+        local dirName = directories[i]
+        if ( toSkip and toSkip[dirName] ) then
+            ax.util:PrintDebug("Skipping directory in toSkip list: " .. dirName)
+            continue
+        end
+
+        ax.util:PrintDebug("Recursively including directory: " .. dirName)
+        ax.util:IncludeDirectory(directory .. dirName .. "/", true, toSkip)
     end
 
     -- Print debug information if developer mode is enabled
@@ -518,4 +530,84 @@ if ( CLIENT ) then
             _ax_screen_blur_last = now
         end
     end
+end
+
+-- Convert a key to UpperCamelCase
+function ax.util:UpperCamel(key)
+    if ( !isstring(key) ) then return "" end
+
+    local result = key:gsub("_([a-z])", function(letter)
+        return letter:upper()
+    end)
+
+    result = result:gsub("^([a-z])", function(letter)
+        return letter:upper()
+    end)
+
+    return result
+end
+
+-- Safe function call wrapper
+function ax.util:SafeCall(fn, ...)
+    if ( !isfunction(fn) ) then
+        return false, "Not a function"
+    end
+
+    local ok, result = pcall(fn, ...)
+    return ok, result
+end
+
+-- Clamp and round a number
+function ax.util:ClampRound(n, min, max, decimals)
+    local num = tonumber(n) or 0
+
+    if ( min and num < min ) then num = min end
+    if ( max and num > max ) then num = max end
+
+    if ( decimals and decimals > 0 ) then
+        local mult = 10 ^ decimals
+        num = math.Round(num * mult) / mult
+    else
+        num = math.Round(num)
+    end
+
+    return num
+end
+
+-- JSON file reading
+function ax.util:ReadJSON(path)
+    if ( !isstring(path) ) then return nil end
+
+    local content = file.Read(path, "DATA")
+    if ( !content ) then return nil end
+
+    local success, data = pcall(util.JSONToTable, content)
+    if ( success and istable(data) ) then
+        return data
+    end
+
+    return nil
+end
+
+-- JSON file writing
+function ax.util:WriteJSON(path, tbl)
+    if ( !isstring(path) or !istable(tbl) ) then return false end
+
+    local success, json = pcall(util.TableToJSON, tbl)
+    if ( !success ) then return false end
+
+    -- Ensure directory exists
+    local dir = string.GetPathFromFilename(path)
+    if ( dir and dir != "" ) then
+        file.CreateDir(dir)
+    end
+
+    file.Write(path, json)
+
+    return true
+end
+
+-- Validate player
+function ax.util:IsValidPlayer(client)
+    return IsValid(client) and client:IsPlayer()
 end
