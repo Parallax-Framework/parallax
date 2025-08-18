@@ -105,6 +105,7 @@ function ax.faction:Include(directory)
     return true
 end
 
+-- Get a faction by its ID or name
 function ax.faction:Get(id)
     if ( isstring(id) and self.stored[id] ) then
         return self.stored[id]
@@ -123,6 +124,7 @@ function ax.faction:Get(id)
     return nil
 end
 
+-- Check if a faction can be joined
 function ax.faction:CanBecome(faction, client)
     local factionTable = self:Get(faction)
     local try, catch = hook.Run("CanBecomeFaction", factionTable, client)
@@ -140,6 +142,16 @@ function ax.faction:CanBecome(faction, client)
     return true, nil
 end
 
+-- Return all faction instances
 function ax.faction:GetAll()
     return self.instances
+end
+
+-- Check if a faction is valid
+function ax.faction:IsValid(faction)
+    if ( self:Get(faction) != nil ) then
+        return true
+    end
+
+    return false
 end
