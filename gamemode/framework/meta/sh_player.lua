@@ -30,7 +30,12 @@ function client:GetCharacters()
 end
 
 function client:GetFaction()
-    return self:Team()
+    local teamIndex = self:Team()
+    if ( ax.faction:IsValid(teamIndex) ) then
+        return teamIndex
+    end
+
+    return nil
 end
 
 function client:GetFactionData()
