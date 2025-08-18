@@ -178,6 +178,10 @@ function PANEL:PopulateVars()
             entry.OnValueChange = function(this)
                 print(this:GetText())
             end
+
+            if ( isfunction(v.populatePost) ) then
+                v:populatePost(container, self.payload, option, entry)
+            end
         elseif ( v.fieldType == ax.type.number ) then
             local option = container:Add("ax.text")
             option:SetText(ax.util:UniqueIDToName(k))
@@ -192,6 +196,10 @@ function PANEL:PopulateVars()
 
             slider.OnValueChanged = function(this, value)
                 print(value)
+            end
+
+            if ( isfunction(v.populatePost) ) then
+                v:populatePost(container, self.payload, option, slider)
             end
         end
     end

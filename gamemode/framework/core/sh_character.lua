@@ -53,6 +53,10 @@ ax.character:RegisterVar("description", {
         end
 
         return true
+    end,
+    populatePost = function(this, container, payload, option, entry)
+        entry:SetTall(entry:GetTall() * 2)
+        entry:SetMultiline(true)
     end
 })
 
@@ -75,9 +79,11 @@ ax.character:RegisterVar("model", {
         local option = container:Add("ax.text")
         option:SetText(ax.util:UniqueIDToName(this.key))
         option:Dock(TOP)
+        option:SetZPos(1)
 
         local scroller = container:Add("DScrollPanel")
         scroller:Dock(TOP)
+        scroller:SetZPos(2)
 
         local layout = scroller:Add("DIconLayout")
         layout:Dock(FILL)
