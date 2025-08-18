@@ -14,13 +14,13 @@ GM.Author = "Parallax Framework Contributors"
 GM.Website = "https://project-ordinance.com/parallax/"
 GM.Email = "<email@example.com>"
 
-local OLD_LP = OLD_LP or LocalPlayer
+LocalPlayerInternal = LocalPlayerInternal or LocalPlayer
 function LocalPlayer()
     if ( ax.client != nil and ax.client:IsValid() ) then
         return ax.client
     end
 
-    return OLD_LP()
+    return LocalPlayerInternal()
 end
 
 ax.util:IncludeDirectory("libraries")
