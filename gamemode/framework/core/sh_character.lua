@@ -81,7 +81,7 @@ ax.character:RegisterVar("model", {
         option:Dock(TOP)
         option:SetZPos(1)
 
-        local scroller = container:Add("DScrollPanel")
+        local scroller = container:Add("ax.scroller.vertical")
         scroller:Dock(TOP)
         scroller:SetZPos(2)
 
@@ -97,7 +97,7 @@ ax.character:RegisterVar("model", {
         for k, v in pairs(ax.faction:Get(factionID):GetModels()) do
             local modelButton = layout:Add("SpawnIcon")
             modelButton:SetModel(v)
-            modelButton:SetSize(64, 64)
+            modelButton:SetSize(ScreenScale(32), ScreenScale(32))
             modelButton:SetTooltip(v)
 
             modelButton.DoClick = function()
