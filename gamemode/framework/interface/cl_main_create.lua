@@ -128,10 +128,7 @@ function PANEL:Init()
     end, "finish", function()
         -- temporarily send payload
         net.Start("ax.character.create")
-            net.WriteTable({
-                name = "John Doe",
-                description = "A new character",
-            })
+            net.WriteTable(self.payload)
         net.SendToServer()
     end)
 
@@ -144,6 +141,8 @@ function PANEL:Init()
     self.characterOptions.container = self.characterOptions:Add("EditablePanel")
     self.characterOptions.container:Dock(FILL)
     self.characterOptions.container:DockMargin(ScreenScale(32), ScreenScaleH(32), ScreenScale(32), 0)
+
+    -- Character options will be automatically populated based on the selected faction
 end
 
 function PANEL:ClearVars()

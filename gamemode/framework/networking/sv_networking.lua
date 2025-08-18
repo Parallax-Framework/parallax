@@ -44,10 +44,11 @@ net.Receive("ax.character.create", function(length, client)
 
     ax.character:Create({
         steamid = client:SteamID64(),
+        faction = payload.faction or 0,
         name = payload.name,
+        description = payload.description,
         schema = engine.ActiveGamemode(),
-        data = payload.data or {},
-        inv_id = payload.invID or 0,
+        data = {},
         created_at = curTime,
         updated_at = curTime
     },
