@@ -22,7 +22,10 @@ function PANEL:Init()
     self.currentY = self:GetTall()
     self.active = false
     self.easing = "OutBounce"
-    self.navigations = {}
+
+    self.guard = self:Add("Panel")
+    self.guard:SetPos(0, 0)
+    self.guard:SetSize(self:GetWide(), self:GetTall())
 
     self:HidePanel()
 end
@@ -31,8 +34,6 @@ function PANEL:CreateNavigation(parent, backText, backCallback, nextText, nextCa
     local navigation = parent:Add("EditablePanel")
     navigation:Dock(BOTTOM)
     navigation:DockMargin(ScreenScale(32), 0, ScreenScale(32), ScreenScaleH(32))
-
-    navigation:SetMouseInputEnabled(false)
 
     local backButton = navigation:Add("ax.button.flat")
     backButton:Dock(LEFT)
@@ -47,8 +48,6 @@ function PANEL:CreateNavigation(parent, backText, backCallback, nextText, nextCa
     end
 
     navigation:SetTall(math.max(backButton:GetTall(), nextButton and nextButton:GetTall() or 0))
-
-    table.insert(self.navigations, navigation)
 
     return navigation
 end
@@ -89,6 +88,9 @@ function PANEL:SlideToFront(time)
     self:SetMouseInputEnabled(true)
     self:SetKeyboardInputEnabled(true)
 
+    self.guard:SetVisible(true)
+    self.guard:SetZPos(CurTime() / 1000 + 1)
+
     self:Motion(time or 1, {
         Target = { currentX = 0, currentY = 0, currentAlpha = 255 },
         Easing = self.easing,
@@ -102,9 +104,7 @@ function PANEL:SlideToFront(time)
                 this:OnSlideComplete()
             end
 
-            for _, nav in ipairs(self.navigations) do
-                nav:SetMouseInputEnabled(true)
-            end
+            self.guard:SetVisible(false)
         end
     })
 
@@ -117,9 +117,7 @@ function PANEL:HidePanel()
     self:SetZPos(0)
     self:SetVisible(false)
 
-    for _, nav in ipairs(self.navigations) do
-        nav:SetMouseInputEnabled(false)
-    end
+    self.guard:SetVisible(false)
 
     self.active = false
 end
@@ -127,6 +125,8 @@ end
 function PANEL:SlideLeft(time)
     self:SetMouseInputEnabled(false)
     self:SetKeyboardInputEnabled(false)
+
+    self.guard:SetVisible(true)
 
     self:Motion(time or 1, {
         Target = { currentX = -self:GetWide(), currentY = 0, currentAlpha = 0 },
@@ -146,6 +146,8 @@ function PANEL:SlideUp(time)
     self:SetMouseInputEnabled(false)
     self:SetKeyboardInputEnabled(false)
 
+    self.guard:SetVisible(true)
+
     self:Motion(time or 1, {
         Target = { currentX = 0, currentY = -self:GetTall(), currentAlpha = 0 },
         Easing = self.easing,
@@ -164,6 +166,8 @@ function PANEL:SlideRight(time)
     self:SetMouseInputEnabled(false)
     self:SetKeyboardInputEnabled(false)
 
+    self.guard:SetVisible(true)
+
     self:Motion(time or 1, {
         Target = { currentX = self:GetWide(), currentY = 0, currentAlpha = 0 },
         Easing = self.easing,
@@ -181,6 +185,8 @@ end
 function PANEL:SlideDown(time)
     self:SetMouseInputEnabled(false)
     self:SetKeyboardInputEnabled(false)
+
+    self.guard:SetVisible(true)
 
     self:Motion(time or 1, {
         Target = { currentX = 0, currentY = self:GetTall(), currentAlpha = 0 },
