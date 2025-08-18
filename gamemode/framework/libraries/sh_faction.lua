@@ -10,7 +10,7 @@
 ]]
 
 ax.faction = ax.faction or {}
-ax.faction.instances  = ax.faction.instances or {}
+ax.faction.instances = ax.faction.instances or {}
 ax.faction.stored = ax.faction.stored or {}
 
 function ax.faction:Initialize()
@@ -65,7 +65,6 @@ function ax.faction:Include(directory)
     directory = string.gsub(directory, "^/+", "") -- Remove leading slashes
 
     local files, directories = file.Find(directory .. "/*.lua", "LUA")
-
     if ( files[1] != nil ) then
         for i = 1, #files do
             local fileName = files[i]
@@ -87,7 +86,7 @@ function ax.faction:Include(directory)
                 end
 
                 ax.util:Include(directory .. "/" .. fileName, "shared")
-                ax.util:PrintDebug(Color(85, 255, 120), "Faction \"" .. FACTION.Name .. "\" initialised successfully.")
+                ax.util:PrintDebug(Color(85, 255, 120), "Faction \"" .. FACTION.name .. "\" initialised successfully.")
 
                 self.stored[FACTION.id] = FACTION
                 self.instances[FACTION.index] = FACTION
@@ -116,7 +115,7 @@ function ax.faction:Get(id)
     for i = 1, #self.instances do
         if ( isnumber(id) and self.instances[i].index == id ) then
             return self.instances[i]
-        elseif ( isstring(id) and ( ax.util:FindString(self.instances[i].Name, id) or ax.util:FindString(self.instances[i].id, id) ) ) then
+        elseif ( isstring(id) and ( ax.util:FindString(self.instances[i].name, id) or ax.util:FindString(self.instances[i].id, id) ) ) then
             return self.instances[i]
         end
     end

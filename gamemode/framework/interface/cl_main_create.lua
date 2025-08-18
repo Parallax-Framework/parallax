@@ -33,12 +33,12 @@ function PANEL:Init()
 
     local factions = table.Copy(ax.faction:GetAll())
     table.sort(factions, function(a, b)
-        local aSort = a.SortOrder or 100
-        local bSort = b.SortOrder or 100
+        local aSort = a.sortOrder or 100
+        local bSort = b.sortOrder or 100
 
         -- If the sort orders are equal, sort by name
         if ( aSort == bSort ) then
-            return a.Name < b.Name
+            return a.name < b.name
         end
 
         return aSort < bSort
@@ -48,8 +48,8 @@ function PANEL:Init()
         local v = factions[i]
         if ( !ax.faction:CanBecome(v.id, ax.client) ) then continue end
 
-        local name = (v.Name and string.upper(v.Name)) or "UNKNOWN FACTION"
-        local description = (v.Description and string.upper(v.Description)) or "UNKNOWN FACTION DESCRIPTION"
+        local name = (v.name and string.upper(v.name)) or "UNKNOWN FACTION"
+        local description = (v.description and string.upper(v.description)) or "UNKNOWN FACTION DESCRIPTION"
         description = ax.util:CapTextWord(description, factionList:GetTall() / 3) -- Unreliable, but it works for now
 
         local descriptionWrapped = ax.util:GetWrappedText(description, "ax.regular.bold", math.min(factionList:GetTall() * 1.125, factionList:GetWide() / 2))
@@ -68,7 +68,7 @@ function PANEL:Init()
             self:PopulateVars()
         end
 
-        local banner = v.Image or hook.Run("GetFactionBanner", v.id) or "gamepadui/hl2/chapter14"
+        local banner = v.image or hook.Run("GetFactionBanner", v.id) or "gamepadui/hl2/chapter14"
         if ( type(banner) == "string" ) then
             banner = ax.util:GetMaterial(banner)
         end
