@@ -29,6 +29,7 @@ function PANEL:Init()
 
     self.VBar = self:Add("DVScrollBar")
     self.VBar:Dock(RIGHT)
+    self.VBar:SetWide(0)
 
     self:SetPadding(0)
     self:SetMouseInputEnabled(true)
