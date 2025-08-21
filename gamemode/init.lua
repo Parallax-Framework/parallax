@@ -18,8 +18,5 @@ AddCSLuaFile("cl_init.lua")
 AddCSLuaFile("framework/util.lua")
 include("framework/util.lua")
 
-AddCSLuaFile("framework/store_factory.lua")
-include("framework/store_factory.lua")
-
 AddCSLuaFile("framework/boot.lua")
 include("framework/boot.lua")

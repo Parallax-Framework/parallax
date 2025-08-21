@@ -291,6 +291,27 @@ function ax.util:SafeParseTable(tInput)
     return tInput
 end
 
+-- Safely call a function and capture errors.
+function ax.util:SafeCall(fn, ...)
+    if ( !isfunction(fn) ) then
+        return false
+    end
+
+    local results = { pcall(fn, ...) }
+    local ok = results[1]
+
+    if ( !ok ) then
+        -- results[2] is the error message
+        self:PrintError("SafeCall: function threw an error: ", results[2])
+        return false
+    end
+
+    -- Remove the boolean success and return remaining values
+    table.remove(results, 1)
+
+    return true, table.unpack(results)
+end
+
 -- Convert a name to a unique ID
 function ax.util:NameToUniqueID(name)
     -- Replace spaces with underscores
@@ -611,3 +632,5 @@ end
 function ax.util:IsValidPlayer(client)
     return IsValid(client) and client:IsPlayer()
 end
+
+ax.util:Include("store_factory.lua")

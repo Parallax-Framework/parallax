@@ -192,7 +192,7 @@ function MODULE:CalcViewModelView(weapon, vm, oldPos, oldAng, pos, ang)
 
     -- Jump bob
     local onGround = client:OnGround()
-    if ( onGround ~= lastOnGround ) then
+    if ( onGround != lastOnGround ) then
         if ( !lastOnGround and onGround ) then
             jumpTarget = jumpBobAmt * 0.7
         elseif ( lastOnGround and !onGround ) then
