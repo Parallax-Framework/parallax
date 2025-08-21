@@ -48,7 +48,7 @@ function ax.util:CreateStore(spec)
         if ( (spec.authority == "client" and CLIENT) or (spec.authority == "server" and SERVER) ) then
             local storedValues = ax.util:ReadJSON(spec.path) or {}
             if ( storedValues[key] != nil ) then
-                local coerced, err = ax.util.coerce(typeId, storedValues[key])
+                local coerced, err = ax.type:Sanitise(typeId, storedValues[key])
                 if ( coerced != nil ) then
                     store.values[key] = coerced
                 else
@@ -111,7 +111,7 @@ function ax.util:CreateStore(spec)
             return false
         end
 
-        local coerced, err = ax.util.coerce(regEntry.typeId, value)
+        local coerced, err = ax.type:Sanitise(regEntry.typeId, value)
         if ( coerced == nil ) then
             ax.util:PrintDebug(spec.name, "Set: Invalid value for", key, ":", err)
             return false
@@ -119,7 +119,7 @@ function ax.util:CreateStore(spec)
 
         if ( regEntry.typeId == ax.type.number ) then
             local data = regEntry.data
-            coerced = ax.util.clamp_round(coerced, data.min, data.max, data.decimals)
+            coerced = ax.type:ClampRound(coerced, data.min, data.max, data.decimals)
         end
 
         if ( regEntry.typeId == ax.type.array and isfunction(regEntry.data.populate) ) then
@@ -229,7 +229,7 @@ function ax.util:CreateStore(spec)
         for key, value in pairs(data) do
             local regEntry = store.registry[key]
             if ( regEntry ) then
-                local coerced, err = ax.util.coerce(regEntry.typeId, value)
+                local coerced, err = ax.type:Sanitise(regEntry.typeId, value)
                 if ( coerced != nil ) then
                     store.values[key] = coerced
                     loaded = loaded + 1
