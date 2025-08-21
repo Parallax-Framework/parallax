@@ -1,5 +1,3 @@
-local MODULE = MODULE
-
 ax.chat.messages = ax.chat.messages or {}
 
 chat.AddTextInternal = chat.AddTextInternal or chat.AddText

@@ -85,10 +85,10 @@ if ( SERVER ) then
     util.AddNetworkString("ax.player.playGesture")
 else
     net.Receive("ax.player.playGesture", function(len)
-        local client = net.ReadPlayer()
+        local sender = net.ReadPlayer()
         local slot = net.ReadUInt(8)
         local sequence = net.ReadUInt(16)
-        client:PlayGesture(slot, sequence)
+        sender:PlayGesture(slot, sequence)
     end)
 end
 
