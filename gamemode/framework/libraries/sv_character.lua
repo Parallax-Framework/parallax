@@ -99,7 +99,9 @@ function ax.character:Restore(client, callback)
                 local character = setmetatable(result[i], ax.character.meta)
 
                 -- Turn the data into a table rather than JSON from the database
-                character.vars.data = util.JSONToTable(character.vars.data)
+                if ( !istable( character.vars ) ) then
+                    character.vars = util.JSONToTable(character.vars or "") or {}
+                end
 
                 ax.character.instances[character.id] = character
                 clientData.axCharacters[ #clientData.axCharacters + 1 ] = character

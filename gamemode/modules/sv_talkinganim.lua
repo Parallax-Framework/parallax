@@ -1,5 +1,10 @@
 local MODULE = MODULE
 
+if ( !istable(WOS_DYNABASE) ) then
+    print("WOS_DYNABASE is not defined. Ensure the WOS Dynamic Base module is loaded before this module.")
+    return
+end
+
 MODULE.Name = "Talking Animation"
 MODULE.Description = "Adds talking animation functionality to the gamemode."
 MODULE.Author = "Riggs"
