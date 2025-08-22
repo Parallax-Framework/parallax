@@ -52,6 +52,17 @@ net.Receive("ax.character.create", function(len)
             ax.gui.main:Remove()
         end
     end
+
+    local clientData = ax.client:GetTable()
+    clientData.axCharacters = {}
+
+    local characters = net.ReadTable()
+    for i = 1, #characters do
+        local charData = characters[i]
+        character = setmetatable(charData, ax.character.meta)
+        ax.character.instances[character.id] = character
+        table.insert(clientData.axCharacters, character)
+    end
 end)
 
 net.Receive("ax.character.sync", function()
@@ -66,36 +77,27 @@ net.Receive("ax.character.sync", function()
 
     client:GetTable().axCharacter = character
 
-    ax.character.instances[character.id] = setmetatable(character, ax.meta.character)
+    ax.character.instances[character.id] = setmetatable(character, ax.character.meta)
 end)
 
-net.Receive("ax.character.cache", function()
+net.Receive("ax.character.restore", function()
     local characters = net.ReadTable()
     if ( !istable(characters) ) then
-        ax.util:PrintError("Invalid character cache received from server")
+        ax.util:PrintError("Invalid characters table received from server")
         return
     end
 
-    local cData = LocalPlayer():GetTable()
-    cData.axCharacters = cData.axCharacters or {}
+    local clientData = ax.client:GetTable()
+    clientData.axCharacters = {}
 
     for i = 1, #characters do
         local charData = characters[i]
-        local character = setmetatable({}, ax.meta.character)
-
-        for k, v in pairs(charData) do
-            if ( k == "vars" ) then
-                character.vars = util.JSONToTable(v) or {}
-            else
-                character[k] = v
-            end
-        end
-
+        local character = setmetatable(charData, ax.character.meta)
         ax.character.instances[character.id] = character
-        cData.axCharacters[#cData.axCharacters + 1] = character
+        table.insert(clientData.axCharacters, character)
     end
 
-    hook.Run("OnCharactersCached", characters)
+    hook.Run("OnCharactersRestored", characters)
 end)
 
 net.Receive("ax.character.SetVar", function()

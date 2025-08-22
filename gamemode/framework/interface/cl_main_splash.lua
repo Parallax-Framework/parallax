@@ -65,6 +65,13 @@ function PANEL:Init()
         )
     end
 
+    local closeButton = self.buttons:Add("ax.button")
+    closeButton:Dock(TOP)
+    closeButton:SetText("close (temporary)")
+    closeButton.DoClick = function()
+        parent:Remove()
+    end
+
     -- Now we need to add docking to the bottom of each button
     for _, button in ipairs(self.buttons:GetCanvas():GetChildren()) do
         if ( IsValid(button) and button.SetTall ) then
@@ -78,7 +85,7 @@ function PANEL:PerformLayout()
     self.subtitle:SetPos(ScreenScale(32), ScrH() / 3 + self.title:GetTall())
 
     self.buttons:SetPos(ScreenScale(32), ScrH() / 3 + self.title:GetTall() + self.subtitle:GetTall() + ScreenScaleH(16))
-    self.buttons:SetSize(ScrW() / 8, ScrH() / 3)
+    self.buttons:SetSize(ScrW() / 6, ScrH() / 3)
 end
 
 vgui.Register("ax.main.splash", PANEL, "ax.transition")

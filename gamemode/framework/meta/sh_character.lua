@@ -9,19 +9,27 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
-local character = ax.meta.character or {}
+local character = ax.character.meta or {}
 character.__index = character
 
 function character:__tostring()
-    return "Character: " .. tostring(self.id) .. " (" .. self.name .. ")"
+    return "Character: " .. tostring(self.id) .. " (" .. self.vars.name .. ")"
 end
 
 function character:GetID()
     return self.id
 end
 
+function character:GetVars()
+    return self.vars
+end
+
+function character:GetName()
+    return self.vars.name
+end
+
 function character:GetInventory()
-    return ax.inventory.instances[self.invID]
+    return ax.inventory.instances[self.vars.inventory]
 end
 
 function character:GetData(key)
@@ -40,4 +48,4 @@ function character:GetOwner()
     return self.player
 end
 
-ax.meta.character = character -- Keep, funcs don't define otherwise.
+ax.character.meta = character -- Keep, funcs don't define otherwise.

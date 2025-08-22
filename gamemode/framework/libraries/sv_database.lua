@@ -18,7 +18,8 @@ ax.database = ax.database or {
         [ax.type.string] = "VARCHAR(255)",
         [ax.type.text] = "TEXT",
         [ax.type.number] = "INT(11)",
-        [ax.type.steamid] = "VARCHAR(20)",
+        [ax.type.steamid] = "VARCHAR(19)",
+        [ax.type.steamid64] = "VARCHAR(17)",
         [ax.type.bool] = "TINYINT(1)",
     }
 }
@@ -90,23 +91,19 @@ function ax.database:CreateTables()
 
     query = mysql:Create("ax_characters")
         query:Create("id", "INT(11) UNSIGNED NOT NULL AUTO_INCREMENT")
-        query:Create("schema", "VARCHAR(64) NOT NULL")
-        query:Create("steamid", "VARCHAR(20) NOT NULL")
-        query:Create("data", "LONGTEXT NOT NULL")
-        query:Create("inv_id", "INT(11)")
         query:PrimaryKey("id")
     query:Execute()
 
     query = mysql:Create("ax_inventories")
         query:Create("id", "INT(11) UNSIGNED NOT NULL AUTO_INCREMENT")
         query:Create("items", "LONGTEXT NOT NULL")
-        query:Create("maxWeight", "FLOAT NOT NULL DEFAULT 30.0")
+        query:Create("max_weight", "FLOAT NOT NULL DEFAULT 30.0")
+        query:Create("data", "LONGTEXT NOT NULL")
         query:PrimaryKey("id")
     query:Execute()
 
     query = mysql:Create("ax_items")
         query:Create("id", "INT(11) UNSIGNED NOT NULL AUTO_INCREMENT")
-        query:Create("inv_id", "INT(11) NOT NULL")
         query:Create("data", "LONGTEXT NOT NULL")
         query:PrimaryKey("id")
     query:Execute()

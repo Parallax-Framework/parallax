@@ -9,6 +9,8 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
+DEFINE_BASECLASS("gamemode_sandbox")
+
 AX_CLIENT_QUEUE = AX_CLIENT_QUEUE or {}
 
 function GM:InitPostEntity()
@@ -16,10 +18,57 @@ function GM:InitPostEntity()
 end
 
 function GM:PlayerDeathThink(client)
-    local character = client:GetCharacter()
-    if ( !character ) then return end
+    if ( client:RateLimit("respawn", 5) ) then
+        client:Spawn()
+    end
+end
 
-    client:Spawn()
+function GM:DoPlayerDeath(client, attacker, damageInfo)
+    client:ResetRateLimit("respawn")
+    client:RateLimit("respawn", 5)
+
+    local ragdoll = ents.Create("prop_ragdoll")
+    ragdoll:SetModel(client:GetModel())
+    ragdoll:SetPos(client:GetPos())
+    ragdoll:SetAngles(client:GetAngles())
+    ragdoll:Spawn()
+
+    local physicsObject = ragdoll:GetPhysicsObject()
+    if ( IsValid(physicsObject) ) then
+        physicsObject:SetVelocity(client:GetVelocity())
+    end
+
+    local velocity = client:GetVelocity()
+    for i = 0, ragdoll:GetPhysicsObjectCount() - 1 do
+        physicsObject = ragdoll:GetPhysicsObjectNum(i)
+        if ( IsValid(physicsObject) ) then
+            physicsObject:SetVelocity(velocity)
+
+            local index = ragdoll:TranslatePhysBoneToBone(i)
+            if ( index != -1 ) then
+                local pos, ang = client:GetBonePosition(index)
+
+                physicsObject:SetPos(pos)
+                physicsObject:SetAngles(ang)
+            end
+        end
+    end
+
+    client:SetNWInt("ax.ragdoll.index", ragdoll:EntIndex())
+end
+
+function GM:PlayerSpawn(client)
+    client:SetNWInt("ax.ragdoll.index", -1)
+
+    hook.Run("PlayerLoadout", client)
+end
+
+function GM:PlayerLoadout(client)
+    BaseClass.PlayerLoadout(self, client)
+
+    client:SetModel("models/player/police.mdl")
+
+    hook.Run("PostPlayerLoadout", client)
 end
 
 function GM:DatabaseConnected()
@@ -33,6 +82,10 @@ end
 function GM:PlayerInitialSpawn(client)
     local steamID64 = client:SteamID64()
     ax.util:PrintDebug("Client " .. steamID64 .. " has connected, waiting for full update request...")
+
+    for k, v in player.Iterator() do
+        v:ChatPrint(Color(60, 220, 120), "Player " .. client:SteamName() .. " has joined the server.")
+    end
 
     AX_CLIENT_QUEUE[steamID64] = true
     hook.Run("PlayerQueued", client)
@@ -51,48 +104,54 @@ function GM:StartCommand(client, userCmd)
         net.Start("ax.player.ready")
         net.Send(client)
 
-        ax.inventory:Restore(client, function(success)
-            if ( success ) then
-                ax.util:PrintDebug(Color(85, 255, 120), "Inventories restored successfully.")
-            else
-                ax.util:PrintDebug(Color(255, 0, 0), "Failed to restore inventories.")
-            end
-        end)
-
         ax.character:Restore(client, function(characters)
             hook.Run("PlayerReady", client)
+
+            ax.inventory:Restore(client, function(success)
+                if ( success ) then
+                    ax.util:PrintDebug(Color(60, 220, 120), "Inventories restored successfully.")
+                else
+                    ax.util:PrintDebug(Color(220, 60, 60), "Failed to restore inventories.")
+                end
+            end)
         end)
     end
+end
+
+function GM:PlayerReady(client)
+    client:Spawn()
 end
 
 function GM:PlayerSay(client, text, teamChat)
     if ( text == "" ) then return end
 
-    --[[
-    local firstWord = string.Explode("%s+", text, true)[1]
-    if ( firstWord[1] == "/" ) then
-        firstWord = string.sub(text, 2)
+    -- Check if this is a command
+    local isCommand = false
+    for k, v in ipairs(ax.command.prefixes) do
+        if ( string.StartsWith(text, v) ) then
+            isCommand = true
+            break
+        end
     end
 
-    local cmd = ax.command:Get(firstWord)
-    print(firstWord)
-    if ( istable(cmd) ) then
-        if ( ax.command:CanRun(firstWord, client) ) then
-            local args = ax.command:ParseArguments(string.sub(text, #firstWord + 2))
+    if ( isCommand ) then
+        local name, rawArgs = ax.command:Parse(text)
+        if ( name and name != "" and ax.command.registry[name] ) then
+            local ok, result = ax.command:Run(client, name, rawArgs)
 
-            PrintTable(args)
-
-            hook.Run("RunCommand", firstWord, client, args)
+            if ( !ok ) then
+                client:ChatPrint("[Command Error] " .. (result or "Unknown error"))
+            elseif ( result and result != "" ) then
+                client:ChatPrint("[Command] " .. tostring(result))
+            end
         else
-            ax.util:PrintError("You do not have permission to run this command.")
+            client:ChatPrint("[Command] " .. tostring(name) .. " is not a valid command.")
         end
 
         return ""
     end
-    ]]
 
-    -- a bloody mess
-
+    -- Format regular chat messages
     if ( hook.Run("ShouldFormatMessage", client, text) != false ) then
         text = ax.chat:Format(text)
     end
@@ -118,11 +177,9 @@ function GM:PlayerDisconnected(client)
 end
 
 function GM:OnDatabaseTablesCreated()
-    ax.util:PrintDebug("Database tables created, restoring inventories...")
+    ax.util:PrintDebug("Database tables created successfully.")
+end
 
-    for name, data in pairs(ax.character.vars) do
-        if ( isstring(data.field) and data.fieldType != nil ) then
-            ax.database:InsertSchema("ax_characters", data.field, data.fieldType)
-        end
-    end
+function GM:PlayerCanHearPlayersVoice(listener, speaker)
+    return true, true
 end

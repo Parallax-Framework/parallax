@@ -12,7 +12,7 @@
 ax.item = ax.item or {}
 ax.item.stored = ax.item.stored or {}
 ax.item.instances = ax.item.instances or {}
-ax.meta.item = ax.meta.item or {}
+ax.item.meta = ax.item.meta or {}
 
 function ax.item:Initialize()
     self:Include("parallax/gamemode/items")
@@ -37,7 +37,7 @@ function ax.item:Include(path)
             itemName = string.sub(itemName, 4)
         end
 
-        ITEM = setmetatable({ uniqueID = itemName }, ax.meta.item)
+        ITEM = setmetatable({ uniqueID = itemName }, ax.item.meta)
             ax.util:Include(path .. "/" .. fileName, "shared")
             ax.util:PrintSuccess("Item \"" .. tostring(ITEM.Name) .. "\" initialized successfully.")
             ax.item.stored[itemName] = ITEM

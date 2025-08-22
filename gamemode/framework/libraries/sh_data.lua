@@ -17,55 +17,7 @@
 -- @module ax.data
 
 ax.data = ax.data or {}
-ax.data._cache = ax.data._cache or {}
-
-local function sanitizeKey( key )
-    if ( !key ) then return "" end
-
-    -- Replace any path unfriendly characters with underscore
-    return string.gsub(tostring(key), "[^%w%-_.]", "_")
-end
-
-local function getProjectName()
-    -- Try to detect active gamemode folder; fall back to 'parallax'
-    if ( engine and engine.ActiveGamemode ) then
-        return engine.ActiveGamemode() or "parallax"
-    end
-
-    return "parallax"
-end
-
-local function buildPath( key, options )
-    options = options or {}
-    local scope = options.scope or "project" -- "global", "project", "map"
-    local name = sanitizeKey( key )
-    local ext = options.human and ".json" or ".dat"
-
-    if ( scope == "global" ) then
-        return "global/" .. name .. ext
-    elseif ( scope == "map" ) then
-        local mapname = ( game and game.GetMap and game.GetMap() ) or "nomap"
-        return getProjectName() .. "/maps/" .. mapname .. "/" .. name .. ext
-    else
-        return getProjectName() .. "/" .. name .. ext
-    end
-end
-
-local function ensureDirForPath( path )
-    -- Create any parent directories needed for a data path
-    local parts = {}
-    for p in string.gmatch( path, "([^/]+/)" ) do
-        parts[#parts + 1] = p
-    end
-
-    local cur = ""
-    for _, p in ipairs(parts) do
-        cur = cur .. p
-        if ( !file.IsDir(cur, "DATA") ) then
-            file.CreateDir(cur)
-        end
-    end
-end
+ax.data.cache = ax.data.cache or {}
 
 --- Save a value to disk.
 -- @param key string Unique key used to name the file.
@@ -75,12 +27,12 @@ end
 --  - human: boolean If true, writes pretty JSON (.json extension)
 --  - noCache: boolean If true, clears cache after writing
 -- @usage ax.data:Set("settings_player", { volume = 0.8 }, { scope = "project", human = true })
-function ax.data:Set( key, value, options )
+function ax.data:Set(key, value, options)
     options = options or {}
-    local path = buildPath(key, options)
+    local path = ax.util:BuildDataPath(key, options)
 
     -- Ensure directory exists
-    ensureDirForPath(path)
+    ax.util:EnsureDataDir(path)
 
     local payload
     if ( istable(value) ) then
@@ -101,9 +53,9 @@ function ax.data:Set( key, value, options )
             parsed = value
         end
 
-        self._cache[path] = parsed
+        self.cache[path] = parsed
     else
-        self._cache[path] = nil
+        self.cache[path] = nil
     end
 
     return true
@@ -117,12 +69,12 @@ end
 --  - force: boolean If true, bypass cache and read from disk
 -- @return any
 -- @usage local cfg = ax.data:Get("settings_player", {}, { force = false })
-function ax.data:Get( key, default, options )
+function ax.data:Get(key, default, options)
     options = options or {}
-    local path = buildPath( key, options )
+    local path = ax.util:BuildDataPath(key, options)
 
     if ( !options.force ) then
-        local cached = self._cache[path]
+        local cached = self.cache[path]
         if ( cached != nil ) then
             return cached
         end
@@ -140,17 +92,17 @@ function ax.data:Get( key, default, options )
     if ( ok and decoded ) then
         -- If decoded is a table with __value wrapper, return raw value
         if ( istable(decoded) and decoded.__value != nil and table.Count(decoded) == 1 ) then
-            self._cache[path] = decoded.__value
+            self.cache[path] = decoded.__value
             return decoded.__value
         end
 
-        self._cache[path] = decoded
+        self.cache[path] = decoded
 
         return decoded
     end
 
     -- Fallback: return raw string
-    self._cache[path] = raw
+    self.cache[path] = raw
 
     return raw
 end
@@ -160,15 +112,15 @@ end
 -- @param options table Optional. Fields:
 --  - scope: "global"|"project"|"map" (default: "project")
 -- @usage ax.data:Delete("settings_player", { scope = "project" })
-function ax.data:Delete( key, options )
+function ax.data:Delete(key, options)
     options = options or {}
 
-    local path = buildPath( key, options )
+    local path = ax.util:BuildDataPath(key, options)
     if ( file.Exists(path, "DATA") ) then
         file.Delete(path)
     end
 
-    self._cache[path] = nil
+    self.cache[path] = nil
 
     return true
 end

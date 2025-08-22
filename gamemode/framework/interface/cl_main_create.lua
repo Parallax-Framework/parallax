@@ -46,7 +46,7 @@ function PANEL:Init()
 
     for i = 1, #factions do
         local v = factions[i]
-        if ( !ax.faction:CanBecome(v.id, ax.client) ) then continue end
+        if ( !ax.faction:CanBecome(v.index, ax.client) ) then continue end
 
         local name = (v.name and string.upper(v.name)) or "UNKNOWN FACTION"
         local description = (v.description and string.upper(v.description)) or "UNKNOWN FACTION DESCRIPTION"
@@ -61,14 +61,14 @@ function PANEL:Init()
         factionButton:SetWide(math.min(factionList:GetTall() * 1.25, factionList:GetWide() / 2))
 
         factionButton.DoClick = function()
-            self.payload.faction = v.id
+            self.payload.faction = v.index
 
             self.factionSelection:SlideLeft()
             self.characterOptions:SlideToFront()
             self:PopulateVars()
         end
 
-        local banner = v.image or hook.Run("GetFactionBanner", v.id) or "gamepadui/hl2/chapter14"
+        local banner = v.image or hook.Run("GetFactionBanner", v.index) or "gamepadui/hl2/chapter14"
         if ( type(banner) == "string" ) then
             banner = ax.util:GetMaterial(banner)
         end
@@ -157,7 +157,8 @@ function PANEL:PopulateVars()
     if ( !container ) then return end
 
     for k, v in pairs(ax.character.vars) do
-        print(k, v)
+        if ( !v.validate ) then continue end
+        if ( v.hide ) then continue end
 
         if ( isfunction(v.populate) ) then
             v:populate(container, self.payload)
@@ -175,7 +176,7 @@ function PANEL:PopulateVars()
             entry:DockMargin(0, 0, 0, ScreenScaleH(16))
 
             entry.OnValueChange = function(this)
-                print(this:GetText())
+                self.payload[k] = this:GetText()
             end
 
             if ( isfunction(v.populatePost) ) then
@@ -194,7 +195,7 @@ function PANEL:PopulateVars()
             slider:DockMargin(0, 0, 0, ScreenScaleH(16))
 
             slider.OnValueChanged = function(this, value)
-                print(value)
+                self.payload[k] = value
             end
 
             if ( isfunction(v.populatePost) ) then

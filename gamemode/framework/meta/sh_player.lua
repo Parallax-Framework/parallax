@@ -60,7 +60,7 @@ function client:RateLimit(name, delay)
 
     local curTime = CurTime()
 
-    if ( data.axRateLimits[name] > curTime ) then
+    if ( data.axRateLimits[name] and data.axRateLimits[name] > curTime ) then
         return false, data.axRateLimits[name] - curTime -- Rate limit exceeded.
     end
 
@@ -118,5 +118,25 @@ function client:PlayGesture(slot, sequence)
             net.WriteUInt(slot, 8)
             net.WriteUInt(sequence, 16)
         net.Send(self)
+    end
+end
+
+if ( SERVER ) then
+    util.AddNetworkString("ax.player.chatPrint")
+else
+    net.Receive("ax.player.chatPrint", function(len)
+        local messages = net.ReadTable()
+        chat.AddText(unpack(messages))
+    end)
+end
+
+client.ChatPrintInternal = client.ChatPrintInternal or client.ChatPrint
+function client:ChatPrint(...)
+    if ( SERVER ) then
+        net.Start("ax.player.chatPrint")
+            net.WriteTable({...})
+        net.Send(self)
+    else
+        chat.AddText(...)
     end
 end

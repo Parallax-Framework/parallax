@@ -11,7 +11,7 @@
 
 DeriveGamemode("sandbox")
 
-ax = ax or {util = {}, meta = {}, config = {}, gui = {}}
+ax = ax or {util = {}, config = {}, options = {}, character = {}, inventory = {}, item = {}, gui = {}}
 
 include("framework/util.lua")
 include("framework/boot.lua")

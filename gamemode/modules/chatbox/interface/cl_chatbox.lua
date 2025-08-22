@@ -141,19 +141,19 @@ function PANEL:Init()
         local text = this:GetValue()
         if ( string.sub(text, 1, 3) == ".//" ) then
             -- Check if it's a way of using local out of character chat using .// prefix
-            local data = ax.command:Get("looc")
+            local data = ax.command:FindClosest("looc")
             if ( data ) then
-                ax.chat.currentType = data.UniqueID
-                chatType = string.upper(data.UniqueID)
+                ax.chat.currentType = data.name
+                chatType = string.upper(data.name)
             end
         elseif ( string.sub(text, 1, 1) == "/" ) then
             -- This is a command, so we need to parse it
             local arguments = string.Explode(" ", string.sub(text, 2))
             local command = arguments[1]
-            local data = ax.command:Get(command)
+            local data = ax.command:FindClosest(command)
             if ( data ) then
-                ax.chat.currentType = data.UniqueID
-                chatType = string.upper(data.UniqueID)
+                ax.chat.currentType = data.name
+                chatType = string.upper(data.name)
             end
 
             self:PopulateRecommendations(command)
@@ -331,10 +331,15 @@ function PANEL:PopulateRecommendations(text)
     self.recommendations.list = {}
     self.recommendations.panels = {}
 
-    for key, command in SortedPairsByMemberValue(ax.command:GetAll(), "UniqueID") do
-        if ( ax.util:FindString(command.UniqueID, text, true) or ( command.Prefixes and ax.util:FindInTable(command.Prefixes, text, true) ) ) then
-            self.recommendations.list[#self.recommendations.list + 1] = command
-        end
+    local matches = {}
+    if ( text == "" ) then
+        matches = ax.command:GetAll()
+    else
+        matches = ax.command:FindAll(text)
+    end
+
+    for key, command in SortedPairsByMemberValue(matches, "name") do
+        self.recommendations.list[#self.recommendations.list + 1] = command
     end
 
     if ( self.recommendations.list[1] != nil ) then
@@ -359,7 +364,7 @@ function PANEL:PopulateRecommendations(text)
                 surface.DrawRect(0, 0, width, height)
 
                 if ( self.recommendations.indexSelect == i ) then
-                    surface.SetDrawColor(ax.config:Get("color.schema"))
+                    surface.SetDrawColor(200, 20, 20, 255)
                     surface.DrawRect(0, 0, width, height)
                 end
             end
@@ -370,10 +375,10 @@ function PANEL:PopulateRecommendations(text)
             title:Dock(TOP)
             title:DockMargin(8, 0, 8, 0)
             title:SetFont("ax.chatbox.text")
-            title:SetText(command.UniqueID, true)
+            title:SetText(command.name, true)
             height = height + title:GetTall()
 
-            local descriptionWrapped = command.Description
+            local descriptionWrapped = command.description
             if ( !descriptionWrapped or descriptionWrapped == "" ) then
                 descriptionWrapped = "No description provided."
             end
@@ -386,7 +391,7 @@ function PANEL:PopulateRecommendations(text)
                 descLine:DockMargin(8, -2, 8, 0)
                 descLine:SetFont("ax.tiny")
                 descLine:SetText(v, true)
-                descLine:SetTextColor(255, 255, 255)
+                descLine:SetTextColor(Color(255, 255, 255))
                 height = height + descLine:GetTall()
             end
 
@@ -434,11 +439,11 @@ function PANEL:CycleRecommendations()
         return
     end
 
-    self.entry:SetText("/" .. data.UniqueID)
+    self.entry:SetText("/" .. data.name)
     self.entry:RequestFocus()
-    self.entry:SetCaretPos(2 + #data.UniqueID)
+    self.entry:SetCaretPos(2 + #data.name)
 
-    self.chatType:SetText(data.UniqueID, true, true)
+    self.chatType:SetText(data.name, true, true)
     self.chatType:RestartTyping()
 
     surface.PlaySound("ax.button.enter")

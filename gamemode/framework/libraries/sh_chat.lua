@@ -52,6 +52,7 @@ local SHORTCUTS = {
     ["btw"] = "by the way",
     ["idk"] = "I don't know",
     ["np"] = "no problem",
+    ["ik"] = "I know",
 
     -- Contractions/missing apostrophes
     ["dont"] = "don't",

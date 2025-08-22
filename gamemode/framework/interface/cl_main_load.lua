@@ -17,24 +17,32 @@ function PANEL:Init()
         parent.splash:SlideToFront()
     end)
 
-    local characterList = self:Add("ax.scroller.vertical")
-    characterList:Dock(FILL)
-    characterList:DockMargin(ScreenScale(128), ScreenScaleH(32), ScreenScale(128), ScreenScaleH(32))
-    characterList:InvalidateParent(true)
-    characterList:GetVBar():SetWide(0)
-    characterList.Paint = nil
+    self.characters = self:Add("ax.scroller.vertical")
+    self.characters:Dock(FILL)
+    self.characters:DockMargin(ScreenScale(128), ScreenScaleH(32), ScreenScale(128), ScreenScaleH(32))
+    self.characters:InvalidateParent(true)
+    self.characters:GetVBar():SetWide(0)
+    self.characters.Paint = nil
+end
+
+function PANEL:OnSlideStart()
+    self:PopulateCharacterList()
+end
+
+function PANEL:PopulateCharacterList()
+    self.characters:Clear()
 
     local clientTable = ax.client:GetTable()
     local characters = clientTable.axCharacters or {}
 
     if ( #characters == 0 ) then
-        local label = characterList:Add("ax.text")
+        local label = self.characters:Add("ax.text")
         label:Dock(TOP)
         label:SetFont("ax.huge.bold")
         label:SetText("No characters found.")
         label:SetContentAlignment(5)
 
-        local createButton = characterList:Add("ax.button.flat")
+        local createButton = self.characters:Add("ax.button.flat")
         createButton:Dock(TOP)
         createButton:SetText("create")
         createButton.DoClick = function()
@@ -46,11 +54,11 @@ function PANEL:Init()
     end
 
     for k, v in pairs(characters) do
-        local button = characterList:Add("ax.button.flat")
+        local button = self.characters:Add("ax.button.flat")
         button:Dock(TOP)
         button:DockMargin(0, 0, 0, ScreenScaleH(4))
         button:SetText("", true, true, true)
-        button:SetTall(characterList:GetWide() / 8)
+        button:SetTall(self.characters:GetWide() / 8)
 
         button.DoClick = function()
             net.Start("ax.character.load")

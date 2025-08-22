@@ -9,11 +9,30 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
+ax.character:RegisterVar("steamID64", {
+    field = "steamid64",
+    fieldType = ax.type.steamid64,
+    default = ""
+})
+
+ax.character:RegisterVar("schema", {
+    field = "schema",
+    fieldType = ax.type.string,
+    default = "parallax"
+})
+
+ax.character:RegisterVar("inventory", {
+    field = "inventory",
+    fieldType = ax.type.number,
+    default = 0
+})
+
 ax.character:RegisterVar("faction", {
     field = "faction",
     fieldType = ax.type.number,
     default = 0,
-    validate = function(this, character, value)
+    hide = true,
+    validate = function(this, value)
         if ( !isnumber(value) or value <= 0 ) then
             return false, "Invalid faction ID"
         end
@@ -25,8 +44,8 @@ ax.character:RegisterVar("faction", {
 ax.character:RegisterVar("name", {
     field = "name",
     fieldType = ax.type.string,
-    default = "",
-    validate = function(this, character, value)
+    default = "Unnamed Character",
+    validate = function(this, value)
         if ( !isstring(value) or value == "" ) then
             return false, "Name cannot be empty"
         end
@@ -42,8 +61,8 @@ ax.character:RegisterVar("name", {
 ax.character:RegisterVar("description", {
     field = "description",
     fieldType = ax.type.string,
-    default = "",
-    validate = function(this, character, value)
+    default = "This is a character description.",
+    validate = function(this, value)
         if ( !isstring(value) or value == "" ) then
             return false, "Description cannot be empty"
         end
@@ -63,8 +82,8 @@ ax.character:RegisterVar("description", {
 ax.character:RegisterVar("model", {
     field = "model",
     fieldType = ax.type.string,
-    default = "",
-    validate = function(this, character, value)
+    default = "models/player.mdl",
+    validate = function(this, value)
         if ( !isstring(value) or value == "" ) then
             return false, "Model cannot be empty"
         end
@@ -112,7 +131,19 @@ ax.character:RegisterVar("model", {
 })
 
 ax.character:RegisterVar("creationTime", {
-    field = "creationTime",
+    field = "creation_time",
     fieldType = ax.type.number,
     default = 0,
+})
+
+ax.character:RegisterVar("lastPlayed", {
+    field = "last_played",
+    fieldType = ax.type.number,
+    default = 0,
+})
+
+ax.character:RegisterVar("data", {
+    field = "data",
+    fieldType = ax.type.text,
+    default = "[]",
 })

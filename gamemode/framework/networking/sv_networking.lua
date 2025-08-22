@@ -38,21 +38,29 @@ net.Receive("ax.character.create", function(length, client)
         return
     end
 
-    ax.util:PrintDebug("Creating character for " .. client:SteamID64() .. " with payload: " .. util.TableToJSON(payload))
-
-    local curTime = math.floor(os.time())
-
-    ax.character:Create({
-        steamid = client:SteamID64(),
-        faction = payload.faction or 0,
-        name = payload.name,
-        description = payload.description,
+    local newPayload = {
+        steamID64 = client:SteamID64(),
         schema = engine.ActiveGamemode(),
-        data = {},
-        created_at = curTime,
-        updated_at = curTime
-    },
-    function(character, inventory)
+    }
+
+    for k, v in pairs(payload) do
+        local var = ax.character.vars[k]
+        if ( !var ) then
+            ax.util:PrintError("Invalid character variable '" .. k .. "' provided in payload.")
+            return
+        end
+
+        if ( var.validate and var:validate(v) ) then
+            newPayload[k] = v
+        else
+            ax.util:PrintError("Validation failed for character variable '" .. k .. "': " .. v)
+            return
+        end
+    end
+
+    ax.util:PrintDebug("Creating character for " .. client:SteamID64() .. " with payload: " .. util.TableToJSON(newPayload))
+
+    ax.character:Create(newPayload, function(character, inventory)
         inventory.receivers = { client }
 
         if ( !client:GetCharacter() ) then
@@ -61,7 +69,10 @@ net.Receive("ax.character.create", function(length, client)
             client:SetMoveType(MOVETYPE_WALK)
         end
 
-        client:GetTable().axCharacter = character
+        local clientData = client:GetTable()
+
+        clientData.axCharacters = clientData.axCharacters or {}
+        table.insert(clientData.axCharacters, character)
 
         ax.inventory.instances[inventory.id] = inventory
         ax.character.instances[character.id] = character
@@ -71,9 +82,10 @@ net.Receive("ax.character.create", function(length, client)
 
         net.Start("ax.character.create")
             net.WriteUInt(character.id, 32)
+            net.WriteTable(clientData.axCharacters)
         net.Send(client)
 
-        ax.util:PrintSuccess("Character created for " .. client:SteamID64() .. ": " .. character.name)
+        ax.util:PrintSuccess("Character created for " .. client:SteamID64() .. ": " .. character:GetName())
 
         hook.Run("OnCharacterCreated", client, character)
     end)
@@ -93,7 +105,7 @@ net.Receive("ax.character.load", function(length, client)
         return
     end
 
-    if ( character.steamid != client:SteamID64() ) then
+    if ( character:GetSteamID64() != client:SteamID64() ) then
         ax.util:PrintError("Character ID " .. charID .. " does not belong to " .. client:SteamID64())
         return
     end

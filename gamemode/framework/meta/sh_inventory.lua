@@ -9,7 +9,7 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
-local inventory = ax.meta.inventory or {}
+local inventory = ax.inventory.meta or {}
 inventory.__index = inventory
 
 function inventory:__tostring()
@@ -149,7 +149,7 @@ if ( SERVER ) then
                     return false
                 end
 
-                local itemObject = setmetatable({}, ax.meta.item)
+                local itemObject = setmetatable({}, ax.item.meta)
                 for k, v in pairs(item) do
                     itemObject[k] = v
                 end
@@ -208,4 +208,4 @@ if ( SERVER ) then
     end
 end
 
-ax.meta.inventory = inventory  -- Keep, inv:GetData is nil otherwise.
+ax.inventory.meta = inventory

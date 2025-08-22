@@ -9,7 +9,7 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
-local item = ax.meta.item or {}
+local item = ax.item.meta or {}
 item.__index = item
 
 function item:GetData(key)
@@ -34,4 +34,4 @@ function item:AddAction(name, action)
     self.actions[name] = action
 end
 
-ax.meta.item = item
+ax.item.meta = item

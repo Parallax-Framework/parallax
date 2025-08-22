@@ -633,4 +633,95 @@ function ax.util:IsValidPlayer(client)
     return IsValid(client) and client:IsPlayer()
 end
 
+-- Tokenize a string into arguments, respecting quoted strings.
+function ax.util:TokenizeString(str)
+    if ( !isstring(str) or str == "" ) then
+        return {}
+    end
+
+    local tokens = {}
+    local current = ""
+    local inQuotes = false
+    local escapeNext = false
+
+    for i = 1, #str do
+        local char = string.sub(str, i, i)
+
+        if ( escapeNext ) then
+            current = current .. char
+            escapeNext = false
+        elseif ( char == "\\" ) then
+            escapeNext = true
+        elseif ( char == "\"" ) then
+            inQuotes = !inQuotes
+        elseif ( char == " " and !inQuotes ) then
+            if ( current != "" ) then
+                table.insert(tokens, current)
+                current = ""
+            end
+        else
+            current = current .. char
+        end
+    end
+
+    -- Add final token if exists
+    if ( current != "" ) then
+        table.insert(tokens, current)
+    end
+
+    return tokens
+end
+
+-- Sanitize a key for safe file naming.
+function ax.util:SanitizeKey(key)
+    if ( !key ) then return "" end
+
+    -- Replace any path unfriendly characters with underscore
+    return string.gsub(tostring(key), "[^%w%-_.]", "_")
+end
+
+-- Get the current project/gamemode name.
+function ax.util:GetProjectName()
+    -- Try to detect active gamemode folder; fall back to 'parallax'
+    if ( engine and engine.ActiveGamemode ) then
+        return engine.ActiveGamemode() or "parallax"
+    end
+
+    return "parallax"
+end
+
+-- Build a data file path based on key and scope options.
+function ax.util:BuildDataPath(key, options)
+    options = options or {}
+    local scope = options.scope or "project" -- "global", "project", "map"
+    local name = self:SanitizeKey(key)
+    local ext = options.human and ".json" or ".dat"
+
+    if ( scope == "global" ) then
+        return "global/" .. name .. ext
+    elseif ( scope == "map" ) then
+        local mapname = ( game and game.GetMap and game.GetMap() ) or "nomap"
+        return self:GetProjectName() .. "/maps/" .. mapname .. "/" .. name .. ext
+    else
+        return self:GetProjectName() .. "/" .. name .. ext
+    end
+end
+
+-- Ensure parent directories exist for a given data path.
+function ax.util:EnsureDataDir(path)
+    -- Create any parent directories needed for a data path
+    local parts = {}
+    for p in string.gmatch(path, "([^/]+/)") do
+        parts[#parts + 1] = p
+    end
+
+    local cur = ""
+    for _, p in ipairs(parts) do
+        cur = cur .. p
+        if ( !file.IsDir(cur, "DATA") ) then
+            file.CreateDir(cur)
+        end
+    end
+end
+
 ax.util:Include("store_factory.lua")

@@ -25,11 +25,39 @@ end
 
 local hide = {
     ["CHudHealth"] = true,
-    ["CHudBattery"] = true
+    ["CHudBattery"] = true,
+    ["CHudSuit"] = true,
+    ["CHudChat"] = true
 }
 
 function GM:HUDShouldDraw(name)
     if ( hide[name] ) then return false end
 
     return true
+end
+
+function GM:CalcView(client, origin, angles, fov)
+    if ( !IsValid(client) ) then return end
+
+    local ragdollIndex = client:GetNWInt("ax.ragdoll.index", -1)
+    if ( ragdollIndex != -1 and !client:Alive() ) then
+        local ragdoll = ents.GetByIndex(ragdollIndex)
+        if ( !IsValid(ragdoll) ) then
+            client:SetNWInt("ax.ragdoll.index", -1)
+            return
+        end
+
+        local matrix = ragdoll:GetBoneMatrix(ragdoll:LookupBone("ValveBiped.Bip01_Head1"))
+        local pos = matrix:GetTranslation()
+        local ang = matrix:GetAngles()
+
+        ang:RotateAroundAxis(ang:Up(), 270)
+        ang:RotateAroundAxis(ang:Forward(), 270)
+
+        return {
+            origin = pos,
+            angles = ang,
+            fov = fov
+        }
+    end
 end

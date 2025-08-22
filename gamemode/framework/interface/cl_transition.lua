@@ -91,6 +91,10 @@ function PANEL:SlideToFront(time)
     self.guard:SetVisible(true)
     self.guard:SetZPos(CurTime() / 1000 + 1)
 
+    if ( self.OnSlideStart ) then
+        self:OnSlideStart()
+    end
+
     self:Motion(time or 1, {
         Target = { currentX = 0, currentY = 0, currentAlpha = 255 },
         Easing = self.easing,
