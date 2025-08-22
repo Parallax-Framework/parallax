@@ -68,6 +68,8 @@ end
 
 function GM:PlayerSpawn(client)
     client:SetNWInt("ax.ragdoll.index", -1)
+    client:SetWalkSpeed(100)
+    client:SetRunSpeed(200)
 
     hook.Run("PlayerLoadout", client)
 end
