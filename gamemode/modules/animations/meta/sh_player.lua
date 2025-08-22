@@ -14,13 +14,13 @@ function meta:IsFemale()
 end
 
 function meta:GetHoldType()
-    if ( !IsValid(self) ) then return "none" end
+    if ( !IsValid(self) ) then return "normal" end
 
     local weapon = self:GetActiveWeapon()
-    if ( !IsValid(weapon) ) then return "none" end
+    if ( !IsValid(weapon) ) then return "normal" end
 
     local holdType = weapon:GetHoldType()
-    if ( !holdType ) then return "none" end
+    if ( !holdType ) then return "normal" end
 
     return HOLDTYPE_TRANSLATOR[holdType] or holdType
 end

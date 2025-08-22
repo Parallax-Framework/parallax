@@ -326,44 +326,6 @@ IdleActivityTranslate[ACT_MP_JUMP] = ACT_HL2MP_JUMP_SLAM
 IdleActivityTranslate[ACT_MP_SWIM] = IdleActivity + 9
 IdleActivityTranslate[ACT_LAND] = ACT_LAND
 
-local PlayerPassiveTranslator = {
-    ["melee"] = {
-        [ACT_MP_STAND_IDLE] = ACT_HL2MP_IDLE,
-        [ACT_MP_WALK] = ACT_HL2MP_WALK,
-        [ACT_MP_RUN] = ACT_HL2MP_RUN,
-        [ACT_MP_CROUCH_IDLE] = ACT_HL2MP_IDLE_CROUCH,
-        [ACT_MP_CROUCHWALK] = ACT_HL2MP_WALK_CROUCH,
-    },
-    ["pistol"] = {
-        [ACT_MP_STAND_IDLE] = ACT_HL2MP_IDLE,
-        [ACT_MP_WALK] = ACT_HL2MP_WALK,
-        [ACT_MP_RUN] = ACT_HL2MP_RUN,
-        [ACT_MP_CROUCH_IDLE] = ACT_HL2MP_IDLE_CROUCH,
-        [ACT_MP_CROUCHWALK] = ACT_HL2MP_WALK_CROUCH,
-    },
-    ["smg"] = {
-        [ACT_MP_STAND_IDLE] = ACT_HL2MP_IDLE_PASSIVE,
-        [ACT_MP_WALK] = ACT_HL2MP_WALK_PASSIVE,
-        [ACT_MP_RUN] = ACT_HL2MP_RUN_PASSIVE,
-        [ACT_MP_CROUCH_IDLE] = ACT_HL2MP_IDLE_CROUCH_PASSIVE,
-        [ACT_MP_CROUCHWALK] = ACT_HL2MP_WALK_CROUCH_PASSIVE,
-    },
-    ["shotgun"] = {
-        [ACT_MP_STAND_IDLE] = ACT_HL2MP_IDLE_PASSIVE,
-        [ACT_MP_WALK] = ACT_HL2MP_WALK_PASSIVE,
-        [ACT_MP_RUN] = ACT_HL2MP_RUN_PASSIVE,
-        [ACT_MP_CROUCH_IDLE] = ACT_HL2MP_IDLE_CROUCH_PASSIVE,
-        [ACT_MP_CROUCHWALK] = ACT_HL2MP_WALK_CROUCH_PASSIVE,
-    },
-    ["ar2"] = {
-        [ACT_MP_STAND_IDLE] = ACT_HL2MP_IDLE_PASSIVE,
-        [ACT_MP_WALK] = ACT_HL2MP_WALK_PASSIVE,
-        [ACT_MP_RUN] = ACT_HL2MP_RUN_PASSIVE,
-        [ACT_MP_CROUCH_IDLE] = ACT_HL2MP_IDLE_CROUCH_PASSIVE,
-        [ACT_MP_CROUCHWALK] = ACT_HL2MP_WALK_CROUCH_PASSIVE,
-    }
-}
-
 local function IsWeaponRaised(client)
     local weapon = client:GetActiveWeapon()
     if ( !IsValid(weapon) ) then return false end
@@ -385,21 +347,7 @@ function MODULE:TranslateActivity(client, act)
     end
 
     local class = ax.animations:GetModelClass(client:GetModel())
-    if ( !class or class == "player" ) then
-        if ( client:InVehicle() ) then
-            return
-        end
-
-        local holdType = clientTable.axHoldType
-        if ( holdType and !IsWeaponRaised(client) ) then
-            local animTable = PlayerPassiveTranslator[holdType]
-            if ( animTable and animTable[act] ) then
-                newAct = animTable[act]
-            end
-        end
-
-        return newAct
-    end
+    if ( !class ) then return end
 
     local animTable = clientTable.axAnimations
     if ( animTable ) then
