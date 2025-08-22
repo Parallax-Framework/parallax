@@ -29,9 +29,18 @@ function GM:DoPlayerDeath(client, attacker, damageInfo)
 
     local ragdoll = ents.Create("prop_ragdoll")
     ragdoll:SetModel(client:GetModel())
+    ragdoll:SetMaterial( client:GetMaterial() )
+    ragdoll:SetSkin( client:GetSkin() )
+
+    local materials = client:GetMaterials()
+    for i = 1, #materials do
+        ragdoll:SetSubMaterial(i - 1, materials[i])
+    end
+
     ragdoll:SetPos(client:GetPos())
     ragdoll:SetAngles(client:GetAngles())
     ragdoll:Spawn()
+    ragdoll:Activate()
 
     local physicsObject = ragdoll:GetPhysicsObject()
     if ( IsValid(physicsObject) ) then
