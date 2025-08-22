@@ -117,16 +117,23 @@ net.Receive("ax.character.SetVar", function()
 end)
 
 net.Receive("ax.inventory.sync", function()
-    local inventory = net.ReadTable()
+    local inv_id = net.ReadUInt( 32 )
+    local inv_items = net.ReadTable( true )
+    local inv_maxWeight = net.ReadFloat()
 
-    ax.inventory.instances[inventory.id] = setmetatable(inventory, ax.meta.inventory)
+    ax.inventory.instances[inv_id] = setmetatable({
+        id = inv_id,
+        items = inv_items,
+        maxWeight = inv_maxWeight
+    }, ax.meta.inventory)
 end)
 
 net.Receive("ax.inventory.receiver.add", function()
-    local inventory = net.ReadTable()
+    local inv_id = net.ReadUInt(32)
     local receiver = net.ReadPlayer()
 
-    ax.inventory.instances[inventory.id] = inventory
+    local inventory = ax.inventory.instances[inv_id]
+    if ( !istable(inventory) ) then return end
 
     inventory:AddReceiver(receiver)
 end)
@@ -135,39 +142,43 @@ net.Receive("ax.inventory.receiver.remove", function()
     local inventory = net.ReadUInt(32)
     local receiver = net.ReadPlayer()
 
-    ax.inventory.instances[inventory] = nil
-
     inventory:RemoveReceiver(receiver)
 end)
 
 net.Receive("ax.inventory.item.add", function()
-    local inventory = net.ReadUInt(32)
-    local item = net.ReadTable()
+    local inv_id = net.ReadUInt( 32 )
+    local item_id = net.ReadUInt( 32 )
+    local item_data = net.ReadTable()
 
-    local inv = ax.inventory.instances[inventory]
+    local inv = ax.inventory.instances[inv_id]
     if ( !istable(inv) ) then
         ax.util:PrintError("Invalid inventory ID received for item add.")
         return
     end
 
-    inv.items[#inv.items + 1] = item
-    ax.item.instances[item.id] = setmetatable(item, ax.meta.item)
+    local item = setmetatable( {
+        id = item_id,
+        data = item_data
+    }, ax.meta.item )
+
+    inv.items[#inv.items + 1] = item.id
+    ax.item.instances[item.id] = item
 end)
 
 net.Receive("ax.inventory.item.remove", function()
-    local inventory = net.ReadUInt(32)
-    local itemId = net.ReadUInt(32)
+    local inv_id = net.ReadUInt(32)
+    local item_id = net.ReadUInt(32)
 
-    local inv = ax.inventory.instances[inventory]
+    local inv = ax.inventory.instances[inv_id]
     if ( !istable(inv) ) then
         ax.util:PrintError("Invalid inventory ID received for item remove.")
         return
     end
 
     for i = 1, #inv.items do
-        if ( inv.items[i].id == itemId ) then
+        if ( inv.items[i].id == item_id ) then
             table.remove(inv.items, i)
-            ax.item.instances[itemId] = nil
+            ax.item.instances[item_id] = nil
             break
         end
     end

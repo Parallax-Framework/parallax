@@ -84,7 +84,7 @@ function inventory:AddReceiver(receiver)
 
             if ( SERVER ) then
                 net.Start("ax.inventory.receiver.add")
-                    net.WriteTable(self)
+                    net.WriteUInt( self.id, 32 )
                     net.WritePlayer(receiver)
                 net.Send(self:GetReceivers())
             end
@@ -96,7 +96,7 @@ function inventory:AddReceiver(receiver)
 
         if ( SERVER ) then
             net.Start("ax.inventory.receiver.add")
-                net.WriteTable(self)
+                net.WriteUInt( self.id, 32 )
                 net.WritePlayer(receiver)
             net.Send(self:GetReceivers())
         end
@@ -164,7 +164,8 @@ if ( SERVER ) then
 
                 net.Start("ax.inventory.item.add")
                     net.WriteUInt(self.id, 32)
-                    net.WriteTable(itemObject)
+                    net.WriteUInt(itemObject.id, 32)
+                    net.WriteTable(itemObject.data)
                 net.Send(self:GetReceivers())
 
                 return true
@@ -207,4 +208,4 @@ if ( SERVER ) then
     end
 end
 
-ax.meta.inventory = inventory  -- Keep, invene:GetData is nil otherwise.
+ax.meta.inventory = inventory  -- Keep, inv:GetData is nil otherwise.

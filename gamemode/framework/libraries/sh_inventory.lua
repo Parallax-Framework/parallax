@@ -55,7 +55,9 @@ if ( SERVER ) then
         end
 
         net.Start("ax.inventory.sync")
-            net.WriteTable(inventory)
+            net.WriteUInt(inventory.id, 32)
+            net.WriteTable(inventory.items, true) -- sequentiable table :: [1] = itemID
+            net.WriteFloat(inventory.maxWeight)
         net.Broadcast()
     end
 
