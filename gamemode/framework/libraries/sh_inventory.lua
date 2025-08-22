@@ -66,7 +66,7 @@ if ( SERVER ) then
         -- Step 1: Retrieve all character IDs the client owns.
         local characterIDs = {}
         for k, v in pairs(client.axCharacters) do
-            table.insert(characterIDs, v.id)
+            characterIDs[ #characterIDs + 1 ] = v.id
         end
 
         -- Step 2: Retrieve all inventory IDs associated with the character IDs.
@@ -80,7 +80,7 @@ if ( SERVER ) then
                     end
 
                     for i = 1, #result do
-                        table.insert(inventoryIDs, result[i].inventory_id)
+                        inventoryIDs[ #inventoryIDs + 1 ] = result[i].inventory_id
                     end
                 end)
             query:Execute()

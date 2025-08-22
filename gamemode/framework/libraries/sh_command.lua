@@ -186,7 +186,7 @@ function ax.command:ExtractArgs(def, raw)
         if ( argDef.type == ax.type.text ) then
             local remaining = {}
             for j = tokenIndex, #tokens do
-                table.insert(remaining, tokens[j])
+                remaining[ #remaining + 1 ] = tokens[j]
             end
 
             value = table.concat(remaining, " ")
@@ -354,7 +354,7 @@ function ax.command:Help(name)
         else
             argStr = "<" .. argStr .. ">"
         end
-        table.insert(parts, argStr)
+        parts[ #parts + 1 ] = argStr
     end
 
     local usage = table.concat(parts, " ")

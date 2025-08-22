@@ -656,7 +656,7 @@ function ax.util:TokenizeString(str)
             inQuotes = !inQuotes
         elseif ( char == " " and !inQuotes ) then
             if ( current != "" ) then
-                table.insert(tokens, current)
+                tokens[ #tokens + 1 ] = current
                 current = ""
             end
         else
@@ -666,7 +666,7 @@ function ax.util:TokenizeString(str)
 
     -- Add final token if exists
     if ( current != "" ) then
-        table.insert(tokens, current)
+        tokens[ #tokens + 1 ] = current
     end
 
     return tokens

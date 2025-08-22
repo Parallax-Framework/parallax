@@ -94,7 +94,7 @@ ax.command:Add("help", {
                 if ( name == def.name and !processed[def.name] ) then -- Only process original command names
                     local hasAccess = ax.command:HasAccess(ply, def)
                     if ( hasAccess ) then
-                        table.insert(available, def.name)
+                        available[ #available + 1 ] = def.name
                         processed[def.name] = true
                     end
                 end

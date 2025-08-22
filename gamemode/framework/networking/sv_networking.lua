@@ -72,7 +72,7 @@ net.Receive("ax.character.create", function(length, client)
         local clientData = client:GetTable()
 
         clientData.axCharacters = clientData.axCharacters or {}
-        table.insert(clientData.axCharacters, character)
+        clientData.axCharacters[ #clientData.axCharacters + 1 ] = character
 
         ax.inventory.instances[inventory.id] = inventory
         ax.character.instances[character.id] = character

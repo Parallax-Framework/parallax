@@ -61,7 +61,7 @@ net.Receive("ax.character.create", function(len)
         local charData = characters[i]
         character = setmetatable(charData, ax.character.meta)
         ax.character.instances[character.id] = character
-        table.insert(clientData.axCharacters, character)
+        clientData.axCharacters[ #clientData.axCharacters + 1 ] = character
     end
 end)
 
@@ -94,7 +94,7 @@ net.Receive("ax.character.restore", function()
         local charData = characters[i]
         local character = setmetatable(charData, ax.character.meta)
         ax.character.instances[character.id] = character
-        table.insert(clientData.axCharacters, character)
+        clientData.axCharacters[ #clientData.axCharacters + 1 ] = character
     end
 
     hook.Run("OnCharactersRestored", characters)

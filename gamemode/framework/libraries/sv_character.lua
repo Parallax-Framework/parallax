@@ -102,7 +102,7 @@ function ax.character:Restore(client, callback)
                 character.vars.data = util.JSONToTable(character.vars.data)
 
                 ax.character.instances[character.id] = character
-                table.insert(clientData.axCharacters, character)
+                clientData.axCharacters[ #clientData.axCharacters + 1 ] = character
             end
 
             net.Start("ax.character.restore")
