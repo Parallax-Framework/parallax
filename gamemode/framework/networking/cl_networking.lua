@@ -127,7 +127,7 @@ net.Receive("ax.inventory.sync", function()
         id = inv_id,
         items = inv_items,
         maxWeight = inv_maxWeight
-    }, ax.meta.inventory)
+    }, ax.inventory.meta)
 end)
 
 net.Receive("ax.inventory.receiver.add", function()
@@ -161,7 +161,7 @@ net.Receive("ax.inventory.item.add", function()
     local item = setmetatable( {
         id = item_id,
         data = item_data
-    }, ax.meta.item )
+    }, ax.item.meta )
 
     inv.items[#inv.items + 1] = item.id
     ax.item.instances[item.id] = item
