@@ -326,17 +326,6 @@ IdleActivityTranslate[ACT_MP_JUMP] = ACT_HL2MP_JUMP_SLAM
 IdleActivityTranslate[ACT_MP_SWIM] = IdleActivity + 9
 IdleActivityTranslate[ACT_LAND] = ACT_LAND
 
-local function IsWeaponRaised(client)
-    local weapon = client:GetActiveWeapon()
-    if ( !IsValid(weapon) ) then return false end
-
-    if ( client.IsWeaponRaised ) then
-        return client:IsWeaponRaised()
-    end
-
-    return true
-end
-
 function MODULE:TranslateActivity(client, act)
     local clientTable = client:GetTable()
     local oldAct = clientTable.axLastAct or -1
@@ -359,7 +348,7 @@ function MODULE:TranslateActivity(client, act)
 
         if ( animTable ) then
             if ( istable(animTable) ) then
-                local preferred = animTable[IsWeaponRaised(client) and 2 or 1]
+                local preferred = animTable[client:IsWeaponRaised() and 2 or 1]
                 newAct = preferred
             else
                 newAct = animTable

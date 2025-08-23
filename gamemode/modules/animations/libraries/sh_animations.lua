@@ -418,8 +418,12 @@ ax.animations:SetModelClass(Model("models/vortigaunt_blue.mdl"), "vortigaunt")
 ax.animations:SetModelClass(Model("models/vortigaunt_doctor.mdl"), "vortigaunt")
 ax.animations:SetModelClass(Model("models/vortigaunt_slave.mdl"), "vortigaunt")
 
+ax.animations:SetModelClass(Model("models/player/police.mdl"), "metrocop")
+ax.animations:SetModelClass(Model("models/player/combine_soldier.mdl"), "overwatch")
+ax.animations:SetModelClass(Model("models/player/combine_soldier_prisonguard.mdl"), "overwatch")
+ax.animations:SetModelClass(Model("models/player/combine_super_soldier.mdl"), "overwatch")
+
 -- Not needed but good to have incase...
-ax.animations:SetModelClass(Model("models/player/police.mdl"), "player")
 ax.animations:SetModelClass(Model("models/player/group01/female_01.mdl"), "player")
 ax.animations:SetModelClass(Model("models/player/group01/female_02.mdl"), "player")
 ax.animations:SetModelClass(Model("models/player/group01/female_03.mdl"), "player")
