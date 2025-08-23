@@ -139,5 +139,7 @@ net.Receive("ax.character.load", function(length, client)
         inventory:AddReceiver(client)
     end
 
+    client:Spawn()
+
     hook.Run("OnCharacterLoaded", client, character)
 end)
