@@ -34,15 +34,14 @@ local lastMuzzleAng = Angle(0, 0, 0)
 local muzzleVel = Angle(0, 0, 0)
 local viewOffset = Angle(0, 0, 0)
 
-function MODULE:CalcView(client, pos, ang, fov)
+ax.viewstack:RegisterModifier("viewmodel", function(client, view)
     if ( !IsValid(client) or !client:Alive() or client:ShouldDrawLocalPlayer() ) then return end
 
     local wep = client:GetActiveWeapon()
     if ( !IsValid(wep) ) then return end
 
     local wepClass = wep:GetClass()
-
-    if weapon_exclusion_list[wepClass] then return end
+    if ( weapon_exclusion_list[wepClass] ) then return end
 
     for _, prefix in ipairs(weapon_prefix_exclusion_list) do
         if ( string.StartWith(wepClass, prefix) ) then
@@ -93,11 +92,11 @@ function MODULE:CalcView(client, pos, ang, fov)
     lastMuzzleAng = muzzleAng
 
     return {
-        origin = pos,
-        angles = ang + viewOffset,
-        fov = fov
+        origin = view.origin,
+        angles = view.angles + viewOffset,
+        fov = view.fov
     }
-end
+end, 1)
 
 -- Local inertia state
 local lastEyeAng = Angle(0, 0, 0)
@@ -110,9 +109,9 @@ local jumpTarget = 0
 local lastOnGround = true
 local overshootDecay = 0
 
-function MODULE:CalcViewModelView(weapon, vm, oldPos, oldAng, pos, ang)
+function MODULE:CalcViewModelView(weapon, vm, oldPos, oldAng, origin, angles)
     local client = ax.client
-    if ( !IsValid(client) or !client:Alive() ) then return pos, ang end
+    if ( !IsValid(client) or !client:Alive() ) then return origin, angles end
 
     local ft = FrameTime()
 
@@ -186,8 +185,8 @@ function MODULE:CalcViewModelView(weapon, vm, oldPos, oldAng, pos, ang)
     crouchLerp = Lerp(ft * 5, crouchLerp, crouchTarget)
     if ( crouchLerp > 0.0001 ) then
         local lowerAmt = crouchLower * crouchLerp
-        pos = pos + ang:Up() * -lowerAmt
-        ang:RotateAroundAxis(ang:Forward(), -crouchRoll * crouchLerp)
+        origin = origin + angles:Up() * -lowerAmt
+        angles:RotateAroundAxis(angles:Forward(), -crouchRoll * crouchLerp)
     end
 
     -- Jump bob
@@ -204,10 +203,10 @@ function MODULE:CalcViewModelView(weapon, vm, oldPos, oldAng, pos, ang)
     jumpBob = Lerp(ft * 10, jumpBob, jumpTarget)
     jumpTarget = Lerp(ft * 4, jumpTarget, 0)
     if ( math.abs(jumpBob) > 0.001 ) then
-        pos = pos + ang:Up() * (jumpBob * 0.6)
+        origin = origin + angles:Up() * (jumpBob * 0.6)
     end
 
     -- Apply camera offsets (pitch and roll)
-    ang:RotateAroundAxis(ang:Right(),  currentOffset.p)
-    ang:RotateAroundAxis(ang:Forward(), currentOffset.r + moveOffset.r)
+    angles:RotateAroundAxis(angles:Right(),  currentOffset.p)
+    angles:RotateAroundAxis(angles:Forward(), currentOffset.r + moveOffset.r)
 end

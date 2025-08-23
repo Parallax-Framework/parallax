@@ -18,20 +18,18 @@ function MODULE:ShouldUseThirdPerson(client)
     return thirdpersonEnable:GetBool()
 end
 
-function MODULE:CalcView(client, origin, angles, fov)
+ax.viewstack:RegisterModifier("thirdperson", function(client, view)
     if ( hook.Run("ShouldUseThirdPerson", client) == false ) then return end
 
-    local view = {}
-    view.origin = origin + angles:Forward() * thirdpersonZ:GetFloat() + angles:Right() * thirdpersonX:GetFloat() + angles:Up() * thirdpersonY:GetFloat()
-    view.angles = angles
-    view.fov = fov
-    view.drawviewer = true
-
-    return view
-end
+    return {
+        origin = view.origin + view.angles:Forward() * thirdpersonZ:GetFloat() + view.angles:Right() * thirdpersonX:GetFloat() + view.angles:Up() * thirdpersonY:GetFloat(),
+        angles = view.angles,
+        fov = view.fov
+    }
+end, 1)
 
 function MODULE:ShouldDrawLocalPlayer(client)
-    if ( hook.Run("ShouldUseThirdPerson", client) == false or ax.client == client ) then return end
+    if ( hook.Run("ShouldUseThirdPerson", client) == false ) then return end
 
     return true
 end

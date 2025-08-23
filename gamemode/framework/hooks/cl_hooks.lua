@@ -36,7 +36,7 @@ function GM:HUDShouldDraw(name)
     return true
 end
 
-function GM:CalcView(client, origin, angles, fov)
+ax.viewstack:RegisterModifier("ragdoll", function(client, view)
     if ( !IsValid(client) ) then return end
 
     local ragdollIndex = client:GetNWInt("ax.ragdoll.index", -1)
@@ -57,7 +57,7 @@ function GM:CalcView(client, origin, angles, fov)
         return {
             origin = pos,
             angles = ang,
-            fov = fov
+            fov = view.fov
         }
     end
-end
+end, 10)
