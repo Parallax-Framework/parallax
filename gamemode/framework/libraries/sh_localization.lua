@@ -61,34 +61,3 @@ function ax.localization:Initialize()
         self:Include(engine.ActiveGamemode() .. "/gamemode/modules/" .. modules[i] .. "/localization")
     end
 end
-
-function ax.localization:Include(directory)
-    if ( !isstring(directory) or directory == "" ) then
-        ax.util:PrintWarning("Include: Invalid directory parameter provided")
-        return false
-    end
-
-    -- Normalize path separators
-    directory = string.gsub(directory, "\\", "/")
-    directory = string.gsub(directory, "^/+", "") -- Remove leading slashes
-
-    local files, directories = file.Find(directory .. "/*.lua", "LUA")
-
-    if ( files[1] != nil ) then
-        for i = 1, #files do
-            local fileName = files[i]
-            ax.util:Include(directory .. "/" .. fileName, "shared")
-        end
-    end
-
-    if ( directories[1] != nil ) then
-        for i = 1, #directories do
-            local dirName = directories[i]
-            self:Include(directory .. "/" .. dirName)
-        end
-    end
-
-    return true
-end
-
-ax.localization = ax.localization

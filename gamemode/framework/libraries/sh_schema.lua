@@ -21,6 +21,32 @@ function ax.schema:Initialize()
         return false
     end
 
+    ax.util:IncludeDirectory(active .. "/gamemode/schema/libraries", true)
+    ax.util:IncludeDirectory(active .. "/gamemode/schema/meta", true)
+    ax.util:IncludeDirectory(active .. "/gamemode/schema/core", true)
+    ax.util:IncludeDirectory(active .. "/gamemode/schema/hooks", true)
+    ax.util:IncludeDirectory(active .. "/gamemode/schema/networking", true)
+    ax.util:IncludeDirectory(active .. "/gamemode/schema/interface", true)
+
+    ax.util:IncludeDirectory(active .. "/gamemode/schema", true, {
+        ["libraries"] = true,
+        ["meta"] = true,
+        ["core"] = true,
+        ["hooks"] = true,
+        ["networking"] = true,
+        ["interface"] = true,
+        ["factions"] = true,
+        ["classes"] = true,
+        ["items"] = true,
+        ["boot.lua"] = true
+    })
+
+    ax.faction:Include(active .. "/gamemode/schema/factions")
+    ax.class:Include(active .. "/gamemode/schema/classes")
+    ax.item:Include(active .. "/gamemode/schema/items")
+
+    ax.module:Include(active .. "/gamemode/modules")
+
     -- Initialize the schema
     ax.util:PrintSuccess("Schema \"" .. active .. "\" initialized successfully.")
 

@@ -10,11 +10,17 @@
 ]]
 
 function GM:Initialize()
+    ax.module:Include("parallax/gamemode/modules")
     ax.schema:Initialize()
-    ax.module:Initialize()
-    ax.faction:Initialize()
-    ax.item:Initialize()
-    ax.localization:Initialize()
+end
+
+local reloaded = false
+function GM:OnReloaded()
+    if ( reloaded ) then return end
+    reloaded = true
+
+    ax.module:Include("parallax/gamemode/modules")
+    ax.schema:Initialize()
 end
 
 function GM:CanBecomeFaction(factionTable, client)

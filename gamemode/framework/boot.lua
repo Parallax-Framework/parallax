@@ -29,15 +29,3 @@ ax.util:IncludeDirectory("core")
 ax.util:IncludeDirectory("hooks")
 ax.util:IncludeDirectory("networking")
 ax.util:IncludeDirectory("interface")
-
-local reloaded = false
-function GM:OnReloaded()
-    if ( reloaded ) then return end
-    reloaded = true
-
-    ax.schema:Initialize()
-    ax.module:Initialize()
-    ax.faction:Initialize()
-    ax.item:Initialize()
-    ax.localization:Initialize()
-end

@@ -12,11 +12,6 @@
 ax.module = ax.module or {}
 ax.module.stored = ax.module.stored or {}
 
-function ax.module:Initialize()
-    self:Include("parallax/gamemode/modules")
-    self:Include(engine.ActiveGamemode() .. "/gamemode/modules")
-end
-
 function ax.module:Include(path)
     local files, directories = file.Find(path .. "/*", "LUA")
 
@@ -31,7 +26,7 @@ function ax.module:Include(path)
             end
 
             MODULE = { UniqueID = moduleName }
-                ax.util:Include(path .. "/" .. fileName, "shared")
+                ax.util:Include(path .. "/" .. fileName)
                 ax.util:PrintSuccess("Module \"" .. tostring(MODULE.Name) .. "\" initialized successfully.")
                 ax.module.stored[moduleName] = MODULE
             MODULE = nil
@@ -45,8 +40,31 @@ function ax.module:Include(path)
             if ( file.Exists(bootFile, "LUA") ) then
                 MODULE = { UniqueID = dirName }
 
-                ax.util:IncludeDirectory(path .. "/" .. dirName, true, {["boot.lua"] = true})
                 ax.util:Include(bootFile, "shared")
+
+                ax.util:IncludeDirectory(path .. "/" .. dirName .. "/libraries", true)
+                ax.util:IncludeDirectory(path .. "/" .. dirName .. "/meta", true)
+                ax.util:IncludeDirectory(path .. "/" .. dirName .. "/core", true)
+                ax.util:IncludeDirectory(path .. "/" .. dirName .. "/hooks", true)
+                ax.util:IncludeDirectory(path .. "/" .. dirName .. "/networking", true)
+                ax.util:IncludeDirectory(path .. "/" .. dirName .. "/interface", true)
+
+                ax.util:IncludeDirectory(path .. "/" .. dirName, true, {
+                    ["libraries"] = true,
+                    ["meta"] = true,
+                    ["core"] = true,
+                    ["hooks"] = true,
+                    ["networking"] = true,
+                    ["interface"] = true,
+                    ["factions"] = true,
+                    ["classes"] = true,
+                    ["items"] = true,
+                    ["boot.lua"] = true
+                })
+
+                ax.faction:Include(path .. "/" .. dirName .. "/factions")
+                ax.class:Include(path .. "/" .. dirName .. "/classes")
+                ax.item:Include(path .. "/" .. dirName .. "/items")
 
                 ax.util:PrintSuccess("Module \"" .. tostring(MODULE.Name) .. "\" initialized successfully.")
                 ax.module.stored[MODULE.UniqueID] = MODULE
