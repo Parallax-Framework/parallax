@@ -124,3 +124,17 @@ ax.command:Add("setmodel", {
         return "Model set to " .. model
     end
 })
+
+ax.command:Add("setskin", {
+    description = "Set the skin of a player.",
+    arguments = {
+        { name = "target", type = ax.type.player },
+        { name = "skin", type = ax.type.number }
+    },
+    OnRun = function(ply, target, skin)
+        if ( !IsValid(target) ) then return "Invalid player." end
+
+        target:SetSkin(skin)
+        return "Skin set to " .. skin
+    end
+})
