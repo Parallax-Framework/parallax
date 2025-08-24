@@ -84,26 +84,6 @@ local function sort_by_prio_then_name(list)
     end)
 end
 
--- Capture existing CalcView hooks and remove them from the hook system.
-local function capture_legacy()
-    CAPTURED = {}
-    local t = hook.GetTable() or {}
-    local cv = t["CalcView"] or {}
-
-    -- Preserve capture order: iterate then record insertion index as implicit order
-    for name, fn in pairs(cv) do
-        if isfunction(fn) and name ~= "__ax_viewstack_dispatcher" then
-            table.insert(CAPTURED, {
-                name    = name,
-                fn      = fn,
-                prio    = PRIORITY[name] or 0,
-                enabled = not BLACKLIST[name]
-            })
-            hook.Remove("CalcView", name)
-        end
-    end
-end
-
 -- Public API
 
 --- Register a modifier that gets (ply, view) and returns a (partial) view table or nil.
@@ -145,8 +125,6 @@ end
 
 --- Rebuild capture and (re)install dispatcher.
 function ax.viewstack:Enable()
-    capture_legacy()
-
     hook.Add("CalcView", "__ax_viewstack_dispatcher", function(ply, origin, angles, fov, znear, zfar)
         -- Base view seeded from engine params
         local view = {
