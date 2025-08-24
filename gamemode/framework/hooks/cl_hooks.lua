@@ -37,7 +37,7 @@ function GM:HUDShouldDraw(name)
 end
 
 ax.viewstack:RegisterModifier("ragdoll", function(client, view)
-    if ( !IsValid(client) ) then return end
+    if ( !IsValid(client) or client:InVehicle() ) then return end
 
     local ragdollIndex = client:GetNWInt("ax.ragdoll.index", -1)
     if ( ragdollIndex != -1 and !client:Alive() ) then

@@ -35,7 +35,7 @@ local muzzleVel = Angle(0, 0, 0)
 local viewOffset = Angle(0, 0, 0)
 
 ax.viewstack:RegisterModifier("viewmodel", function(client, view)
-    if ( !IsValid(client) or !client:Alive() or client:ShouldDrawLocalPlayer() ) then return end
+    if ( !IsValid(client) or !client:Alive() or client:InVehicle() or client:ShouldDrawLocalPlayer() ) then return end
 
     local wep = client:GetActiveWeapon()
     if ( !IsValid(wep) ) then return end

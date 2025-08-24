@@ -61,8 +61,33 @@ net.Receive("ax.character.create", function(len)
         local charData = characters[i]
         character = setmetatable(charData, ax.character.meta)
         ax.character.instances[character.id] = character
-        clientData.axCharacters[ #clientData.axCharacters + 1 ] = character
+        clientData.axCharacters[#clientData.axCharacters + 1] = character
     end
+
+    hook.Run("PlayerCreatedCharacter", client, character)
+end)
+
+net.Receive("ax.character.load", function()
+    local characterID = net.ReadUInt(32)
+    local client = ax.client
+    if ( !IsValid(client) ) then return end
+
+    local character = ax.character:Get(characterID)
+    if ( !istable(character) ) then
+        ax.util:PrintError("Character with ID " .. characterID .. " not found.")
+        return
+    end
+
+    local clientData = client:GetTable()
+    clientData.axCharacter = character
+
+    if ( IsValid(ax.gui.main) ) then
+        ax.gui.main:Remove()
+    end
+
+    client:ScreenFade(SCREENFADE.IN, color_black, 4, 1)
+
+    hook.Run("PlayerLoadedCharacter", client, character)
 end)
 
 net.Receive("ax.character.sync", function()
@@ -100,7 +125,7 @@ net.Receive("ax.character.restore", function()
     hook.Run("OnCharactersRestored", characters)
 end)
 
-net.Receive("ax.character.SetVar", function()
+net.Receive("ax.character.var", function()
     local characterId = net.ReadUInt(32)
     local name = net.ReadString()
     local value = net.ReadType()

@@ -151,6 +151,16 @@ DEFINE_BASECLASS("ax.button.core")
 
 PANEL = {}
 
+AccessorFunc(PANEL, "baseHeight", "BaseHeight", FORCE_NUMBER)
+AccessorFunc(PANEL, "baseHeightMotion", "BaseHeightMotion", FORCE_NUMBER)
+AccessorFunc(PANEL, "baseHeightHovered", "BaseHeightHovered", FORCE_NUMBER)
+AccessorFunc(PANEL, "textInsetX", "TextInsetX", FORCE_NUMBER)
+AccessorFunc(PANEL, "textInsetXMotion", "TextInsetXMotion", FORCE_NUMBER)
+AccessorFunc(PANEL, "textInsetXHovered", "TextInsetXHovered", FORCE_NUMBER)
+AccessorFunc(PANEL, "textInsetY", "TextInsetY", FORCE_NUMBER)
+AccessorFunc(PANEL, "textInsetYMotion", "TextInsetYMotion", FORCE_NUMBER)
+AccessorFunc(PANEL, "textInsetYHovered", "TextInsetYHovered", FORCE_NUMBER)
+
 function PANEL:Init()
     BaseClass.Init(self)
 
@@ -287,6 +297,10 @@ vgui.Register("ax.button", PANEL, "ax.button.core")
 DEFINE_BASECLASS("ax.button.core")
 
 PANEL = {}
+
+AccessorFunc(PANEL, "backgroundColor", "BackgroundColor")
+AccessorFunc(PANEL, "backgroundAlpha", "BackgroundAlpha", FORCE_NUMBER)
+AccessorFunc(PANEL, "backgroundAlphaHovered", "BackgroundAlphaHovered", FORCE_NUMBER)
 
 function PANEL:Init()
     BaseClass.Init(self)

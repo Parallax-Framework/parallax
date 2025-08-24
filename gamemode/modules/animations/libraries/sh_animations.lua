@@ -21,61 +21,63 @@ ax.animations.translations = ax.animations.translations or {}
 
 ax.animations.stored["player"] = {
     ["normal"] = {
-        [ACT_MP_STAND_IDLE] = {ACT_IDLE, ACT_IDLE_ANGRY_SMG1},
-        [ACT_MP_WALK] = {ACT_WALK, ACT_WALK_AIM_RIFLE_STIMULATED},
-        [ACT_MP_RUN] = {ACT_RUN, ACT_RUN_AIM_RIFLE_STIMULATED},
-        [ACT_MP_CROUCH_IDLE] = {ACT_COVER_LOW, ACT_COVER_LOW},
-        [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH, ACT_WALK_CROUCH_AIM_RIFLE}
+        [ACT_MP_STAND_IDLE] = {{"idle_all_01", "idle_all_02"}, {"idle_all_01", "idle_all_02"}},
+        [ACT_MP_WALK] = {"walk_all", "walk_all"},
+        [ACT_MP_RUN] = {"run_all_01", "run_all_01"},
+        [ACT_MP_CROUCH_IDLE] = {"cidle_all", "cidle_all"},
+        [ACT_MP_CROUCHWALK] = {"cwalk_all", "cwalk_all"},
     },
     ["pistol"] = {
-        [ACT_MP_STAND_IDLE] = {ACT_IDLE_PISTOL, ACT_IDLE_ANGRY_PISTOL},
-        [ACT_MP_WALK] = {ACT_WALK_PISTOL, ACT_WALK_AIM_PISTOL},
-        [ACT_MP_RUN] = {ACT_RUN_PISTOL, ACT_RUN_AIM_PISTOL},
-        [ACT_MP_CROUCH_IDLE] = {ACT_COVER_PISTOL_LOW, ACT_COVER_PISTOL_LOW},
-        [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH, ACT_WALK_CROUCH},
-        ["shoot"] = ACT_GESTURE_RANGE_ATTACK_PISTOL,
-        ["reload"] = ACT_GESTURE_RELOAD_PISTOL
+        [ACT_MP_STAND_IDLE] = {{"idle_all_01", "idle_all_02"}, "idle_revolver"},
+        [ACT_MP_WALK] = {"walk_all", "walk_revolver"},
+        [ACT_MP_RUN] = {"run_all_01", "run_revolver"},
+        [ACT_MP_CROUCH_IDLE] = {"cidle_all", "cidle_revolver"},
+        [ACT_MP_CROUCHWALK] = {"cwalk_all", "cwalk_revolver"},
+        ["shoot"] = "gesture_shoot_pistol",
+        ["reload"] = "gesture_reload_357"
     },
     ["smg"] = {
-        [ACT_MP_STAND_IDLE] = {"idle_smg1_relaxed", "idle_smg1_aim_alert"},
-        [ACT_MP_WALK] = {"walk_smg1_relaxed_all", "walk_smg1"},
-        [ACT_MP_RUN] = {"run_smg1_relaxed_all", "run_smg1"},
-        [ACT_MP_CROUCH_IDLE] = {ACT_COVER_LOW, ACT_RANGE_AIM_SMG1_LOW},
-        [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH_RIFLE, ACT_WALK_CROUCH_AIM_RIFLE},
-        ["shoot"] = ACT_GESTURE_RANGE_ATTACK_SMG1,
-        ["reload"] = ACT_GESTURE_RELOAD_SMG1
+        [ACT_MP_STAND_IDLE] = {"idle_passive", "idle_smg1"},
+        [ACT_MP_WALK] = {"walk_passive", "walk_smg1"},
+        [ACT_MP_RUN] = {"run_passive", "run_smg1"},
+        [ACT_MP_CROUCH_IDLE] = {"cidle_passive", "cidle_smg1"},
+        [ACT_MP_CROUCHWALK] = {"cwalk_passive", "cwalk_smg1"},
+        ["shoot"] = "gesture_shoot_smg1",
+        ["reload"] = "gesture_reload_smg1"
     },
     ["shotgun"] = {
-        [ACT_MP_STAND_IDLE] = {ACT_IDLE_SHOTGUN_RELAXED, ACT_IDLE_ANGRY_SMG1},
-        [ACT_MP_WALK] = {ACT_WALK_RIFLE_RELAXED, ACT_WALK_AIM_RIFLE_STIMULATED},
-        [ACT_MP_RUN] = {ACT_RUN_RIFLE_RELAXED, ACT_RUN_AIM_RIFLE_STIMULATED},
-        [ACT_MP_CROUCH_IDLE] = {ACT_COVER_LOW, ACT_RANGE_AIM_SMG1_LOW},
-        [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH_RIFLE, ACT_WALK_CROUCH_RIFLE},
-        ["shoot"] = ACT_GESTURE_RANGE_ATTACK_SHOTGUN,
-        ["reload"] = ACT_GESTURE_RELOAD_SHOTGUN
+        [ACT_MP_STAND_IDLE] = {"idle_passive", "idle_shotgun"},
+        [ACT_MP_WALK] = {"walk_passive", "walk_shotgun"},
+        [ACT_MP_RUN] = {"run_passive", "run_shotgun"},
+        [ACT_MP_CROUCH_IDLE] = {"cidle_passive", "cidle_shotgun"},
+        [ACT_MP_CROUCHWALK] = {"cwalk_passive", "cwalk_shotgun"},
+        ["shoot"] = "gesture_shoot_shotgun",
+        ["reload"] = "gesture_reload_shotgun"
     },
     ["ar2"] = {
-        [ACT_MP_STAND_IDLE] = {ACT_IDLE_SMG1_RELAXED, ACT_IDLE_ANGRY_SMG1},
-        [ACT_MP_WALK] = {ACT_WALK_RIFLE_RELAXED, ACT_WALK_AIM_RIFLE_STIMULATED},
-        [ACT_MP_RUN] = {ACT_RUN_RIFLE_RELAXED, ACT_RUN_AIM_RIFLE_STIMULATED},
-        [ACT_MP_CROUCH_IDLE] = {ACT_COVER_LOW, ACT_RANGE_AIM_SMG1_LOW},
-        [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH_RIFLE, ACT_WALK_CROUCH_AIM_RIFLE},
-        ["shoot"] = ACT_GESTURE_RANGE_ATTACK_SMG1,
-        ["reload"] = ACT_GESTURE_RELOAD_SMG1
+        [ACT_MP_STAND_IDLE] = {"idle_passive", "idle_ar2"},
+        [ACT_MP_WALK] = {"walk_passive", "walk_ar2"},
+        [ACT_MP_RUN] = {"run_passive", "run_ar2"},
+        [ACT_MP_CROUCH_IDLE] = {"cidle_passive", "cidle_ar2"},
+        [ACT_MP_CROUCHWALK] = {"cwalk_passive", "cwalk_ar2"},
+        ["shoot"] = "gesture_shoot_ar2",
+        ["reload"] = "gesture_reload_ar2"
     },
     ["melee"] = {
-        [ACT_MP_STAND_IDLE] = {ACT_IDLE, ACT_IDLE_ANGRY_MELEE},
-        [ACT_MP_WALK] = {ACT_WALK, ACT_WALK_AIM_RIFLE},
-        [ACT_MP_RUN] = {ACT_RUN, ACT_RUN},
-        [ACT_MP_CROUCH_IDLE] = {ACT_COVER_LOW, ACT_COVER_LOW},
-        [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH, ACT_WALK_CROUCH}
+        [ACT_MP_STAND_IDLE] = {{"idle_all_01", "idle_all_02"}, "idle_melee"},
+        [ACT_MP_WALK] = {"walk_all", "walk_melee"},
+        [ACT_MP_RUN] = {"run_all_01", "run_melee"},
+        [ACT_MP_CROUCH_IDLE] = {"cidle_all", "cidle_melee"},
+        [ACT_MP_CROUCHWALK] = {"cwalk_all", "cwalk_melee"},
+        ["shoot"] = "range_melee"
     },
     ["grenade"] = {
-        [ACT_MP_STAND_IDLE] = {ACT_IDLE, ACT_IDLE_MANNEDGUN},
-        [ACT_MP_WALK] = {ACT_WALK, ACT_WALK_AIM_RIFLE_STIMULATED},
-        [ACT_MP_RUN] = {ACT_RUN, ACT_RUN_RIFLE_STIMULATED},
-        [ACT_MP_CROUCH_IDLE] = {ACT_COVER_LOW, ACT_RANGE_AIM_SMG1_LOW},
-        [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH, ACT_WALK_CROUCH_AIM_RIFLE}
+        [ACT_MP_STAND_IDLE] = {{"idle_all_01", "idle_all_02"}, "idle_grenade"},
+        [ACT_MP_WALK] = {"walk_all", "walk_grenade"},
+        [ACT_MP_RUN] = {"run_all_01", "run_grenade"},
+        [ACT_MP_CROUCH_IDLE] = {"cidle_all", "cidle_grenade"},
+        [ACT_MP_CROUCHWALK] = {"cwalk_all", "cwalk_grenade"},
+        ["shoot"] = "range_grenade"
     }
 }
 

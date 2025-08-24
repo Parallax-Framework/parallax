@@ -87,7 +87,7 @@ net.Receive("ax.character.create", function(length, client)
 
         ax.util:PrintSuccess("Character created for " .. client:SteamID64() .. ": " .. character:GetName())
 
-        hook.Run("OnCharacterCreated", client, character)
+        hook.Run("PlayerCreatedCharacter", client, character)
     end)
 end)
 
@@ -120,7 +120,7 @@ net.Receive("ax.character.load", function(length, client)
         prevChar.player = NULL
     end
 
-    local try, catch = hook.Run("CanLoadCharacter", client, character)
+    local try, catch = hook.Run("CanPlayerLoadCharacter", client, character)
     if ( try == false ) then
         if ( isstring(catch) and #catch > 0 ) then
             client:ChatPrint(catch)
@@ -129,17 +129,5 @@ net.Receive("ax.character.load", function(length, client)
         return
     end
 
-    character.player = client
-
-    client:GetTable().axCharacter = character
-    ax.character:Sync(client, character)
-
-    local inventory = ax.inventory.instances[character.invID]
-    if ( istable(inventory) ) then
-        inventory:AddReceiver(client)
-    end
-
-    client:Spawn()
-
-    hook.Run("OnCharacterLoaded", client, character)
+    ax.character:Load(client, character)
 end)

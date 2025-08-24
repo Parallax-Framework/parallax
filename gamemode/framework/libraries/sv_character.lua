@@ -77,13 +77,34 @@ function ax.character:Create(payload, callback)
     query:Execute()
 end
 
+function ax.character:Load(client, character)
+    local clientData = client:GetTable()
+    character.player = client
+
+    clientData.axCharacter = character
+    ax.character:Sync(client, character)
+
+    local inventory = ax.inventory.instances[character.invID]
+    if ( istable(inventory) ) then
+        inventory:AddReceiver(client)
+    end
+
+    client:Spawn()
+
+    net.Start("ax.character.load")
+        net.WriteUInt(character.id, 32)
+    net.Send(client)
+
+    hook.Run("PlayerLoadedCharacter", client, character)
+end
+
 function ax.character:Restore(client, callback)
     local clientData = client:GetTable()
     clientData.axCharacters = {}
 
     local steamID64 = client:SteamID64()
     local query = mysql:Select("ax_characters")
-        query:Where("steamID64", steamID64)
+        query:Where("steamid64", steamID64)
         query:Callback(function(result, status)
             if ( result == false ) then
                 ax.util:PrintError("Failed to fetch characters for " .. steamID64)

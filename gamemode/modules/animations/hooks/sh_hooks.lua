@@ -422,7 +422,7 @@ function MODULE:DoAnimationEvent(client, event, data)
             desired = client:LookupSequence(desired[math.random(#desired)])
         end
 
-        client:AnimRestartGesture(GESTURE_SLOT_ATTACK_AND_RELOAD, desired, true)
+        client:PlayGesture(GESTURE_SLOT_ATTACK_AND_RELOAD, desired)
 
         return ACT_VM_PRIMARYATTACK
     elseif ( event == PLAYERANIMEVENT_ATTACK_SECONDARY ) then
@@ -440,7 +440,7 @@ function MODULE:DoAnimationEvent(client, event, data)
             desired = client:LookupSequence(desired[math.random(#desired)])
         end
 
-        client:AnimRestartGesture(GESTURE_SLOT_ATTACK_AND_RELOAD, desired, true)
+        client:PlayGesture(GESTURE_SLOT_ATTACK_AND_RELOAD, desired)
 
         return ACT_INVALID
     elseif ( event == PLAYERANIMEVENT_JUMP ) then
