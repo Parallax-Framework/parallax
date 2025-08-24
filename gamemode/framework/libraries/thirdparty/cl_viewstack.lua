@@ -7,11 +7,11 @@
       CalcView with a single dispatcher that calls everyone and merges results.
 
     Behavior:
-      - Legacy hooks: called as fn(ply, origin, angles, fov, znear, zfar).
+      - Legacy hooks: called as fn(client, origin, angles, fov, znear, zfar).
         If they return (pos, ang, fov) or a table { origin, angles, fov, znear, zfar, drawviewer },
         we merge into the current view. Missing fields are ignored.
       - Modifier API: register with ax.viewstack.RegisterModifier(name, fn, priority).
-        Your fn gets (ply, view) and returns either nil (no change) or a (partial) view table.
+        Your fn gets (client, view) and returns either nil (no change) or a (partial) view table.
 
     Notes:
       - Last write wins per-field.
@@ -86,7 +86,7 @@ end
 
 -- Public API
 
---- Register a modifier that gets (ply, view) and returns a (partial) view table or nil.
+--- Register a modifier that gets (client, view) and returns a (partial) view table or nil.
 function ax.viewstack:RegisterModifier(name, fn, priority)
     assert(isstring(name) and name ~= "", "Modifier needs a name")
     assert(isfunction(fn), "Modifier needs a function")
@@ -125,7 +125,7 @@ end
 
 --- Rebuild capture and (re)install dispatcher.
 function ax.viewstack:Enable()
-    hook.Add("CalcView", "__ax_viewstack_dispatcher", function(ply, origin, angles, fov, znear, zfar)
+    hook.Add("CalcView", "__ax_viewstack_dispatcher", function(client, origin, angles, fov, znear, zfar)
         -- Base view seeded from engine params
         local view = {
             origin = origin,
@@ -139,7 +139,7 @@ function ax.viewstack:Enable()
         -- 1) run modern modifiers
         for _, m in ipairs(MODS) do
             if m.enabled and not BLACKLIST[m.name] then
-                local ok, patch = pcall(m.fn, ply, view)
+                local ok, patch = pcall(m.fn, client, view)
                 if not ok then
                     if not WARNED[m.name] then
                         WARNED[m.name] = true
@@ -158,7 +158,7 @@ function ax.viewstack:Enable()
             sort_by_prio_then_name(CAPTURED) -- stable + applies priority changes
             for _, h in ipairs(CAPTURED) do
                 if h.enabled and not BLACKLIST[h.name] then
-                    local patch = safe_call(h.name, h.fn, ply, view.origin, view.angles, view.fov, view.znear, view.zfar)
+                    local patch = safe_call(h.name, h.fn, client, view.origin, view.angles, view.fov, view.znear, view.zfar)
                     if istable(patch) then
                         merge_view(view, patch)
                     end

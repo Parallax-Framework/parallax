@@ -302,18 +302,18 @@ extraInfoTbl)
     local allPlys = select(2, player.Iterator())
     local countdown = #allPlys
 
-    local function onResult(ply, hasAccess, _)
+    local function onResult(client, hasAccess, _)
         countdown = countdown - 1
 
-        if hasAccess then allowedPlys[#allowedPlys + 1] = ply end
+        if hasAccess then allowedPlys[#allowedPlys + 1] = client end
         if countdown == 0 then callback(allowedPlys) end
     end
 
     local playerCount = #allPlys
     for i = 1, playerCount do
-        local ply = allPlys[i]
-        CAMI.PlayerHasAccess(ply, privilegeName,
-            function(...) onResult(ply, ...) end,
+        local client = allPlys[i]
+        CAMI.PlayerHasAccess(client, privilegeName,
+            function(...) onResult(client, ...) end,
             targetPly, extraInfoTbl)
     end
 end
@@ -342,12 +342,12 @@ end
 --- of a player should be.
 ---
 --- Listen to the hook to receive the usergroup changes of other admin mods.
---- @param ply GPlayer @The player for which the usergroup is changed
+--- @param client GPlayer @The player for which the usergroup is changed
 --- @param old string @The previous usergroup of the player.
 --- @param new string @The new usergroup of the player.
 --- @param source any @Identifier for your own admin mod. Can be anything.
-function CAMI.SignalUserGroupChanged(ply, old, new, source)
-    hook.Call("CAMI.PlayerUsergroupChanged", nil, ply, old, new, source)
+function CAMI.SignalUserGroupChanged(client, old, new, source)
+    hook.Call("CAMI.PlayerUsergroupChanged", nil, client, old, new, source)
 end
 
 --- Signify that your admin mod has changed the usergroup of a disconnected

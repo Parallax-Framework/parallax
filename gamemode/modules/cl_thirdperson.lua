@@ -57,6 +57,6 @@ function MODULE:ShouldDrawLocalPlayer(client)
     return true
 end
 
-concommand.Add("ax_thirdperson_toggle", function(ply, cmd, args)
+concommand.Add("ax_thirdperson_toggle", function(client, cmd, args)
     thirdpersonEnable:SetBool(!thirdpersonEnable:GetBool())
 end)

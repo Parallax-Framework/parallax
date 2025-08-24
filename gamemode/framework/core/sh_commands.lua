@@ -9,7 +9,7 @@ ax.command:Add("setgravity", {
     arguments = {
         { name = "scale", type = ax.type.number, min = 0.1, max = 3, decimals = 2 }
     },
-    OnRun = function(ply, scale)
+    OnRun = function(client, scale)
         RunConsoleCommand("sv_gravity", tostring(600 * scale))
         return "Gravity set to " .. scale .. "x"
     end
@@ -25,13 +25,13 @@ ax.command:Add("pm", {
         { name = "target", type = ax.type.player },
         { name = "message", type = ax.type.text }
     },
-    OnRun = function(ply, target, message)
+    OnRun = function(client, target, message)
         if ( !IsValid(target) ) then
             return "Target player not found."
         end
 
-        target:ChatPrint("[PM from " .. ply:Nick() .. "] " .. message)
-        ply:ChatPrint("[PM to " .. target:Nick() .. "] " .. message)
+        target:ChatPrint("[PM from " .. client:Nick() .. "] " .. message)
+        client:ChatPrint("[PM to " .. target:Nick() .. "] " .. message)
         return ""
     end
 })
@@ -45,8 +45,8 @@ ax.command:Add("god", {
     arguments = {
         { name = "target", type = ax.type.player, optional = true }
     },
-    OnRun = function(ply, target)
-        target = target or ply
+    OnRun = function(client, target)
+        target = target or client
 
         if ( !IsValid(target) ) then
             return "Invalid target player."
@@ -56,7 +56,7 @@ ax.command:Add("god", {
         target:GodEnable(!isGod)
 
         local status = !isGod and "enabled" or "disabled"
-        local targetName = target == ply and "yourself" or target:Nick()
+        local targetName = target == client and "yourself" or target:Nick()
 
         return "God mode " .. status .. " for " .. targetName
     end
@@ -71,7 +71,7 @@ ax.command:Add("help", {
     arguments = {
         { name = "command", type = ax.type.string, optional = true }
     },
-    OnRun = function(ply, commandName)
+    OnRun = function(client, commandName)
         if ( commandName ) then
             -- Show help for specific command
             local def = ax.command.registry[string.lower(commandName)]
@@ -79,7 +79,7 @@ ax.command:Add("help", {
                 return "Command '" .. commandName .. "' not found."
             end
 
-            local hasAccess = ax.command:HasAccess(ply, def)
+            local hasAccess = ax.command:HasAccess(client, def)
             if ( !hasAccess ) then
                 return "Command '" .. commandName .. "' not found." -- Don't reveal existence
             end
@@ -92,7 +92,7 @@ ax.command:Add("help", {
 
             for name, def in pairs(ax.command.registry) do
                 if ( name == def.name and !processed[def.name] ) then -- Only process original command names
-                    local hasAccess = ax.command:HasAccess(ply, def)
+                    local hasAccess = ax.command:HasAccess(client, def)
                     if ( hasAccess ) then
                         available[ #available + 1 ] = def.name
                         processed[def.name] = true
@@ -117,7 +117,7 @@ ax.command:Add("setmodel", {
         { name = "target", type = ax.type.player },
         { name = "model", type = ax.type.text }
     },
-    OnRun = function(ply, target, model)
+    OnRun = function(client, target, model)
         if ( !IsValid(target) ) then return "Invalid player." end
 
         target:SetModel(model)
@@ -131,7 +131,7 @@ ax.command:Add("setskin", {
         { name = "target", type = ax.type.player },
         { name = "skin", type = ax.type.number }
     },
-    OnRun = function(ply, target, skin)
+    OnRun = function(client, target, skin)
         if ( !IsValid(target) ) then return "Invalid player." end
 
         target:SetSkin(skin)

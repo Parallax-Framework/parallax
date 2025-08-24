@@ -23,7 +23,7 @@ end
     @realm shared
     @param string name The command name (normalized to lowercase)
     @param table def Command definition table
-    @usage ax.command:Add("test", { description = "Test command", OnRun = function(ply) end })
+    @usage ax.command:Add("test", { description = "Test command", OnRun = function(client) end })
 ]]
 function ax.command:Add(name, def)
     if ( !isstring(name) or name == "" ) then
@@ -119,7 +119,7 @@ end
     @param Entity caller The player or console (nil) attempting to run the command
     @param table def The command definition
     @return bool, string Whether access is granted and optional reason
-    @usage local canRun, reason = ax.command:HasAccess(ply, def)
+    @usage local canRun, reason = ax.command:HasAccess(client, def)
 ]]
 function ax.command:HasAccess(caller, def)
     if ( !istable(def) ) then
@@ -250,7 +250,7 @@ end
     @param string name The command name
     @param string rawArgs Raw argument string
     @return bool, string Success status and result/error message
-    @usage local ok, result = ax.command:Run(ply, "pm", "player1 hello")
+    @usage local ok, result = ax.command:Run(client, "pm", "player1 hello")
 ]]
 function ax.command:Run(caller, name, rawArgs)
     if ( !isstring(name) or name == "" ) then

@@ -27,8 +27,8 @@
 
     if SERVER then
         -- Read a player's networked option
-        local ply = somePlayer
-        print(ax.option:Get(ply, "language", "english"))
+        local client = somePlayer
+        print(ax.option:Get(client, "language", "english"))
     end
 ]]
 
