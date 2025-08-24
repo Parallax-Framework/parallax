@@ -181,10 +181,10 @@ function PANEL:Paint(width, height)
         Derma_DrawBackgroundBlur(self, self.m_fCreateTime)
     end
 
-    surface.SetDrawColor(ax.color:Get("background.transparent"))
+    surface.SetDrawColor(0, 0, 0, 150)
     surface.DrawRect(0, 0, width, height)
 
-    surface.SetDrawColor(ax.color:Get("background"))
+    surface.SetDrawColor(0, 0, 0, 200)
     surface.DrawRect(0, 0, width, 58)
 
     return true
