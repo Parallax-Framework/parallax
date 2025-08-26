@@ -10,6 +10,9 @@
 ]]
 
 function GM:Initialize()
+    ax.faction:Include("parallax/gamemode/factions")
+    ax.class:Include("parallax/gamemode/classes")
+    ax.item:Include("parallax/gamemode/items")
     ax.module:Include("parallax/gamemode/modules")
     ax.schema:Initialize()
 end
@@ -19,6 +22,9 @@ function GM:OnReloaded()
     if ( reloaded ) then return end
     reloaded = true
 
+    ax.faction:Include("parallax/gamemode/factions")
+    ax.class:Include("parallax/gamemode/classes")
+    ax.item:Include("parallax/gamemode/items")
     ax.module:Include("parallax/gamemode/modules")
     ax.schema:Initialize()
 end
