@@ -11,7 +11,7 @@
 
 local MODULE = MODULE
 
-local KEY_SHOOT = IN_ATTACK + IN_ATTACK2
+local KEY_SHOOT = bit.bor(IN_ATTACK, IN_ATTACK2)
 function MODULE:StartCommand(client, cmd)
     local weapon = client:GetActiveWeapon()
     if ( !IsValid(weapon) or !weapon:IsWeapon() ) then return end
