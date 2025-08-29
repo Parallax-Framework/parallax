@@ -117,7 +117,7 @@ function client:PlayGesture(slot, sequence)
             net.WritePlayer(self)
             net.WriteUInt(slot, 8)
             net.WriteUInt(sequence, 16)
-        net.Send(self)
+        net.SendPVS( self:GetPos() )
     end
 end
 
