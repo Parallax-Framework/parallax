@@ -14,7 +14,7 @@ local client = FindMetaTable("Player")
 local steamName = steamName or client.Name
 function client:Name()
     local character = self:GetCharacter()
-    return character and character.name or steamName(self)
+    return character and character:GetName() or steamName(self)
 end
 
 function client:SteamName()
