@@ -47,15 +47,10 @@ ax.viewstack:RegisterModifier("thirdperson", function(client, view)
     return {
         origin = desiredPos,
         angles = ang,
-        fov = view.fov
+        fov = view.fov,
+        drawviewer = true
     }
 end, 1)
-
-function MODULE:ShouldDrawLocalPlayer(client)
-    if ( hook.Run("ShouldUseThirdPerson", client) == false ) then return end
-
-    return true
-end
 
 concommand.Add("ax_thirdperson_toggle", function(client, cmd, args)
     thirdpersonEnable:SetBool(!thirdpersonEnable:GetBool())
