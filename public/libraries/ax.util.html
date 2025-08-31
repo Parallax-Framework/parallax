@@ -1,0 +1,1348 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>Parallax Documentation</title>
+    <link rel="stylesheet" href="../ldoc.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>Parallax</h1>
+
+
+<ul>
+  <li><a href="../index.html">Index</a></li>
+</ul>
+
+<h2>Contents</h2>
+<ul>
+<li><a href="#Functions">Functions</a></li>
+</ul>
+
+
+<h2>Libraries</h2>
+<ul class="nowrap">
+  <li><a href="../libraries/ax.motion.html">ax.motion</a></li>
+  <li><a href="../libraries/ax.data.html">ax.data</a></li>
+  <li><a href="../libraries/ax.ease.html">ax.ease</a></li>
+  <li><a href="../libraries/ax.hook.html">ax.hook</a></li>
+  <li><a href="../libraries/ax.type.html">ax.type</a></li>
+  <li><strong>ax.util</strong></li>
+</ul>
+<h2>Manual</h2>
+<ul class="nowrap">
+  <li><a href="../manual/readme.md.html">readme</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+<h1>Module <code>ax.util</code></h1>
+<p>Utility helpers used across the Parallax framework (printing, file handling, text utilities, etc.).</p>
+<p>
+
+</p>
+
+
+<h2><a href="#Functions">Functions</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#ax.util:DetectFileRealm">ax.util:DetectFileRealm (file)</a></td>
+	<td class="summary">Detects the realm of a file based on its name.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ax.util:Include">ax.util:Include (path, realm)</a></td>
+	<td class="summary">Includes a Lua file, handling AddCSLuaFile/include based on realm.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ax.util:IncludeDirectory">ax.util:IncludeDirectory (directory, fromLua, toSkip)</a></td>
+	<td class="summary">Recursively includes all Lua files found under a directory.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ax.util:PreparePackage">ax.util:PreparePackage (...)</a></td>
+	<td class="summary">Prepares a package of arguments for printing (converts entities to readable values).</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ax.util:Print">ax.util:Print (...)</a></td>
+	<td class="summary">Print a regular message with framework styling.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ax.util:PrintError">ax.util:PrintError (...)</a></td>
+	<td class="summary">Print an error message (Uses ErrorNoHaltWithStack).</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ax.util:PrintWarning">ax.util:PrintWarning (...)</a></td>
+	<td class="summary">Print a warning message.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ax.util:PrintSuccess">ax.util:PrintSuccess (...)</a></td>
+	<td class="summary">Print a success message.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ax.util:PrintDebug">ax.util:PrintDebug (...)</a></td>
+	<td class="summary">Print a debug message</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ax.util:FindString">ax.util:FindString (str, find)</a></td>
+	<td class="summary">Find a specific piece of text within a larger body of text (case-insensitive).</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ax.util:FindText">ax.util:FindText (txt, find)</a></td>
+	<td class="summary">Search each word in a text for a substring (case-insensitive).</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ax.util:FindPlayer">ax.util:FindPlayer (identifier)</a></td>
+	<td class="summary">Find a player by SteamID, SteamID64, name, entity or numeric index.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ax.util:SafeParseTable">ax.util:SafeParseTable (tInput)</a></td>
+	<td class="summary">Safely parse a JSON string into a table, or return table input unchanged.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ax.util:SafeCall">ax.util:SafeCall (fn, ...)</a></td>
+	<td class="summary">Safely call a function and capture errors, returning success and results.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ax.util:NameToUniqueID">ax.util:NameToUniqueID (name)</a></td>
+	<td class="summary">Convert a human-readable name to a sanitized unique id.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ax.util:UniqueIDToName">ax.util:UniqueIDToName (id)</a></td>
+	<td class="summary">Convert a unique id (underscored) back to a human-friendly name.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ax.util:CapText">ax.util:CapText (text, maxLength)</a></td>
+	<td class="summary">Cap text to a maximum number of characters, adding ellipsis when trimmed.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ax.util:CapTextWord">ax.util:CapTextWord (text, maxLength)</a></td>
+	<td class="summary">Cap text at a word boundary to avoid breaking words when truncating.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ax.util:GetWrappedText">ax.util:GetWrappedText (text, font, maxWidth)</a></td>
+	<td class="summary">Wraps text into multiple lines based on a maximum width (client-only).</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ax.util:GetMaterial">ax.util:GetMaterial (path, parameters)</a></td>
+	<td class="summary">Returns a material from the cache or creates a new one.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ax.util:GetTextWidth">ax.util:GetTextWidth (font, text)</a></td>
+	<td class="summary">Returns the given text's width (client-only).</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ax.util:GetTextHeight">ax.util:GetTextHeight (font)</a></td>
+	<td class="summary">Returns the given text's height (client-only).</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ax.util:GetTextSize">ax.util:GetTextSize (font, text)</a></td>
+	<td class="summary">Returns the given text's size (client-only).</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ax.util:DrawPanelBlur">ax.util:DrawPanelBlur (panel, passes, density, alpha, throttle, clip)</a></td>
+	<td class="summary">Draws a blur behind a panel (client-only).</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ax.util:DrawRectBlur">ax.util:DrawRectBlur (x, y, w, h, passes, density, alpha, throttle)</a></td>
+	<td class="summary">Draws a blur inside a rectangle (client-only).</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ax.util:UpperCamel">ax.util:UpperCamel (key)</a></td>
+	<td class="summary">Convert a key to UpperCamelCase.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ax.util:SafeCall">ax.util:SafeCall (fn)</a></td>
+	<td class="summary">Safe function call wrapper (returns ok and result).</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ax.util:ClampRound">ax.util:ClampRound (n, min, max, decimals)</a></td>
+	<td class="summary">Clamp and round a number.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ax.util:ReadJSON">ax.util:ReadJSON (path)</a></td>
+	<td class="summary">Read and parse a JSON file from DATA safely.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ax.util:WriteJSON">ax.util:WriteJSON (path, tbl)</a></td>
+	<td class="summary">Write a table to a JSON file in DATA safely.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ax.util:IsValidPlayer">ax.util:IsValidPlayer (client)</a></td>
+	<td class="summary">Returns true if the entity is a valid player.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ax.util:TokenizeString">ax.util:TokenizeString (str)</a></td>
+	<td class="summary">Tokenize a string into arguments, respecting quoted strings.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ax.util:SanitizeKey">ax.util:SanitizeKey (key)</a></td>
+	<td class="summary">Sanitize a key to be safe for use in file names.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ax.util:GetProjectName">ax.util:GetProjectName ()</a></td>
+	<td class="summary">Get the current project/gamemode name (falls back to "parallax").</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ax.util:BuildDataPath">ax.util:BuildDataPath (key, options)</a></td>
+	<td class="summary">Build a data file path based on key and scope options.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ax.util:EnsureDataDir">ax.util:EnsureDataDir (path)</a></td>
+	<td class="summary">Ensure parent directories exist for a given data path.</td>
+	</tr>
+</table>
+
+<br/>
+<br/>
+
+
+    <h2 class="section-header "><a name="Functions"></a>Functions</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "ax.util:DetectFileRealm"></a>
+    <strong>ax.util:DetectFileRealm (file)</strong>
+    </dt>
+    <dd>
+    Detects the realm of a file based on its name.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">file</span>
+         string Filename to inspect (may include path)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        string One of "client", "server", or "shared"
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> realm = ax.util:<span class="function-name">DetectFileRealm</span>(<span class="string">"cl_init.lua"</span>) <span class="comment">-- returns "client"</span></pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "ax.util:Include"></a>
+    <strong>ax.util:Include (path, realm)</strong>
+    </dt>
+    <dd>
+    Includes a Lua file, handling AddCSLuaFile/include based on realm.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">path</span>
+         string Path to the Lua file to include (relative to gamemode)
+        </li>
+        <li><span class="parameter">realm</span>
+         string|nil Optional realm hint: "client", "server", or "shared"
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        boolean True if include/AddCSLuaFile was attempted
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example">ax.util:<span class="function-name">Include</span>(<span class="string">"framework/util.lua"</span>)</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "ax.util:IncludeDirectory"></a>
+    <strong>ax.util:IncludeDirectory (directory, fromLua, toSkip)</strong>
+    </dt>
+    <dd>
+    Recursively includes all Lua files found under a directory.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">directory</span>
+         string Directory path to include (relative to gamemode)
+        </li>
+        <li><span class="parameter">fromLua</span>
+         boolean|nil Internal flag used when recursing from Lua
+        </li>
+        <li><span class="parameter">toSkip</span>
+         table|nil Optional set of filenames or directory names to skip
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        boolean True if directory processed
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example">ax.util:<span class="function-name">IncludeDirectory</span>(<span class="string">"framework/libraries/"</span>)</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "ax.util:PreparePackage"></a>
+    <strong>ax.util:PreparePackage (...)</strong>
+    </dt>
+    <dd>
+    Prepares a package of arguments for printing (converts entities to readable values).
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">...</span>
+         any Any values to prepare for printing
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        table A table of values suitable for MsgC/Error printing
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> pkg = ax.util:<span class="function-name">PreparePackage</span>(<span class="string">"example"</span>, someEntity)</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "ax.util:Print"></a>
+    <strong>ax.util:Print (...)</strong>
+    </dt>
+    <dd>
+    Print a regular message with framework styling.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">...</span>
+         any Values to print (strings, entities, etc.)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        table The prepared arguments that were printed
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example">ax.util:<span class="function-name">Print</span>(<span class="string">"Server started"</span>)</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "ax.util:PrintError"></a>
+    <strong>ax.util:PrintError (...)</strong>
+    </dt>
+    <dd>
+    Print an error message (Uses ErrorNoHaltWithStack).
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">...</span>
+         any Values to print as an error
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        table The prepared arguments that were printed
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example">ax.util:<span class="function-name">PrintError</span>(<span class="string">"Failed to load module"</span>, moduleName)</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "ax.util:PrintWarning"></a>
+    <strong>ax.util:PrintWarning (...)</strong>
+    </dt>
+    <dd>
+    Print a warning message.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">...</span>
+         any Values to print as a warning
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        table The prepared arguments that were printed
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example">ax.util:<span class="function-name">PrintWarning</span>(<span class="string">"Deprecated API used"</span>)</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "ax.util:PrintSuccess"></a>
+    <strong>ax.util:PrintSuccess (...)</strong>
+    </dt>
+    <dd>
+    Print a success message.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">...</span>
+         any Values to print as success output
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        table The prepared arguments that were printed
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example">ax.util:<span class="function-name">PrintSuccess</span>(<span class="string">"Configuration saved"</span>)</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "ax.util:PrintDebug"></a>
+    <strong>ax.util:PrintDebug (...)</strong>
+    </dt>
+    <dd>
+    Print a debug message
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">...</span>
+         any Values to print for debugging
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        table|nil The prepared arguments when printed, nil otherwise
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example">ax.util:<span class="function-name">PrintDebug</span>(<span class="string">"Loaded module"</span>, moduleName)</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "ax.util:FindString"></a>
+    <strong>ax.util:FindString (str, find)</strong>
+    </dt>
+    <dd>
+    Find a specific piece of text within a larger body of text (case-insensitive).
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">str</span>
+         string The string to search in
+        </li>
+        <li><span class="parameter">find</span>
+         string The substring to search for
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        boolean True if substring exists in string
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">if</span> ax.util:<span class="function-name">FindString</span>(<span class="string">"Hello World"</span>, <span class="string">"world"</span>) <span class="keyword">then</span> <span class="global">print</span>(<span class="string">"found"</span>) <span class="keyword">end</span></pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "ax.util:FindText"></a>
+    <strong>ax.util:FindText (txt, find)</strong>
+    </dt>
+    <dd>
+    Search each word in a text for a substring (case-insensitive).
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">txt</span>
+         string The text to search
+        </li>
+        <li><span class="parameter">find</span>
+         string The substring to search for across words
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        boolean True when any word in txt contains find
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example">ax.util:<span class="function-name">FindText</span>(<span class="string">"the quick brown fox"</span>, <span class="string">"quick"</span>)</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "ax.util:FindPlayer"></a>
+    <strong>ax.util:FindPlayer (identifier)</strong>
+    </dt>
+    <dd>
+    Find a player by SteamID, SteamID64, name, entity or numeric index.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">identifier</span>
+         number|string|Entity|table Player identifier or list of identifiers
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Player|NULL The found player entity or NULL
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> ply = ax.util:<span class="function-name">FindPlayer</span>(<span class="string">"7656119..."</span>)</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "ax.util:SafeParseTable"></a>
+    <strong>ax.util:SafeParseTable (tInput)</strong>
+    </dt>
+    <dd>
+    Safely parse a JSON string into a table, or return table input unchanged.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">tInput</span>
+         string|table JSON string or already-parsed table
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        table|nil The parsed table or nil on failure
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> tbl = ax.util:<span class="function-name">SafeParseTable</span>(jsonString)</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "ax.util:SafeCall"></a>
+    <strong>ax.util:SafeCall (fn, ...)</strong>
+    </dt>
+    <dd>
+    Safely call a function and capture errors, returning success and results.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">fn</span>
+         function Function to call
+        </li>
+        <li><span class="parameter">...</span>
+         any Arguments to pass to fn
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+        <li>
+        boolean ok True if function executed without error</li>
+        <li>
+        any ... Results returned by fn when ok is true</li>
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> ok, result = ax.util:<span class="function-name">SafeCall</span>(<span class="keyword">function</span>() <span class="keyword">return</span> <span class="number">1</span>+<span class="number">1</span> <span class="keyword">end</span>)</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "ax.util:NameToUniqueID"></a>
+    <strong>ax.util:NameToUniqueID (name)</strong>
+    </dt>
+    <dd>
+    Convert a human-readable name to a sanitized unique id.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">name</span>
+         string Human-readable name
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        string A sanitized lowercase unique id
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> id = ax.util:<span class="function-name">NameToUniqueID</span>(<span class="string">"My Module"</span>) <span class="comment">-- "my_module"</span></pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "ax.util:UniqueIDToName"></a>
+    <strong>ax.util:UniqueIDToName (id)</strong>
+    </dt>
+    <dd>
+    Convert a unique id (underscored) back to a human-friendly name.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">id</span>
+         string Unique id to convert
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        string Human-friendly name
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> name = ax.util:<span class="function-name">UniqueIDToName</span>(<span class="string">"my_module"</span>) <span class="comment">-- "My Module"</span></pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "ax.util:CapText"></a>
+    <strong>ax.util:CapText (text, maxLength)</strong>
+    </dt>
+    <dd>
+    Cap text to a maximum number of characters, adding ellipsis when trimmed.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">text</span>
+         string Text to cap
+        </li>
+        <li><span class="parameter">maxLength</span>
+         number Maximum number of characters
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        string The truncated text (with ellipsis when trimmed)
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> short = ax.util:<span class="function-name">CapText</span>(longText, <span class="number">32</span>)</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "ax.util:CapTextWord"></a>
+    <strong>ax.util:CapTextWord (text, maxLength)</strong>
+    </dt>
+    <dd>
+    Cap text at a word boundary to avoid breaking words when truncating.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">text</span>
+         string Text to cap
+        </li>
+        <li><span class="parameter">maxLength</span>
+         number Maximum number of characters
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        string The truncated text at a word boundary
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> short = ax.util:<span class="function-name">CapTextWord</span>(longText, <span class="number">50</span>)</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "ax.util:GetWrappedText"></a>
+    <strong>ax.util:GetWrappedText (text, font, maxWidth)</strong>
+    </dt>
+    <dd>
+    Wraps text into multiple lines based on a maximum width (client-only).
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">text</span>
+         string Text to wrap
+        </li>
+        <li><span class="parameter">font</span>
+         string Font name used to measure text
+        </li>
+        <li><span class="parameter">maxWidth</span>
+         number Maximum width in pixels
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        table An array of line strings
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> lines = ax.util:<span class="function-name">GetWrappedText</span>(<span class="string">"Hello world"</span>, <span class="string">"Default"</span>, <span class="number">200</span>)</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "ax.util:GetMaterial"></a>
+    <strong>ax.util:GetMaterial (path, parameters)</strong>
+    </dt>
+    <dd>
+    Returns a material from the cache or creates a new one.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">path</span>
+         string Material path
+        </li>
+        <li><span class="parameter">parameters</span>
+         string|nil Parameters string passed to Material()
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        IMaterial The created or cached material
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> mat = ax.util:<span class="function-name">GetMaterial</span>(<span class="string">"sprites/glow"</span>, <span class="string">"nocull"</span>)</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "ax.util:GetTextWidth"></a>
+    <strong>ax.util:GetTextWidth (font, text)</strong>
+    </dt>
+    <dd>
+    Returns the given text's width (client-only).
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">font</span>
+         string Font name
+        </li>
+        <li><span class="parameter">text</span>
+         string Text to measure
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        number Width in pixels
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> w = ax.util:<span class="function-name">GetTextWidth</span>(<span class="string">"Default"</span>, <span class="string">"Hello"</span>)</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "ax.util:GetTextHeight"></a>
+    <strong>ax.util:GetTextHeight (font)</strong>
+    </dt>
+    <dd>
+    Returns the given text's height (client-only).
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">font</span>
+         string Font name
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        number Height in pixels
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> h = ax.util:<span class="function-name">GetTextHeight</span>(<span class="string">"Default"</span>)</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "ax.util:GetTextSize"></a>
+    <strong>ax.util:GetTextSize (font, text)</strong>
+    </dt>
+    <dd>
+    Returns the given text's size (client-only).
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">font</span>
+         string Font name
+        </li>
+        <li><span class="parameter">text</span>
+         string Text to measure
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        number w, number h Width and height in pixels
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> w,h = ax.util:<span class="function-name">GetTextSize</span>(<span class="string">"Default"</span>, <span class="string">"Hello"</span>)</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "ax.util:DrawPanelBlur"></a>
+    <strong>ax.util:DrawPanelBlur (panel, passes, density, alpha, throttle, clip)</strong>
+    </dt>
+    <dd>
+    Draws a blur behind a panel (client-only).
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">panel</span>
+         Panel The panel to blur behind
+        </li>
+        <li><span class="parameter">passes</span>
+         number Number of blur passes (default 3)
+        </li>
+        <li><span class="parameter">density</span>
+         number Blur density multiplier
+        </li>
+        <li><span class="parameter">alpha</span>
+         number Alpha of blur overlay (0-255)
+        </li>
+        <li><span class="parameter">throttle</span>
+         number Minimum seconds between updates (optional)
+        </li>
+        <li><span class="parameter">clip</span>
+         boolean Whether to clip the blur to panel bounds
+        </li>
+    </ul>
+
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example">ax.util:<span class="function-name">DrawPanelBlur</span>(myPanel, <span class="number">3</span>, <span class="number">1.0</span>, <span class="number">180</span>)</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "ax.util:DrawRectBlur"></a>
+    <strong>ax.util:DrawRectBlur (x, y, w, h, passes, density, alpha, throttle)</strong>
+    </dt>
+    <dd>
+    Draws a blur inside a rectangle (client-only).
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">x</span>
+         number X screen coordinate
+        </li>
+        <li><span class="parameter">y</span>
+         number Y screen coordinate
+        </li>
+        <li><span class="parameter">w</span>
+         number Width in pixels
+        </li>
+        <li><span class="parameter">h</span>
+         number Height in pixels
+        </li>
+        <li><span class="parameter">passes</span>
+         number Number of blur passes
+        </li>
+        <li><span class="parameter">density</span>
+         number Blur density multiplier
+        </li>
+        <li><span class="parameter">alpha</span>
+         number Alpha of blur overlay (0-255)
+        </li>
+        <li><span class="parameter">throttle</span>
+         number Throttle interval in seconds
+        </li>
+    </ul>
+
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example">ax.util:<span class="function-name">DrawRectBlur</span>(<span class="number">10</span>,<span class="number">10</span>,<span class="number">200</span>,<span class="number">100</span>,<span class="number">3</span>,<span class="number">1.0</span>,<span class="number">180</span>)</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "ax.util:UpperCamel"></a>
+    <strong>ax.util:UpperCamel (key)</strong>
+    </dt>
+    <dd>
+    Convert a key to UpperCamelCase.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">key</span>
+         string Input key e.g. "hello_world"
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        string Camel-cased string e.g. "HelloWorld"
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> s = ax.util:<span class="function-name">UpperCamel</span>(<span class="string">"my_key"</span>) <span class="comment">-- "MyKey"</span></pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "ax.util:SafeCall"></a>
+    <strong>ax.util:SafeCall (fn)</strong>
+    </dt>
+    <dd>
+    Safe function call wrapper (returns ok and result).
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">fn</span>
+         function Function to call
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+        <li>
+        boolean ok True if function executed without error</li>
+        <li>
+        any The return value of the function when ok</li>
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> ok, res = ax.util:<span class="function-name">SafeCall</span>(<span class="keyword">function</span>() <span class="keyword">return</span> <span class="number">123</span> <span class="keyword">end</span>)</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "ax.util:ClampRound"></a>
+    <strong>ax.util:ClampRound (n, min, max, decimals)</strong>
+    </dt>
+    <dd>
+    Clamp and round a number.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">n</span>
+         number Input number
+        </li>
+        <li><span class="parameter">min</span>
+         number|nil Minimum allowed value
+        </li>
+        <li><span class="parameter">max</span>
+         number|nil Maximum allowed value
+        </li>
+        <li><span class="parameter">decimals</span>
+         number|nil Number of decimal places to keep
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        number The clamped and rounded value
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> v = ax.util:<span class="function-name">ClampRound</span>(<span class="number">3.14159</span>, <span class="number">0</span>, <span class="number">10</span>, <span class="number">2</span>) <span class="comment">-- 3.14</span></pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "ax.util:ReadJSON"></a>
+    <strong>ax.util:ReadJSON (path)</strong>
+    </dt>
+    <dd>
+    Read and parse a JSON file from DATA safely.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">path</span>
+         string Path in DATA to read
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        table|nil Parsed table or nil on error
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> cfg = ax.util:<span class="function-name">ReadJSON</span>(<span class="string">"parallax/config.json"</span>)</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "ax.util:WriteJSON"></a>
+    <strong>ax.util:WriteJSON (path, tbl)</strong>
+    </dt>
+    <dd>
+    Write a table to a JSON file in DATA safely.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">path</span>
+         string Path in DATA to write
+        </li>
+        <li><span class="parameter">tbl</span>
+         table Table to serialize
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        boolean True on success
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example">ax.util:<span class="function-name">WriteJSON</span>(<span class="string">"parallax/config.json"</span>, myTable)</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "ax.util:IsValidPlayer"></a>
+    <strong>ax.util:IsValidPlayer (client)</strong>
+    </dt>
+    <dd>
+    Returns true if the entity is a valid player.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">client</span>
+         Entity Candidate entity
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        boolean True if entity is a valid player
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">if</span> ax.util:<span class="function-name">IsValidPlayer</span>(ply) <span class="keyword">then</span> <span class="comment">-- do something end</span></pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "ax.util:TokenizeString"></a>
+    <strong>ax.util:TokenizeString (str)</strong>
+    </dt>
+    <dd>
+    Tokenize a string into arguments, respecting quoted strings.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">str</span>
+         string Input command string
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        table Array of token strings
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> args = ax.util:<span class="function-name">TokenizeString</span>(<span class="string">'say "hello world"'</span>)</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "ax.util:SanitizeKey"></a>
+    <strong>ax.util:SanitizeKey (key)</strong>
+    </dt>
+    <dd>
+    Sanitize a key to be safe for use in file names.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">key</span>
+         string Input key
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        string A filesystem-safe string
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> safe = ax.util:<span class="function-name">SanitizeKey</span>(<span class="string">"Player:Test"</span>) <span class="comment">-- "Player_Test"</span></pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "ax.util:GetProjectName"></a>
+    <strong>ax.util:GetProjectName ()</strong>
+    </dt>
+    <dd>
+    Get the current project/gamemode name (falls back to "parallax").
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        string The active gamemode folder name or "parallax"
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> name = ax.util:<span class="function-name">GetProjectName</span>()</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "ax.util:BuildDataPath"></a>
+    <strong>ax.util:BuildDataPath (key, options)</strong>
+    </dt>
+    <dd>
+    Build a data file path based on key and scope options.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">key</span>
+         string The data key
+        </li>
+        <li><span class="parameter">options</span>
+         table|nil Options table (scope, human)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        string The data file path relative to DATA
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> path = ax.util:<span class="function-name">BuildDataPath</span>(<span class="string">"settings_player"</span>, { scope = <span class="string">"project"</span> })</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "ax.util:EnsureDataDir"></a>
+    <strong>ax.util:EnsureDataDir (path)</strong>
+    </dt>
+    <dd>
+    Ensure parent directories exist for a given data path.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">path</span>
+         string Data path to ensure directories for (e.g. "parallax/foo/bar/")
+        </li>
+    </ul>
+
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example">ax.util:<span class="function-name">EnsureDataDir</span>(<span class="string">"parallax/settings_player/"</span>)</pre>
+    </ul>
+
+</dd>
+</dl>
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/lunarmodules/ldoc">LDoc 1.5.0</a></i>
+<i style="float:right;">Last updated 2025-08-31 06:04:51 </i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>

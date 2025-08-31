@@ -1,0 +1,192 @@
+/* Layout vars and box-sizing */
+:root {
+    --nav-width: 25%; /* change here to adjust nav width */
+    --panel-bg: #3a3548;
+    --shadow: 0 4px 10px rgba(0,0,0,0.16); /* softer, less harsh */
+    --panel-shadow: 0 3px 6px rgba(0,0,0,0.12);
+}
+
+* { box-sizing: border-box; }
+
+body {
+    font-family: arial, helvetica, geneva, sans-serif;
+    background-color: #2e2b3a; /* Dark purple background */
+    color: #e0e0e0; /* Light text for contrast */
+    margin: 1.5em;
+    margin-left: 0;
+    padding-bottom: 1.5em; /* prevent footer from overlapping content */
+}
+
+code, tt {
+    font-family: monospace;
+    font-size: 1.25em;
+    color: #d4bfff; /* Purple text for code */
+}
+
+h1 {
+    font-size: 2em;
+    margin: 25px 0 25px 0; /* Increased spacing */
+    color: #c9a6ff; /* Lighter purple for headings */
+}
+
+h2, h3, h4 {
+    margin: 20px 0 15px 0; /* Increased spacing */
+    color: #b89cff; /* Slightly lighter purple */
+}
+
+h2 {
+    font-size: 1.75em;
+}
+
+h3 {
+    font-size: 1.5em;
+}
+
+h4 {
+    font-size: 1.25em;
+}
+
+pre {
+    background-color: #3a3548; /* Darker purple for code blocks */
+    border: 1px solid #4a4260; /* Border with a slightly lighter shade */
+    border-radius: 8px; /* Rounded corners */
+    padding: 15px; /* Increased padding */
+    margin: 15px 0 15px 0; /* Increased spacing */
+    overflow: auto;
+    font-family: "Andale Mono", monospace;
+    box-shadow: var(--panel-shadow); /* Subtle panel shadow */
+}
+
+#navigation {
+    position: fixed; /* keep the nav fixed on the left */
+    left: 1.5em; /* flush to viewport left */
+    top: 1.5em; /* align with page padding */
+    width: var(--nav-width);
+    vertical-align: top;
+    background-color: var(--panel-bg);
+    border-radius: 10px; /* Rounded corners */
+    box-shadow: var(--shadow); /* Softer shadow for depth */
+    overflow: auto; /* allow scrolling if nav is long */
+    padding: 20px; /* Increased padding for better spacing */
+    z-index: 1000; /* sit clearly above content and footer */
+    max-height: calc(100vh - 4em); /* avoid overlapping footer/header */
+}
+
+#navigation h1 {
+    font-size: 2em;
+    color: #ffffff; /* White for main title */
+    margin: -20px 0 10px 0; /* Increased bottom margin */
+    padding-bottom: 10px; /* Padding for separation */
+    border-bottom: 2px solid #5a4a70; /* Border for emphasis */
+}
+
+#navigation h2 {
+    background-color: #4a4260;
+    font-size: 1.1em;
+    color: #ffffff;
+    text-align: left;
+    padding: 0.5em; /* Increased padding */
+    border-top: 1px solid #5a4a70;
+    border-bottom: 1px solid #5a4a70;
+    border-radius: 10px 10px 0 0; /* Rounded top corners */
+}
+
+#navigation ul
+{
+    font-size:1em;
+    list-style-type: none;
+    margin: 1px 1px 10px 1px;
+}
+
+#navigation li {
+    text-indent: 0; /* Removed negative indent */
+    display: block;
+    margin: 5px 0; /* Adjusted spacing */
+}
+
+#navigation li li a {
+    margin: 0; /* Removed unnecessary margin */
+}
+
+#content {
+    margin-left: calc(var(--nav-width) + 3.5em); /* move content to the right of nav + gap */
+    padding: 1.5em; /* Increased padding */
+    width: auto;
+    max-width: calc(100% - (var(--nav-width) + 4rem));
+    border-left: 2px solid #4a4260;
+    border-right: 2px solid #4a4260;
+    background-color: #3a3548;
+    border-radius: 10px; /* Rounded corners */
+    box-shadow: var(--shadow);
+    z-index: 100;
+}
+
+#about {
+    clear: both;
+    padding: 10px; /* Increased padding */
+    border-top: 2px solid #4a4260;
+    background-color: #3a3548;
+    color: #e0e0e0;
+    height: 40px; /* Small footer height */
+    position: fixed; /* Stick to the bottom */
+    bottom: 0;
+    font-weight: bold;
+    width: 100%;
+    border-radius: 0 0 10px 10px; /* Rounded bottom corners */
+    z-index: 600; /* make footer above background but below nav */
+    box-shadow: 0 -2px 8px rgba(0,0,0,0.12); /* subtle top shadow so footer reads as a bar */
+}
+
+a:link, a:visited {
+    font-weight: bold;
+    color: #a78bfa; /* Brighter purple links */
+    transition: color 0.2s ease;
+    text-decoration: none;
+}
+
+a:link:hover {
+    text-decoration: underline;
+    color: #c9a6ff; /* Even brighter on hover */
+    transition: color 0.2s ease;
+}
+
+ul.nowrap {
+    overflow: hidden; /* Prevent overflow artifacts */
+    white-space: normal; /* Adjusted white-space */
+}
+
+@media (max-width: 900px) {
+    /* stack nav above content on narrow screens */
+    #navigation { position: static; width: 100%; max-height: none; left: 0; }
+    body { padding-left: 1.5em; padding-right: 1.5em; }
+    #content { margin-left: 1.5em; margin-right: 1.5em; max-width: none; }
+}
+
+/* stop sublists from having initial vertical space */
+ul ul { margin-top: 0px; }
+ol ul { margin-top: 0px; }
+ol ol { margin-top: 0px; }
+ul ol { margin-top: 0px; }
+
+/* make the target distinct; helps when we're navigating to a function */
+a:target + * {
+    background-color: #4a4260;
+}
+
+dt {
+    font-weight: bold;
+    font-style: italic;
+    font-size: 1.5em;
+    color: #a78bfa; /* Brighter purple links */
+    transition: color 0.2s ease;
+    text-decoration: none;
+    margin-left: 1.5em;
+    border-bottom: 2px solid #5a4a70; /* Border for emphasis */
+    margin-bottom: 10px; /* Increased bottom margin */
+    padding-bottom: 10px; /* Padding for separation */
+}
+
+dt:hover {
+    color: #c9a6ff; /* Even brighter on hover */
+    transition: color 0.2s ease;
+}

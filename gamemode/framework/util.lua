@@ -9,7 +9,13 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
--- Detect the realm of a file based on its name
+--- Utility helpers used across the Parallax framework (printing, file handling, text utilities, etc.).
+-- @module ax.util
+
+--- Detects the realm of a file based on its name.
+-- @param file string Filename to inspect (may include path)
+-- @return string One of "client", "server", or "shared"
+-- @usage local realm = ax.util:DetectFileRealm("cl_init.lua") -- returns "client"
 function ax.util:DetectFileRealm(file)
     if ( !file or type(file) != "string" ) then
         return "shared"
@@ -37,7 +43,11 @@ function ax.util:DetectFileRealm(file)
     return "shared"
 end
 
--- Include a file with the specified path and realm
+--- Includes a Lua file, handling AddCSLuaFile/include based on realm.
+-- @param path string Path to the Lua file to include (relative to gamemode)
+-- @param realm string|nil Optional realm hint: "client", "server", or "shared"
+-- @return boolean True if include/AddCSLuaFile was attempted
+-- @usage ax.util:Include("framework/util.lua")
 function ax.util:Include(path, realm)
     if ( !isstring(path) or path == "" ) then
         ax.util:PrintError("Include: Invalid path parameter provided")
@@ -75,7 +85,12 @@ function ax.util:Include(path, realm)
     return true
 end
 
--- Recursively include all files in a directory
+--- Recursively includes all Lua files found under a directory.
+-- @param directory string Directory path to include (relative to gamemode)
+-- @param fromLua boolean|nil Internal flag used when recursing from Lua
+-- @param toSkip table|nil Optional set of filenames or directory names to skip
+-- @return boolean True if directory processed
+-- @usage ax.util:IncludeDirectory("framework/libraries/")
 function ax.util:IncludeDirectory(directory, fromLua, toSkip)
     if ( !isstring(directory) or directory == "" ) then
         ax.util:PrintError("IncludeDirectory: Invalid directory parameter provided")
@@ -140,7 +155,10 @@ function ax.util:IncludeDirectory(directory, fromLua, toSkip)
     return true
 end
 
--- Prepares a package of arguments for printing.
+--- Prepares a package of arguments for printing (converts entities to readable values).
+-- @param ... any Any values to prepare for printing
+-- @return table A table of values suitable for MsgC/Error printing
+-- @usage local pkg = ax.util:PreparePackage("example", someEntity)
 function ax.util:PreparePackage(...)
     local arguments = {...}
     local package = {}
@@ -168,7 +186,10 @@ local color_warning = Color(255, 200, 100)
 local color_success = Color(100, 255, 100)
 local color_debug = Color(150, 150, 150)
 
--- Print a regular message with framework styling
+--- Print a regular message with framework styling.
+-- @param ... any Values to print (strings, entities, etc.)
+-- @return table The prepared arguments that were printed
+-- @usage ax.util:Print("Server started")
 function ax.util:Print(...)
     local args = self:PreparePackage(...)
 
@@ -177,7 +198,10 @@ function ax.util:Print(...)
     return args
 end
 
--- Print an error message
+--- Print an error message (Uses ErrorNoHaltWithStack).
+-- @param ... any Values to print as an error
+-- @return table The prepared arguments that were printed
+-- @usage ax.util:PrintError("Failed to load module", moduleName)
 function ax.util:PrintError(...)
     local args = self:PreparePackage(...)
 
@@ -186,7 +210,10 @@ function ax.util:PrintError(...)
     return args
 end
 
--- Print a warning message
+--- Print a warning message.
+-- @param ... any Values to print as a warning
+-- @return table The prepared arguments that were printed
+-- @usage ax.util:PrintWarning("Deprecated API used")
 function ax.util:PrintWarning(...)
     local args = self:PreparePackage(...)
 
@@ -195,7 +222,10 @@ function ax.util:PrintWarning(...)
     return args
 end
 
--- Print a success message
+--- Print a success message.
+-- @param ... any Values to print as success output
+-- @return table The prepared arguments that were printed
+-- @usage ax.util:PrintSuccess("Configuration saved")
 function ax.util:PrintSuccess(...)
     local args = self:PreparePackage(...)
 
@@ -204,8 +234,12 @@ function ax.util:PrintSuccess(...)
     return args
 end
 
--- Print a debug message (only when developer mode is enabled)
 local developer = GetConVar("developer")
+
+--- Print a debug message
+-- @param ... any Values to print for debugging
+-- @return table|nil The prepared arguments when printed, nil otherwise
+-- @usage ax.util:PrintDebug("Loaded module", moduleName)
 function ax.util:PrintDebug(...)
     if ( developer:GetInt() < 1 ) then return end
 
@@ -216,7 +250,11 @@ function ax.util:PrintDebug(...)
     return args
 end
 
--- Find a specific piece of text within a larger body of text
+--- Find a specific piece of text within a larger body of text (case-insensitive).
+-- @param str string The string to search in
+-- @param find string The substring to search for
+-- @return boolean True if substring exists in string
+-- @usage if ax.util:FindString("Hello World", "world") then print("found") end
 function ax.util:FindString(str, find)
     if ( str == nil or find == nil ) then
         ax.util:PrintError("Attempted to find a string with no value to find for! (" .. tostring(str) .. ", " .. tostring(find) .. ")")
@@ -229,7 +267,11 @@ function ax.util:FindString(str, find)
     return string.find(str, find) != nil
 end
 
--- Find a specific piece of text within a larger body of text
+--- Search each word in a text for a substring (case-insensitive).
+-- @param txt string The text to search
+-- @param find string The substring to search for across words
+-- @return boolean True when any word in txt contains find
+-- @usage ax.util:FindText("the quick brown fox", "quick")
 function ax.util:FindText(txt, find)
     if ( txt == nil or find == nil ) then return false end
 
@@ -243,7 +285,10 @@ function ax.util:FindText(txt, find)
     return false
 end
 
--- Find a player by their identifier (SteamID, SteamID64, or name)
+--- Find a player by SteamID, SteamID64, name, entity or numeric index.
+-- @param identifier number|string|Entity|table Player identifier or list of identifiers
+-- @return Player|NULL The found player entity or NULL
+-- @usage local ply = ax.util:FindPlayer("7656119...")
 function ax.util:FindPlayer(identifier)
     if ( identifier == nil ) then return NULL end
 
@@ -282,7 +327,10 @@ function ax.util:FindPlayer(identifier)
     return NULL
 end
 
--- Safely parse a JSON table
+--- Safely parse a JSON string into a table, or return table input unchanged.
+-- @param tInput string|table JSON string or already-parsed table
+-- @return table|nil The parsed table or nil on failure
+-- @usage local tbl = ax.util:SafeParseTable(jsonString)
 function ax.util:SafeParseTable(tInput)
     if ( isstring(tInput) ) then
         return util.JSONToTable(tInput)
@@ -291,7 +339,12 @@ function ax.util:SafeParseTable(tInput)
     return tInput
 end
 
--- Safely call a function and capture errors.
+--- Safely call a function and capture errors, returning success and results.
+-- @param fn function Function to call
+-- @param ... any Arguments to pass to fn
+-- @return boolean ok True if function executed without error
+-- @return any ... Results returned by fn when ok is true
+-- @usage local ok, result = ax.util:SafeCall(function() return 1+1 end)
 function ax.util:SafeCall(fn, ...)
     if ( !isfunction(fn) ) then
         return false
@@ -312,7 +365,10 @@ function ax.util:SafeCall(fn, ...)
     return true, table.unpack(results)
 end
 
--- Convert a name to a unique ID
+--- Convert a human-readable name to a sanitized unique id.
+-- @param name string Human-readable name
+-- @return string A sanitized lowercase unique id
+-- @usage local id = ax.util:NameToUniqueID("My Module") -- "my_module"
 function ax.util:NameToUniqueID(name)
     -- Replace spaces with underscores
     name = name:gsub("%s+", "_")
@@ -324,7 +380,10 @@ function ax.util:NameToUniqueID(name)
     return name:lower()
 end
 
--- Convert a unique ID to a name
+--- Convert a unique id (underscored) back to a human-friendly name.
+-- @param id string Unique id to convert
+-- @return string Human-friendly name
+-- @usage local name = ax.util:UniqueIDToName("my_module") -- "My Module"
 function ax.util:UniqueIDToName(id)
     -- Replace underscores with spaces
     local name = id:gsub("_", " ")
@@ -340,7 +399,11 @@ function ax.util:UniqueIDToName(id)
     return name
 end
 
--- Cap the text to a certain number of characters
+--- Cap text to a maximum number of characters, adding ellipsis when trimmed.
+-- @param text string Text to cap
+-- @param maxLength number Maximum number of characters
+-- @return string The truncated text (with ellipsis when trimmed)
+-- @usage local short = ax.util:CapText(longText, 32)
 function ax.util:CapText(text, maxLength)
     if ( !isstring(text) or !isnumber(maxLength) or maxLength <= 0 ) then
         ax.util:PrintError("Attempted to cap text with invalid parameters", text, maxLength)
@@ -354,7 +417,11 @@ function ax.util:CapText(text, maxLength)
     return string.sub(text, 1, maxLength - 3) .. "..."
 end
 
--- Cap the text at a certain number of characters, but only at word boundaries
+--- Cap text at a word boundary to avoid breaking words when truncating.
+-- @param text string Text to cap
+-- @param maxLength number Maximum number of characters
+-- @return string The truncated text at a word boundary
+-- @usage local short = ax.util:CapTextWord(longText, 50)
 function ax.util:CapTextWord(text, maxLength)
     if ( !isstring(text) or !isnumber(maxLength) or maxLength <= 0 ) then
         ax.util:PrintError("Attempted to cap text with invalid parameters", text, maxLength)
@@ -384,7 +451,12 @@ function ax.util:CapTextWord(text, maxLength)
     return cappedText .. "..."
 end
 
--- Wrap text to fit within a specified width
+--- Wraps text into multiple lines based on a maximum width (client-only).
+-- @param text string Text to wrap
+-- @param font string Font name used to measure text
+-- @param maxWidth number Maximum width in pixels
+-- @return table An array of line strings
+-- @usage local lines = ax.util:GetWrappedText("Hello world", "Default", 200)
 function ax.util:GetWrappedText(text, font, maxWidth)
     if ( !isstring(text) or !isstring(font) or !isnumber(maxWidth) ) then
         ax.util:PrintError("Attempted to wrap text with no value", text, font, maxWidth)
@@ -438,8 +510,13 @@ function ax.util:GetWrappedText(text, font, maxWidth)
     return lines
 end
 
--- Returns a material from the cache or creates a new one
 local stored = {}
+
+--- Returns a material from the cache or creates a new one.
+-- @param path string Material path
+-- @param parameters string|nil Parameters string passed to Material()
+-- @return IMaterial The created or cached material
+-- @usage local mat = ax.util:GetMaterial("sprites/glow", "nocull")
 function ax.util:GetMaterial(path, parameters)
     if ( !tostring(path) ) then
         ax.util:PrintError("Attempted to get a material with no path", path, parameters)
@@ -460,19 +537,30 @@ function ax.util:GetMaterial(path, parameters)
 end
 
 if ( CLIENT ) then
-    -- Returns the given text's width.
+    --- Returns the given text's width (client-only).
+    -- @param font string Font name
+    -- @param text string Text to measure
+    -- @return number Width in pixels
+    -- @usage local w = ax.util:GetTextWidth("Default", "Hello")
     function ax.util:GetTextWidth(font, text)
         surface.SetFont(font)
         return select(1, surface.GetTextSize(text))
     end
 
-    -- Returns the given text's height.
+    --- Returns the given text's height (client-only).
+    -- @param font string Font name
+    -- @return number Height in pixels
+    -- @usage local h = ax.util:GetTextHeight("Default")
     function ax.util:GetTextHeight(font)
         surface.SetFont(font)
         return select(2, surface.GetTextSize("W"))
     end
 
-    -- Returns the given text's size.
+    --- Returns the given text's size (client-only).
+    -- @param font string Font name
+    -- @param text string Text to measure
+    -- @return number w, number h Width and height in pixels
+    -- @usage local w,h = ax.util:GetTextSize("Default", "Hello")
     function ax.util:GetTextSize(font, text)
         surface.SetFont(font)
         return surface.GetTextSize(text)
@@ -480,6 +568,14 @@ if ( CLIENT ) then
 
     local BLUR_MAT = ax.util:GetMaterial("pp/blurscreen")
     local _ax_blur_last_update = 0
+    --- Draws a blur behind a panel (client-only).
+    -- @param panel Panel The panel to blur behind
+    -- @param passes number Number of blur passes (default 3)
+    -- @param density number Blur density multiplier
+    -- @param alpha number Alpha of blur overlay (0-255)
+    -- @param throttle number Minimum seconds between updates (optional)
+    -- @param clip boolean Whether to clip the blur to panel bounds
+    -- @usage ax.util:DrawPanelBlur(myPanel, 3, 1.0, 180)
     function ax.util:DrawPanelBlur(panel, passes, density, alpha, throttle, clip)
         if ( !IsValid(panel) ) then return end
 
@@ -521,6 +617,16 @@ if ( CLIENT ) then
         end
     end
 
+    --- Draws a blur inside a rectangle (client-only).
+    -- @param x number X screen coordinate
+    -- @param y number Y screen coordinate
+    -- @param w number Width in pixels
+    -- @param h number Height in pixels
+    -- @param passes number Number of blur passes
+    -- @param density number Blur density multiplier
+    -- @param alpha number Alpha of blur overlay (0-255)
+    -- @param throttle number Throttle interval in seconds
+    -- @usage ax.util:DrawRectBlur(10,10,200,100,3,1.0,180)
     function ax.util:DrawRectBlur(x, y, w, h, passes, density, alpha, throttle)
         passes = math.max(1, math.floor(passes or 3))
         density = density or 1.0
@@ -553,7 +659,10 @@ if ( CLIENT ) then
     end
 end
 
--- Convert a key to UpperCamelCase
+--- Convert a key to UpperCamelCase.
+-- @param key string Input key e.g. "hello_world"
+-- @return string Camel-cased string e.g. "HelloWorld"
+-- @usage local s = ax.util:UpperCamel("my_key") -- "MyKey"
 function ax.util:UpperCamel(key)
     if ( !isstring(key) ) then return "" end
 
@@ -568,7 +677,11 @@ function ax.util:UpperCamel(key)
     return result
 end
 
--- Safe function call wrapper
+--- Safe function call wrapper (returns ok and result).
+-- @param fn function Function to call
+-- @return boolean ok True if function executed without error
+-- @return any The return value of the function when ok
+-- @usage local ok, res = ax.util:SafeCall(function() return 123 end)
 function ax.util:SafeCall(fn, ...)
     if ( !isfunction(fn) ) then
         return false, "Not a function"
@@ -578,7 +691,13 @@ function ax.util:SafeCall(fn, ...)
     return ok, result
 end
 
--- Clamp and round a number
+--- Clamp and round a number.
+-- @param n number Input number
+-- @param min number|nil Minimum allowed value
+-- @param max number|nil Maximum allowed value
+-- @param decimals number|nil Number of decimal places to keep
+-- @return number The clamped and rounded value
+-- @usage local v = ax.util:ClampRound(3.14159, 0, 10, 2) -- 3.14
 function ax.util:ClampRound(n, min, max, decimals)
     local num = tonumber(n) or 0
 
@@ -595,7 +714,10 @@ function ax.util:ClampRound(n, min, max, decimals)
     return num
 end
 
--- JSON file reading
+--- Read and parse a JSON file from DATA safely.
+-- @param path string Path in DATA to read
+-- @return table|nil Parsed table or nil on error
+-- @usage local cfg = ax.util:ReadJSON("parallax/config.json")
 function ax.util:ReadJSON(path)
     if ( !isstring(path) ) then return nil end
 
@@ -610,7 +732,11 @@ function ax.util:ReadJSON(path)
     return nil
 end
 
--- JSON file writing
+--- Write a table to a JSON file in DATA safely.
+-- @param path string Path in DATA to write
+-- @param tbl table Table to serialize
+-- @return boolean True on success
+-- @usage ax.util:WriteJSON("parallax/config.json", myTable)
 function ax.util:WriteJSON(path, tbl)
     if ( !isstring(path) or !istable(tbl) ) then return false end
 
@@ -628,12 +754,18 @@ function ax.util:WriteJSON(path, tbl)
     return true
 end
 
--- Validate player
+--- Returns true if the entity is a valid player.
+-- @param client Entity Candidate entity
+-- @return boolean True if entity is a valid player
+-- @usage if ax.util:IsValidPlayer(ply) then -- do something end
 function ax.util:IsValidPlayer(client)
     return IsValid(client) and client:IsPlayer()
 end
 
--- Tokenize a string into arguments, respecting quoted strings.
+--- Tokenize a string into arguments, respecting quoted strings.
+-- @param str string Input command string
+-- @return table Array of token strings
+-- @usage local args = ax.util:TokenizeString('say "hello world"')
 function ax.util:TokenizeString(str)
     if ( !isstring(str) or str == "" ) then
         return {}
@@ -672,7 +804,10 @@ function ax.util:TokenizeString(str)
     return tokens
 end
 
--- Sanitize a key for safe file naming.
+--- Sanitize a key to be safe for use in file names.
+-- @param key string Input key
+-- @return string A filesystem-safe string
+-- @usage local safe = ax.util:SanitizeKey("Player:Test") -- "Player_Test"
 function ax.util:SanitizeKey(key)
     if ( !key ) then return "" end
 
@@ -680,7 +815,9 @@ function ax.util:SanitizeKey(key)
     return string.gsub(tostring(key), "[^%w%-_.]", "_")
 end
 
--- Get the current project/gamemode name.
+--- Get the current project/gamemode name (falls back to "parallax").
+-- @return string The active gamemode folder name or "parallax"
+-- @usage local name = ax.util:GetProjectName()
 function ax.util:GetProjectName()
     -- Try to detect active gamemode folder; fall back to 'parallax'
     if ( engine and engine.ActiveGamemode ) then
@@ -690,7 +827,11 @@ function ax.util:GetProjectName()
     return "parallax"
 end
 
--- Build a data file path based on key and scope options.
+--- Build a data file path based on key and scope options.
+-- @param key string The data key
+-- @param options table|nil Options table (scope, human)
+-- @return string The data file path relative to DATA
+-- @usage local path = ax.util:BuildDataPath("settings_player", { scope = "project" })
 function ax.util:BuildDataPath(key, options)
     options = options or {}
     local scope = options.scope or "project" -- "global", "project", "map"
@@ -707,7 +848,9 @@ function ax.util:BuildDataPath(key, options)
     end
 end
 
--- Ensure parent directories exist for a given data path.
+--- Ensure parent directories exist for a given data path.
+-- @param path string Data path to ensure directories for (e.g. "parallax/foo/bar/")
+-- @usage ax.util:EnsureDataDir("parallax/settings_player/")
 function ax.util:EnsureDataDir(path)
     -- Create any parent directories needed for a data path
     local parts = {}

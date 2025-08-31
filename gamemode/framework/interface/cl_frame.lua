@@ -15,8 +15,6 @@ AccessorFunc(PANEL, "m_iMinWidth",        "MinWidth",      FORCE_NUMBER)
 AccessorFunc(PANEL, "m_iMinHeight",       "MinHeight",     FORCE_NUMBER)
 AccessorFunc(PANEL, "m_bBackgroundBlur",  "BackgroundBlur",FORCE_BOOL)
 
---- Initialize the frame.
--- @client
 function PANEL:Init()
     ax.gui.frame = self
 

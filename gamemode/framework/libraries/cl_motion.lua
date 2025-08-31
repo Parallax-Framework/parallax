@@ -1,5 +1,17 @@
+--[[
+    Parallax Framework
+    Copyright (c) 2025 Parallax Framework Contributors
+
+    This file is part of the Parallax Framework and is licensed under the MIT License.
+    You may use, copy, modify, merge, publish, distribute, and sublicense this file
+    under the terms of the LICENSE file included with this project.
+
+    Attribution is required. If you use or modify this file, you must retain this notice.
+]]
+
 --- Advanced panel animation handler using easing for custom fields.
 -- Supports delays, per-field animation isolation, and cancelation.
+-- @realm shared
 -- @module ax.motion
 
 ax.motion = ax.motion or {}

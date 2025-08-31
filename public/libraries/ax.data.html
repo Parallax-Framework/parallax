@@ -1,0 +1,202 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>Parallax Documentation</title>
+    <link rel="stylesheet" href="../ldoc.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>Parallax</h1>
+
+
+<ul>
+  <li><a href="../index.html">Index</a></li>
+</ul>
+
+<h2>Contents</h2>
+<ul>
+<li><a href="#Functions">Functions</a></li>
+</ul>
+
+
+<h2>Libraries</h2>
+<ul class="nowrap">
+  <li><a href="../libraries/ax.motion.html">ax.motion</a></li>
+  <li><strong>ax.data</strong></li>
+  <li><a href="../libraries/ax.ease.html">ax.ease</a></li>
+  <li><a href="../libraries/ax.hook.html">ax.hook</a></li>
+  <li><a href="../libraries/ax.type.html">ax.type</a></li>
+  <li><a href="../libraries/ax.util.html">ax.util</a></li>
+</ul>
+<h2>Manual</h2>
+<ul class="nowrap">
+  <li><a href="../manual/readme.md.html">readme</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+<h1>Module <code>ax.data</code></h1>
+<p>Simple data persistence helpers.</p>
+<p> Stores files under the Garry's Mod <code>data/</code> folder with options for
+ global, project, or map-scoped storage. Returns cached values by
+ default and supports human-readable JSON output.</p>
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example">shared
+</pre>
+    </ul>
+
+
+<h2><a href="#Functions">Functions</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#ax.data:Set">ax.data:Set (key, value, options)</a></td>
+	<td class="summary">Save a value to disk.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ax.data:Get">ax.data:Get (key, default, options)</a></td>
+	<td class="summary">Load a value from disk.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ax.data:Delete">ax.data:Delete (key, options)</a></td>
+	<td class="summary">Delete a stored file.</td>
+	</tr>
+</table>
+
+<br/>
+<br/>
+
+
+    <h2 class="section-header "><a name="Functions"></a>Functions</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "ax.data:Set"></a>
+    <strong>ax.data:Set (key, value, options)</strong>
+    </dt>
+    <dd>
+    Save a value to disk.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">key</span>
+         string Unique key used to name the file.
+        </li>
+        <li><span class="parameter">value</span>
+         any Value to persist. Tables are serialized as JSON.
+        </li>
+        <li><span class="parameter">options</span>
+         table Optional. Fields:
+  - scope: "global"|"project"|"map" (default: "project")
+  - human: boolean If true, writes pretty JSON (.json extension)
+  - noCache: boolean If true, clears cache after writing
+        </li>
+    </ul>
+
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example">ax.data:<span class="function-name">Set</span>(<span class="string">"settings_player"</span>, { volume = <span class="number">0.8</span> }, { scope = <span class="string">"project"</span>, human = <span class="keyword">true</span> })</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "ax.data:Get"></a>
+    <strong>ax.data:Get (key, default, options)</strong>
+    </dt>
+    <dd>
+    Load a value from disk.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">key</span>
+         string
+        </li>
+        <li><span class="parameter">default</span>
+         any Value returned if the file does not exist.
+        </li>
+        <li><span class="parameter">options</span>
+         table Optional. Fields:
+  - scope: "global"|"project"|"map" (default: "project")
+  - force: boolean If true, bypass cache and read from disk
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        any
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> cfg = ax.data:<span class="function-name">Get</span>(<span class="string">"settings_player"</span>, {}, { force = <span class="keyword">false</span> })</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "ax.data:Delete"></a>
+    <strong>ax.data:Delete (key, options)</strong>
+    </dt>
+    <dd>
+    Delete a stored file.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">key</span>
+         string
+        </li>
+        <li><span class="parameter">options</span>
+         table Optional. Fields:
+  - scope: "global"|"project"|"map" (default: "project")
+        </li>
+    </ul>
+
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example">ax.data:<span class="function-name">Delete</span>(<span class="string">"settings_player"</span>, { scope = <span class="string">"project"</span> })</pre>
+    </ul>
+
+</dd>
+</dl>
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/lunarmodules/ldoc">LDoc 1.5.0</a></i>
+<i style="float:right;">Last updated 2025-08-31 06:04:51 </i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>

@@ -9,9 +9,10 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
--- riggs9162 @ TODO: Rewrite the type library entirely to be independent of Helix.
-
--- Credit @ Helix :: Original Type Library
+--- ax.type
+-- The type library provides utilities for type detection, sanitization, and formatting.
+-- Adapted from the Helix framework with modifications for the Parallax framework.
+-- @module ax.type
 
 ax.type = ax.type or {
     [1]         = "string",
@@ -43,6 +44,11 @@ ax.type = ax.type or {
     table       = 4096,
 }
 
+--- Sanitizes a value to match the specified type ID.
+-- @param typeID number The type ID to sanitize the value to.
+-- @param value any The value to sanitize.
+-- @return any The sanitized value, or nil if the value could not be sanitized.
+-- @usage local sanitizedValue = ax.type:Sanitise(ax.type.number, "123") -- returns 123
 function ax.type:Sanitise(typeID, value)
     if ( typeID == nil or value == nil ) then return nil end
 
@@ -100,6 +106,10 @@ local checkTypeMap = {
     [ax.type.steamid64] = function(val) return isstring(val) and #val == 17 and ( string.match(val, "7656119%d+") != nil or string.match(val, "9007199%d+") != nil ) end
 }
 
+--- Detects the type ID of a given value.
+-- @param value any The value to detect the type of.
+-- @return number|nil The detected type ID, or nil if the type could not be determined.
+-- @usage local typeID = ax.type:Detect("example") -- returns ax.type.string
 function ax.type:Detect(value)
     local luaType = type(value)
     local mapped = basicTypeMap[luaType]
@@ -137,7 +147,7 @@ local typeNames = {
 --- Formats a type ID into a human-readable string.
 -- @param typeID number The type ID to format.
 -- @return string The formatted type name.
--- @usage local typeName = ax.util:FormatType(ax.type.color) -- returns "Color"
+-- @usage local typeName = ax.type:Format(ax.type.color) -- returns "Color"
 function ax.type:Format(typeID)
     if ( typeID == nil ) then return "Unknown" end
 

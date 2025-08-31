@@ -1,0 +1,249 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>Parallax Documentation</title>
+    <link rel="stylesheet" href="../ldoc.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>Parallax</h1>
+
+
+<ul>
+  <li><a href="../index.html">Index</a></li>
+</ul>
+
+<h2>Contents</h2>
+<ul>
+<li><a href="#Functions">Functions</a></li>
+</ul>
+
+
+<h2>Libraries</h2>
+<ul class="nowrap">
+  <li><strong>ax.motion</strong></li>
+  <li><a href="../libraries/ax.data.html">ax.data</a></li>
+  <li><a href="../libraries/ax.ease.html">ax.ease</a></li>
+  <li><a href="../libraries/ax.hook.html">ax.hook</a></li>
+  <li><a href="../libraries/ax.type.html">ax.type</a></li>
+  <li><a href="../libraries/ax.util.html">ax.util</a></li>
+</ul>
+<h2>Manual</h2>
+<ul class="nowrap">
+  <li><a href="../manual/readme.md.html">readme</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+<h1>Module <code>ax.motion</code></h1>
+<p>Advanced panel animation handler using easing for custom fields.</p>
+<p> Supports delays, per-field animation isolation, and cancelation.</p>
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example">shared
+</pre>
+    </ul>
+
+
+<h2><a href="#Functions">Functions</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#ax.motion:Motion">ax.motion:Motion (panel, duration, data)</a></td>
+	<td class="summary">Starts a property animation on a panel.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ax.motion:Cancel">ax.motion:Cancel (panel, key)</a></td>
+	<td class="summary">Cancels a specific animation on a panel.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ax.motion:CancelAll">ax.motion:CancelAll (panel)</a></td>
+	<td class="summary">Cancels all animations on a panel.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#PANEL:Motion">PANEL:Motion (duration, data)</a></td>
+	<td class="summary">Animate custom properties with easing.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#PANEL:CancelAnimation">PANEL:CancelAnimation (key)</a></td>
+	<td class="summary">Cancel a specific animation on this panel.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#PANEL:CancelAllAnimations">PANEL:CancelAllAnimations ()</a></td>
+	<td class="summary">Cancel all animations on this panel.</td>
+	</tr>
+</table>
+
+<br/>
+<br/>
+
+
+    <h2 class="section-header "><a name="Functions"></a>Functions</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "ax.motion:Motion"></a>
+    <strong>ax.motion:Motion (panel, duration, data)</strong>
+    </dt>
+    <dd>
+    Starts a property animation on a panel.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">panel</span>
+            <span class="types"><span class="type">Panel</span></span>
+         The target panel.
+        </li>
+        <li><span class="parameter">duration</span>
+            <span class="types"><span class="type">number</span></span>
+         Duration in seconds.
+        </li>
+        <li><span class="parameter">data</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+         Contains Target, Easing, optional Delay, Think, OnComplete.
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "ax.motion:Cancel"></a>
+    <strong>ax.motion:Cancel (panel, key)</strong>
+    </dt>
+    <dd>
+    Cancels a specific animation on a panel.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">panel</span>
+            <span class="types"><span class="type">Panel</span></span>
+         The panel whose animation to cancel.
+        </li>
+        <li><span class="parameter">key</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         The custom property key to cancel.
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "ax.motion:CancelAll"></a>
+    <strong>ax.motion:CancelAll (panel)</strong>
+    </dt>
+    <dd>
+    Cancels all animations on a panel.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">panel</span>
+            <span class="types"><span class="type">Panel</span></span>
+         The panel to cancel all animations for.
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "PANEL:Motion"></a>
+    <strong>PANEL:Motion (duration, data)</strong>
+    </dt>
+    <dd>
+    Animate custom properties with easing.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">duration</span>
+            <span class="types"><span class="type">number</span></span>
+         Duration in seconds.
+        </li>
+        <li><span class="parameter">data</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+         Table with Target, Easing, Delay, Think, OnComplete.
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "PANEL:CancelAnimation"></a>
+    <strong>PANEL:CancelAnimation (key)</strong>
+    </dt>
+    <dd>
+    Cancel a specific animation on this panel.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">key</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         The property key to cancel.
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "PANEL:CancelAllAnimations"></a>
+    <strong>PANEL:CancelAllAnimations ()</strong>
+    </dt>
+    <dd>
+    Cancel all animations on this panel.
+
+
+
+
+
+
+
+</dd>
+</dl>
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/lunarmodules/ldoc">LDoc 1.5.0</a></i>
+<i style="float:right;">Last updated 2025-08-31 06:04:51 </i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>
