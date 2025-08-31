@@ -47,7 +47,7 @@ function PANEL:PopulateCharacterList()
         createButton:SetText("create")
         createButton.DoClick = function()
             self:SlideDown()
-            parent.create:SlideToFront()
+            self:GetParent().create:SlideToFront()
         end
 
         return
