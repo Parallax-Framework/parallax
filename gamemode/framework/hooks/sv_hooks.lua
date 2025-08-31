@@ -13,6 +13,10 @@ DEFINE_BASECLASS("gamemode_sandbox")
 
 AX_CLIENT_QUEUE = AX_CLIENT_QUEUE or {}
 
+function GM:PlayerSwitchFlashlight(client, state)
+    return true
+end
+
 function GM:InitPostEntity()
     ax.database:Connect() -- TODO: Allow schemas to connect to their own databases
 end
@@ -78,8 +82,20 @@ function GM:PlayerLoadout(client)
     BaseClass.PlayerLoadout(self, client)
 
     client:SetModel("models/player/police.mdl")
+    client:Give("none")
+    client:Give("weapon_fists")
 
     hook.Run("PostPlayerLoadout", client)
+end
+
+function GM:PlayerSetHandsModel(client, ent)
+   local simplemodel = player_manager.TranslateToPlayerModelName(client:GetModel())
+   local info = player_manager.TranslatePlayerHands(simplemodel)
+   if ( info ) then
+        ent:SetModel(info.model)
+        ent:SetSkin(info.skin)
+        ent:SetBodyGroups(info.body)
+   end
 end
 
 function GM:DatabaseConnected()
@@ -101,6 +117,16 @@ function GM:PlayerInitialSpawn(client)
     AX_CLIENT_QUEUE[steamID64] = true
     hook.Run("PlayerQueued", client)
 end
+
+gameevent.Listen("player_disconnect")
+hook.Add("player_disconnect", "Parallax.PlayerDisconnected", function(data)
+    local name = data.name
+    local reason = data.reason
+
+    for k, v in player.Iterator() do
+        v:ChatPrint(Color(220, 60, 60), "Player " .. name .. " has disconnected. (" .. reason .. ")")
+    end
+end)
 
 function GM:StartCommand(client, userCmd)
     local steamID64 = client:SteamID64()
