@@ -4,8 +4,8 @@ MODULE.Name = "Curvy"
 MODULE.Description = "Adds a curvy visual style to HUD elements."
 MODULE.Author = "Riggs"
 
-ax.option:Add("curvyCurveAmount", ax.type.number, 64, { category = "curvy", min = 16, max = 64, decimals = 1 })
-ax.option:Add("curvySegments", ax.type.number, 128, { category = "curvy", min = 16, max = 256, decimals = 0 })
+ax.option:Add("curvyCurveAmount", ax.type.number, 64, { category = "curvy", min = 16, max = 256, decimals = 0 })
+ax.option:Add("curvySegments", ax.type.number, 256, { category = "curvy", min = 16, max = 256, decimals = 0 })
 
 ax.curvy = ax.curvy or {}
 
@@ -155,7 +155,7 @@ end
 function ax.curvy:RenderCurvedMesh(mat, width, height)
     if ( !mat or mat:IsError() ) then return end
 
-    local meshData = self:GetCurveMesh(ax.option:Get("curvySegments", 128), ax.option:Get("curvyCurveAmount", 64), width, height)
+    local meshData = self:GetCurveMesh(ax.option:Get("curvySegments"), ax.option:Get("curvyCurveAmount"), width, height)
 
     cam.IgnoreZ(true)
     render.CullMode(MATERIAL_CULLMODE_CW)
