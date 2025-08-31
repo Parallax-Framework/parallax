@@ -106,7 +106,7 @@ function client:PlayGesture(slot, sequence)
     sequence = sequence or -1
 
     if ( !isnumber(sequence) or sequence < 0 ) then
-        ax.util:PrintError("Invalid gesture sequence provided to Player:PlayGesture()")
+        ax.util:PrintWarning("Invalid gesture sequence provided to Player:PlayGesture()")
         return nil
     end
 
