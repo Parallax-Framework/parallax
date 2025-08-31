@@ -114,6 +114,8 @@ ax.character:RegisterVar("model", {
         end
 
         for k, v in pairs(ax.faction:Get(factionID):GetModels()) do
+            if ( istable( v ) ) then v = v[ 1 ] end
+
             local modelButton = layout:Add("SpawnIcon")
             modelButton:SetModel(v)
             modelButton:SetSize(ScreenScale(32), ScreenScale(32))
