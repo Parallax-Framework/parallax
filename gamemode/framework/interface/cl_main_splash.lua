@@ -29,6 +29,15 @@ function PANEL:Init()
     end
 
     -- Now create our own buttons
+    if ( ax.client.axCharacter ) then
+        local playButton = self.buttons:Add("ax.button")
+        playButton:Dock(TOP)
+        playButton:SetText("play")
+        playButton.DoClick = function()
+            parent:Remove()
+        end
+    end
+
     local createButton = self.buttons:Add("ax.button")
     createButton:Dock(TOP)
     createButton:SetText("create")
@@ -63,13 +72,6 @@ function PANEL:Init()
             end,
             "No", function() end
         )
-    end
-
-    local closeButton = self.buttons:Add("ax.button")
-    closeButton:Dock(TOP)
-    closeButton:SetText("close (temporary)")
-    closeButton.DoClick = function()
-        parent:Remove()
     end
 
     -- Now we need to add docking to the bottom of each button
