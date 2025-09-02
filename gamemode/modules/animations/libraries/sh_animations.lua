@@ -25,8 +25,7 @@ ax.animations.stored["citizen_male"] = {
         [ACT_MP_CROUCH_IDLE] = {ACT_COVER_LOW, ACT_COVER_LOW},
         [ACT_MP_WALK] = {ACT_WALK, ACT_WALK_AIM_RIFLE_STIMULATED},
         [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH, ACT_WALK_CROUCH_AIM_RIFLE},
-        [ACT_MP_RUN] = {ACT_RUN, ACT_RUN_AIM_RIFLE_STIMULATED},
-        [ACT_LAND] = {ACT_RESET, ACT_RESET}
+        [ACT_MP_RUN] = {ACT_RUN, ACT_RUN_AIM_RIFLE_STIMULATED}
     },
     ["pistol"] = {
         [ACT_MP_STAND_IDLE] = {ACT_IDLE, ACT_RANGE_ATTACK_PISTOL},
@@ -34,7 +33,6 @@ ax.animations.stored["citizen_male"] = {
         [ACT_MP_WALK] = {ACT_WALK, ACT_WALK_AIM_RIFLE_STIMULATED},
         [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH, ACT_WALK_CROUCH_AIM_RIFLE},
         [ACT_MP_RUN] = {ACT_RUN, ACT_RUN_AIM_RIFLE_STIMULATED},
-        [ACT_LAND] = {ACT_RESET, ACT_RESET},
         ["attack"] = ACT_GESTURE_RANGE_ATTACK_PISTOL,
         ["attack"] = ACT_RELOAD_PISTOL
     },
@@ -44,7 +42,6 @@ ax.animations.stored["citizen_male"] = {
         [ACT_MP_WALK] = {ACT_WALK_RIFLE_RELAXED, ACT_WALK_AIM_RIFLE_STIMULATED},
         [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH_RIFLE, ACT_WALK_CROUCH_AIM_RIFLE},
         [ACT_MP_RUN] = {ACT_RUN_RIFLE_RELAXED, ACT_RUN_AIM_RIFLE_STIMULATED},
-        [ACT_LAND] = {ACT_RESET, ACT_RESET},
         ["attack"] = ACT_GESTURE_RANGE_ATTACK_SMG1,
         ["reload"] = ACT_GESTURE_RELOAD_SMG1
     },
@@ -54,7 +51,6 @@ ax.animations.stored["citizen_male"] = {
         [ACT_MP_WALK] = {ACT_WALK_RIFLE_RELAXED, ACT_WALK_AIM_RIFLE_STIMULATED},
         [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH_RIFLE, ACT_WALK_CROUCH_RIFLE},
         [ACT_MP_RUN] = {ACT_RUN_RIFLE_RELAXED, ACT_RUN_AIM_RIFLE_STIMULATED},
-        [ACT_LAND] = {ACT_RESET, ACT_RESET},
         ["attack"] = ACT_GESTURE_RANGE_ATTACK_SHOTGUN
     },
     ["grenade"] = {
@@ -63,7 +59,6 @@ ax.animations.stored["citizen_male"] = {
         [ACT_MP_WALK] = {ACT_WALK, ACT_WALK_AIM_RIFLE_STIMULATED},
         [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH, ACT_WALK_CROUCH_AIM_RIFLE},
         [ACT_MP_RUN] = {ACT_RUN, ACT_RUN_RIFLE_STIMULATED},
-        [ACT_LAND] = {ACT_RESET, ACT_RESET},
         ["attack"] = ACT_RANGE_ATTACK_THROW
     },
     ["melee"] = {
@@ -72,7 +67,6 @@ ax.animations.stored["citizen_male"] = {
         [ACT_MP_WALK] = {ACT_WALK, ACT_WALK_AIM_RIFLE},
         [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH, ACT_WALK_CROUCH},
         [ACT_MP_RUN] = {ACT_RUN, ACT_RUN},
-        [ACT_LAND] = {ACT_RESET, ACT_RESET},
         ["attack"] = ACT_MELEE_ATTACK_SWING
     },
     ["glide"] = ACT_GLIDE,
@@ -90,8 +84,7 @@ ax.animations.stored["citizen_female"] = {
         [ACT_MP_CROUCH_IDLE] = {ACT_COVER_LOW, ACT_COVER_LOW},
         [ACT_MP_WALK] = {ACT_WALK, ACT_WALK_AIM_RIFLE_STIMULATED},
         [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH, ACT_WALK_CROUCH_AIM_RIFLE},
-        [ACT_MP_RUN] = {ACT_RUN, ACT_RUN_AIM_RIFLE_STIMULATED},
-        [ACT_LAND] = {ACT_RESET, ACT_RESET}
+        [ACT_MP_RUN] = {ACT_RUN, ACT_RUN_AIM_RIFLE_STIMULATED}
     },
     ["pistol"] = {
         [ACT_MP_STAND_IDLE] = {ACT_IDLE_PISTOL, ACT_IDLE_ANGRY_PISTOL},
@@ -99,7 +92,6 @@ ax.animations.stored["citizen_female"] = {
         [ACT_MP_WALK] = {ACT_WALK, ACT_WALK_AIM_PISTOL},
         [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH, ACT_WALK_CROUCH_AIM_RIFLE},
         [ACT_MP_RUN] = {ACT_RUN, ACT_RUN_AIM_PISTOL},
-        [ACT_LAND] = {ACT_RESET, ACT_RESET},
         ["attack"] = ACT_GESTURE_RANGE_ATTACK_PISTOL,
         ["attack"] = ACT_RELOAD_PISTOL
     },
@@ -109,7 +101,6 @@ ax.animations.stored["citizen_female"] = {
         [ACT_MP_WALK] = {ACT_WALK_RIFLE_RELAXED, ACT_WALK_AIM_RIFLE_STIMULATED},
         [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH_RIFLE, ACT_WALK_CROUCH_AIM_RIFLE},
         [ACT_MP_RUN] = {ACT_RUN_RIFLE_RELAXED, ACT_RUN_AIM_RIFLE_STIMULATED},
-        [ACT_LAND] = {ACT_RESET, ACT_RESET},
         ["attack"] = ACT_GESTURE_RANGE_ATTACK_SMG1,
         ["attack"] = ACT_GESTURE_RELOAD_SMG1
     },
@@ -119,7 +110,6 @@ ax.animations.stored["citizen_female"] = {
         [ACT_MP_WALK] = {ACT_WALK_RIFLE_RELAXED, ACT_WALK_AIM_RIFLE_STIMULATED},
         [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH_RIFLE, ACT_WALK_CROUCH_AIM_RIFLE},
         [ACT_MP_RUN] = {ACT_RUN_RIFLE_RELAXED, ACT_RUN_AIM_RIFLE_STIMULATED},
-        [ACT_LAND] = {ACT_RESET, ACT_RESET},
         ["attack"] = ACT_GESTURE_RANGE_ATTACK_SHOTGUN
     },
     ["grenade"] = {
@@ -128,7 +118,6 @@ ax.animations.stored["citizen_female"] = {
         [ACT_MP_WALK] = {ACT_WALK, ACT_WALK_AIM_PISTOL},
         [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH, ACT_WALK_CROUCH_AIM_RIFLE},
         [ACT_MP_RUN] = {ACT_RUN, ACT_RUN_AIM_PISTOL},
-        [ACT_LAND] = {ACT_RESET, ACT_RESET},
         ["attack"] = ACT_RANGE_ATTACK_THROW
     },
     ["melee"] = {
@@ -137,7 +126,6 @@ ax.animations.stored["citizen_female"] = {
         [ACT_MP_WALK] = {ACT_WALK, ACT_WALK_AIM_RIFLE},
         [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH, ACT_WALK_CROUCH},
         [ACT_MP_RUN] = {ACT_RUN, ACT_RUN},
-        [ACT_LAND] = {ACT_RESET, ACT_RESET},
         ["attack"] = ACT_MELEE_ATTACK_SWING
     },
     ["glide"] = ACT_GLIDE,
@@ -150,8 +138,7 @@ ax.animations.stored["overwatch"] = {
         [ACT_MP_CROUCH_IDLE] = {ACT_CROUCHIDLE, ACT_CROUCHIDLE},
         [ACT_MP_WALK] = {"walkunarmed_all", ACT_WALK_RIFLE},
         [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH_RIFLE, ACT_WALK_CROUCH_RIFLE},
-        [ACT_MP_RUN] = {ACT_RUN_AIM_RIFLE, ACT_RUN_AIM_RIFLE},
-        [ACT_LAND] = {ACT_RESET, ACT_RESET}
+        [ACT_MP_RUN] = {ACT_RUN_AIM_RIFLE, ACT_RUN_AIM_RIFLE}
     },
     ["pistol"] = {
         [ACT_MP_STAND_IDLE] = {"idle_unarmed", ACT_IDLE_ANGRY_SMG1},
@@ -159,7 +146,8 @@ ax.animations.stored["overwatch"] = {
         [ACT_MP_WALK] = {"walkunarmed_all", ACT_WALK_RIFLE},
         [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH_RIFLE, ACT_WALK_CROUCH_RIFLE},
         [ACT_MP_RUN] = {ACT_RUN_AIM_RIFLE, ACT_RUN_AIM_RIFLE},
-        [ACT_LAND] = {ACT_RESET, ACT_RESET}
+        ["shoot"] = "gesture_shoot_pistol",
+        ["reload"] = "gesture_reload_357"
     },
     ["smg"] = {
         [ACT_MP_STAND_IDLE] = {ACT_IDLE_SMG1, ACT_IDLE_ANGRY_SMG1},
@@ -167,7 +155,8 @@ ax.animations.stored["overwatch"] = {
         [ACT_MP_WALK] = {ACT_WALK_RIFLE, ACT_WALK_AIM_RIFLE},
         [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH_RIFLE, ACT_WALK_CROUCH_RIFLE},
         [ACT_MP_RUN] = {ACT_RUN_RIFLE, ACT_RUN_AIM_RIFLE},
-        [ACT_LAND] = {ACT_RESET, ACT_RESET}
+        ["shoot"] = "gesture_shoot_smg1",
+        ["reload"] = "gesture_reload_smg1"
     },
     ["shotgun"] = {
         [ACT_MP_STAND_IDLE] = {ACT_IDLE_SMG1, ACT_IDLE_ANGRY_SHOTGUN},
@@ -175,7 +164,8 @@ ax.animations.stored["overwatch"] = {
         [ACT_MP_WALK] = {ACT_WALK_RIFLE, ACT_WALK_AIM_SHOTGUN},
         [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH_RIFLE, ACT_WALK_CROUCH_RIFLE},
         [ACT_MP_RUN] = {ACT_RUN_RIFLE, ACT_RUN_AIM_SHOTGUN},
-        [ACT_LAND] = {ACT_RESET, ACT_RESET}
+        ["shoot"] = "gesture_shoot_shotgun",
+        ["reload"] = "gesture_reload_shotgun"
     },
     ["ar2"] = {
         [ACT_MP_STAND_IDLE] = {ACT_IDLE_SMG1, ACT_IDLE_ANGRY_SMG1},
@@ -183,15 +173,15 @@ ax.animations.stored["overwatch"] = {
         [ACT_MP_WALK] = {ACT_WALK_RIFLE, ACT_WALK_AIM_RIFLE},
         [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH_RIFLE, ACT_WALK_CROUCH_RIFLE},
         [ACT_MP_RUN] = {ACT_RUN_RIFLE, ACT_RUN_AIM_RIFLE},
-        [ACT_LAND] = {ACT_RESET, ACT_RESET}
+        ["shoot"] = "gesture_shoot_ar2",
+        ["reload"] = "gesture_reload_ar2"
     },
     ["grenade"] = {
         [ACT_MP_STAND_IDLE] = {"idle_unarmed", ACT_IDLE_ANGRY},
         [ACT_MP_CROUCH_IDLE] = {ACT_CROUCHIDLE, ACT_CROUCHIDLE},
         [ACT_MP_WALK] = {"walkunarmed_all", ACT_WALK_RIFLE},
         [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH_RIFLE, ACT_WALK_CROUCH_RIFLE},
-        [ACT_MP_RUN] = {ACT_RUN_AIM_RIFLE, ACT_RUN_AIM_RIFLE},
-        [ACT_LAND] = {ACT_RESET, ACT_RESET}
+        [ACT_MP_RUN] = {ACT_RUN_AIM_RIFLE, ACT_RUN_AIM_RIFLE}
     },
     ["melee"] = {
         [ACT_MP_STAND_IDLE] = {"idle_unarmed", ACT_IDLE_ANGRY},
@@ -199,7 +189,6 @@ ax.animations.stored["overwatch"] = {
         [ACT_MP_WALK] = {"walkunarmed_all", ACT_WALK_RIFLE},
         [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH_RIFLE, ACT_WALK_CROUCH_RIFLE},
         [ACT_MP_RUN] = {ACT_RUN_AIM_RIFLE, ACT_RUN_AIM_RIFLE},
-        [ACT_LAND] = {ACT_RESET, ACT_RESET},
         ["attack"] = ACT_MELEE_ATTACK_SWING_GESTURE
     },
     ["glide"] = ACT_GLIDE

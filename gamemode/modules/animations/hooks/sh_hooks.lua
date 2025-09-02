@@ -384,10 +384,10 @@ function MODULE:TranslateActivity(client, act)
     -- https://github.com/TankNut/helix-plugins/blob/master/turning.lua
     local diff = math.NormalizeAngle(client:GetRenderAngles().y - client:EyeAngles().y)
     if ( math.abs(diff) >= 45 and client.axNextTurn <= CurTime() ) then
-        local gesture = diff > 0 and ACT_GESTURE_TURN_RIGHT90 or ACT_GESTURE_TURN_LEFT90
-        client:AnimRestartGesture(GESTURE_SLOT_CUSTOM, gesture, true)
+        local gesture = diff > 0 and "gesture_turn_right_90" or "gesture_turn_left_90"
+        client:PlayGesture(GESTURE_SLOT_FLINCH, gesture)
 
-        local duration = client:SequenceDuration(client:SelectWeightedSequence(gesture))
+        local duration = client:SequenceDuration(client:LookupSequence(gesture))
         if ( duration <= 0 ) then
             duration = 0.5
         end

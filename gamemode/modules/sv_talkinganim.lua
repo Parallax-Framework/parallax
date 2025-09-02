@@ -95,7 +95,7 @@ end
 function MODULE:PlayTalkingAnimation(client)
     local animation = self:PickTalkingAnimation(client)
     if ( animation ) then
-        client:PlayGesture(6, animation)
+        client:PlayGesture(GESTURE_SLOT_VCD, animation)
     end
 end
 
