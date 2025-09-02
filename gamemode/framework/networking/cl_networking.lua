@@ -140,7 +140,11 @@ net.Receive("ax.character.var", function()
         character.vars = {}
     end
 
-    character.vars[name] = value
+    if ( !istable(character.vars.data) ) then
+        character.vars.data = {}
+    end
+
+    character.vars.data[name] = value
 end)
 
 net.Receive("ax.inventory.sync", function()

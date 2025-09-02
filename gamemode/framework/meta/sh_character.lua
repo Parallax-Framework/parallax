@@ -48,4 +48,38 @@ function character:GetOwner()
     return self.player
 end
 
+function character:GetData( key, fallback )
+    if ( !istable(self.vars.data) ) then self.vars.data = {} end
+
+    return self.vars.data[key] == nil and fallback or self.vars.data[key]
+end
+
+if ( SERVER ) then
+    function character:SetData( key, value, bNoNetworking, recipients )
+        if ( !istable( self.vars.data ) ) then self.vars.data = {} end
+
+        self.vars.data[ key ] = value
+
+        if ( !bNoNetworking ) then
+            net.Start( "ax.character.var" )
+                net.WriteUInt( self:GetID(), 32 )
+                net.WriteString( key )
+                net.WriteType( value )
+            if ( recipients ) then
+                net.Send( recipients )
+            else
+                net.Broadcast()
+            end
+        end
+    end
+
+    function character:Save()
+        if ( !istable( self.vars.data ) ) then self.vars.data = {} end
+        local query = mysql:Update( "characters" )
+            query:Where( "id", self:GetID() )
+            query:Update( "data", util.TableToJSON( self.vars.data ) )
+        query:Execute()
+    end
+end
+
 ax.character.meta = character -- Keep, funcs don't define otherwise.

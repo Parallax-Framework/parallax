@@ -56,7 +56,7 @@ local function SetVar(char, name, value, isNetworked, recipients)
     char.vars[name] = value
 
     if ( SERVER and isNetworked ) then
-        net.Start("ax.character.var.set")
+        net.Start("ax.character.var")
             net.WriteUInt(char:GetID(), 32)
             net.WriteString(name)
             net.WriteType(value)

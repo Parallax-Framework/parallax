@@ -148,4 +148,5 @@ ax.character:RegisterVar("data", {
     field = "data",
     fieldType = ax.type.text,
     default = "[]",
+    bNoFuncs = true
 })
