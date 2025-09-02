@@ -72,8 +72,11 @@ end
 
 function GM:PlayerSpawn(client)
     client:SetNWInt("ax.ragdoll.index", -1)
+    client:SetSlowWalkSpeed(75)
     client:SetWalkSpeed(100)
-    client:SetRunSpeed(200)
+    client:SetCrouchedWalkSpeed(0.75)
+    client:SetJumpPower(175)
+    client:SetRunSpeed(220)
 
     hook.Run("PlayerLoadout", client)
 end
@@ -81,9 +84,15 @@ end
 function GM:PlayerLoadout(client)
     BaseClass.PlayerLoadout(self, client)
 
-    client:SetModel("models/player/police.mdl")
     client:Give("none")
     client:Give("weapon_fists")
+
+    local character = client:GetCharacter()
+    if ( character ) then
+        client:SetModel(character:GetModel())
+    end
+
+    client:SetupHands()
 
     hook.Run("PostPlayerLoadout", client)
 end
