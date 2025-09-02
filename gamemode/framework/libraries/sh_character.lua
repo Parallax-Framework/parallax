@@ -95,7 +95,7 @@ function ax.character:RegisterVar(name, data)
         ax.character.meta[nameSet] = function(char, value, isNetworked, recipients)
             if ( isfunction(data.Set) ) then
                 if ( !istable(char.vars) ) then char.vars = {} end
-                data:Set(char, value)
+                data:Set(char, value, isNetworked, recipients)
             else
                 SetVar(char, name, value, isNetworked, recipients)
             end

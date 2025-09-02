@@ -102,7 +102,7 @@ ax.command:Add("help", {
 
             table.sort(available)
 
-            if ( #available == 0 ) then
+            if ( available[1] == nil ) then
                 return "No commands available."
             else
                 return "Available commands (" .. #available .. "): " .. table.concat(available, ", ")
