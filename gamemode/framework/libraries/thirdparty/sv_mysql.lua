@@ -663,7 +663,21 @@ function mysql:Escape(text)
     if (self.connection and self.module == "mysqloo") then
         return self.connection:escape(text)
     else
-        return sql.SQLStr(text, true)
+        -- Use SQLite's quote() via sql.QueryTyped and strip surrounding quotes
+        local ok, res = pcall(function()
+            return sql.QueryTyped("SELECT quote(?) AS v", tostring(text))
+        end)
+
+        if ok and istable(res) and res[1] and res[1].v then
+            local quoted = res[1].v
+            if quoted == "NULL" then return "NULL" end
+            if string.sub(quoted, 1, 1) == "'" and string.sub(quoted, -1) == "'" then
+                return string.sub(quoted, 2, -2)
+            end
+            return quoted
+        end
+
+        return tostring(text)
     end
 end
 
