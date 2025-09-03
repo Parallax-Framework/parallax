@@ -73,11 +73,21 @@ function QUERY_CLASS:Where(key, value)
 end
 
 function QUERY_CLASS:WhereEqual(key, value)
-    self.whereList[#self.whereList + 1] = {"`" .. key .. "` = ?", value}
+    if value == nil then
+        -- Use IS NULL when value is nil; no bound parameter
+        self.whereList[#self.whereList + 1] = {"`" .. key .. "` IS NULL", {}}
+    else
+        self.whereList[#self.whereList + 1] = {"`" .. key .. "` = ?", value}
+    end
 end
 
 function QUERY_CLASS:WhereNotEqual(key, value)
-    self.whereList[#self.whereList + 1] = {"`" .. key .. "` != ?", value}
+    if value == nil then
+        -- Use IS NOT NULL when value is nil; no bound parameter
+        self.whereList[#self.whereList + 1] = {"`" .. key .. "` IS NOT NULL", {}}
+    else
+        self.whereList[#self.whereList + 1] = {"`" .. key .. "` != ?", value}
+    end
 end
 
 function QUERY_CLASS:WhereLike(key, value, format)
@@ -246,9 +256,15 @@ local function BuildInsertQuery(queryObj, bIgnore)
     end
 
     for i = 1, #queryObj.insertList do
-        keyList[#keyList + 1] = queryObj.insertList[i][1]
-        valueList[#valueList + 1] = "?"
-        parameters[#parameters + 1] = queryObj.insertList[i][2]
+        local col = queryObj.insertList[i][1]
+        local val = queryObj.insertList[i][2]
+        keyList[#keyList + 1] = col
+        if val == nil then
+            valueList[#valueList + 1] = "NULL"
+        else
+            valueList[#valueList + 1] = "?"
+            parameters[#parameters + 1] = val
+        end
     end
 
     if (#keyList == 0) then
@@ -277,8 +293,14 @@ local function BuildUpdateQuery(queryObj)
         queryString[#queryString + 1] = " SET"
 
         for i = 1, #queryObj.updateList do
-            updateList[#updateList + 1] = queryObj.updateList[i][1] .. " = ?"
-            parameters[#parameters + 1] = queryObj.updateList[i][2]
+            local col = queryObj.updateList[i][1]
+            local val = queryObj.updateList[i][2]
+            if val == nil then
+                updateList[#updateList + 1] = col .. " = NULL"
+            else
+                updateList[#updateList + 1] = col .. " = ?"
+                parameters[#parameters + 1] = val
+            end
         end
 
         queryString[#queryString + 1] = " " .. table.concat(updateList, ", ")
@@ -293,11 +315,11 @@ local function BuildUpdateQuery(queryObj)
             whereStrings[#whereStrings + 1] = whereClause[1]
 
             if (istable(whereClause[2])) then
-                -- Handle IN clauses with multiple values
+                -- Handle IN clauses and nil-aware empty parameter sets
                 for j = 1, #whereClause[2] do
                     parameters[#parameters + 1] = whereClause[2][j]
                 end
-            else
+            elseif (whereClause[2] ~= nil) then
                 parameters[#parameters + 1] = whereClause[2]
             end
         end
@@ -593,8 +615,22 @@ function mysql:RawQuery(query, callback, flags, ...)
         local result = nil
         local parameters = select(1, ...)
 
-        if (istable(parameters) and #parameters > 0) then
-            result = sql.QueryTyped(query, unpack(parameters))
+        if (istable(parameters) and next(parameters) ~= nil) then
+            -- Try both vararg and table forms for sql.QueryTyped to support different wrappers
+            local ok, res = pcall(function()
+                return sql.QueryTyped(query, unpack(parameters))
+            end)
+            if (!ok) then
+                ok, res = pcall(function()
+                    return sql.QueryTyped(query, parameters)
+                end)
+            end
+
+            if (!ok) then
+                error(string.format("[mysql] SQL Query Error!\nQuery: %s\n%s\n", query, tostring(res)))
+            else
+                result = res
+            end
         else
             result = sql.Query(query)
         end
