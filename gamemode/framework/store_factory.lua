@@ -314,10 +314,7 @@ function ax.util:CreateStore(spec)
                     for key, value in pairs(data) do
                         CONFIG_CACHE[key] = value
 
-                        local regEntry = store.registry[key]
-                        if ( regEntry and isfunction(regEntry.data.OnChanged) ) then
-                            ax.util:SafeCall(regEntry.data.OnChanged, nil, value, key)
-                        end
+                        self:HandleConfigChange(store.registry[key], nil, value, key)
                     end
 
                     ax.util:PrintDebug(spec.name, "Received initial config:", table.Count(data), "keys")
@@ -329,10 +326,7 @@ function ax.util:CreateStore(spec)
                     local oldValue = CONFIG_CACHE[key]
                     CONFIG_CACHE[key] = value
 
-                    local regEntry = store.registry[key]
-                    if ( regEntry and isfunction(regEntry.data.OnChanged) ) then
-                        ax.util:SafeCall(regEntry.data.OnChanged, oldValue, value, key)
-                    end
+                    self:HandleConfigChange(store.registry[key], oldValue, value, key)
 
                     ax.util:PrintDebug(spec.name, "Received config update:", key, "=", value)
                 end)
@@ -388,6 +382,12 @@ function ax.util:CreateStore(spec)
                     end)
                 end)
             end
+        end
+    end
+
+    function store:HandleConfigChange(regEntry, oldValue, newValue, key)
+        if ( regEntry and isfunction(regEntry.data.OnChanged) ) then
+            ax.util:SafeCall(regEntry.data.OnChanged, oldValue, newValue, key)
         end
     end
 
