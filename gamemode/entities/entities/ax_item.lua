@@ -14,4 +14,8 @@ if SERVER then
         self:SetUseType(SIMPLE_USE)
         self:PhysWake()
     end
+
+    function ENT:UpdateTransmitState()
+        return TRANSMIT_PVS
+    end
 end
