@@ -21,7 +21,7 @@ function PANEL:Init()
     self.currentX = 0
     self.currentY = self:GetTall()
     self.active = false
-    self.easing = "OutBounce"
+    self.easing = "InOutQuart"
 
     self.guard = self:Add("Panel")
     self.guard:SetPos(0, 0)
@@ -207,3 +207,43 @@ function PANEL:SlideDown(time)
 end
 
 vgui.Register("ax.transition", PANEL, "EditablePanel")
+
+PANEL = {}
+
+AccessorFunc(PANEL, "currentPage", "CurrentPage", FORCE_NUMBER)
+AccessorFunc(PANEL, "pages", "Pages")
+
+function PANEL:Init()
+    self.pages = {}
+    self.currentPage = 0
+end
+
+function PANEL:CreatePage()
+    local page = vgui.Create("ax.transition", self)
+    page.index = #self.pages + 1
+    self.pages[#self.pages + 1] = page
+    return page
+end
+
+function PANEL:GetPages()
+    return self.pages
+end
+
+function PANEL:TransitionToPage(index)
+    if ( index < 1 or index > #self.pages ) then return end
+
+    local currentPage = self:GetCurrentPage()
+    local targetPage = self.pages[index]
+
+    -- If our current page is lower than our requested page, slide the target page in from the right
+    if ( currentPage < index ) then
+        targetPage:StartAtLeft()
+        targetPage:SlideToFront()
+    else
+        targetPage:SlideRight()
+    end
+
+    self.currentPage = index
+end
+
+vgui.Register("ax.transition.pages", PANEL, "DPanel")
