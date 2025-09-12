@@ -112,13 +112,13 @@ ax.command:Add("help", {
 })
 
 ax.command:Add("setmodel", {
-    description = "Set the model of a player.",
+    description = "Set the model of a character.",
     arguments = {
-        { name = "target", type = ax.type.player },
+        { name = "target", type = ax.type.character },
         { name = "model", type = ax.type.text }
     },
     OnRun = function(client, target, model)
-        if ( !IsValid(target) ) then return "Invalid player." end
+        if ( !target) then return "Invalid character." end
 
         target:SetModel(model)
         return "Model set to " .. model

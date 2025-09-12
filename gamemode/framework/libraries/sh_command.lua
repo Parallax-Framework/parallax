@@ -431,6 +431,13 @@ function ax.command:ConvertArgument(value, argDef)
         end
 
         return foundPlayer
+    elseif ( argDef.type == ax.type.character ) then
+        local foundChar = ax.util:FindCharacter(value)
+        if ( !foundChar ) then
+            return nil, "character not found or ambiguous match"
+        end
+
+        return foundChar
     else
         return nil, "unknown argument type: " .. argDef.type
     end
