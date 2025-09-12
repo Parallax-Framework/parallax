@@ -1,0 +1,1 @@
+ax.option:Add("performance.animations", ax.type.bool, true, { category = "performance", description = "Enable or disable interface animations." })

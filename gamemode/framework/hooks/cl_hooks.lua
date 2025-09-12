@@ -9,6 +9,24 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
+function GM:ScoreboardShow()
+    if ( hook.Run("ShouldRenderMainMenu") ) then
+        return false
+    end
+
+    if ( !IsValid(ax.gui.tab) ) then
+        vgui.Create("ax.tab")
+    else
+        ax.gui.tab:Remove()
+    end
+
+    return false
+end
+
+function GM:ScoreboardHide()
+    return false
+end
+
 local steps = {".stepleft", ".stepright"}
 function GM:EntityEmitSound(data)
     if ( !IsValid(data.Entity) and !data.Entity:IsPlayer() ) then return end

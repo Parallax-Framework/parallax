@@ -24,7 +24,6 @@ ax.motion.active = ax.motion.active or {}
 function ax.motion:Motion(panel, duration, data)
     if ( !IsValid(panel) or !istable(data) or !istable(data.Target) ) then return end
 
-    --[[
     if ( !ax.option:Get("performance.animations") ) then
         -- if animations are disabled, set target values immediately
         for key, target in pairs(data.Target) do
@@ -43,7 +42,6 @@ function ax.motion:Motion(panel, duration, data)
 
         return
     end
-    ]]
 
     local easing = data.Easing or "OutQuad"
     local delay = data.Delay or 0
