@@ -78,10 +78,9 @@ function ax.character:RegisterVar(name, data)
         ax.database:AddToSchema("ax_characters", data.field, data.fieldType or ax.type.string)
     end
 
-    if ( !data.bNoFuncs ) then
-        local prettyName = string.upper(string.sub(name, 1, 1)) .. string.sub(name, 2)
+    local prettyName = string.upper(string.sub(name, 1, 1)) .. string.sub(name, 2)
+    if ( !data.bNoGetter ) then
         local nameGet = "Get" .. prettyName
-        local nameSet = "Set" .. prettyName
 
         ax.character.meta[nameGet] = function(char, fallback)
             if ( isfunction(data.Get) ) then
@@ -91,7 +90,10 @@ function ax.character:RegisterVar(name, data)
                 return GetVar(char, name, fallback)
             end
         end
+    end
 
+    if ( !data.bNoSetter ) then
+        local nameSet = "Set" .. prettyName
         ax.character.meta[nameSet] = function(char, value, isNetworked, recipients)
             if ( isfunction(data.Set) ) then
                 if ( !istable(char.vars) ) then char.vars = {} end
@@ -100,20 +102,23 @@ function ax.character:RegisterVar(name, data)
                 SetVar(char, name, value, isNetworked, recipients)
             end
         end
+    end
 
-        if ( istable(data.alias) ) then
-            for i = 1, #data.alias do
-                local alias = data.alias[i]
-                if ( !isstring(alias) ) then continue end
+    if ( istable(data.alias) ) then
+        for i = 1, #data.alias do
+            local alias = data.alias[i]
+            if ( !isstring(alias) ) then continue end
 
-                self.vars[alias] = data
+            self.vars[alias] = data
 
-                local aliasPrettyName = string.upper(string.sub(alias, 1, 1)) .. string.sub(2)
-                local aliasGet = "Get" .. aliasPrettyName
-                local aliasSet = "Set" .. aliasPrettyName
+            local aliasPrettyName = string.upper( string.sub( alias, 1, 1 ) ) .. string.sub( alias, 2 )
 
-                ax.character.meta[aliasGet] = ax.character.meta[nameGet]
-                ax.character.meta[aliasSet] = ax.character.meta[nameSet]
+            if ( !data.bNoGetter ) then
+                ax.character.meta[ "Get" .. aliasPrettyName ] = ax.character.meta["Get" .. prettyName]
+            end
+
+            if ( !data.bNoSetter ) then
+                ax.character.meta[ "Set" .. aliasPrettyName ] = ax.character.meta["Set" .. prettyName]
             end
         end
     end
