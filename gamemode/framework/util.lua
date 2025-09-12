@@ -327,6 +327,40 @@ function ax.util:FindPlayer(identifier)
     return NULL
 end
 
+--- Find a character by ID or name (case-insensitive, partial match).
+-- @param identifier number|string Character ID or name to search for
+-- @return ax.character.meta|nil The found character or nil
+-- @usage local char = ax.util:FindCharacter("John")
+function ax.util:FindCharacter(identifier)
+    if ( identifier == nil ) then return nil end
+
+    if ( isnumber(identifier) ) then
+        return ax.character.instances[identifier]
+    end
+
+    if ( isstring(identifier) ) then
+        local foundChar = nil
+        local lowerIdent = string.lower(identifier)
+
+        for _, char in pairs(ax.character.instances) do
+            if ( string.lower(char.vars.name) == lowerIdent ) then
+                return char -- Exact match
+            elseif ( self:FindString(char.vars.name, lowerIdent) ) then
+                if ( foundChar ) then
+                    -- Ambiguous match
+                    return nil
+                end
+
+                foundChar = char
+            end
+        end
+
+        return foundChar
+    end
+
+    return nil
+end
+
 --- Safely parse a JSON string into a table, or return table input unchanged.
 -- @param tInput string|table JSON string or already-parsed table
 -- @return table|nil The parsed table or nil on failure

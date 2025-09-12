@@ -72,9 +72,38 @@ if ( SERVER ) then
     function character:Save()
         if ( !istable(self.vars.data) ) then self.vars.data = {} end
 
-        local query = mysql:Update("characters")
-            query:Where("id", self:GetID())
-            query:Update("data", util.TableToJSON(self.vars.data))
+        -- Build an update query for the characters table using the registered schema
+        local query = mysql:Update("ax_characters")
+        query:Where("id", self:GetID())
+
+        -- Ensure the data table exists and always save it as JSON
+        query:Update("data", util.TableToJSON(self.vars.data or {}))
+
+        -- Iterate registered vars and persist fields that declare a database column
+        for name, meta in pairs(ax.character.vars or {}) do
+            if ( istable(meta) and meta.field ) then
+                local val = nil
+
+                if ( istable(self.vars) ) then
+                    val = self.vars[name]
+                end
+
+                -- Fall back to default if not present
+                if ( val == nil and meta.default != nil ) then
+                    val = meta.default
+                end
+
+                -- Serialize tables to JSON for storage
+                if ( istable(val) ) then
+                    val = util.TableToJSON(val)
+                end
+
+                query:Update(meta.field, val)
+
+                ax.util:PrintDebug("Saving character field '" .. meta.field .. "' with value: " .. tostring(val))
+            end
+        end
+
         query:Execute()
     end
 end
