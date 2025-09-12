@@ -116,9 +116,7 @@ function ax.database:CreateTables()
     -- load schema from database
     query = mysql:Select("ax_schema")
         query:Callback(function(result)
-            if (!istable(result)) then
-                return
-            end
+            if ( !istable(result) ) then return end
 
             for _, v in pairs(result) do
                 self.schema[v.table] = util.JSONToTable(v.columns)
