@@ -13,7 +13,7 @@ local character = ax.character.meta or {}
 character.__index = character
 
 function character:__tostring()
-    return "Character: " .. tostring(self.id) .. " (" .. self.vars.name .. ")"
+    return string.format("Character [%d][%s]", self.id, self.vars.name or "Unnamed")
 end
 
 function character:GetID()

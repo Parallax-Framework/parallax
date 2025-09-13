@@ -13,7 +13,7 @@ local inventory = ax.inventory.meta or {}
 inventory.__index = inventory
 
 function inventory:__tostring()
-    return "Inventory: " .. tostring(self.id)
+    return string.format("Inventory [%d]", self.id or 0)
 end
 
 function inventory:GetMaxWeight()
