@@ -51,8 +51,6 @@ function ax.character:Create(payload, callback)
 
         ax.character.instances[character.id] = character
 
-        ax.util:PrintDebug("Character created with ID: " .. lastID)
-
         ax.inventory:Create(nil, function(inventory)
             if ( inventory == false ) then
                 ax.util:PrintError("Failed to create inventory for character " .. lastID)
@@ -70,7 +68,11 @@ function ax.character:Create(payload, callback)
                 callback(character, inventory)
             end
 
-            ax.util:PrintDebug("Character created for " .. payload.steamID64 .. ": " .. character.vars.name)
+            -- If we don't have an active character for the player, load this one.
+            local client = player.GetBySteamID64(payload.steamID64)
+            if ( IsValid(client) and (client:GetTable().axCharacter == nil or client:GetTable().axCharacter.id == nil) ) then
+                ax.character:Load(client, character)
+            end
         end)
     end)
 
