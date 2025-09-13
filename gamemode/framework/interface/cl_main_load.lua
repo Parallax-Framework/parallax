@@ -35,7 +35,7 @@ function PANEL:PopulateCharacterList()
     local clientTable = ax.client:GetTable()
     local characters = clientTable.axCharacters or {}
 
-    if ( #characters == 0 ) then
+    if ( characters[1] == nil ) then
         local label = self.characters:Add("ax.text")
         label:Dock(TOP)
         label:SetFont("ax.huge.bold")
