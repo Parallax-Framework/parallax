@@ -69,7 +69,7 @@ function PANEL:Init()
         end
 
         local banner = v.image or hook.Run("GetFactionBanner", v.index) or "gamepadui/hl2/chapter14"
-        if ( type(banner) == "string" ) then
+        if ( isstring( banner ) ) then
             banner = ax.util:GetMaterial(banner)
         end
 
