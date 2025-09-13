@@ -112,7 +112,7 @@ function PANEL:Init()
         button.DoClick = function()
             ax.gui.tabLast = k
 
-            self:Populate(v, button.tab)
+            self:TransitionToPage(button.tab.index, ax.option:Get("tab.fade.time", 0.25))
         end
 
         local tab = self:CreatePage()
@@ -122,6 +122,20 @@ function PANEL:Init()
         tab:SetHeightOffset(-ScreenScaleH(32))
         self.tabs[k] = tab
         button.tab = tab
+
+        if ( istable(v) ) then
+            if ( isfunction(v.Populate) ) then
+                v:Populate(tab)
+            end
+
+            if ( v.OnClose ) then
+                self:CallOnRemove("ax.tab." .. v.name, function()
+                    v.OnClose()
+                end)
+            end
+        elseif ( isfunction(v) ) then
+            v(tab)
+        end
     end
 
     buttonSizeable.Think = function(this)
@@ -139,10 +153,10 @@ function PANEL:Init()
     end
 
     if ( ax.gui.tabLast and buttons[ax.gui.tabLast] ) then
-        self:Populate(buttons[ax.gui.tabLast], self.tabs[ax.gui.tabLast])
+        self:TransitionToPage(self.tabs[ax.gui.tabLast].index, ax.option:Get("tab.fade.time", 0.25))
     else
         for k, v in SortedPairs(buttons) do
-            self:Populate(v, self.tabs[k])
+            self:TransitionToPage(self.tabs[k].index, ax.option:Get("tab.fade.time", 0.25))
             break
         end
     end
@@ -151,25 +165,6 @@ function PANEL:Init()
     self:SetGradientRightTarget(1)
     self:SetGradientTopTarget(1)
     self:SetGradientBottomTarget(1)
-end
-
-function PANEL:Populate(data, tab)
-    if ( !data ) then return end
-
-    if ( istable(data) ) then
-        if ( isfunction(data.Populate) ) then
-            self:TransitionToPage(tab.index, ax.option:Get("tab.fade.time", 0.25))
-            data:Populate(tab)
-        end
-
-        if ( data.OnClose ) then
-            self:CallOnRemove("ax.tab." .. data.name, function()
-                data.OnClose()
-            end)
-        end
-    elseif ( isfunction(data) ) then
-        data(tab)
-    end
 end
 
 function PANEL:Close(callback)

@@ -2,6 +2,14 @@ local PANEL = {}
 
 function PANEL:Init()
     self:Dock(FILL)
+
+    local title = self:Add("ax.text")
+    title:Dock(TOP)
+    title:SetFont("ax.huge.bold")
+    title:SetText("SETTINGS")
+end
+
+function PANEL:Paint(width, height)
 end
 
 vgui.Register("ax.tab.settings", PANEL, "DPanel")
