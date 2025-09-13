@@ -13,8 +13,8 @@ AccessorFunc(PANEL, "textColorHovered", "TextColorHovered")
 AccessorFunc(PANEL, "easing", "Easing", FORCE_STRING)
 
 function PANEL:Init()
-    self.soundEnter = "UI/buttonrollover.wav"
-    self.soundClick = "UI/buttonclick.wav"
+    self.soundEnter = "ui/buttonrollover.wav"
+    self.soundClick = "ui/buttonclickrelease.wav"
     self.fontDefault = "ax.large"
     self.fontHovered = "ax.large.bold"
     self.textColor = Color(255, 255, 255)
@@ -63,6 +63,8 @@ function PANEL:SizeToContents()
 end
 
 function PANEL:OnMousePressed(mouseCode)
+    if ( !self:IsEnabled() ) then return end
+
     if ( mouseCode == MOUSE_LEFT ) then
         if ( self.DoClick ) then
             self:DoClick()
@@ -73,13 +75,22 @@ function PANEL:OnMousePressed(mouseCode)
         end
     end
 
+    -- Unsure about this, but it does a nice little flicker effect
+    -- Could convert this into a cooldown timer if needed
+    self:SetEnabled(false)
+    timer.Simple(0.1, function()
+        if ( IsValid(self) ) then
+            self:SetEnabled(true)
+        end
+    end)
+
     if ( self.soundClick ) then
         surface.PlaySound(self.soundClick)
     end
 end
 
 function PANEL:Think()
-    local hovering = self:IsHovered()
+    local hovering = self:IsHovered() and self:IsEnabled()
     if ( hovering and !self.wasHovered ) then
         surface.PlaySound(self.soundEnter)
         self:SetFont(self.fontHovered)
@@ -201,7 +212,7 @@ function PANEL:SizeToContents()
 end
 
 function PANEL:Think()
-    local hovering = self:IsHovered()
+    local hovering = self:IsHovered() and self:IsEnabled()
     if ( hovering and !self.wasHovered ) then
         surface.PlaySound(self.soundEnter)
         self:SetFont(self.fontHovered)
