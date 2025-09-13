@@ -155,17 +155,23 @@ function GM:StartCommand(client, userCmd)
     if ( AX_CLIENT_QUEUE[steamID64] and !userCmd:IsForced() ) then
         AX_CLIENT_QUEUE[steamID64] = nil
 
-        client:SetLastJoin(os.time(), true, client)
+        client:EnsurePlayer(function(ok)
+            if ( !ok ) then
+                ax.util:PrintError("Proceeding despite player DB ensure failure for " .. steamID64)
+            end
 
-        ax.character:Restore(client, function(characters)
-            hook.Run("PlayerReady", client)
+            client:SetLastJoin(os.time(), true, client)
 
-            ax.inventory:Restore(client, function(success)
-                if ( success ) then
-                    ax.util:PrintDebug(Color(60, 220, 120), "Inventories restored successfully.")
-                else
-                    ax.util:PrintDebug(Color(220, 60, 60), "Failed to restore inventories.")
-                end
+            ax.character:Restore(client, function(characters)
+                hook.Run("PlayerReady", client)
+
+                ax.inventory:Restore(client, function(success)
+                    if ( success ) then
+                        ax.util:PrintDebug(Color(60, 220, 120), "Inventories restored successfully.")
+                    else
+                        ax.util:PrintDebug(Color(220, 60, 60), "Failed to restore inventories.")
+                    end
+                end)
             end)
         end)
 

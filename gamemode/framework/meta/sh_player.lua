@@ -9,7 +9,6 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
-
 local steamName = steamName or ax.player.meta.GetName
 function ax.player.meta:GetName()
     local character = self:GetCharacter()
@@ -142,7 +141,7 @@ if ( SERVER ) then
 
         -- Build an update query for the players table using the registered schema
         local query = mysql:Update("ax_players")
-        query:Where("id", self:GetID())
+        query:Where("steamid64", self:GetSteamID64())
 
         -- Ensure the data table exists and always save it as JSON
         query:Update("data", util.TableToJSON(self.vars.data or {}))
@@ -174,6 +173,65 @@ if ( SERVER ) then
 
         query:Execute()
     end
+
+    function ax.player.meta:EnsurePlayer(callback)
+        local steamID64 = self:SteamID64()
+
+        local function finish(ok)
+            if ( isfunction(callback) ) then
+                callback(ok)
+            end
+        end
+
+        local query = mysql:Select("ax_players")
+            query:Where("steamid64", steamID64)
+            query:Callback(function(result, status)
+                if ( result == false ) then
+                    ax.util:PrintError("Failed to query players for " .. steamID64)
+                    finish(false)
+                    return
+                end
+
+                if ( result[1] == nil ) then
+                    ax.util:PrintDebug("No player row found for " .. steamID64 .. ", creating one.")
+
+                    local insert = mysql:Insert("ax_players")
+                        insert:Insert("steamid64", steamID64)
+                        insert:Insert("name", self:SteamName())
+                        insert:Insert("last_join", os.time())
+                        insert:Insert("last_leave", 0)
+                        insert:Insert("play_time", 0)
+                        insert:Insert("data", "[]")
+                    insert:Callback(function(res, st, lastID)
+                        if ( res == false ) then
+                            ax.util:PrintError("Failed to create player row for " .. steamID64)
+                            finish(false)
+                            return
+                        end
+
+                        ax.util:PrintDebug("Created player row for " .. steamID64 .. " with id " .. tostring(lastID))
+                        finish(true)
+                    end)
+                    insert:Execute()
+                else
+                    finish(true)
+                end
+            end)
+        query:Execute()
+    end
+end
+
+if ( CLIENT ) then
+    function ax.player.meta:EnsurePlayer(callback)
+        local t = self:GetTable()
+        if ( t.axReady ) then
+            if ( isfunction(callback) ) then callback(true) end
+            return
+        end
+
+        t.axEnsureCallbacks = t.axEnsureCallbacks or {}
+        t.axEnsureCallbacks[#t.axEnsureCallbacks + 1] = callback
+    end
 end
 
 if ( SERVER ) then
@@ -193,7 +251,7 @@ else
     end)
 end
 
-client.ChatPrintInternal = client.ChatPrintInternal or client.ChatPrint
+ax.player.meta.ChatPrintInternal = ax.player.meta.ChatPrintInternal or ax.player.meta.ChatPrint
 function ax.player.meta:ChatPrint(...)
     if ( SERVER ) then
         net.Start("ax.player.chatPrint")

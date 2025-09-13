@@ -82,8 +82,8 @@ function ax.database:CreateTables()
     query:Execute()
 
     query = mysql:Create("ax_players")
-        query:Create("id", "INT(11) UNSIGNED NOT NULL AUTO_INCREMENT")
-        query:PrimaryKey("id")
+        query:Create("steamid64", "VARCHAR(17) NOT NULL")
+        query:PrimaryKey("steamid64")
     query:Execute()
 
     query = mysql:Create("ax_characters")
@@ -142,7 +142,7 @@ concommand.Add("ax_database_create", function(client, command, args, argStr)
     end
 
     ax.database:CreateTables()
-    ax.util:Print("Database tables created successfully.")
+    ax.util:Print(Color(0, 255, 0), "Database tables created successfully.")
 end)
 
 function ax.database:WipeTables(callback)
@@ -174,6 +174,17 @@ function ax.database:WipeTables(callback)
     hook.Run("OnDatabaseTablesWiped")
 end
 
+concommand.Add("ax_database_wipe", function(client, command, args, argStr)
+    if ( !IsValid(client) or !client:IsSuperAdmin() ) then
+        ax.util:PrintError("You do not have permission to use this command.")
+        return
+    end
+
+    ax.database:WipeTables(function()
+        ax.util:Print(Color(255, 255, 0), "Database tables wiped successfully.")
+    end)
+end)
+
 function ax.database:DestroyTables(callback)
     local query
 
@@ -203,17 +214,6 @@ function ax.database:DestroyTables(callback)
     hook.Run("OnDatabaseTablesWiped")
 end
 
-concommand.Add("ax_database_wipe", function(client, command, args, argStr)
-    if ( !IsValid(client) or !client:IsSuperAdmin() ) then
-        ax.util:PrintError("You do not have permission to use this command.")
-        return
-    end
-
-    ax.database:WipeTables(function()
-        ax.util:Print("Database tables wiped successfully.")
-    end)
-end)
-
 concommand.Add("ax_database_destroy", function(client, command, args, argStr)
     if ( !IsValid(client) or !client:IsSuperAdmin() ) then
         ax.util:PrintError("You do not have permission to use this command.")
@@ -221,6 +221,6 @@ concommand.Add("ax_database_destroy", function(client, command, args, argStr)
     end
 
     ax.database:DestroyTables(function()
-        ax.util:Print("Database tables destroyed successfully.")
+        ax.util:Print(Color(255, 0, 0), "Database tables destroyed successfully.")
     end)
 end)

@@ -16,6 +16,20 @@ net.Receive("ax.player.ready", function(len)
     clientTable.axReady = true
 
     vgui.Create("ax.main")
+
+    -- Run any queued EnsurePlayer callbacks
+    local client = LocalPlayer()
+    local t = client:GetTable()
+    if ( istable(t.axEnsureCallbacks) ) then
+        for i = 1, #t.axEnsureCallbacks do
+            local cb = t.axEnsureCallbacks[i]
+            if ( isfunction(cb) ) then
+                pcall(cb, true)
+            end
+        end
+
+        t.axEnsureCallbacks = nil
+    end
 end)
 
 net.Receive("ax.character.create", function(len)

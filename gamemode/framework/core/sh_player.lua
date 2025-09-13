@@ -9,13 +9,7 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
-ax.player:RegisterVar("steamID64", {
-    field = "steamid64",
-    fieldType = ax.type.steamid64,
-    default = ""
-})
-
-ax.player:RegisterVar("name", {
+ax.player:RegisterVar("nameVar", {
     field = "name",
     fieldType = ax.type.string,
     default = "Unknown"
