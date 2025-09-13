@@ -135,6 +135,8 @@ ax.command:Add("setskin", {
         if ( !IsValid(target) ) then return "Invalid player." end
 
         target:SetSkin(skin)
+        target:GetCharacter():SetData("skin", skin)
+        target:GetCharacter():Save()
         return "Skin set to " .. skin
     end
 })
