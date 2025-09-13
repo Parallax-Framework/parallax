@@ -12,7 +12,7 @@
 ax.chat = ax.chat or {}
 ax.chat.classes = ax.chat.classes or {}
 
-function ax.chat:New(name, data)
+function ax.chat:Add(name, data)
     if ( !isstring(name) or name == "" ) then
         ax.util:PrintError("Invalid chat class name provided")
         return
@@ -24,6 +24,7 @@ function ax.chat:New(name, data)
     end
 
     self.classes[name] = data
+
     ax.util:PrintDebug("Chat class \"" .. name .. "\" added successfully.")
 end
 
@@ -91,6 +92,7 @@ local function apply_shortcuts(text)
     for k, v in pairs(SHORTCUTS) do
         text = string.gsub(text, "%f[%a]" .. k .. "%f[^%a]", v)
     end
+
     return text
 end
 
@@ -101,6 +103,7 @@ local function normalize_spacing(text)
     text = string.gsub(text, "%?%?%?+", "?")
     text = string.gsub(text, "!!!+", "!")
     text = string.gsub(text, "%.%.+", ".")
+
     return string.Trim(text)
 end
 
@@ -109,6 +112,7 @@ local function capitalize_sentences(text)
     text = string.gsub(text, "([%.%!%?]%s+)([%l])", function(punct, ch)
         return punct .. string.upper(ch)
     end)
+
     return text
 end
 
@@ -118,12 +122,14 @@ local function fix_pronoun_i(text)
     text = string.gsub(text, "%f[%a]i('?)ve%f[^%a]", "I've")
     text = string.gsub(text, "%f[%a]i('?)d%f[^%a]", "I'd")
     text = string.gsub(text, "%f[%a]i('?)ll%f[^%a]", "I'll")
+
     return text
 end
 
 local function detect_capitalization(text)
     if ( string.upper(text) == text ) then return "upper" end
     if ( string.lower(text) == text ) then return "lower" end
+
     return "mixed"
 end
 
