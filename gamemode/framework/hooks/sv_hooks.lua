@@ -85,7 +85,7 @@ function GM:PlayerLoadout(client)
     local character = client:GetCharacter()
     if ( character ) then
         client:SetModel(character:GetModel())
-        client:SetSkin( character:GetData( "skin", 0 ) )
+        client:SetSkin(character:GetData("skin", 0))
         local bodyGroups = character:GetData("bodygroups", {})
         for k, v in pairs(bodyGroups) do
             client:SetBodygroup(k, v)
@@ -103,13 +103,13 @@ function GM:PlayerLoadout(client)
 end
 
 function GM:PlayerSetHandsModel(client, ent)
-   local simplemodel = player_manager.TranslateToPlayerModelName(client:GetModel())
-   local info = player_manager.TranslatePlayerHands(simplemodel)
-   if ( info ) then
+    local simplemodel = player_manager.TranslateToPlayerModelName(client:GetModel())
+    local info = player_manager.TranslatePlayerHands(simplemodel)
+    if ( info ) then
         ent:SetModel(info.model)
         ent:SetSkin(info.skin)
         ent:SetBodyGroups(info.body)
-   end
+    end
 end
 
 function GM:DatabaseConnected()
