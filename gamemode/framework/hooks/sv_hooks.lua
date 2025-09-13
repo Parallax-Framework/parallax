@@ -132,22 +132,6 @@ function GM:PlayerInitialSpawn(client)
         v:ChatPrint(Color(60, 220, 120), "Player " .. client:SteamName() .. " has joined the server.")
     end
 
-    client:LoadData( function( data )
-        if ( !IsValid( client) ) then return end
-
-        ax.character:Restore(client, function(characters)
-            hook.Run("PlayerReady", client)
-
-            ax.inventory:Restore(client, function(success)
-                if ( success ) then
-                    ax.util:PrintDebug(Color(60, 220, 120), "Inventories restored successfully.")
-                else
-                    ax.util:PrintDebug(Color(220, 60, 60), "Failed to restore inventories.")
-                end
-            end)
-        end)
-    end )
-
     AX_CLIENT_QUEUE[steamID64] = true
     hook.Run("PlayerQueued", client)
 end
@@ -166,6 +150,22 @@ function GM:StartCommand(client, userCmd)
     local steamID64 = client:SteamID64()
     if ( AX_CLIENT_QUEUE[steamID64] and !userCmd:IsForced() ) then
         AX_CLIENT_QUEUE[steamID64] = nil
+
+        client:LoadData( function( data )
+            if ( !IsValid( client) ) then return end
+
+            ax.character:Restore(client, function(characters)
+                hook.Run("PlayerReady", client)
+
+                ax.inventory:Restore(client, function(success)
+                    if ( success ) then
+                        ax.util:PrintDebug(Color(60, 220, 120), "Inventories restored successfully.")
+                    else
+                        ax.util:PrintDebug(Color(220, 60, 60), "Failed to restore inventories.")
+                    end
+                end)
+            end)
+        end )
 
         client:SetNoDraw(true)
         client:SetNotSolid(true)
