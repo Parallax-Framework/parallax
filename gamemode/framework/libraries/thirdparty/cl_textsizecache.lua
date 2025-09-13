@@ -6,7 +6,10 @@ local oldGetTextSize = oldGetTextSize or surface.GetTextSize
 local activeFont = "Default"
 
 function surface.SetFont(font)
-    activeFont = font
+    if ( activeFont != font ) then
+        activeFont = font
+    end
+
     oldSetFont(font)
 end
 
