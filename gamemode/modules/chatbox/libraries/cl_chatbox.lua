@@ -34,10 +34,10 @@ function chat.AddText(...)
         for _, seg in ipairs(segments) do
             local t = seg.text or ""
             local len = #t
-            if remaining >= len then
+            if ( remaining >= len ) then
                 out = out .. string.format("<color=%d %d %d>%s</color>", seg.color.r, seg.color.g, seg.color.b, t)
                 remaining = remaining - len
-            elseif remaining > 0 then
+            elseif ( remaining > 0 ) then
                 out = out .. string.format("<color=%d %d %d>%s</color>", seg.color.r, seg.color.g, seg.color.b, string.sub(t, 1, remaining))
                 break
             else
@@ -69,13 +69,17 @@ function chat.AddText(...)
 
     function panel:Paint(w, h)
         surface.SetAlphaMultiplier(self.alpha)
-        if rich then rich:Draw(0, 0) end
+
+        if ( rich ) then
+            rich:Draw(0, 0)
+        end
+
         surface.SetAlphaMultiplier(1)
     end
 
     function panel:Think()
         -- Reveal characters over time until fully shown
-        if self.revealedChars < self.totalChars then
+        if ( self.revealedChars < self.totalChars ) then
             self.revealedChars = math.min(self.totalChars, self.revealedChars + FrameTime() * self.revealSpeed)
             rich = markup.Parse("<font=" .. font .. ">" .. buildMarkup(math.floor(self.revealedChars)) .. "</font>", maxWidth)
             self:SetTall(rich:GetHeight())

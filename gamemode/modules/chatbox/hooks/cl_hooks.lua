@@ -48,7 +48,7 @@ function MODULE:PostDrawTranslucentRenderables()
         local text = client:GetNWString("axChatText", "")
         if ( text == "" ) then continue end
 
-        if ( string.StartsWith(text, "/") ) then continue end
+        if ( string.StartsWith(text, "/") or string.StartsWith(text, ".") ) then continue end
 
         local pos = client:EyePos() + Vector(0, 0, 8)
         local typing = "Typing..."

@@ -11,11 +11,14 @@
 
 local client = FindMetaTable("Player")
 
-local steamName = steamName or client.Name
-function client:Name()
+local steamName = steamName or client.GetName
+function client:GetName()
     local character = self:GetCharacter()
     return character and character:GetName() or steamName(self)
 end
+
+client.Name = client.GetName
+client.Nick = client.GetName
 
 function client:SteamName()
     return steamName(self)
@@ -117,7 +120,7 @@ function client:PlayGesture(slot, sequence)
             net.WritePlayer(self)
             net.WriteUInt(slot, 8)
             net.WriteUInt(sequence, 16)
-        net.SendPVS( self:GetPos() )
+        net.SendPVS(self:GetPos())
     end
 end
 

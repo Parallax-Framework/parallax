@@ -10,22 +10,80 @@
 ]]
 
 ax.chat = ax.chat or {}
-ax.chat.classes = ax.chat.classes or {}
+ax.chat.registry = ax.chat.registry or {}
 
-function ax.chat:Add(name, data)
+function ax.chat:Add(name, def)
     if ( !isstring(name) or name == "" ) then
-        ax.util:PrintError("Invalid chat class name provided")
+        ax.util:PrintError("ax.chat:Add - Invalid chat name provided")
         return
     end
 
-    if ( !istable(data) ) then
-        ax.util:PrintError("Invalid chat class data provided for class \"" .. name .. "\"")
+    if ( !istable(def) ) then
+        ax.util:PrintError("ax.chat:Add - Invalid chat definition provided for \"" .. name .. "\"")
         return
     end
 
-    self.classes[name] = data
+    if ( !def.noCommand ) then
+        ax.command:Add(name, {
+            description = def.description or "No description available.",
+            chatCommand = true,
+            arguments = {
+                { name = "message", type = ax.type.text }
+            },
+            OnRun = function(client, message)
+                if ( !isstring(message) or message == "" ) then
+                    return
+                end
 
-    ax.util:PrintDebug("Chat class \"" .. name .. "\" added successfully.")
+                if ( def.OnRun ) then
+                    ax.chat:Send(client, name, message)
+                end
+            end
+        })
+    end
+
+    self.registry[name] = def
+    ax.util:PrintDebug("ax.chat:Add - Chat Type \"" .. name .. "\" registered successfully")
+end
+
+if ( SERVER ) then
+    function ax.chat:Send(client, chatType, ...)
+        if ( !IsValid(client) or !client:IsPlayer() ) then return end
+        if ( !isstring(chatType) or chatType == "" ) then return end
+
+        local def = self.registry[chatType]
+        if ( !def ) then
+            ax.util:PrintError("ax.chat:Send - Invalid chat type \"" .. chatType .. "\"")
+            return
+        end
+
+        local package = {}
+        if ( def.OnRun ) then
+            local result = { def.OnRun(client, ...) }
+            if ( #result == 0 ) then return end
+
+            package = result
+        else
+            package = { ... }
+        end
+
+        local clients = {}
+        for _, v in player.Iterator() do
+            if ( v == client ) then
+                table.insert(clients, v)
+            elseif ( def.CanHear ) then
+                if ( def.CanHear(client, v) ) then
+                    table.insert(clients, v)
+                end
+            else
+                table.insert(clients, v)
+            end
+        end
+
+        for _, v in ipairs(clients) do
+            v:ChatPrint(unpack(package))
+        end
+    end
 end
 
 local LAST_SYMBOLS = {
@@ -141,7 +199,7 @@ function ax.chat:Format(message)
 
     local capStyle = detect_capitalization(message)
 
-    message = apply_shortcuts(string.lower(message))
+    message = apply_shortcuts(message)
     message = fix_pronoun_i(message)
     message = normalize_spacing(message)
     message = capitalize_sentences(message)
