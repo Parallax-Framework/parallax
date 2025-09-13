@@ -173,11 +173,17 @@ if ( SERVER ) then
             query:Callback( function( result )
                 if ( IsValid( self ) and istable( result ) and result[1] != nil and result[1].data ) then
                     local clientTable = self:GetTable()
-                    clientTable.axData = util.JSONToTable( result[1].data ) or {}
+                    local data = util.JSONToTable( result[1].data ) or {}
+
+                    for k, v in pairs( data ) do
+                        self:SetData( k, v )
+                    end
 
                     if ( isfunction( callback ) ) then
                         callback( clientTable.axData )
                     end
+
+                    hook.Run( "PlayerDataLoaded", self )
                 else
                     local insertQuery = mysql:Insert( "ax_players" )
                         insertQuery:Insert( "steamid", steamID64 )
@@ -188,6 +194,8 @@ if ( SERVER ) then
                     if ( isfunction( callback ) ) then
                         callback( {} )
                     end
+
+                    hook.Run( "PlayerDataCreated", self )
                 end
             end )
         query:Execute()
@@ -200,9 +208,12 @@ if ( SERVER ) then
         local updateQuery = mysql:Update( "ax_players" )
             updateQuery:Update( "data", util.TableToJSON( data ) )
             updateQuery:Where( "steamid", steamID64 )
+            updateQuery:Callback( function( success )
+                if ( success ) then
+                    hook.Run( "PlayerDataSaved", self )
+                end
+            end )
         updateQuery:Execute()
-
-        return true
     end
 else
     net.Receive("ax.player.chatPrint", function(len)
