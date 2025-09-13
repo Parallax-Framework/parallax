@@ -84,7 +84,7 @@ function ax.character:Load(client, character)
     clientData.axCharacter = character
     ax.character:Sync(client, character)
 
-    local inventory = ax.inventory.instances[character.invID]
+    local inventory = ax.inventory.instances[character.vars.inventory]
     if ( istable(inventory) ) then
         inventory:AddReceiver(client)
     end
