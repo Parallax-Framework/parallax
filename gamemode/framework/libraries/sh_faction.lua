@@ -75,18 +75,20 @@ function ax.faction:Include(directory)
                 facUniqueID = string.sub(facUniqueID, 4)
             end
 
-            if ( self.stored[facUniqueID] ) then
-                ax.util:PrintDebug(Color(255, 73, 24), "Faction \"" .. facUniqueID .. "\" already exists, skipping file: " .. fileName)
-                continue
+            local existing = self.stored[facUniqueID]
+            local index = (istable(existing) and existing.index) or (#self.instances + 1)
+
+            if ( existing ) then
+                ax.util:PrintDebug(Color(255, 200, 50), "Faction \"" .. facUniqueID .. "\" already exists, overwriting file: " .. fileName)
             end
 
-            FACTION = { id = facUniqueID, index = #self.instances + 1 }
+            FACTION = { id = facUniqueID, index = index }
                 FACTION.GetModels = function(this)
                     return this.models or DEFAULT_MODELS
                 end
 
                 ax.util:Include(directory .. "/" .. fileName, "shared")
-                ax.util:PrintDebug(Color(85, 255, 120), "Faction \"" .. FACTION.name .. "\" initialised successfully.")
+                ax.util:PrintDebug(Color(85, 255, 120), "Faction \"" .. (FACTION.name or FACTION.Name or FACTION.id) .. "\" initialised successfully.")
 
                 self.stored[FACTION.id] = FACTION
                 self.instances[FACTION.index] = FACTION
