@@ -26,6 +26,8 @@ function ax.player.meta:GetCharacter()
     return self:GetTable().axCharacter
 end
 
+ax.player.meta.GetChar = ax.player.meta.GetCharacter
+
 function ax.player.meta:GetCharacters()
     return self:GetTable().axCharacters or {}
 end
