@@ -45,19 +45,3 @@ function ax.localization:GetPhrase(phrase, ...)
 
     return translation
 end
-
-function ax.localization:Initialize()
-    self:Include("parallax/gamemode/localization")
-
-    local _, modules = file.Find("parallax/gamemode/modules/*", "LUA")
-    for i = 1, #modules do
-        self:Include("parallax/gamemode/modules/" .. modules[i] .. "/localization")
-    end
-
-    self:Include(engine.ActiveGamemode() .. "/gamemode/schema/localization")
-
-    _, modules = file.Find(engine.ActiveGamemode() .. "/gamemode/modules/*", "LUA")
-    for i = 1, #modules do
-        self:Include(engine.ActiveGamemode() .. "/gamemode/modules/" .. modules[i] .. "/localization")
-    end
-end

@@ -10,6 +10,7 @@
 ]]
 
 function GM:Initialize()
+    ax.util:IncludeDirectory("parallax/gamemode/localization", true)
     ax.faction:Include("parallax/gamemode/factions")
     ax.class:Include("parallax/gamemode/classes")
     ax.item:Include("parallax/gamemode/items")
@@ -22,6 +23,7 @@ function GM:OnReloaded()
     if ( reloaded ) then return end
     reloaded = true
 
+    ax.util:IncludeDirectory("parallax/gamemode/localization", true)
     ax.faction:Include("parallax/gamemode/factions")
     ax.class:Include("parallax/gamemode/classes")
     ax.item:Include("parallax/gamemode/items")

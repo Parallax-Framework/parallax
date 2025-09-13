@@ -28,14 +28,18 @@ function PANEL:Init()
     self:SetContentAlignment(4)
 end
 
+function PANEL:SetTextInternal(text)
+    BaseClass.SetText(self, text)
+end
+
 function PANEL:SetText(text, bNoTranslate, bNoSizeToContents)
     if ( !text ) then return end
 
-    if ( !bNoTranslate ) then
+    if ( !bNoTranslate and text != "" ) then
         text = ax.localization:GetPhrase(text)
     end
 
-    BaseClass.SetText(self, text)
+    self:SetTextInternal(text)
 
     if ( !bNoSizeToContents ) then
         self:SizeToContents()
@@ -181,12 +185,12 @@ end
 function PANEL:SetText(text)
     if ( !text ) then return end
 
-    BaseClass.SetText(self, text, false, true)
+    BaseClass.SetText(self, text)
 
     text = self:GetText()
     text = string.upper(text)
 
-    BaseClass.SetText(self, text, true, false)
+    self:SetTextInternal(text)
 end
 
 function PANEL:SizeToContents()
@@ -316,12 +320,12 @@ end
 function PANEL:SetText(text)
     if ( !text ) then return end
 
-    BaseClass.SetText(self, text, false, true)
+    BaseClass.SetText(self, text)
 
     text = self:GetText()
     text = string.upper(text)
 
-    BaseClass.SetText(self, text, true, false)
+    self:SetTextInternal(text)
 end
 
 function PANEL:SizeToContents()
