@@ -72,7 +72,7 @@ if ( SERVER ) then
         -- Step 2: Retrieve all inventory IDs associated with the character IDs.
         local inventoryIDs = {}
         for _, characterID in ipairs(characterIDs) do
-            local query = mysql:Select("ax_character")
+            local query = mysql:Select("ax_characters")
                 query:Where("id", characterID)
                 query:Callback(function(result, status)
                     if ( result == nil or status == false ) then
