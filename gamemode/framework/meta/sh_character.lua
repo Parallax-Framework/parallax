@@ -28,6 +28,8 @@ function character:GetInventory()
     return ax.inventory.instances[self.vars.inventory]
 end
 
+character.GetInv = character.GetInventory
+
 function character:GetData(key)
     if ( !istable(self.vars.data) ) then self.vars.data = {} end
 
