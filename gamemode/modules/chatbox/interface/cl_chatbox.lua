@@ -468,6 +468,8 @@ function PANEL:SetVisible(visible)
         self.chatType:RestartTyping()
     end
 
+    hook.Run("ChatboxOnTextChanged", "", "IC")
+
     self:PopulateRecommendations()
 end
 
