@@ -18,30 +18,31 @@ if ( SERVER ) then
         data = data or {}
         data.maxWeight = data.maxWeight or 30.0
 
-        local query = mysql:InsertIgnore("ax_inventories")
-        query:Insert("items", "[]")
-        query:Insert("max_weight", data.maxWeight)
-        query:Callback(function(result, status, lastInvId)
-            if ( result == false ) then
-                if ( isfunction(callback) ) then
-                    callback(false)
+        local query = mysql:Insert("ax_inventories")
+            query:Insert("items", "[]")
+            query:Insert("max_weight", data.maxWeight)
+            query:Insert("data", "[]")
+            query:Callback(function(result, status, lastInvId)
+                if ( result == false ) then
+                    if ( isfunction(callback) ) then
+                        callback(false)
+                    end
+
+                    return
                 end
 
-                return
-            end
+                local inventory = setmetatable({}, ax.inventory.meta)
+                inventory.id = lastInvId
+                inventory.items = {}
+                inventory.maxWeight = data.maxWeight or 30.0
+                inventory.receivers = {}
 
-            local inventory = setmetatable({}, ax.inventory.meta)
-            inventory.id = lastInvId
-            inventory.items = {}
-            inventory.maxWeight = data.maxWeight or 30.0
-            inventory.receivers = {}
+                ax.inventory.instances[lastInvId] = inventory
 
-            ax.inventory.instances[lastInvId] = inventory
-
-            if ( isfunction(callback) ) then
-                callback(inventory)
-            end
-        end)
+                if ( isfunction(callback) ) then
+                    callback(inventory)
+                end
+            end)
         query:Execute()
     end
 
