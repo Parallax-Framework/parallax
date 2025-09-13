@@ -136,6 +136,8 @@ function GM:PlayerInitialSpawn(client)
         ax.util:PrintDebug("Auto-saved player " .. client:SteamName() .. ".")
     end)
 
+    client:GetTable().axJoinTime = os.time()
+
     AX_CLIENT_QUEUE[steamID64] = true
     hook.Run("PlayerQueued", client)
 end
@@ -218,6 +220,20 @@ end
 
 function GM:PlayerCanHearPlayersVoice(listener, speaker)
     return true, true
+end
+
+function GM:ShutDown() -- PlayerDisconnected isn't called on p2p/singleplayer
+    if ( !game.IsDedicated() ) then
+        for _, client in player.Iterator() do
+            local joinTime = client:GetLastJoin() or os.time()
+            local playtime = os.difftime(os.time(), joinTime)
+
+            client:SetLastLeave(os.time())
+            client:SetPlayTime(playtime)
+
+            client:Save()
+        end
+    end
 end
 
 function GM:PlayerDisconnected(client)

@@ -221,9 +221,7 @@ if ( SERVER ) then
             end)
         query:Execute()
     end
-end
-
-if ( CLIENT ) then
+else
     function ax.player.meta:EnsurePlayer(callback)
         local t = self:GetTable()
         if ( t.axReady ) then
@@ -234,6 +232,13 @@ if ( CLIENT ) then
         t.axEnsureCallbacks = t.axEnsureCallbacks or {}
         t.axEnsureCallbacks[#t.axEnsureCallbacks + 1] = callback
     end
+end
+
+function ax.player.meta:GetSessionPlayTime()
+    local joinTime = self:GetTable().axJoinTime
+    if ( !joinTime ) then return 0 end
+
+    return os.difftime(os.time(), joinTime)
 end
 
 if ( SERVER ) then
