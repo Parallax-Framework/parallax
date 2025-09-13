@@ -82,7 +82,7 @@ function ax.player:RegisterVar(name, data)
 
     if ( !data.bNoGetter ) then
         local nameGet = "Get" .. prettyName
-        PLAYER[nameGet] = function(client, fallback)
+        ax.player.meta[nameGet] = function(client, fallback)
             if ( isfunction(data.Get) ) then
                 return data:Get(client, fallback)
             else
@@ -93,7 +93,7 @@ function ax.player:RegisterVar(name, data)
 
     if ( !data.bNoSetter ) then
         local nameSet = "Set" .. prettyName
-        PLAYER[nameSet] = function(client, value, isNetworked, recipients)
+        ax.player.meta[nameSet] = function(client, value, isNetworked, recipients)
             if ( isfunction(data.Set) ) then
                 data:Set(client, value, isNetworked, recipients)
 
@@ -119,11 +119,11 @@ function ax.player:RegisterVar(name, data)
             local aliasPrettyName = string.upper( string.sub( alias, 1, 1 ) ) .. string.sub( alias, 2 )
 
             if ( !data.bNoGetter ) then
-                PLAYER[ "Get" .. aliasPrettyName ] = PLAYER[ "Get" .. prettyName ]
+                ax.player.meta[ "Get" .. aliasPrettyName ] = ax.player.meta[ "Get" .. prettyName ]
             end
 
             if ( !data.bNoSetter ) then
-                PLAYER[ "Set" .. aliasPrettyName ] = PLAYER[ "Set" .. prettyName ]
+                ax.player.meta[ "Set" .. aliasPrettyName ] = ax.player.meta[ "Set" .. prettyName ]
             end
         end
     end

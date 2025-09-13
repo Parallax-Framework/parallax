@@ -63,11 +63,11 @@ function GM:DoPlayerDeath(client, attacker, damageInfo)
         end
     end
 
-    client:SetNWInt("ax.ragdoll.index", ragdoll:EntIndex())
+    client:SetRelay("ax.ragdoll.index", ragdoll:EntIndex())
 end
 
 function GM:PlayerSpawn(client)
-    client:SetNWInt("ax.ragdoll.index", -1)
+    client:SetRelay("ax.ragdoll.index", -1)
     client:SetSlowWalkSpeed(75)
     client:SetWalkSpeed(100)
     client:SetCrouchedWalkSpeed(0.75)
