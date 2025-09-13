@@ -69,7 +69,7 @@ function PANEL:Init()
         end
 
         local banner = v.image or hook.Run("GetFactionBanner", v.index) or "gamepadui/hl2/chapter14"
-        if ( type(banner) == "string" ) then
+        if ( isstring( banner ) ) then
             banner = ax.util:GetMaterial(banner)
         end
 
@@ -130,6 +130,17 @@ function PANEL:Init()
         net.Start("ax.character.create")
             net.WriteTable(self.payload)
         net.SendToServer()
+
+        local client = ax.client
+        local clientTable = client:GetTable()
+        local characters = clientTable.axCharacters or {}
+        if ( !client:GetCharacter() and characters[1] == nil ) then
+            timer.Simple(0.1, function()
+                net.Start("ax.character.load")
+                    net.WriteUInt(#ax.character.instances, 32)
+                net.SendToServer()
+            end)
+        end
     end)
 
     title = self.characterOptions:Add("ax.text")

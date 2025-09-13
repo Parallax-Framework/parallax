@@ -118,7 +118,15 @@ net.Receive("ax.character.load", function(length, client)
             return
         end
 
+        for i = #ax.inventory.instances, 1, -1 do
+            local inventory = ax.inventory.instances[ i ]
+            if ( istable(inventory) and inventory:IsReceiver( client ) ) then
+                inventory:RemoveReceiver( client )
+            end
+        end
+
         prevChar.player = NULL
+        hook.Run("PlayerUnloadedCharacter", client, prevChar)
     end
 
     local try, catch = hook.Run("CanPlayerLoadCharacter", client, character)
@@ -131,4 +139,63 @@ net.Receive("ax.character.load", function(length, client)
     end
 
     ax.character:Load(client, character)
+end)
+
+util.AddNetworkString( "ax.character.delete" )
+net.Receive( "ax.character.delete", function( length, client )
+    local id = net.ReadUInt( 32 )
+    if ( !isnumber( id ) or id < 1 ) then return end
+
+    local character = ax.character.instances[ id ]
+    if ( !istable( character ) ) then
+        ax.util:PrintError( "Character with ID " .. id .. " does not exist." )
+        return
+    end
+
+    if ( character:GetSteamID64() != client:SteamID64() ) then
+        ax.util:PrintError( "Character ID " .. id .. " does not belong to " .. client:SteamID64() )
+        return
+    end
+
+    local try, catch = hook.Run( "CanPlayerDeleteCharacter", client, character )
+    if ( try == false ) then
+        if ( isstring(catch) and #catch > 0 ) then
+            client:ChatPrint(catch)
+        end
+
+        return
+    end
+
+    ax.character:Delete( id, function( bSuccess )
+        if ( bSuccess ) then
+            local clientData = client:GetTable()
+            local clientCharacters = clientData.axCharacters or {}
+            if ( istable( clientData.axCharacters ) ) then
+                for i = #clientCharacters, 1, -1 do
+                    if ( clientCharacters[i].id == id ) then
+                        table.remove( clientCharacters, i )
+                        break
+                    end
+                end
+            end
+
+            if ( clientData.axCharacter and clientData.axCharacter.id == id ) then
+                clientData.axCharacter = nil
+                client:SetNoDraw(true)
+                client:SetNotSolid(true)
+                client:SetMoveType(MOVETYPE_NONE)
+                client:KillSilent()
+
+                client:SendLua( [[vgui.Create( "ax.main" )]] )
+            end
+
+            net.Start( "ax.character.delete" )
+                net.WriteUInt( id, 32 )
+            net.Send( client )
+
+            hook.Run( "PlayerDeletedCharacter", client, id )
+
+            ax.character.instances[ id ] = nil
+        end
+    end )
 end)

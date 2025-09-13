@@ -35,7 +35,7 @@ function PANEL:PopulateCharacterList()
     local clientTable = ax.client:GetTable()
     local characters = clientTable.axCharacters or {}
 
-    if ( #characters == 0 ) then
+    if ( characters[1] == nil ) then
         local label = self.characters:Add("ax.text")
         label:Dock(TOP)
         label:SetFont("ax.huge.bold")
@@ -67,7 +67,7 @@ function PANEL:PopulateCharacterList()
         end
 
         local banner = hook.Run("GetCharacterBanner", v.id) or "gamepadui/hl2/chapter14"
-        if ( type(banner) == "string" ) then
+        if ( isstring( banner ) ) then
             banner = ax.util:GetMaterial(banner)
         end
 
@@ -92,6 +92,10 @@ function PANEL:PopulateCharacterList()
         deleteButton.width = 0
         deleteButton.DoClick = function()
             -- self:PopulateDelete(v.id)
+
+            net.Start("ax.character.delete")
+                net.WriteUInt(v.id, 32)
+            net.SendToServer()
         end
 
         -- Sorry for this pyramid of code, but eon wanted me to make the delete button extend when hovered over the character button.

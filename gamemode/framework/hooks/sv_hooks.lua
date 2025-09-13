@@ -22,7 +22,7 @@ function GM:InitPostEntity()
 end
 
 function GM:PlayerDeathThink(client)
-    if ( client:RateLimit("respawn", 5) ) then
+    if ( client:RateLimit("respawn", 5) and client:GetCharacter() ) then
         client:Spawn()
     end
 end
@@ -84,12 +84,21 @@ end
 function GM:PlayerLoadout(client)
     BaseClass.PlayerLoadout(self, client)
 
-    client:Give("none")
     client:Give("weapon_fists")
 
     local character = client:GetCharacter()
     if ( character ) then
         client:SetModel(character:GetModel())
+        client:SetSkin( character:GetData( "skin", 0 ) )
+        local bodyGroups = character:GetData("bodygroups", {})
+        for k, v in pairs(bodyGroups) do
+            client:SetBodygroup(k, v)
+        end
+
+        local materials = character:GetData("materials", {})
+        for k, v in pairs(materials) do
+            client:SetSubMaterial(k - 1, v)
+        end
     end
 
     client:SetupHands()

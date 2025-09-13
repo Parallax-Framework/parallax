@@ -67,14 +67,14 @@ end
 function inventory:AddReceiver(receiver)
     if ( !istable(self.receivers) ) then self.receivers = {} end
 
-    for i = 1, #self.receivers do
+    for i = #self.receivers, 1, -1 do
         if ( self.receivers[i] == receiver ) then
             return false -- Already exists.
         end
     end
 
     if ( istable(receiver) ) then
-        for i = 1, #receiver do
+        for i = #receiver, 1, -1 do
             if ( !receiver[i]:IsPlayer() ) then
                 ax.util:PrintError("Invalid player provided to ax.inventory:AddReceiver() (" .. tostring(receiver[i]) .. ")")
                 return false
@@ -110,7 +110,7 @@ end
 function inventory:RemoveReceiver(receiver)
     if ( !istable(self.receivers) ) then self.receivers = {} return end
 
-    for i = 1, #self.receivers do
+    for i = #self.receivers, 1, -1 do
         if ( self.receivers[i] == receiver ) then
             table.remove(self.receivers, i)
 
