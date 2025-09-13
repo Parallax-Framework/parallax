@@ -39,7 +39,7 @@ function ax.item:Include(path)
 
         ITEM = setmetatable({ uniqueID = itemName }, ax.item.meta)
             ax.util:Include(path .. "/" .. fileName, "shared")
-            ax.util:PrintSuccess("Item \"" .. tostring(ITEM.Name) .. "\" initialized successfully.")
+            ax.util:PrintSuccess("Item \"" .. tostring(ITEM.name) .. "\" initialized successfully.")
             ax.item.stored[itemName] = ITEM
         ITEM = nil
     end
