@@ -136,6 +136,8 @@ function GM:PlayerInitialSpawn(client)
         ax.util:PrintDebug("Auto-saved player " .. client:SteamName() .. ".")
     end)
 
+    client:GetTable().axJoinTime = os.time()
+
     AX_CLIENT_QUEUE[steamID64] = true
     hook.Run("PlayerQueued", client)
 end
@@ -159,6 +161,26 @@ function GM:StartCommand(client, userCmd)
             if ( !ok ) then
                 ax.util:PrintError("Proceeding despite player DB ensure failure for " .. steamID64)
             end
+
+            local query = mysql:Select("ax_players")
+                query:Where("steamid64", steamID64)
+                query:Callback(function(result, status)
+                    if ( result == false or result[1] == nil ) then
+                        ax.util:PrintError("Failed to load player data for " .. steamID64)
+                        return
+                    end
+
+                    local data = result[1]
+                    client:GetTable().axPlayerID = data.id
+                    client:GetTable().axData = util.JSONToTable(data.data) or {}
+
+                    client:SetPlayTime(tonumber(data.play_time) or 0)
+                    client:SetLastJoin(tonumber(data.last_join) or os.time())
+                    client:SetLastLeave(tonumber(data.last_leave) or 0)
+
+                    ax.util:PrintDebug("Loaded player data for " .. steamID64)
+                end)
+            query:Execute()
 
             client:SetLastJoin(os.time(), true, client)
 
@@ -218,6 +240,20 @@ end
 
 function GM:PlayerCanHearPlayersVoice(listener, speaker)
     return true, true
+end
+
+function GM:ShutDown() -- PlayerDisconnected isn't called on p2p/singleplayer
+    if ( !game.IsDedicated() ) then
+        for _, client in player.Iterator() do
+            local joinTime = client:GetLastJoin() or os.time()
+            local playtime = os.difftime(os.time(), joinTime)
+
+            client:SetLastLeave(os.time())
+            client:SetPlayTime(playtime)
+
+            client:Save()
+        end
+    end
 end
 
 function GM:PlayerDisconnected(client)
