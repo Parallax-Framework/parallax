@@ -12,8 +12,9 @@ end)
 
 util.AddNetworkString("ax.chatbox.text.changed")
 net.Receive("ax.chatbox.text.changed", function(len, client)
-    if ( CurTime() - (client.axLastChatChange or 0) < 0.01 ) then return end
-    client.axLastChatChange = CurTime()
+    local clientTable = client:GetTable()
+    if ( CurTime() - (clientTable.axLastChatChange or 0) < 0.01 ) then return end
+    clientTable.axLastChatChange = CurTime()
 
     local text = net.ReadString()
     local chatType = net.ReadString()
