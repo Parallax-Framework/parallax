@@ -51,12 +51,14 @@ function ax.class:Include(directory)
                 clsUniqueID = string.sub(clsUniqueID, 4)
             end
 
-            if ( self.stored[clsUniqueID] ) then
-                ax.util:PrintDebug(Color(255, 73, 24), "Faction \"" .. clsUniqueID .. "\" already exists, skipping file: " .. fileName)
-                continue
+            local existing = self.stored[clsUniqueID]
+            local index = (istable(existing) and existing.index) or (#self.instances + 1)
+
+            if ( existing ) then
+                ax.util:PrintDebug(Color(255, 200, 50), "Class \"" .. clsUniqueID .. "\" already exists, overwriting file: " .. fileName)
             end
 
-            CLASS = { id = clsUniqueID, index = #self.instances + 1 }
+            CLASS = { id = clsUniqueID, index = index }
                 if ( !isnumber(CLASS.Faction) ) then
                     ax.util:PrintDebug(Color(255, 73, 24), "Class \"" .. CLASS.id .. "\" does not have faction ID, skipping file: " .. fileName)
                     continue
@@ -69,13 +71,13 @@ function ax.class:Include(directory)
                 end
 
                 ax.util:Include(directory .. "/" .. fileName, "shared")
-                ax.util:PrintDebug(Color(85, 255, 120), "CLASS \"" .. CLASS.Name .. "\" initialised successfully.")
+                ax.util:PrintDebug(Color(85, 255, 120), "CLASS \"" .. (CLASS.Name or CLASS.name or CLASS.id) .. "\" initialised successfully.")
 
                 if ( !istable(factionTable.Classes) ) then factionTable.Classes = {} end
                 factionTable.Classes[CLASS.id] = CLASS
 
-                self.stored[CLASS.id] = FACTION
-                self.instances[CLASS.index] = FACTION
+                self.stored[CLASS.id] = CLASS
+                self.instances[CLASS.index] = CLASS
             CLASS = nil
         end
     end
