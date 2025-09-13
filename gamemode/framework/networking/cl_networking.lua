@@ -247,3 +247,12 @@ net.Receive("ax.inventory.item.remove", function()
         end
     end
 end)
+
+net.Receive( "ax.relay.update", function()
+    local index = net.ReadString()
+    local name = net.ReadString()
+    local value = net.ReadType()
+
+    ax.relay.data[index] = ax.relay.data[index] or {}
+    ax.relay.data[index][name] = value
+end )
