@@ -15,7 +15,7 @@ ax.command.prefixes = ax.command.prefixes or {"/", "!"}
 
 -- Server-side networking setup
 if ( SERVER ) then
-    util.AddNetworkString("axCommandRun")
+    util.AddNetworkString("ax.command.run")
 end
 
 --[[
@@ -322,7 +322,7 @@ function ax.command:Send(text)
     end
 
     -- Send to server
-    net.Start("axCommandRun")
+    net.Start("ax.command.run")
         net.WriteString(name)
         net.WriteString(rawArgs)
     net.SendToServer()
@@ -363,7 +363,7 @@ end
 
 -- Server-side network receiver
 if ( SERVER ) then
-    net.Receive("axCommandRun", function(len, caller)
+    net.Receive("ax.command.run", function(len, caller)
         if ( !IsValid(caller) ) then return end
 
         local name = net.ReadString()
