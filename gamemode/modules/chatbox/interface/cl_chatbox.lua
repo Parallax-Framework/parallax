@@ -210,8 +210,8 @@ function PANEL:Init()
     self.sizer.Paint = function(this, w, h)
         surface.SetDrawColor(255, 255, 255, 25)
         -- simple corner grip
-        for i = 0, 2 do
-            surface.DrawLine(w - 1 - i * 4, h - 1, w - 1, h - 1 - i * 4)
+        for i = 0, 3 do
+            surface.DrawLine(w - 1 - i * 4, 0, w - 1, i * 4)
         end
     end
     self.sizer.OnMousePressed = function(this, code)
