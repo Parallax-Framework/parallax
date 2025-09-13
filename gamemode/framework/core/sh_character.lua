@@ -129,6 +129,12 @@ ax.character:RegisterVar("model", {
 
         layout:SizeToChildren(layout:GetStretchWidth(), layout:GetStretchHeight())
         scroller:SetTall(layout:GetTall())
+    end,
+    changed = function(character, value, isNetworked, recipients)
+        local client = character:GetOwner()
+        if ( IsValid(client) and client:GetModel() != value ) then
+            client:SetModel(value)
+        end
     end
 })
 

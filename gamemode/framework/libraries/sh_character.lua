@@ -100,8 +100,25 @@ function ax.character:RegisterVar(name, data)
                 if ( !istable(char.vars) ) then char.vars = {} end
 
                 data:Set(char, value, isNetworked, recipients)
+
+                -- Call changed callback if present
+                if ( isfunction(data.changed) ) then
+                    -- Protect the callback to avoid crashes
+                    local success, err = pcall(data.changed, char, value, isNetworked, recipients)
+                    if ( !success ) then
+                        ax.util:PrintError("Error occurred in character variable changed callback:", err)
+                    end
+                end
             else
                 SetVar(char, name, value, isNetworked, recipients)
+
+                -- Call changed callback if present
+                if ( isfunction(data.changed) ) then
+                    local success, err = pcall(data.changed, char, value, isNetworked, recipients)
+                    if ( !success ) then
+                        ax.util:PrintError("Error occurred in character variable changed callback:", err)
+                    end
+                end
             end
         end
     end
