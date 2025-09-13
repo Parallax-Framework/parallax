@@ -162,6 +162,26 @@ function GM:StartCommand(client, userCmd)
                 ax.util:PrintError("Proceeding despite player DB ensure failure for " .. steamID64)
             end
 
+            local query = mysql:Select("ax_players")
+                query:Where("steamid64", steamID64)
+                query:Callback(function(result, status)
+                    if ( result == false or result[1] == nil ) then
+                        ax.util:PrintError("Failed to load player data for " .. steamID64)
+                        return
+                    end
+
+                    local data = result[1]
+                    client:GetTable().axPlayerID = data.id
+                    client:GetTable().axData = util.JSONToTable(data.data) or {}
+
+                    client:SetPlayTime(tonumber(data.play_time) or 0)
+                    client:SetLastJoin(tonumber(data.last_join) or os.time())
+                    client:SetLastLeave(tonumber(data.last_leave) or 0)
+
+                    ax.util:PrintDebug("Loaded player data for " .. steamID64)
+                end)
+            query:Execute()
+
             client:SetLastJoin(os.time(), true, client)
 
             ax.character:Restore(client, function(characters)
