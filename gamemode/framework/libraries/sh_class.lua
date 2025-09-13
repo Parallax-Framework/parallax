@@ -114,13 +114,15 @@ function ax.class:CanBecome(class, client)
     local classTable = self:Get(faction)
     local try, catch = hook.Run("CanBecomeClass", classTable, client)
     if ( try == false and isstring(catch) and #catch > 0 ) then
-        client:ChatPrint(catch)
+        client:Notify(catch, "error")
+        return false, catch
     end
 
     if ( isfunction(classTable.CanBecome) ) then
         try, catch = classTable:CanBecome(client)
         if ( try == false and isstring(catch) and #catch > 0 ) then
-            client:ChatPrint(catch)
+            client:Notify(catch, "error")
+            return false, catch
         end
     end
 

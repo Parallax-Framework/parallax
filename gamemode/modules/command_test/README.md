@@ -25,7 +25,7 @@ ax.command:Add("hello", {
     },
     OnRun = function(caller, target, message)
         message = message or "Hello!"
-        target:ChatPrint("[" .. caller:Nick() .. "] " .. message)
+        target:Notify("[" .. caller:Nick() .. "] " .. message)
         return "Message sent to " .. target:Nick()
     end
 })

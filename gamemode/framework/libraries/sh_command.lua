@@ -371,9 +371,9 @@ if ( SERVER ) then
 
         local ok, result = ax.command:Run(caller, name, rawArgs)
         if ( !ok ) then
-            caller:ChatPrint("[Command Error] " .. (result or "Unknown error"))
+            caller:Notify(result or "Unknown error", "error")
         elseif ( result and result != "" ) then
-            caller:ChatPrint("[Command] " .. tostring(result))
+            caller:Notify(tostring(result))
         end
     end)
 end
@@ -448,18 +448,18 @@ if ( SERVER ) then
     concommand.Add("ax_command", function(caller, cmd, args, argStr)
         if ( !argStr or argStr == "" ) then
             if ( IsValid(caller) ) then
-                caller:ChatPrint("[Command] Usage: ax_command <command> [arguments]")
+                caller:Notify("Usage: ax_command <command> [arguments]", "info")
             else
-                print("[Command] Usage: ax_command <command> [arguments]")
+                print("Usage: ax_command <command> [arguments]")
             end
             return
         end
 
         local name, rawArgs = ax.command:Parse(argStr)
         if ( !name or name == "" ) then
-            local msg = "[Command Error] Invalid command format"
+            local msg = "Invalid command format"
             if ( IsValid(caller) ) then
-                caller:ChatPrint(msg)
+                caller:Notify(msg, "error")
             else
                 print(msg)
             end
@@ -469,16 +469,16 @@ if ( SERVER ) then
         local ok, result = ax.command:Run(caller, name, rawArgs)
 
         if ( !ok ) then
-            local msg = "[Command Error] " .. (result or "Unknown error")
+            local msg = "" .. (result or "Unknown error")
             if ( IsValid(caller) ) then
-                caller:ChatPrint(msg)
+                caller:Notify(msg, "error")
             else
                 print(msg)
             end
         elseif ( result and result != "" ) then
-            local msg = "[Command] " .. tostring(result)
+            local msg = tostring(result)
             if ( IsValid(caller) ) then
-                caller:ChatPrint(msg)
+                caller:Notify(msg)
             else
                 print(msg)
             end

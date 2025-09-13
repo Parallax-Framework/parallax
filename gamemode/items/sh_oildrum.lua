@@ -19,7 +19,7 @@ ITEM:AddAction({
     description = "Use this item.",
     icon = "icon16/accept.png",
     OnUse = function(item, client)
-        client:ChatPrint("You have used the item: " .. item.name)
+        client:Notify("You have used the item: " .. item.name)
         return false -- Returning false prevents the item from being removed after use
     end,
     CanUse = function(item, client)

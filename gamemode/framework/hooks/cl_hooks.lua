@@ -27,6 +27,10 @@ function GM:ScoreboardHide()
     return false
 end
 
+function GM:PostRenderVGUI()
+    ax.notification:Render()
+end
+
 local steps = {".stepleft", ".stepright"}
 function GM:EntityEmitSound(data)
     if ( !IsValid(data.Entity) and !data.Entity:IsPlayer() ) then return end

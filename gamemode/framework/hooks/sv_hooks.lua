@@ -195,12 +195,12 @@ function GM:PlayerSay(client, text, teamChat)
             local ok, result = ax.command:Run(client, name, rawArgs)
 
             if ( !ok ) then
-                client:ChatPrint("[Command Error] " .. (result or "Unknown error"))
+                client:Notify(result or "Unknown error", "error")
             elseif ( result and result != "" ) then
-                client:ChatPrint("[Command] " .. tostring(result))
+                client:Notify(tostring(result))
             end
         else
-            client:ChatPrint("[Command] " .. tostring(name) .. " is not a valid command.")
+            client:Notify(tostring(name) .. " is not a valid command.", "warning")
         end
 
         return ""

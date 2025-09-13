@@ -1,0 +1,8 @@
+ax.config:Add("notification.enabled", ax.type.bool, true, { description = "Enable client notifications", bNetworked = true, category = "notifications" })
+ax.config:Add("notification.maxVisible", ax.type.number, 4, { min = 1, max = 8, decimals = 0, bNetworked = true, category = "notifications" })
+ax.config:Add("notification.defaultLength", ax.type.number, 5, { min = 1, max = 20, decimals = 0, bNetworked = true, category = "notifications" })
+ax.config:Add("notification.maxWidthFrac", ax.type.number, 0.42, { min = 0.2, max = 0.9, decimals = 2, bNetworked = true, category = "notifications" })
+ax.config:Add("notification.inTime", ax.type.number, 0.22, { min = 0.05, max = 1.0, decimals = 2, bNetworked = true, category = "notifications" })
+ax.config:Add("notification.outTime", ax.type.number, 0.20, { min = 0.05, max = 1.0, decimals = 2, bNetworked = true, category = "notifications" })
+ax.config:Add("notification.easing", ax.type.string, "OutCubic", { description = "Easing for notification animations", bNetworked = true, category = "notifications" })
+ax.config:Add("notification.sound", ax.type.string, "ui/hint.wav", { description = "Sound to play when a notification appears (path relative to sound/)", bNetworked = true, category = "notifications" })

@@ -32,7 +32,7 @@ net.Receive("ax.character.create", function(length, client)
     local try, catch = hook.Run("CanCreateCharacter", client, payload)
     if ( try == false ) then
         if ( isstring(catch) and #catch > 0 ) then
-            client:ChatPrint(catch)
+            client:Notify(catch, "error")
             ax.util:Error("Character creation failed for " .. client:SteamID64() .. ": " .. catch)
         end
 
@@ -132,7 +132,7 @@ net.Receive("ax.character.load", function(length, client)
     local try, catch = hook.Run("CanPlayerLoadCharacter", client, character)
     if ( try == false ) then
         if ( isstring(catch) and #catch > 0 ) then
-            client:ChatPrint(catch)
+            client:Notify(catch, "error")
         end
 
         return
@@ -160,7 +160,7 @@ net.Receive( "ax.character.delete", function( length, client )
     local try, catch = hook.Run( "CanPlayerDeleteCharacter", client, character )
     if ( try == false ) then
         if ( isstring(catch) and #catch > 0 ) then
-            client:ChatPrint(catch)
+            client:Notify(catch, "error")
         end
 
         return
