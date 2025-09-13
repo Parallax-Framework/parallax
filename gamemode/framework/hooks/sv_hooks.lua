@@ -128,6 +128,14 @@ function GM:PlayerInitialSpawn(client)
         v:ChatPrint(Color(60, 220, 120), "Player " .. client:SteamName() .. " has joined the server.")
     end
 
+    timer.Create("ax.player.save." .. steamID64, 300, 1, function()
+        if ( !IsValid(client) ) then return end
+
+        client:Save()
+
+        ax.util:PrintDebug("Auto-saved player " .. client:SteamName() .. ".")
+    end)
+
     AX_CLIENT_QUEUE[steamID64] = true
     hook.Run("PlayerQueued", client)
 end
@@ -147,29 +155,19 @@ function GM:StartCommand(client, userCmd)
     if ( AX_CLIENT_QUEUE[steamID64] and !userCmd:IsForced() ) then
         AX_CLIENT_QUEUE[steamID64] = nil
 
-        client:LoadData( function( data )
-            if ( !IsValid( client ) ) then return end
+        client:SetLastJoin(os.time(), true, client)
 
-            local query = mysql:Update( "ax_players" )
-                query:Where( "steamid", client:SteamID() )
-                query:Update( "last_join", os.date( "%Y-%m-%d %H:%M:%S", os.time() ) )
-            query:Execute()
+        ax.character:Restore(client, function(characters)
+            hook.Run("PlayerReady", client)
 
-            client:GetTable().axJoinTime = os.time()
-            client:SetData( "playtime", data.playtime or 0, false, self ) -- we don't need anyone else knowing our playtime
-
-            ax.character:Restore(client, function(characters)
-                hook.Run("PlayerReady", client)
-
-                ax.inventory:Restore(client, function(success)
-                    if ( success ) then
-                        ax.util:PrintDebug(Color(60, 220, 120), "Inventories restored successfully.")
-                    else
-                        ax.util:PrintDebug(Color(220, 60, 60), "Failed to restore inventories.")
-                    end
-                end)
+            ax.inventory:Restore(client, function(success)
+                if ( success ) then
+                    ax.util:PrintDebug(Color(60, 220, 120), "Inventories restored successfully.")
+                else
+                    ax.util:PrintDebug(Color(220, 60, 60), "Failed to restore inventories.")
+                end
             end)
-        end )
+        end)
 
         client:SetNoDraw(true)
         client:SetNotSolid(true)
@@ -217,16 +215,18 @@ function GM:PlayerCanHearPlayersVoice(listener, speaker)
 end
 
 function GM:PlayerDisconnected(client)
-    local joinTime = client:GetTable().axJoinTime or os.time()
+    local joinTime = client:GetLastJoin() or os.time()
     local playtime = os.difftime(os.time(), joinTime)
 
-    local query = mysql:Update("ax_players")
-        query:Where("steamid", client:SteamID())
-        query:Update("last_leave", os.date("%Y-%m-%d %H:%M:%S", os.time()))
-        query:Update("playtime", playtime)
-    query:Execute()
+    client:SetLastLeave(os.time())
+    client:SetPlaytime(playtime)
 
-    client:GetTable().axJoinTime = nil
+    client:Save()
 
-    AX_CLIENT_QUEUE[client:SteamID64()] = nil
+    local steamID64 = client:SteamID64()
+    if ( timer.Exists("ax.player.save." .. steamID64) ) then
+        timer.Remove("ax.player.save." .. steamID64)
+    end
+
+    AX_CLIENT_QUEUE[steamID64] = nil
 end

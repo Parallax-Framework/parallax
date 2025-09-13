@@ -113,136 +113,77 @@ function client:PlayGesture(slot, sequence)
     end
 end
 
-function client:SetData( key, value, bNoNetworking, recipients )
-    if ( !isstring(key) or key == "" ) then
-        ax.util:PrintError("Invalid key provided to Player:SetData()")
-        return false
-    end
+function client:GetData(key, fallback)
+    if ( !istable(self.vars.data) ) then self.vars.data = {} end
 
-    if ( recipients == nil ) then
-        recipients = self
-    end
-
-    local data = self:GetTable()
-    if ( !data.axData ) then data.axData = {} end
-
-    data.axData[key] = value
-
-    if ( !bNoNetworking ) then
-        net.Start("ax.player.setData")
-            net.WritePlayer(self)
-            net.WriteString(key)
-            net.WriteType(value)
-        net.Send(recipients)
-    end
-
-    return true
+    return self.vars.data[key] == nil and fallback or self.vars.data[key]
 end
 
-function client:GetData( key, fallback )
-    if ( !isstring(key) or key == "" ) then
-        ax.util:PrintError("Invalid key provided to Player:GetData()")
-        return fallback
+if ( SERVER ) then
+    function client:SetData(key, value, isNetworked, recipients)
+        if ( !istable(self.vars.data) ) then self.vars.data = {} end
+
+        self.vars.data[key] = value
+
+        if ( !isNetworked ) then
+            net.Start("ax.player.var")
+                net.WritePlayer(self)
+                net.WriteString(key)
+                net.WriteType(value)
+            if ( recipients ) then
+                net.Send(recipients)
+            else
+                net.Broadcast()
+            end
+        end
     end
 
-    local data = self:GetTable()
-    if ( !data.axData ) then data.axData = {} end
+    function client:Save()
+        if ( !istable(self.vars.data) ) then self.vars.data = {} end
 
-    return data.axData[key] != nil and data.axData[key] or fallback
+        -- Build an update query for the players table using the registered schema
+        local query = mysql:Update("ax_players")
+        query:Where("id", self:GetID())
+
+        -- Ensure the data table exists and always save it as JSON
+        query:Update("data", util.TableToJSON(self.vars.data or {}))
+
+        -- Iterate registered vars and persist fields that declare a database column
+        for name, meta in pairs(ax.player.vars or {}) do
+            if ( istable(meta) and meta.field ) then
+                local val = nil
+
+                if ( istable(self.vars) ) then
+                    val = self.vars[name]
+                end
+
+                -- Fall back to default if not present
+                if ( val == nil and meta.default != nil ) then
+                    val = meta.default
+                end
+
+                -- Serialize tables to JSON for storage
+                if ( istable(val) ) then
+                    val = util.TableToJSON(val)
+                end
+
+                query:Update(meta.field, val)
+
+                ax.util:PrintDebug("Saving player field '" .. meta.field .. "' with value: " .. tostring(val))
+            end
+        end
+
+        query:Execute()
+    end
 end
 
 if ( SERVER ) then
     util.AddNetworkString( "ax.player.chatPrint" )
-    util.AddNetworkString( "ax.player.setData" )
     util.AddNetworkString( "ax.player.playGesture" )
-
-    function client:LoadData( callback )
-        local name = self:SteamName()
-        local steamID64 = self:SteamID64()
-
-        local query = mysql:Select( "ax_players" )
-            query:Select( "data" )
-            query:Where( "steamid", steamID64 )
-            query:Callback( function( result )
-                if ( IsValid( self ) and istable( result ) and result[1] != nil and result[1].data ) then
-                    local clientTable = self:GetTable()
-                    local data = util.JSONToTable( result[1].data ) or {}
-
-                    for k, v in pairs( data ) do
-                        self:SetData( k, v )
-                    end
-
-                    if ( isfunction( callback ) ) then
-                        callback( clientTable.axData )
-                    end
-
-                    hook.Run( "PlayerDataLoaded", self )
-                else
-                    local insertQuery = mysql:Insert( "ax_players" )
-                        insertQuery:Insert( "steamid", steamID64 )
-                        insertQuery:Insert( "name", name )
-                        insertQuery:Insert( "data", "[]" )
-                    insertQuery:Execute()
-
-                    if ( isfunction( callback ) ) then
-                        callback( {} )
-                    end
-
-                    hook.Run( "PlayerDataCreated", self )
-                end
-            end )
-        query:Execute()
-    end
-
-    function client:SaveData()
-        local steamID64 = self:SteamID64()
-        local data = self:GetTable().axData or {}
-
-        local updateQuery = mysql:Update( "ax_players" )
-            updateQuery:Update( "data", util.TableToJSON( data ) )
-            updateQuery:Where( "steamid", steamID64 )
-            updateQuery:Callback( function( success )
-                if ( success ) then
-                    hook.Run( "PlayerDataSaved", self )
-                end
-            end )
-        updateQuery:Execute()
-    end
-
-    function client:GetPlayTime()
-        local playtime = self:GetData( "playtime", 0 )
-        if ( !isnumber( playtime ) or playtime < 0 ) then
-            return 0
-        end
-
-        if ( self.axJoinTime ) then
-            playtime = playtime + ( os.time() - self.axJoinTime )
-        end
-
-        return playtime
-    end
 else
-    ax.playtime = ax.playtime or 0
-    function client:GetPlayTime()
-        return ax.playtime + ( ax.joinTime and ( os.time() - ax.joinTime ) or 0 )
-    end
-
     net.Receive("ax.player.chatPrint", function(len)
         local messages = net.ReadTable()
         chat.AddText(unpack(messages))
-    end)
-
-    net.Receive( "ax.player.setData", function( len )
-        local ply = net.ReadPlayer()
-        local key = net.ReadString()
-        local value = net.ReadType()
-
-        if ( IsValid( ply ) and isstring( key ) and key != "" ) then
-            local data = ply:GetTable()
-            if ( !data.axData ) then data.axData = {} end
-
-            data.axData[key] = value
-        end
     end)
 
     net.Receive("ax.player.playGesture", function(len)

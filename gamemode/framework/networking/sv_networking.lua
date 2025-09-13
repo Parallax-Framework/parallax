@@ -10,11 +10,12 @@
 ]]
 
 util.AddNetworkString("ax.player.ready")
+util.AddNetworkString("ax.player.var")
 util.AddNetworkString("ax.character.sync")
 util.AddNetworkString("ax.character.restore")
-util.AddNetworkString( "ax.character.var" )
+util.AddNetworkString("ax.character.var")
 
-util.AddNetworkString( "ax.relay.update" )
+util.AddNetworkString("ax.relay.update")
 
 util.AddNetworkString("ax.inventory.sync")
 util.AddNetworkString("ax.inventory.receiver.add")

@@ -173,11 +173,22 @@ net.Receive("ax.character.var", function()
         character.vars = {}
     end
 
-    if ( !istable(character.vars.data) ) then
-        character.vars.data = {}
+    character.vars[name] = value
+end)
+
+net.Receive("ax.player.var", function()
+    local client = net.ReadPlayer()
+    if ( !IsValid(client) ) then return end
+
+    local name = net.ReadString()
+    local value = net.ReadType()
+
+    local clientTable = client:GetTable()
+    if ( !istable(clientTable.vars) ) then
+        clientTable.vars = {}
     end
 
-    character.vars.data[name] = value
+    clientTable.vars[name] = value
 end)
 
 net.Receive("ax.inventory.sync", function()

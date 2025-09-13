@@ -83,12 +83,6 @@ function ax.database:CreateTables()
 
     query = mysql:Create("ax_players")
         query:Create("id", "INT(11) UNSIGNED NOT NULL AUTO_INCREMENT")
-        query:Create("steamid", "VARCHAR(20) NOT NULL")
-        query:Create("name", "VARCHAR(32) NOT NULL")
-        query:Create("data", "LONGTEXT NOT NULL")
-        query:Create("last_join", "TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP")
-        query:Create("last_leave", "TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP")
-        query:Create("playtime", "INT(11) NOT NULL DEFAULT 0")
         query:PrimaryKey("id")
     query:Execute()
 
@@ -113,6 +107,11 @@ function ax.database:CreateTables()
 
     query = mysql:InsertIgnore("ax_schema")
         query:Insert("table", "ax_characters")
+        query:Insert("columns", util.TableToJSON({}))
+    query:Execute()
+
+    query = mysql:InsertIgnore("ax_schema")
+        query:Insert("table", "ax_players")
         query:Insert("columns", util.TableToJSON({}))
     query:Execute()
 
@@ -175,6 +174,35 @@ function ax.database:WipeTables(callback)
     hook.Run("OnDatabaseTablesWiped")
 end
 
+function ax.database:DestroyTables(callback)
+    local query
+
+    query = mysql:Drop("ax_schema")
+    query:Execute()
+
+    query = mysql:Drop("ax_players")
+    query:Execute()
+
+    query = mysql:Drop("ax_characters")
+    query:Execute()
+
+    query = mysql:Drop("ax_inventories")
+    query:Execute()
+
+    query = mysql:Drop("ax_items")
+        query:Callback(function()
+            if ( isfunction(callback) ) then
+                callback()
+            end
+        end)
+    query:Execute()
+
+    self.schema = {}
+    self.schemaQueue = {}
+
+    hook.Run("OnDatabaseTablesWiped")
+end
+
 concommand.Add("ax_database_wipe", function(client, command, args, argStr)
     if ( !IsValid(client) or !client:IsSuperAdmin() ) then
         ax.util:PrintError("You do not have permission to use this command.")
@@ -183,5 +211,16 @@ concommand.Add("ax_database_wipe", function(client, command, args, argStr)
 
     ax.database:WipeTables(function()
         ax.util:Print("Database tables wiped successfully.")
+    end)
+end)
+
+concommand.Add("ax_database_destroy", function(client, command, args, argStr)
+    if ( !IsValid(client) or !client:IsSuperAdmin() ) then
+        ax.util:PrintError("You do not have permission to use this command.")
+        return
+    end
+
+    ax.database:DestroyTables(function()
+        ax.util:Print("Database tables destroyed successfully.")
     end)
 end)

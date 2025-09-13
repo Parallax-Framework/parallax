@@ -30,7 +30,6 @@ local function GetVar(char, name, fallback)
         return fallback
     end
 
-
     if ( fallback == nil and varTable.default != nil ) then
         fallback = varTable.default
     end
@@ -47,6 +46,14 @@ local function SetVar(char, name, value, isNetworked, recipients)
     if ( !istable(varTable) ) then
         ax.util:PrintError("Invalid character variable name provided to ax.character:SetVar()")
         return
+    end
+
+    if ( isfunction(varTable.changed) ) then
+        local success, err = pcall(varTable.changed, char, value, isNetworked, recipients)
+        if ( !success ) then
+            ax.util:PrintError("Error occurred in character variable changed callback:", err)
+            return
+        end
     end
 
     if ( !istable(char.vars) ) then
@@ -111,14 +118,6 @@ function ax.character:RegisterVar(name, data)
                 end
             else
                 SetVar(char, name, value, isNetworked, recipients)
-
-                -- Call changed callback if present
-                if ( isfunction(data.changed) ) then
-                    local success, err = pcall(data.changed, char, value, isNetworked, recipients)
-                    if ( !success ) then
-                        ax.util:PrintError("Error occurred in character variable changed callback:", err)
-                    end
-                end
             end
         end
     end
