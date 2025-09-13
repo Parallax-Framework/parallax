@@ -124,12 +124,117 @@ function client:PlayGesture(slot, sequence)
     end
 end
 
+function client:SetData( key, value, bNoNetworking, recipients )
+    if ( !isstring(key) or key == "" ) then
+        ax.util:PrintError("Invalid key provided to Player:SetData()")
+        return false
+    end
+
+    if ( recipients == nil ) then
+        recipients = self
+    end
+
+    local data = self:GetTable()
+    if ( !data.axData ) then data.axData = {} end
+
+    data.axData[key] = value
+
+    if ( !bNoNetworking ) then
+        net.Start("ax.player.setData")
+            net.WritePlayer(self)
+            net.WriteString(key)
+            net.WriteType(value)
+        net.Send(recipients)
+    end
+
+    return true
+end
+
+function client:GetData( key, fallback )
+    if ( !isstring(key) or key == "" ) then
+        ax.util:PrintError("Invalid key provided to Player:GetData()")
+        return fallback
+    end
+
+    local data = self:GetTable()
+    if ( !data.axData ) then data.axData = {} end
+
+    return data.axData[key] != nil and data.axData[key] or fallback
+end
+
 if ( SERVER ) then
     util.AddNetworkString("ax.player.chatPrint")
+    util.AddNetworkString( "ax.player.setData" )
+
+    function client:LoadData( callback )
+        local name = self:SteamName()
+        local steamID64 = self:SteamID64()
+
+        local query = mysql:Select( "ax_players" )
+            query:Select( "data" )
+            query:Where( "steamid", steamID64 )
+            query:Callback( function( result )
+                if ( IsValid( self ) and istable( result ) and result[1] != nil and result[1].data ) then
+                    local clientTable = self:GetTable()
+                    local data = util.JSONToTable( result[1].data ) or {}
+
+                    for k, v in pairs( data ) do
+                        self:SetData( k, v )
+                    end
+
+                    if ( isfunction( callback ) ) then
+                        callback( clientTable.axData )
+                    end
+
+                    hook.Run( "PlayerDataLoaded", self )
+                else
+                    local insertQuery = mysql:Insert( "ax_players" )
+                        insertQuery:Insert( "steamid", steamID64 )
+                        insertQuery:Insert( "name", name )
+                        insertQuery:Insert( "data", "[]" )
+                    insertQuery:Execute()
+
+                    if ( isfunction( callback ) ) then
+                        callback( {} )
+                    end
+
+                    hook.Run( "PlayerDataCreated", self )
+                end
+            end )
+        query:Execute()
+    end
+
+    function client:SaveData()
+        local steamID64 = self:SteamID64()
+        local data = self:GetTable().axData or {}
+
+        local updateQuery = mysql:Update( "ax_players" )
+            updateQuery:Update( "data", util.TableToJSON( data ) )
+            updateQuery:Where( "steamid", steamID64 )
+            updateQuery:Callback( function( success )
+                if ( success ) then
+                    hook.Run( "PlayerDataSaved", self )
+                end
+            end )
+        updateQuery:Execute()
+    end
 else
     net.Receive("ax.player.chatPrint", function(len)
         local messages = net.ReadTable()
         chat.AddText(unpack(messages))
+    end)
+
+    net.Receive( "ax.player.setData", function( len )
+        local ply = net.ReadPlayer()
+        local key = net.ReadString()
+        local value = net.ReadType()
+
+        if ( IsValid( ply ) and isstring( key ) and key != "" ) then
+            local data = ply:GetTable()
+            if ( !data.axData ) then data.axData = {} end
+
+            data.axData[key] = value
+        end
     end)
 end
 
