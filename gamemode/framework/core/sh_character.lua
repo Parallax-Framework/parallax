@@ -24,7 +24,8 @@ ax.character:RegisterVar("schema", {
 ax.character:RegisterVar("inventory", {
     field = "inventory",
     fieldType = ax.type.number,
-    default = 0
+    default = 0,
+    bNoGetter = true
 })
 
 ax.character:RegisterVar("faction", {
@@ -38,6 +39,12 @@ ax.character:RegisterVar("faction", {
         end
 
         return true
+    end,
+    changed = function(character, value, isNetworked, recipients)
+        local client = character:GetOwner()
+        if ( IsValid(client) ) then
+            client:SetTeam(value)
+        end
     end
 })
 
