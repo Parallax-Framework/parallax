@@ -13,8 +13,8 @@ AccessorFunc(PANEL, "textColorHovered", "TextColorHovered")
 AccessorFunc(PANEL, "easing", "Easing", FORCE_STRING)
 
 function PANEL:Init()
-    self.soundEnter = "UI/buttonrollover.wav"
-    self.soundClick = "UI/buttonclick.wav"
+    self.soundEnter = "ui/buttonrollover.wav"
+    self.soundClick = "ui/buttonclickrelease.wav"
     self.fontDefault = "ax.large"
     self.fontHovered = "ax.large.bold"
     self.textColor = Color(255, 255, 255)
