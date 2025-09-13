@@ -87,6 +87,8 @@ ax.font:CreateFamily("large", "GorDIN Regular", ScreenScaleH(16))
 ax.font:CreateFamily("massive", "GorDIN Regular", ScreenScaleH(24))
 ax.font:CreateFamily("huge", "GorDIN Regular", ScreenScaleH(32))
 
+hook.Run( "LoadFonts" )
+
 concommand.Add("ax_font_list", function()
     ax.util:Print("Available fonts:")
 
