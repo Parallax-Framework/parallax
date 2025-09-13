@@ -84,17 +84,6 @@ function client:ResetRateLimit(name)
     return true
 end
 
-if ( SERVER ) then
-    util.AddNetworkString("ax.player.playGesture")
-else
-    net.Receive("ax.player.playGesture", function(len)
-        local sender = net.ReadPlayer()
-        local slot = net.ReadUInt(8)
-        local sequence = net.ReadUInt(16)
-        sender:PlayGesture(slot, sequence)
-    end)
-end
-
 function client:PlayGesture(slot, sequence)
     if ( !isnumber(slot) or slot < 0 or slot > 6 ) then
         ax.util:PrintError("Invalid gesture slot provided to Player:PlayGesture()")
@@ -163,8 +152,9 @@ function client:GetData( key, fallback )
 end
 
 if ( SERVER ) then
-    util.AddNetworkString("ax.player.chatPrint")
+    util.AddNetworkString( "ax.player.chatPrint" )
     util.AddNetworkString( "ax.player.setData" )
+    util.AddNetworkString( "ax.player.playGesture" )
 
     function client:LoadData( callback )
         local name = self:SteamName()
@@ -218,7 +208,25 @@ if ( SERVER ) then
             end )
         updateQuery:Execute()
     end
+
+    function client:GetPlayTime()
+        local playtime = self:GetData( "playtime", 0 )
+        if ( !isnumber( playtime ) or playtime < 0 ) then
+            return 0
+        end
+
+        if ( self.axJoinTime ) then
+            playtime = playtime + ( os.time() - self.axJoinTime )
+        end
+
+        return playtime
+    end
 else
+    ax.playtime = ax.playtime or 0
+    function client:GetPlayTime()
+        return ax.playtime + ( ax.joinTime and ( os.time() - ax.joinTime ) or 0 )
+    end
+
     net.Receive("ax.player.chatPrint", function(len)
         local messages = net.ReadTable()
         chat.AddText(unpack(messages))
@@ -235,6 +243,13 @@ else
 
             data.axData[key] = value
         end
+    end)
+
+    net.Receive("ax.player.playGesture", function(len)
+        local sender = net.ReadPlayer()
+        local slot = net.ReadUInt(8)
+        local sequence = net.ReadUInt(16)
+        sender:PlayGesture(slot, sequence)
     end)
 end
 

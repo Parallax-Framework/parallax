@@ -17,10 +17,6 @@ function GM:PlayerSwitchFlashlight(client, state)
     return true
 end
 
-function GM:InitPostEntity()
-    ax.database:Connect() -- TODO: Allow schemas to connect to their own databases
-end
-
 function GM:PlayerDeathThink(client)
     if ( client:RateLimit("respawn", 5) and client:GetCharacter() ) then
         client:Spawn()
@@ -152,7 +148,15 @@ function GM:StartCommand(client, userCmd)
         AX_CLIENT_QUEUE[steamID64] = nil
 
         client:LoadData( function( data )
-            if ( !IsValid( client) ) then return end
+            if ( !IsValid( client ) ) then return end
+
+            local query = mysql:Update( "ax_players" )
+                query:Where( "steamid", client:SteamID() )
+                query:Update( "last_join", os.date( "%Y-%m-%d %H:%M:%S", os.time() ) )
+            query:Execute()
+
+            client:GetTable().axJoinTime = os.time()
+            client:SetData( "playtime", data.playtime or 0, false, self ) -- we don't need anyone else knowing our playtime
 
             ax.character:Restore(client, function(characters)
                 hook.Run("PlayerReady", client)
@@ -210,4 +214,19 @@ end
 
 function GM:PlayerCanHearPlayersVoice(listener, speaker)
     return true, true
+end
+
+function GM:PlayerDisconnected(client)
+    local joinTime = client:GetTable().axJoinTime or os.time()
+    local playtime = os.difftime(os.time(), joinTime)
+
+    local query = mysql:Update("ax_players")
+        query:Where("steamid", client:SteamID())
+        query:Update("last_leave", os.date("%Y-%m-%d %H:%M:%S", os.time()))
+        query:Update("playtime", playtime)
+    query:Execute()
+
+    client:GetTable().axJoinTime = nil
+
+    AX_CLIENT_QUEUE[client:SteamID64()] = nil
 end
