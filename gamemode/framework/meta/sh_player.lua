@@ -147,6 +147,18 @@ function client:SetData( key, value, bNoNetworking, recipients )
     return true
 end
 
+function client:GetData( key, fallback )
+    if ( !isstring(key) or key == "" ) then
+        ax.util:PrintError("Invalid key provided to Player:GetData()")
+        return fallback
+    end
+
+    local data = self:GetTable()
+    if ( !data.axData ) then data.axData = {} end
+
+    return data.axData[key] != nil and data.axData[key] or fallback
+end
+
 if ( SERVER ) then
     util.AddNetworkString("ax.player.chatPrint")
     util.AddNetworkString( "ax.player.setData" )
