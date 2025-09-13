@@ -71,11 +71,11 @@ end
 ax.viewstack:RegisterModifier("ragdoll", function(client, view)
     if ( !IsValid(client) or client:InVehicle() ) then return end
 
-    local ragdollIndex = client:GetNWInt("ax.ragdoll.index", -1)
+    local ragdollIndex = client:GetRelay("ax.ragdoll.index", -1)
     if ( ragdollIndex != -1 and !client:Alive() ) then
         local ragdoll = ents.GetByIndex(ragdollIndex)
         if ( !IsValid(ragdoll) ) then
-            client:SetNWInt("ax.ragdoll.index", -1)
+            client:SetRelay("ax.ragdoll.index", -1)
             return
         end
 
