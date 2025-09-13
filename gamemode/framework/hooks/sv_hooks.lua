@@ -22,7 +22,7 @@ function GM:InitPostEntity()
 end
 
 function GM:PlayerDeathThink(client)
-    if ( client:RateLimit("respawn", 5) ) then
+    if ( client:RateLimit("respawn", 5) and client:GetCharacter() ) then
         client:Spawn()
     end
 end
