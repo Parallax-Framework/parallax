@@ -9,30 +9,29 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
-local client = FindMetaTable("Player")
 
-local steamName = steamName or client.GetName
-function client:GetName()
+local steamName = steamName or ax.player.meta.GetName
+function ax.player.meta:GetName()
     local character = self:GetCharacter()
     return character and character:GetName() or steamName(self)
 end
 
-client.Name = client.GetName
-client.Nick = client.GetName
+ax.player.meta.Name = ax.player.meta.GetName
+ax.player.meta.Nick = ax.player.meta.GetName
 
-function client:SteamName()
+function ax.player.meta:SteamName()
     return steamName(self)
 end
 
-function client:GetCharacter()
+function ax.player.meta:GetCharacter()
     return self:GetTable().axCharacter
 end
 
-function client:GetCharacters()
+function ax.player.meta:GetCharacters()
     return self:GetTable().axCharacters or {}
 end
 
-function client:GetFaction()
+function ax.player.meta:GetFaction()
     local teamIndex = self:Team()
     if ( ax.faction:IsValid(teamIndex) ) then
         return teamIndex
@@ -41,12 +40,12 @@ function client:GetFaction()
     return nil
 end
 
-function client:GetFactionData()
+function ax.player.meta:GetFactionData()
     local factionData = ax.faction:Get(self:GetFaction())
     return factionData
 end
 
-function client:RateLimit(name, delay)
+function ax.player.meta:RateLimit(name, delay)
     local data = self:GetTable()
 
     if ( !isstring(name) or name == "" ) then
@@ -71,7 +70,7 @@ function client:RateLimit(name, delay)
     return true -- Rate limit passed.
 end
 
-function client:ResetRateLimit(name)
+function ax.player.meta:ResetRateLimit(name)
     if ( !isstring(name) or name == "" ) then
         ax.util:PrintError("Invalid rate limit name provided to Player:ResetRateLimit()")
         return false
@@ -84,7 +83,7 @@ function client:ResetRateLimit(name)
     return true
 end
 
-function client:PlayGesture(slot, sequence)
+function ax.player.meta:PlayGesture(slot, sequence)
     if ( !isnumber(slot) or slot < 0 or slot > 6 ) then
         ax.util:PrintError("Invalid gesture slot provided to Player:PlayGesture()")
         return nil
@@ -113,14 +112,14 @@ function client:PlayGesture(slot, sequence)
     end
 end
 
-function client:GetData(key, fallback)
+function ax.player.meta:GetData(key, fallback)
     if ( !istable(self.vars.data) ) then self.vars.data = {} end
 
     return self.vars.data[key] == nil and fallback or self.vars.data[key]
 end
 
 if ( SERVER ) then
-    function client:SetData(key, value, isNetworked, recipients)
+    function ax.player.meta:SetData(key, value, isNetworked, recipients)
         if ( !istable(self.vars.data) ) then self.vars.data = {} end
 
         self.vars.data[key] = value
@@ -138,7 +137,7 @@ if ( SERVER ) then
         end
     end
 
-    function client:Save()
+    function ax.player.meta:Save()
         if ( !istable(self.vars.data) ) then self.vars.data = {} end
 
         -- Build an update query for the players table using the registered schema
@@ -195,7 +194,7 @@ else
 end
 
 client.ChatPrintInternal = client.ChatPrintInternal or client.ChatPrint
-function client:ChatPrint(...)
+function ax.player.meta:ChatPrint(...)
     if ( SERVER ) then
         net.Start("ax.player.chatPrint")
             net.WriteTable({...})
