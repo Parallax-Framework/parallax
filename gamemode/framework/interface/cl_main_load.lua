@@ -67,7 +67,7 @@ function PANEL:PopulateCharacterList()
         end
 
         local banner = hook.Run("GetCharacterBanner", v.id) or "gamepadui/hl2/chapter14"
-        if ( type(banner) == "string" ) then
+        if ( isstring( banner ) ) then
             banner = ax.util:GetMaterial(banner)
         end
 
