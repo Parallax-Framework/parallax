@@ -152,7 +152,7 @@ if ( SERVER ) then
     util.AddNetworkString( "ax.player.setData" )
 
     function client:LoadData( callback )
-        local name = client:SteamName()
+        local name = self:SteamName()
         local steamID64 = self:SteamID64()
 
         local query = mysql:Select( "ax_players" )
