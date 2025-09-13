@@ -114,16 +114,18 @@ function ax.player.meta:PlayGesture(slot, sequence)
 end
 
 function ax.player.meta:GetData(key, fallback)
-    if ( !istable(self.vars.data) ) then self.vars.data = {} end
+    local t = self:GetTable()
+    if ( !istable(t.vars.data) ) then t.vars.data = {} end
 
-    return self.vars.data[key] == nil and fallback or self.vars.data[key]
+    return t.vars.data[key] == nil and fallback or t.vars.data[key]
 end
 
 if ( SERVER ) then
     function ax.player.meta:SetData(key, value, isNetworked, recipients)
-        if ( !istable(self.vars.data) ) then self.vars.data = {} end
+        local t = self:GetTable()
+        if ( !istable(t.vars.data) ) then t.vars.data = {} end
 
-        self.vars.data[key] = value
+        t.vars.data[key] = value
 
         if ( !isNetworked ) then
             net.Start("ax.player.var")
@@ -139,22 +141,23 @@ if ( SERVER ) then
     end
 
     function ax.player.meta:Save()
-        if ( !istable(self.vars.data) ) then self.vars.data = {} end
+        local t = self:GetTable()
+        if ( !istable(t.vars.data) ) then t.vars.data = {} end
 
         -- Build an update query for the players table using the registered schema
         local query = mysql:Update("ax_players")
         query:Where("steamid64", self:SteamID64())
 
         -- Ensure the data table exists and always save it as JSON
-        query:Update("data", util.TableToJSON(self.vars.data or {}))
+        query:Update("data", util.TableToJSON(t.vars.data or {}))
 
         -- Iterate registered vars and persist fields that declare a database column
         for name, meta in pairs(ax.player.vars or {}) do
             if ( istable(meta) and meta.field ) then
                 local val = nil
 
-                if ( istable(self.vars) ) then
-                    val = self.vars[name]
+                if ( istable(t.vars) ) then
+                    val = t.vars[name]
                 end
 
                 -- Fall back to default if not present
