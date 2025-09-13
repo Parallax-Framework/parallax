@@ -193,7 +193,7 @@ else
     end)
 end
 
-client.ChatPrintInternal = client.ChatPrintInternal or client.ChatPrint
+ax.player.meta.ChatPrintInternal = ax.player.meta.ChatPrintInternal or ax.player.meta.ChatPrint
 function ax.player.meta:ChatPrint(...)
     if ( SERVER ) then
         net.Start("ax.player.chatPrint")
