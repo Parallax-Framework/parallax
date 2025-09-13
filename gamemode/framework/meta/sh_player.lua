@@ -143,7 +143,7 @@ if ( SERVER ) then
 
         -- Build an update query for the players table using the registered schema
         local query = mysql:Update("ax_players")
-        query:Where("steamid64", self:GetSteamID64())
+        query:Where("steamid64", self:SteamID64())
 
         -- Ensure the data table exists and always save it as JSON
         query:Update("data", util.TableToJSON(self.vars.data or {}))
