@@ -100,7 +100,7 @@ end
 
 function ax.character:Restore(client, callback)
     local clientData = client:GetTable()
-    clientData.axCharacters = {}
+    clientData.axCharacters = clientData.axCharacters or {}
 
     local steamID64 = client:SteamID64()
     local query = mysql:Select("ax_characters")
@@ -142,6 +142,27 @@ function ax.character:Restore(client, callback)
                 callback(clientData.axCharacters)
             end
         end)
+    query:Execute()
+end
+
+function ax.character:Delete( id, callback )
+    local query = mysql:Delete( "ax_characters" )
+        query:Where( "id", id )
+        query:Callback( function( result, status )
+            if ( result == false ) then
+                ax.util:PrintError( "Failed to delete character with ID " .. id )
+                if ( isfunction(callback) ) then
+                    callback(false)
+                end
+
+                return
+            end
+
+            ax.util:PrintDebug( "Character with ID " .. id .. " deleted successfully" )
+            if ( isfunction(callback) ) then
+                callback(true)
+            end
+        end )
     query:Execute()
 end
 

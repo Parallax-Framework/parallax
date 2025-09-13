@@ -92,6 +92,10 @@ function PANEL:PopulateCharacterList()
         deleteButton.width = 0
         deleteButton.DoClick = function()
             -- self:PopulateDelete(v.id)
+
+            net.Start("ax.character.delete")
+                net.WriteUInt(v.id, 32)
+            net.SendToServer()
         end
 
         -- Sorry for this pyramid of code, but eon wanted me to make the delete button extend when hovered over the character button.

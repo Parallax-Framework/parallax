@@ -125,6 +125,39 @@ net.Receive("ax.character.restore", function()
     hook.Run("OnCharactersRestored", characters)
 end)
 
+net.Receive( "ax.character.delete", function()
+    local id = net.ReadUInt( 32 )
+    if ( !isnumber( id ) or id < 1 ) then return end
+
+    local character = ax.character.instances[ id ]
+    if ( !istable( character ) ) then
+        ax.util:PrintError( "Character with ID " .. id .. " does not exist." )
+        return
+    end
+
+    local clientData = ax.client:GetTable()
+    if ( clientData.axCharacter and clientData.axCharacter.id == id ) then
+        clientData.axCharacter = nil
+    end
+
+    if ( istable( clientData.axCharacters ) ) then
+        for i = #clientData.axCharacters, 1, -1 do
+            if ( clientData.axCharacters[i].id == id ) then
+                table.remove( clientData.axCharacters, i )
+                break
+            end
+        end
+    end
+
+    hook.Run( "PlayerDeletedCharacter", id )
+
+    ax.character.instances[ id ] = nil
+
+    if ( IsValid( ax.gui.main ) and IsValid( ax.gui.main.load ) ) then
+        ax.gui.main.load:PopulateCharacterList()
+    end
+end)
+
 net.Receive("ax.character.var", function()
     local characterId = net.ReadUInt(32)
     local name = net.ReadString()
