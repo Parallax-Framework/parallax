@@ -502,7 +502,7 @@ ax.animations.stored["player_overwatch"] = {
         [ACT_MP_CROUCHWALK] = {"cwalk_all", "cwalk_all"},
     },
     ["pistol"] = {
-        [ACT_MP_STAND_IDLE] = {"idle_unarmed", "idle_revolver"},
+        [ACT_MP_STAND_IDLE] = {"idle1_pistol", "combatidle1_pistol"},
         [ACT_MP_WALK] = {"walk_all", "walk_revolver"},
         [ACT_MP_RUN] = {"run_all_01", "run_revolver"},
         [ACT_MP_CROUCH_IDLE] = {"cidle_all", "cidle_revolver"},
@@ -511,27 +511,27 @@ ax.animations.stored["player_overwatch"] = {
         ["reload"] = "gesture_reload_357"
     },
     ["smg"] = {
-        [ACT_MP_STAND_IDLE] = {"idle_passive", "idle_smg1"},
-        [ACT_MP_WALK] = {"walk_passive", "walk_smg1"},
-        [ACT_MP_RUN] = {"run_passive", "run_smg1"},
+        [ACT_MP_STAND_IDLE] = {"idle1_smg1", "combatidle1_smg1"},
+        [ACT_MP_WALK] = {"walk_all_smg1", "walk_aiming_all"},
+        [ACT_MP_RUN] = {"runall_smg1", "run_smg1"},
         [ACT_MP_CROUCH_IDLE] = {"cidle_passive", "cidle_smg1"},
         [ACT_MP_CROUCHWALK] = {"cwalk_passive", "cwalk_smg1"},
         ["shoot"] = "gesture_shoot_smg1",
         ["reload"] = "gesture_reload_smg1"
     },
     ["shotgun"] = {
-        [ACT_MP_STAND_IDLE] = {"idle_passive", "idle_shotgun"},
-        [ACT_MP_WALK] = {"walk_passive", "walk_shotgun"},
-        [ACT_MP_RUN] = {"run_passive", "run_shotgun"},
+        [ACT_MP_STAND_IDLE] = {"idle1_sg", "combatidle1_sg"},
+        [ACT_MP_WALK] = {"walk_all_sg", "walk_aiming_all_sg"},
+        [ACT_MP_RUN] = {"runall_sg", "run_shotgun"},
         [ACT_MP_CROUCH_IDLE] = {"cidle_passive", "cidle_shotgun"},
         [ACT_MP_CROUCHWALK] = {"cwalk_passive", "cwalk_shotgun"},
         ["shoot"] = "gesture_shoot_shotgun",
         ["reload"] = "gesture_reload_shotgun"
     },
     ["ar2"] = {
-        [ACT_MP_STAND_IDLE] = {"idle_passive", "idle_ar2"},
-        [ACT_MP_WALK] = {"walk_passive", "walk_ar2"},
-        [ACT_MP_RUN] = {"run_passive", "run_ar2"},
+        [ACT_MP_STAND_IDLE] = {"idle1_ar2", "combatidle1"},
+        [ACT_MP_WALK] = {"walk_all_ar2", "walk_aiming_all_ar2"},
+        [ACT_MP_RUN] = {"runall_ar2", "run_ar2"},
         [ACT_MP_CROUCH_IDLE] = {"cidle_passive", "cidle_ar2"},
         [ACT_MP_CROUCHWALK] = {"cwalk_passive", "cwalk_ar2"},
         ["shoot"] = "gesture_shoot_ar2",
