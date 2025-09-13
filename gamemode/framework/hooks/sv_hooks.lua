@@ -225,7 +225,7 @@ function GM:PlayerDisconnected(client)
     local playtime = os.difftime(os.time(), joinTime)
 
     client:SetLastLeave(os.time())
-    client:SetPlaytime(playtime)
+    client:SetPlayTime(playtime)
 
     client:Save()
 
