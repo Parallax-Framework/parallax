@@ -84,7 +84,6 @@ end
 function GM:PlayerLoadout(client)
     BaseClass.PlayerLoadout(self, client)
 
-    client:Give("none")
     client:Give("weapon_fists")
 
     local character = client:GetCharacter()
