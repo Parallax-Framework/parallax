@@ -171,7 +171,6 @@ function GM:StartCommand(client, userCmd)
                     end
 
                     local data = result[1]
-                    client:GetTable().axPlayerID = data.id
                     client:GetTable().axData = util.JSONToTable(data.data) or {}
 
                     client:SetPlayTime(tonumber(data.play_time) or 0)
