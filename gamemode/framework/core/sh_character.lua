@@ -96,7 +96,7 @@ ax.character:RegisterVar("model", {
     end,
     populate = function(this, container, payload)
         local option = container:Add("ax.text")
-        option:SetText(ax.util:UniqueIDToName(this.key))
+        option:SetText(string.lower(ax.util:UniqueIDToName(this.key)))
         option:Dock(TOP)
         option:SetZPos(1)
 

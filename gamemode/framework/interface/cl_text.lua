@@ -21,7 +21,7 @@ end
 function PANEL:SetText(text, bNoTranslate, bNoSizeToContents)
     if ( !text ) then return end
 
-    if ( !bNoTranslate ) then
+    if ( !bNoTranslate and text != "" ) then
         text = ax.localization:GetPhrase(text)
     end
 
@@ -64,7 +64,7 @@ end
 function PANEL:SetText(text, bNoTranslate, bNoSizeToContents)
     if ( !text ) then return end
 
-    if ( !bNoTranslate ) then
+    if ( !bNoTranslate and text != "" ) then
         text = ax.localization:GetPhrase(text)
     end
 
