@@ -14,6 +14,8 @@ util.AddNetworkString("ax.character.sync")
 util.AddNetworkString("ax.character.restore")
 util.AddNetworkString( "ax.character.var" )
 
+util.AddNetworkString( "ax.relay.update" )
+
 util.AddNetworkString("ax.inventory.sync")
 util.AddNetworkString("ax.inventory.receiver.add")
 util.AddNetworkString("ax.inventory.receiver.remove")
