@@ -1,3 +1,14 @@
+--[[
+    Parallax Framework
+    Copyright (c) 2025 Parallax Framework Contributors
+
+    This file is part of the Parallax Framework and is licensed under the MIT License.
+    You may use, copy, modify, merge, publish, distribute, and sublicense this file
+    under the terms of the LICENSE file included with this project.
+
+    Attribution is required. If you use or modify this file, you must retain this notice.
+]]
+
 ax.config:Add("notification.enabled", ax.type.bool, true, { description = "Enable client notifications", bNetworked = true, category = "notifications" })
 ax.config:Add("notification.maxVisible", ax.type.number, 4, { min = 1, max = 8, decimals = 0, bNetworked = true, category = "notifications" })
 ax.config:Add("notification.defaultLength", ax.type.number, 5, { min = 1, max = 20, decimals = 0, bNetworked = true, category = "notifications" })
