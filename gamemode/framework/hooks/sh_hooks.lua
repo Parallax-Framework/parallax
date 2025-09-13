@@ -40,3 +40,11 @@ end
 function GM:CanLoadCharacter(client, character)
     return true
 end
+
+function GM:InitPostEntity()
+    if ( SERVER ) then
+        ax.database:Connect() -- TODO: Allow schemas to connect to their own databases
+    else
+        ax.joinTime = os.time()
+    end
+end
