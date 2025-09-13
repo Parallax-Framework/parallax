@@ -296,7 +296,7 @@ function PANEL:GetPages()
     return self.pages
 end
 
-function PANEL:TransitionToPage(targetPageIndex)
+function PANEL:TransitionToPage(targetPageIndex, duration)
     if ( targetPageIndex < 1 or targetPageIndex > #self.pages ) then return end
 
     local currentPageIndex = self:GetCurrentPage()
@@ -310,23 +310,33 @@ function PANEL:TransitionToPage(targetPageIndex)
         if ( currentPageIndex < targetPageIndex ) then
             -- Slide out the current page to the left
             if ( IsValid(currentPage) ) then
-                currentPage:SlideLeft(0.5)
+                currentPage:SlideLeft(duration)
             end
 
-            targetPage:StartAtRight(0.5)
-            targetPage:SlideToFront(0.5)
+            targetPage:StartAtRight(duration)
+            targetPage:SlideToFront(duration)
         else
             -- Slide out the current page to the right
             if ( IsValid(currentPage) ) then
-                currentPage:SlideRight(0.5)
+                currentPage:SlideRight(duration)
             end
 
-            targetPage:StartAtLeft(0.5)
-            targetPage:SlideToFront(0.5)
+            targetPage:StartAtLeft(duration)
+            targetPage:SlideToFront(duration)
         end
     end
 
     self.currentPage = targetPageIndex
+end
+
+function PANEL:HideAllPages()
+    for k, v in pairs(self.pages) do
+        if ( IsValid(v) ) then
+            v:HidePanel()
+        end
+    end
+
+    self.currentPage = 0
 end
 
 function PANEL:Paint(width, height)

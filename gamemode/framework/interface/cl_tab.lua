@@ -73,7 +73,7 @@ function PANEL:Init()
 
     self:MakePopup()
 
-    self:Motion(ax.option:Get("tab.fade.time", 0.2), {
+    self:Motion(ax.option:Get("tab.fade.time", 0.25), {
         Target = {alpha = 255},
         Easing = "OutQuad",
         Think = function(this)
@@ -82,7 +82,7 @@ function PANEL:Init()
     })
 
     self.buttons = self:Add("EditablePanel")
-    self.buttons:SetSize(ScrW() / 4 - ScreenScale(16), ScrH() - ScreenScaleH(32))
+    self.buttons:SetSize(ScrW() / 4 - ScreenScale(32), ScrH() - ScreenScaleH(32))
     self.buttons:SetPos(-self.buttons:GetWide(), ScreenScaleH(16))
 
     self.buttons.x = self.buttons:GetX()
@@ -90,8 +90,8 @@ function PANEL:Init()
 
     self.buttons.alpha = 0
     self.buttons:SetAlpha(0)
-    self.buttons:Motion(ax.option:Get("tab.fade.time", 0.2), {
-        Target = {x = ScreenScale(8), y = ScreenScaleH(16), alpha = 255},
+    self.buttons:Motion(ax.option:Get("tab.fade.time", 0.25), {
+        Target = {x = ScreenScale(16), y = ScreenScaleH(16), alpha = 255},
         Easing = "OutQuad",
         Think = function(vars)
             self.buttons:SetPos(vars.x, vars.y)
@@ -116,9 +116,9 @@ function PANEL:Init()
         end
 
         local tab = self:CreatePage()
-        tab:SetXOffset(self.buttons:GetWide() + ScreenScale(16))
+        tab:SetXOffset(self.buttons:GetWide() + ScreenScale(32))
         tab:SetYOffset(ScreenScaleH(16))
-        tab:SetWidthOffset(-self.buttons:GetWide() - ScreenScale(16) * 2)
+        tab:SetWidthOffset(-self.buttons:GetWide() - ScreenScale(16) * 3)
         tab:SetHeightOffset(-ScreenScaleH(32))
         self.tabs[k] = tab
         button.tab = tab
@@ -158,7 +158,7 @@ function PANEL:Populate(data, tab)
 
     if ( istable(data) ) then
         if ( isfunction(data.Populate) ) then
-            self:TransitionToPage(tab.index)
+            self:TransitionToPage(tab.index, ax.option:Get("tab.fade.time", 0.25))
             data:Populate(tab)
         end
 
@@ -187,7 +187,7 @@ function PANEL:Close(callback)
     self:SetGradientTopTarget(0)
     self:SetGradientBottomTarget(0)
 
-    local fadeDuration = ax.option:Get("tab.fade.time", 0.2)
+    local fadeDuration = ax.option:Get("tab.fade.time", 0.25)
 
     self:AlphaTo(0, fadeDuration, 0, function()
         self:Remove()
@@ -220,6 +220,12 @@ function PANEL:Close(callback)
             self:Remove()
         end
     })
+
+    local currentPageIndex = self:GetCurrentPage()
+    local currentPage = self.pages[currentPageIndex]
+    if ( IsValid(currentPage) ) then
+        currentPage:SlideRight(fadeDuration)
+    end
 end
 
 function PANEL:OnKeyCodePressed(keyCode)
