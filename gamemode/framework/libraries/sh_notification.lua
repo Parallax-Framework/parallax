@@ -110,7 +110,7 @@ if ( CLIENT ) then
 
     --- Promote queued items into active list respecting maxVisible.
     function ax.notification:Next()
-        local maxVisible = (ax.config and ax.config.Get and ax.config:Get("notification.maxVisible", self.maxVisible)) or self.maxVisible
+        local maxVisible = self.maxVisible
         while (#self.active < maxVisible) and (#self.queue > 0) do
             local data = table.remove(self.queue, 1)
             self:Show(data)
