@@ -44,6 +44,18 @@ function item:CanInteract( client, action )
         return false
     end
 
+    local actionTable = self.actions[action]
+    if ( istable( actionTable ) and isfunction( actionTable.CanInteract ) ) then
+        local canRun, reason = actionTable:CanInteract( self, client )
+        if ( canRun == false ) then
+            if ( isstring(reason) and #reason > 0 ) then
+                client:Notify(reason, "error")
+            end
+
+            return false
+        end
+    end
+
     return true
 end
 

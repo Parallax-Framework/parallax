@@ -44,7 +44,7 @@ net.Receive( "ax.inventory.item.action", function( length, client )
 
     if ( !item:CanInteract( client, action ) ) then return end
 
-    item.actions[ action ]( item, client )
+    item.actions[ action ]:Interact( client )
 
     hook.Run( "PlayerUsedItemAction", client, item, action )
 end)
