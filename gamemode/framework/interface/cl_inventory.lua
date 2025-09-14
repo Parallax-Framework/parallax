@@ -33,7 +33,6 @@ function PANEL:Init()
     progress:Dock(TOP)
     progress:SetFraction(total)
     progress:SetTall(ScreenScale(12))
-    progress:DockMargin(0, 0, ScreenScale(8), 0)
     progress.Paint = function(this, width, height)
         draw.RoundedBox(0, 0, 0, width, height, Color(0, 0, 0, 150))
 
