@@ -7,7 +7,6 @@ function PANEL:Init()
     title:Dock(TOP)
     title:SetFont("ax.huge.bold")
     title:SetText("INVENTORY")
-    title:SetContentAlignment(9)
 
     local inventory = ax.client:GetCharacter():GetInventory()
     if ( !inventory ) then
@@ -55,6 +54,9 @@ function PANEL:Init()
     for i = 1, 16 do
         local item = self.container:Add("ax.button.flat")
         item:Dock(TOP)
+        item:SetFont("ax.small")
+        item:SetFontDefault("ax.small")
+        item:SetFontHovered("ax.regular.bold")
         item:SetText("Item " .. i)
         item:SetContentAlignment(4)
         item:SetTextInset(item:GetTall() + ScreenScale(2), 0)
