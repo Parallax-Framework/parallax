@@ -22,14 +22,13 @@ end
 
 function inventory:GetWeight()
     local weight = 0
-    for i = 1, #self.items do
-        local item = self.items[i]
-        if ( istable(item) and isnumber(item.weight) ) then
-            return weight + item.weight
+    for k, v in pairs(self.items) do
+        if ( istable(v) and isnumber(v.weight) ) then
+            weight = weight + v.weight
         end
     end
 
-    return 0
+    return weight
 end
 
 function inventory:GetID()
@@ -41,9 +40,9 @@ function inventory:GetItems()
 end
 
 function inventory:GetItemByID(itemID)
-    for i = 1, #self.items do
-        if ( self.items[i].id == itemID ) then
-            return self.items[i]
+    for k, v in pairs(self.items) do
+        if ( v.id == itemID ) then
+            return v
         end
     end
 
@@ -129,34 +128,30 @@ function inventory:RemoveReceiver(receiver)
 end
 
 if ( SERVER ) then
-    function inventory:AddItem(itemUniqueID, data)
+    function inventory:AddItem(class, data)
         if ( !istable(self.items) ) then self.items = {} end
 
-        local item = ax.item.stored[itemUniqueID]
+        local item = ax.item.stored[class]
         if ( !istable(item) ) then
-            ax.util:PrintError("Invalid item provided to ax.inventory:AddItem() (" .. tostring(itemUniqueID) .. ")")
+            ax.util:PrintError("Invalid item provided to ax.inventory:AddItem() (" .. tostring(class) .. ")")
             return false
         end
 
         data = data or {}
 
         local query = mysql:Insert("ax_items")
-            query:Insert("inv_id", self.id)
+            query:Insert("class", class)
+            query:Insert("inventory_id", self.id)
             query:Insert("data", util.TableToJSON(data))
             query:Callback(function(result, status, lastID)
-                if result == false then
+                if ( result == false ) then
                     ax.util:PrintError("Failed to insert item into database for inventory " .. self.id)
                     return false
                 end
 
-                local itemObject = setmetatable({}, ax.item.meta)
-                for k, v in pairs(item) do
-                    itemObject[k] = v
-                end
-
+                local itemObject = setmetatable(item, ax.item.meta)
                 itemObject.id = lastID
                 itemObject.data = data or {}
-                itemObject.invID = self.id
 
                 ax.item.instances[itemObject.id] = itemObject
 
@@ -164,8 +159,7 @@ if ( SERVER ) then
 
                 net.Start("ax.inventory.item.add")
                     net.WriteUInt(self.id, 32)
-                    net.WriteUInt(itemObject.id, 32)
-                    net.WriteTable(itemObject.data)
+                    net.WriteTable(itemObject)
                 net.Send(self:GetReceivers())
 
                 return true

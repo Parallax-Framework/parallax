@@ -37,7 +37,7 @@ function ax.item:Include(path)
             itemName = string.sub(itemName, 4)
         end
 
-        ITEM = setmetatable({ uniqueID = itemName }, ax.item.meta)
+        ITEM = setmetatable({ class = itemName }, ax.item.meta)
             ax.util:Include(path .. "/" .. fileName, "shared")
             ax.util:PrintSuccess("Item \"" .. tostring(ITEM.name) .. "\" initialized successfully.")
             ax.item.stored[itemName] = ITEM
@@ -53,4 +53,110 @@ function ax.item:Get(identifier)
     end
 
     return nil
+end
+
+--- Inserts a new item instance into the database and returns the item object via callback.
+-- @realm server
+-- @param class string The unique ID of the item to create.
+-- @param inventoryID number The ID of the inventory to which this item belongs.
+-- @param data table Optional data table containing item properties.
+-- @param callback function|nil Optional callback function called with the created item or false on failure.
+-- @usage ax.item:Create("item_unique_id", 1, { customData = true }, function(item) print(item.id) end)
+function ax.item:Create(class, inventoryID, data, callback)
+    data = data or {}
+
+    local query = mysql:Insert("ax_items")
+        query:Insert("class", class)
+        query:Insert("inventory_id", inventoryID)
+        query:Insert("data", util.TableToJSON(data))
+        query:Callback(function(result, status, lastItemId)
+            if ( result == false ) then
+                if ( isfunction(callback) ) then
+                    callback(false)
+                end
+
+                return
+            end
+
+            -- Create the item object
+            local item = setmetatable(ax.item.stored[class], ax.item.meta)
+            item.id = lastItemId
+            item.class = class
+            item.data = data or {}
+
+            ax.item.instances[lastItemId] = item
+
+            -- Look for the inventory and add the item to it
+            local inventory = ax.inventory.instances[inventoryID]
+            if ( inventory ) then
+                inventory.items[#inventory.items + 1] = item
+                ax.inventory:Sync(inventory)
+            end
+
+            -- Call the callback with the created item
+            if ( isfunction(callback) ) then
+                callback(item)
+            end
+        end)
+    query:Execute()
+end
+
+concommand.Add("ax_item_create", function(client, command, args, argStr)
+    if ( IsValid(client) and !client:IsSuperAdmin() ) then
+        ax.util:PrintError("You do not have permission to use this command!")
+        return
+    end
+
+    local class = args[1]
+    local inventoryID = tonumber(args[2]) or 0
+
+    if ( !class or class == "" ) then
+        ax.util:PrintError("You must provide an item class.")
+
+        ax.util:Print(Color(0, 255, 0), "Available item classes:")
+        for k, v in pairs(ax.item.stored) do
+            ax.util:Print(Color(0, 255, 0), "- " .. k)
+        end
+
+        return
+    end
+
+    if ( inventoryID <= 0 ) then
+        ax.util:PrintError("You must provide a valid inventory ID.")
+
+        ax.util:Print(Color(0, 255, 0), "Available inventory IDs:")
+        for k, v in pairs(ax.inventory.instances) do
+            ax.util:Print(Color(0, 255, 0), "- " .. k)
+        end
+
+        return
+    end
+
+    ax.item:Create(class, inventoryID, {}, function(item)
+        if ( item ) then
+            ax.util:Print(Color(0, 255, 0), "Item created successfully with ID: " .. item.id)
+        else
+            ax.util:PrintError("Failed to create item.")
+        end
+    end)
+end)
+
+--- Deletes the specified item instance from the database and removes it from memory.
+-- @realm server
+-- @param item number The item ID to delete.
+function ax.item:Delete(item)
+    if ( isnumber(item) ) then
+        item = self.instances[item]
+    end
+
+    if ( !item ) then return end
+
+    local query = mysql:Delete("ax_items")
+        query:Where("id", item.id)
+        query:Callback(function(result, status)
+            if ( result == false ) then return end
+
+            self.instances[item.id] = nil
+        end)
+    query:Execute()
 end

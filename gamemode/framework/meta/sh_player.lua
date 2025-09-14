@@ -271,3 +271,13 @@ function ax.player.meta:ChatPrint(...)
         chat.AddText(...)
     end
 end
+
+--- Player:Notify - Convenience for sending a toast to this player.
+-- @realm server
+function ax.player.meta:Notify(text, type, length)
+    if ( SERVER ) then
+        ax.notification:Send(self, text, type, length)
+    else
+        ax.notification:Add(text, type, length)
+    end
+end

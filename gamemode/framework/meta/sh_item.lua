@@ -12,6 +12,34 @@
 local item = ax.item.meta or {}
 item.__index = item
 
+function item:__tostring()
+    return string.format("Item [%d][%s]", self.id, self.name or "Unknown")
+end
+
+function item:GetID()
+    return self.id
+end
+
+function item:GetClass()
+    return self.class
+end
+
+function item:GetName()
+    return self.name or "Unknown"
+end
+
+function item:GetDescription()
+    return self.description or "No description available."
+end
+
+function item:GetWeight()
+    return self.weight or 0
+end
+
+function item:GetModel()
+    return self.model or "models/props_junk/wood_crate001a.mdl"
+end
+
 function item:GetData(key)
     if ( !istable(self.data) ) then self.data = {} end
 

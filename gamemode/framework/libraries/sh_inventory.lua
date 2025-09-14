@@ -66,14 +66,15 @@ if ( SERVER ) then
                 "Invalid inventory provided to ax.inventory:Sync() (type: %s, value: %s)",
                 type(inventory), tostring(inventory)
             ))
+
             return
         end
 
         net.Start("ax.inventory.sync")
             net.WriteUInt(inventory.id, 32)
-            net.WriteTable(inventory.items, true) -- sequentiable table :: [1] = itemID
+            net.WriteTable(inventory.items)
             net.WriteFloat(inventory.maxWeight)
-        net.Broadcast()
+        net.Send(inventory:GetReceivers())
     end
 
     --- Restores all inventories associated with the client's characters from the database.

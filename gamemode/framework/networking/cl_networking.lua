@@ -140,7 +140,7 @@ net.Receive("ax.character.restore", function()
 end)
 
 net.Receive( "ax.character.delete", function()
-    local id = net.ReadUInt( 32 )
+    local id = net.ReadUInt(32)
     if ( !isnumber( id ) or id < 1 ) then return end
 
     local character = ax.character.instances[ id ]
@@ -206,22 +206,39 @@ net.Receive("ax.player.var", function()
 end)
 
 net.Receive("ax.inventory.sync", function()
-    local inv_id = net.ReadUInt( 32 )
-    local inv_items = net.ReadTable( true )
-    local inv_maxWeight = net.ReadFloat()
+    local inventoryID = net.ReadUInt(32)
+    local inventoryItems = net.ReadTable()
+    local inventoryMaxWeight = net.ReadFloat()
 
-    ax.inventory.instances[inv_id] = setmetatable({
-        id = inv_id,
-        items = inv_items,
-        maxWeight = inv_maxWeight
+    -- Convert the items into objects
+    for i = 1, #inventoryItems do
+        local itemData = inventoryItems[i]
+        if ( istable(itemData) and isnumber(itemData.id) ) then
+            local item = setmetatable(ax.item.stored[itemData.class], ax.item.meta)
+            item.id = itemData.id
+            item.class = itemData.class
+            item.data = itemData.data or {}
+
+            ax.item.instances[item.id] = item
+            inventoryItems[i] = item
+        else
+            ax.util:PrintError("Invalid item data received for inventory sync.")
+            inventoryItems[i] = nil
+        end
+    end
+
+    ax.inventory.instances[inventoryID] = setmetatable({
+        id = inventoryID,
+        items = inventoryItems,
+        maxWeight = inventoryMaxWeight
     }, ax.inventory.meta)
 end)
 
 net.Receive("ax.inventory.receiver.add", function()
-    local inv_id = net.ReadUInt(32)
+    local inventoryID = net.ReadUInt(32)
     local receiver = net.ReadPlayer()
 
-    local inventory = ax.inventory.instances[inv_id]
+    local inventory = ax.inventory.instances[inventoryID]
     if ( !istable(inventory) ) then return end
 
     inventory:AddReceiver(receiver)
@@ -235,49 +252,48 @@ net.Receive("ax.inventory.receiver.remove", function()
 end)
 
 net.Receive("ax.inventory.item.add", function()
-    local inv_id = net.ReadUInt( 32 )
-    local item_id = net.ReadUInt( 32 )
-    local item_data = net.ReadTable()
+    local inventoryID = net.ReadUInt(32)
+    local itemObject = net.ReadTable()
 
-    local inv = ax.inventory.instances[inv_id]
-    if ( !istable(inv) ) then
+    local inventory = ax.inventory.instances[inventoryID]
+    if ( !istable(inventory) ) then
         ax.util:PrintError("Invalid inventory ID received for item add.")
         return
     end
 
-    local item = setmetatable( {
-        id = item_id,
-        data = item_data
-    }, ax.item.meta )
+    local item = setmetatable(ax.item.stored[itemObject.class], ax.item.meta)
+    item.id = itemObject.id
+    item.class = itemObject.class
+    item.data = itemObject.data or {}
 
-    inv.items[#inv.items + 1] = item.id
+    inventory.items[item.id] = item
     ax.item.instances[item.id] = item
 end)
 
 net.Receive("ax.inventory.item.remove", function()
-    local inv_id = net.ReadUInt(32)
-    local item_id = net.ReadUInt(32)
+    local inventoryID = net.ReadUInt(32)
+    local itemID = net.ReadUInt(32)
 
-    local inv = ax.inventory.instances[inv_id]
+    local inv = ax.inventory.instances[inventoryID]
     if ( !istable(inv) ) then
         ax.util:PrintError("Invalid inventory ID received for item remove.")
         return
     end
 
     for i = 1, #inv.items do
-        if ( inv.items[i].id == item_id ) then
+        if ( inv.items[i].id == itemID ) then
             table.remove(inv.items, i)
-            ax.item.instances[item_id] = nil
+            ax.item.instances[itemID] = nil
             break
         end
     end
 end)
 
-net.Receive( "ax.relay.update", function()
+net.Receive("ax.relay.update", function()
     local index = net.ReadString()
     local name = net.ReadString()
     local value = net.ReadType()
 
     ax.relay.data[index] = ax.relay.data[index] or {}
     ax.relay.data[index][name] = value
-end )
+end)

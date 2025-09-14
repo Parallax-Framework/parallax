@@ -27,7 +27,7 @@ function PANEL:Init()
         draw.RoundedBox(0, 0, 0, width, height, Color(0, 0, 0, 150))
     end
 
-    local total = inventory:GetWeight() / ax.config:Get("inventory.max.weight", 20)
+    local total = inventory:GetWeight() / inventory:GetMaxWeight()
 
     local progress = self.container:Add("DProgress")
     progress:Dock(TOP)
@@ -41,7 +41,7 @@ function PANEL:Init()
         draw.RoundedBox(0, 0, 0, width * fraction, height, Color(100, 200, 175, 200))
     end
 
-    local maxWeight = ax.config:Get("inventory.max.weight", 20)
+    local maxWeight = inventory:GetMaxWeight()
     local weight = math.Round(maxWeight * progress:GetFraction(), 2)
 
     local label = progress:Add("ax.text")
@@ -50,14 +50,13 @@ function PANEL:Init()
     label:SetText(weight .. "kg / " .. maxWeight .. "kg")
     label:SetContentAlignment(5)
 
-    -- temporary filler items
-    for i = 1, 16 do
+    for k, v in pairs(inventory:GetItems()) do
         local item = self.container:Add("ax.button.flat")
         item:Dock(TOP)
         item:SetFont("ax.small")
         item:SetFontDefault("ax.small")
         item:SetFontHovered("ax.regular.bold")
-        item:SetText("Item " .. i)
+        item:SetText(v:GetName() or tostring(v))
         item:SetContentAlignment(4)
         item:SetTextInset(item:GetTall() + ScreenScale(2), 0)
 
@@ -65,7 +64,7 @@ function PANEL:Init()
         icon:Dock(LEFT)
         icon:SetWide(item:GetTall())
         icon:DockMargin(0, 0, ScreenScale(4), 0)
-        icon:SetModel("models/props_junk/PopCan01a.mdl")
+        icon:SetModel(v:GetModel() or "models/props_junk/wood_crate001a.mdl")
         icon:SetMouseInputEnabled(false)
     end
 end
