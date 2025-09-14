@@ -103,7 +103,7 @@ function PANEL:PopulateInfo(item)
     description:SetContentAlignment(5)
 
     local actions = item:GetActions()
-    if ( #actions < 1 ) then
+    if ( table.IsEmpty(actions) ) then
         local noActions = self.info:Add("ax.text")
         noActions:Dock(TOP)
         noActions:SetFont("ax.regular.italic")

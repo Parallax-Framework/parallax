@@ -56,10 +56,10 @@ function item:GetActions()
     return self.actions
 end
 
-function item:AddAction(name, action)
+function item:AddAction(name, actionData)
     if ( !istable(self.actions) ) then self.actions = {} end
 
-    self.actions[name] = action
+    self.actions[name] = actionData
 end
 
 function item:CanInteract( client, action )

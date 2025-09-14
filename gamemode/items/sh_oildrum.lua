@@ -14,7 +14,7 @@ ITEM.camera = {
     fov = 70 -- Field of view for the camera
 }
 
-ITEM:AddAction({
+ITEM:AddAction("use", {
     name = "Use",
     description = "Use this item.",
     icon = "icon16/accept.png",
