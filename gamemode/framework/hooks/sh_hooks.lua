@@ -50,3 +50,6 @@ function GM:InitPostEntity()
         ax.joinTime = os.time()
     end
 end
+
+function GM:CanPlayerInteractItem( client, item, action )
+end

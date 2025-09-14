@@ -34,4 +34,17 @@ function item:AddAction(name, action)
     self.actions[name] = action
 end
 
+function item:CanInteract( client, action )
+    local try, catch = hook.Run("CanPlayerInteractItem", client, self, action)
+    if ( try == false ) then
+        if ( isstring(catch) and #catch > 0 ) then
+            client:Notify(catch, "error")
+        end
+
+        return false
+    end
+
+    return true
+end
+
 ax.item.meta = item

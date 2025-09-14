@@ -24,6 +24,31 @@ util.AddNetworkString("ax.inventory.item.add")
 util.AddNetworkString("ax.inventory.item.remove")
 util.AddNetworkString("ax.inventory.item.update")
 
+util.AddNetworkString( "ax.inventory.item.action" )
+net.Receive( "ax.inventory.item.action", function( length, client )
+    if ( !client:RateLimit( "ax.inventory.action", 0.2 ) ) then return end
+
+    local itemID = net.ReadUInt( 32 )
+    local action = net.ReadString()
+
+    if ( !isnumber( itemID ) or itemID < 1 or !isstring( action ) or #action < 1 ) then
+        ax.util:Error( "Invalid payload received for item action." )
+        return
+    end
+
+    local item = ax.item.instances[ itemID ]
+    if ( !istable( item ) ) then
+        ax.util:PrintError( "Item with ID " .. itemID .. " does not exist." )
+        return
+    end
+
+    if ( !item:CanInteract( client, action ) ) then return end
+
+    item.actions[ action ]( item, client )
+
+    hook.Run( "PlayerUsedItemAction", client, item, action )
+end)
+
 util.AddNetworkString("ax.character.create")
 net.Receive("ax.character.create", function(length, client)
     local payload = net.ReadTable()
