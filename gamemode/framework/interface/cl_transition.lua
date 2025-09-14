@@ -296,7 +296,7 @@ function PANEL:GetPages()
     return self.pages
 end
 
-function PANEL:TransitionToPage(targetPageIndex, duration)
+function PANEL:TransitionToPage(targetPageIndex, duration, skipStartAt)
     if ( targetPageIndex < 1 or targetPageIndex > #self.pages ) then return end
 
     local currentPageIndex = self:GetCurrentPage()
@@ -313,7 +313,10 @@ function PANEL:TransitionToPage(targetPageIndex, duration)
                 currentPage:SlideLeft(duration)
             end
 
-            targetPage:StartAtRight(duration)
+            if ( !skipStartAt ) then
+                targetPage:StartAtRight(duration)
+            end
+
             targetPage:SlideToFront(duration)
         else
             -- Slide out the current page to the right
@@ -321,7 +324,10 @@ function PANEL:TransitionToPage(targetPageIndex, duration)
                 currentPage:SlideRight(duration)
             end
 
-            targetPage:StartAtLeft(duration)
+            if ( !skipStartAt ) then
+                targetPage:StartAtLeft(duration)
+            end
+
             targetPage:SlideToFront(duration)
         end
     end
