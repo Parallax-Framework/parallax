@@ -4,8 +4,8 @@ net.Receive("ax.chatbox.send", function(len, client)
 
     hook.Run("PlayerSay", client, net.ReadString(), false)
 
-    client:SetNWString("axChatText", "")
-    client:SetNWString("axChatType", "")
+    client:SetRelay("chatText", "")
+    client:SetRelay("chatType", "")
 end)
 
 util.AddNetworkString("ax.chatbox.text.changed")
@@ -15,8 +15,8 @@ net.Receive("ax.chatbox.text.changed", function(len, client)
     local text = net.ReadString()
     local chatType = net.ReadString()
 
-    client:SetNWString("axChatText", text)
-    client:SetNWString("axChatType", chatType)
+    client:SetRelay("chatText", text)
+    client:SetRelay("chatType", chatType)
 
     hook.Run("ChatboxOnTextChanged", text, chatType)
 end)

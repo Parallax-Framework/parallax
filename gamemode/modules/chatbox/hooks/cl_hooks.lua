@@ -45,7 +45,7 @@ end
 function MODULE:PostDrawTranslucentRenderables()
     -- Draw a text above the player who is typing to indicate that they are typing.
     for _, client in player.Iterator() do
-        local text = client:GetNWString("axChatText", "")
+        local text = client:GetRelay("chatText", "")
         if ( text == "" ) then continue end
 
         if ( string.StartsWith(text, "/") or string.StartsWith(text, ".") ) then continue end
