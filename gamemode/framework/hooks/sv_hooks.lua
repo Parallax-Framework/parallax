@@ -210,12 +210,6 @@ function GM:PlayerReady(client)
     client:Spawn()
 end
 
-function GM:PlayerSay(client, text, teamChat)
-    if ( text == "" ) then return end
-
-    return ""
-end
-
 function GM:PlayerDisconnected(client)
     local invKeys = table.GetKeys(ax.inventory.instances)
     for i = 1, #invKeys do
