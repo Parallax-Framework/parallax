@@ -16,6 +16,10 @@ function GM:Initialize()
     ax.item:Include("parallax/gamemode/items")
     ax.module:Include("parallax/gamemode/modules")
     ax.schema:Initialize()
+
+    if ( CLIENT ) then
+        ax.font:Load()
+    end
 end
 
 local reloaded = false
@@ -29,6 +33,10 @@ function GM:OnReloaded()
     ax.item:Include("parallax/gamemode/items")
     ax.module:Include("parallax/gamemode/modules")
     ax.schema:Initialize()
+
+    if ( CLIENT ) then
+        ax.font:Load()
+    end
 end
 
 function GM:CanBecomeFaction(factionTable, client)

@@ -80,14 +80,16 @@ function ax.font:CreateFamily(name, font, size, familiesOverride)
     ax.util:Print("Font family '" .. name .. "' created successfully.")
 end
 
-ax.font:CreateFamily("tiny", "GorDIN Regular", ScreenScaleH(6))
-ax.font:CreateFamily("small", "GorDIN Regular", ScreenScaleH(8))
-ax.font:CreateFamily("regular", "GorDIN Regular", ScreenScaleH(10))
-ax.font:CreateFamily("large", "GorDIN Regular", ScreenScaleH(16))
-ax.font:CreateFamily("massive", "GorDIN Regular", ScreenScaleH(24))
-ax.font:CreateFamily("huge", "GorDIN Regular", ScreenScaleH(32))
+function ax.font:Load()
+    ax.font:CreateFamily("tiny", "GorDIN Regular", ScreenScaleH(6))
+    ax.font:CreateFamily("small", "GorDIN Regular", ScreenScaleH(8))
+    ax.font:CreateFamily("regular", "GorDIN Regular", ScreenScaleH(10))
+    ax.font:CreateFamily("large", "GorDIN Regular", ScreenScaleH(16))
+    ax.font:CreateFamily("massive", "GorDIN Regular", ScreenScaleH(24))
+    ax.font:CreateFamily("huge", "GorDIN Regular", ScreenScaleH(32))
 
-hook.Run( "LoadFonts" )
+    hook.Run("LoadFonts")
+end
 
 concommand.Add("ax_font_list", function()
     ax.util:Print("Available fonts:")
