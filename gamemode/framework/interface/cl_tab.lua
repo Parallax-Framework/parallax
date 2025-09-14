@@ -81,15 +81,18 @@ function PANEL:Init()
         end
     })
 
+    -- Create a top bar for buttons instead of a left column
     self.buttons = self:Add("EditablePanel")
-    self.buttons:SetSize(ScrW() / 4 - ScreenScale(32), ScrH() - ScreenScaleH(32))
-    self.buttons:SetPos(-self.buttons:GetWide(), ScreenScaleH(16))
+    self.buttons:SetSize(ScrW() - ScreenScale(32), ScreenScaleH(32))
+    self.buttons:SetPos(ScreenScale(16), -ScreenScaleH(32))
 
     self.buttons.x = self.buttons:GetX()
     self.buttons.y = self.buttons:GetY()
 
     self.buttons.alpha = 0
     self.buttons:SetAlpha(0)
+
+    -- Slide down animation from above
     self.buttons:Motion(ax.option:Get("tab.fade.time", 0.25), {
         Target = {x = ScreenScale(16), y = ScreenScaleH(16), alpha = 255},
         Easing = "OutQuad",
@@ -99,15 +102,19 @@ function PANEL:Init()
         end
     })
 
-    local buttonSizeable = self.buttons:Add("EditablePanel")
-
     local buttons = {}
     hook.Run("PopulateTabButtons", buttons)
     for k, v in SortedPairs(buttons) do
-        local button = buttonSizeable:Add("ax.button")
-        button:Dock(TOP)
-        button:DockMargin(0, 8, 0, 8)
+        local button = self.buttons:Add("ax.button.flat")
+        -- Dock left to make a horizontal row across the top
+        button:Dock(LEFT)
         button:SetText(k)
+
+        button:SetUpdateSizeOnHover(true)
+        button:SetSizeToContentsMotion(true)
+
+        self.buttons:SetTall(math.max(self.buttons:GetTall(), button:GetTall()))
+        self.buttons:SetY(self.buttons:GetY())
 
         button.DoClick = function()
             ax.gui.tabLast = k
@@ -116,10 +123,11 @@ function PANEL:Init()
         end
 
         local tab = self:CreatePage()
-        tab:SetXOffset(self.buttons:GetWide() + ScreenScale(32))
-        tab:SetYOffset(ScreenScaleH(16))
-        tab:SetWidthOffset(-self.buttons:GetWide() - ScreenScale(16) * 3)
-        tab:SetHeightOffset(-ScreenScaleH(32))
+        -- Account for top bar: offset content downward by the height of the bar
+        tab:SetXOffset(ScreenScale(32))
+        tab:SetYOffset(self.buttons:GetTall() + ScreenScaleH(32))
+        tab:SetWidthOffset(-ScreenScale(32) * 2)
+        tab:SetHeightOffset(-self.buttons:GetTall() - ScreenScaleH(64))
         self.tabs[k] = tab
         button.tab = tab
 
@@ -138,25 +146,13 @@ function PANEL:Init()
         end
     end
 
-    buttonSizeable.Think = function(this)
-        local totalHeight = 0
-        local children = this:GetChildren()
-        for i = 1, #children do
-            local v = children[i]
-            if ( IsValid(v) and v:IsVisible() ) then
-                totalHeight = totalHeight + v:GetTall() + 16
-            end
-        end
-
-        this:SetSize(self.buttons:GetWide(), totalHeight)
-        this:CenterVertical()
-    end
-
     if ( ax.gui.tabLast and buttons[ax.gui.tabLast] ) then
-        self:TransitionToPage(self.tabs[ax.gui.tabLast].index, ax.option:Get("tab.fade.time", 0.25))
+        self.tabs[ax.gui.tabLast]:StartAtBottom()
+        self:TransitionToPage(self.tabs[ax.gui.tabLast].index, ax.option:Get("tab.fade.time", 0.25), true)
     else
         for k, v in SortedPairs(buttons) do
-            self:TransitionToPage(self.tabs[k].index, ax.option:Get("tab.fade.time", 0.25))
+            self.tabs[k]:StartAtBottom()
+            self:TransitionToPage(self.tabs[k].index, ax.option:Get("tab.fade.time", 0.25), true)
             break
         end
     end
@@ -193,7 +189,7 @@ function PANEL:Close(callback)
     end)
 
     self.buttons:Motion(fadeDuration, {
-        Target = {x = -self.buttons:GetWide() * 2, y = ScreenScaleH(16), alpha = 0},
+        Target = {x = ScreenScale(16), y = -self.buttons:GetTall() - ScreenScaleH(16), alpha = 0},
         Easing = "OutQuad",
         Think = function(this)
             self.buttons:SetPos(this.x, this.y)
@@ -219,7 +215,7 @@ function PANEL:Close(callback)
     local currentPageIndex = self:GetCurrentPage()
     local currentPage = self.pages[currentPageIndex]
     if ( IsValid(currentPage) ) then
-        currentPage:SlideRight(fadeDuration)
+        currentPage:SlideDown(fadeDuration)
     end
 end
 
