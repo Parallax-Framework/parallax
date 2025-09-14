@@ -296,11 +296,9 @@ if ( CLIENT ) then
     end)
 end
 
-local PLAYER = FindMetaTable("Player")
-
 --- Player:Notify - Convenience for sending a toast to this player.
 -- @realm server
-function PLAYER:Notify(text, type, length)
+function ax.player.meta:Notify(text, type, length)
     if ( SERVER ) then
         ax.notification:Send(self, text, type, length)
     else

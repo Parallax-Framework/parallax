@@ -14,13 +14,11 @@ ALWAYS_RAISED["gmod_tool"] = true
 ALWAYS_RAISED["gmod_camera"] = true
 ALWAYS_RAISED["weapon_physgun"] = true
 
-local PLAYER = FindMetaTable("Player")
-
-function PLAYER:IsWeaponRaised()
+function ax.player.meta:IsWeaponRaised()
     if ( ax.config:Get("weapon.raise.alwaysraised", false) ) then return true end
 
     local weapon = self:GetActiveWeapon()
     if ( IsValid(weapon) and ( ALWAYS_RAISED[weapon:GetClass()] or weapon.AlwaysRaised ) ) then return true end
 
-    return self:GetNWBool("ax.weapon.raised", false)
+    return self:GetRelay("ax.weapon.raised", false)
 end

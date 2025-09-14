@@ -1,6 +1,4 @@
-local meta = FindMetaTable("Player")
-
-function meta:IsFemale()
+function ax.player.meta:IsFemale()
     local modelClass = ax.animations:GetModelClass(self:GetModel())
     if ( !isstring(modelClass) or modelClass == "" ) then
         return false
@@ -13,7 +11,7 @@ function meta:IsFemale()
     return false
 end
 
-function meta:GetHoldType()
+function ax.player.meta:GetHoldType()
     if ( !IsValid(self) ) then return "normal" end
 
     local weapon = self:GetActiveWeapon()
@@ -26,7 +24,7 @@ function meta:GetHoldType()
 end
 
 if ( SERVER ) then
-    function meta:LeaveSequence()
+    function ax.player.meta:LeaveSequence()
         local prevent = hook.Run("PrePlayerLeaveSequence", self)
         if ( prevent != nil and prevent == false ) then return end
 
@@ -46,7 +44,7 @@ if ( SERVER ) then
         hook.Run("PostPlayerLeaveSequence", self)
     end
 
-    function meta:ForceSequence(sequence, callback, time, noFreeze)
+    function ax.player.meta:ForceSequence(sequence, callback, time, noFreeze)
         local prevent = hook.Run("PrePlayerForceSequence", self, sequence, callback, time, noFreeze)
         if ( prevent != nil and prevent == false ) then return end
 

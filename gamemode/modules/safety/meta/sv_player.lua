@@ -9,12 +9,10 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
-local PLAYER = FindMetaTable("Player")
-
-function PLAYER:SetWeaponRaised(bRaised)
+function ax.player.meta:SetWeaponRaised(bRaised)
     if ( bRaised == nil ) then bRaised = true end
 
-    self:SetNWBool("ax.weapon.raised", bRaised)
+    self:SetRelay("ax.weapon.raised", bRaised)
 
     local weapon = self:GetActiveWeapon()
     if ( IsValid(weapon) and weapon:IsWeapon() and isfunction(weapon.SetWeaponRaised) ) then
@@ -24,7 +22,7 @@ function PLAYER:SetWeaponRaised(bRaised)
     hook.Run("PlayerWeaponRaised", self, bRaised)
 end
 
-function PLAYER:ToggleWeaponRaise()
-    local bRaised = self:GetNWBool("ax.weapon.raised", false)
+function ax.player.meta:ToggleWeaponRaise()
+    local bRaised = self:GetRelay("ax.weapon.raised", false)
     self:SetWeaponRaised(!bRaised)
 end
