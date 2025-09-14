@@ -24,6 +24,8 @@ util.AddNetworkString("ax.inventory.item.add")
 util.AddNetworkString("ax.inventory.item.remove")
 util.AddNetworkString("ax.inventory.item.update")
 
+util.AddNetworkString( "ax.item.remove" )
+
 util.AddNetworkString( "ax.inventory.item.action" )
 net.Receive( "ax.inventory.item.action", function( length, client )
     if ( !client:RateLimit( "ax.inventory.action", 0.2 ) ) then return end
@@ -44,7 +46,15 @@ net.Receive( "ax.inventory.item.action", function( length, client )
 
     if ( !item:CanInteract( client, action ) ) then return end
 
-    item.actions[ action ]:Interact( client )
+    local bRemoveAfter = item.actions[ action ]:OnUse( client )
+    if ( bRemoveAfter == nil or !isbool( bRemoveAfter ) ) then bRemoveAfter = false end
+
+    if ( bRemoveAfter ) then
+        local inventory = ax.inventory.instances[ item.invID ]
+        if ( istable( inventory ) ) then
+            inventory:RemoveItem( item.id )
+        end
+    end
 
     hook.Run( "PlayerUsedItemAction", client, item, action )
 end)

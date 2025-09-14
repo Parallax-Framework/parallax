@@ -6,7 +6,15 @@ ENT.PrintName = "Parallax Item"
 ENT.Author = "Parallax Team"
 ENT.Category = "Parallax"
 
-if SERVER then
+function ENT:SetupDataTables()
+    self:NetworkVar( "Int", 0, "ItemID" )
+end
+
+function ENT:GetItemTable()
+    return ax.item.instances[ self:GetItemID() ]
+end
+
+if ( SERVER ) then
     function ENT:Initialize()
         self:SetModel(Model("models/props_junk/gnome.mdl"))
         self:PhysicsInit(SOLID_VPHYSICS)

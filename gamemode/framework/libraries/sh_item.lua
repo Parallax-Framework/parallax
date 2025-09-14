@@ -89,7 +89,7 @@ function ax.item:Create(class, inventoryID, data, callback)
             -- Look for the inventory and add the item to it
             local inventory = ax.inventory.instances[inventoryID]
             if ( inventory ) then
-                inventory.items[#inventory.items + 1] = item
+                inventory.items[ item.id ] = item
                 ax.inventory:Sync(inventory)
             end
 
@@ -151,10 +151,27 @@ function ax.item:Delete(item)
 
     if ( !item ) then return end
 
+    -- would probably be a better idea to make ax.inventory:RemoveItem as a helper function...
+
     local query = mysql:Delete("ax_items")
         query:Where("id", item.id)
         query:Callback(function(result, status)
             if ( result == false ) then return end
+
+            for invID, inv in pairs( ax.inventory.instances ) do
+                if ( istable( inv ) and istable( inv.items ) ) then
+                    for itemID in pairs( inv.items ) do
+                        if ( itemID == item.id ) then
+                            inv.items[ itemID ] = nil
+                            break
+                        end
+                    end
+                end
+            end
+
+            net.Start( "ax.item.remove" )
+                net.WriteUInt( item.id, 32 )
+            net.Broadcast()
 
             self.instances[item.id] = nil
         end)

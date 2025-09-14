@@ -37,7 +37,7 @@ function item:GetWeight()
 end
 
 function item:GetModel()
-    return self.model or "models/props_junk/wood_crate001a.mdl"
+    return self.model or Model( "models/props_junk/wood_crate001a.mdl" )
 end
 
 function item:GetData(key)
@@ -72,12 +72,12 @@ function item:CanInteract( client, action )
         return false
     end
 
-    local actionTable = self.actions[action]
-    if ( istable( actionTable ) and isfunction( actionTable.CanInteract ) ) then
-        local canRun, reason = actionTable:CanInteract( self, client )
+    local actionTable = self.actions[ action ]
+    if ( istable( actionTable ) and isfunction( actionTable.CanUse ) ) then
+        local canRun, reason = actionTable:CanUse( self, client )
         if ( canRun == false ) then
-            if ( isstring(reason) and #reason > 0 ) then
-                client:Notify(reason, "error")
+            if ( isstring( reason ) and #reason > 0 ) then
+                client:Notify( reason, "error" )
             end
 
             return false

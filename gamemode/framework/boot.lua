@@ -16,8 +16,8 @@ GM.Email = "<email@example.com>"
 
 LocalPlayerInternal = LocalPlayerInternal or LocalPlayer
 function LocalPlayer()
-    if ( ax.client != nil and ax.client:IsValid() ) then
-        return ax.client
+    if ( IsValid( ax.client ) ) then
+        LocalPlayer = function() return ax.client end
     end
 
     return LocalPlayerInternal()
