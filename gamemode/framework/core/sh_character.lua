@@ -107,12 +107,10 @@ ax.character:RegisterVar("model", {
         option:Dock(TOP)
         option:SetZPos(1)
 
-        local scroller = container:Add("ax.scroller.vertical")
-        scroller:Dock(TOP)
-        scroller:SetZPos(2)
-
-        local layout = scroller:Add("DIconLayout")
-        layout:Dock(FILL)
+        local layout = container:Add("DIconLayout")
+        layout:Dock(TOP)
+        layout:SetZPos(2)
+        layout:SetStretchHeight(true)
 
         local factionID = payload.faction
         if ( !factionID or ax.faction:Get(factionID) == nil ) then
@@ -120,22 +118,28 @@ ax.character:RegisterVar("model", {
             return
         end
 
+        local size = math.min(container:GetWide() / 8, 128)
         for k, v in pairs(ax.faction:Get(factionID):GetModels()) do
             if ( istable( v ) ) then v = v[ 1 ] end
 
             local modelButton = layout:Add("SpawnIcon")
             modelButton:SetModel(v)
-            modelButton:SetSize(ScreenScale(32), ScreenScale(32))
+            modelButton:SetSize(size, size)
             modelButton:SetTooltip(v)
 
             modelButton.DoClick = function()
                 payload.model = v
-                print("Selected model:", v)
+            end
+
+            modelButton.PaintOver = function(this, width, height)
+                if ( payload.model == v ) then
+                    surface.SetDrawColor(0, 150, 255, 100)
+                    surface.DrawRect(0, 0, width, height)
+                end
             end
         end
 
         layout:SizeToChildren(layout:GetStretchWidth(), layout:GetStretchHeight())
-        scroller:SetTall(layout:GetTall())
     end,
     changed = function(character, value, isNetworked, recipients)
         local client = character:GetOwner()

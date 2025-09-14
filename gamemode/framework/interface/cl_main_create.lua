@@ -151,7 +151,8 @@ function PANEL:Init()
 
     self.characterOptions.container = self.characterOptions:Add("EditablePanel")
     self.characterOptions.container:Dock(FILL)
-    self.characterOptions.container:DockMargin(ScreenScale(32), ScreenScaleH(32), ScreenScale(32), 0)
+    self.characterOptions.container:DockMargin(ScreenScale(196), ScreenScaleH(32), ScreenScale(196), 0)
+    self.characterOptions.container:InvalidateParent(true)
 
     -- Character options will be automatically populated based on the selected faction
 end
