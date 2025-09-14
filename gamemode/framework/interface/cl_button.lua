@@ -11,8 +11,12 @@ AccessorFunc(PANEL, "inertia", "Inertia", FORCE_NUMBER)
 AccessorFunc(PANEL, "textColorMotion", "TextColorMotion")
 AccessorFunc(PANEL, "textColorHovered", "TextColorHovered")
 AccessorFunc(PANEL, "easing", "Easing", FORCE_STRING)
+AccessorFunc(PANEL, "updateSizeOnHover", "UpdateSizeOnHover", FORCE_BOOL)
+AccessorFunc(PANEL, "wasHovered", "WasHovered", FORCE_BOOL)
 
 function PANEL:Init()
+    BaseClass.Init(self)
+
     self.soundEnter = "ui/buttonrollover.wav"
     self.soundClick = "ui/buttonclickrelease.wav"
     self.fontDefault = "ax.large"
@@ -22,6 +26,8 @@ function PANEL:Init()
     self.textColorHovered = Color(200, 200, 240)
     self.inertia = 0
     self.easing = "OutQuint"
+    self.updateSizeOnHover = false
+    self.wasHovered = false
 
     self:SetFont(self.fontDefault)
     self:SetTextColor(self.textColor)
@@ -55,8 +61,12 @@ function PANEL:SetTextColor(color)
     self:SetTextColorInternal(color)
 end
 
-function PANEL:SizeToContents()
+function PANEL:SizeToContentsInternal()
     BaseClass.SizeToContents(self)
+end
+
+function PANEL:SizeToContents()
+    self:SizeToContentsInternal()
 
     local width, height = self:GetSize()
     self:SetSize(width + ScreenScale(8), height + ScreenScaleH(8))
@@ -91,10 +101,15 @@ end
 
 function PANEL:Think()
     local hovering = self:IsHovered() and self:IsEnabled()
-    if ( hovering and !self.wasHovered ) then
+    if ( hovering and !self:GetWasHovered() ) then
         surface.PlaySound(self.soundEnter)
         self:SetFont(self.fontHovered)
-        self.wasHovered = true
+
+        if ( self.updateSizeOnHover ) then
+            self:SizeToContents()
+        end
+
+        self:SetWasHovered(true)
 
         self:Motion(0.25, {
             Target = {inertia = 1},
@@ -115,9 +130,14 @@ function PANEL:Think()
         if ( self.OnHovered ) then
             self:OnHovered()
         end
-    elseif ( !hovering and self.wasHovered ) then
+    elseif ( !hovering and self:GetWasHovered() ) then
         self:SetFont(self.fontDefault)
-        self.wasHovered = false
+
+        if ( self.updateSizeOnHover ) then
+            self:SizeToContents()
+        end
+
+        self:SetWasHovered(false)
 
         self:Motion(0.25, {
             Target = {inertia = 0},
@@ -316,6 +336,8 @@ PANEL = {}
 AccessorFunc(PANEL, "backgroundColor", "BackgroundColor")
 AccessorFunc(PANEL, "backgroundAlpha", "BackgroundAlpha", FORCE_NUMBER)
 AccessorFunc(PANEL, "backgroundAlphaHovered", "BackgroundAlphaHovered", FORCE_NUMBER)
+AccessorFunc(PANEL, "backgroundAlphaUnHovered", "BackgroundAlphaUnHovered", FORCE_NUMBER)
+AccessorFunc(PANEL, "sizeToContentsMotion", "SizeToContentsMotion", FORCE_BOOL)
 
 function PANEL:Init()
     BaseClass.Init(self)
@@ -323,6 +345,7 @@ function PANEL:Init()
     self.backgroundColor = Color(255, 255, 255)
     self.backgroundAlphaHovered = 255
     self.backgroundAlphaUnHovered = 0
+    self.sizeToContentsMotion = false
 
     self:SetTextColorHovered(Color(0, 0, 0))
     self:SetContentAlignment(5)
@@ -340,10 +363,37 @@ function PANEL:SetText(text)
 end
 
 function PANEL:SizeToContents()
+    if ( !self.sizeToContentsMotion ) then
+        BaseClass.SizeToContents(self)
+
+        local width, height = self:GetSize()
+        self:SetSize(width + ScreenScale(8), height + ScreenScaleH(8))
+
+        return
+    end
+
+    local oldWidth, oldHeight = self:GetSize()
+
     BaseClass.SizeToContents(self)
 
     local width, height = self:GetSize()
-    self:SetSize(width + ScreenScale(8), height + ScreenScaleH(8))
+    self:SetSize(oldWidth, oldHeight)
+
+    self.width = oldWidth
+    self.height = oldHeight
+
+    if ( !self.wasHovered ) then
+        width = width + ScreenScale(8)
+        height = height + ScreenScaleH(8)
+    end
+
+    self:Motion(0.25, {
+        Target = {width = width, height = height},
+        Easing = self.easing,
+        Think = function(this)
+            self:SetSize(this.width, this.height)
+        end
+    })
 end
 
 function PANEL:Paint(width, height)
