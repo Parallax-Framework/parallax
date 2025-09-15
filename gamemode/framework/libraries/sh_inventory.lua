@@ -120,8 +120,8 @@ if ( SERVER ) then
                     local data = result[i]
                     local inventory = setmetatable({}, ax.inventory.meta)
 
-                    inventory.id = data.id
                     inventory.items = ax.util:SafeParseTable(data.items) or {}
+                    data.id = tonumber( data.id )
                     inventory.id = data.id
 
                     if ( isstring(data.items) ) then
