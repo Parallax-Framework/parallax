@@ -297,20 +297,3 @@ net.Receive("ax.relay.update", function()
     ax.relay.data[index] = ax.relay.data[index] or {}
     ax.relay.data[index][name] = value
 end)
-
-net.Receive( "ax.item.remove", function()
-    local itemId = net.ReadUInt( 32 )
-
-    for invID, inv in pairs( ax.inventory.instances ) do
-        if ( istable( inv ) and istable( inv.items ) ) then
-            for itemID in pairs( inv.items ) do
-                if ( itemID == itemId ) then
-                    inv.items[ itemID ] = nil
-                    break
-                end
-            end
-        end
-    end
-
-    ax.item.instances[ itemId ] = nil
-end)
