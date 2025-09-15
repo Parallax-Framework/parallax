@@ -172,6 +172,15 @@ if ( SERVER ) then
     function inventory:RemoveItem(itemID)
         if ( !istable(self.items) ) then self.items = {} return end
 
+        if ( isstring( itemID ) and ax.item.stored[ itemID ] ) then
+            for _, v in pairs(self.items) do
+                if ( v.class == itemID ) then
+                    itemID = v.id
+                    break
+                end
+            end
+        end
+
         for item_id, item_data in pairs(self.items) do
             if ( item_data.id == itemID ) then
                 local query = mysql:Delete("ax_items")
