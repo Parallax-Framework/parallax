@@ -177,7 +177,7 @@ function ax.database:WipeTables(callback)
 end
 
 concommand.Add("ax_database_wipe", function(client, command, args, argStr)
-    if ( !IsValid(client) or !client:IsSuperAdmin() ) then
+    if ( IsValid(client) or !client:IsSuperAdmin() ) then
         ax.util:PrintError("You do not have permission to use this command.")
         return
     end
