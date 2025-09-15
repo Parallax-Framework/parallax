@@ -98,7 +98,7 @@ net.Receive("ax.character.create", function(length, client)
     ax.util:PrintDebug("Creating character for " .. client:SteamID64() .. " with payload: " .. util.TableToJSON(newPayload))
 
     ax.character:Create(newPayload, function(character, inventory)
-        inventory.receivers = { client }
+        inventory:AddReceiver( client )
 
         if ( !client:GetCharacter() ) then
             client:SetNoDraw(false)
