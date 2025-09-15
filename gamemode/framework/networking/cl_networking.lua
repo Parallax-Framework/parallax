@@ -253,7 +253,9 @@ end)
 
 net.Receive("ax.inventory.item.add", function()
     local inventoryID = net.ReadUInt(32)
-    local itemObject = net.ReadTable()
+    local item_id = net.ReadUInt(32)
+    local item_class = net.ReadString()
+    local item_data = net.ReadTable()
 
     local inventory = ax.inventory.instances[inventoryID]
     if ( !istable(inventory) ) then
@@ -261,10 +263,10 @@ net.Receive("ax.inventory.item.add", function()
         return
     end
 
-    local item = setmetatable(ax.item.stored[itemObject.class], ax.item.meta)
-    item.id = itemObject.id
-    item.class = itemObject.class
-    item.data = itemObject.data or {}
+    local item = setmetatable(ax.item.stored[item_class], ax.item.meta)
+    item.id = item_id
+    item.class = item_class
+    item.data = item_data or {}
 
     inventory.items[item.id] = item
     ax.item.instances[item.id] = item
@@ -280,10 +282,10 @@ net.Receive("ax.inventory.item.remove", function()
         return
     end
 
-    for i = 1, #inv.items do
-        if ( inv.items[i].id == itemID ) then
-            table.remove(inv.items, i)
-            ax.item.instances[itemID] = nil
+    for item_id in pairs(inv.items) do
+        if ( item_id == itemID ) then
+            inv.items[item_id] = nil
+            ax.item.instances[item_id] = nil
             break
         end
     end

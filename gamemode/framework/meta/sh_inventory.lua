@@ -153,13 +153,15 @@ if ( SERVER ) then
                 itemObject.id = lastID
                 itemObject.data = data or {}
 
-                ax.item.instances[itemObject.id] = itemObject
+                ax.item.instances[ lastID ] = itemObject
 
-                self.items[#self.items + 1] = itemObject
+                self.items[ lastID ] = itemObject
 
                 net.Start("ax.inventory.item.add")
                     net.WriteUInt(self.id, 32)
-                    net.WriteTable(itemObject)
+                    net.WriteUInt( itemObject.id, 32 )
+                    net.WriteString( itemObject.class )
+                    net.WriteTable( itemObject.data )
                 net.Send(self:GetReceivers())
 
                 return true
@@ -170,31 +172,29 @@ if ( SERVER ) then
     function inventory:RemoveItem(itemID)
         if ( !istable(self.items) ) then self.items = {} return end
 
-        for i = 1, #self.items do
-            if ( self.items[i].id == itemID ) then
-                local item = self.items[i]
-
+        for item_id, item_data in pairs(self.items) do
+            if ( item_data.id == itemID ) then
                 local query = mysql:Delete("ax_items")
-                    query:Where("id", item.id)
+                    query:Where("id", itemID)
                     query:Callback(function(result, status)
-                        if result == false then
+                        if ( result == false ) then
                             ax.util:PrintError("Failed to remove item from database for inventory " .. self.id)
                             return false
                         end
 
-                        table.remove(self.items, i)
+                        self.items[item_id] = nil
+                        ax.item.instances[itemID] = nil
 
                         net.Start("ax.inventory.item.remove")
                             net.WriteUInt(self.id, 32)
-                            net.WriteUInt(item.id, 32)
+                            net.WriteUInt(itemID, 32)
                         net.Send(self:GetReceivers())
 
                         return true
                     end)
                 query:Execute()
 
-                ax.item.instances[item.id] = nil
-                return true
+                break
             end
         end
 
