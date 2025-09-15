@@ -120,21 +120,37 @@ if ( SERVER ) then
                     local data = result[i]
                     local inventory = setmetatable({}, ax.inventory.meta)
 
-                    inventory.items = ax.util:SafeParseTable(data.items) or {}
                     data.id = tonumber( data.id )
                     inventory.id = data.id
-
-                    if ( isstring(data.items) ) then
-                        inventory.items = ax.util:SafeParseTable(data.items) or {}
-                    elseif ( istable(data.items) ) then
-                        inventory.items = data.items
-                    else
-                        inventory.items = {}
-                    end
 
                     local maxWeight = data.maxWeight or 30.0
                     inventory.maxWeight = maxWeight
                     inventory.receivers = {}
+
+                    local itemsInInv = {}
+                    local itemFetchQuery = mysql:Select( "ax_items" )
+                        itemFetchQuery:Where( "inventory_id", data.id )
+                        itemFetchQuery:Callback( function( itemsResult, itemsStatus )
+                            if ( itemsResult == nil or itemsStatus == false ) then return end
+
+                            for j = 1, #itemsResult do
+                                local itemData = itemsResult[j]
+                                local item = ax.item.stored[ itemData.class ]
+                                if ( !item ) then continue end
+
+                                local itemObject = setmetatable( {}, ax.item.meta )
+                                itemObject.id = itemData.id
+                                itemObject.class = itemData.class
+                                itemObject.inventory_id = itemData.inventory_id
+                                itemObject.data = util.JSONToTable( itemData.data ) or {}
+
+                                ax.item.instances[ itemObject.id ] = itemObject
+                                itemsInInv[ itemObject.id ] = itemObject
+                            end
+
+                            inventory.items = itemsInInv
+                        end )
+                    itemFetchQuery:Execute()
 
                     self.instances[inventory.id] = inventory
                     self:Sync(inventory)
