@@ -26,7 +26,7 @@ util.AddNetworkString("ax.inventory.item.update")
 
 util.AddNetworkString( "ax.inventory.item.action" )
 net.Receive( "ax.inventory.item.action", function( length, client )
-    if ( !client:RateLimit( "ax.inventory.action", 0.2 ) ) then return end
+    if ( !client:RateLimit( "inventory.action", 0.2 ) ) then return end
 
     local itemID = net.ReadUInt( 32 )
     local action = net.ReadString()

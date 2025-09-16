@@ -92,6 +92,7 @@ function ax.character:Load(client, character)
         ax.inventory:Sync( inventory )
     end
 
+    client:SetTeam(character.vars.faction)
     client:Spawn()
 
     net.Start("ax.character.load")
