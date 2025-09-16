@@ -46,44 +46,6 @@ function ax.player.meta:GetFactionData()
     return factionData
 end
 
-function ax.player.meta:RateLimit(name, delay)
-    local data = self:GetTable()
-
-    if ( !isstring(name) or name == "" ) then
-        ax.util:PrintError("Invalid rate limit name provided to Player:RateLimit()")
-        return false
-    end
-
-    if ( !isnumber(delay) or delay <= 0 ) then
-        ax.util:PrintError("Invalid rate limit delay provided to Player:RateLimit()")
-        return false
-    end
-
-    if ( !data.axRateLimits ) then data.axRateLimits = {} end
-
-    local curTime = CurTime()
-
-    if ( data.axRateLimits[name] and data.axRateLimits[name] > curTime ) then
-        return false, data.axRateLimits[name] - curTime -- Rate limit exceeded.
-    end
-
-    data.axRateLimits[name] = curTime + delay
-    return true -- Rate limit passed.
-end
-
-function ax.player.meta:ResetRateLimit(name)
-    if ( !isstring(name) or name == "" ) then
-        ax.util:PrintError("Invalid rate limit name provided to Player:ResetRateLimit()")
-        return false
-    end
-
-    local data = self:GetTable()
-    if ( !data.axRateLimits ) then return true end
-
-    data.axRateLimits[name] = nil
-    return true
-end
-
 function ax.player.meta:PlayGesture(slot, sequence)
     if ( !isnumber(slot) or slot < 0 or slot > 6 ) then
         ax.util:PrintError("Invalid gesture slot provided to Player:PlayGesture()")
