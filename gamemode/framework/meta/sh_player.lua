@@ -9,17 +9,19 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
-local steamName = steamName or ax.player.meta.GetName
+ax.player.meta.GetNameInternal = ax.player.meta.GetNameInternal or ax.player.meta.GetName
 function ax.player.meta:GetName()
     local character = self:GetCharacter()
-    return character and character:GetName() or steamName(self)
+    return character and character:GetName() or self:GetNameInternal()
 end
 
 ax.player.meta.Name = ax.player.meta.GetName
+ax.player.meta.NameInternal = ax.player.meta.GetNameInternal
 ax.player.meta.Nick = ax.player.meta.GetName
+ax.player.meta.NickInternal = ax.player.meta.GetNameInternal
 
 function ax.player.meta:SteamName()
-    return steamName(self)
+    return self:GetNameInternal()
 end
 
 function ax.player.meta:GetCharacter()
