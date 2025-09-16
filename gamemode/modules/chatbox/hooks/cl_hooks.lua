@@ -48,10 +48,18 @@ function MODULE:PostDrawTranslucentRenderables()
         local text = client:GetRelay("chatText", "")
         if ( text == "" ) then continue end
 
-        if ( string.StartsWith(text, "/") or string.StartsWith(text, ".") ) then continue end
-
         local pos = client:EyePos() + Vector(0, 0, 8)
-        local typing = "Typing..."
+        local typing = "Typing"
+
+        if ( string.StartsWith(text, "/me") ) then
+            typing = "Performing"
+        elseif ( string.StartsWith(text, "/") or string.StartsWith(text, ".") ) then
+            continue
+        end
+
+        -- Add incremental dots to the typing text
+        local numDots = math.floor((CurTime() * 2) % 4)
+        typing = typing .. string.rep(".", numDots)
 
         cam.Start3D2D(pos, Angle(0, EyeAngles().y - 90, 90), 0.05)
             draw.SimpleTextOutlined(typing, "ax.huge.italic", 0, 0, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM, 1, color_black)
