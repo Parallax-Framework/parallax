@@ -34,7 +34,7 @@ local families = {
     ["italic.bold"] = "GorDIN Black"
 }
 
-function ax.font:CreateFamily(name, font, size, familiesOverride)
+function ax.font:CreateFamily(name, font, size, familiesOverride, fontData)
     if ( !font or font == "" ) then
         ax.util:PrintError("Failed to create font family '" .. name .. "': Font is not defined.")
         return
@@ -46,12 +46,16 @@ function ax.font:CreateFamily(name, font, size, familiesOverride)
     end
 
     -- Create the base font
-    surface.CreateFont("ax." .. name, {
+    local createFontData = {
         font = font,
         size = size,
         weight = 700,
         antialias = true
-    })
+    }
+
+    table.Merge(createFontData, fontData or {})
+
+    surface.CreateFont("ax." .. name, createFontData)
 
     if ( familiesOverride ) then
         families = familiesOverride
@@ -59,21 +63,29 @@ function ax.font:CreateFamily(name, font, size, familiesOverride)
 
     for family, fontName in pairs(families) do
         if ( isstring(family) and isstring(fontName) ) then
-            surface.CreateFont("ax." .. name .. "." .. family, {
+            createFontData = {
                 font = fontName,
                 size = size,
                 weight = ax.util:FindString(family, "bold") and 900 or 700,
                 italic = ax.util:FindString(family, "italic"),
                 antialias = true
-            })
+            }
+
+            table.Merge(createFontData, fontData or {})
+
+            surface.CreateFont("ax." .. name .. "." .. family, createFontData)
         else
-            surface.CreateFont("ax." .. name .. "." .. family, {
+            createFontData = {
                 font = font,
                 size = size,
                 weight = ax.util:FindString(family, "bold") and 900 or 700,
                 italic = ax.util:FindString(family, "italic"),
                 antialias = true
-            })
+            }
+
+            table.Merge(createFontData, fontData or {})
+
+            surface.CreateFont("ax." .. name .. "." .. family, createFontData)
         end
     end
 
