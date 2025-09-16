@@ -14,6 +14,12 @@ function chat.AddText(...)
     local font = hook.Run("GetChatFont", chatType) or "ax.chatbox.text"
     local maxWidth = ax.gui.chatbox:GetWide() - 20
 
+    -- Add a timestamp if enabled
+    if ( ax.option:Get("chat.timestamps", true) ) then
+        local timeStr = os.date("%H:%M")
+        arguments = { Color(150, 150, 150), "[" .. timeStr .. "] ", unpack(arguments) }
+    end
+
     -- Build segments so we can reveal text with a typewriter effect safely (keeps tags intact)
     local segments = {}
     for i = 1, #arguments do
