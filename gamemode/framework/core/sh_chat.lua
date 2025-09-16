@@ -43,7 +43,12 @@ ax.chat:Add("ooc", {
 ax.chat:Add("me", {
     description = "Perform an action in third person",
     OnRun = function(client, message)
-        return "* " .. client:Nick() .. " " .. ax.chat:Format(message)
+        local txt = ax.chat:Format(message)
+        if ( #txt > 0 ) then
+            txt = txt:sub(1,1):lower() .. txt:sub(2)
+        end
+
+        return "* " .. client:Nick() .. " " .. txt
     end,
     CanHear = function(speaker, listener)
         return speaker:GetPos():Distance(listener:GetPos()) <= 600
