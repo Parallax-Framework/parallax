@@ -14,6 +14,8 @@ ax.schema = ax.schema or {}
 function ax.schema:Initialize()
     SCHEMA = SCHEMA or { Folder = engine.ActiveGamemode() }
 
+    ax.hook:Register("SCHEMA")
+
     local active = SCHEMA.Folder
     local boot = ax.util:Include(active .. "/gamemode/schema/boot.lua", "shared")
     if ( !boot ) then
