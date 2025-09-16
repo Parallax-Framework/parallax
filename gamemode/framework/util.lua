@@ -788,6 +788,88 @@ function ax.util:WriteJSON(path, tbl)
     return true
 end
 
+--- Internal: read parallax-version.json from GAME or DATA and parse
+-- @return table|nil Parsed table or nil
+local function ReadVersionFile()
+    -- Only allow file reads on the server. Clients must rely on the broadcasted global (ax.version).
+    if ( CLIENT ) then return nil end
+
+    -- The version file lives in the game install under gamemodes/parallax/
+    local content = file.Read("gamemodes/parallax/parallax-version.json", "GAME")
+    if ( !content ) then
+        ax.util:PrintDebug("ReadVersionFile: parallax-version.json not found in GAME path")
+        return nil
+    end
+
+    local ok, data = pcall(util.JSONToTable, content)
+    if ( ok and istable(data) ) then return data end
+
+    ax.util:PrintWarning("ReadVersionFile: failed to parse parallax-version.json")
+
+    return nil
+end
+
+--- Get the Parallax version string (e.g. "0.3.42").
+-- Prefers `ax.version` if available, else attempts to read `parallax-version.json`.
+-- @return string|nil Version string or nil when unavailable
+function ax.util:GetVersion()
+    if ( istable(ax.version) and ax.version.version ) then
+        return tostring(ax.version.version)
+    end
+
+    local data = ReadVersionFile()
+    if ( istable(data) and data.version ) then
+        return tostring(data.version)
+    end
+
+    return "0.0.0"
+end
+
+--- Get the Parallax commit count (number).
+-- @return number|nil Commit count or nil when unavailable
+function ax.util:GetCommitCount()
+    if ( istable(ax.version) and ax.version.commitCount ) then
+        return tonumber(ax.version.commitCount) or nil
+    end
+
+    local data = ReadVersionFile()
+    if ( istable(data) and data.commitCount ) then
+        return tonumber(data.commitCount) or nil
+    end
+
+    return 0
+end
+
+--- Get the Parallax commit hash (short).
+-- @return string|nil Commit hash or nil when unavailable
+function ax.util:GetCommitHash()
+    if ( istable(ax.version) and ax.version.commitHash ) then
+        return tostring(ax.version.commitHash)
+    end
+
+    local data = ReadVersionFile()
+    if ( istable(data) and data.commitHash ) then
+        return tostring(data.commitHash)
+    end
+
+    return ""
+end
+
+--- Get the Parallax branch name.
+-- @return string|nil Branch name or nil when unavailable
+function ax.util:GetBranch()
+    if ( istable(ax.version) and ax.version.branch ) then
+        return tostring(ax.version.branch)
+    end
+
+    local data = ReadVersionFile()
+    if ( istable(data) and data.branch ) then
+        return tostring(data.branch)
+    end
+
+    return "unknown"
+end
+
 --- Returns true if the entity is a valid player.
 -- @param client Entity Candidate entity
 -- @return boolean True if entity is a valid player
@@ -899,6 +981,42 @@ function ax.util:EnsureDataDir(path)
             file.CreateDir(cur)
         end
     end
+end
+
+--- Get the server's network address.
+-- Returns the raw address string as returned by game.GetIPAddress(),
+-- plus the parsed ip and port when available.
+-- @realm shared
+-- @return string|nil full The full "ip:port" string or nil when unavailable
+-- @return string|nil ip The IP portion (may be "0.0.0.0" or similar)
+-- @return number|nil port The port number (0 when not present)
+-- @usage local full, ip, port = ax.util:GetServerAddress()
+function ax.util:GetServerAddress()
+    local addr = nil
+
+    if ( game and game.GetIPAddress ) then
+        addr = game.GetIPAddress() or ""
+    end
+
+    -- Fallbacks if game.GetIPAddress isn't available or is empty
+    if ( (addr == "" or addr == nil) and SERVER and GetConVar ) then
+        -- sv_ip is rarely set, but try it as a best-effort fallback
+        local svip = GetConVar("sv_ip")
+        if ( svip ) then
+            addr = svip:GetString() or ""
+        end
+    end
+
+    if ( addr == "" or !isstring(addr) ) then
+        self:PrintDebug("GetServerAddress: no address detected")
+        return nil, nil, nil
+    end
+
+    -- Parse "ip:port" (port optional)
+    local ip, port = string.match(addr, "^([^:]+):?(%d*)$")
+    port = tonumber(port) or 0
+
+    return addr, ip, port
 end
 
 ax.util:Include("store_factory.lua")
