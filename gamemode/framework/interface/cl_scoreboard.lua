@@ -70,6 +70,7 @@ function PANEL:RebuildScoreboard()
         title:SetFont("ax.large.italic.bold")
         title:SetText(team.GetName(tid) or ("Team " .. tostring(tid)))
         title:SetTextInset(ScreenScale(2), -ScreenScaleH(1))
+        title:SetExpensiveShadow(2, Color(0, 0, 0, 200))
 
         header:SetTall(title:GetTall())
 
