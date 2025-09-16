@@ -46,7 +46,7 @@ if ( SERVER ) then
         end
 
         local t = type or "generic"
-        local dur = tonumber(length) or (ax.config and ax.config.Get and ax.config:Get("notification.defaultLength", 5) or 5)
+        local dur = tonumber(length) or (ax.config:Get("notification.defaultLength", 5) or 5)
 
         net.Start("ax.notification.push")
             net.WriteString(msg)
@@ -60,29 +60,19 @@ end
 
 -- Client-side implementation
 if ( CLIENT ) then
-    ax.notification.queue = ax.notification.queue or {}
-    ax.notification.active = ax.notification.active or {}
+    ax.notification.queue = {}
+    ax.notification.active = {}
 
     -- style defaults (can be overridden by config where noted)
     ax.notification.maxVisible = math.max(1, math.floor(ScrH() / 128)) -- max toasts visible at once
     ax.notification.paddingX = ScreenScale(4)
     ax.notification.paddingY = ScreenScaleH(4)
     ax.notification.spacing = ScreenScale(4)
-    ax.notification.corner = ScreenScale(2)
-    ax.notification.shadow = ScreenScale(2)
     ax.notification.font = "ax.regular"
-    ax.notification.maxWidthFrac = 0.42 -- 42% of screen width (can be overridden by config)
-    ax.notification.inTime = 0.22
-    ax.notification.outTime = 0.20
+    ax.notification.maxWidthFrac = 0.5
+    ax.notification.inTime = 0.25
+    ax.notification.outTime = 0.25
     ax.notification.easing = "OutCubic"
-
-    ax.notification.colors = {
-        generic = Color(32, 32, 32),
-        info    = Color(0, 134, 255),
-        success = Color(46, 204, 113),
-        warning = Color(241, 196, 15),
-        error   = Color(231, 76, 60)
-    }
 
     local function clamp(v, a, b) return math.min(math.max(v, a), b) end
 
@@ -91,18 +81,27 @@ if ( CLIENT ) then
         return ax.util:GetWrappedText(text, font, maxW) or { tostring(text or "") }
     end
 
+    -- easing helpers (cubic)
+    local function EaseOutCubic(t)
+        return 1 - math.pow(1 - t, 3)
+    end
+
+    local function EaseInCubic(t)
+        return t * t * t
+    end
+
     --- Add a new notification to the queue.
     -- @realm client
     -- @tparam string text The message to display.
     -- @tparam[opt="generic"] string type One of: generic, info, success, warning, error
     -- @tparam[opt=5] number length Seconds to remain visible (excluding animation).
     function ax.notification:Add(text, type, length)
-        if ( ax.config and ax.config.Get and !ax.config:Get("notification.enabled", true) ) then return end
+        if ( !ax.config:Get("notification.enabled", true) ) then return end
 
         table.insert(self.queue, {
             text = tostring(text or ""),
             type = type or "generic",
-            length = tonumber(length) or (ax.config and ax.config.Get and ax.config:Get("notification.defaultLength", 5) or 5)
+            length = tonumber(length) or (ax.config:Get("notification.defaultLength", 5) or 5)
         })
 
         self:Next()
@@ -121,12 +120,12 @@ if ( CLIENT ) then
     -- @tparam table data
     function ax.notification:Show(data)
         local sw, sh = ScrW(), ScrH()
-        local maxWFrac = (ax.config and ax.config.Get and ax.config:Get("notification.maxWidthFrac", self.maxWidthFrac)) or self.maxWidthFrac
+        local maxWFrac = (ax.config:Get("notification.maxWidthFrac", self.maxWidthFrac)) or self.maxWidthFrac
         local maxW = math.floor(sw * maxWFrac)
 
         surface.SetFont(self.font)
         local _, th = surface.GetTextSize("Hg")
-        local lines = getWrapped(data.text, self.font, maxW - (self.paddingX * 2))
+        local lines = getWrapped(ax.chat:Format(data.text), self.font, maxW - (self.paddingX * 2))
 
         local maxLineW = 0
         for i = 1, #lines do
@@ -138,10 +137,16 @@ if ( CLIENT ) then
         local h = clamp(#lines * th + self.paddingY * 2, th + self.paddingY * 2, math.floor(sh * 0.5))
 
         local p = vgui.Create("Panel")
-        p:SetVisible(false) -- property bag for ax.motion
-        p.alpha = 0
-        p.offset = 24 -- slide up from bottom
+        p:SetVisible(false)
+        p.alpha = 255
+        p.offset = 24
         p.stack = p.stack or 0
+
+        local growTime = 0.25
+        local waitTime = 0.5
+        local slideTime = 0.5
+        local outTime = 0.5
+        local outFadeTime = 0.12
 
         local toast = {
             text = data.text,
@@ -153,25 +158,29 @@ if ( CLIENT ) then
             lineHeight = th,
             panel = p,
             startTime = CurTime(),
-            closing = false
+            closing = false,
+
+            -- animation internal
+            phase = "intro-grow", -- intro-grow -> intro-wait -> intro-slide -> visible -> out-eat -> done
+            phaseStart = CurTime(),
+            growTime = growTime,
+            waitTime = waitTime,
+            slideTime = slideTime,
+            outTime = outTime,
+
+            barFill = 0, -- 0..1 (for grow)
+            coverW = w, -- pixels width of matte cover that hides text (starts full until reveal)
+            textAlpha = 0, -- 0..255 (text appears under the bar)
+            outFadeTime = outFadeTime
         }
 
-        local easing = ax.config:Get("notification.easing", self.easing)
-        local inTime = ax.config:Get("notification.inTime", self.inTime)
-
         -- play configured sound immediately when the intro begins
-        local soundPath = ax.config:Get("notification.sound", "ui/hint.wav")
-        local lp = LocalPlayer()
-        if ( IsValid(lp) and lp.EmitSound ) then
-            lp:EmitSound(soundPath)
-        else
-            surface.PlaySound(soundPath)
-        end
+        ax.client:EmitSound("parallax/ui/notification_in.wav", 60, math.random(95, 105), 0.4)
 
-        -- animate in
-        p:Motion(inTime, {
-            Easing = easing,
-            Target = { alpha = 255, offset = 0 }
+        -- animate stack/offset with motion to preserve previous behavior
+        p:Motion(0.25, {
+            Easing = "OutQuad",
+            Target = { stack = 0 }
         })
 
         table.insert(self.active, toast)
@@ -187,7 +196,7 @@ if ( CLIENT ) then
             y = y + t.height + self.spacing
 
             if ( IsValid(t.panel) ) then
-                t.panel:Motion(0.18, {
+                t.panel:Motion(0.25, {
                     Easing = "OutQuad",
                     Target = { stack = target }
                 })
@@ -201,28 +210,16 @@ if ( CLIENT ) then
         local t = self.active[idx]
         if ( !t or !IsValid(t.panel) or t.closing ) then return end
 
+        -- start outro sequence: expand the matte cover to eat the text
         t.closing = true
-        local easing = ax.config:Get("notification.easing", self.easing)
-        local outTime = ax.config:Get("notification.outTime", self.outTime)
-
-        t.panel:Motion(outTime, {
-            Easing = easing,
-            Target = { alpha = 0, offset = 16 }
-        })
-
-        local panel = t.panel
-        timer.Simple(outTime + 0.01, function()
-            if ( !t ) then return end
-            if ( IsValid(panel) ) then panel:Remove() end
-            table.remove(self.active, idx)
-            ax.notification:Layout()
-            ax.notification:Next()
-        end)
+        t.phase = "out-eat"
+        t.phaseStart = CurTime()
+        ax.client:EmitSound("parallax/ui/notification_out.wav", 60, math.random(95, 105), 0.4)
     end
 
     --- Draw the active notifications. Called in PostRenderVGUI.
     function ax.notification:Render()
-        if ( ax.config and ax.config.Get and !ax.config:Get("notification.enabled", true) ) then return end
+        if ( !ax.config:Get("notification.enabled", true) ) then return end
         if ( #self.active == 0 ) then return end
 
         local sw, sh = ScrW(), ScrH()
@@ -237,34 +234,118 @@ if ( CLIENT ) then
             if ( !IsValid(p) ) then
                 table.remove(self.active, i)
             else
-                if ( !t.closing and (CurTime() - t.startTime) >= t.length ) then
+                -- Auto-close if visible time elapsed and not already closing
+                if ( t.phase == "visible" and (CurTime() - t.phaseStart) >= t.length and !t.closing ) then
                     self:Close(i)
                 end
 
-                local alpha = clamp(p.alpha or 0, 0, 255)
                 local stack = p.stack or 0
                 local offset = p.offset or 0
 
-                local w, h = t.width, t.height
-                local x = cx - math.floor(w / 2)
+                local fullW, h = t.width, t.height
+                local x = cx - math.floor(fullW / 2)
                 local y = baseY - stack - offset - h
 
-                if ( self.shadow > 0 and alpha > 0 ) then
-                    local sa = math.floor(alpha * 0.25)
-                    draw.RoundedBox(self.corner, x + self.shadow, y + self.shadow, w, h, Color(0, 0, 0, sa))
+                -- Progress logic per-phase
+                local now = CurTime()
+                local elapsed = now - t.phaseStart
+
+                if ( t.phase == "intro-grow" ) then
+                    local pfrac = clamp(elapsed / t.growTime, 0, 1)
+                    t.barFill = EaseOutCubic(pfrac)
+                    t.textAlpha = 0
+                    t.coverW = 0
+                    if ( pfrac >= 1 ) then
+                        t.phase = "intro-wait"
+                        t.phaseStart = CurTime()
+                    end
+                elseif ( t.phase == "intro-wait" ) then
+                    if ( elapsed >= t.waitTime ) then
+                        t.phase = "intro-slide"
+                        t.phaseStart = CurTime()
+                    end
+                elseif ( t.phase == "intro-slide" ) then
+                    local pfrac = clamp(elapsed / t.slideTime, 0, 1)
+                    t.barFill = 1 - EaseOutCubic(pfrac)
+                    t.textAlpha = math.floor(EaseOutCubic(pfrac) * 255)
+                    t.shrinkAnchorRight = true
+                    if ( pfrac >= 1 ) then
+                        t.phase = "visible"
+                        t.phaseStart = CurTime()
+                        t.barFill = 0
+                        t.coverW = 0
+                        t.textAlpha = 255
+                        t.shrinkAnchorRight = false
+                    end
+                elseif ( t.phase == "visible" ) then
+                    local _ = true
+                elseif ( t.phase == "out-eat" ) then
+                    local pfrac = clamp(elapsed / t.outTime, 0, 1)
+                    local eatW = math.floor(EaseInCubic(pfrac) * fullW)
+                    t.coverW = eatW
+                    t.textAlpha = 255
+                    if ( pfrac >= 1 ) then
+                        t.phase = "out-wait"
+                        t.phaseStart = CurTime()
+                    end
+                elseif ( t.phase == "out-wait" ) then
+                    if ( elapsed >= t.waitTime ) then
+                        t.phase = "out-reveal"
+                        t.phaseStart = CurTime()
+                        t.barFill = 1
+                        t.coverW = 0
+                        t.shrinkAnchorRight = true
+                    end
+                elseif ( t.phase == "out-reveal" ) then
+                    local pfrac = clamp(elapsed / t.slideTime, 0, 1)
+                    t.barFill = 1 - EaseOutCubic(pfrac)
+                    t.textAlpha = 0
+                    t.shrinkAnchorRight = true
+                    if ( pfrac >= 1 ) then
+                        t.phase = "done"
+                        t.phaseStart = CurTime()
+                        t.barFill = 0
+                        t.coverW = 0
+                        t.textAlpha = 0
+                        t.shrinkAnchorRight = false
+                    end
                 end
 
-                draw.RoundedBox(self.corner, x, y, w, h, Color(18, 18, 18, math.floor(alpha * 0.92)))
+                -- colored accent / foreground color (matte)
+                local col = Color(32, 32, 32)
 
-                local col = self.colors[t.type] or self.colors.generic
-                draw.RoundedBox(self.corner, x, y, ScreenScale(2), h, Color(col.r, col.g, col.b, alpha))
-
+                -- draw text (render beneath matte foreground). It will be revealed as the foreground shrinks.
                 local ty = y + self.paddingY
                 local tx = x + self.paddingX
+                local textA = clamp(t.textAlpha or 0, 0, 255)
                 for k = 1, #t.lines do
                     local line = t.lines[k]
-                    draw.SimpleText(line, self.font, tx, ty, Color(240, 240, 240, alpha), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+                    draw.SimpleText(line, self.font, tx, ty, Color(240, 240, 240, textA), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
                     ty = ty + t.lineHeight
+                end
+
+                -- draw the matte foreground rectangle driven by barFill (this is the element that shrinks to reveal)
+                local fillW = math.floor(fullW * (t.barFill or 0))
+                if ( fillW > 0 ) then
+                    if ( t.shrinkAnchorRight ) then
+                        -- draw anchored to the right so the left edge moves right as fillW decreases
+                        draw.RoundedBox(0, x + (fullW - fillW), y, fillW, h, col)
+                    else
+                        draw.RoundedBox(0, x, y, fillW, h, col)
+                    end
+                end
+
+                -- draw the outro matte cover (left portion) which hides the text; coverW==0 means fully revealed
+                if ( t.coverW and t.coverW > 0 ) then
+                    draw.RoundedBox(0, x, y, t.coverW, h, col)
+                end
+
+                -- cleanup if done
+                if ( t.phase == "done" ) then
+                    if ( IsValid(p) ) then p:Remove() end
+                    table.remove(self.active, i)
+                    ax.notification:Layout()
+                    ax.notification:Next()
                 end
             end
         end
