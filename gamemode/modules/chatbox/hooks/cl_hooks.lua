@@ -53,6 +53,8 @@ function MODULE:PostDrawTranslucentRenderables()
 
         if ( string.StartsWith(text, "/me") ) then
             typing = "Performing"
+        elseif ( hook.Run("GetTypingIndicatorText", client, text) ) then
+            typing = hook.Run("GetTypingIndicatorText", client, text) or "Typing"
         elseif ( string.StartsWith(text, "/") or string.StartsWith(text, ".") ) then
             continue
         end
