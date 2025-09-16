@@ -28,7 +28,6 @@ function surface.CreateFont(name, data)
 end
 
 local families = {
-    ["regular"] = "GorDIN Regular",
     ["bold"] = "GorDIN Black",
     ["italic"] = "GorDIN Regular",
     ["italic.bold"] = "GorDIN Black"
@@ -103,10 +102,10 @@ function ax.font:Load()
     hook.Run("LoadFonts")
 end
 
-concommand.Add("ax_font_list", function()
+concommand.Add("ax_font_list", function(client, cmd, args)
     ax.util:Print("Available fonts:")
 
-    for name, data in SortedPairsByMemberValue(ax.font.stored, "size", true) do
+    for name, data in (args[1] and SortedPairsByMemberValue(ax.font.stored, "size", true) or SortedPairs(ax.font.stored)) do
         ax.util:Print(" - " .. name)
     end
 end, nil, "List all available fonts in the Parallax Framework", FCVAR_HIDDEN)
