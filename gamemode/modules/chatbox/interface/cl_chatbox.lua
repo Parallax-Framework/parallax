@@ -16,7 +16,7 @@ function PANEL:Init()
     local sw = tonumber(cookie.GetString("ax.chatbox.w") or "")
     local sh = tonumber(cookie.GetString("ax.chatbox.h") or "")
     if ( sw and sh ) then
-        local minW, minH = 260, 180
+        local minW, minH = ScreenScale(128), ScreenScaleH(128)
         local maxW, maxH = ScrW(), ScrH()
         self:SetSize(math.Clamp(sw, minW, maxW), math.Clamp(sh, minH, maxH))
     end
@@ -129,8 +129,17 @@ function PANEL:Init()
             net.Start("ax.chatbox.send")
                 net.WriteString(text)
             net.SendToServer()
+            -- Save to history
+            self.historyCache = self.historyCache or {}
+            table.insert(self.historyCache, 1, text)
+            -- keep reasonable limit
+            if ( #self.historyCache > 100 ) then
+                table.remove(self.historyCache, #self.historyCache)
+            end
 
             this:SetText("")
+            -- Reset history index
+            self.historyIndex = 0
         end
 
         self:SetVisible(false)
@@ -178,6 +187,30 @@ function PANEL:Init()
     self.entry.OnKeyCode = function(this, key)
         if ( key == KEY_TAB ) then
             self:CycleRecommendations()
+            return true
+        end
+
+        -- Navigate history with Up/Down
+        if ( key == KEY_UP or key == KEY_DOWN ) then
+            self.historyCache = self.historyCache or {}
+            if ( #self.historyCache == 0 ) then return end
+
+            this:SetCaretPos(0)
+            self.historyIndex = self.historyIndex or 0
+
+            if ( key == KEY_UP ) then
+                self.historyIndex = math.min(#self.historyCache, (self.historyIndex or 0) + 1)
+            else
+                self.historyIndex = math.max(0, (self.historyIndex or 0) - 1)
+            end
+
+            if ( self.historyIndex > 0 ) then
+                this:SetText(self.historyCache[self.historyIndex])
+                this:SetCaretPos(#this:GetText())
+            else
+                this:SetText("")
+            end
+
             return true
         end
     end
@@ -492,7 +525,7 @@ end
 function PANEL:Paint(width, height)
     ax.util:DrawPanelBlur(self)
 
-    surface.SetDrawColor(0, 0, 0, 150)
+    surface.SetDrawColor(0, 0, 0, 200)
     surface.DrawRect(0, 0, width, height)
 end
 
