@@ -91,7 +91,7 @@ function PANEL:RebuildScoreboard()
                 if ( code == MOUSE_RIGHT ) then
                     local menu = DermaMenu()
                     menu:AddOption("View Profile", function()
-                        gui.OpenURL("http://steamcommunity.com/profiles/" .. tostring(client:SteamID64()))
+                        gui.OpenURL("http://steamcommunity.com/profiles/" .. client:SteamID64())
                     end):SetIcon("icon16/user_go.png")
 
                     -- Allow modules to populate the menu
