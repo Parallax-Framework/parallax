@@ -119,7 +119,7 @@ function ax.util:CreateStore(spec)
 
         if ( regEntry.typeId == ax.type.number ) then
             local data = regEntry.data
-            coerced = ax.type:ClampRound(coerced, data.min, data.max, data.decimals)
+            coerced = ax.util:ClampRound(coerced, data.min, data.max, data.decimals)
         end
 
         if ( regEntry.typeId == ax.type.array and isfunction(regEntry.data.populate) ) then
