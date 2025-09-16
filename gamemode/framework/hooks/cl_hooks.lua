@@ -68,6 +68,34 @@ function GM:HUDShouldDraw(name)
     return true
 end
 
+local healthIcon = Material("parallax/icons/hud/health.png", "smooth mips")
+function GM:HUDPaintCurvy(width, height, client, isCurved)
+    if ( !IsValid(client) ) then return end
+
+    local barWidth, barHeight = ScreenScale(64), ScreenScaleH(8)
+    local barX, barY = ScreenScale(8), ScrH() - ScreenScaleH(8) - barHeight * 1.5
+
+    -- Draw health icon
+    surface.SetMaterial(healthIcon)
+    surface.SetDrawColor(255, 255, 255, 200)
+    surface.DrawTexturedRect(barX, barY - barHeight / 2, barHeight * 2, barHeight * 2)
+    barX = barX + barHeight * 2 + ScreenScale(4)
+
+    -- Draw health bar background
+    draw.RoundedBox(barHeight, barX, barY, barWidth, barHeight, Color(0, 0, 0, 150))
+
+    -- Interpolated health value for smooth transitions
+    local targetHealth = math.Clamp(client:Health(), 0, 100)
+    client._axCurvyHealth = client._axCurvyHealth or targetHealth
+    client._axCurvyHealth = Lerp(math.Clamp(FrameTime() * 10, 0, 1), client._axCurvyHealth, targetHealth)
+
+    local healthFraction = client._axCurvyHealth / 100
+    local fillWidth = math.max(0, barWidth * healthFraction - ScreenScale(2))
+
+    -- Draw health bar fill using interpolated value
+    draw.RoundedBox(barHeight, barX + ScreenScale(1), barY + ScreenScaleH(1), fillWidth, barHeight - ScreenScaleH(2), Color(255, 255, 255, 200))
+end
+
 ax.viewstack:RegisterModifier("ragdoll", function(client, view)
     if ( !IsValid(client) or client:InVehicle() ) then return end
 
