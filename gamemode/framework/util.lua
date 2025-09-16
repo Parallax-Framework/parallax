@@ -339,23 +339,15 @@ function ax.util:FindCharacter(identifier)
     end
 
     if ( isstring(identifier) ) then
-        local foundChar = nil
         local lowerIdent = string.lower(identifier)
-
         for _, char in pairs(ax.character.instances) do
-            if ( string.lower(char.vars.name) == lowerIdent ) then
+            local name = char:GetName()
+            if ( string.lower(name) == lowerIdent ) then
                 return char -- Exact match
-            elseif ( self:FindString(char.vars.name, lowerIdent) ) then
-                if ( foundChar ) then
-                    -- Ambiguous match
-                    return nil
-                end
-
-                foundChar = char
+            elseif ( self:FindString(name, lowerIdent) ) then
+                return char -- Partial match
             end
         end
-
-        return foundChar
     end
 
     return nil
