@@ -620,7 +620,7 @@ function mysql:RawQuery(query, callback, flags, ...)
             parameters = parameters[1]
         end
 
-        if (istable(parameters) and #parameters > 0) then
+        if (istable(parameters) and parameters[1] != nil ) then
             -- Use sql.QueryTyped with proper parameter expansion
             result = sql.QueryTyped(query, unpack(parameters))
         else
