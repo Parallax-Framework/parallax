@@ -613,36 +613,30 @@ function mysql:RawQuery(query, callback, flags, ...)
         queryObj:start()
     elseif (self.module == "sqlite") then
         local result = nil
-        local parameters = select(1, ...)
+        local parameters = {...}
 
-        if (istable(parameters) and next(parameters) ~= nil) then
-            -- Try both vararg and table forms for sql.QueryTyped to support different wrappers
-            local ok, res = pcall(function()
-                return sql.QueryTyped(query, unpack(parameters))
-            end)
-            if (!ok) then
-                ok, res = pcall(function()
-                    return sql.QueryTyped(query, parameters)
-                end)
-            end
+        -- If first parameter is a table, use it as the parameter list
+        if (istable(parameters[1])) then
+            parameters = parameters[1]
+        end
 
-            if (!ok) then
-                error(string.format("[mysql] SQL Query Error!\nQuery: %s\n%s\n", query, tostring(res)))
-            else
-                result = res
-            end
+        if (istable(parameters) and #parameters > 0) then
+            -- Use sql.QueryTyped with proper parameter expansion
+            result = sql.QueryTyped(query, unpack(parameters))
         else
             result = sql.Query(query)
         end
 
         if (result == false) then
-            error(string.format("[mysql] SQL Query Error!\nQuery: %s\n%s\n", query, sql.LastError()))
+            local errorMsg = sql.LastError() or "Unknown SQL error"
+            ErrorNoHalt(string.format("[mysql] SQL Query Error!\nQuery: %s\n%s\n", query, errorMsg))
+            return
         else
             if (callback) then
                 local bStatus, value = pcall(callback, result, true, tonumber(sql.QueryValue("SELECT last_insert_rowid()")))
 
                 if (!bStatus) then
-                    error(string.format("[mysql] SQL Callback Error!\n%s\n", value))
+                    ErrorNoHalt(string.format("[mysql] SQL Callback Error!\n%s\n", value))
                 end
             end
         end
@@ -722,6 +716,12 @@ function mysql:OnConnectionFailed(errorText)
     hook.Run("DatabaseConnectionFailed", errorText)
 end
 
+-- A function to check whether or not the module is connected to a database.
+function mysql:IsConnected()
+    return self.module == "mysqloo" and (self.connection and self.connection:ping()) or self.module == "sqlite"
+end
+
+return mysql
 -- A function to check whether or not the module is connected to a database.
 function mysql:IsConnected()
     return self.module == "mysqloo" and (self.connection and self.connection:ping()) or self.module == "sqlite"
