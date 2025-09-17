@@ -68,7 +68,7 @@ if ( CLIENT ) then
     ax.notification.paddingX = ScreenScale(4)
     ax.notification.paddingY = ScreenScaleH(4)
     ax.notification.spacing = ScreenScale(4)
-    ax.notification.font = "ax.regular"
+    ax.notification.font = "ax.regular.bold"
     ax.notification.maxWidthFrac = 0.5
     ax.notification.inTime = 0.25
     ax.notification.outTime = 0.25
@@ -110,7 +110,7 @@ if ( CLIENT ) then
     --- Promote queued items into active list respecting maxVisible.
     function ax.notification:Next()
         local maxVisible = self.maxVisible
-        while (#self.active < maxVisible) and (#self.queue > 0) do
+        while ( #self.active < maxVisible ) and ( #self.queue > 0 ) do
             local data = table.remove(self.queue, 1)
             self:Show(data)
         end
@@ -146,7 +146,7 @@ if ( CLIENT ) then
         local waitTime = 0.5
         local slideTime = 0.5
         local outTime = 0.5
-        local outFadeTime = 0.12
+        local outFadeTime = 0.25
 
         local toast = {
             text = data.text,
@@ -160,24 +160,21 @@ if ( CLIENT ) then
             startTime = CurTime(),
             closing = false,
 
-            -- animation internal
-            phase = "intro-grow", -- intro-grow -> intro-wait -> intro-slide -> visible -> out-eat -> done
+            phase = "intro-grow",
             phaseStart = CurTime(),
             growTime = growTime,
             waitTime = waitTime,
             slideTime = slideTime,
             outTime = outTime,
 
-            barFill = 0, -- 0..1 (for grow)
-            coverW = w, -- pixels width of matte cover that hides text (starts full until reveal)
-            textAlpha = 0, -- 0..255 (text appears under the bar)
+            barFill = 0,
+            coverW = w,
+            textAlpha = 0,
             outFadeTime = outFadeTime
         }
 
-        -- play configured sound immediately when the intro begins
         ax.client:EmitSound("parallax/ui/notification_in.wav", 60, math.random(95, 105), 0.4)
 
-        -- animate stack/offset with motion to preserve previous behavior
         p:Motion(0.25, {
             Easing = "OutQuad",
             Target = { stack = 0 }
@@ -204,20 +201,16 @@ if ( CLIENT ) then
         end
     end
 
-    --- Begin fade-out and removal of a toast.
-    -- @tparam number idx Active index
     function ax.notification:Close(idx)
         local t = self.active[idx]
         if ( !t or !IsValid(t.panel) or t.closing ) then return end
 
-        -- start outro sequence: expand the matte cover to eat the text
         t.closing = true
         t.phase = "out-eat"
         t.phaseStart = CurTime()
         ax.client:EmitSound("parallax/ui/notification_out.wav", 60, math.random(95, 105), 0.4)
     end
 
-    --- Draw the active notifications. Called in PostRenderVGUI.
     function ax.notification:Render()
         if ( !ax.config:Get("notification.enabled", true) ) then return end
         if ( #self.active == 0 ) then return end
@@ -234,7 +227,6 @@ if ( CLIENT ) then
             if ( !IsValid(p) ) then
                 table.remove(self.active, i)
             else
-                -- Auto-close if visible time elapsed and not already closing
                 if ( t.phase == "visible" and (CurTime() - t.phaseStart) >= t.length and !t.closing ) then
                     self:Close(i)
                 end
@@ -320,7 +312,7 @@ if ( CLIENT ) then
                 local textA = clamp(t.textAlpha or 0, 0, 255)
                 for k = 1, #t.lines do
                     local line = t.lines[k]
-                    draw.SimpleText(line, self.font, tx, ty, Color(240, 240, 240, textA), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+                    draw.SimpleText(line, self.font, tx, ty, Color(200, 200, 200, textA), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
                     ty = ty + t.lineHeight
                 end
 
@@ -360,11 +352,6 @@ if ( CLIENT ) then
             if ( t and IsValid(t.panel) ) then t.panel:Remove() end
             table.remove(self.active, i)
         end
-    end
-
-    -- Draw above all VGUI
-    function GM:PostRenderVGUI()
-        ax.notification:Render()
     end
 
     -- Receive server-sent toasts
