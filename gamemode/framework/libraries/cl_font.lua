@@ -54,6 +54,11 @@ function ax.font:CreateFamily(name, font, size, familiesOverride, fontData)
 
     table.Merge(createFontData, fontData or {})
 
+    -- Multiply depending on size
+    if ( createFontData.blursize ) then
+        createFontData.blursize = math.max(2, math.floor(size / 8))
+    end
+
     surface.CreateFont("ax." .. name, createFontData)
 
     if ( familiesOverride ) then
