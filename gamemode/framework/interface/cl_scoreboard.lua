@@ -60,9 +60,8 @@ function PANEL:RebuildScoreboard()
         local header = self.container:Add("DPanel")
         header:Dock(TOP)
         header.Paint = function(_, width, height)
-            local col = team.GetColor(tid) or Color(80,80,80)
-            surface.SetDrawColor(col.r, col.g, col.b, 180)
-            surface.DrawRect(0, 0, width, height)
+            local col = team.GetColor(tid) or Color(80, 80, 80)
+            ax.render.Draw(0, 0, 0, width, height, ColorAlpha(col, 180))
         end
 
         local title = header:Add("ax.text")
@@ -81,8 +80,7 @@ function PANEL:RebuildScoreboard()
             row:DockMargin(0, 0, 0, index == #members and ScreenScaleH(8) or 0)
             row:SetMouseInputEnabled(true)
             row.Paint = function(_, width, height)
-                surface.SetDrawColor(0, 0, 0, 120)
-                surface.DrawRect(0, 0, width, height)
+                ax.render.Draw(0, 0, 0, width, height, Color(0, 0, 0, 150))
             end
 
             -- Right-click context menu support. Other modules can add entries

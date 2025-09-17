@@ -36,8 +36,7 @@ function Derma_DrawBackgroundBlur(panel, starttime)
         end
     end
 
-    surface.SetDrawColor(10, 10, 10, 200 * fraction)
-    surface.DrawRect(x * -1, y * -1, ScrW(), ScrH())
+    ax.render.Draw(0, x * -1, y * -1, ScrW(), ScrH(), Color(0, 0, 0, 200 * fraction))
 
     DisableClipping(wasEnabled)
 end

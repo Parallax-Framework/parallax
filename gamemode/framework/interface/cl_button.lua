@@ -321,10 +321,9 @@ end
 
 function PANEL:Paint(width, height)
     local backgroundColor = Color(self.textColor.r / 8, self.textColor.g / 8, self.textColor.b / 8)
-    draw.RoundedBox(0, 0, 0, width, height, ColorAlpha(backgroundColor, 100 * self.inertia))
 
-    surface.SetDrawColor(self.textColor.r, self.textColor.g, self.textColor.b, 200 * self.inertia)
-    surface.DrawRect(0, 0, ScreenScale(4) * self.inertia, height)
+    ax.render.Draw(0, 0, 0, width, height, ColorAlpha(backgroundColor, 100 * self.inertia))
+    ax.render.Draw(0, 0, 0, ScreenScale(4) * self.inertia, height, Color(self.textColor.r, self.textColor.g, self.textColor.b, 200 * self.inertia))
 end
 
 vgui.Register("ax.button", PANEL, "ax.button.core")
@@ -397,8 +396,7 @@ function PANEL:SizeToContents()
 end
 
 function PANEL:Paint(width, height)
-    surface.SetDrawColor(self.backgroundColor.r, self.backgroundColor.g, self.backgroundColor.b, self.backgroundAlphaHovered * self.inertia)
-    surface.DrawRect(0, 0, width, height)
+    ax.render.Draw(0, 0, 0, width, height, ColorAlpha(self.backgroundColor, self.backgroundAlphaHovered * self.inertia))
 end
 
 vgui.Register("ax.button.flat", PANEL, "ax.button.core")

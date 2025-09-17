@@ -134,8 +134,7 @@ function PANEL:SizeToContents()
 end
 
 function PANEL:Paint(width, height)
-    surface.SetDrawColor(0, 0, 0, 100)
-    surface.DrawRect(0, 0, width, height)
+    ax.render.Draw(ScreenScale(1) + ScreenScaleH(1), 0, 0, width, height, Color(0, 0, 0, 150))
 
     BaseClass.Paint(self, width, height)
 end

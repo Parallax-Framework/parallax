@@ -32,20 +32,18 @@ function PANEL:Init()
         self:SetPos(hook.Run("GetChatboxPos"))
     end
 
-    self.top = self:Add("ax.text")
-    self.top:Dock(TOP)
-    self.top:SetTextInset(8, 0)
-    self.top:SetFont("ax.chatbox.text")
-    self.top:SetText(GetHostName(), true)
-    self.top.Paint = function(this, width, height)
-        surface.SetDrawColor(0, 0, 0, 100)
-        surface.DrawRect(0, 0, width, height)
+    self.categories = self:Add("ax.scroller.horizontal")
+    self.categories:Dock(TOP)
+    self.categories:DockPadding(4, 4, 4, 4)
+    self.categories:InvalidateParent(true)
+    self.categories.Paint = function(this, width, height)
+        ax.render.Draw(ScreenScale(1) + ScreenScaleH(1), 0, 0, width, height, Color(0, 0, 0, 150))
     end
 
     -- Enable dragging the chatbox by grabbing the top bar
-    self.top:SetMouseInputEnabled(true)
-    self.top:SetCursor("sizeall")
-    self.top.OnMousePressed = function(this, code)
+    self.categories:SetMouseInputEnabled(true)
+    self.categories:SetCursor("sizeall")
+    self.categories.OnMousePressed = function(this, code)
         if ( code == MOUSE_LEFT ) then
             local px, py = self:GetPos()
             this.dragOffsetX = gui.MouseX() - px
@@ -71,7 +69,7 @@ function PANEL:Init()
             menu:Open()
         end
     end
-    self.top.OnMouseReleased = function(this, code)
+    self.categories.OnMouseReleased = function(this, code)
         if ( this.dragging ) then
             this.dragging = false
             this:MouseCapture(false)
@@ -82,7 +80,7 @@ function PANEL:Init()
             cookie.Set("ax.chatbox.y", tostring(y))
         end
     end
-    self.top.Think = function(this)
+    self.categories.Think = function(this)
         if ( this.dragging ) then
             local mx, my = gui.MouseX(), gui.MouseY()
             local nx = mx - (this.dragOffsetX or 0)
@@ -92,6 +90,20 @@ function PANEL:Init()
             local maxY = math.max(0, ScrH() - self:GetTall())
             self:SetPos(math.Clamp(nx, 0, maxX), math.Clamp(ny, 0, maxY))
         end
+    end
+
+    -- Add some temporary filler categories
+    -- TODO: Implement a category system where you can select chat types to show and hide.
+    for i = 1, 3 do
+        local cat = self.categories:Add("ax.button.flat")
+        cat:Dock(LEFT)
+        cat:SetFont("ax.small")
+        cat:SetFontDefault("ax.small")
+        cat:SetFontHovered("ax.regular.bold")
+        cat:SetText(tostring(i))
+        cat:SetTall(cat:GetTall() / 2)
+
+        self.categories:SetTall(math.max(self.categories:GetTall(), cat:GetTall()))
     end
 
     local bottom = self:Add("EditablePanel")
@@ -108,8 +120,7 @@ function PANEL:Init()
         this:SetWide(ax.util:GetTextWidth(this:GetFont(), this:GetText()) + 16)
     end
     self.chatType.Paint = function(this, width, height)
-        surface.SetDrawColor(0, 0, 0, 100)
-        surface.DrawRect(0, 0, width, height)
+        ax.render.Draw(ScreenScale(1) + ScreenScaleH(1), 0, 0, width, height, Color(0, 0, 0, 150))
     end
 
     self.entry = bottom:Add("ax.text.entry")
@@ -228,15 +239,13 @@ function PANEL:Init()
     self.recommendations.indexSelect = 0
     self.recommendations.maxSelection = 0
     self.recommendations.Paint = function(this, width, height)
-        ax.util:DrawPanelBlur(this)
-
-        surface.SetDrawColor(0, 0, 0, 100)
-        surface.DrawRect(0, 0, width, height)
+        ax.util:DrawBlur(0, 0, 0, width, height, Color(255, 255, 255, 150))
+        ax.render.Draw(ScreenScale(1) + ScreenScaleH(1), 0, 0, width, height, Color(0, 0, 0, 150))
     end
 
     -- Resizer handle (corner-based, position-adaptive)
     self.sizer = self:Add("DPanel")
-    self.sizer:SetSize(self.top:GetTall(), self.top:GetTall())
+    self.sizer:SetSize(self.categories:GetTall(), self.categories:GetTall())
     self.sizer.anchorX = "right"
     self.sizer.anchorY = "top"
     self.sizer:SetCursor("sizenesw")
@@ -393,12 +402,10 @@ function PANEL:PopulateRecommendations(text)
             rec:DockMargin(4, 4, 4, 0)
             rec.index = i
             rec.Paint = function(_, width, height)
-                surface.SetDrawColor(0, 0, 0, 100)
-                surface.DrawRect(0, 0, width, height)
+                ax.render.Draw(ScreenScale(1) + ScreenScaleH(1), 0, 0, width, height, Color(0, 0, 0, 150))
 
                 if ( self.recommendations.indexSelect == i ) then
-                    surface.SetDrawColor(200, 20, 20, 255)
-                    surface.DrawRect(0, 0, width, height)
+                    ax.render.Draw(ScreenScale(1) + ScreenScaleH(1), 0, 0, width, height, Color(200, 50, 50, 150))
                 end
             end
 
@@ -523,20 +530,18 @@ function PANEL:OnKeyCodePressed(key)
 end
 
 function PANEL:Paint(width, height)
-    ax.util:DrawPanelBlur(self)
-
-    surface.SetDrawColor(0, 0, 0, 200)
-    surface.DrawRect(0, 0, width, height)
+    ax.util:DrawBlur(0, 0, 0, width, height, Color(255, 255, 255, 150))
+    ax.render.Draw(ScreenScale(1) + ScreenScaleH(1), 0, 0, width, height, Color(0, 0, 0, 150))
 end
 
 function PANEL:PerformLayout(width, height)
     -- Recompute dynamic layout on size changes
-    if ( IsValid(self.top) and IsValid(self.entry) and IsValid(self.history) ) then
+    if ( IsValid(self.categories) and IsValid(self.entry) and IsValid(self.history) ) then
         local w, h = self:GetSize()
         local histW = w - 16
-        local histH = h - 24 - self.top:GetTall() - self.entry:GetTall()
+        local histH = h - 24 - self.categories:GetTall() - self.entry:GetTall()
         self.history:SetSize(math.max(0, histW), math.max(0, histH))
-        self.history:SetPos(8, self.top:GetTall() + 8)
+        self.history:SetPos(8, self.categories:GetTall() + 8)
     end
 
     if ( IsValid(self.recommendations) and IsValid(self.history) ) then
@@ -548,7 +553,7 @@ function PANEL:PerformLayout(width, height)
 
     if ( IsValid(self.sizer) ) then
         -- Keep sizer sized like the top bar for a clean look
-        local sz = IsValid(self.top) and self.top:GetTall() or self.sizer:GetTall()
+        local sz = IsValid(self.categories) and self.categories:GetTall() or self.sizer:GetTall()
         self.sizer:SetSize(sz, sz)
 
         local x = (self.sizer.anchorX == "right") and (self:GetWide() - self.sizer:GetWide()) or 0

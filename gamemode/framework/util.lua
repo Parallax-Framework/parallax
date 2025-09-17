@@ -592,96 +592,62 @@ if ( CLIENT ) then
         return surface.GetTextSize(text)
     end
 
-    local BLUR_MAT = ax.util:GetMaterial("pp/blurscreen")
-    local _ax_blur_last_update = 0
-    --- Draws a blur behind a panel (client-only).
-    -- @param panel Panel The panel to blur behind
-    -- @param passes number Number of blur passes (default 3)
-    -- @param density number Blur density multiplier
-    -- @param alpha number Alpha of blur overlay (0-255)
-    -- @param throttle number Minimum seconds between updates (optional)
-    -- @param clip boolean Whether to clip the blur to panel bounds
-    -- @usage ax.util:DrawPanelBlur(myPanel, 3, 1.0, 180)
-    function ax.util:DrawPanelBlur(panel, passes, density, alpha, throttle, clip)
-        if ( !IsValid(panel) ) then return end
-
-        passes = math.max(1, math.floor(passes or 3))
-        density = density or 1.0
-        alpha = math.Clamp(tonumber(alpha or 180) or 180, 0, 255)
-        throttle = tonumber(throttle or 0) or 0
-        clip = clip == nil and true or clip
-
-        if ( alpha <= 0 ) then return end
-
-        local sx, sy = panel:LocalToScreen(0, 0)
-        local w, h = panel:GetWide(), panel:GetTall()
-
-        local now = CurTime()
-        local can_update = (throttle <= 0) or (now - _ax_blur_last_update >= throttle)
-
-        surface.SetMaterial(BLUR_MAT)
-        surface.SetDrawColor(255, 255, 255, alpha)
-
-        if ( clip ) then
-            render.SetScissorRect(sx, sy, sx + w, sy + h, true)
-        end
-
-        for i = 1, passes do
-            BLUR_MAT:SetFloat("$blur", i * density)
-            if ( can_update ) then
-                render.UpdateScreenEffectTexture()
-            end
-            surface.DrawTexturedRect(-sx, -sy, ScrW(), ScrH())
-        end
-
-        if ( clip ) then
-            render.SetScissorRect(0, 0, 0, 0, false)
-        end
-
-        if ( can_update ) then
-            _ax_blur_last_update = now
-        end
-    end
-
     --- Draws a blur inside a rectangle (client-only).
+    -- @param r number Roundness of rectangle corners
     -- @param x number X screen coordinate
     -- @param y number Y screen coordinate
-    -- @param w number Width in pixels
-    -- @param h number Height in pixels
-    -- @param passes number Number of blur passes
-    -- @param density number Blur density multiplier
-    -- @param alpha number Alpha of blur overlay (0-255)
-    -- @param throttle number Throttle interval in seconds
-    -- @usage ax.util:DrawRectBlur(10,10,200,100,3,1.0,180)
-    function ax.util:DrawRectBlur(x, y, w, h, passes, density, alpha, throttle)
-        passes = math.max(1, math.floor(passes or 3))
-        density = density or 1.0
-        alpha = math.Clamp(tonumber(alpha or 180) or 180, 0, 255)
-        throttle = tonumber(throttle or 0) or 0
+    -- @param width number Width in pixels
+    -- @param height number Height in pixels
+    -- @param color Color Color of the blur overlay (alpha used)
+    -- @usage ax.util:DrawBlur(16,10,10,200,100,Color(255,255,255,180))
+    function ax.util:DrawBlur(r, x, y, width, height, color)
+        ax.render.Draw(r, x, y, width, height, color, ax.render.BLUR)
+    end
+end
 
-        if ( alpha <= 0 ) then return end
+if ( CLIENT ) then
+    --- Resolve a gradient material path by a short name.
+    -- Accepts common names: "left", "right", "top", "bottom" or direct material paths.
+    -- @param name string Short name or material path
+    -- @return string Material path
+    -- @usage local path = ax.util:GetGradientPath("left")
+    function ax.util:GetGradientPath(name)
+        if ( !isstring(name) or name == "" ) then return "vgui/gradient-l" end
 
-        local now = CurTime()
-        local can_update = ( throttle <= 0 ) or ( now - _ax_screen_blur_last >= throttle )
+        local lname = string.lower(name)
+        if ( lname == "left" or lname == "l" or lname == 1 ) then return "vgui/gradient-l" end
+        if ( lname == "right" or lname == "r" or lname == 2 ) then return "vgui/gradient-r" end
+        if ( lname == "top" or lname == "up" or lname == "u" or lname == 3 ) then return "vgui/gradient-u" end
+        if ( lname == "bottom" or lname == "down" or lname == "d" or lname == 4 ) then return "vgui/gradient-d" end
 
-        surface.SetMaterial(BLUR_MAT)
-        surface.SetDrawColor(255, 255, 255, alpha)
+        -- If it looks like a material path, return it as-is
+        return tostring(name)
+    end
 
-        render.SetScissorRect(x, y, x + w, y + h, true)
+    --- Get a cached gradient material by name.
+    -- @param name string Short name or material path
+    -- @return IMaterial Material instance
+    -- @usage local mat = ax.util:GetGradient("left")
+    function ax.util:GetGradient(name)
+        local path = self:GetGradientPath(name)
+        return self:GetMaterial(path)
+    end
 
-        for i = 1, passes do
-            BLUR_MAT:SetFloat("$blur", i * density)
-            if ( can_update ) then
-                render.UpdateScreenEffectTexture()
-            end
-            surface.DrawTexturedRect(0, 0, ScrW(), ScrH())
-        end
+    --- Draw a gradient material tinted with a color.
+    -- @param name string Gradient short name or material path
+    -- @param x number X coordinate
+    -- @param y number Y coordinate
+    -- @param w number Width
+    -- @param h number Height
+    -- @param color Color|nil Optional tint color (defaults to white)
+    -- @usage ax.util:DrawGradient("left", 0, 0, 200, 400, Color(0,0,0,200))
+    function ax.util:DrawGradient(name, x, y, w, h, color)
+        local mat = self:GetGradient(name)
+        if ( !mat ) then return end
 
-        render.SetScissorRect(0, 0, 0, 0, false)
+        color = color or Color(255, 255, 255, 255)
 
-        if ( can_update ) then
-            _ax_screen_blur_last = now
-        end
+        ax.render.DrawMaterial(0, x, y, w, h, color, mat)
     end
 end
 

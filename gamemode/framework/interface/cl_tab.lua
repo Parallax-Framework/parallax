@@ -250,7 +250,7 @@ function PANEL:Paint(width, height)
     end
 
     local fraction = self:GetAlpha() / 255
-    ax.util:DrawPanelBlur(self, 3 * fraction, 1 * fraction, 180 * fraction)
+    ax.util:DrawBlur(0, 0, 0, width, height, Color(255, 255, 255, 150 * fraction))
 
     self:SetGradientLeft(Lerp(time, self:GetGradientLeft(), self:GetGradientLeftTarget()))
     self:SetGradientRight(Lerp(time, self:GetGradientRight(), self:GetGradientRightTarget()))
