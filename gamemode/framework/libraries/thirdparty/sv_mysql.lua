@@ -602,6 +602,8 @@ function mysql:RawQuery(query, callback, flags, ...)
 
                 if (!bStatus) then
                     error(string.format("[mysql] MySQL Callback Error!\n%s\n", value))
+                else
+                    ax.util:PrintDebug(string.format("[mysql] Query Success: %s\n", query))
                 end
             end
         end
@@ -637,6 +639,8 @@ function mysql:RawQuery(query, callback, flags, ...)
 
                 if (!bStatus) then
                     ErrorNoHalt(string.format("[mysql] SQL Callback Error!\n%s\n", value))
+                else
+                    ax.util:PrintDebug(string.format("[mysql] Query Success: %s\n", query))
                 end
             end
         end
