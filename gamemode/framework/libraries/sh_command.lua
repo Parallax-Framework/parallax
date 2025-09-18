@@ -21,7 +21,7 @@ end
 --[[
     Register a command with the system.
     @realm shared
-    @param string name The command name (normalized to lowercase)
+    @param string name The command name
     @param table def Command definition table
     @usage ax.command:Add("test", { description = "Test command", OnRun = function(client) end })
 ]]
@@ -35,9 +35,6 @@ function ax.command:Add(name, def)
         ax.util:PrintError("ax.command:Add - Invalid command definition provided for \"" .. name .. "\"")
         return
     end
-
-    -- Normalize name to lowercase
-    name = string.lower(name)
 
     -- Set defaults
     def.name = name
