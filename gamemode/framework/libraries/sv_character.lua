@@ -89,9 +89,10 @@ function ax.character:Load(client, character)
     local inventory = ax.inventory.instances[character.vars.inventory]
     if ( istable(inventory) ) then
         inventory:AddReceiver(client)
-        ax.inventory:Sync( inventory )
+        ax.inventory:Sync(inventory)
     end
 
+    client:KillSilent()
     client:SetTeam(character.vars.faction)
     client:Spawn()
 
