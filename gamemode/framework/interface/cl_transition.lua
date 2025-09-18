@@ -147,7 +147,7 @@ function PANEL:StartAtBottom()
     self:SetPos(self.currentX, self.currentY)
 end
 
-function PANEL:SlideToFront(time)
+function PANEL:SlideToFront(time, callback)
     if ( self.active ) then return end
 
     self:SetZPos(CurTime() / 1000) -- Set a high ZPos to ensure this panel is on top
@@ -176,6 +176,10 @@ function PANEL:SlideToFront(time)
             end
 
             self.guard:SetVisible(false)
+
+            if ( isfunction(callback) ) then
+                callback()
+            end
         end
     })
 
@@ -193,7 +197,7 @@ function PANEL:HidePanel()
     self.active = false
 end
 
-function PANEL:SlideLeft(time)
+function PANEL:SlideLeft(time, callback)
     self:SetMouseInputEnabled(false)
     self:SetKeyboardInputEnabled(false)
 
@@ -209,11 +213,15 @@ function PANEL:SlideLeft(time)
         end,
         OnComplete = function()
             self:HidePanel()
+
+            if ( isfunction(callback) ) then
+                callback()
+            end
         end
     })
 end
 
-function PANEL:SlideUp(time)
+function PANEL:SlideUp(time, callback)
     self:SetMouseInputEnabled(false)
     self:SetKeyboardInputEnabled(false)
 
@@ -229,11 +237,15 @@ function PANEL:SlideUp(time)
         end,
         OnComplete = function()
             self:HidePanel()
+
+            if ( isfunction(callback) ) then
+                callback()
+            end
         end
     })
 end
 
-function PANEL:SlideRight(time)
+function PANEL:SlideRight(time, callback)
     self:SetMouseInputEnabled(false)
     self:SetKeyboardInputEnabled(false)
 
@@ -249,11 +261,15 @@ function PANEL:SlideRight(time)
         end,
         OnComplete = function()
             self:HidePanel()
+
+            if ( isfunction(callback) ) then
+                callback()
+            end
         end
     })
 end
 
-function PANEL:SlideDown(time)
+function PANEL:SlideDown(time, callback)
     self:SetMouseInputEnabled(false)
     self:SetKeyboardInputEnabled(false)
 
@@ -269,6 +285,10 @@ function PANEL:SlideDown(time)
         end,
         OnComplete = function()
             self:HidePanel()
+
+            if ( isfunction(callback) ) then
+                callback()
+            end
         end
     })
 end
