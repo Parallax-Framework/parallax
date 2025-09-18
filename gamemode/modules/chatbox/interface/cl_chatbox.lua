@@ -380,7 +380,7 @@ function PANEL:PopulateRecommendations(text)
         matches = ax.command:FindAll(text)
     end
 
-    for key, command in SortedPairsByMemberValue(matches, "name") do
+    for key, command in SortedPairs(matches) do
         self.recommendations.list[#self.recommendations.list + 1] = command
     end
 
