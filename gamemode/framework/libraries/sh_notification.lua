@@ -110,7 +110,7 @@ if ( CLIENT ) then
     --- Promote queued items into active list respecting maxVisible.
     function ax.notification:Next()
         local maxVisible = self.maxVisible
-        while ( #self.active < maxVisible ) and ( #self.queue > 0 ) do
+        while ( #self.active < maxVisible ) and ( self.queue[ 1 ] != nil ) do
             local data = table.remove(self.queue, 1)
             self:Show(data)
         end
@@ -213,7 +213,7 @@ if ( CLIENT ) then
 
     function ax.notification:Render()
         if ( !ax.config:Get("notification.enabled", true) ) then return end
-        if ( #self.active == 0 ) then return end
+        if ( self.active[ 1 ] == nil ) then return end
 
         local sw, sh = ScrW(), ScrH()
         local baseY = sh - 24

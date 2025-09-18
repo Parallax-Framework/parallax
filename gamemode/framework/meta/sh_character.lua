@@ -55,8 +55,10 @@ end
 function character:HasFlags( flags )
     local data = self:GetData( "flags", "" )
     for i = 1, #flags do
-        local letter = flags[i]
-        if ( !ax.util:FindString( data, letter ) ) then return false end
+        local letter = flags[ i ]
+        if ( !ax.util:FindString( data, letter ) ) then
+            return false
+        end
     end
 
     return true
@@ -67,7 +69,7 @@ if ( SERVER ) then
         if ( !isstring(flags) or #flags < 1 ) then return end
 
         for i = 1, #flags do
-            local letter = flags[i]
+            local letter = flags[ i ]
             local flagData = ax.flag:Get( letter )
             if ( !istable( flagData ) ) then continue end
 
@@ -88,7 +90,7 @@ if ( SERVER ) then
         if ( !isstring(flags) or #flags < 1 ) then return end
 
         for i = 1, #flags do
-            local letter = flags[i]
+            local letter = flags[ i ]
             local flagData = ax.flag:Get( letter )
             if ( !istable( flagData ) ) then continue end
 
@@ -112,6 +114,22 @@ if ( SERVER ) then
         if ( !isstring(flags) ) then return end
 
         local concantecated = table.concat( string.Explode( "", flags ) )
+
+        local current = self:GetData( "flags", "" )
+        for i = 1, #current do
+            local letter = current[ i ]
+            if ( ax.util:FindString( concantecated, letter ) ) then continue end
+
+            local flagData = ax.flag:Get( letter )
+            if ( !istable( flagData ) ) then continue end
+
+            if ( isfunction( flagData.OnTaken ) ) then
+                flagData:OnTaken( self )
+            end
+
+            hook.Run( "CharacterFlagTaken", self, letter )
+        end
+
         self:SetData( "flags", concantecated )
         self:Save()
 
