@@ -52,7 +52,91 @@ function character:GetData(key, fallback)
     return self.vars.data[key] == nil and fallback or self.vars.data[key]
 end
 
+function character:HasFlags( flags )
+    local data = self:GetData( "flags", "" )
+    for i = 1, #flags do
+        local letter = flags[i]
+        if ( !ax.util:FindString( data, letter ) ) then return false end
+    end
+
+    return true
+end
+
 if ( SERVER ) then
+    function character:GiveFlags( flags )
+        if ( !isstring(flags) or #flags < 1 ) then return end
+
+        for i = 1, #flags do
+            local letter = flags[i]
+            local flagData = ax.flag:Get( letter )
+            if ( !istable( flagData ) ) then continue end
+
+            if ( self:HasFlags( letter ) ) then continue end
+
+            self:SetData( "flags", self:GetData( "flags", "" ) .. letter )
+            self:Save()
+
+            if ( isfunction( flagData.OnGiven ) ) then
+                flagData:OnGiven( self )
+            end
+
+            hook.Run( "CharacterFlagGiven", self, letter )
+        end
+    end
+
+    function character:TakeFlags( flags )
+        if ( !isstring(flags) or #flags < 1 ) then return end
+
+        for i = 1, #flags do
+            local letter = flags[i]
+            local flagData = ax.flag:Get( letter )
+            if ( !istable( flagData ) ) then continue end
+
+            if ( !self:HasFlags( letter ) ) then continue end
+
+            local newFlags = self:GetData( "flags", "" )
+            newFlags = string.Replace( newFlags, letter, "" )
+
+            self:SetData( "flags", newFlags )
+            self:Save()
+
+            if ( isfunction( flagData.OnTaken ) ) then
+                flagData:OnTaken( self )
+            end
+
+            hook.Run( "CharacterFlagTaken", self, letter )
+        end
+    end
+
+    function character:SetFlags( flags )
+        if ( !isstring(flags) ) then return end
+
+        local currFlags = self:GetData( "flags", "" )
+        for i = 1, #currFlags do
+            local letter = currFlags[i]
+            if ( !self:HasFlags( letter ) ) then
+                local flagData = ax.flag:Get( letter )
+                if ( istable( flagData ) and isfunction( flagData.OnTaken ) ) then
+                    flagData:OnTaken( self )
+                end
+
+                hook.Run( "CharacterFlagTaken", self, letter )
+            end
+        end
+
+        for i = 1, #flags do
+            local letter = flags[i]
+            if ( !self:HasFlags( letter ) ) then
+                local flagData = ax.flag:Get( letter )
+                if ( istable( flagData ) and isfunction( flagData.OnGiven ) ) then
+                    flagData:OnGiven( self )
+                end
+
+                hook.Run( "CharacterFlagGiven", self, letter )
+            end
+        end
+    end
+
     function character:SetData(key, value, bNoNetworking, recipients)
         if ( !istable(self.vars.data) ) then self.vars.data = {} end
 
