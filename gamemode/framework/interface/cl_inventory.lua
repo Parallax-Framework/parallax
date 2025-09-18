@@ -8,7 +8,14 @@ function PANEL:Init()
     title:SetFont("ax.huge.bold")
     title:SetText("INVENTORY")
 
-    local inventory = ax.client:GetCharacter():GetInventory()
+    local client = ax.client
+    local character = client:GetCharacter()
+    if ( !character ) then
+        title:SetText("NO CHARACTER")
+        return
+    end
+
+    local inventory = character:GetInventory()
     if ( !inventory ) then
         title:SetText("NO INVENTORY")
         return
