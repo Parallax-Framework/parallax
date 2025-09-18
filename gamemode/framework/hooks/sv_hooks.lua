@@ -95,6 +95,14 @@ function GM:PlayerLoadout(client)
         for k, v in pairs(materials) do
             client:SetSubMaterial(k - 1, v)
         end
+
+        if ( character:HasFlags( "p" ) ) then
+            client:Give( "weapon_physgun" )
+        end
+
+        if ( character:HasFlags( "t" ) ) then
+            client:Give( "gmod_tool" )
+        end
     end
 
     client:SetupHands()
