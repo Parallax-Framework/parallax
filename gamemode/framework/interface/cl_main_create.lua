@@ -122,11 +122,10 @@ function PANEL:Init()
 
     self:CreateNavigation(self.characterOptions, "back", function()
         self.characterOptions:SlideRight()
-        self.factionSelection:SlideToFront()
-
-        self:ClearVars()
+        self.factionSelection:SlideToFront(nil, function()
+            self:ClearVars()
+        end)
     end, "finish", function()
-        -- temporarily send payload
         net.Start("ax.character.create")
             net.WriteTable(self.payload)
         net.SendToServer()

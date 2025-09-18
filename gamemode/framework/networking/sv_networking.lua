@@ -24,37 +24,37 @@ util.AddNetworkString("ax.inventory.item.add")
 util.AddNetworkString("ax.inventory.item.remove")
 util.AddNetworkString("ax.inventory.item.update")
 
-util.AddNetworkString( "ax.inventory.item.action" )
-net.Receive( "ax.inventory.item.action", function( length, client )
-    if ( !client:RateLimit( "inventory.action", 0.2 ) ) then return end
+util.AddNetworkString("ax.inventory.item.action")
+net.Receive("ax.inventory.item.action", function(length, client)
+    if ( !client:RateLimit("inventory.action", 0.2) ) then return end
 
-    local itemID = net.ReadUInt( 32 )
+    local itemID = net.ReadUInt(32)
     local action = net.ReadString()
 
-    if ( !isnumber( itemID ) or itemID < 1 or !isstring( action ) or #action < 1 ) then
-        ax.util:Error( "Invalid payload received for item action." )
+    if ( !isnumber(itemID) or itemID < 1 or !isstring(action) or #action < 1 ) then
+        ax.util:Error("Invalid payload received for item action.")
         return
     end
 
-    local item = ax.item.instances[ itemID ]
-    if ( !istable( item ) ) then
-        ax.util:PrintError( "Item with ID " .. itemID .. " does not exist." )
+    local item = ax.item.instances[itemID]
+    if ( !istable(item) ) then
+        ax.util:PrintError("Item with ID " .. itemID .. " does not exist.")
         return
     end
 
-    if ( !item:CanInteract( client, action ) ) then return end
+    if ( !item:CanInteract(client, action) ) then return end
 
-    local bRemoveAfter = item.actions[ action ]:OnUse( client )
-    if ( bRemoveAfter == nil or !isbool( bRemoveAfter ) ) then bRemoveAfter = false end
+    local bRemoveAfter = item.actions[action]:OnUse(client)
+    if ( bRemoveAfter == nil or !isbool(bRemoveAfter) ) then bRemoveAfter = false end
 
     if ( bRemoveAfter ) then
-        local inventory = ax.inventory.instances[ item.invID ]
-        if ( istable( inventory ) ) then
-            inventory:RemoveItem( item.id )
+        local inventory = ax.inventory.instances[item.invID]
+        if ( istable(inventory) ) then
+            inventory:RemoveItem(item.id)
         end
     end
 
-    hook.Run( "PlayerUsedItemAction", client, item, action )
+    hook.Run("PlayerUsedItemAction", client, item, action)
 end)
 
 util.AddNetworkString("ax.character.create")
@@ -123,6 +123,8 @@ net.Receive("ax.character.create", function(length, client)
         net.Send(client)
 
         ax.util:PrintSuccess("Character created for " .. client:SteamID64() .. ": " .. character:GetName())
+
+        client:Notify("You have successfully created a new character!", "success")
 
         hook.Run("PlayerCreatedCharacter", client, character)
     end)

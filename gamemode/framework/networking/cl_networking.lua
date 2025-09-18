@@ -57,13 +57,23 @@ net.Receive("ax.character.create", function(len)
         return
     end
 
+    local main = ax.gui.main
     if ( !clientTable.axCharacter ) then
         net.Start("ax.character.load")
             net.WriteUInt(characterID, 32)
-        net.Send(client)
+        net.SendToServer()
 
-        if ( IsValid(ax.gui.main) ) then
-            ax.gui.main:Remove()
+        if ( IsValid(main) ) then
+            main:Remove()
+        end
+    else
+        if ( IsValid(main) ) then
+            main.create:SlideDown(nil, function()
+                main.create:ClearVars()
+                main.create.factionSelection:SlideToFront(0)
+                main.create.characterOptions:SlideRight(0)
+            end)
+            main.splash:SlideToFront()
         end
     end
 
