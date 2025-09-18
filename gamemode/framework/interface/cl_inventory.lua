@@ -57,6 +57,13 @@ function PANEL:Init()
     label:SetContentAlignment(5)
 
     for k, v in pairs(inventory:GetItems()) do
+        if ( !ax.item.stored[v.class] ) then
+            ax.util:PrintDebug("Item class '" .. tostring(v.class) .. "' not found in registry, skipping...")
+            continue
+        end
+
+        PrintTable(v)
+
         local item = self.container:Add("ax.button.flat")
         item:Dock(TOP)
         item:SetFont("ax.small")
@@ -109,7 +116,7 @@ function PANEL:PopulateInfo(item)
     description:DockMargin(0, 0, 0, ScreenScaleH(8))
     description:SetContentAlignment(5)
 
-    local actions = item:GetActions()
+    local actions = item:GetActions() or {}
     if ( table.IsEmpty(actions) ) then
         local noActions = self.info:Add("ax.text")
         noActions:Dock(TOP)
