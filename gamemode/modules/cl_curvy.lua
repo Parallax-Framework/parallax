@@ -200,7 +200,7 @@ function ax.curvy:ShouldDrawCurvedHUD(client)
     return true
 end
 
-function ax.curvy:DrawCurvedHUD(drawFunc, rtName)
+function ax.curvy:HUDPaintCurvy(drawFunc, rtName)
     local client = LocalPlayer()
     if ( !self:ShouldDrawCurvedHUD(client) ) then return end
 
@@ -230,8 +230,42 @@ function ax.curvy:DrawCurvedHUD(drawFunc, rtName)
     self:RenderCurvedMesh(material, width, height)
 end
 
+function ax.curvy:PostRender()
+    local client = LocalPlayer()
+    if ( !self:ShouldDrawCurvedHUD(client) ) then return end
+
+    local width, height = ScrW(), ScrH()
+    rtName = rtName or "main"
+
+    -- Cheap mode: draw directly without curve
+    if ( ax.option:Get("curvyCheap") ) then
+        if ( drawFunc ) then
+            drawFunc(width, height, client)
+        end
+
+        hook.Run("PostRenderCurvy", width, height, client, false)
+        return
+    end
+
+    -- Render to target and draw with curve
+    local texture = self:RenderToTarget(rtName, width, height, function()
+        if ( drawFunc ) then
+            drawFunc(width, height, client)
+        end
+
+        hook.Run("PostRenderCurvy", width, height, client, true)
+    end)
+
+    local material = self:CreateRenderTargetMaterial(rtName, texture)
+    self:RenderCurvedMesh(material, width, height)
+end
+
 hook.Add("HUDPaint", "ax.curvy.HUDPaint", function()
-    ax.curvy:DrawCurvedHUD()
+    ax.curvy:HUDPaintCurvy()
+end)
+
+hook.Add("PostRenderVGUI", "ax.curvy.PostRender", function()
+    ax.curvy:PostRender()
 end)
 
 hook.Add("OnScreenSizeChanged", "ax.curvy.ScreenResize", function()

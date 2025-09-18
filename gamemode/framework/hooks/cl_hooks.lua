@@ -51,6 +51,10 @@ function GM:PlayerStartVoice()
     end
 end
 
+function GM:PostRenderCurvy(width, height, client, isCurved)
+    ax.notification:Render()
+end
+
 local hide = {
     ["CHudHealth"] = true,
     ["CHudBattery"] = true,
@@ -67,8 +71,6 @@ end
 local healthIcon = ax.util:GetMaterial("parallax/icons/hud/health.png", "smooth mips")
 function GM:HUDPaintCurvy(width, height, client, isCurved)
     if ( !IsValid(client) ) then return end
-
-    ax.notification:Render()
 
     local shouldDraw = hook.Run("ShouldDrawHealthHUD")
     if ( shouldDraw != false ) then
