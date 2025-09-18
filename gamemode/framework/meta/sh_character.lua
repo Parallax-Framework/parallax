@@ -111,29 +111,20 @@ if ( SERVER ) then
     function character:SetFlags( flags )
         if ( !isstring(flags) ) then return end
 
-        local currFlags = self:GetData( "flags", "" )
-        for i = 1, #currFlags do
-            local letter = currFlags[i]
-            if ( !self:HasFlags( letter ) ) then
-                local flagData = ax.flag:Get( letter )
-                if ( istable( flagData ) and isfunction( flagData.OnTaken ) ) then
-                    flagData:OnTaken( self )
-                end
+        local concantecated = table.concat( string.Explode( "", flags ) )
+        self:SetData( "flags", concantecated )
+        self:Save()
 
-                hook.Run( "CharacterFlagTaken", self, letter )
+        for i = 1, #concantecated do
+            local letter = concantecated[i]
+            local flagData = ax.flag:Get( letter )
+            if ( !istable( flagData ) ) then continue end
+
+            if ( isfunction( flagData.OnGiven ) ) then
+                flagData:OnGiven( self )
             end
-        end
 
-        for i = 1, #flags do
-            local letter = flags[i]
-            if ( !self:HasFlags( letter ) ) then
-                local flagData = ax.flag:Get( letter )
-                if ( istable( flagData ) and isfunction( flagData.OnGiven ) ) then
-                    flagData:OnGiven( self )
-                end
-
-                hook.Run( "CharacterFlagGiven", self, letter )
-            end
+            hook.Run( "CharacterFlagGiven", self, letter )
         end
     end
 

@@ -72,3 +72,51 @@ ax.command:Add("SetSkin", {
         return "Skin set to " .. skin
     end
 })
+
+ax.command:Add("GiveFlags", {
+    description = "Give flags to a character.",
+    arguments = {
+        { name = "target", type = ax.type.character },
+        { name = "flags", type = ax.type.string }
+    },
+    OnRun = function(client, target, flags)
+        if ( !target ) then target = client:GetCharacter() end
+
+        target:GiveFlags(flags)
+        target:Save()
+
+        return "Flags given to " .. target:Nick() .. ": " .. flags
+    end
+})
+
+ax.command:Add("TakeFlags", {
+    description = "Take flags from a character.",
+    arguments = {
+        { name = "target", type = ax.type.character },
+        { name = "flags", type = ax.type.string }
+    },
+    OnRun = function(client, target, flags)
+        if ( !target ) then target = client:GetCharacter() end
+
+        target:TakeFlags(flags)
+        target:Save()
+
+        return "Flags taken from " .. target:Nick() .. ": " .. flags
+    end
+})
+
+ax.command:Add("SetFlags", {
+    description = "Set flags for a character.",
+    arguments = {
+        { name = "target", type = ax.type.character, optional = true },
+        { name = "flags", type = ax.type.string }
+    },
+    OnRun = function(client, target, flags)
+        if ( !target ) then target = client:GetCharacter() end
+
+        target:SetFlags(flags)
+        target:Save()
+
+        return "Flags set to " .. flags
+    end
+})
