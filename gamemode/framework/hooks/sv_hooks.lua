@@ -86,6 +86,7 @@ function GM:PlayerLoadout(client)
     if ( character ) then
         client:SetModel(character:GetModel())
         client:SetSkin(character:GetData("skin", 0))
+
         local bodyGroups = character:GetData("bodygroups", {})
         for k, v in pairs(bodyGroups) do
             client:SetBodygroup(k, v)
@@ -105,9 +106,9 @@ function GM:PlayerLoadout(client)
         end
     end
 
-    client:SetupHands()
-
     hook.Run("PostPlayerLoadout", client)
+
+    client:SetupHands()
 end
 
 function GM:PlayerSetHandsModel(client, ent)
