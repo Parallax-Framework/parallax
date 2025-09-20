@@ -10,7 +10,7 @@
 ]]
 
 ax.command = ax.command or {}
-ax.command.registry = ax.command.registry or {}
+ax.command.registry = {}
 ax.command.prefixes = ax.command.prefixes or {"/", "!"}
 
 -- Server-side networking setup
@@ -35,6 +35,8 @@ function ax.command:Add(name, def)
         ax.util:PrintError("ax.command:Add - Invalid command definition provided for \"" .. name .. "\"")
         return
     end
+
+    def.displayName = def.displayName or ax.util:UniqueIDToName(name)
 
     name = ax.util:NameToUniqueID(name)
 
@@ -105,11 +107,19 @@ end
 ]]
 function ax.command:FindClosest(partial)
     local matches = self:FindAll(partial)
-    if ( table.Count(matches) == 1 ) then
-        return matches[1]
+    local bestMatch = nil
+    local bestLength = 0
+    for name, def in pairs(matches) do
+        if ( string.StartWith(name, partial) ) then
+            local length = #name
+            if ( length > bestLength ) then
+                bestLength = length
+                bestMatch = def
+            end
+        end
     end
 
-    return nil
+    return bestMatch
 end
 
 --[[

@@ -10,6 +10,7 @@
 ]]
 
 ax.chat:Add("ic", {
+    displayName = "IC",
     description = "Speak in-character",
     noCommand = true,
     OnRun = function(client, message)
@@ -21,7 +22,8 @@ ax.chat:Add("ic", {
 })
 
 ax.chat:Add("looc", {
-    description = "Speak local out-of-character",
+    displayName = "Local Out of Character",
+    description = "Speak local out of character",
     OnRun = function(client, message)
         return Color(110, 10, 10), "(LOOC) ", color_white, client:SteamName() .. ": " .. message
     end,
@@ -31,7 +33,8 @@ ax.chat:Add("looc", {
 })
 
 ax.chat:Add("ooc", {
-    description = "Speak out-of-character",
+    displayName = "Out of Character",
+    description = "Speak out of character",
     OnRun = function(client, message)
         return Color(110, 10, 10), "(OOC) ", color_white, client:SteamName() .. ": " .. message
     end,

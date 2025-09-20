@@ -37,7 +37,7 @@ function PANEL:Init()
     self.categories:DockPadding(4, 4, 4, 4)
     self.categories:InvalidateParent(true)
     self.categories.Paint = function(this, width, height)
-        ax.render.Draw(ScreenScale(1) + ScreenScaleH(1), 0, 0, width, height, Color(0, 0, 0, 150))
+        ax.render.Draw(8, 0, 0, width, height, Color(0, 0, 0, 150))
     end
 
     -- Enable dragging the chatbox by grabbing the top bar
@@ -120,7 +120,7 @@ function PANEL:Init()
         this:SetWide(ax.util:GetTextWidth(this:GetFont(), this:GetText()) + 16)
     end
     self.chatType.Paint = function(this, width, height)
-        ax.render.Draw(ScreenScale(1) + ScreenScaleH(1), 0, 0, width, height, Color(0, 0, 0, 150))
+        ax.render.Draw(8, 0, 0, width, height, Color(0, 0, 0, 150))
     end
 
     self.entry = bottom:Add("ax.text.entry")
@@ -163,20 +163,21 @@ function PANEL:Init()
             -- Check if it's a way of using local out of character chat using .// prefix
             local data = ax.command:FindClosest("looc")
             if ( data ) then
-                ax.chat.currentType = data.name
+                ax.chat.currentType = data.displayName
                 chatType = string.upper(data.name)
             end
         elseif ( string.sub(text, 1, 1) == "/" ) then
             -- This is a command, so we need to parse it
             local arguments = string.Explode(" ", string.sub(text, 2))
             local command = arguments[1]
+            self:PopulateRecommendations(command)
+
             local data = ax.command:FindClosest(command)
             if ( data ) then
-                ax.chat.currentType = data.name
+                ax.chat.currentType = data.displayName
                 chatType = string.upper(data.name)
+                self:SelectRecommendation(data.displayName)
             end
-
-            self:PopulateRecommendations(command)
         else
             self:PopulateRecommendations()
         end
@@ -240,7 +241,7 @@ function PANEL:Init()
     self.recommendations.maxSelection = 0
     self.recommendations.Paint = function(this, width, height)
         ax.util:DrawBlur(0, 0, 0, width, height, Color(255, 255, 255, 150))
-        ax.render.Draw(ScreenScale(1) + ScreenScaleH(1), 0, 0, width, height, Color(0, 0, 0, 150))
+        ax.render.Draw(8, 0, 0, width, height, Color(0, 0, 0, 150))
     end
 
     -- Resizer handle (corner-based, position-adaptive)
@@ -402,10 +403,10 @@ function PANEL:PopulateRecommendations(text)
             rec:DockMargin(4, 4, 4, 0)
             rec.index = i
             rec.Paint = function(_, width, height)
-                ax.render.Draw(ScreenScale(1) + ScreenScaleH(1), 0, 0, width, height, Color(0, 0, 0, 150))
+                ax.render.Draw(8, 0, 0, width, height, Color(0, 0, 0, 150))
 
                 if ( self.recommendations.indexSelect == i ) then
-                    ax.render.Draw(ScreenScale(1) + ScreenScaleH(1), 0, 0, width, height, Color(200, 50, 50, 150))
+                    ax.render.Draw(8, 0, 0, width, height, Color(200, 50, 50, 150))
                 end
             end
 
@@ -415,7 +416,7 @@ function PANEL:PopulateRecommendations(text)
             title:Dock(TOP)
             title:DockMargin(8, 0, 8, 0)
             title:SetFont("ax.chatbox.text")
-            title:SetText(command.name, true)
+            title:SetText(command.displayName, true)
             height = height + title:GetTall()
 
             local descriptionWrapped = command.description
@@ -483,10 +484,32 @@ function PANEL:CycleRecommendations()
     self.entry:RequestFocus()
     self.entry:SetCaretPos(2 + #data.name)
 
-    self.chatType:SetText(data.name, true, true)
+    self.chatType:SetText(data.name:upper(), true, true)
     self.chatType:RestartTyping()
 
     surface.PlaySound("ax.button.enter")
+end
+
+function PANEL:SelectRecommendation(identifier)
+    local recommendations = self.recommendations.list
+    if ( #recommendations < 1 ) then
+        return
+    end
+
+    for i = 1, #recommendations do
+        local command = recommendations[i]
+        if ( command.displayName == identifier ) then
+            self.recommendations.indexSelect = i
+            for j = 1, #self.recommendations.panels do
+                local panel = self.recommendations.panels[j]
+                panel.index = panel.index or 1
+                if ( panel.index == i ) then
+                    self.recommendations:ScrollToChild(panel)
+                end
+            end
+            return
+        end
+    end
 end
 
 function PANEL:SetVisible(visible)
@@ -530,8 +553,8 @@ function PANEL:OnKeyCodePressed(key)
 end
 
 function PANEL:Paint(width, height)
-    ax.util:DrawBlur(0, 0, 0, width, height, Color(255, 255, 255, 150))
-    ax.render.Draw(ScreenScale(1) + ScreenScaleH(1), 0, 0, width, height, Color(0, 0, 0, 150))
+    ax.util:DrawBlur(8, 0, 0, width, height, Color(255, 255, 255, 150))
+    ax.render.Draw(8, 0, 0, width, height, Color(0, 0, 0, 150))
 end
 
 function PANEL:PerformLayout(width, height)

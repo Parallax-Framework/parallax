@@ -25,6 +25,7 @@ function ax.chat:Add(name, def)
 
     if ( !def.noCommand ) then
         ax.command:Add(name, {
+            displayName = def.displayName or ax.util:UniqueIDToName(name),
             description = def.description or "No description available.",
             chatCommand = true,
             arguments = {
