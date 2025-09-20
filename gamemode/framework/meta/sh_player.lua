@@ -48,6 +48,24 @@ function ax.player.meta:GetFactionData()
     return factionData
 end
 
+function ax.player.meta:GetClass()
+    local character = self:GetCharacter()
+    if ( character ) then
+        return character:GetClass()
+    end
+
+    return nil
+end
+
+function ax.player.meta:GetClassData()
+    local classID = self:GetClass()
+    if ( classID ) then
+        return ax.class:Get(classID)
+    end
+
+    return nil
+end
+
 function ax.player.meta:PlayGesture(slot, sequence)
     if ( !isnumber(slot) or slot < 0 or slot > 6 ) then
         ax.util:PrintError("Invalid gesture slot provided to Player:PlayGesture()")

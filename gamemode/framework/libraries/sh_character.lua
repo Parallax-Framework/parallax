@@ -23,7 +23,7 @@ function ax.character:Get(id)
     return ax.character.instances[id]
 end
 
-local function GetVar(char, name, fallback)
+function ax.character:GetVar(char, name, fallback)
     local varTable = ax.character.vars[name]
     if ( !istable(varTable) ) then
         ax.util:PrintError("Invalid character variable name provided to ax.character:GetVar()")
@@ -41,7 +41,7 @@ local function GetVar(char, name, fallback)
     return char.vars[name] == nil and fallback or char.vars[name]
 end
 
-local function SetVar(char, name, value, isNetworked, recipients)
+function ax.character:SetVar(char, name, value, isNetworked, recipients)
     local varTable = ax.character.vars[name]
     if ( !istable(varTable) ) then
         ax.util:PrintError("Invalid character variable name provided to ax.character:SetVar()")
@@ -95,7 +95,7 @@ function ax.character:RegisterVar(name, data)
 
                 return data:Get(char, fallback)
             else
-                return GetVar(char, name, fallback)
+                return ax.character:GetVar(char, name, fallback)
             end
         end
     end
@@ -117,7 +117,7 @@ function ax.character:RegisterVar(name, data)
                     end
                 end
             else
-                SetVar(char, name, value, isNetworked, recipients)
+                ax.character:SetVar(char, name, value, isNetworked, recipients)
             end
         end
     end
