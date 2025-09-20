@@ -220,6 +220,8 @@ net.Receive("ax.inventory.sync", function()
     local inventoryItems = net.ReadTable()
     local inventoryMaxWeight = net.ReadFloat()
 
+    print(inventoryID, inventoryItems, inventoryMaxWeight)
+
     -- Convert the items into objects
     for i = 1, #inventoryItems do
         local itemData = inventoryItems[i]
@@ -231,9 +233,10 @@ net.Receive("ax.inventory.sync", function()
 
             ax.item.instances[item.id] = item
             inventoryItems[i] = item
+            ax.util:PrintDebug(string.format("Synchronized item %d (%s) in inventory %d", item.id, item.class, inventoryID))
         else
-            ax.util:PrintError("Invalid item data received for inventory sync.")
             inventoryItems[i] = nil
+            ax.util:PrintError("Invalid item data received for inventory sync.")
         end
     end
 

@@ -181,10 +181,10 @@ function ax.util:PreparePackage(...)
     return package
 end
 
-local color_print = Color(100, 150, 255)
-local color_warning = Color(255, 200, 100)
-local color_success = Color(100, 255, 100)
-local color_debug = Color(150, 150, 150)
+color_print = Color(100, 150, 255)
+color_warning = Color(255, 200, 100)
+color_success = Color(100, 255, 100)
+color_debug = Color(150, 150, 150)
 
 --- Print a regular message with framework styling.
 -- @param ... any Values to print (strings, entities, etc.)

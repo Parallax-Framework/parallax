@@ -83,7 +83,7 @@ function inventory:AddReceiver(receiver)
 
             if ( SERVER ) then
                 net.Start("ax.inventory.receiver.add")
-                    net.WriteUInt( self.id, 32 )
+                    net.WriteUInt(self.id, 32)
                     net.WritePlayer(receiver)
                 net.Send(self:GetReceivers())
             end
@@ -95,7 +95,7 @@ function inventory:AddReceiver(receiver)
 
         if ( SERVER ) then
             net.Start("ax.inventory.receiver.add")
-                net.WriteUInt( self.id, 32 )
+                net.WriteUInt(self.id, 32)
                 net.WritePlayer(receiver)
             net.Send(self:GetReceivers())
         end

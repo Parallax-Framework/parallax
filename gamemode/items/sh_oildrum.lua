@@ -18,11 +18,11 @@ ITEM:AddAction("use", {
     name = "Use",
     description = "Use this item.",
     icon = "icon16/accept.png",
-    OnUse = function(item, client)
-        client:Notify("You have used the item: " .. item.name)
+    OnRun = function(action, item, client)
+        client:Notify("You have used the item: " .. item:GetName(), "info")
         return false -- Returning false prevents the item from being removed after use
     end,
-    CanUse = function(item, client)
-        return true -- Allow the item to be used
+    CanUse = function(action, item, client)
+        return math.random(1, 10) > 2, "You cannot use this item right now." -- 80% chance to be able to use
     end
 })

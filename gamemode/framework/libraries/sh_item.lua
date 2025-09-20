@@ -38,6 +38,24 @@ function ax.item:Include(path)
         end
 
         ITEM = setmetatable({ class = itemName }, ax.item.meta)
+            ITEM:AddAction("drop", {
+                name = "Drop",
+                icon = "icon16/arrow_down.png",
+                order = 1,
+                CanUse = function(this, client)
+                    return true
+                end,
+                OnRun = function(action, item, client)
+                    local inventory = ax.inventory.instances[item.invID]
+                    if ( istable(inventory) ) then
+                        inventory:RemoveItem(item.id)
+                        client:Notify("You have dropped the item: " .. item:GetName(), "info")
+                    end
+
+                    return true -- Returning true removes one item from the stack
+                end
+            })
+
             ax.util:Include(path .. "/" .. fileName, "shared")
             ax.util:PrintSuccess("Item \"" .. tostring(ITEM.name) .. "\" initialized successfully.")
             ax.item.stored[itemName] = ITEM
@@ -53,52 +71,6 @@ function ax.item:Get(identifier)
     end
 
     return nil
-end
-
---- Inserts a new item instance into the database and returns the item object via callback.
--- @realm server
--- @param class string The unique ID of the item to create.
--- @param inventoryID number The ID of the inventory to which this item belongs.
--- @param data table Optional data table containing item properties.
--- @param callback function|nil Optional callback function called with the created item or false on failure.
--- @usage ax.item:Create("item_unique_id", 1, { customData = true }, function(item) print(item.id) end)
-function ax.item:Create(class, inventoryID, data, callback)
-    data = data or {}
-
-    local query = mysql:Insert("ax_items")
-        query:Insert("class", class)
-        query:Insert("inventory_id", inventoryID)
-        query:Insert("data", util.TableToJSON(data))
-        query:Callback(function(result, status, lastItemId)
-            if ( result == false ) then
-                if ( isfunction(callback) ) then
-                    callback(false)
-                end
-
-                return
-            end
-
-            -- Create the item object
-            local item = setmetatable(ax.item.stored[class], ax.item.meta)
-            item.id = lastItemId
-            item.class = class
-            item.data = data or {}
-
-            ax.item.instances[lastItemId] = item
-
-            -- Look for the inventory and add the item to it
-            local inventory = ax.inventory.instances[inventoryID]
-            if ( inventory ) then
-                inventory.items[ item.id ] = item
-                ax.inventory:Sync(inventory)
-            end
-
-            -- Call the callback with the created item
-            if ( isfunction(callback) ) then
-                callback(item)
-            end
-        end)
-    query:Execute()
 end
 
 concommand.Add("ax_item_create", function(client, command, args, argStr)
@@ -132,11 +104,17 @@ concommand.Add("ax_item_create", function(client, command, args, argStr)
         return
     end
 
-    ax.item:Create(class, inventoryID, {}, function(item)
-        if ( item ) then
-            ax.util:Print(Color(0, 255, 0), "Item created successfully with ID: " .. item.id)
-        else
-            ax.util:PrintError("Failed to create item.")
-        end
-    end)
+    local inventory = ax.inventory.instances[inventoryID]
+    if ( !istable(inventory) ) then
+        ax.util:PrintError("Inventory with ID " .. inventoryID .. " does not exist.")
+        return
+    end
+
+    local item = ax.item.stored[class]
+    if ( !istable(item) ) then
+        ax.util:PrintError("Item with class " .. class .. " does not exist.")
+        return
+    end
+
+    inventory:AddItem(class)
 end)

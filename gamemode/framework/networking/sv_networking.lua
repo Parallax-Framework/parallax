@@ -44,7 +44,7 @@ net.Receive("ax.inventory.item.action", function(length, client)
 
     if ( !item:CanInteract(client, action) ) then return end
 
-    local bRemoveAfter = item.actions[action]:OnUse(client)
+    local bRemoveAfter = item.actions[action]:OnRun(item, client)
     if ( bRemoveAfter == nil or !isbool(bRemoveAfter) ) then bRemoveAfter = false end
 
     if ( bRemoveAfter ) then

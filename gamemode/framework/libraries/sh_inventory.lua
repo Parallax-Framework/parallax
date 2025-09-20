@@ -70,96 +70,113 @@ if ( SERVER ) then
             return
         end
 
+        local items = {}
+        if ( istable(inventory.items) ) then
+            for k, v in pairs(inventory.items) do
+                items[#items + 1] = {
+                    id = v.id,
+                    class = v.class,
+                    data = v.data or {}
+                }
+            end
+        end
+
         net.Start("ax.inventory.sync")
             net.WriteUInt(inventory.id, 32)
-            net.WriteTable(inventory.items)
+            net.WriteTable(items)
             net.WriteFloat(inventory.maxWeight)
         net.Send(inventory:GetReceivers())
+
+        ax.util:PrintDebug(string.format("Synchronized inventory %d with %d receivers.", inventory.id, #inventory:GetReceivers()))
     end
 
     --- Restores all inventories associated with the client's characters from the database.
     -- @realm server
     -- @param client Player The player whose inventories should be restored.
-    -- @param callback function|nil Optional callback function called with true on success or false on failure.
-    -- @usage ax.inventory:Restore(client, function(success) print(success) end)
-    function ax.inventory:Restore(client, callback)
+    -- @usage ax.inventory:Restore(client)
+    -- @internal
+    function ax.inventory:Restore(client)
         local characterIDs = {}
         for k, v in pairs(client.axCharacters) do
             characterIDs[#characterIDs + 1] = v.id
         end
 
+        ax.util:PrintDebug(string.format("Found %d character IDs for %s", #characterIDs, client:SteamID64()))
+
+        -- TODO: Find a way to optimize this to use fewer pyramids
         local inventoryIDs = {}
         if ( characterIDs[1] != nil ) then
-            local query = mysql:Select("ax_characters")
-                query:Where("id", characterIDs)
-                query:Callback(function(result, status)
+            for _, characterID in pairs(characterIDs) do
+                local characterQuery = mysql:Select("ax_characters")
+                characterQuery:Where("id", characterID)
+                characterQuery:Callback(function(result, status)
                     if ( result == nil or status == false ) then
                         return
                     end
 
                     for i = 1, #result do
-                        if ( result[i].inventory_id != nil ) then
-                            inventoryIDs[#inventoryIDs + 1] = result[i].inventory_id
+                        if ( result[i].inventory != nil ) then
+                            inventoryIDs[#inventoryIDs + 1] = result[i].inventory
                         end
                     end
-                end)
-            query:Execute()
-        end
 
-        local query = mysql:Select("ax_inventories")
-            query:Callback(function(result, status)
-                if ( result == nil or status == false ) then
-                    if ( isfunction(callback) ) then
-                        callback(false)
-                    end
+                    ax.util:PrintDebug(string.format("Found %d inventories for %s", #inventoryIDs, client:SteamID64()))
 
-                    return
-                end
+                    for _, inventoryID in pairs(inventoryIDs) do
+                        local inventoryQuery = mysql:Select("ax_inventories")
+                        inventoryQuery:Where("id", inventoryID)
+                        inventoryQuery:Callback(function(result, status)
+                            if ( result == nil or status == false ) then return end
 
-                for i = 1, #result do
-                    local data = result[i]
-                    local inventory = setmetatable({}, ax.inventory.meta)
+                            ax.util:PrintDebug(string.format("Restoring %d inventories for %s", #result, client:SteamID64()))
 
-                    data.id = tonumber( data.id )
-                    inventory.id = data.id
+                            for i = 1, #result do
+                                local data = result[i]
+                                local inventory = setmetatable({}, ax.inventory.meta)
 
-                    local maxWeight = data.maxWeight or 30.0
-                    inventory.maxWeight = maxWeight
-                    inventory.receivers = {}
+                                data.id = tonumber(data.id)
+                                inventory.id = data.id
 
-                    local itemsInInv = {}
-                    local itemFetchQuery = mysql:Select( "ax_items" )
-                        itemFetchQuery:Where( "inventory_id", data.id )
-                        itemFetchQuery:Callback( function( itemsResult, itemsStatus )
-                            if ( itemsResult == nil or itemsStatus == false ) then return end
+                                local maxWeight = data.maxWeight or 30.0
+                                inventory.maxWeight = maxWeight
+                                inventory.receivers = {}
 
-                            for j = 1, #itemsResult do
-                                local itemData = itemsResult[j]
-                                local item = ax.item.stored[ itemData.class ]
-                                if ( !item ) then continue end
+                                local itemsInInv = {}
+                                local itemFetchQuery = mysql:Select("ax_items")
+                                itemFetchQuery:Where("inventory_id", data.id)
+                                itemFetchQuery:Callback(function(itemsResult, itemsStatus)
+                                    if ( itemsResult == nil or itemsStatus == false ) then return end
 
-                                local itemObject = setmetatable( {}, ax.item.meta )
-                                itemObject.id = itemData.id
-                                itemObject.class = itemData.class
-                                itemObject.inventory_id = itemData.inventory_id
-                                itemObject.data = util.JSONToTable( itemData.data ) or {}
+                                    for j = 1, #itemsResult do
+                                        local itemData = itemsResult[j]
+                                        local item = ax.item.stored[itemData.class]
+                                        if ( !item ) then continue end
 
-                                ax.item.instances[ itemObject.id ] = itemObject
-                                itemsInInv[ itemObject.id ] = itemObject
+                                        local itemObject = setmetatable(ax.item.stored[itemData.class], ax.item.meta)
+                                        itemObject.id = itemData.id
+                                        itemObject.class = itemData.class
+                                        itemObject.inventory_id = itemData.inventory_id
+                                        itemObject.data = util.JSONToTable(itemData.data) or {}
+
+                                        ax.item.instances[itemObject.id] = itemObject
+                                        itemsInInv[itemObject.id] = itemObject
+                                    end
+
+                                    inventory.items = itemsInInv
+                                end)
+                                itemFetchQuery:Execute()
+
+                                self.instances[inventory.id] = inventory
+                                self:Sync(inventory)
+
+                                inventory:AddReceiver(client)
                             end
-
-                            inventory.items = itemsInInv
-                        end )
-                    itemFetchQuery:Execute()
-
-                    self.instances[inventory.id] = inventory
-                    self:Sync(inventory)
-                end
-
-                if ( isfunction(callback) ) then
-                    callback(true)
-                end
-            end)
-        query:Execute()
+                        end)
+                        inventoryQuery:Execute()
+                    end
+                end)
+                characterQuery:Execute()
+            end
+        end
     end
 end

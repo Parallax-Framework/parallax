@@ -53,7 +53,7 @@ function item:SetData(key, value)
 end
 
 function item:GetActions()
-    return self.actions
+    return self.actions or {}
 end
 
 function item:AddAction(name, actionData)
@@ -62,7 +62,7 @@ function item:AddAction(name, actionData)
     self.actions[name] = actionData
 end
 
-function item:CanInteract( client, action )
+function item:CanInteract(client, action)
     local try, catch = hook.Run("CanPlayerInteractItem", client, self, action)
     if ( try == false ) then
         if ( isstring(catch) and #catch > 0 ) then
@@ -72,12 +72,12 @@ function item:CanInteract( client, action )
         return false
     end
 
-    local actionTable = self.actions[ action ]
-    if ( istable( actionTable ) and isfunction( actionTable.CanUse ) ) then
-        local canRun, reason = actionTable:CanUse( self, client )
+    local actionTable = self.actions[action]
+    if ( istable(actionTable) and isfunction(actionTable.CanUse) ) then
+        local canRun, reason = actionTable:CanUse(self, client)
         if ( canRun == false ) then
-            if ( isstring( reason ) and #reason > 0 ) then
-                client:Notify( reason, "error" )
+            if ( isstring(reason) and #reason > 0 ) then
+                client:Notify(reason, "error")
             end
 
             return false

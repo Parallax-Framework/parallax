@@ -195,13 +195,7 @@ function GM:StartCommand(client, userCmd)
             ax.character:Restore(client, function(characters)
                 hook.Run("PlayerReady", client)
 
-                ax.inventory:Restore(client, function(success)
-                    if ( success ) then
-                        ax.util:PrintDebug(Color(60, 220, 120), "Inventories restored successfully.")
-                    else
-                        ax.util:PrintDebug(Color(220, 60, 60), "Failed to restore inventories.")
-                    end
-                end)
+                ax.inventory:Restore(client)
             end)
         end)
 
