@@ -120,3 +120,45 @@ ax.command:Add("SetFlags", {
         return "Flags set for " .. target:GetName() .. ": " .. flags
     end
 })
+
+ax.command:Add("PlyWhitelist", {
+    description = "Whitelist a player for a faction.",
+    arguments = {
+        { name = "target", type = ax.type.player },
+        { name = "faction", type = ax.type.string }
+    },
+    OnRun = function(client, target, faction)
+        if ( !IsValid(target) ) then return "Invalid player." end
+
+        local factionTable = ax.faction:Get(faction)
+        if ( !factionTable ) then return "Invalid faction." end
+        if ( factionTable.isDefault ) then return "This faction does not require whitelisting." end
+
+        local whitelists = target:GetData("whitelists", {})
+        whitelists[factionTable.index] = true
+        target:SetData("whitelists", whitelists)
+
+        return target:Nick() .. "( " .. target:SteamName() .. " ) has been whitelisted for " .. factionTable.name .. "."
+    end
+})
+
+ax.command:Add("PlyUnwhitelist", {
+    description = "Remove a player's whitelist for a faction.",
+    arguments = {
+        { name = "target", type = ax.type.player },
+        { name = "faction", type = ax.type.string }
+    },
+    OnRun = function(client, target, faction)
+        if ( !IsValid(target) ) then return "Invalid player." end
+
+        local factionTable = ax.faction:Get(faction)
+        if ( !factionTable ) then return "Invalid faction." end
+        if ( factionTable.isDefault ) then return "This faction does not require whitelisting." end
+
+        local whitelists = target:GetData("whitelists", {})
+        whitelists[factionTable.index] = nil
+        target:SetData("whitelists", whitelists)
+
+        return target:Nick() .. "( " .. target:SteamName() .. " ) has been unwhitelisted for " .. factionTable.name .. "."
+    end
+})
