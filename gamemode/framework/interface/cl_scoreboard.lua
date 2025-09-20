@@ -3,12 +3,6 @@ local PANEL = {}
 function PANEL:Init()
     self:Dock(FILL)
 
-    -- Title
-    local title = self:Add("ax.text")
-    title:Dock(TOP)
-    title:SetFont("ax.huge.bold")
-    title:SetText("SCOREBOARD")
-
     -- Scrollable container for teams/players
     self.container = self:Add("DScrollPanel")
     self.container:Dock(FILL)

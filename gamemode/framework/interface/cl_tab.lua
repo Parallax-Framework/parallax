@@ -122,6 +122,21 @@ function PANEL:Init()
             self:TransitionToPage(button.tab.index, ax.option:Get("tab.fade.time", 0.25))
         end
 
+        button.Paint = function( this, width, height )
+            if ( ax.gui.tabLast == k ) then
+                surface.SetDrawColor( color_white )
+                surface.DrawRect(0, 0, width, height )
+
+                if ( this:GetTextColor() != color_black ) then
+                    this:SetTextColor( color_black )
+                end
+            else
+                if ( this:GetTextColor() != color_white ) then
+                    this:SetTextColor( color_white )
+                end
+            end
+        end
+
         local tab = self:CreatePage()
         -- Account for top bar: offset content downward by the height of the bar
         tab:SetXOffset(ScreenScale(32))

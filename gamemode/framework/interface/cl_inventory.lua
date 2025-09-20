@@ -3,21 +3,14 @@ local PANEL = {}
 function PANEL:Init()
     self:Dock(FILL)
 
-    local title = self:Add("ax.text")
-    title:Dock(TOP)
-    title:SetFont("ax.huge.bold")
-    title:SetText("INVENTORY")
-
     local client = ax.client
     local character = client:GetCharacter()
     if ( !character ) then
-        title:SetText("NO CHARACTER")
         return
     end
 
     local inventory = character:GetInventory()
     if ( !inventory ) then
-        title:SetText("NO INVENTORY")
         return
     end
 
