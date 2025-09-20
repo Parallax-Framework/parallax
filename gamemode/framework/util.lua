@@ -977,4 +977,20 @@ function ax.util:GetServerAddress()
     return addr, ip, port
 end
 
+function ax.util:GetSurfaceDataViaName(surfaceName)
+    if ( !surfaceName ) then return nil end
+
+    local idx = util.GetSurfaceIndex(surfaceName)
+    if ( idx == 0 ) then return nil end
+
+    return util.GetSurfaceData(idx)
+end
+
+function ax.util:GetSurfaceDataViaTrace(tr)
+    if ( !tr or !tr.Hit ) then return nil end
+    if ( !tr.SurfaceProps or tr.SurfaceProps == 0 ) then return nil end
+
+    return util.GetSurfaceData(tr.SurfaceProps)
+end
+
 ax.util:Include("store_factory.lua")
