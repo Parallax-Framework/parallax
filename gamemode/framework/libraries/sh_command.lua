@@ -36,6 +36,8 @@ function ax.command:Add(name, def)
         return
     end
 
+    name = ax.util:NameToUniqueID(name)
+
     -- Set defaults
     def.name = name
     def.description = def.description or "No description available."

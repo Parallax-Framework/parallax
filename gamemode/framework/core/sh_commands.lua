@@ -85,7 +85,7 @@ ax.command:Add("GiveFlags", {
         target:GiveFlags(flags)
         target:Save()
 
-        return "Flags given to " .. target:Nick() .. ": " .. flags
+        return "Flags given to " .. target:GetName() .. ": " .. flags
     end
 })
 
@@ -101,7 +101,7 @@ ax.command:Add("TakeFlags", {
         target:TakeFlags(flags)
         target:Save()
 
-        return "Flags taken from " .. target:Nick() .. ": " .. flags
+        return "Flags taken from " .. target:GetName() .. ": " .. flags
     end
 })
 
@@ -117,6 +117,6 @@ ax.command:Add("SetFlags", {
         target:SetFlags(flags)
         target:Save()
 
-        return "Flags set to " .. flags
+        return "Flags set for " .. target:GetName() .. ": " .. flags
     end
 })
