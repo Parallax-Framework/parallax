@@ -52,6 +52,14 @@ function character:GetData(key, fallback)
     return self.vars.data[key] == nil and fallback or self.vars.data[key]
 end
 
+function character:GetFactionData()
+    return ax.faction:Get(self.vars.faction)
+end
+
+function character:GetClassData()
+    return ax.class:Get(self.vars.class)
+end
+
 function character:HasFlags( flags )
     local data = self:GetData( "flags", "" )
     for i = 1, #flags do
