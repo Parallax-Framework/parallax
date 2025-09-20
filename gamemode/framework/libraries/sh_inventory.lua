@@ -169,7 +169,12 @@ if ( SERVER ) then
                                 self.instances[inventory.id] = inventory
                                 self:Sync(inventory)
 
-                                inventory:AddReceiver(client)
+                                local clientChar = client:GetCharacter()
+                                local charInv = clientChar and clientChar.vars and clientChar.vars.inventory
+                                if ( charInv == inventory.id ) then
+                                    inventory:AddReceiver(client)
+                                    ax.util:PrintDebug(string.format("Added %s as a receiver to inventory %d", client:SteamID64(), inventory.id))
+                                end
                             end
                         end)
                         inventoryQuery:Execute()
