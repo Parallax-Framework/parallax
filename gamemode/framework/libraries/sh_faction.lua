@@ -132,15 +132,13 @@ function ax.faction:CanBecome(faction, client)
     local factionTable = self:Get(faction)
     local try, catch = hook.Run("CanBecomeFaction", factionTable, client)
     if ( try == false and isstring(catch) and #catch > 0 ) then
-        client:Notify(catch, "error")
-        return false, catch
+        return try, catch
     end
 
     if ( isfunction(factionTable.CanBecome) ) then
         try, catch = factionTable:CanBecome(client)
         if ( try == false and isstring(catch) and #catch > 0 ) then
-            client:Notify(catch, "error")
-            return false, catch
+            return try, catch
         end
     end
 
