@@ -38,6 +38,10 @@ ax.character:RegisterVar("faction", {
             return false, "Invalid faction ID"
         end
 
+        if ( ax.faction:Get(value) == nil ) then
+            return false, "Faction does not exist"
+        end
+
         return true
     end,
     changed = function(character, value, isNetworked, recipients)
@@ -45,6 +49,24 @@ ax.character:RegisterVar("faction", {
         if ( IsValid(client) ) then
             client:SetTeam(value)
         end
+    end
+})
+
+ax.character:RegisterVar("class", {
+    field = "class",
+    fieldType = ax.type.number,
+    default = 0,
+    hide = true,
+    validate = function(this, value)
+        if ( !isnumber(value) or value < 0 ) then
+            return false, "Invalid class ID"
+        end
+
+        if ( ax.class:Get(value) == nil ) then
+            return false, "Class does not exist"
+        end
+
+        return true
     end
 })
 
