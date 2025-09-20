@@ -27,16 +27,6 @@ function GM:ScoreboardHide()
     return false
 end
 
-local steps = {".stepleft", ".stepright"}
-function GM:EntityEmitSound(data)
-    if ( !IsValid(data.Entity) and !data.Entity:IsPlayer() ) then return end
-
-    local name = data.OriginalSoundName
-    if ( name:find(steps[1]) or name:find(steps[2]) ) then
-        return false
-    end
-end
-
 function GM:OnEntityCreated(entity)
     if ( entity == LocalPlayer() and !IsValid(ax.client) ) then
         ax.client = LocalPlayer()
