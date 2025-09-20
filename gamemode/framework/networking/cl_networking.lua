@@ -215,6 +215,24 @@ net.Receive("ax.player.var", function()
     clientTable.vars[name] = value
 end)
 
+net.Receive( "ax.player.data", function()
+    local client = net.ReadPlayer()
+    if ( !IsValid(client) ) then return end
+
+    local key, value = net.ReadString(), net.ReadType()
+
+    local clientTable = client:GetTable()
+    if ( !istable(clientTable.vars) ) then
+        clientTable.vars = {}
+    end
+
+    if ( !istable(clientTable.vars.data) ) then
+        clientTable.vars.data = {}
+    end
+
+    clientTable.vars.data[key] = value
+end)
+
 net.Receive("ax.inventory.sync", function()
     local inventoryID = net.ReadUInt(32)
     local inventoryItems = net.ReadTable()

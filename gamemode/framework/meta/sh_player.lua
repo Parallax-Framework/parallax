@@ -105,12 +105,13 @@ end
 if ( SERVER ) then
     function ax.player.meta:SetData(key, value, isNetworked, recipients)
         local t = self:GetTable()
+        if ( !istable(t.vars) ) then t.vars = {} end
         if ( !istable(t.vars.data) ) then t.vars.data = {} end
 
         t.vars.data[key] = value
 
         if ( !isNetworked ) then
-            net.Start("ax.player.var")
+            net.Start("ax.player.data")
                 net.WritePlayer(self)
                 net.WriteString(key)
                 net.WriteType(value)

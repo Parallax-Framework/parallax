@@ -11,6 +11,8 @@
 
 util.AddNetworkString("ax.player.ready")
 util.AddNetworkString("ax.player.var")
+util.AddNetworkString("ax.player.data")
+
 util.AddNetworkString("ax.character.sync")
 util.AddNetworkString("ax.character.restore")
 util.AddNetworkString("ax.character.var")
