@@ -276,7 +276,7 @@ function ax.util:CreateStore(spec)
                 networked[key] = store.values[key]
             end
 
-            if ( table.Count(networked) > 0 ) then
+            if ( !table.IsEmpty(networked) ) then
                 net.Start(spec.net.init)
                     net.WriteTable(networked)
                 net.Send(recipients)
@@ -289,7 +289,7 @@ function ax.util:CreateStore(spec)
                 networked[key] = store.values[key]
             end
 
-            if ( table.Count(networked) > 0 ) then
+            if ( !table.IsEmpty(networked) ) then
                 net.Start(spec.net.sync)
                     net.WriteTable(networked)
                 net.SendToServer()
