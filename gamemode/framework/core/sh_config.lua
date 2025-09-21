@@ -9,6 +9,8 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
+ax.config:Add( "language", ax.type.string, "en", { description = "Server language", category = "general" } )
+
 ax.config:Add("notification.enabled", ax.type.bool, true, { description = "Enable client notifications", bNetworked = true, category = "notifications" })
 ax.config:Add("notification.defaultLength", ax.type.number, 5, { min = 1, max = 20, decimals = 0, bNetworked = true, category = "notifications" })
 ax.config:Add("notification.maxWidthFrac", ax.type.number, 0.42, { min = 0.2, max = 0.9, decimals = 2, bNetworked = true, category = "notifications" })
