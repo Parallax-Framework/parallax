@@ -10,8 +10,8 @@
 ]]
 
 ax.player = ax.player or {}
-ax.player.vars = ax.player.vars or {}
 ax.player.meta = FindMetaTable("Player")
+ax.player.vars = ax.player.vars or {}
 
 local function GetVar(client, name, fallback)
     local varTable = ax.player.vars[name]
