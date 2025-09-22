@@ -48,15 +48,6 @@ function ax.player.meta:GetFactionData()
     return factionData
 end
 
-function ax.player.meta:GetClass()
-    local character = self:GetCharacter()
-    if ( character ) then
-        return character:GetClass()
-    end
-
-    return nil
-end
-
 function ax.player.meta:GetClassData()
     local classID = self:GetClass()
     if ( classID ) then
