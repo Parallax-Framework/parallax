@@ -37,14 +37,14 @@ hook.Add( "PlayerButtonDown" , "ax.bind", function(client, key)
     ax.bind.activeButtons = buttons
 
     local bind = ax.bind.stored[ buttons ]
-    if ( isfunction( bind.callbackPressed ) ) then
+    if ( bind and isfunction( bind.callbackPressed ) ) then
         bind:callbackPressed()
     end
 end)
 
 hook.Add( "PlayerButtonUp", "ax.bind", function(client, key)
     local bind = ax.bind.stored[ ax.bind.activeButtons ]
-    if ( isfunction( bind.callbackReleased ) ) then
+    if ( bind and isfunction( bind.callbackReleased ) ) then
         bind:callbackReleased()
     end
 
