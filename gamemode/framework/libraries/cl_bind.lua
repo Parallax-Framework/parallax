@@ -28,7 +28,7 @@ function ax.bind:Bind( keys, callbackPressed, callbackReleased )
         return false
     end
 
-    self.stored[keys] = { callbackPressed = callbackPressed, callbackReleased = callbackReleased }
+    self.stored[ keys ] = { callbackPressed = callbackPressed, callbackReleased = callbackReleased }
     return true
 end
 
@@ -37,14 +37,14 @@ hook.Add( "PlayerButtonDown" , "ax.bind", function(client, key)
     ax.bind.activeButtons = buttons
 
     local bind = ax.bind.stored[ buttons ]
-    if ( bind and isfunction( bind.callbackPressed ) ) then
+    if ( istable( bind ) and isfunction( bind.callbackPressed ) ) then
         bind:callbackPressed()
     end
 end)
 
 hook.Add( "PlayerButtonUp", "ax.bind", function(client, key)
     local bind = ax.bind.stored[ ax.bind.activeButtons ]
-    if ( bind and isfunction( bind.callbackReleased ) ) then
+    if ( istable( bind ) and isfunction( bind.callbackReleased ) ) then
         bind:callbackReleased()
     end
 
