@@ -7,7 +7,7 @@ function ax.flag:Create( letter, flagData )
         return
     end
 
-    self.stored[letter] = flagData
+    self.stored[ letter ] = flagData
 end
 
 function ax.flag:GetAll()
@@ -15,10 +15,10 @@ function ax.flag:GetAll()
 end
 
 function ax.flag:Get(letter)
-    if ( !isstring(letter) or #letter > 1 ) then
+    if ( !isstring( letter ) or #letter > 1 ) then
         ax.util:PrintError("Invalid flag letter provided to ax.flag:Get()")
         return
     end
 
-    return self.stored[letter]
+    return self.stored[ letter ]
 end
