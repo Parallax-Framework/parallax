@@ -334,18 +334,20 @@ end
 function ax.util:FindCharacter(identifier)
     if ( identifier == nil ) then return nil end
 
-    if ( isnumber(identifier) ) then
-        return ax.character.instances[identifier]
+    local identifierNumber = tonumber(identifier)
+    if ( ax.character.instances[identifierNumber] ) then
+        return ax.character.instances[identifierNumber]
     end
 
     if ( isstring(identifier) ) then
-        local lowerIdent = string.lower(identifier)
         for _, char in pairs(ax.character.instances) do
             local name = char:GetName()
-            if ( string.lower(name) == lowerIdent ) then
-                return char -- Exact match
-            elseif ( self:FindString(name, lowerIdent) ) then
-                return char -- Partial match
+            if ( name == identifier ) then
+                return char -- exact match
+            elseif ( string.lower(name) == string.lower(identifier) ) then
+                return char -- case-insensitive exact match
+            elseif ( self:FindString(name, identifier) ) then
+                return char -- partial match
             end
         end
     end
