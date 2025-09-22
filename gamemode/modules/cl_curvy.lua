@@ -6,12 +6,18 @@ MODULE.Author = "Riggs"
 
 ax.option:Add("curvyCurveAmount", ax.type.number, 64, { category = "curvy", min = 16, max = 256, decimals = 0 })
 ax.option:Add("curvySegments", ax.type.number, 256, { category = "curvy", min = 16, max = 256, decimals = 0 })
+ax.option:Add("curvyDynamicLOD", ax.type.bool, true, { category = "curvy", description = "Automatically reduce curve segments when FPS is low.", noNetworking = true })
 
 ax.curvy = ax.curvy or {}
 
 local renderTargets = {}
 local materials = {}
 local meshCache = {}
+
+-- Micro-optimizations: localize frequently-used globals
+local math_sin = math.sin
+local math_pi = math.pi
+local Vector_local = Vector
 
 function ax.curvy:LoadMaterial(path, filter)
     if ( !path or path == "" ) then return nil end
@@ -23,6 +29,7 @@ function ax.curvy:LoadMaterial(path, filter)
     if ( mat:IsError() ) then return nil end
 
     materials[cacheKey] = mat
+
     return mat
 end
 
@@ -104,48 +111,34 @@ function ax.curvy:GetCurveMesh(segments, curveAmount, width, height)
     end
 
     local meshData = {}
-    for i = 0, segments - 1 do
-        local u1 = i / segments
-        local u2 = (i + 1) / segments
-        local x1, x2 = u1 * width, u2 * width
+    -- Use locals for perf
+    local seg = segments
+    local ca = curveAmount
+    local w = width
+    local h = height
+    for i = 0, seg - 1 do
+        local u1 = i / seg
+        local u2 = (i + 1) / seg
+        local x1 = u1 * w
+        local x2 = u2 * w
 
-        local off1 = math.sin(u1 * math.pi) * curveAmount
-        local off2 = math.sin(u2 * math.pi) * curveAmount
+        local off1 = math_sin(u1 * math_pi) * ca
+        local off2 = math_sin(u2 * math_pi) * ca
 
-        local yT1, yT2 = 0 + off1, 0 + off2
-        local yB1, yB2 = height - off1, height - off2
+        local yT1 = off1
+        local yT2 = off2
+        local yB1 = h - off1
+        local yB2 = h - off2
 
         -- Triangle 1
-        table.insert(meshData, {
-            pos = Vector(x1, yT1, 0),
-            u = u1, v = 0
-        })
-
-        table.insert(meshData, {
-            pos = Vector(x2, yT2, 0),
-            u = u2, v = 0
-        })
-
-        table.insert(meshData, {
-            pos = Vector(x2, yB2, 0),
-            u = u2, v = 1
-        })
+        meshData[#meshData + 1] = { pos = Vector_local(x1, yT1, 0), u = u1, v = 0 }
+        meshData[#meshData + 1] = { pos = Vector_local(x2, yT2, 0), u = u2, v = 0 }
+        meshData[#meshData + 1] = { pos = Vector_local(x2, yB2, 0), u = u2, v = 1 }
 
         -- Triangle 2
-        table.insert(meshData, {
-            pos = Vector(x1, yT1, 0),
-            u = u1, v = 0
-        })
-
-        table.insert(meshData, {
-            pos = Vector(x2, yB2, 0),
-            u = u2, v = 1
-        })
-
-        table.insert(meshData, {
-            pos = Vector(x1, yB1, 0),
-            u = u1, v = 1
-        })
+        meshData[#meshData + 1] = { pos = Vector_local(x1, yT1, 0), u = u1, v = 0 }
+        meshData[#meshData + 1] = { pos = Vector_local(x2, yB2, 0), u = u2, v = 1 }
+        meshData[#meshData + 1] = { pos = Vector_local(x1, yB1, 0), u = u1, v = 1 }
     end
 
     meshCache[cacheKey] = meshData
@@ -155,14 +148,33 @@ end
 function ax.curvy:RenderCurvedMesh(mat, width, height)
     if ( !mat or mat:IsError() ) then return end
 
-    local meshData = self:GetCurveMesh(ax.option:Get("curvySegments"), ax.option:Get("curvyCurveAmount"), width, height)
+    -- Cache option lookups locally for this render call
+    local baseSegments = ax.option:Get("curvySegments")
+    local curveAmount = ax.option:Get("curvyCurveAmount")
+
+    -- Dynamic LOD: scale segments down when FPS is low using a smoothed FPS estimate
+    local segments = baseSegments
+    if ( ax.option:Get("curvyDynamicLOD") ) then
+        local ft = FrameTime() or 0.016
+        local fps = 1 / math.max(0.0001, ft)
+        self._fpsAvg = (self._fpsAvg or fps) * 0.92 + fps * 0.08
+
+        -- If average FPS under 30, scale segments linearly down to minimum (16)
+        if ( self._fpsAvg < 30 ) then
+            local scale = math.max(0.1, self._fpsAvg / 30)
+            segments = math.max(16, math.floor(baseSegments * scale))
+        end
+    end
+
+    local meshData = self:GetCurveMesh(segments, curveAmount, width, height)
 
     cam.IgnoreZ(true)
     render.CullMode(MATERIAL_CULLMODE_CW)
     render.SetMaterial(mat)
 
     mesh.Begin(MATERIAL_TRIANGLES, #meshData)
-        for _, vertex in ipairs(meshData) do
+        for i = 1, #meshData do
+            local vertex = meshData[i]
             mesh.Position(vertex.pos)
             mesh.TexCoord(0, vertex.u, vertex.v)
             mesh.Color(255, 255, 255, 255)
@@ -235,28 +247,20 @@ function ax.curvy:PostRender()
     if ( !self:ShouldDrawCurvedHUD(client) ) then return end
 
     local width, height = ScrW(), ScrH()
-    rtName = rtName or "main"
+    local rt = "post"
 
-    -- Cheap mode: draw directly without curve
+    -- Cheap mode: just run the hook and return
     if ( ax.option:Get("curvyCheap") ) then
-        if ( drawFunc ) then
-            drawFunc(width, height, client)
-        end
-
         hook.Run("PostRenderCurvy", width, height, client, false)
         return
     end
 
     -- Render to target and draw with curve
-    local texture = self:RenderToTarget(rtName, width, height, function()
-        if ( drawFunc ) then
-            drawFunc(width, height, client)
-        end
-
+    local texture = self:RenderToTarget(rt, width, height, function()
         hook.Run("PostRenderCurvy", width, height, client, true)
     end)
 
-    local material = self:CreateRenderTargetMaterial(rtName, texture)
+    local material = self:CreateRenderTargetMaterial(rt, texture)
     self:RenderCurvedMesh(material, width, height)
 end
 
