@@ -15,7 +15,7 @@ SWEP.Contact = ""
 SWEP.Purpose = "Grab and throw things"
 SWEP.Instructions = ""
 
-SWEP.Slot = 0
+SWEP.Slot = 1
 SWEP.SlotPos = 1
 SWEP.DrawAmmo = false
 SWEP.DrawCrosshair = true
@@ -300,7 +300,7 @@ function SWEP:SecondaryAttack()
 
     local entity = traceData.Entity
     if ( SERVER and IsValid(entity) ) then
-        if ( entity:IsDoor() ) then
+        if ( entity:GetClass():find("door") ) then
             if ( entity:GetPos():DistToSqr(owner:GetPos()) > 6000 ) then
                 return
             end
