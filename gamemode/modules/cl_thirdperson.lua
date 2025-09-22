@@ -4,10 +4,10 @@ MODULE.Name = "Third Person"
 MODULE.Description = "Adds third-person camera functionality to the gamemode."
 MODULE.Author = "Riggs"
 
-local thirdpersonEnable = CreateClientConVar("ax_thirdperson_enable", "0", true, false, "Enable or disable third person mode.", 0, 1)
-local thirdpersonX = CreateClientConVar("ax_thirdperson_x", "25", true, false, "X offset for third person camera.", 0, 100)
-local thirdpersonY = CreateClientConVar("ax_thirdperson_y", "0", true, false, "Y offset for third person camera.", -100, 100)
-local thirdpersonZ = CreateClientConVar("ax_thirdperson_z", "-50", true, false, "Z offset for third person camera.", -100, 0)
+ax.option:Add("thirdperson", ax.type.bool, false, { category = "Camera" })
+ax.option:Add("thirdperson_x", ax.type.number, 25, { category = "Camera" })
+ax.option:Add("thirdperson_y", ax.type.number, 0, { category = "Camera" })
+ax.option:Add("thirdperson_z", ax.type.number, -50, { category = "Camera" })
 local FIXED_RADIUS = 6
 
 -- LVS is gay and already used the ShouldDrawThirdPerson hook, so we have to use a different name
@@ -16,7 +16,7 @@ function MODULE:ShouldUseThirdPerson(client)
         return false
     end
 
-    return thirdpersonEnable:GetBool()
+    return ax.option:Get("thirdperson")
 end
 
 ax.viewstack:RegisterModifier("thirdperson", function(client, view)
@@ -27,9 +27,7 @@ ax.viewstack:RegisterModifier("thirdperson", function(client, view)
     local ang = view.angles
 
     -- desired camera offset relative to view angles
-    local desiredPos = startPos + ang:Forward() * thirdpersonZ:GetFloat() + ang:Right() * thirdpersonX:GetFloat() + ang:Up() * thirdpersonY:GetFloat()
-
-    local FIXED_RADIUS = FIXED_RADIUS
+    local desiredPos = startPos + ang:Forward() * ax.option:Get("thirdperson_z") + ang:Right() * ax.option:Get("thirdperson_x") + ang:Up() * ax.option:Get("thirdperson_y")
 
     local tr = util.TraceHull({
         start = startPos,
@@ -53,5 +51,5 @@ ax.viewstack:RegisterModifier("thirdperson", function(client, view)
 end, 1)
 
 concommand.Add("ax_thirdperson_toggle", function(client, cmd, args)
-    thirdpersonEnable:SetBool(!thirdpersonEnable:GetBool())
+    ax.option:Set("thirdperson", !ax.option:Get("thirdperson"))
 end)
