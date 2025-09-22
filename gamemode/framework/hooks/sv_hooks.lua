@@ -67,6 +67,8 @@ function GM:DoPlayerDeath(client, attacker, damageInfo)
 end
 
 function GM:PlayerSpawn(client)
+    client:RemoveAllItems()
+
     client:SetRelay("ax.ragdoll.index", -1)
     client:SetSlowWalkSpeed(75)
     client:SetWalkSpeed(100)
@@ -80,7 +82,7 @@ end
 function GM:PlayerLoadout(client)
     BaseClass.PlayerLoadout(self, client)
 
-    client:Give("weapon_fists")
+    client:Give("ax_hands")
 
     local character = client:GetCharacter()
     if ( character ) then
@@ -97,14 +99,16 @@ function GM:PlayerLoadout(client)
             client:SetSubMaterial(k - 1, v)
         end
 
-        if ( character:HasFlags( "p" ) ) then
-            client:Give( "weapon_physgun" )
+        if ( character:HasFlags("p") ) then
+            client:Give("weapon_physgun")
         end
 
-        if ( character:HasFlags( "t" ) ) then
-            client:Give( "gmod_tool" )
+        if ( character:HasFlags("t") ) then
+            client:Give("gmod_tool")
         end
     end
+
+    client:SelectWeapon("ax_hands")
 
     hook.Run("PostPlayerLoadout", client)
 

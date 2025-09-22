@@ -156,7 +156,8 @@ ax.animations.stored["overwatch"] = {
         [ACT_MP_CROUCH_IDLE] = {ACT_CROUCHIDLE, ACT_CROUCHIDLE},
         [ACT_MP_WALK] = {"walkunarmed_all", ACT_WALK_RIFLE},
         [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH_RIFLE, ACT_WALK_CROUCH_RIFLE},
-        [ACT_MP_RUN] = {ACT_RUN_AIM_RIFLE, ACT_RUN_AIM_RIFLE}
+        [ACT_MP_RUN] = {ACT_RUN_AIM_RIFLE, ACT_RUN_AIM_RIFLE},
+        ["shoot"] = "gesture_shoot_357"
     },
     ["pistol"] = {
         [ACT_MP_STAND_IDLE] = {"idle_unarmed", ACT_IDLE_ANGRY_SMG1},
@@ -199,7 +200,8 @@ ax.animations.stored["overwatch"] = {
         [ACT_MP_CROUCH_IDLE] = {ACT_CROUCHIDLE, ACT_CROUCHIDLE},
         [ACT_MP_WALK] = {"walkunarmed_all", ACT_WALK_RIFLE},
         [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH_RIFLE, ACT_WALK_CROUCH_RIFLE},
-        [ACT_MP_RUN] = {ACT_RUN_AIM_RIFLE, ACT_RUN_AIM_RIFLE}
+        [ACT_MP_RUN] = {ACT_RUN_AIM_RIFLE, ACT_RUN_AIM_RIFLE},
+        ["attack"] = "gesture_shoot_357"
     },
     ["melee"] = {
         [ACT_MP_STAND_IDLE] = {"idle_unarmed", ACT_IDLE_ANGRY},
@@ -218,7 +220,8 @@ ax.animations.stored["metrocop"] = {
         [ACT_MP_WALK] = {"walk_all_unarmed", "walk_all_unarmed"},
         [ACT_MP_RUN] = {"run_all_unarmed", "run_all_unarmed"},
         [ACT_MP_CROUCH_IDLE] = {ACT_COVER_PISTOL_LOW, ACT_COVER_SMG1_LOW},
-        [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH, ACT_WALK_CROUCH}
+        [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH, ACT_WALK_CROUCH},
+        ["shoot"] = ACT_GESTURE_RANGE_ATTACK_PISTOL
     },
     ["pistol"] = {
         [ACT_MP_STAND_IDLE] = {{"pistolidle1", "pistolidle2", "pistolidle3"}, "pistolangryidle2"},
@@ -327,11 +330,12 @@ ax.animations.stored["vortigaunt"] = {
 
 ax.animations.stored["player"] = {
     ["normal"] = {
-        [ACT_MP_STAND_IDLE] = {{"idle_all_01", "idle_all_02"}, {"idle_all_01", "idle_all_02"}},
-        [ACT_MP_WALK] = {"walk_all", "walk_all"},
-        [ACT_MP_RUN] = {"run_all_01", "run_all_01"},
-        [ACT_MP_CROUCH_IDLE] = {"cidle_all", "cidle_all"},
-        [ACT_MP_CROUCHWALK] = {"cwalk_all", "cwalk_all"},
+        [ACT_MP_STAND_IDLE] = {{"idle_all_01", "idle_all_02"}, "idle_fist"},
+        [ACT_MP_WALK] = {"walk_all", "walk_fist"},
+        [ACT_MP_RUN] = {"run_all_01", "run_fist"},
+        [ACT_MP_CROUCH_IDLE] = {"cidle_all", "cidle_fist"},
+        [ACT_MP_CROUCHWALK] = {"cwalk_all", "cwalk_fist"},
+        ["shoot"] = {"range_fists_l", "range_fists_r"}
     },
     ["pistol"] = {
         [ACT_MP_STAND_IDLE] = {{"idle_all_01", "idle_all_02"}, "idle_revolver"},
@@ -389,11 +393,12 @@ ax.animations.stored["player"] = {
 
 ax.animations.stored["player_citizen_male"] = {
     ["normal"] = {
-        [ACT_MP_STAND_IDLE] = {{"idle_all_01", "idle_all_02"}, {"idle_all_01", "idle_all_02"}},
-        [ACT_MP_WALK] = {"walk_all", "walk_all"},
-        [ACT_MP_RUN] = {"run_all_01", "run_all_01"},
-        [ACT_MP_CROUCH_IDLE] = {"cidle_all", "cidle_all"},
-        [ACT_MP_CROUCHWALK] = {"cwalk_all", "cwalk_all"},
+        [ACT_MP_STAND_IDLE] = {{"idle_all_01", "idle_all_02"}, "idle_fist"},
+        [ACT_MP_WALK] = {"walk_all", "walk_fist"},
+        [ACT_MP_RUN] = {"run_all_01", "run_fist"},
+        [ACT_MP_CROUCH_IDLE] = {"cidle_all", "cidle_fist"},
+        [ACT_MP_CROUCHWALK] = {"cwalk_all", "cwalk_fist"},
+        ["shoot"] = {"range_fists_l", "range_fists_r"}
     },
     ["pistol"] = {
         [ACT_MP_STAND_IDLE] = {{"idle_all_01", "idle_all_02"}, "idle_revolver"},
@@ -451,11 +456,12 @@ ax.animations.stored["player_citizen_male"] = {
 
 ax.animations.stored["player_citizen_female"] = {
     ["normal"] = {
-        [ACT_MP_STAND_IDLE] = {{"idle_all_01", "idle_all_02"}, {"idle_all_01", "idle_all_02"}},
-        [ACT_MP_WALK] = {"walk_all", "walk_all"},
-        [ACT_MP_RUN] = {"run_all_01", "run_all_01"},
-        [ACT_MP_CROUCH_IDLE] = {"cidle_all", "cidle_all"},
-        [ACT_MP_CROUCHWALK] = {"cwalk_all", "cwalk_all"},
+        [ACT_MP_STAND_IDLE] = {{"idle_all_01", "idle_all_02"}, "idle_fist"},
+        [ACT_MP_WALK] = {"walk_all", "walk_fist"},
+        [ACT_MP_RUN] = {"run_all_01", "run_fist"},
+        [ACT_MP_CROUCH_IDLE] = {"cidle_all", "cidle_fist"},
+        [ACT_MP_CROUCHWALK] = {"cwalk_all", "cwalk_fist"},
+        ["shoot"] = {"range_fists_l", "range_fists_r"}
     },
     ["pistol"] = {
         [ACT_MP_STAND_IDLE] = {{"idle_all_01", "idle_all_02"}, "idle_revolver"},
@@ -513,11 +519,12 @@ ax.animations.stored["player_citizen_female"] = {
 
 ax.animations.stored["player_overwatch"] = {
     ["normal"] = {
-        [ACT_MP_STAND_IDLE] = {"idle_unarmed", "idle_unarmed"},
-        [ACT_MP_WALK] = {"walk_all", "walk_all"},
-        [ACT_MP_RUN] = {"run_all_01", "run_all_01"},
-        [ACT_MP_CROUCH_IDLE] = {"cidle_all", "cidle_all"},
-        [ACT_MP_CROUCHWALK] = {"cwalk_all", "cwalk_all"},
+        [ACT_MP_STAND_IDLE] = {"idle_unarmed", "idle_fist"},
+        [ACT_MP_WALK] = {"walk_all", "walk_fist"},
+        [ACT_MP_RUN] = {"run_all_01", "run_fist"},
+        [ACT_MP_CROUCH_IDLE] = {"cidle_all", "cidle_fist"},
+        [ACT_MP_CROUCHWALK] = {"cwalk_all", "cwalk_fist"},
+        ["shoot"] = {"range_fists_l", "range_fists_r"}
     },
     ["pistol"] = {
         [ACT_MP_STAND_IDLE] = {"idle1_pistol", "combatidle1_pistol"},
@@ -575,11 +582,12 @@ ax.animations.stored["player_overwatch"] = {
 
 ax.animations.stored["player_metrocop"] = {
     ["normal"] = {
-        [ACT_MP_STAND_IDLE] = {"unarmedidle1", "unarmedidle1"},
-        [ACT_MP_WALK] = {"walk_all_unarmed", "walk_all_unarmed"},
-        [ACT_MP_RUN] = {"run_all_unarmed", "run_all_unarmed"},
-        [ACT_MP_CROUCH_IDLE] = {ACT_COVER_PISTOL_LOW, ACT_COVER_SMG1_LOW},
-        [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH, ACT_WALK_CROUCH}
+        [ACT_MP_STAND_IDLE] = {"unarmedidle1", "idle_fist"},
+        [ACT_MP_WALK] = {"walk_all_unarmed", "walk_fist"},
+        [ACT_MP_RUN] = {"run_all_unarmed", "run_fist"},
+        [ACT_MP_CROUCH_IDLE] = {ACT_COVER_PISTOL_LOW, "cidle_fist"},
+        [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH, "cwalk_fist"},
+        ["shoot"] = {"range_fists_l", "range_fists_r"}
     },
     ["pistol"] = {
         [ACT_MP_STAND_IDLE] = {{"pistolidle1", "pistolidle2", "pistolidle3"}, "pistolangryidle2"},
