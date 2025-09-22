@@ -14,7 +14,7 @@ function ax.flag:GetAll()
     return self.stored
 end
 
-function ax.flag:Get(letter)
+function ax.flag:Get( letter )
     if ( !isstring( letter ) or #letter > 1 ) then
         ax.util:PrintError("Invalid flag letter provided to ax.flag:Get()")
         return
