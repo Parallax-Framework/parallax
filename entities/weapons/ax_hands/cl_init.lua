@@ -15,7 +15,7 @@ function SWEP:CheckYaw()
     local client = self:GetOwner()
     local playerPitch = client:EyeAngles().p
     if ( playerPitch < -20 ) then
-        if ( client:RateLimit("hands", 0.5) ) then return end
+        if ( !client:RateLimit("hands", 0.5) ) then return end
 
         net.Start("ax.hands.reset")
         net.SendToServer()

@@ -15,7 +15,7 @@ include("shared.lua")
 
 util.AddNetworkString("ax.hands.reset")
 net.Receive("ax.hands.reset", function(length, client)
-    if ( client:RateLimit("hands", 0.5) ) then return end
+    if ( !client:RateLimit("hands", 0.5) ) then return end
 
     if ( !IsValid(client) ) then return end
 

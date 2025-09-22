@@ -243,9 +243,9 @@ function SWEP:CheckValidity()
         end
 
         return false
-    else
-        return true
     end
+
+    return true
 end
 
 function SWEP:IsEntityStoodOn(entity)
@@ -300,7 +300,7 @@ function SWEP:SecondaryAttack()
 
     local entity = traceData.Entity
     if ( SERVER and IsValid(entity) ) then
-        if ( entity:GetClass():find("door") ) then
+        if ( ax.util:FindString( entity:GetClass(), "door" ) ) then
             if ( entity:GetPos():DistToSqr(owner:GetPos()) > 6000 ) then
                 return
             end
@@ -320,7 +320,7 @@ function SWEP:SecondaryAttack()
         elseif ( !entity:IsPlayer() and !entity:IsNPC() ) then
             self:DoPickup()
         elseif entity:IsPlayer() and entity:Alive() then
-            if ( self:RateLimit("push", 0.5) ) then return end
+            if ( !self:RateLimit("push", 0.5) ) then return end
             if ( entity:GetPos():DistToSqr(owner:GetPos()) > 2000 ) then return end
             if ( hook.Run("PlayerCanPush", owner, entity) == false ) then
                 return
@@ -339,7 +339,6 @@ function SWEP:SecondaryAttack()
                 entity:EmitSound("physics/flesh/flesh_impact_hard" .. math.random(2, 5) .. ".wav", 60)
             end)
 
-            self:RateLimit("push", 0.5)
             owner:ViewPunch(pushViewPunchAngle)
             owner:EmitSound("physics/flesh/flesh_impact_hard" .. math.random(2, 5) .. ".wav", 60)
             owner:SetAnimation(PLAYER_ATTACK1)
