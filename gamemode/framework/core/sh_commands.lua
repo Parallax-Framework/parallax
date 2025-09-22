@@ -40,7 +40,7 @@ ax.command:Add("PM", {
     end
 })
 
-ax.command:Add("SetModel", {
+ax.command:Add("CharSetModel", {
     description = "Set the model of a character.",
     arguments = {
         { name = "target", type = ax.type.character },
@@ -49,31 +49,62 @@ ax.command:Add("SetModel", {
     OnRun = function(client, target, model)
         if ( !target) then return "Invalid character." end
 
-        target:SetModel(model)
+        target:SetModel(model, true)
         target:Save()
 
         return "Model set to " .. model
     end
 })
 
-ax.command:Add("SetSkin", {
-    description = "Set the skin of a player.",
+ax.command:Add("CharSetSkin", {
+    description = "Set the skin of a character.",
     arguments = {
-        { name = "target", type = ax.type.player },
+        { name = "target", type = ax.type.character },
         { name = "skin", type = ax.type.number }
     },
     OnRun = function(client, target, skin)
-        if ( !IsValid(target) ) then return "Invalid player." end
+        if ( !target ) then return "Invalid character." end
 
-        target:SetSkin(skin)
-        target:GetCharacter():SetData("skin", skin)
-        target:GetCharacter():Save()
+        target:SetData("skin", skin)
+        target:Save()
+
+        local targetPlayer = target:GetPlayer()
+        if ( IsValid(targetPlayer) ) then
+            targetPlayer:SetSkin(skin)
+        end
 
         return "Skin set to " .. skin
     end
 })
 
-ax.command:Add("GiveFlags", {
+ax.command:Add("CharSetName", {
+    description = "Set the name of a character.",
+    arguments = {
+        { name = "target", type = ax.type.character, optional = true },
+        { name = "name", type = ax.type.string, optional = true }
+    },
+    OnRun = function(client, target, name)
+        if ( !target ) then
+            target = client:GetCharacter()
+        end
+
+        if ( !name or name == "" ) then
+            net.Start("ax.character.setnameprompt")
+                net.WriteUInt(target.id, 32)
+                net.WriteString(target:GetName())
+            net.Send(client)
+
+            return
+        end
+
+        target:SetName(name, true)
+        target:Save()
+
+        return "Name set to " .. name
+    end
+})
+
+ax.command:Add("CharGiveFlags", {
     description = "Give flags to a character.",
     arguments = {
         { name = "target", type = ax.type.character },
@@ -89,7 +120,7 @@ ax.command:Add("GiveFlags", {
     end
 })
 
-ax.command:Add("TakeFlags", {
+ax.command:Add("CharTakeFlags", {
     description = "Take flags from a character.",
     arguments = {
         { name = "target", type = ax.type.character },
@@ -105,7 +136,7 @@ ax.command:Add("TakeFlags", {
     end
 })
 
-ax.command:Add("SetFlags", {
+ax.command:Add("CharSetFlags", {
     description = "Set flags for a character.",
     arguments = {
         { name = "target", type = ax.type.character, optional = true },

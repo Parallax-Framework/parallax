@@ -149,7 +149,7 @@ net.Receive("ax.character.restore", function()
     hook.Run("OnCharactersRestored", characters)
 end)
 
-net.Receive( "ax.character.delete", function()
+net.Receive("ax.character.delete", function()
     local id = net.ReadUInt(32)
     if ( !isnumber( id ) or id < 1 ) then return end
 
@@ -198,6 +198,21 @@ net.Receive("ax.character.var", function()
     end
 
     character.vars[name] = value
+end)
+
+net.Receive("ax.character.setnameprompt", function()
+    local target = ax.character:Get(net.ReadUInt(32))
+    if ( !istable(target) ) then
+        ax.util:PrintError("Character not found for name prompt.")
+        return
+    end
+
+    Derma_StringRequest("Set Character Name", "Enter a new name for your character:", target:GetName() or "", function(text)
+        text = string.Trim(text)
+        if ( text == "" ) then return end
+
+        ax.command:Send("/CharSetName \"" .. target:GetName() .. "\" \"" .. text .. "\"")
+    end, nil, "Set Name")
 end)
 
 net.Receive("ax.player.var", function()
