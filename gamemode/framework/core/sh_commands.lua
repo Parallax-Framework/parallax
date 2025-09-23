@@ -168,12 +168,13 @@ ax.command:Add("PlyWhitelist", {
         local whitelists = target:GetData("whitelists", {})
         whitelists[factionTable.index] = true
         target:SetData("whitelists", whitelists)
+        target:Save()
 
         return target:Nick() .. "( " .. target:SteamName() .. " ) has been whitelisted for " .. factionTable.name .. "."
     end
 })
 
-ax.command:Add("PlyUnwhitelist", {
+ax.command:Add("PlyUnWhitelist", {
     description = "Remove a player's whitelist for a faction.",
     arguments = {
         { name = "target", type = ax.type.player },
@@ -189,6 +190,7 @@ ax.command:Add("PlyUnwhitelist", {
         local whitelists = target:GetData("whitelists", {})
         whitelists[factionTable.index] = nil
         target:SetData("whitelists", whitelists)
+        target:Save()
 
         return target:Nick() .. "( " .. target:SteamName() .. " ) has been unwhitelisted for " .. factionTable.name .. "."
     end
