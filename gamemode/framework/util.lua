@@ -288,7 +288,7 @@ end
 --- Find a player by SteamID, SteamID64, name, entity or numeric index.
 -- @param identifier number|string|Entity|table Player identifier or list of identifiers
 -- @return Player|NULL The found player entity or NULL
--- @usage local ply = ax.util:FindPlayer("7656119...")
+-- @usage local client = ax.util:FindPlayer("7656119...")
 function ax.util:FindPlayer(identifier)
     if ( identifier == nil ) then return NULL end
 
@@ -833,7 +833,7 @@ end
 --- Returns true if the entity is a valid player.
 -- @param client Entity Candidate entity
 -- @return boolean True if entity is a valid player
--- @usage if ax.util:IsValidPlayer(ply) then -- do something end
+-- @usage if ax.util:IsValidPlayer(client) then -- do something end
 function ax.util:IsValidPlayer(client)
     return IsValid(client) and client:IsPlayer()
 end
