@@ -272,21 +272,10 @@ function PANEL:Paint(width, height)
     self:SetGradientTop(Lerp(time, self:GetGradientTop(), self:GetGradientTopTarget()))
     self:SetGradientBottom(Lerp(time, self:GetGradientBottom(), self:GetGradientBottomTarget()))
 
-    surface.SetDrawColor(0, 0, 0, 255 * self:GetGradientLeft())
-    surface.SetMaterial(gradientLeft)
-    surface.DrawTexturedRect(0, 0, width / 2, height)
-
-    surface.SetDrawColor(0, 0, 0, 255 * self:GetGradientRight())
-    surface.SetMaterial(gradientRight)
-    surface.DrawTexturedRect(width / 2, 0, width / 2, height)
-
-    surface.SetDrawColor(0, 0, 0, 255 * self:GetGradientTop())
-    surface.SetMaterial(gradientTop)
-    surface.DrawTexturedRect(0, 0, width, height / 2)
-
-    surface.SetDrawColor(0, 0, 0, 255 * self:GetGradientBottom())
-    surface.SetMaterial(gradientBottom)
-    surface.DrawTexturedRect(0, height / 2, width, height / 2)
+    ax.util:DrawGradient("left", 0, 0, width, height, Color(0, 0, 0, 100 * self:GetGradientLeft()))
+    ax.util:DrawGradient("right", 0, 0, width, height, Color(0, 0, 0, 100 * self:GetGradientRight()))
+    ax.util:DrawGradient("top", 0, 0, width, height, Color(0, 0, 0, 100 * self:GetGradientTop()))
+    ax.util:DrawGradient("bottom", 0, 0, width, height, Color(0, 0, 0, 100 * self:GetGradientBottom()))
 end
 
 vgui.Register("ax.tab", PANEL, "ax.transition.pages")
