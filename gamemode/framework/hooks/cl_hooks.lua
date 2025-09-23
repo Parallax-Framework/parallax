@@ -62,16 +62,21 @@ function GM:HUDShouldDraw(name)
 end
 
 local healthIcon = ax.util:GetMaterial("parallax/icons/hud/health.png", "smooth mips")
+local healthColor = Color(255, 150, 150, 200)
+local armorIcon = ax.util:GetMaterial("parallax/icons/hud/armor.png", "smooth mips")
+local armorColor = Color(100, 150, 255, 200)
+local talkingIcon = ax.util:GetMaterial("parallax/icons/hud/talking.png", "smooth mips")
+local speakingIcon = ax.util:GetMaterial("parallax/icons/hud/speaking.png", "smooth mips")
 function GM:HUDPaintCurvy(width, height, client, isCurved)
     if ( !IsValid(client) ) then return end
 
     local shouldDraw = hook.Run("ShouldDrawHealthHUD")
     if ( shouldDraw != false ) then
         local barWidth, barHeight = ScreenScale(64), ScreenScaleH(8)
-        local barX, barY = ScreenScale(8), ScrH() - ScreenScaleH(8) - barHeight * 1.5
+        local barX, barY = ScreenScale(8), ScreenScaleH(8) + barHeight / 2
 
         -- Draw health icon
-        ax.render.DrawMaterial(0, barX, barY - barHeight / 2, barHeight * 2, barHeight * 2, Color(255, 255, 255, 200), healthIcon)
+        ax.render.DrawMaterial(0, barX, barY - barHeight / 2, barHeight * 2, barHeight * 2, healthColor, healthIcon)
         barX = barX + barHeight * 2 + ScreenScale(4)
 
         -- Draw health bar background
@@ -86,7 +91,50 @@ function GM:HUDPaintCurvy(width, height, client, isCurved)
         local fillWidth = math.max(0, barWidth * healthFraction - ScreenScale(2))
 
         -- Draw health bar fill using interpolated value
-        ax.render.Draw(barHeight, barX + ScreenScale(1), barY + ScreenScaleH(1), fillWidth, barHeight - ScreenScaleH(2), Color(255, 255, 255, 200))
+        ax.render.Draw(barHeight, barX + ScreenScale(1), barY + ScreenScaleH(1), fillWidth, barHeight - ScreenScaleH(2), healthColor)
+
+        -- Draw armor icon and bar if player has armor
+        if ( client:Armor() > 0 ) then
+            barX = barX + barWidth + ScreenScale(8)
+
+            ax.render.DrawMaterial(0, barX, barY - barHeight / 2, barHeight * 2, barHeight * 2, armorColor, armorIcon)
+            barX = barX + barHeight * 2 + ScreenScale(4)
+
+            ax.render.Draw(barHeight, barX, barY, barWidth, barHeight, Color(0, 0, 0, 150))
+
+            local targetArmor = math.Clamp(client:Armor(), 0, 100)
+            client._axCurvyArmor = client._axCurvyArmor or targetArmor
+            client._axCurvyArmor = Lerp(math.Clamp(FrameTime() * 10, 0, 1), client._axCurvyArmor, targetArmor)
+
+            local armorFraction = client._axCurvyArmor / 100
+            local armorFillWidth = math.max(0, barWidth * armorFraction - ScreenScale(2))
+
+            ax.render.Draw(barHeight, barX + ScreenScale(1), barY + ScreenScaleH(1), armorFillWidth, barHeight - ScreenScaleH(2), armorColor)
+        end
+
+        -- Draw voice chat icon if player is talking
+        if ( client:IsSpeaking() ) then
+            local iconSize = barHeight * 2
+            local iconX = width - ScreenScale(8) - iconSize
+            local iconY = height / 2 - iconSize / 2
+
+            local iconColor = Color(255, 255, 255, 200)
+            local iconMaterial = talkingIcon
+            if ( client:IsSpeaking() ) then
+                iconMaterial = speakingIcon
+            end
+
+            ax.render.DrawMaterial(0, iconX, iconY, iconSize, iconSize, iconColor, iconMaterial)
+        end
+
+        -- Draw talking icon if player is typing
+        if ( IsValid(ax.gui.chatbox) and ax.gui.chatbox:GetAlpha() >= 255 ) then
+            local iconSize = barHeight * 2
+            local iconX = width - ScreenScale(8) - iconSize
+            local iconY = height / 2 - iconSize / 2 + (client:IsSpeaking() and iconSize + ScreenScale(4) or 0)
+
+            ax.render.DrawMaterial(0, iconX, iconY, iconSize, iconSize, Color(255, 255, 255, 200), talkingIcon)
+        end
     end
 end
 
