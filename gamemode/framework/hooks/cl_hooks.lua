@@ -143,7 +143,7 @@ function GM:PostDrawTranslucentRenderables(depth, skybox)
 
     -- Draw voice chat icons above players' heads
     for _, client in player.Iterator() do
-        --if ( !IsValid(client) or client == LocalPlayer() ) then continue end
+        if ( !IsValid(client) or client == LocalPlayer() ) then continue end
         if ( !client:IsSpeaking() ) then continue end
 
         local headBone = client:LookupBone("ValveBiped.Bip01_Head1")
