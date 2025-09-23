@@ -38,3 +38,45 @@ function ENTITY:ResetRateLimit(name)
     data.axRateLimits[name] = nil
     return true
 end
+
+--- Emit a sequence of sounds in order, similar to Entity:EmitSound but queued.
+-- @param soundNames Table of sound file names (strings).
+-- @param soundLevel (Optional) Sound level (default: 75).
+-- @param pitchPercent (Optional) Pitch percentage (default: 100).
+-- @param volume (Optional) Volume scalar (default: 1).
+-- @param channel (Optional) Channel to emit on, e.g., CHAN_AUTO (default).
+-- @param soundFlags (Optional) EmitSound flags (default: 0).
+-- @param dsp (Optional) DSP preset (default: 0).
+-- @param filter (Optional) CRecipientFilter to restrict who hears it.
+function ENTITY:EmitQueuedSound(soundNames, soundLevel, pitchPercent, volume, channel, soundFlags, dsp, filter)
+    soundLevel = soundLevel or 75
+    pitchPercent = pitchPercent or 100
+    volume = volume or 1
+    channel = channel or CHAN_AUTO
+    soundFlags = soundFlags or 0
+    dsp = dsp or 0
+
+    if ( !istable(soundNames) ) then
+        self:PrintError("EmitQueuedSound expected table of sound names.")
+        return
+    end
+
+    local ent = self
+    local delay = 0
+    local totalDuration = 0
+
+    for _, snd in ipairs(soundNames) do
+        local duration = SoundDuration(snd) or 0
+        totalDuration = totalDuration + duration
+
+        timer.Simple(delay, function()
+            if ( !IsValid(ent) ) then return end
+
+            ent:EmitSound(snd, soundLevel, pitchPercent, volume, channel, soundFlags, dsp, filter)
+        end)
+
+        delay = delay + duration
+    end
+
+    return totalDuration
+end
