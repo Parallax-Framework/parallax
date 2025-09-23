@@ -25,8 +25,8 @@ function ax.util:CreateStore(spec)
     local SERVER_CACHE = {}
 
     -- Add a new setting
-    function store:Add(key, typeId, default, data)
-        if ( !isstring(key) or !typeId or default == nil ) then
+    function store:Add(key, type, default, data)
+        if ( !isstring(key) or !type or default == nil ) then
             ax.util:PrintDebug(spec.name, "Add: Invalid parameters for key", key)
             return false
         end
@@ -34,7 +34,7 @@ function ax.util:CreateStore(spec)
         data = data or {}
 
         store.registry[key] = {
-            typeId = typeId,
+            type = type,
             default = default,
             data = data
         }
@@ -48,7 +48,7 @@ function ax.util:CreateStore(spec)
         if ( (spec.authority == "client" and CLIENT) or (spec.authority == "server" and SERVER) ) then
             local storedValues = ax.util:ReadJSON(spec.path) or {}
             if ( storedValues[key] != nil ) then
-                local coerced, err = ax.type:Sanitise(typeId, storedValues[key])
+                local coerced, err = ax.type:Sanitise(type, storedValues[key])
                 if ( coerced != nil ) then
                     store.values[key] = coerced
                 else
@@ -99,6 +99,19 @@ function ax.util:CreateStore(spec)
         return store.defaults[key] or default
     end
 
+    function store:GetData(key)
+        if ( !isstring(key) ) then
+            return nil
+        end
+
+        local regEntry = store.registry[key]
+        if ( !regEntry ) then
+            return nil
+        end
+
+        return table.Copy(regEntry.data)
+    end
+
     function store:Set(key, value, bNoSave)
         if ( !isstring(key) ) then
             ax.util:PrintDebug(spec.name, "Set: Invalid key")
@@ -111,18 +124,18 @@ function ax.util:CreateStore(spec)
             return false
         end
 
-        local coerced, err = ax.type:Sanitise(regEntry.typeId, value)
+        local coerced, err = ax.type:Sanitise(regEntry.type, value)
         if ( coerced == nil ) then
             ax.util:PrintDebug(spec.name, "Set: Invalid value for", key, ":", err)
             return false
         end
 
-        if ( regEntry.typeId == ax.type.number ) then
+        if ( regEntry.type == ax.type.number ) then
             local data = regEntry.data
             coerced = ax.util:ClampRound(coerced, data.min, data.max, data.decimals)
         end
 
-        if ( regEntry.typeId == ax.type.array and isfunction(regEntry.data.populate) ) then
+        if ( regEntry.type == ax.type.array and isfunction(regEntry.data.populate) ) then
             local ok, choices = ax.util:SafeCall(regEntry.data.populate)
             if ( ok and istable(choices) and !choices[coerced] ) then
                 ax.util:PrintDebug(spec.name, "Set: Invalid choice for", key, ":", coerced)
@@ -184,31 +197,35 @@ function ax.util:CreateStore(spec)
         return true
     end
 
+    function store:GetAllCategories()
+        local result = {}
+
+        for key, entry in pairs(store.registry) do
+            local category = entry.data.category or "General"
+            result[category] = true
+        end
+
+        return table.GetKeys(result)
+    end
+
     function store:GetAllDefinitions()
         local result = {}
 
         for key, entry in pairs(store.registry) do
-            result[key] = { typeId = entry.typeId, default = entry.default, data = table.Copy(entry.data) }
+            result[key] = { type = entry.type, default = entry.default, data = table.Copy(entry.data) }
         end
 
         return result
     end
 
-    function store:GetAllByCategories(bRemoveHidden)
+    function store:GetAllByCategory(category)
         local result = {}
 
         for key, entry in pairs(store.registry) do
-            local data = entry.data
-            local category = data.category or "misc"
-            if ( bRemoveHidden and isfunction(data.hidden) ) then
-                local ok, isHidden = ax.util:SafeCall(data.hidden)
-                if ( ok and isHidden ) then
-                    continue
-                end
+            local entryCategory = entry.data.category or "misc"
+            if ( ax.util:FindString(entryCategory, category) ) then
+                result[key] = { type = entry.type, default = entry.default, data = table.Copy(entry.data) }
             end
-
-            result[category] = result[category] or {}
-            result[category][key] = { typeId = entry.typeId, default = entry.default, data = table.Copy(entry.data), value = store.values[key] }
         end
 
         return result
@@ -229,7 +246,7 @@ function ax.util:CreateStore(spec)
         for key, value in pairs(data) do
             local regEntry = store.registry[key]
             if ( regEntry ) then
-                local coerced, err = ax.type:Sanitise(regEntry.typeId, value)
+                local coerced, err = ax.type:Sanitise(regEntry.type, value)
                 if ( coerced != nil ) then
                     store.values[key] = coerced
                     loaded = loaded + 1
