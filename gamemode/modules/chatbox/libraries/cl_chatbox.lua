@@ -11,7 +11,26 @@ function chat.AddText(...)
     local arguments = {...}
     local currentColor = Color(255, 255, 255)
     local chatType = ax.chat.currentType
-    local font = hook.Run("GetChatFont", chatType) or "ax.chatbox.text"
+    local font = "ax.chatbox.text"
+
+    -- Search the arguments for a custom font input using <font=FontName>message</font>
+    for i = 1, #arguments do
+        local v = arguments[i]
+        if ( type(v) == "string" ) then
+            local fontTag = string.match(v, "<font=([^>]+)>")
+            if ( fontTag ) then
+                font = fontTag
+                arguments[i] = string.gsub(v, "<font=[^>]+>", "")
+                arguments[i] = string.gsub(arguments[i], "</font>", "")
+                break
+            end
+        end
+    end
+
+    if ( hook.Run("GetChatFont", chatType) ) then
+        font = hook.Run("GetChatFont", chatType)
+    end
+
     local maxWidth = ax.gui.chatbox:GetWide() - 20
 
     -- Add a timestamp if enabled
