@@ -105,10 +105,23 @@ function MODULE:HandlePlayerSwimming(client, velocity, clientTable)
     return true
 end
 
-function MODULE:HandlePlayerLanding(client, velocity, WasOnGround)
+function MODULE:HandlePlayerLanding(client, velocity, wasOnGround)
     if ( client:GetMoveType() == MOVETYPE_NOCLIP ) then return end
-    if ( client:IsOnGround() and !WasOnGround ) then
-        client:AnimRestartGesture(GESTURE_SLOT_JUMP, ACT_LAND, true)
+    if ( client:IsOnGround() and !wasOnGround ) then
+        local land = ACT_LAND
+        local clientTable = client:GetTable()
+        local animTable = clientTable.axAnimations
+        if ( animTable and animTable.land ) then
+            land = animTable.land
+        end
+
+        if ( isstring(land) ) then
+            land = client:LookupSequence(land)
+        elseif ( istable(land) ) then
+            land = client:LookupSequence(land[math.random(#land)])
+        end
+
+        client:PlayGesture(GESTURE_SLOT_JUMP, land)
     end
 end
 
@@ -121,45 +134,45 @@ function MODULE:HandlePlayerDriving(client, clientTable)
         return false
     end
 
-    local pVehicle = client:GetVehicle()
-    if ( !pVehicle.HandleAnimation and pVehicle.GetVehicleClass ) then
-        local c = pVehicle:GetVehicleClass()
+    local vehicle = client:GetVehicle()
+    if ( !vehicle.HandleAnimation and vehicle.GetVehicleClass ) then
+        local c = vehicle:GetVehicleClass()
         local t = list.Get("Vehicles")[c]
         if ( t and t.Members and t.Members.HandleAnimation ) then
-            pVehicle.HandleAnimation = t.Members.HandleAnimation
+            vehicle.HandleAnimation = t.Members.HandleAnimation
         else
-            pVehicle.HandleAnimation = true
+            vehicle.HandleAnimation = true
         end
     end
 
-    if ( isfunction(pVehicle.HandleAnimation) ) then
-        local seq = pVehicle:HandleAnimation(client)
+    if ( isfunction(vehicle.HandleAnimation) ) then
+        local seq = vehicle:HandleAnimation(client)
         if ( seq != nil ) then
             clientTable.CalcSeqOverride = seq
         end
     end
 
     if ( clientTable.CalcSeqOverride == -1 ) then
-        local class = pVehicle:GetClass()
+        local class = vehicle:GetClass()
         if ( class == "prop_vehicle_jeep" ) then
             clientTable.CalcSeqOverride = client:LookupSequence("drive_jeep")
         elseif ( class == "prop_vehicle_airboat" ) then
             clientTable.CalcSeqOverride = client:LookupSequence("drive_airboat")
-        elseif ( class == "prop_vehicle_prisoner_pod" and pVehicle:GetModel() == "models/vehicles/prisoner_pod_inner.mdl" ) then
+        elseif ( class == "prop_vehicle_prisoner_pod" and vehicle:GetModel() == "models/vehicles/prisoner_pod_inner.mdl" ) then
             clientTable.CalcSeqOverride = client:LookupSequence("drive_pd")
         else
             clientTable.CalcSeqOverride = client:LookupSequence("sit_rollercoaster")
         end
     end
 
-    local use_anims = ( clientTable.CalcSeqOverride == client:LookupSequence("sit_rollercoaster") or clientTable.CalcSeqOverride == client:LookupSequence("sit") )
-    if ( use_anims and client:GetAllowWeaponsInVehicle() and IsValid(client:GetActiveWeapon()) ) then
-        local holdtype = client:GetActiveWeapon():GetHoldType()
-        if ( holdtype == "smg" ) then
-            holdtype = "smg1"
+    local useAnims = ( clientTable.CalcSeqOverride == client:LookupSequence("sit_rollercoaster") or clientTable.CalcSeqOverride == client:LookupSequence("sit") )
+    if ( useAnims and client:GetAllowWeaponsInVehicle() and IsValid(client:GetActiveWeapon()) ) then
+        local holdType = client:GetActiveWeapon():GetHoldType()
+        if ( holdType == "smg" ) then
+            holdType = "smg1"
         end
 
-        local seqid = client:LookupSequence("sit_" .. holdtype)
+        local seqid = client:LookupSequence("sit_" .. holdType)
         if ( seqid != -1 ) then
             clientTable.CalcSeqOverride = seqid
         end
@@ -186,16 +199,16 @@ function MODULE:UpdateAnimation(client, velocity, maxseqgroundspeed)
 
     if ( CLIENT ) then
         if ( client:InVehicle() ) then
-            local Vehicle = client:GetVehicle()
-            local Velocity = Vehicle:GetVelocity()
-            local fwd = Vehicle:GetUp()
+            local vehicle = client:GetVehicle()
+            local Velocity = vehicle:GetVelocity()
+            local fwd = vehicle:GetUp()
             local dp = fwd:Dot(vector_up)
             client:SetPoseParameter("vertical_velocity", (dp < 0 and dp or 0) + fwd:Dot(Velocity) * 0.005)
 
-            local steer = Vehicle:GetPoseParameter("vehicle_steer")
+            local steer = vehicle:GetPoseParameter("vehicle_steer")
             steer = steer * 2 - 1
-            if ( Vehicle:GetClass() == "prop_vehicle_prisoner_pod" ) then
-                steer = 0 client:SetPoseParameter("aim_yaw", math.NormalizeAngle(client:GetAimVector():Angle().y - Vehicle:GetAngles().y - 90))
+            if ( vehicle:GetClass() == "prop_vehicle_prisoner_pod" ) then
+                steer = 0 client:SetPoseParameter("aim_yaw", math.NormalizeAngle(client:GetAimVector():Angle().y - vehicle:GetAngles().y - 90))
             end
 
             client:SetPoseParameter("vehicle_steer", steer)
@@ -248,7 +261,7 @@ local vectorAngle = FindMetaTable("Vector").Angle
 local normalizeAngle = math.NormalizeAngle
 function MODULE:CalcMainActivity(client, velocity)
     local clientTable = client:GetTable()
-    local forcedSequence = clientTable["ax.Sequence.forced"]
+    local forcedSequence = clientTable["ax.sequence.forced"]
 
     if ( forcedSequence ) then
         if ( client:GetSequence() != forcedSequence ) then
@@ -338,6 +351,10 @@ function MODULE:TranslateActivity(client, act)
     local class = ax.animations:GetModelClass(client:GetModel())
     if ( !class ) then return end
 
+    if ( class:find("player") and client:InVehicle() ) then
+        return newAct
+    end
+
     local animTable = clientTable.axAnimations
     if ( animTable ) then
         if ( !animTable[ACT_MP_JUMP] ) then
@@ -383,7 +400,7 @@ function MODULE:TranslateActivity(client, act)
 
     -- https://github.com/TankNut/helix-plugins/blob/master/turning.lua
     local diff = math.NormalizeAngle(client:GetRenderAngles().y - client:EyeAngles().y)
-    if ( math.abs(diff) >= 45 and client.axNextTurn <= CurTime() ) then
+    if ( !client:InVehicle() and math.abs(diff) >= 45 and client.axNextTurn <= CurTime() ) then
         local gesture = diff > 0 and "gesture_turn_right_90" or "gesture_turn_left_90"
         client:PlayGesture(GESTURE_SLOT_FLINCH, gesture)
 
