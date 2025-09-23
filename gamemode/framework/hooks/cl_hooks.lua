@@ -138,6 +138,44 @@ function GM:HUDPaintCurvy(width, height, client, isCurved)
     end
 end
 
+function GM:PostDrawTranslucentRenderables(depth, skybox)
+    if ( skybox ) then return end
+
+    -- Draw voice chat icons above players' heads
+    for _, client in player.Iterator() do
+        --if ( !IsValid(client) or client == LocalPlayer() ) then continue end
+        if ( !client:IsSpeaking() ) then continue end
+
+        local headBone = client:LookupBone("ValveBiped.Bip01_Head1")
+        if ( !headBone ) then continue end
+
+        local boneMatrix = client:GetBoneMatrix(headBone)
+        if ( !boneMatrix ) then continue end
+
+        local pos = boneMatrix:GetTranslation()
+        pos = pos + Vector(0, 0, 16)
+
+        local eyeAngles = EyeAngles()
+        local angle = Angle(0, eyeAngles.y - 90, 90)
+        local size = 96 * (1 + client:VoiceVolume())
+
+        client._axCurvyVoiceIconSize = client._axCurvyVoiceIconSize or size
+        client._axCurvyVoiceIconSize = Lerp(math.Clamp(FrameTime() * 10, 0, 1), client._axCurvyVoiceIconSize, size)
+        size = client._axCurvyVoiceIconSize
+
+        pos.z = pos.z + math.sin(CurTime()) * size / 96
+
+        cam.Start3D2D(pos, angle, 0.1)
+            local iconMaterial = talkingIcon
+            if ( client:IsSpeaking() ) then
+                iconMaterial = speakingIcon
+            end
+
+            ax.render.DrawMaterial(0, -size / 2, -size / 2, size, size, Color(255, 255, 255, 200), iconMaterial)
+        cam.End3D2D()
+    end
+end
+
 ax.viewstack:RegisterModifier("ragdoll", function(client, view)
     if ( !IsValid(client) or client:InVehicle() ) then return end
 
