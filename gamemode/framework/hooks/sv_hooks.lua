@@ -84,6 +84,11 @@ function GM:PlayerLoadout(client)
 
     client:Give("ax_hands")
 
+    for i = 1, 32 do
+        client:SetBodygroup(i, 0)
+        client:SetSubMaterial(i - 1, "")
+    end
+
     local character = client:GetCharacter()
     if ( character ) then
         client:SetModel(character:GetModel())
@@ -91,7 +96,7 @@ function GM:PlayerLoadout(client)
 
         local bodyGroups = character:GetData("bodygroups", {})
         for k, v in pairs(bodyGroups) do
-            client:SetBodygroup(k, v)
+            client:SetBodygroup(client:FindBodygroupByName(k), v)
         end
 
         local materials = character:GetData("materials", {})
