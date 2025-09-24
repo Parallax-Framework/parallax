@@ -7,11 +7,11 @@ ENT.Author = "Parallax Team"
 ENT.Category = "Parallax"
 
 function ENT:SetupDataTables()
-    self:NetworkVar( "Int", 0, "ItemID" )
+    self:NetworkVar("Int", 0, "ItemID")
 end
 
 function ENT:GetItemTable()
-    return ax.item.instances[ self:GetItemID() ]
+    return ax.item.instances[self:GetItemID()]
 end
 
 if ( SERVER ) then
