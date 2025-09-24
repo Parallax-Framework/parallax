@@ -439,6 +439,11 @@ function MODULE:DoAnimationEvent(client, event, data)
             desired = client:LookupSequence(desired[math.random(#desired)])
         end
 
+        local translated = hook.Run("TranslateEvent", client, event, data, desired)
+        if ( translated ) then
+            desired = translated
+        end
+
         client:PlayGesture(GESTURE_SLOT_ATTACK_AND_RELOAD, desired)
 
         return ACT_VM_PRIMARYATTACK
@@ -457,6 +462,11 @@ function MODULE:DoAnimationEvent(client, event, data)
             desired = client:LookupSequence(desired[math.random(#desired)])
         end
 
+        local translated = hook.Run("TranslateEvent", client, event, data, desired)
+        if ( translated ) then
+            desired = translated
+        end
+
         client:PlayGesture(GESTURE_SLOT_ATTACK_AND_RELOAD, desired)
 
         return ACT_INVALID
@@ -472,5 +482,17 @@ function MODULE:DoAnimationEvent(client, event, data)
         client:AnimResetGestureSlot(GESTURE_SLOT_ATTACK_AND_RELOAD)
 
         return ACT_INVALID
+    end
+end
+
+function MODULE:TranslateEvent(client, event, data, desired)
+    if ( !wOS or !wOS.DynaBase ) then return end
+
+    desired = isnumber(desired) and client:GetSequenceName(desired) or desired
+
+    if ( string.StartsWith(desired, "reload_") ) then
+        return "gesture_reload_" .. string.sub(desired, 8)
+    elseif ( string.StartsWith(desired, "shoot_") ) then
+        return "gesture_shoot_" .. string.sub(desired, 7)
     end
 end
