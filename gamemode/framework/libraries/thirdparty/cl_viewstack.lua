@@ -48,7 +48,7 @@ end
 local function normalize_returns(a, b, c, d, e, f)
     -- Table return
     if istable(a) then return a end
-    -- Tuple return: pos, ang, fov (ignore extra returns; GMod doesn’t use them here)
+    -- Tuple return: pos, ang, fov (ignore extra returns; GMod doesn't use them here)
     if a ~= nil or b ~= nil or c ~= nil then
         return {
             origin = a,
