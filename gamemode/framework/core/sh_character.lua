@@ -125,7 +125,8 @@ ax.character:RegisterVar("model", {
     end,
     populate = function(this, container, payload)
         local option = container:Add("ax.text")
-        option:SetText(string.lower(ax.util:UniqueIDToName(this.key)))
+        option:SetFont("ax.regular.bold")
+        option:SetText(string.upper(ax.util:UniqueIDToName(this.key)))
         option:Dock(TOP)
         option:SetZPos(1)
 

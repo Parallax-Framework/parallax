@@ -73,7 +73,7 @@ function PANEL:Init()
             banner = ax.util:GetMaterial(banner)
         end
 
-        local image = factionButton:Add("DPanel")
+        local image = factionButton:Add("EditablePanel")
         image:Dock(FILL)
         image:SetMouseInputEnabled(false)
         image:SetSize(factionButton:GetTall(), factionButton:GetTall())
@@ -91,7 +91,7 @@ function PANEL:Init()
 
             local boxHeight = boxHeightStatic * inertia
             boxHeight = math.Round(boxHeight)
-            draw.RoundedBox(0, 0, imageHeight - boxHeight, width, boxHeight, Color(255, 255, 255, 255 * inertia))
+            ax.render.Draw(0, 0, imageHeight - boxHeight, width, boxHeight, Color(255, 255, 255, 255 * inertia))
 
             local textColor = factionButton:GetTextColor()
             local hovered = factionButton:IsHovered()
@@ -178,7 +178,8 @@ function PANEL:PopulateVars()
 
         if ( v.fieldType == ax.type.string ) then
             local option = container:Add("ax.text")
-            option:SetText(string.lower(ax.util:UniqueIDToName(k)))
+            option:SetFont("ax.regular.bold")
+            option:SetText(string.upper(ax.util:UniqueIDToName(k)))
             option:Dock(TOP)
 
             local entry = container:Add("ax.text.entry")
@@ -195,7 +196,8 @@ function PANEL:PopulateVars()
             end
         elseif ( v.fieldType == ax.type.number ) then
             local option = container:Add("ax.text")
-            option:SetText(string.lower(ax.util:UniqueIDToName(k)))
+            option:SetFont("ax.regular.bold")
+            option:SetText(string.upper(ax.util:UniqueIDToName(k)))
             option:Dock(TOP)
 
             local slider = container:Add("DNumSlider")
