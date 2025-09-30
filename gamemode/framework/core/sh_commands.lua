@@ -152,6 +152,33 @@ ax.command:Add("CharSetFlags", {
     end
 })
 
+ax.command:Add("CharSetFaction", {
+    description = "Set the faction of a character.",
+    arguments = {
+        { name = "target", type = ax.type.character, optional = true },
+        { name = "faction", type = ax.type.string }
+    },
+    OnRun = function(client, target, faction)
+        if ( !target ) then
+            target = client:GetCharacter()
+        end
+
+        if ( !target ) then
+            return "Invalid character."
+        end
+
+        local factionTable = ax.faction:Get(faction)
+        if ( !factionTable ) then
+            return "Invalid faction."
+        end
+
+        target:SetFaction(factionTable.index, true)
+        target:Save()
+
+        return "Faction set to " .. factionTable.name
+    end
+})
+
 ax.command:Add("PlyWhitelist", {
     description = "Whitelist a player for a faction.",
     arguments = {
