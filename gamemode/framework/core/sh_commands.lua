@@ -68,7 +68,7 @@ ax.command:Add("CharSetSkin", {
         target:SetData("skin", skin)
         target:Save()
 
-        local targetPlayer = target:GetPlayer()
+        local targetPlayer = target:GetOwner()
         if ( IsValid(targetPlayer) ) then
             targetPlayer:SetSkin(skin)
         end
