@@ -24,7 +24,7 @@ function PANEL:Init()
     self.info:DockPadding(ScreenScale(4), ScreenScaleH(4), ScreenScale(4), ScreenScaleH(4))
     self.info:SetWide(0)
     self.info.Paint = function(this, width, height)
-        draw.RoundedBox(0, 0, 0, width, height, Color(0, 0, 0, 150))
+        ax.render.Draw(0, 0, 0, width, height, Color(0, 0, 0, 150))
     end
 
     local total = inventory:GetWeight() / inventory:GetMaxWeight()
@@ -34,10 +34,10 @@ function PANEL:Init()
     progress:SetFraction(total)
     progress:SetTall(ScreenScale(12))
     progress.Paint = function(this, width, height)
-        draw.RoundedBox(0, 0, 0, width, height, Color(0, 0, 0, 150))
+        ax.render.Draw(0, 0, 0, width, height, Color(0, 0, 0, 150))
 
         local fraction = this:GetFraction()
-        draw.RoundedBox(0, 0, 0, width * fraction, height, Color(100, 200, 175, 200))
+        ax.render.Draw(0, 0, 0, width * fraction, height, Color(100, 200, 175, 200))
     end
 
     local maxWeight = inventory:GetMaxWeight()
@@ -132,8 +132,8 @@ function PANEL:PopulateInfo(item)
 
         actionButton.DoClick = function()
             net.Start("ax.inventory.item.action")
-            net.WriteUInt(item.id, 32)
-            net.WriteString(k)
+                net.WriteUInt(item.id, 32)
+                net.WriteString(k)
             net.SendToServer()
 
             self.info:Motion(0.25, {
@@ -151,7 +151,7 @@ end
 function PANEL:Paint(width, height)
 end
 
-vgui.Register("ax.tab.inventory", PANEL, "DPanel")
+vgui.Register("ax.tab.inventory", PANEL, "EditablePanel")
 
 hook.Add("PopulateTabButtons", "ax.tab.inventory", function(buttons)
     buttons["inventory"] = {

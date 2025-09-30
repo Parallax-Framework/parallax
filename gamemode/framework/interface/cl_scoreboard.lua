@@ -51,7 +51,7 @@ function PANEL:RebuildScoreboard()
         if ( !members or #members == 0 ) then continue end
 
         -- Team header
-        local header = self.container:Add("DPanel")
+        local header = self.container:Add("EditablePanel")
         header:Dock(TOP)
         header.Paint = function(_, width, height)
             local col = team.GetColor(tid) or Color(80, 80, 80)
@@ -69,7 +69,7 @@ function PANEL:RebuildScoreboard()
 
         -- Player rows
         for index, client in ipairs(members) do
-            local row = self.container:Add("DPanel")
+            local row = self.container:Add("EditablePanel")
             row:Dock(TOP)
             row:DockMargin(0, 0, 0, index == #members and ScreenScaleH(8) or 0)
             row:SetMouseInputEnabled(true)
@@ -122,7 +122,7 @@ function PANEL:RebuildScoreboard()
     end
 end
 
-vgui.Register("ax.tab.scoreboard", PANEL, "DPanel")
+vgui.Register("ax.tab.scoreboard", PANEL, "EditablePanel")
 
 hook.Add("PopulateTabButtons", "ax.tab.scoreboard", function(buttons)
     buttons["scoreboard"] = {

@@ -7,7 +7,7 @@ end
 function PANEL:Paint(width, height)
 end
 
-vgui.Register("ax.tab.help", PANEL, "DPanel")
+vgui.Register("ax.tab.help", PANEL, "EditablePanel")
 
 hook.Add("PopulateTabButtons", "ax.tab.help", function(buttons)
     buttons["help"] = {

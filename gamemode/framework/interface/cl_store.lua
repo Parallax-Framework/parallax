@@ -7,7 +7,7 @@ function PANEL:Init()
     self.categories = self:Add("ax.scroller.horizontal")
     self.categories:SetSize(ScrW() - ScreenScale(32), ScreenScaleH(32))
 
-    self.container = self:Add("DPanel")
+    self.container = self:Add("EditablePanel")
     self.container:Dock(FILL)
     self.container:DockMargin(0, ScreenScaleH(16) + self.categories:GetTall(), 0, 0)
     self.container.Paint = nil

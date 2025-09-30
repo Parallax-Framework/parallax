@@ -245,7 +245,7 @@ function PANEL:Init()
     end
 
     -- Resizer handle (corner-based, position-adaptive)
-    self.sizer = self:Add("DPanel")
+    self.sizer = self:Add("EditablePanel")
     self.sizer:SetSize(self.categories:GetTall(), self.categories:GetTall())
     self.sizer.anchorX = "right"
     self.sizer.anchorY = "top"
@@ -398,7 +398,7 @@ function PANEL:PopulateRecommendations(text)
 
         for i = 1, #self.recommendations.list do
             local command = self.recommendations.list[i]
-            local rec = self.recommendations:Add("DPanel")
+            local rec = self.recommendations:Add("EditablePanel")
             rec:Dock(TOP)
             rec:DockMargin(4, 4, 4, 0)
             rec.index = i

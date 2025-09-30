@@ -85,7 +85,7 @@ function PANEL:PopulateCharacterList()
             banner = ax.util:GetMaterial(banner)
         end
 
-        local image = button:Add("DPanel")
+        local image = button:Add("EditablePanel")
         image:Dock(LEFT)
         image:DockMargin(0, 0, ScreenScale(8), 0)
         image:SetSize(button:GetTall() * 1.75, button:GetTall())

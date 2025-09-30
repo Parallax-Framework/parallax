@@ -369,4 +369,4 @@ function PANEL:Paint(width, height)
     ax.render.Draw(0, 0, 0, width, height, Color(0, 0, 0, 150))
 end
 
-vgui.Register("ax.transition.pages", PANEL, "DPanel")
+vgui.Register("ax.transition.pages", PANEL, "EditablePanel")
