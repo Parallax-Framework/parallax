@@ -17,22 +17,21 @@
 -- @return string One of "client", "server", or "shared"
 -- @usage local realm = ax.util:DetectFileRealm("cl_init.lua") -- returns "client"
 function ax.util:DetectFileRealm(file)
-    if ( !file or type(file) != "string" ) then
+    local fileName = string.GetFileFromFilename(file)
+    if ( !fileName or !isstring( fileName ) ) then
         return "shared"
     end
 
-    local fileName = string.lower(file)
+    fileName = string.lower(fileName)
 
     -- Client-side patterns
-    if ( string.match(fileName, "^cl_") or
-        string.match(fileName, "/cl_") ) then
+    if ( string.Left( fileName, 3 ) == "cl_" ) then
         self:PrintDebug("Detected client-side file: " .. fileName)
         return "client"
     end
 
     -- Server-side patterns
-    if ( string.match(fileName, "^sv_") or
-        string.match(fileName, "/sv_") ) then
+    if ( string.Left( fileName, 3 ) == "sv_" ) then
         self:PrintDebug("Detected server-side file: " .. fileName)
         return "server"
     end
