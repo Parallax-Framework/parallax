@@ -321,15 +321,15 @@ if ( CLIENT ) then
                 if ( fillW > 0 ) then
                     if ( t.shrinkAnchorRight ) then
                         -- draw anchored to the right so the left edge moves right as fillW decreases
-                        draw.RoundedBox(0, x + (fullW - fillW), y, fillW, h, col)
+                        ax.render.Draw(0, x + (fullW - fillW), y, fillW, h, col)
                     else
-                        draw.RoundedBox(0, x, y, fillW, h, col)
+                        ax.render.Draw(0, x, y, fillW, h, col)
                     end
                 end
 
                 -- draw the outro matte cover (left portion) which hides the text; coverW==0 means fully revealed
                 if ( t.coverW and t.coverW > 0 ) then
-                    draw.RoundedBox(0, x, y, t.coverW, h, col)
+                    ax.render.Draw(0, x, y, t.coverW, h, col)
                 end
 
                 -- cleanup if done
