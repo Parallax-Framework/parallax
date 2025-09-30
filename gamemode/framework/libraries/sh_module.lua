@@ -90,3 +90,9 @@ function ax.module:Get(name)
 
     return module
 end
+
+function ax.module:IsLoaded(name)
+    if ( !name or name == "" ) then return false end
+
+    return self.stored[name] != nil
+end
