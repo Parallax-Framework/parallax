@@ -58,6 +58,14 @@ local hide = {
 function GM:HUDShouldDraw(name)
     if ( hide[name] ) then return false end
 
+    local client = ax.client
+    if ( !IsValid(client) ) then return false end
+    if ( client:GetViewEntity() != client ) then return false end
+    if ( gui.IsGameUIVisible() ) then return false end
+
+    local weapon = client:GetActiveWeapon()
+    if ( IsValid(weapon) and weapon:GetClass() == "gmod_camera" ) then return false end
+
     return true
 end
 
@@ -201,3 +209,20 @@ ax.viewstack:RegisterModifier("ragdoll", function(client, view)
         }
     end
 end, 10)
+
+local cameraFOV = CreateConVar("ax_camera_fov", "90", {FCVAR_ARCHIVE, FCVAR_REPLICATED}, "Set the camera FOV when using a view entity.")
+ax.viewstack:RegisterModifier("camera", function(client, view)
+    if ( !IsValid(client) or client:InVehicle() ) then return end
+
+    local viewEntity = client:GetViewEntity()
+    if ( IsValid(viewEntity) and viewEntity != client and viewEntity:GetClass() != "gmod_camera" ) then
+        local pos = viewEntity:GetPos()
+        local ang = viewEntity:GetAngles()
+
+        return {
+            origin = pos,
+            angles = ang,
+            fov = cameraFOV:GetFloat()
+        }
+    end
+end, 99)

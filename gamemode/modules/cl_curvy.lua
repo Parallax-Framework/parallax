@@ -201,20 +201,9 @@ function ax.curvy:RenderToTarget(rtName, width, height, drawFunc, ...)
     return texture
 end
 
-function ax.curvy:ShouldDrawCurvedHUD(client)
-    if ( !IsValid(client) ) then return false end
-    if ( client:GetViewEntity() != client ) then return false end
-    if ( gui.IsGameUIVisible() ) then return false end
-
-    local weapon = client:GetActiveWeapon()
-    if ( IsValid(weapon) and weapon:GetClass() == "gmod_camera" ) then return false end
-
-    return true
-end
-
 function ax.curvy:HUDPaintCurvy(drawFunc, rtName)
     local client = LocalPlayer()
-    if ( !self:ShouldDrawCurvedHUD(client) ) then return end
+    if ( hook.Run("HUDShouldDraw") == false ) then return end
 
     local width, height = ScrW(), ScrH()
     rtName = rtName or "main"
@@ -244,7 +233,7 @@ end
 
 function ax.curvy:PostRender()
     local client = LocalPlayer()
-    if ( !self:ShouldDrawCurvedHUD(client) ) then return end
+    if ( hook.Run("HUDShouldDraw") == false ) then return end
 
     local width, height = ScrW(), ScrH()
     local rt = "post"
