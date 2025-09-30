@@ -64,10 +64,10 @@ if ( CLIENT ) then
     ax.notification.active = {}
 
     -- style defaults (can be overridden by config where noted)
-    ax.notification.maxVisible = math.max(1, math.floor(ScrH() / 128)) -- max toasts visible at once
-    ax.notification.paddingX = ScreenScale(4)
-    ax.notification.paddingY = ScreenScaleH(4)
-    ax.notification.spacing = ScreenScale(4)
+    ax.notification.maxVisible = math.max(1, math.floor(ScrH() / 64)) -- max toasts visible at once
+    ax.notification.paddingX = ScreenScale(16)
+    ax.notification.paddingY = ScreenScaleH(2)
+    ax.notification.spacing = ScreenScaleH(2)
     ax.notification.font = "ax.regular.bold"
     ax.notification.maxWidthFrac = 0.5
     ax.notification.inTime = 0.25
@@ -134,7 +134,7 @@ if ( CLIENT ) then
         end
 
         local w = clamp(maxLineW + self.paddingX * 2, 64, maxW)
-        local h = clamp(#lines * th + self.paddingY * 2, th + self.paddingY * 2, math.floor(sh * 0.5))
+        local h = clamp(#lines * th + self.paddingY * 2, th + self.paddingY * 2, math.floor(sh / 2))
 
         local p = vgui.Create("Panel")
         p:SetVisible(false)
@@ -216,8 +216,8 @@ if ( CLIENT ) then
         if ( self.active[ 1 ] == nil ) then return end
 
         local sw, sh = ScrW(), ScrH()
-        local baseY = sh - 24
-        local cx = math.floor(sw * 0.5)
+        local baseY = sh - ScreenScaleH(32)
+        local cx = math.floor(sw / 2)
 
         surface.SetFont(self.font)
 
