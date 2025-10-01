@@ -60,6 +60,24 @@ end
 
 -- Client-side implementation
 if ( CLIENT ) then
+    sound.Add({
+        name = "parallax.ui.notification.in",
+        channel = CHAN_AUTO,
+        volume = 0.4,
+        level = 60,
+        pitch = {95, 105},
+        sound = "parallax/ui/notification_in.wav"
+    })
+
+    sound.Add({
+        name = "parallax.ui.notification.out",
+        channel = CHAN_AUTO,
+        volume = 0.4,
+        level = 60,
+        pitch = {95, 105},
+        sound = "parallax/ui/notification_out.wav"
+    })
+
     ax.notification.queue = {}
     ax.notification.active = {}
 
@@ -173,7 +191,7 @@ if ( CLIENT ) then
             outFadeTime = outFadeTime
         }
 
-        ax.client:EmitSound("parallax/ui/notification_in.wav", 60, math.random(95, 105), 0.4)
+        ax.client:EmitSound("parallax.ui.notification.in")
 
         p:Motion(0.25, {
             Easing = "OutQuad",
@@ -208,7 +226,7 @@ if ( CLIENT ) then
         t.closing = true
         t.phase = "out-eat"
         t.phaseStart = CurTime()
-        ax.client:EmitSound("parallax/ui/notification_out.wav", 60, math.random(95, 105), 0.4)
+        ax.client:EmitSound("parallax.ui.notification.out")
     end
 
     function ax.notification:Render()
