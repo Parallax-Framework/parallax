@@ -79,7 +79,7 @@ function ax.faction:Include(directory)
             local index = (istable(existing) and existing.index) or (#self.instances + 1)
 
             if ( existing ) then
-                ax.util:PrintDebug(Color(255, 200, 50), "Faction \"" .. facUniqueID .. "\" already exists, overwriting file: " .. fileName)
+                ax.util:PrintDebug(color_warning, "Faction \"" .. facUniqueID .. "\" already exists, overwriting file: " .. fileName)
             end
 
             FACTION = { id = facUniqueID, index = index }
@@ -88,7 +88,7 @@ function ax.faction:Include(directory)
                 end
 
                 ax.util:Include(directory .. "/" .. fileName, "shared")
-                ax.util:PrintDebug(Color(85, 255, 120), "Faction \"" .. (FACTION.name or FACTION.Name or FACTION.id) .. "\" initialised successfully.")
+                ax.util:PrintDebug(color_success, "Faction \"" .. (FACTION.name or FACTION.Name or FACTION.id) .. "\" initialised successfully.")
 
                 team.SetUp(FACTION.index, FACTION.name or FACTION.Name or ("Faction " .. FACTION.id), FACTION.color or Color(255, 255, 255), FACTION.icon or "icon16/user.png")
 

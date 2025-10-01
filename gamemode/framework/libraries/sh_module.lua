@@ -75,7 +75,7 @@ function ax.module:Include(path)
     end
 
     if ( files[1] == nil and directories[1] == nil ) then
-        ax.util:PrintDebug(Color(255, 73, 24), "No modules found in path: " .. path)
+        ax.util:PrintDebug(color_error, "No modules found in path: " .. path)
     end
 end
 

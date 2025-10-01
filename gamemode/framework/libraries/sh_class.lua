@@ -55,23 +55,23 @@ function ax.class:Include(directory)
             local index = (istable(existing) and existing.index) or (#self.instances + 1)
 
             if ( existing ) then
-                ax.util:PrintDebug(Color(255, 200, 50), "Class \"" .. clsUniqueID .. "\" already exists, overwriting file: " .. fileName)
+                ax.util:PrintDebug(color_warning, "Class \"" .. clsUniqueID .. "\" already exists, overwriting file: " .. fileName)
             end
 
             CLASS = { id = clsUniqueID, index = index }
                 if ( !isnumber(CLASS.Faction) ) then
-                    ax.util:PrintDebug(Color(255, 73, 24), "Class \"" .. CLASS.id .. "\" does not have faction ID, skipping file: " .. fileName)
+                    ax.util:PrintDebug(color_error, "Class \"" .. CLASS.id .. "\" does not have faction ID, skipping file: " .. fileName)
                     continue
                 end
 
                 local factionTable = ax.faction:Get(CLASS.Faction)
                 if ( !istable(factionTable) ) then
-                    ax.util:PrintDebug(Color(255, 73, 24), "Class \"" .. CLASS.id .. "\" uses an invalid faction ID skipping file: " .. fileName)
+                    ax.util:PrintDebug(color_error, "Class \"" .. CLASS.id .. "\" uses an invalid faction ID skipping file: " .. fileName)
                     continue
                 end
 
                 ax.util:Include(directory .. "/" .. fileName, "shared")
-                ax.util:PrintDebug(Color(85, 255, 120), "CLASS \"" .. (CLASS.Name or CLASS.name or CLASS.id) .. "\" initialised successfully.")
+                ax.util:PrintDebug(color_success, "CLASS \"" .. (CLASS.Name or CLASS.name or CLASS.id) .. "\" initialised successfully.")
 
                 if ( !istable(factionTable.Classes) ) then factionTable.Classes = {} end
                 factionTable.Classes[CLASS.id] = CLASS
