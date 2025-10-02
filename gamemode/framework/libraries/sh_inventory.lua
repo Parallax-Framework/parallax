@@ -142,20 +142,18 @@ if ( SERVER ) then
                                 inventory.maxWeight = maxWeight
                                 inventory.receivers = {}
 
-                                local itemsInInv = {}
                                 local itemFetchQuery = mysql:Select("ax_items")
                                 itemFetchQuery:Where("inventory_id", data.id)
                                 itemFetchQuery:Callback(function(itemsResult, itemsStatus)
                                     if ( itemsResult == nil or itemsStatus == false ) then return end
 
+                                    local itemsInInv = {}
                                     for j = 1, #itemsResult do
                                         local itemData = itemsResult[j]
                                         local item = ax.item.stored[itemData.class]
                                         if ( !item ) then continue end
 
-                                        local itemObject = setmetatable(ax.item.stored[itemData.class], ax.item.meta)
-                                        itemObject.id = itemData.id
-                                        itemObject.class = itemData.class
+                                        local itemObject = ax.item:Instance(itemData.id, itemData.class)
                                         itemObject.inventory_id = itemData.inventory_id
                                         itemObject.data = util.JSONToTable(itemData.data) or {}
 
@@ -164,18 +162,18 @@ if ( SERVER ) then
                                     end
 
                                     inventory.items = itemsInInv
+
+                                    self.instances[inventory.id] = inventory
+                                    self:Sync(inventory)
+
+                                    local clientChar = client:GetCharacter()
+                                    local charInv = clientChar and clientChar.vars and clientChar.vars.inventory
+                                    if ( charInv == inventory.id ) then
+                                        inventory:AddReceiver(client)
+                                        ax.util:PrintDebug(string.format("Added %s as a receiver to inventory %d", client:SteamID64(), inventory.id))
+                                    end
                                 end)
                                 itemFetchQuery:Execute()
-
-                                self.instances[inventory.id] = inventory
-                                self:Sync(inventory)
-
-                                local clientChar = client:GetCharacter()
-                                local charInv = clientChar and clientChar.vars and clientChar.vars.inventory
-                                if ( charInv == inventory.id ) then
-                                    inventory:AddReceiver(client)
-                                    ax.util:PrintDebug(string.format("Added %s as a receiver to inventory %d", client:SteamID64(), inventory.id))
-                                end
                             end
                         end)
                         inventoryQuery:Execute()
@@ -186,3 +184,10 @@ if ( SERVER ) then
         end
     end
 end
+
+concommand.Add("ax_inventory_restore", function(client, command, args)
+    if ( !IsValid(client) or !client:IsPlayer() ) then return end
+    if ( !client:IsSuperAdmin() ) then return end
+
+    ax.inventory:Restore(client)
+end)

@@ -56,7 +56,7 @@ end
 function inventory:GetOwner()
     local owner
     for k, v in pairs(ax.character.instances) do
-        if ( v.inventoryID == self.id ) then
+        if ( v:GetInventoryID() == self.id ) then
             owner = v
             break
         end

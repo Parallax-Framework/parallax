@@ -257,14 +257,13 @@ net.Receive("ax.inventory.sync", function()
     for i = 1, #inventoryItems do
         local itemData = inventoryItems[i]
         if ( istable(itemData) and isnumber(itemData.id) ) then
-            local item = setmetatable(ax.item.stored[itemData.class], ax.item.meta)
-            item.id = itemData.id
-            item.class = itemData.class
-            item.data = itemData.data or {}
+            local itemObject = ax.item:Instance(itemData.id, itemData.class)
+            itemObject.inventory_id = inventoryID
+            itemObject.data = itemData.data or {}
 
-            ax.item.instances[item.id] = item
-            inventoryItems[i] = item
-            ax.util:PrintDebug(string.format("Synchronized item %d (%s) in inventory %d", item.id, item.class, inventoryID))
+            ax.item.instances[itemObject.id] = itemObject
+            inventoryItems[i] = itemObject
+            ax.util:PrintDebug(string.format("Synchronized item %d (%s) in inventory %d", itemObject.id, itemObject.class, inventoryID))
         else
             inventoryItems[i] = nil
             ax.util:PrintError("Invalid item data received for inventory sync.")
@@ -308,14 +307,16 @@ net.Receive("ax.inventory.item.add", function()
         return
     end
 
-    local item = setmetatable(ax.item.stored[item_class], ax.item.meta)
-    item.id = item_id
-    item.class = item_class
-    item.data = item_data or {}
-    item.inventory_id = inventory_id
+    local itemObject = ax.item:Instance(item_id, item_class)
+    itemObject.inventory_id = inventory_id
+    itemObject.data = item_data or {}
 
     inventory.items[item.id] = item
     ax.item.instances[item.id] = item
+
+    if ( IsValid(ax.gui.inventory) ) then
+        ax.gui.inventory:PopulateItems()
+    end
 end)
 
 net.Receive("ax.inventory.item.remove", function()
@@ -334,6 +335,10 @@ net.Receive("ax.inventory.item.remove", function()
             ax.item.instances[item_id] = nil
             break
         end
+    end
+
+    if ( IsValid(ax.gui.inventory) ) then
+        ax.gui.inventory:PopulateItems()
     end
 end)
 
@@ -388,6 +393,10 @@ net.Receive("ax.item.transfer", function()
     end
 
     ax.util:PrintDebug(string.format("Item %d transferred from inventory %d to inventory %d", item.id, fromInventoryID, toInventoryID))
+
+    if ( IsValid(ax.gui.inventory) ) then
+        ax.gui.inventory:PopulateItems()
+    end
 end)
 
 net.Receive("ax.item.spawn", function()
@@ -401,12 +410,10 @@ net.Receive("ax.item.spawn", function()
     end
 
     -- Create item instance
-    local itemInstance = setmetatable(table.Copy(item), ax.item.meta)
-    itemInstance.id = itemID
-    itemInstance.class = itemClass
-    itemInstance.data = {}
-    itemInstance.inventory_id = 0
+    local itemObject = ax.item:Instance(itemID, itemClass)
+    itemObject.inventory_id = 0
+    itemObject.data = {}
 
-    ax.item.instances[itemID] = itemInstance
+    ax.item.instances[itemID] = itemObject
     ax.util:PrintDebug(string.format("Spawning item entity for item ID %d (%s)", itemID, itemClass))
 end)

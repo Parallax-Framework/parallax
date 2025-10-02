@@ -55,13 +55,14 @@ function ax.item:Include(path)
 
                     local inventoryID = 0
                     for k, v in pairs(ax.character.instances) do
-                        if ( v.inventoryID == item.invID ) then
-                            inventoryID = v.inventoryID
+                        print(v:GetInventoryID(), item:GetInventoryID())
+                        if ( v:GetInventoryID() == item:GetInventoryID() ) then
+                            inventoryID = v:GetInventoryID()
                             break
                         end
                     end
 
-                    if ( inventoryID <= 0 ) then
+                    if ( !inventoryID or inventoryID <= 0 ) then
                         client:Notify("You cannot drop this item right now.")
                         return false
                     end
@@ -97,6 +98,37 @@ function ax.item:Get(identifier)
     end
 
     return nil
+end
+
+function ax.item:Instance(id, class)
+    if ( !isnumber(id) or id <= 0 ) then
+        return nil
+    end
+
+    if ( !isstring(class) or class == "" ) then
+        return nil
+    end
+
+    local item = self.stored[class]
+    if ( !istable(item) ) then
+        return nil
+    end
+
+    if ( self.instances[id] and self.instances[id].class == class ) then
+        return self.instances[id]
+    end
+
+    local itemObject = setmetatable({
+        id = id,
+        class = class
+    }, {
+        __index = item,
+        __tostring = item.__tostring
+    })
+
+    self.instances[id] = itemObject
+
+    return itemObject
 end
 
 if ( SERVER ) then
@@ -179,8 +211,6 @@ if ( SERVER ) then
                     toInventory.items[item.id] = item
                 end
 
-                item.inventory_id = toInventoryID
-
                 if ( fromInventory != 0 ) then
                     fromInventory.items[item.id] = nil
                 end
@@ -248,12 +278,7 @@ if ( SERVER ) then
                     return false
                 end
 
-                local itemObject = setmetatable(item, ax.item.meta)
-                itemObject.id = lastID
-                itemObject.data = data or {}
-                itemObject.inventory_id = 0
-
-                ax.item.instances[lastID] = itemObject
+                local itemObject = ax.item:Instance(lastID, class)
 
                 local entity = ents.Create("ax_item")
                 entity:SetItemID(lastID)

@@ -30,6 +30,12 @@ end
 
 character.GetInv = character.GetInventory
 
+function character:GetInventoryID()
+    return tonumber(self.vars.inventory) or 0
+end
+
+character.GetInvID = character.GetInventoryID
+
 function character:GetData(key)
     if ( !istable(self.vars.data) ) then self.vars.data = {} end
 

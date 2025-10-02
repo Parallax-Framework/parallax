@@ -1,18 +1,20 @@
 local PANEL = {}
 
 function PANEL:Init()
+    ax.gui.inventory = self
+
     self:Dock(FILL)
 
     local client = ax.client
     local character = client:GetCharacter()
-    if ( !character ) then
-        return
-    end
+    if ( !character ) then return end
+
+    self.character = character
 
     local inventory = character:GetInventory()
-    if ( !inventory ) then
-        return
-    end
+    if ( !inventory ) then return end
+
+    self.inventory = inventory
 
     self.container = self:Add("ax.scroller.vertical")
     self.container:Dock(FILL)
@@ -26,13 +28,11 @@ function PANEL:Init()
         ax.render.Draw(0, 0, 0, width, height, Color(0, 0, 0, 150))
     end
 
-    local total = inventory:GetWeight() / inventory:GetMaxWeight()
-
-    local progress = self.container:Add("DProgress")
-    progress:SetFraction(total)
-    progress:SetTall(ScreenScale(12))
-    progress:Dock(TOP)
-    progress.Paint = function(this, width, height)
+    self.weightProgress = self.container:Add("DProgress")
+    self.weightProgress:SetFraction(inventory:GetWeight() / inventory:GetMaxWeight())
+    self.weightProgress:SetTall(ScreenScale(12))
+    self.weightProgress:Dock(TOP)
+    self.weightProgress.Paint = function(this, width, height)
         ax.render.Draw(0, 0, 0, width, height, Color(0, 0, 0, 150))
 
         local fraction = this:GetFraction()
@@ -40,13 +40,29 @@ function PANEL:Init()
     end
 
     local maxWeight = inventory:GetMaxWeight()
-    local weight = math.Round(maxWeight * progress:GetFraction(), 2)
+    local weight = math.Round(maxWeight * self.weightProgress:GetFraction(), 2)
 
-    local label = progress:Add("ax.text")
-    label:SetFont("ax.regular")
-    label:SetText(weight .. "kg / " .. maxWeight .. "kg", true)
-    label:SetContentAlignment(5)
-    label:Dock(FILL)
+    self.weightCounter = self.weightProgress:Add("ax.text")
+    self.weightCounter:SetFont("ax.regular")
+    self.weightCounter:SetText(weight .. "kg / " .. maxWeight .. "kg", true)
+    self.weightCounter:SetContentAlignment(5)
+    self.weightCounter:Dock(FILL)
+
+    self:PopulateItems()
+end
+
+function PANEL:PopulateItems()
+    local character = self.character
+    local inventory = self.inventory
+
+    if ( !character or !inventory ) then
+        return
+    end
+
+    self.container:Clear()
+
+    self.weightProgress:SetFraction(inventory:GetWeight() / inventory:GetMaxWeight())
+    self.weightCounter:SetText(math.Round(inventory:GetWeight(), 2) .. "kg / " .. inventory:GetMaxWeight() .. "kg", true)
 
     for k, v in pairs(inventory:GetItems()) do
         if ( !ax.item.stored[v.class] ) then
@@ -62,6 +78,7 @@ function PANEL:Init()
         item:SetContentAlignment(4)
         item:SetTextInset(item:GetTall() + ScreenScale(2), 0)
         item:Dock(TOP)
+        item:SetTooltip(v:GetID() or 0)
 
         item.DoClick = function()
             self.info:Motion(0.25, {

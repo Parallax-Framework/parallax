@@ -11,6 +11,8 @@
 
 local item = ax.item.meta or {}
 item.__index = item
+item.id = item.id
+item.class = item.class
 
 function item:__tostring()
     return string.format("Item [%d][%s]", self.id, self.name or "Unknown")
@@ -38,6 +40,20 @@ end
 
 function item:GetModel()
     return self.model or Model( "models/props_junk/wood_crate001a.mdl" )
+end
+
+function item:GetInventoryID()
+    local inventoryID
+    for _, v in pairs(ax.inventory.instances) do
+        for id, item in pairs(v.items) do
+            if ( id == self.id ) then
+                inventoryID = v.id
+                break
+            end
+        end
+    end
+
+    return inventoryID
 end
 
 function item:GetData(key)
