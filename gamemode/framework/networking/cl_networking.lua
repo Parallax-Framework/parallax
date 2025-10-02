@@ -355,10 +355,13 @@ net.Receive("ax.item.transfer", function()
         return
     end
 
-    local fromInventory = ax.inventory.instances[fromInventoryID]
-    if ( fromInventoryID != 0 and !istable(fromInventory) ) then
-        ax.util:PrintError("From inventory with ID " .. fromInventoryID .. " does not exist.")
-        return
+    local fromInventory
+    if ( fromInventoryID != 0 ) then
+        fromInventory = ax.inventory.instances[fromInventoryID]
+        if ( !istable(fromInventory) ) then
+            ax.util:PrintError("From inventory with ID " .. fromInventoryID .. " does not exist.")
+            return
+        end
     end
 
     local toInventory = nil
@@ -368,8 +371,6 @@ net.Receive("ax.item.transfer", function()
             ax.util:PrintError("To inventory with ID " .. toInventoryID .. " does not exist.")
             return
         end
-    else
-        toInventory = 0
     end
 
     -- Remove from the old inventory, if applicable
@@ -379,7 +380,8 @@ net.Receive("ax.item.transfer", function()
 
     item.invID = toInventoryID
 
-    if ( toInventory != 0 ) then
+    -- Add to the new inventory, if applicable
+    if ( toInventoryID != 0 ) then
         toInventory.items[item.id] = item
     end
 
