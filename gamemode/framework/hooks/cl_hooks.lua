@@ -226,3 +226,15 @@ ax.viewstack:RegisterModifier("camera", function(client, view)
         }
     end
 end, 99)
+
+-- Due to viewstack, it breaks the SWEP:GetViewModelPosition hook, so we have to do it ourselves
+ax.viewstack:RegisterViewModelModifier("swep", function(weapon, patch)
+    if ( !IsValid(weapon) or !weapon.GetViewModelPosition ) then return end
+
+    local pos, ang = weapon:GetViewModelPosition(patch.pos, patch.ang)
+
+    return {
+        pos = pos,
+        ang = ang
+    }
+end, 99) -- Run last

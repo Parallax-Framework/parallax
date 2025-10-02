@@ -14,7 +14,8 @@ local MODULE = MODULE
 local LOWERED_POS = Vector(0, 0, 0)
 local LOWERED_ANGLES = Angle(10, 10, 0)
 local LOWERED_LERP = {pos = Vector(0, 0, 0), angles = Angle(0, 0, 0)}
-function MODULE:CalcViewModelView(weapon, viewModel, oldPos, oldAng, pos, ang)
+
+ax.viewstack:RegisterViewModelModifier("safety", function(weapon, patch)
     local client = ax.client
     if ( !IsValid(client) ) then return end
 
@@ -38,8 +39,13 @@ function MODULE:CalcViewModelView(weapon, viewModel, oldPos, oldAng, pos, ang)
         LOWERED_LERP.angles = LerpAngle(FrameTime() * 4, LOWERED_LERP.angles, angle_zero)
     end
 
-    pos = pos + LOWERED_LERP.pos
-    ang = ang + LOWERED_LERP.angles
+    if ( !LOWERED_LERP.pos or !LOWERED_LERP.angles ) then return end
 
-    return GAMEMODE.BaseClass:CalcViewModelView(weapon, viewModel, oldPos, oldAng, pos, ang)
-end
+    local pos = patch.pos + LOWERED_LERP.pos
+    local ang = patch.ang + LOWERED_LERP.angles
+
+    return {
+        pos = pos,
+        ang = ang
+    }
+end, 99)

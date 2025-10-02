@@ -1,17 +1,21 @@
 --[[
-    ax.viewstack — Stacked CalcView dispatcher for Garry's Mod
-    ----------------------------------------------------------
+    ax.viewstack — Stacked CalcView and CalcViewModelView dispatcher for Garry's Mod
+    -------------------------------------------------------------------------------
     Purpose:
-      GMod stops calling further CalcView hooks after the first non-nil return.
-      This shim captures existing CalcView hooks, removes them, then replaces
-      CalcView with a single dispatcher that calls everyone and merges results.
+      GMod stops calling further CalcView/CalcViewModelView hooks after the first non-nil return.
+      This shim captures existing hooks, removes them, then replaces them with single dispatchers
+      that call everyone and merge results.
 
     Behavior:
-      - Legacy hooks: called as fn(client, origin, angles, fov, znear, zfar).
+      - CalcView legacy hooks: called as fn(client, origin, angles, fov, znear, zfar).
         If they return (pos, ang, fov) or a table { origin, angles, fov, znear, zfar, drawviewer },
         we merge into the current view. Missing fields are ignored.
-      - Modifier API: register with ax.viewstack.RegisterModifier(name, fn, priority).
+      - CalcViewModelView legacy hooks: called as fn(weapon, viewmodel, oldPos, oldAng, pos, ang).
+        If they return (pos, ang, fov) or a table { pos, ang, fov }, we merge into the current viewmodel view.
+      - Modifier API: register with ax.viewstack.RegisterModifier(name, fn, priority) for CalcView.
         Your fn gets (client, view) and returns either nil (no change) or a (partial) view table.
+      - ViewModelModifier API: register with ax.viewstack.RegisterViewModelModifier(name, fn, priority) for CalcViewModelView.
+        Your fn gets (weapon, viewmodel) and returns either nil (no change) or a (partial) viewmodel table.
 
     Notes:
       - Last write wins per-field.
@@ -26,8 +30,15 @@
 ax = ax or {}
 ax.viewstack = ax.viewstack or {}
 
+-- CalcView storage
 local CAPTURED   = nil           -- array of { name, fn, prio, enabled=true }
 local MODS       = {}            -- array of { name, fn, prio, enabled=true }
+
+-- CalcViewModelView storage
+local CAPTURED_VIEWMODEL = nil   -- array of { name, fn, prio, enabled=true }
+local MODS_VIEWMODEL     = {}    -- array of { name, fn, prio, enabled=true }
+
+-- Shared storage
 local BLACKLIST  = {}            -- [name]=true
 local PRIORITY   = {}            -- [name]=number
 local WARNED     = {}            -- [name]=true (already logged error once)
@@ -41,6 +52,15 @@ local function merge_view(base, patch)
     base.znear       = patch.znear       or base.znear
     base.zfar        = patch.zfar        or base.zfar
     base.drawviewer  = (patch.drawviewer ~= nil) and patch.drawviewer or base.drawviewer
+    return base
+end
+
+-- Utility: shallow merge for viewmodel views, last write wins
+local function merge_viewmodel_view(base, patch)
+    if not patch then return base end
+    base.pos         = patch.pos         or base.pos
+    base.ang         = patch.ang         or base.ang
+    base.fov         = patch.fov         or base.fov
     return base
 end
 
@@ -63,6 +83,21 @@ local function normalize_returns(a, b, c, d, e, f)
     return nil
 end
 
+-- Normalize any CalcViewModelView-style returns into a table or nil
+local function normalize_viewmodel_returns(a, b, c)
+    -- Table return
+    if istable(a) then return a end
+    -- Tuple return: pos, ang, fov
+    if a ~= nil or b ~= nil or c ~= nil then
+        return {
+            pos = a,
+            ang = b,
+            fov = c
+        }
+    end
+    return nil
+end
+
 local function safe_call(name, fn, ...)
     local ok, a, b, c, d, e, f = pcall(fn, ...)
     if not ok then
@@ -73,6 +108,18 @@ local function safe_call(name, fn, ...)
         return nil
     end
     return normalize_returns(a, b, c, d, e, f)
+end
+
+local function safe_call_viewmodel(name, fn, ...)
+    local ok, a, b, c = pcall(fn, ...)
+    if not ok then
+        if not WARNED[name] then
+            WARNED[name] = true
+            MsgC(Color(255,80,80), "[viewstack] ViewModelView hook error in ", name, ": ", tostring(a), "\n")
+        end
+        return nil
+    end
+    return normalize_viewmodel_returns(a, b, c)
 end
 
 local function sort_by_prio_then_name(list)
@@ -94,6 +141,14 @@ function ax.viewstack:RegisterModifier(name, fn, priority)
     sort_by_prio_then_name(MODS)
 end
 
+--- Register a viewmodel modifier that gets (client, viewmodel) and returns a (partial) viewmodel table or nil.
+function ax.viewstack:RegisterViewModelModifier(name, fn, priority)
+    assert(isstring(name) and name ~= "", "ViewModelModifier needs a name")
+    assert(isfunction(fn), "ViewModelModifier needs a function")
+    table.insert(MODS_VIEWMODEL, { name = name, fn = fn, prio = tonumber(priority) or 0, enabled = true })
+    sort_by_prio_then_name(MODS_VIEWMODEL)
+end
+
 --- Blacklist a legacy hook (or modifier) by name.
 function ax.viewstack:Blacklist(name, state)
     BLACKLIST[name] = state ~= false
@@ -103,7 +158,15 @@ function ax.viewstack:Blacklist(name, state)
             if h.name == name then h.enabled = not BLACKLIST[name] end
         end
     end
+    if CAPTURED_VIEWMODEL then
+        for _, h in ipairs(CAPTURED_VIEWMODEL) do
+            if h.name == name then h.enabled = not BLACKLIST[name] end
+        end
+    end
     for _, m in ipairs(MODS) do
+        if m.name == name then m.enabled = not BLACKLIST[name] end
+    end
+    for _, m in ipairs(MODS_VIEWMODEL) do
         if m.name == name then m.enabled = not BLACKLIST[name] end
     end
 end
@@ -117,10 +180,20 @@ function ax.viewstack:SetPriority(name, prio)
         end
         sort_by_prio_then_name(CAPTURED)
     end
+    if CAPTURED_VIEWMODEL then
+        for _, h in ipairs(CAPTURED_VIEWMODEL) do
+            if h.name == name then h.prio = PRIORITY[name] end
+        end
+        sort_by_prio_then_name(CAPTURED_VIEWMODEL)
+    end
     for _, m in ipairs(MODS) do
         if m.name == name then m.prio = PRIORITY[name] end
     end
     sort_by_prio_then_name(MODS)
+    for _, m in ipairs(MODS_VIEWMODEL) do
+        if m.name == name then m.prio = PRIORITY[name] end
+    end
+    sort_by_prio_then_name(MODS_VIEWMODEL)
 end
 
 --- Rebuild capture and (re)install dispatcher.
@@ -168,15 +241,63 @@ function ax.viewstack:Enable()
 
         return view
     end)
+
+    hook.Add("CalcViewModelView", "__ax_viewstack_viewmodel_dispatcher", function(weapon, viewmodel, oldPos, oldAng, pos, ang)
+        -- Base viewmodel view seeded from engine params
+        local viewmodelView = {
+            pos = pos,
+            ang = ang,
+        }
+
+        -- 1) run modern viewmodel modifiers
+        for _, m in ipairs(MODS_VIEWMODEL) do
+            if m.enabled and not BLACKLIST[m.name] then
+                local ok, patch = pcall(m.fn, weapon, viewmodelView)
+                if not ok then
+                    if not WARNED[m.name] then
+                        WARNED[m.name] = true
+                        MsgC(Color(255,80,80), "[viewstack] ViewModelModifier error in ", m.name, ": ", tostring(patch), "\n")
+                    end
+                else
+                    if istable(patch) then
+                        merge_viewmodel_view(viewmodelView, patch)
+                    end
+                end
+            end
+        end
+
+        -- 2) run captured legacy viewmodel hooks
+        if CAPTURED_VIEWMODEL and #CAPTURED_VIEWMODEL > 0 then
+            sort_by_prio_then_name(CAPTURED_VIEWMODEL) -- stable + applies priority changes
+            for _, h in ipairs(CAPTURED_VIEWMODEL) do
+                if h.enabled and not BLACKLIST[h.name] then
+                    local patch = safe_call_viewmodel(h.name, h.fn, weapon, viewmodel, oldPos, oldAng, viewmodelView.pos, viewmodelView.ang)
+                    if istable(patch) then
+                        merge_viewmodel_view(viewmodelView, patch)
+                    end
+                end
+            end
+        end
+
+        return viewmodelView.pos, viewmodelView.ang
+    end)
 end
 
 --- Remove dispatcher and restore captured hooks (if needed).
 function ax.viewstack:Disable()
     hook.Remove("CalcView", "__ax_viewstack_dispatcher")
+    hook.Remove("CalcViewModelView", "__ax_viewstack_viewmodel_dispatcher")
     if CAPTURED then
         for _, h in ipairs(CAPTURED) do
             if h.fn and isfunction(h.fn) then
                 hook.Add("CalcView", h.name, h.fn)
+            end
+        end
+    end
+    if CAPTURED_VIEWMODEL then
+        for _, h in ipairs(CAPTURED_VIEWMODEL) do
+            if h.fn and isfunction(h.fn) then
+                hook.Add("CalcViewModelView", h.name, h.fn)
             end
         end
     end
@@ -207,6 +328,28 @@ function ax.viewstack:Lerp(alpha, target)
     end
 end
 
+-- Convenience: simple offset/lerp helpers you can use in viewmodel modifiers.
+function ax.viewstack:ViewModelOffset(vec, ang, fovDelta)
+    return function(_, viewmodel)
+        local patch = {}
+        if vec then patch.pos = viewmodel.pos + vec end
+        if ang then patch.ang = Angle(viewmodel.ang.p + ang.p, viewmodel.ang.y + ang.y, viewmodel.ang.r + ang.r) end
+        if fovDelta then patch.fov = (viewmodel.fov or 90) + fovDelta end
+        return patch
+    end
+end
+
+function ax.viewstack:ViewModelLerp(alpha, target)
+    alpha = math.Clamp(alpha or 0, 0, 1)
+    return function(_, viewmodel)
+        local p = {}
+        if target.pos then p.pos = LerpVector(alpha, viewmodel.pos, target.pos) end
+        if target.ang then p.ang = LerpAngle(alpha, viewmodel.ang, target.ang) end
+        if target.fov then p.fov = Lerp(alpha, viewmodel.fov or 90, target.fov) end
+        return p
+    end
+end
+
 -- Auto-enable after all scripts have had a chance to add their hooks
 -- (timer 0 yields one frame; also re-run on code reload)
 local function boot()
@@ -214,7 +357,7 @@ local function boot()
         if ax.viewstack.__booted then return end
         ax.viewstack.__booted = true
         ax.viewstack:Enable()
-        MsgC(Color(120,200,255), "[viewstack] Enabled. Captured and stacked CalcView hooks.\n")
+        MsgC(Color(120,200,255), "[viewstack] Enabled. Captured and stacked CalcView and CalcViewModelView hooks.\n")
     end)
 end
 
