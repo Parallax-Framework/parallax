@@ -40,8 +40,8 @@ function inventory:GetItems()
 end
 
 function inventory:GetItemByID(itemID)
-    for k, v in pairs(self.items) do
-        if ( v.id == itemID ) then
+    for id, v in pairs(self.items) do
+        if ( id == itemID ) then
             return v
         end
     end
@@ -164,6 +164,7 @@ if ( SERVER ) then
                 local itemObject = setmetatable(item, ax.item.meta)
                 itemObject.id = lastID
                 itemObject.data = data or {}
+                itemObject.inventory_id = self.id
 
                 ax.item.instances[ lastID ] = itemObject
 
@@ -174,6 +175,7 @@ if ( SERVER ) then
                     net.WriteUInt( itemObject.id, 32 )
                     net.WriteString( itemObject.class )
                     net.WriteTable( itemObject.data )
+                    net.WriteUInt( itemObject.inventory_id, 32 )
                 net.Send(self:GetReceivers())
 
                 return true

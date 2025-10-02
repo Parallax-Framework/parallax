@@ -179,7 +179,7 @@ if ( SERVER ) then
                     toInventory.items[item.id] = item
                 end
 
-                item.invID = toInventoryID
+                item.inventory_id = toInventoryID
 
                 if ( fromInventory != 0 ) then
                     fromInventory.items[item.id] = nil
@@ -251,6 +251,7 @@ if ( SERVER ) then
                 local itemObject = setmetatable(item, ax.item.meta)
                 itemObject.id = lastID
                 itemObject.data = data or {}
+                itemObject.inventory_id = 0
 
                 ax.item.instances[lastID] = itemObject
 

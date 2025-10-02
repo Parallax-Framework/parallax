@@ -300,6 +300,7 @@ net.Receive("ax.inventory.item.add", function()
     local item_id = net.ReadUInt(32)
     local item_class = net.ReadString()
     local item_data = net.ReadTable()
+    local inventory_id = net.ReadUInt(32)
 
     local inventory = ax.inventory.instances[inventoryID]
     if ( !istable(inventory) ) then
@@ -311,6 +312,7 @@ net.Receive("ax.inventory.item.add", function()
     item.id = item_id
     item.class = item_class
     item.data = item_data or {}
+    item.inventory_id = inventory_id
 
     inventory.items[item.id] = item
     ax.item.instances[item.id] = item
@@ -378,7 +380,7 @@ net.Receive("ax.item.transfer", function()
         fromInventory.items[item.id] = nil
     end
 
-    item.invID = toInventoryID
+    item.inventory_id = toInventoryID
 
     -- Add to the new inventory, if applicable
     if ( toInventoryID != 0 ) then
@@ -403,6 +405,7 @@ net.Receive("ax.item.spawn", function()
     itemInstance.id = itemID
     itemInstance.class = itemClass
     itemInstance.data = {}
+    itemInstance.inventory_id = 0
 
     ax.item.instances[itemID] = itemInstance
     ax.util:PrintDebug(string.format("Spawning item entity for item ID %d (%s)", itemID, itemClass))

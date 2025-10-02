@@ -76,7 +76,8 @@ if ( SERVER ) then
                 items[#items + 1] = {
                     id = v.id,
                     class = v.class,
-                    data = v.data or {}
+                    data = v.data or {},
+                    inventory_id = v.inventory_id
                 }
             end
         end
