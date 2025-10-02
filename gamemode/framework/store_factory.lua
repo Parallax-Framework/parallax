@@ -120,13 +120,13 @@ function ax.util:CreateStore(spec)
 
         local regEntry = store.registry[key]
         if ( !regEntry ) then
-            ax.util:PrintDebug(spec.name, "Set: Unknown key", key)
+            ax.util:PrintDebug(spec.name, "Set: Unknown key ", key)
             return false
         end
 
         local coerced, err = ax.type:Sanitise(regEntry.type, value)
         if ( coerced == nil ) then
-            ax.util:PrintDebug(spec.name, "Set: Invalid value for", key, ":", err)
+            ax.util:PrintDebug(spec.name, "Set: Invalid value for ", key, ":", err)
             return false
         end
 
@@ -138,7 +138,7 @@ function ax.util:CreateStore(spec)
         if ( regEntry.type == ax.type.array and isfunction(regEntry.data.populate) ) then
             local ok, choices = ax.util:SafeCall(regEntry.data.populate)
             if ( ok and istable(choices) and !choices[coerced] ) then
-                ax.util:PrintDebug(spec.name, "Set: Invalid choice for", key, ":", coerced)
+                ax.util:PrintDebug(spec.name, "Set: Invalid choice for ", key, ":", coerced)
                 return false
             end
         end
@@ -161,18 +161,18 @@ function ax.util:CreateStore(spec)
         if ( store.networkedKeys[key] ) then
             if ( spec.name == "ax.config" and SERVER ) then
                 net.Start(spec.net.set)
-                net.WriteString(key)
-                net.WriteType(coerced)
+                    net.WriteString(key)
+                    net.WriteType(coerced)
                 net.Broadcast()
             elseif ( spec.name == "ax.option" and CLIENT ) then
                 net.Start(spec.net.set)
-                net.WriteString(key)
-                net.WriteType(coerced)
+                    net.WriteString(key)
+                    net.WriteType(coerced)
                 net.SendToServer()
             end
         end
 
-        ax.util:PrintDebug(spec.name, "Set:", key, "=", coerced)
+        ax.util:PrintDebug(spec.name, "Set: ", key, "=", coerced)
 
         return true
     end
