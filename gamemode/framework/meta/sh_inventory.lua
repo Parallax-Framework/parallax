@@ -182,7 +182,7 @@ if ( SERVER ) then
         end
 
         for item_id, item_data in pairs(self.items) do
-            if ( item_data.id == itemID ) then
+            if ( item_id == itemID ) then
                 local query = mysql:Delete("ax_items")
                     query:Where("id", itemID)
                     query:Callback(function(result, status)
