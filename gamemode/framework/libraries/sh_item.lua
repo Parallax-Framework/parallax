@@ -88,6 +88,10 @@ if ( SERVER ) then
             return false, "Invalid destination inventory provided."
         end
 
+        if ( fromInventory == toInventory ) then
+            return false, "Source and destination inventories cannot be the same."
+        end
+
         -- TODO: Turn this check into a hook so inventories can have custom rules in terms of what they can accept. That way we can also handle weight checks there too.
         if ( toInventory:GetWeight() + item:GetWeight() > toInventory:GetMaxWeight() ) then
             return false, "The destination inventory cannot hold this item."
