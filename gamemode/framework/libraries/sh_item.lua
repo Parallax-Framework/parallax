@@ -166,6 +166,12 @@ if ( SERVER ) then
                 entity:Spawn()
                 entity:Activate()
 
+                -- TODO: Network the entity to all clients so they can see it, make sure when a player joins they get the entity too
+                
+                if ( isfunction(callback) ) then
+                    callback(entity, itemObject)
+                end
+
                 return true
             end)
         query:Execute()
