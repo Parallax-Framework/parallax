@@ -253,8 +253,6 @@ net.Receive("ax.inventory.sync", function()
     local inventoryItems = net.ReadTable()
     local inventoryMaxWeight = net.ReadFloat()
 
-    print(inventoryID, inventoryItems, inventoryMaxWeight)
-
     -- Convert the items into objects
     for i = 1, #inventoryItems do
         local itemData = inventoryItems[i]
@@ -346,40 +344,64 @@ net.Receive("ax.relay.update", function()
     ax.relay.data[index][name] = value
 end)
 
-net.Receive( "ax.item.transfer", function()
-    local itemID = net.ReadInt(32)
-    local fromInventoryID = net.ReadInt(32)
-    local toInventoryID = net.ReadInt(32)
+net.Receive("ax.item.transfer", function()
+    local itemID = net.ReadUInt(32)
+    local fromInventoryID = net.ReadUInt(32)
+    local toInventoryID = net.ReadUInt(32)
 
     local item = ax.item.instances[itemID]
-    if ( !istable( item ) ) then
-        ax.util:PrintError( "Item with ID " .. itemID .. " does not exist." )
+    if ( !istable(item) ) then
+        ax.util:PrintError("Item with ID " .. itemID .. " does not exist.")
         return
     end
 
     local fromInventory = ax.inventory.instances[fromInventoryID]
-    if ( !istable( fromInventory ) ) then
-        ax.util:PrintError( "From inventory with ID " .. fromInventoryID .. " does not exist." )
+    if ( fromInventoryID != 0 and !istable(fromInventory) ) then
+        ax.util:PrintError("From inventory with ID " .. fromInventoryID .. " does not exist.")
         return
     end
 
     local toInventory = nil
     if ( toInventoryID != 0 ) then
         toInventory = ax.inventory.instances[toInventoryID]
-        if ( !istable( toInventory ) ) then
-            ax.util:PrintError( "To inventory with ID " .. toInventoryID .. " does not exist." )
+        if ( !istable(toInventory) ) then
+            ax.util:PrintError("To inventory with ID " .. toInventoryID .. " does not exist.")
             return
         end
     else
         toInventory = 0
     end
 
-    -- Remove from the old inventory
-    fromInventory.items[item.id] = nil
+    -- Remove from the old inventory, if applicable
+    if ( fromInventoryID != 0 ) then
+        fromInventory.items[item.id] = nil
+    end
+
     item.invID = toInventoryID
 
     if ( toInventory != 0 ) then
-        toInventory.items[ item.id ] = item
+        toInventory.items[item.id] = item
     end
 
-end )
+    ax.util:PrintDebug(string.format("Item %d transferred from inventory %d to inventory %d", item.id, fromInventoryID, toInventoryID))
+end)
+
+net.Receive("ax.item.spawn", function()
+    local itemID = net.ReadUInt(32)
+    local itemClass = net.ReadString()
+
+    local item = ax.item.stored[itemClass]
+    if ( !istable(item) ) then
+        ax.util:PrintError("Invalid item class received for spawn: " .. itemClass)
+        return
+    end
+
+    -- Create item instance
+    local itemInstance = setmetatable(table.Copy(item), ax.item.meta)
+    itemInstance.id = itemID
+    itemInstance.class = itemClass
+    itemInstance.data = {}
+
+    ax.item.instances[itemID] = itemInstance
+    ax.util:PrintDebug(string.format("Spawning item entity for item ID %d (%s)", itemID, itemClass))
+end)

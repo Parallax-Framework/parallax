@@ -97,8 +97,22 @@ if ( SERVER ) then
             return false, "The destination inventory cannot hold this item."
         end
 
+        local fromInventoryID = 0
+        if ( istable(fromInventory) ) then
+            fromInventoryID = fromInventory.id
+        elseif ( fromInventory == 0 or fromInventory == nil ) then
+            fromInventoryID = 0
+        end
+
+        local toInventoryID = 0
+        if ( istable(toInventory) ) then
+            toInventoryID = toInventory.id
+        elseif ( toInventory == 0 or toInventory == nil ) then
+            toInventoryID = 0
+        end
+
         local query = mysql:Update("ax_items")
-            query:Update("inventory_id", toInventory.id)
+            query:Update("inventory_id", toInventoryID)
             query:Where("id", item.id)
             query:Callback(function(result, status)
                 if ( result == false ) then
@@ -106,20 +120,33 @@ if ( SERVER ) then
                     return false, "A database error occurred."
                 end
 
-                toInventory.items[item.id] = item
-                item.invID = toInventory.id
+                if ( istable(toInventory) and toInventoryID != 0 ) then
+                    toInventory.items[item.id] = item
+                end
+
+                item.invID = toInventoryID
+
                 if ( fromInventory != 0 ) then
                     fromInventory.items[item.id] = nil
                 end
 
-                net.Start( "ax.item.transfer" )
-                    net.WriteInt( item.id, 32 )
-                    net.WriteInt( fromInventory.id, 32 )
-                    net.WriteInt( toInventory.id, 32 )
-                if ( toInventory == 0 ) then
+                ax.util:PrintDebug(string.format("Transferred item %s from inventory %s to inventory %s", item.id, tostring(fromInventoryID), tostring(toInventoryID)))
+
+                net.Start("ax.item.transfer")
+                    net.WriteUInt(item.id, 32)
+                    net.WriteUInt(fromInventoryID, 32)
+                    net.WriteUInt(toInventoryID, 32)
+                if ( toInventoryID == 0 ) then
                     net.Broadcast()
+                    
+                    ax.util:PrintDebug("Broadcasting to all clients (world inventory)")
                 else
-                    net.Send( toInventory:GetReceivers() )
+                    net.Send(toInventory:GetReceivers())
+                    
+                    ax.util:PrintDebug("Sending to inventory receivers only")
+                    for k, v in pairs(toInventory:GetReceivers()) do
+                        ax.util:PrintDebug(" - Sent to: " .. tostring(v))
+                    end
                 end
 
                 if ( isfunction(callback) ) then
@@ -166,8 +193,11 @@ if ( SERVER ) then
                 entity:Spawn()
                 entity:Activate()
 
-                -- TODO: Network the entity to all clients so they can see it, make sure when a player joins they get the entity too
-                
+                net.Start("ax.item.spawn")
+                    net.WriteUInt(lastID, 32)
+                    net.WriteString(class)
+                net.Broadcast()
+
                 if ( isfunction(callback) ) then
                     callback(entity, itemObject)
                 end

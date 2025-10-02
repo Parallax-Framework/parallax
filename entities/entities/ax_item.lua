@@ -18,7 +18,7 @@ end
 if ( SERVER ) then
     function ENT:Initialize()
         local item = self:GetItemTable()
-        if ( !istable(item) ) then print("No item found!") return end
+        if ( !istable(item) ) then return end
 
         self:SetModel(item:GetModel() or Model("models/props_junk/gnome.mdl"))
         self:PhysicsInit(SOLID_VPHYSICS)
@@ -35,13 +35,13 @@ if ( SERVER ) then
         if ( !IsValid(activator) or !activator:IsPlayer() ) then return end
 
         local item = self:GetItemTable()
-        if ( !istable(item) ) then print("No item found!") return end
+        if ( !istable(item) ) then return end
 
         local character = activator:GetCharacter()
-        if ( !istable(character) ) then print("No character found!") return end
+        if ( !istable(character) ) then return end
 
         local inventory = character:GetInventory()
-        if ( !istable(inventory) ) then print("No inventory found!") return end
+        if ( !istable(inventory) ) then return end
 
         if ( inventory:GetWeight() + item:GetWeight() <= inventory:GetMaxWeight() ) then
             local success, reason = ax.item:Transfer(item, 0, inventory, function(success)

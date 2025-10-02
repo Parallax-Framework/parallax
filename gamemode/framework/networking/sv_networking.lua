@@ -28,6 +28,7 @@ util.AddNetworkString("ax.inventory.item.remove")
 util.AddNetworkString("ax.inventory.item.update")
 
 util.AddNetworkString("ax.item.transfer")
+util.AddNetworkString("ax.item.spawn")
 
 util.AddNetworkString("ax.inventory.item.action")
 net.Receive("ax.inventory.item.action", function(length, client)
