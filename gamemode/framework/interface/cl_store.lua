@@ -215,7 +215,7 @@ function PANEL:Toggle()
 
         ax.config:Set(self.key, !current)
 
-        self:SetText(self.key)
+        self:SetText(ax.util:UniqueIDToName(self.key))
         self.value:SetText(string.format("<%s>", ax.config:Get(self.key) and "Enabled" or "Disabled"), true)
     elseif ( self.type == "option" ) then
         local current = ax.option:Get(self.key)
@@ -229,7 +229,7 @@ function PANEL:Toggle()
 
         ax.option:Set(self.key, !current)
 
-        self:SetText(self.key)
+        self:SetText(ax.util:UniqueIDToName(self.key))
         self.value:SetText(string.format("<%s>", ax.option:Get(self.key) and "Enabled" or "Disabled"), true)
     else
         self:SetText("unknown")
