@@ -46,13 +46,10 @@ function ax.item:Include(path)
                     return true
                 end,
                 OnRun = function(action, item, client)
-                    local inventory = ax.inventory.instances[item.invID]
-                    if ( istable(inventory) ) then
-                        inventory:RemoveItem(item.id)
-                        client:Notify("You have dropped the item: " .. item:GetName(), "info")
-                    end
+                    -- TODO: Implement item dropping, use ax.item:Transfer() to move item to world inventory (ID 0), then spawn entity
+                    -- Example: ax.item:Transfer(item, item.inventory, worldInventory, function(success) ... end)
 
-                    return true -- Returning true removes one item from the stack
+                    return false
                 end
             })
 
@@ -71,6 +68,85 @@ function ax.item:Get(identifier)
     end
 
     return nil
+end
+
+if ( SERVER ) then
+    function ax.item:Transfer(item, fromInventory, toInventory, callback)
+        if ( !istable(item) ) then
+            return false, "Invalid item provided."
+        end
+
+        if ( fromInventory != 0 and !istable(fromInventory) ) then
+            return false, "Invalid source inventory provided."
+        end
+
+        if ( !istable(toInventory) ) then
+            return false, "Invalid destination inventory provided."
+        end
+
+        if ( toInventory:GetWeight() + item:GetWeight() > toInventory:GetMaxWeight() ) then
+            return false, "The destination inventory cannot hold this item."
+        end
+
+        local query = mysql:Update("ax_items")
+            query:Update("inventory_id", toInventory.id)
+            query:Where("id", item.id)
+            query:Callback(function(result, status)
+                if ( result == false ) then
+                    ax.util:PrintError("Failed to update item in database during transfer.")
+                    return false, "A database error occurred."
+                end
+
+                -- TODO: Finish backend transfer logic (remove from old inventory, add to new inventory, etc)
+
+                if ( isfunction(callback) ) then
+                    callback(true)
+                end
+
+                return true
+            end)
+        query:Execute()
+
+        return true
+    end
+
+    function ax.item:Spawn(class, pos, ang, callback, data)
+        local item = ax.item.stored[class]
+        if ( !istable(item) ) then
+            ax.util:PrintError("Invalid item provided to ax.item:Spawn() (" .. tostring(class) .. ")")
+            return false
+        end
+
+        data = data or {}
+
+        local query = mysql:Insert("ax_items")
+            query:Insert("class", class)
+            query:Insert("inventory_id", 0)
+            query:Insert("data", util.TableToJSON(data))
+            query:Callback(function(result, status, lastID)
+                if ( result == false ) then
+                    ax.util:PrintError("Failed to insert item into database for world spawn.")
+                    return false
+                end
+
+                local itemObject = setmetatable(item, ax.item.meta)
+                itemObject.id = lastID
+                itemObject.data = data or {}
+
+                ax.item.instances[lastID] = itemObject
+
+                local entity = ents.Create("ax_item")
+                entity:SetItemID(lastID)
+                entity:SetItemClass(class)
+                entity:SetPos(pos)
+                entity:SetAngles(ang)
+                entity:Spawn()
+                entity:Activate()
+
+                return true
+            end)
+        query:Execute()
+    end
 end
 
 concommand.Add("ax_item_create", function(client, command, args, argStr)
@@ -117,4 +193,37 @@ concommand.Add("ax_item_create", function(client, command, args, argStr)
     end
 
     inventory:AddItem(class)
+end)
+
+concommand.Add("ax_item_list", function(client, command, args, argStr)
+    if ( IsValid(client) and !client:IsSuperAdmin() ) then
+        ax.util:PrintError("You do not have permission to use this command!")
+        return
+    end
+
+    ax.util:Print(Color(0, 255, 0), "Available item classes:")
+    for k, v in pairs(ax.item.stored) do
+        ax.util:Print(Color(0, 255, 0), "- " .. k)
+    end
+end)
+
+concommand.Add("ax_item_spawn", function(client, command, args, argStr)
+    if ( IsValid(client) and !client:IsSuperAdmin() ) then
+        ax.util:PrintError("You do not have permission to use this command!")
+        return
+    end
+
+    if ( CLIENT ) then return end
+
+    local class = args[1]
+    if ( !class or class == "" ) then
+        ax.util:PrintError("You must provide an item class.")
+        return
+    end
+
+    local trace = client:GetEyeTrace()
+    local pos = trace.HitPos + trace.HitNormal * 16
+    local ang = trace.HitNormal:Angle()
+
+    ax.item:Spawn(class, pos, ang)
 end)
