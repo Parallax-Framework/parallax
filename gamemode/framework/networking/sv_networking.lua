@@ -27,6 +27,8 @@ util.AddNetworkString("ax.inventory.item.add")
 util.AddNetworkString("ax.inventory.item.remove")
 util.AddNetworkString("ax.inventory.item.update")
 
+util.AddNetworkString("ax.item.transfer")
+
 util.AddNetworkString("ax.inventory.item.action")
 net.Receive("ax.inventory.item.action", function(length, client)
     if ( !client:RateLimit("inventory.action", 0.2) ) then return end

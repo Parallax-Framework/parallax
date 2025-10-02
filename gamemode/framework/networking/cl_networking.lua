@@ -345,3 +345,41 @@ net.Receive("ax.relay.update", function()
     ax.relay.data[index] = ax.relay.data[index] or {}
     ax.relay.data[index][name] = value
 end)
+
+net.Receive( "ax.item.transfer", function()
+    local itemID = net.ReadInt(32)
+    local fromInventoryID = net.ReadInt(32)
+    local toInventoryID = net.ReadInt(32)
+
+    local item = ax.item.instances[itemID]
+    if ( !istable( item ) ) then
+        ax.util:PrintError( "Item with ID " .. itemID .. " does not exist." )
+        return
+    end
+
+    local fromInventory = ax.inventory.instances[fromInventoryID]
+    if ( !istable( fromInventory ) ) then
+        ax.util:PrintError( "From inventory with ID " .. fromInventoryID .. " does not exist." )
+        return
+    end
+
+    local toInventory = nil
+    if ( toInventoryID != 0 ) then
+        toInventory = ax.inventory.instances[toInventoryID]
+        if ( !istable( toInventory ) ) then
+            ax.util:PrintError( "To inventory with ID " .. toInventoryID .. " does not exist." )
+            return
+        end
+    else
+        toInventory = 0
+    end
+
+    -- Remove from the old inventory
+    fromInventory.items[item.id] = nil
+    item.invID = toInventoryID
+
+    if ( toInventory != 0 ) then
+        toInventory.items[ item.id ] = item
+    end
+
+end )
