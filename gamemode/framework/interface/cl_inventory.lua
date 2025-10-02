@@ -28,7 +28,7 @@ function PANEL:Init()
         ax.render.Draw(0, 0, 0, width, height, Color(0, 0, 0, 150))
     end
 
-    self.weightProgress = self.container:Add("DProgress")
+    self.weightProgress = self:Add("DProgress")
     self.weightProgress:SetFraction(inventory:GetWeight() / inventory:GetMaxWeight())
     self.weightProgress:SetTall(ScreenScale(12))
     self.weightProgress:Dock(TOP)
@@ -55,9 +55,7 @@ function PANEL:PopulateItems()
     local character = self.character
     local inventory = self.inventory
 
-    if ( !character or !inventory ) then
-        return
-    end
+    if ( !character or !inventory ) then return end
 
     self.container:Clear()
 
