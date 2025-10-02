@@ -4,8 +4,8 @@ function PANEL:Init()
     self:Dock(FILL)
     self:InvalidateParent(true)
 
-    self.categories = self:Add("ax.scroller.horizontal")
-    self.categories:SetSize(ScrW() - ScreenScale(32), ScreenScaleH(32))
+    self.categories = self:Add("ax.scroller.vertical")
+    self.categories:SetSize(ScreenScale(32), ScrH() - ScreenScaleH(32))
 
     self.container = self:Add("EditablePanel")
     self.container:Dock(FILL)
@@ -32,14 +32,19 @@ function PANEL:SetType(type)
         return
     end
 
-    for k, v in SortedPairs(categories) do
+    categories = table.Copy(categories)
+    table.sort(categories, function(a, b) return a < b end)
+
+    for k, v in SortedPairsByValue(categories) do
         local button = self.categories:Add("ax.button.flat")
-        button:Dock(LEFT)
-        button:SetText(v)
+        button:Dock(TOP)
+        button:SetText(ax.util:UniqueIDToName(ax.localization:GetPhrase(v)), true)
+
+        self.categories:SetWide(math.max(self.categories:GetWide(), button:GetWide() + ScreenScale(16)))
 
         local tab = self:CreatePage()
-        tab:SetYOffset(self.categories:GetTall() + ScreenScaleH(16))
-        tab:SetHeightOffset(-self.categories:GetTall() - ScreenScaleH(16))
+        tab:SetXOffset(self.categories:GetWide() + ScreenScale(32))
+        tab:SetWidthOffset(-self.categories:GetWide() - ScreenScale(32))
 
         self:Populate(tab, type, v)
 
@@ -47,7 +52,11 @@ function PANEL:SetType(type)
         button.tab.index = tab.index
 
         button.DoClick = function()
-            self:TransitionToPage(button.tab.index, ax.option:Get("tab.fade.time", 0.25))
+            self:TransitionToPage(button.tab.index, ax.option:Get("tabFadeTime", 0.25))
+        end
+
+        if ( k == 1 ) then
+            self:TransitionToPage(button.tab.index, 0)
         end
     end
 end
@@ -71,13 +80,13 @@ function PANEL:Populate(panel, type, category)
         local label = panel:Add("ax.text")
         label:Dock(FILL)
         label:SetFont("ax.large.italic")
-        label:SetText(string.format("No %s found in category: %s", type, category))
+        label:SetText(string.format("No %s found in category: %s", type, category), true)
         label:SetContentAlignment(5)
         label:SetTextColor(Color(200, 200, 200))
         return
     end
 
-    for key, data in pairs(rows) do
+    for key, data in SortedPairs(rows) do
         if ( data.type == ax.type.bool ) then
             local btn = panel:Add("ax.store.bool")
             btn:Dock(TOP)
@@ -87,7 +96,7 @@ function PANEL:Populate(panel, type, category)
             local label = panel:Add("ax.text")
             label:Dock(TOP)
             label:SetFont("ax.large.italic")
-            label:SetText(string.format("Unsupported type '%s' for key: %s", tostring(data.type), tostring(key)))
+            label:SetText(string.format("Unsupported type '%s' for key: %s", ax.type:Format(data.type), tostring(key)), true)
             label:SetContentAlignment(5)
             label:SetTextColor(Color(200, 200, 200))
         end
@@ -166,8 +175,8 @@ function PANEL:SetKey(key)
             return
         end
 
-        self:SetText(key)
-        self.value:SetText(string.format("<%s>", ax.config:Get(key) and "Enabled" or "Disabled"))
+        self:SetText(ax.util:UniqueIDToName(key))
+        self.value:SetText(string.format("<%s>", ax.config:Get(key) and "Enabled" or "Disabled"), true)
     elseif ( self.type == "option" ) then
         if ( ax.option:Get(key) == nil ) then
             self:SetText("unknown")
@@ -177,8 +186,8 @@ function PANEL:SetKey(key)
             return
         end
 
-        self:SetText(key)
-        self.value:SetText(string.format("<%s>", ax.option:Get(key) and "Enabled" or "Disabled"))
+        self:SetText(ax.util:UniqueIDToName(key))
+        self.value:SetText(string.format("<%s>", ax.option:Get(key) and "Enabled" or "Disabled"), true)
     else
         self:SetText("unknown")
         self.value:SetText("unknown")
@@ -204,10 +213,10 @@ function PANEL:Toggle()
             return
         end
 
-        ax.option:Set(self.key, !current)
+        ax.config:Set(self.key, !current)
 
         self:SetText(self.key)
-        self.value:SetText(string.format("<%s>", ax.option:Get(self.key) and "Enabled" or "Disabled"))
+        self.value:SetText(string.format("<%s>", ax.config:Get(self.key) and "Enabled" or "Disabled"), true)
     elseif ( self.type == "option" ) then
         local current = ax.option:Get(self.key)
         if ( current == nil ) then
@@ -221,7 +230,7 @@ function PANEL:Toggle()
         ax.option:Set(self.key, !current)
 
         self:SetText(self.key)
-        self.value:SetText(string.format("<%s>", ax.option:Get(self.key) and "Enabled" or "Disabled"))
+        self.value:SetText(string.format("<%s>", ax.option:Get(self.key) and "Enabled" or "Disabled"), true)
     else
         self:SetText("unknown")
         self.value:SetText("unknown")
