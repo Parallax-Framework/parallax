@@ -23,6 +23,10 @@ function ax.item:Initialize()
     for i = 1, #modules do
         self:Include("parallax/gamemode/modules/" .. modules[i] .. "/items")
     end
+
+    -- TODO: Refresh item instances to update any changes made to item definitions
+    -- For example, actions currently do not update on existing items for some reason, at least the drop action doesn't update...
+    -- Haven't looked into item specific actions yet.
 end
 
 function ax.item:Include(path)
@@ -84,6 +88,7 @@ if ( SERVER ) then
             return false, "Invalid destination inventory provided."
         end
 
+        -- TODO: Turn this check into a hook so inventories can have custom rules in terms of what they can accept. That way we can also handle weight checks there too.
         if ( toInventory:GetWeight() + item:GetWeight() > toInventory:GetMaxWeight() ) then
             return false, "The destination inventory cannot hold this item."
         end
@@ -149,6 +154,7 @@ if ( SERVER ) then
     end
 end
 
+-- TODO: Turn these into chat commands? Idk
 concommand.Add("ax_item_create", function(client, command, args, argStr)
     if ( IsValid(client) and !client:IsSuperAdmin() ) then
         ax.util:PrintError("You do not have permission to use this command!")
