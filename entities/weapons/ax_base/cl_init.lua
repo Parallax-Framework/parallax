@@ -18,12 +18,16 @@ SWEP.IronSightsProgress = 0
 SWEP._vmCachedPos = Vector(0, 0, 0)
 SWEP._vmCachedAng = Angle(0, 0, 0)
 
-function SWEP:Think()
+-- Think doesn't run when reloading, so we have to do this in ViewModelDrawn
+function SWEP:ViewModelDrawn()
     local owner = self:GetOwner()
     if ( owner != ax.client ) then return end
 
     local aim = self:GetIronSights()
-    self.IronSightsProgress = Lerp(FrameTime() * 8, self.IronSightsProgress, aim and 1 or 0)
+    self.IronSightsProgress = math.Clamp(
+        ax.ease:Lerp("InOutQuad", FrameTime() * 14, self.IronSightsProgress, aim and 1 or 0),
+        0, 1
+    )
 end
 
 function SWEP:TranslateFOV(fov)
@@ -35,7 +39,7 @@ function SWEP:GetViewModelPosition(pos, ang)
     local targetPos = self.ViewOffsetPos or vector_origin
     local targetAng = self.ViewOffsetAng or angle_zero
 
-    local progress = self.IronSightsProgress or 0
+    local progress = math.Clamp(self.IronSightsProgress, 0, 1)
     if ( self.IronSightsEnabled and progress > 0 ) then
         targetPos = targetPos + (self.IronSightsPos or vector_origin) * progress
         if ( self.IronSightsAng ) then

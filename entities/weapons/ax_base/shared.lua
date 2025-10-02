@@ -131,7 +131,7 @@ function SWEP:CanPrimaryAttack()
     if ( !IsValid(owner) ) then return false end
 
     if ( self:IsEmpty() ) then
-        self:EmitSound(self.Primary.SoundEmpty or "Weapon_Pistol.Empty")
+        self:EmitSound(self.Primary.SoundEmpty or "Weapon_Pistol.Empty", nil, nil, nil, CHAN_STATIC)
         self:SetNextPrimaryFire(CurTime() + 1)
         return false
     end
@@ -162,7 +162,7 @@ function SWEP:PrimaryAttack()
 
     -- Client-side: visuals and effects
     if ( CLIENT and IsFirstTimePredicted() ) then
-        self:EmitSound(self.Primary.Sound)
+        self:EmitSound(self.Primary.Sound, nil, nil, nil, CHAN_STATIC)
         owner:MuzzleFlash()
     end
 
@@ -267,7 +267,7 @@ function SWEP:Reload()
         path = self.Reloading.SoundEmpty or path
     end
 
-    self:EmitSound(path)
+    self:EmitSound(path, nil, nil, nil, CHAN_STATIC)
 
     local duration = self:GetActiveAnimationDuration()
     if ( duration > 0 ) then
