@@ -53,6 +53,31 @@ function ax.item:Include(path)
                     -- TODO: Implement item dropping, use ax.item:Transfer() to move item to world inventory (ID 0), then spawn entity
                     -- Example: ax.item:Transfer(item, item.inventory, worldInventory, function(success) ... end)
 
+                    local inventoryID = 0
+                    for k, v in pairs(ax.character.instances) do
+                        if ( v.inventoryID == item.invID ) then
+                            inventoryID = v.inventoryID
+                            break
+                        end
+                    end
+
+                    if ( inventoryID <= 0 ) then
+                        client:Notify("You cannot drop this item right now.")
+                        return false
+                    end
+
+                    local success, reason = ax.item:Transfer(item, inventoryID, 0, function(success)
+                        if ( success ) then
+                            client:Notify("You have dropped: " .. (item:GetName() or "Unknown Item"))
+                        else
+                            client:Notify("Failed to drop item: " .. (item:GetName() or "Unknown Item"))
+                        end
+                    end)
+
+                    if ( success == false ) then
+                        client:Notify(string.format("Failed to drop item: %s", reason or "Unknown Reason"))
+                    end
+
                     return false
                 end
             })
@@ -80,12 +105,30 @@ if ( SERVER ) then
             return false, "Invalid item provided."
         end
 
-        if ( fromInventory != 0 and !istable(fromInventory) ) then
-            return false, "Invalid source inventory provided."
+        ax.util:PrintDebug(string.format("Transferring item %s from inventory %s to inventory %s", item.id, tostring(fromInventory), tostring(toInventory)))
+
+        local fromInventoryID = 0
+        if ( istable(fromInventory) ) then
+            fromInventoryID = fromInventory.id
+        elseif ( isnumber(fromInventory) and fromInventory > 0 ) then
+            fromInventoryID = fromInventory
+            fromInventory = ax.inventory.instances[fromInventoryID]
+
+            if ( !istable(fromInventory) ) then
+                return false, "From inventory with ID " .. fromInventoryID .. " does not exist."
+            end
         end
 
-        if ( !istable(toInventory) ) then
-            return false, "Invalid destination inventory provided."
+        local toInventoryID = 0
+        if ( istable(toInventory) ) then
+            toInventoryID = toInventory.id
+        elseif ( isnumber(toInventory) and toInventory > 0 ) then
+            toInventoryID = toInventory
+            toInventory = ax.inventory.instances[toInventoryID]
+
+            if ( !istable(toInventory) ) then
+                return false, "To inventory with ID " .. toInventoryID .. " does not exist."
+            end
         end
 
         if ( fromInventory == toInventory ) then
@@ -93,22 +136,34 @@ if ( SERVER ) then
         end
 
         -- TODO: Turn this check into a hook so inventories can have custom rules in terms of what they can accept. That way we can also handle weight checks there too.
-        if ( toInventory:GetWeight() + item:GetWeight() > toInventory:GetMaxWeight() ) then
+        if ( toInventory != 0 and toInventory:GetWeight() + item:GetWeight() > toInventory:GetMaxWeight() ) then
             return false, "The destination inventory cannot hold this item."
         end
 
-        local fromInventoryID = 0
         if ( istable(fromInventory) ) then
             fromInventoryID = fromInventory.id
         elseif ( fromInventory == 0 or fromInventory == nil ) then
             fromInventoryID = 0
         end
 
-        local toInventoryID = 0
-        if ( istable(toInventory) ) then
-            toInventoryID = toInventory.id
-        elseif ( toInventory == 0 or toInventory == nil ) then
-            toInventoryID = 0
+        local dropPos
+        if ( fromInventoryID != 0 and toInventoryID == 0 ) then
+            local owner = fromInventory:GetOwner()
+            print(fromInventory, owner)
+            if ( istable(owner) and IsValid(owner:GetOwner()) ) then
+                print("here")
+                local trace = {}
+                trace.start = owner:GetOwner():GetShootPos()
+                trace.endpos = trace.start + (owner:GetOwner():GetAimVector() * 96)
+                trace.filter = owner:GetOwner()
+                trace = util.TraceLine(trace)
+
+                dropPos = trace.HitPos + trace.HitNormal * 16
+            end
+
+            if ( !isvector(dropPos) ) then
+                return false, "Failed to determine drop position."
+            end
         end
 
         local query = mysql:Update("ax_items")
@@ -147,7 +202,7 @@ if ( SERVER ) then
 
                     itemEntity:SetItemID(item.id)
                     itemEntity:SetItemClass(item.class)
-                    itemEntity:SetPos(fromInventory:GetOwner():GetPos() + Vector(0, 0, 50))
+                    itemEntity:SetPos(dropPos or vector_origin)
                     itemEntity:Spawn()
                     itemEntity:Activate()
 

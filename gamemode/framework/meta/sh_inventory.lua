@@ -53,6 +53,18 @@ function inventory:GetReceivers()
     return self.receivers or {}
 end
 
+function inventory:GetOwner()
+    local owner
+    for k, v in pairs(ax.character.instances) do
+        if ( v.inventoryID == self.id ) then
+            owner = v
+            break
+        end
+    end
+
+    return owner
+end
+
 function inventory:IsReceiver(client)
     for i = 1, #self.receivers do
         if ( self.receivers[i] == client ) then
