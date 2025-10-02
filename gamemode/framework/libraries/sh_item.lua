@@ -106,7 +106,21 @@ if ( SERVER ) then
                     return false, "A database error occurred."
                 end
 
-                -- TODO: Finish backend transfer logic (remove from old inventory, add to new inventory, etc)
+                toInventory.items[item.id] = item
+                item.invID = toInventory.id
+                if ( fromInventory != 0 ) then
+                    fromInventory.items[item.id] = nil
+                end
+
+                net.Start( "ax.item.transfer" )
+                    net.WriteInt( item.id, 32 )
+                    net.WriteInt( fromInventory.id, 32 )
+                    net.WriteInt( toInventory.id, 32 )
+                if ( toInventory == 0 ) then
+                    net.Broadcast()
+                else
+                    net.Send( toInventory:GetReceivers() )
+                end
 
                 if ( isfunction(callback) ) then
                     callback(true)
