@@ -114,3 +114,17 @@ concommand.Add("ax_font_list", function(client, cmd, args)
         ax.util:Print(" - " .. name)
     end
 end, nil, "List all available fonts in the Parallax Framework", FCVAR_HIDDEN)
+
+concommand.Add("ax_font_reload", function(client, cmd, args)
+    ax.font:Load()
+end, nil, "Reload all fonts in the Parallax Framework", FCVAR_HIDDEN)
+
+concommand.Add("ax_font_wipe", function(client, cmd, args)
+    for name, data in pairs(ax.font.stored) do
+        if ( string.StartsWith(name, "ax.") or string.StartsWith(name, "Parallax") ) then
+            surface.CreateFont(name, data)
+        end
+    end
+
+    ax.util:Print("Wiped and reloaded all Parallax Framework fonts.")
+end, nil, "Wipe and reload all Parallax Framework fonts", FCVAR_HIDDEN)
