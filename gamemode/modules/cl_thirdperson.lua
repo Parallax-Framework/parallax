@@ -4,11 +4,11 @@ MODULE.Name = "Third Person"
 MODULE.Description = "Adds third-person camera functionality to the gamemode."
 MODULE.Author = "Riggs"
 
-ax.option:Add("thirdperson", ax.type.bool, false, { category = "Camera" })
-ax.option:Add("thirdperson_x", ax.type.number, 25, { category = "Camera" })
-ax.option:Add("thirdperson_y", ax.type.number, 0, { category = "Camera" })
-ax.option:Add("thirdperson_z", ax.type.number, -50, { category = "Camera" })
-ax.option:Add("thirdperson_follow_head", ax.type.bool, true, { category = "Camera", description = "Make the third-person camera follow the player's model head movements." })
+ax.option:Add("thirdperson", ax.type.bool, false, { category = "camera" })
+ax.option:Add("thirdpersonX", ax.type.number, 25, { category = "camera" })
+ax.option:Add("thirdpersonY", ax.type.number, 0, { category = "camera" })
+ax.option:Add("thirdpersonZ", ax.type.number, -50, { category = "camera" })
+ax.option:Add("thirdpersonFollowHead", ax.type.bool, true, { category = "camera", description = "Make the third-person camera follow the player's model head movements." })
 
 local FIXED_RADIUS = 6
 
@@ -27,7 +27,7 @@ ax.viewstack:RegisterModifier("thirdperson", function(client, view)
     -- start from the player's eye position
     local startPos = client:EyePos()
     local head = client:LookupBone("ValveBiped.Bip01_Head1")
-    if ( ax.option:Get("thirdperson_follow_head") and head ) then
+    if ( ax.option:Get("thirdpersonFollowHead") and head ) then
         local headPos, _ = client:GetBonePosition(head)
         if ( headPos ) then
             startPos = headPos
@@ -37,7 +37,7 @@ ax.viewstack:RegisterModifier("thirdperson", function(client, view)
     local ang = view.angles
 
     -- desired camera offset relative to view angles
-    local desiredPos = startPos + ang:Forward() * ax.option:Get("thirdperson_z") + ang:Right() * ax.option:Get("thirdperson_x") + ang:Up() * ax.option:Get("thirdperson_y")
+    local desiredPos = startPos + ang:Forward() * ax.option:Get("thirdpersonZ") + ang:Right() * ax.option:Get("thirdpersonX") + ang:Up() * ax.option:Get("thirdpersonY")
 
     local tr = util.TraceHull({
         start = startPos,

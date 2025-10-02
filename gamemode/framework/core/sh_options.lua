@@ -9,4 +9,4 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
-ax.option:Add("performance.animations", ax.type.bool, true, { category = "performance", description = "Enable or disable interface animations." })
+ax.option:Add("performanceAnimations", ax.type.bool, true, { category = "performance", description = "Enable or disable interface animations." })

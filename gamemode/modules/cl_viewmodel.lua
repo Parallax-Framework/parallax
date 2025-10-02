@@ -6,14 +6,6 @@ MODULE.Description = "Adds a small muzzle-driven camera sway effect to the playe
 
 CreateClientConVar("muzzlecam_scale", "1", true, false)
 
-ax.option:Add("viewmodel.inertia_speed", ax.type.number, 7, { category = "view", description = "Inertia lerp speed" })
-ax.option:Add("viewmodel.tilt_amount", ax.type.number, 2, { category = "view", description = "Base camera tilt amount" })
-ax.option:Add("viewmodel.strafe_tilt", ax.type.number, 3.0, { category = "view", description = "Strafe roll amount" })
-ax.option:Add("viewmodel.crouch_lower", ax.type.number, 2.0, { category = "view", description = "Crouch lower amount" })
-ax.option:Add("viewmodel.crouch_roll", ax.type.number, 3.0, { category = "view", description = "Crouch roll amount" })
-ax.option:Add("viewmodel.overshoot_strength", ax.type.number, 1.5, { category = "view", description = "Overshoot impulse strength" })
-ax.option:Add("viewmodel.jump_bob", ax.type.number, 3.5, { category = "view", description = "Jump bob strength" })
-
 local weapon_exclusion_list = {
     ["gmod_tool"] = true,
     ["weapon_physcannon"] = true,

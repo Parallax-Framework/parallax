@@ -73,7 +73,7 @@ function PANEL:Init()
 
     self:MakePopup()
 
-    self:Motion(ax.option:Get("tab.fade.time", 0.25), {
+    self:Motion(ax.option:Get("tabFadeTime", 0.25), {
         Target = {alpha = 255},
         Easing = "OutQuad",
         Think = function(this)
@@ -93,7 +93,7 @@ function PANEL:Init()
     self.buttons:SetAlpha(0)
 
     -- Slide down animation from above
-    self.buttons:Motion(ax.option:Get("tab.fade.time", 0.25), {
+    self.buttons:Motion(ax.option:Get("tabFadeTime", 0.25), {
         Target = {x = ScreenScale(16), y = ScreenScaleH(16), alpha = 255},
         Easing = "OutQuad",
         Think = function(vars)
@@ -119,7 +119,7 @@ function PANEL:Init()
         button.DoClick = function()
             ax.gui.tabLast = k
 
-            self:TransitionToPage(button.tab.index, ax.option:Get("tab.fade.time", 0.25))
+            self:TransitionToPage(button.tab.index, ax.option:Get("tabFadeTime", 0.25))
         end
 
         button.Paint = function( this, width, height )
@@ -163,11 +163,11 @@ function PANEL:Init()
 
     if ( ax.gui.tabLast and buttons[ax.gui.tabLast] ) then
         self.tabs[ax.gui.tabLast]:StartAtBottom()
-        self:TransitionToPage(self.tabs[ax.gui.tabLast].index, ax.option:Get("tab.fade.time", 0.25), true)
+        self:TransitionToPage(self.tabs[ax.gui.tabLast].index, ax.option:Get("tabFadeTime", 0.25), true)
     else
         for k, v in SortedPairs(buttons) do
             self.tabs[k]:StartAtBottom()
-            self:TransitionToPage(self.tabs[k].index, ax.option:Get("tab.fade.time", 0.25), true)
+            self:TransitionToPage(self.tabs[k].index, ax.option:Get("tabFadeTime", 0.25), true)
             break
         end
     end
@@ -193,7 +193,7 @@ function PANEL:Close(callback)
     self:SetGradientTopTarget(0)
     self:SetGradientBottomTarget(0)
 
-    local fadeDuration = ax.option:Get("tab.fade.time", 0.25)
+    local fadeDuration = ax.option:Get("tabFadeTime", 0.25)
 
     self:AlphaTo(0, fadeDuration, 0, function()
         self:Remove()
@@ -259,7 +259,7 @@ function PANEL:Paint(width, height)
     local ft = FrameTime()
     local time = ft * 5
 
-    local performanceAnimations = ax.option:Get("performance.animations", true)
+    local performanceAnimations = ax.option:Get("performanceAnimations", true)
     if ( !performanceAnimations ) then
         time = 1
     end

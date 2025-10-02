@@ -46,7 +46,7 @@ if ( SERVER ) then
         end
 
         local t = type or "generic"
-        local dur = tonumber(length) or (ax.config:Get("notification.defaultLength", 5) or 5)
+        local dur = tonumber(length) or (ax.config:Get("notificationDefaultLength", 5) or 5)
 
         net.Start("ax.notification.push")
             net.WriteString(msg)
@@ -87,10 +87,10 @@ if ( CLIENT ) then
     ax.notification.paddingY = ScreenScaleH(2)
     ax.notification.spacing = ScreenScaleH(2)
     ax.notification.font = "ax.regular.bold"
-    ax.notification.maxWidthFrac = 0.5
-    ax.notification.inTime = 0.25
-    ax.notification.outTime = 0.25
-    ax.notification.easing = "OutCubic"
+    ax.notificationMaxWidthFraction = 0.5
+    ax.notificationInTime = 0.25
+    ax.notificationOutTime = 0.25
+    ax.notificationEasing = "OutCubic"
 
     local function clamp(v, a, b) return math.min(math.max(v, a), b) end
 
@@ -114,12 +114,12 @@ if ( CLIENT ) then
     -- @tparam[opt="generic"] string type One of: generic, info, success, warning, error
     -- @tparam[opt=5] number length Seconds to remain visible (excluding animation).
     function ax.notification:Add(text, type, length)
-        if ( !ax.config:Get("notification.enabled", true) ) then return end
+        if ( !ax.config:Get("notificationEnabled", true) ) then return end
 
         table.insert(self.queue, {
             text = tostring(text or ""),
             type = type or "generic",
-            length = tonumber(length) or (ax.config:Get("notification.defaultLength", 5) or 5)
+            length = tonumber(length) or (ax.config:Get("notificationDefaultLength", 5) or 5)
         })
 
         self:Next()
@@ -138,7 +138,7 @@ if ( CLIENT ) then
     -- @tparam table data
     function ax.notification:Show(data)
         local sw, sh = ScrW(), ScrH()
-        local maxWFrac = (ax.config:Get("notification.maxWidthFrac", self.maxWidthFrac)) or self.maxWidthFrac
+        local maxWFrac = (ax.config:Get("notificationMaxWidthFraction", self.maxWidthFrac)) or self.maxWidthFrac
         local maxW = math.floor(sw * maxWFrac)
 
         surface.SetFont(self.font)
@@ -230,7 +230,7 @@ if ( CLIENT ) then
     end
 
     function ax.notification:Render()
-        if ( !ax.config:Get("notification.enabled", true) ) then return end
+        if ( !ax.config:Get("notificationEnabled", true) ) then return end
         if ( self.active[ 1 ] == nil ) then return end
 
         local sw, sh = ScrW(), ScrH()
