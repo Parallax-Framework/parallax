@@ -138,11 +138,25 @@ if ( SERVER ) then
                     net.WriteUInt(toInventoryID, 32)
                 if ( toInventoryID == 0 ) then
                     net.Broadcast()
-                    
+
+                    local itemEntity = ents.Create("ax_item")
+                    if ( !IsValid(itemEntity) ) then
+                        ax.util:PrintError("Failed to create item entity during transfer to world inventory.")
+                        return false, "Failed to create item entity."
+                    end
+
+                    itemEntity:SetItemID(item.id)
+                    itemEntity:SetItemClass(item.class)
+                    itemEntity:SetPos(fromInventory:GetOwner():GetPos() + Vector(0, 0, 50))
+                    itemEntity:Spawn()
+                    itemEntity:Activate()
+
+                    callback(true, item)
+
                     ax.util:PrintDebug("Broadcasting to all clients (world inventory)")
                 else
                     net.Send(toInventory:GetReceivers())
-                    
+
                     ax.util:PrintDebug("Sending to inventory receivers only")
                     for k, v in pairs(toInventory:GetReceivers()) do
                         ax.util:PrintDebug(" - Sent to: " .. tostring(v))
