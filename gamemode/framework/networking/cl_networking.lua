@@ -70,8 +70,13 @@ net.Receive("ax.character.create", function(len)
         if ( IsValid(main) ) then
             main.create:SlideDown(nil, function()
                 main.create:ClearVars()
-                main.create.factionSelection:SlideToFront(0)
-                main.create.characterOptions:SlideRight(0)
+                main.create:SlideToFront(0)
+
+                for k, v in pairs(main.create.tabs) do
+                    if ( IsValid(v) ) then
+                        v:Remove()
+                    end
+                end
             end)
             main.splash:SlideToFront()
         end
