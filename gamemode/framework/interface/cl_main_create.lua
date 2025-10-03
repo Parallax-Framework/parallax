@@ -9,6 +9,9 @@ function PANEL:Init()
     -- Set payloads to defaults
     local vars = self:GetVars()
     for k, v in pairs(vars) do
+        if ( !v.validate ) then continue end
+        if ( v.hide ) then continue end
+
         self.payload[k] = v.default
     end
 
@@ -35,6 +38,7 @@ function PANEL:PopulateTabs()
 
     local index = 1
     for k, v in SortedPairsByMemberValue(vars, "category") do
+        if ( !v.validate ) then continue end
         if ( v.hide ) then continue end
 
         local category = v.category or "misc"
@@ -65,15 +69,7 @@ function PANEL:PopulateTabs()
                 end
             end, "next", function()
                 for k2, v2 in pairs(self.tabs) do
-                    if ( tab.index + 1 == v2.index ) then
-                        if ( !IsValid(v2) ) then continue end
-
-                        tab:SlideLeft()
-                        v2:SlideToFront()
-                        self:ClearVars(k2)
-                        self:PopulateVars(k2)
-                        break
-                    elseif ( tab.index == #self.tabs ) then
+                    if ( tab.index == table.Count(self.tabs) ) then
                         net.Start("ax.character.create")
                             net.WriteTable(self.payload)
                         net.SendToServer()
@@ -88,6 +84,16 @@ function PANEL:PopulateTabs()
                                 net.SendToServer()
                             end)
                         end
+
+                        break
+                    elseif ( tab.index + 1 == v2.index ) then
+                        if ( !IsValid(v2) ) then continue end
+
+                        tab:SlideLeft()
+                        v2:SlideToFront()
+                        self:ClearVars(k2)
+                        self:PopulateVars(k2)
+                        break
                     end
                 end
             end)
