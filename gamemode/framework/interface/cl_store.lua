@@ -60,7 +60,6 @@ function PANEL:SetType(type)
     for k, v in ipairs(self:GetPages()) do
         v:SetXOffset(self.categories:GetWide() + ScreenScale(32))
         v:SetWidthOffset(-self.categories:GetWide() - ScreenScale(32))
-        print(v:GetXOffset(), v:GetWidthOffset())
 
         if ( k == 1 ) then
             self:TransitionToPage(v.index, 0, true)
@@ -132,8 +131,6 @@ function PANEL:Populate(tab, scroller, type, category)
             label:SetTextColor(Color(200, 200, 200))
         end
     end
-
-    PrintTable(subCategoryCache)
 
     -- Remove the sub categories if there is only one
     if ( table.Count(subCategoryCache) == 1 ) then
