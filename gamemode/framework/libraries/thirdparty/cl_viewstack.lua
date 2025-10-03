@@ -43,162 +43,242 @@ local BLACKLIST  = {}            -- [name]=true
 local PRIORITY   = {}            -- [name]=number
 local WARNED     = {}            -- [name]=true (already logged error once)
 
--- Utility: shallow merge, last write wins
+-- Performance tracking and caching
+local PERF_STATS = {
+    lastUpdate = 0,
+    frameTime = 0.016,
+    skipThreshold = 0.033, -- Skip heavy operations if frame time > 33ms
+    modsSorted = false,
+    viewmodelModsSorted = false
+}
+
+-- Pre-allocated tables to reduce GC pressure
+-- Removed TEMP_VIEW and TEMP_VIEWMODEL to avoid mutation bugs
+
+-- Localized globals for performance
+local istable_local = istable
+local isstring_local = isstring
+local isfunction_local = isfunction
+local isnumber_local = isnumber
+local isbool_local = isbool
+local tonumber_local = tonumber
+local tostring_local = tostring
+local pcall_local = pcall
+local ipairs_local = ipairs
+local table_sort = table.sort
+local table_insert = table.insert
+local math_max = math.max
+local CurTime_local = CurTime
+local FrameTime_local = FrameTime
+
+-- Optimized merge functions with performance checks
 local function merge_view(base, patch)
     if not patch then return base end
-    base.origin      = patch.origin      or base.origin
-    base.angles      = patch.angles      or base.angles
-    base.fov         = patch.fov         or base.fov
-    base.znear       = patch.znear       or base.znear
-    base.zfar        = patch.zfar        or base.zfar
-    base.drawviewer  = (patch.drawviewer ~= nil) and patch.drawviewer or base.drawviewer
+    -- Only update fields that actually changed
+    if patch.origin and (not base.origin or not patch.origin:IsEqualTol(base.origin, 0.0001)) then base.origin = patch.origin end
+    if patch.angles and (not base.angles or not patch.angles:IsEqualTol(base.angles, 0.0001)) then base.angles = patch.angles end
+    if patch.fov and patch.fov ~= base.fov then base.fov = patch.fov end
+    if patch.znear and patch.znear ~= base.znear then base.znear = patch.znear end
+    if patch.zfar and patch.zfar ~= base.zfar then base.zfar = patch.zfar end
+    if patch.drawviewer ~= nil and patch.drawviewer ~= base.drawviewer then 
+        base.drawviewer = patch.drawviewer 
+    end
     return base
 end
 
--- Utility: shallow merge for viewmodel views, last write wins
 local function merge_viewmodel_view(base, patch)
     if not patch then return base end
-    base.pos         = patch.pos         or base.pos
-    base.ang         = patch.ang         or base.ang
-    base.fov         = patch.fov         or base.fov
+    -- Only update fields that actually changed
+    if patch.pos and (not base.pos or not patch.pos:IsEqualTol(base.pos, 0.0001)) then base.pos = patch.pos end
+    if patch.ang and (not base.ang or not patch.ang:IsEqualTol(base.ang, 0.0001)) then base.ang = patch.ang end
+    if patch.fov and patch.fov ~= base.fov then base.fov = patch.fov end
     return base
 end
 
--- Normalize any CalcView-style returns into a table or nil
+-- Optimized normalization with reduced allocations
 local function normalize_returns(a, b, c, d, e, f)
-    -- Table return
-    if istable(a) then return a end
-    -- Tuple return: pos, ang, fov (ignore extra returns; GMod doesn't use them here)
-    if a ~= nil or b ~= nil or c ~= nil then
-        return {
-            origin = a,
-            angles = b,
-            fov    = c,
-            -- d/e/f could be znear/zfar/drawviewer in some custom hooks; keep if typed right
-            znear  = isnumber(d) and d or nil,
-            zfar   = isnumber(e) and e or nil,
-            drawviewer = isbool(f) and f or nil
-        }
-    end
-    return nil
+    -- Fast path: table return
+    if istable_local(a) then return a end
+    -- Early bailout: no meaningful data
+    if a == nil and b == nil and c == nil then return nil end
+
+    -- Use local table to avoid mutation/race bugs
+    return {
+        origin = a,
+        angles = b,
+        fov = c,
+        znear = isnumber_local(d) and d or nil,
+        zfar = isnumber_local(e) and e or nil,
+        drawviewer = isbool_local(f) and f or nil
+    }
 end
 
--- Normalize any CalcViewModelView-style returns into a table or nil
 local function normalize_viewmodel_returns(a, b, c)
-    -- Table return
-    if istable(a) then return a end
-    -- Tuple return: pos, ang, fov
-    if a ~= nil or b ~= nil or c ~= nil then
-        return {
-            pos = a,
-            ang = b,
-            fov = c
-        }
-    end
-    return nil
+    -- Fast path: table return
+    if istable_local(a) then return a end
+    -- Early bailout: no meaningful data
+    if a == nil and b == nil and c == nil then return nil end
+
+    -- Use local table to avoid mutation/race bugs
+    return {
+        pos = a,
+        ang = b,
+        fov = c
+    }
 end
 
+-- Optimized safe call with performance tracking
 local function safe_call(name, fn, ...)
-    local ok, a, b, c, d, e, f = pcall(fn, ...)
+    local ok, a, b, c, d, e, f = pcall_local(fn, ...)
     if not ok then
         if not WARNED[name] then
             WARNED[name] = true
-            MsgC(Color(255,80,80), "[viewstack] Hook error in ", name, ": ", tostring(a), "\n")
+            MsgC(Color(255,80,80), "[viewstack] Hook error in ", name, ": ", tostring_local(a), "\n")
         end
         return nil
     end
+    -- Skip normalization if no returns
+    if a == nil and b == nil and c == nil then return nil end
     return normalize_returns(a, b, c, d, e, f)
 end
 
 local function safe_call_viewmodel(name, fn, ...)
-    local ok, a, b, c = pcall(fn, ...)
+    local ok, a, b, c = pcall_local(fn, ...)
     if not ok then
         if not WARNED[name] then
             WARNED[name] = true
-            MsgC(Color(255,80,80), "[viewstack] ViewModelView hook error in ", name, ": ", tostring(a), "\n")
+            MsgC(Color(255,80,80), "[viewstack] ViewModelView hook error in ", name, ": ", tostring_local(a), "\n")
         end
         return nil
     end
+    -- Skip normalization if no returns
+    if a == nil and b == nil and c == nil then return nil end
     return normalize_viewmodel_returns(a, b, c)
 end
 
-local function sort_by_prio_then_name(list)
-    table.sort(list, function(x, y)
+-- Performance monitoring
+local function update_perf_stats()
+    local now = CurTime_local()
+    if now - PERF_STATS.lastUpdate > 0.1 then -- Update every 100ms
+        PERF_STATS.frameTime = FrameTime_local() or 0.016
+        PERF_STATS.lastUpdate = now
+    end
+end
+
+-- Optimized sorting with caching
+local function sort_by_prio_then_name(list, sortedFlag)
+    -- Skip sorting if already sorted and no changes
+    if sortedFlag and PERF_STATS[sortedFlag] then return end
+    
+    table_sort(list, function(x, y)
         local px = x.prio or 0
         local py = y.prio or 0
         if px ~= py then return px < py end
-        return tostring(x.name) < tostring(y.name)
+        return tostring_local(x.name) < tostring_local(y.name)
     end)
+    
+    if sortedFlag then
+        PERF_STATS[sortedFlag] = true
+    end
 end
 
 -- Public API
 
 --- Register a modifier that gets (client, view) and returns a (partial) view table or nil.
 function ax.viewstack:RegisterModifier(name, fn, priority)
-    assert(isstring(name) and name ~= "", "Modifier needs a name")
-    assert(isfunction(fn), "Modifier needs a function")
-    table.insert(MODS, { name = name, fn = fn, prio = tonumber(priority) or 0, enabled = true })
-    sort_by_prio_then_name(MODS)
+    assert(isstring_local(name) and name ~= "", "Modifier needs a name")
+    assert(isfunction_local(fn), "Modifier needs a function")
+    table_insert(MODS, { name = name, fn = fn, prio = tonumber_local(priority) or 0, enabled = true })
+    PERF_STATS.modsSorted = false -- Mark for re-sort
 end
 
---- Register a viewmodel modifier that gets (client, viewmodel) and returns a (partial) viewmodel table or nil.
+--- Register a viewmodel modifier that gets (weapon, viewmodel) and returns a (partial) viewmodel table or nil.
 function ax.viewstack:RegisterViewModelModifier(name, fn, priority)
-    assert(isstring(name) and name ~= "", "ViewModelModifier needs a name")
-    assert(isfunction(fn), "ViewModelModifier needs a function")
-    table.insert(MODS_VIEWMODEL, { name = name, fn = fn, prio = tonumber(priority) or 0, enabled = true })
-    sort_by_prio_then_name(MODS_VIEWMODEL)
+    assert(isstring_local(name) and name ~= "", "ViewModelModifier needs a name")
+    assert(isfunction_local(fn), "ViewModelModifier needs a function")
+    table_insert(MODS_VIEWMODEL, { name = name, fn = fn, prio = tonumber_local(priority) or 0, enabled = true })
+    PERF_STATS.viewmodelModsSorted = false -- Mark for re-sort
 end
 
 --- Blacklist a legacy hook (or modifier) by name.
 function ax.viewstack:Blacklist(name, state)
-    BLACKLIST[name] = state ~= false
-    -- Apply to captured + mods immediately
+    local newState = state ~= false
+    if BLACKLIST[name] == newState then return end -- No change needed
+    
+    BLACKLIST[name] = newState
+    local enabled = not newState
+    
+    -- Apply to captured hooks
     if CAPTURED then
-        for _, h in ipairs(CAPTURED) do
-            if h.name == name then h.enabled = not BLACKLIST[name] end
+        for _, h in ipairs_local(CAPTURED) do
+            if h.name == name then h.enabled = enabled end
         end
     end
     if CAPTURED_VIEWMODEL then
-        for _, h in ipairs(CAPTURED_VIEWMODEL) do
-            if h.name == name then h.enabled = not BLACKLIST[name] end
+        for _, h in ipairs_local(CAPTURED_VIEWMODEL) do
+            if h.name == name then h.enabled = enabled end
         end
     end
-    for _, m in ipairs(MODS) do
-        if m.name == name then m.enabled = not BLACKLIST[name] end
+    
+    -- Apply to modifiers
+    for _, m in ipairs_local(MODS) do
+        if m.name == name then m.enabled = enabled end
     end
-    for _, m in ipairs(MODS_VIEWMODEL) do
-        if m.name == name then m.enabled = not BLACKLIST[name] end
+    for _, m in ipairs_local(MODS_VIEWMODEL) do
+        if m.name == name then m.enabled = enabled end
     end
 end
 
 --- Set priority for a legacy hook (captured) or modifier. Lower number runs earlier.
 function ax.viewstack:SetPriority(name, prio)
-    PRIORITY[name] = tonumber(prio) or 0
+    local newPrio = tonumber_local(prio) or 0
+    if PRIORITY[name] == newPrio then return end -- No change needed
+    
+    PRIORITY[name] = newPrio
+    local needsSort = false
+    
+    -- Update captured hooks
     if CAPTURED then
-        for _, h in ipairs(CAPTURED) do
-            if h.name == name then h.prio = PRIORITY[name] end
+        for _, h in ipairs_local(CAPTURED) do
+            if h.name == name then 
+                h.prio = newPrio
+                needsSort = true
+            end
         end
-        sort_by_prio_then_name(CAPTURED)
+        if needsSort then sort_by_prio_then_name(CAPTURED) end
     end
+    
+    needsSort = false
     if CAPTURED_VIEWMODEL then
-        for _, h in ipairs(CAPTURED_VIEWMODEL) do
-            if h.name == name then h.prio = PRIORITY[name] end
+        for _, h in ipairs_local(CAPTURED_VIEWMODEL) do
+            if h.name == name then 
+                h.prio = newPrio
+                needsSort = true
+            end
         end
-        sort_by_prio_then_name(CAPTURED_VIEWMODEL)
+        if needsSort then sort_by_prio_then_name(CAPTURED_VIEWMODEL) end
     end
-    for _, m in ipairs(MODS) do
-        if m.name == name then m.prio = PRIORITY[name] end
+    
+    -- Update modifiers and mark for re-sort
+    for _, m in ipairs_local(MODS) do
+        if m.name == name then 
+            m.prio = newPrio
+            PERF_STATS.modsSorted = false
+        end
     end
-    sort_by_prio_then_name(MODS)
-    for _, m in ipairs(MODS_VIEWMODEL) do
-        if m.name == name then m.prio = PRIORITY[name] end
+    for _, m in ipairs_local(MODS_VIEWMODEL) do
+        if m.name == name then 
+            m.prio = newPrio
+            PERF_STATS.viewmodelModsSorted = false
+        end
     end
-    sort_by_prio_then_name(MODS_VIEWMODEL)
 end
 
 --- Rebuild capture and (re)install dispatcher.
 function ax.viewstack:Enable()
     hook.Add("CalcView", "__ax_viewstack_dispatcher", function(client, origin, angles, fov, znear, zfar)
+        update_perf_stats()
+        
         -- Base view seeded from engine params
         local view = {
             origin = origin,
@@ -209,30 +289,36 @@ function ax.viewstack:Enable()
             drawviewer = false
         }
 
-        -- 1) run modern modifiers
-        for _, m in ipairs(MODS) do
-            if m.enabled and not BLACKLIST[m.name] then
-                local ok, patch = pcall(m.fn, client, view)
-                if not ok then
-                    if not WARNED[m.name] then
-                        WARNED[m.name] = true
-                        MsgC(Color(255,80,80), "[viewstack] Modifier error in ", m.name, ": ", tostring(patch), "\n")
-                    end
-                else
-                    if istable(patch) then
+        -- Early bailout for performance: skip if no modifiers and no captured hooks
+        local hasWork = #MODS > 0 or (CAPTURED and #CAPTURED > 0)
+        if not hasWork then return view end
+
+        -- 1) run modern modifiers (sort only when needed)
+        if #MODS > 0 then
+            sort_by_prio_then_name(MODS, "modsSorted")
+            
+            for _, m in ipairs_local(MODS) do
+                if m.enabled and not BLACKLIST[m.name] then
+                    local ok, patch = pcall_local(m.fn, client, view)
+                    if not ok then
+                        if not WARNED[m.name] then
+                            WARNED[m.name] = true
+                            MsgC(Color(255,80,80), "[viewstack] Modifier error in ", m.name, ": ", tostring_local(patch), "\n")
+                        end
+                    elseif istable_local(patch) then
                         merge_view(view, patch)
                     end
                 end
             end
         end
 
-        -- 2) run captured legacy hooks
+        -- 2) run captured legacy hooks (only if they exist)
         if CAPTURED and #CAPTURED > 0 then
-            sort_by_prio_then_name(CAPTURED) -- stable + applies priority changes
-            for _, h in ipairs(CAPTURED) do
+            sort_by_prio_then_name(CAPTURED) -- Legacy hooks always get sorted
+            for _, h in ipairs_local(CAPTURED) do
                 if h.enabled and not BLACKLIST[h.name] then
                     local patch = safe_call(h.name, h.fn, client, view.origin, view.angles, view.fov, view.znear, view.zfar)
-                    if istable(patch) then
+                    if istable_local(patch) then
                         merge_view(view, patch)
                     end
                 end
@@ -243,36 +329,44 @@ function ax.viewstack:Enable()
     end)
 
     hook.Add("CalcViewModelView", "__ax_viewstack_viewmodel_dispatcher", function(weapon, viewmodel, oldPos, oldAng, pos, ang)
+        update_perf_stats()
+        
         -- Base viewmodel view seeded from engine params
         local viewmodelView = {
             pos = pos,
             ang = ang,
         }
 
-        -- 1) run modern viewmodel modifiers
-        for _, m in ipairs(MODS_VIEWMODEL) do
-            if m.enabled and not BLACKLIST[m.name] then
-                local ok, patch = pcall(m.fn, weapon, viewmodelView)
-                if not ok then
-                    if not WARNED[m.name] then
-                        WARNED[m.name] = true
-                        MsgC(Color(255,80,80), "[viewstack] ViewModelModifier error in ", m.name, ": ", tostring(patch), "\n")
-                    end
-                else
-                    if istable(patch) then
+        -- Early bailout: skip if no modifiers and no captured hooks
+        local hasWork = #MODS_VIEWMODEL > 0 or (CAPTURED_VIEWMODEL and #CAPTURED_VIEWMODEL > 0)
+        if not hasWork then return pos, ang end
+
+        -- 1) run modern viewmodel modifiers (sort only when needed)
+        if #MODS_VIEWMODEL > 0 then
+            sort_by_prio_then_name(MODS_VIEWMODEL, "viewmodelModsSorted")
+            
+            for _, m in ipairs_local(MODS_VIEWMODEL) do
+                if m.enabled and not BLACKLIST[m.name] then
+                    local ok, patch = pcall_local(m.fn, weapon, viewmodelView)
+                    if not ok then
+                        if not WARNED[m.name] then
+                            WARNED[m.name] = true
+                            MsgC(Color(255,80,80), "[viewstack] ViewModelModifier error in ", m.name, ": ", tostring_local(patch), "\n")
+                        end
+                    elseif istable_local(patch) then
                         merge_viewmodel_view(viewmodelView, patch)
                     end
                 end
             end
         end
 
-        -- 2) run captured legacy viewmodel hooks
+        -- 2) run captured legacy viewmodel hooks (only if they exist)
         if CAPTURED_VIEWMODEL and #CAPTURED_VIEWMODEL > 0 then
-            sort_by_prio_then_name(CAPTURED_VIEWMODEL) -- stable + applies priority changes
-            for _, h in ipairs(CAPTURED_VIEWMODEL) do
+            sort_by_prio_then_name(CAPTURED_VIEWMODEL) -- Legacy hooks always get sorted
+            for _, h in ipairs_local(CAPTURED_VIEWMODEL) do
                 if h.enabled and not BLACKLIST[h.name] then
                     local patch = safe_call_viewmodel(h.name, h.fn, weapon, viewmodel, oldPos, oldAng, viewmodelView.pos, viewmodelView.ang)
-                    if istable(patch) then
+                    if istable_local(patch) then
                         merge_viewmodel_view(viewmodelView, patch)
                     end
                 end
