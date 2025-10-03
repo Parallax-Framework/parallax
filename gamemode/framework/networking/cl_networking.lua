@@ -311,8 +311,8 @@ net.Receive("ax.inventory.item.add", function()
     itemObject.inventory_id = inventory_id
     itemObject.data = item_data or {}
 
-    inventory.items[item.id] = item
-    ax.item.instances[item.id] = item
+    inventory.items[item_id] = itemObject
+    ax.item.instances[item_id] = itemObject
 
     if ( IsValid(ax.gui.inventory) ) then
         ax.gui.inventory:PopulateItems()
