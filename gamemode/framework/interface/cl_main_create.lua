@@ -74,17 +74,6 @@ function PANEL:PopulateTabs()
                             net.WriteTable(self.payload)
                         net.SendToServer()
 
-                        local client = ax.client
-                        local clientTable = client:GetTable()
-                        local characters = clientTable.axCharacters or {}
-                        if ( !client:GetCharacter() and characters[1] == nil ) then
-                            timer.Simple(0.1, function()
-                                net.Start("ax.character.load")
-                                    net.WriteUInt(#ax.character.instances, 32)
-                                net.SendToServer()
-                            end)
-                        end
-
                         break
                     elseif ( tab.index + 1 == v2.index ) then
                         if ( !IsValid(v2) ) then continue end

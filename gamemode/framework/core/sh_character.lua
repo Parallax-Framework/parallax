@@ -203,7 +203,7 @@ ax.character:RegisterVar("name", {
         local factionData = ax.faction:Get(payload.faction)
         if ( !factionData ) then return end
 
-        entry:SetPlaceholderText(factionData:GetDefaultName(ax.client) or "Enter your character's name")
+        entry:SetPlaceholderText("Enter your character's name")
 
         if ( factionData.allowNonAscii == true ) then
             entry:SetAllowNonAsciiCharacters(true)
