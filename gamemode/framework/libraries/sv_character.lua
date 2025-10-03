@@ -109,65 +109,72 @@ function ax.character:Restore(client, callback)
 
     local steamID64 = client:SteamID64()
     local query = mysql:Select("ax_characters")
-        query:Where("steamid64", steamID64)
-        query:Callback(function(result, status)
-            if ( result == false ) then
-                ax.util:PrintError("Failed to fetch characters for " .. steamID64)
-                return
+    query:Where("steamid64", steamID64)
+    query:Callback(function(result, status)
+        if ( result == false ) then
+            ax.util:PrintError("Failed to fetch characters for " .. steamID64)
+            return
+        end
+
+        if ( result[1] == nil ) then
+            ax.util:PrintDebug("No characters found for " .. steamID64)
+            return
+        end
+
+        for i = 1, #result do
+            local character = setmetatable({}, ax.character.meta)
+            character.id = result[i].id
+            character.vars = {}
+
+            for k, v in pairs(self.vars) do
+                local field = v.field
+                local var = result[i][field] or v.default
+                character.vars[k] = var
             end
 
-            if ( result[1] == nil ) then
-                ax.util:PrintDebug("No characters found for " .. steamID64)
-                return
-            end
+            -- Turn the data into a table rather than JSON from the database
+            character.vars.data = util.JSONToTable(character.vars.data)
 
-            for i = 1, #result do
-                local character = setmetatable({}, ax.character.meta)
-                character.id = result[i].id
-                character.vars = {}
+            ax.character.instances[character.id] = character
+            clientData.axCharacters[ #clientData.axCharacters + 1 ] = character
+        end
 
-                for k, v in pairs(self.vars) do
-                    local field = v.field
-                    local var = result[i][field] or v.default
-                    character.vars[k] = var
-                end
+        net.Start("ax.character.restore")
+            net.WriteTable(clientData.axCharacters)
+        net.Send(client)
 
-                -- Turn the data into a table rather than JSON from the database
-                character.vars.data = util.JSONToTable(character.vars.data)
-
-                ax.character.instances[character.id] = character
-                clientData.axCharacters[ #clientData.axCharacters + 1 ] = character
-            end
-
-            net.Start("ax.character.restore")
-                net.WriteTable(clientData.axCharacters)
-            net.Send(client)
-
-            if ( isfunction(callback) ) then
-                callback(clientData.axCharacters)
-            end
-        end)
+        if ( isfunction(callback) ) then
+            callback(clientData.axCharacters)
+        end
+    end)
     query:Execute()
 end
 
-function ax.character:Delete( id, callback )
-    local query = mysql:Delete( "ax_characters" )
-        query:Where( "id", id )
-        query:Callback( function( result, status )
-            if ( result == false ) then
-                ax.util:PrintError( "Failed to delete character with ID " .. id )
-                if ( isfunction(callback) ) then
-                    callback(false)
-                end
-
-                return
-            end
-
-            ax.util:PrintDebug( "Character with ID " .. id .. " deleted successfully" )
+function ax.character:Delete(id, callback)
+    local query = mysql:Delete("ax_characters")
+    query:Where("id", id)
+    query:Callback(function(result, status)
+        if ( result == false ) then
+            ax.util:PrintError("Failed to delete character with ID " .. id)
             if ( isfunction(callback) ) then
-                callback(true)
+                callback(false)
             end
-        end )
+
+            return
+        end
+
+        ax.util:PrintDebug(color_success, "Character with ID " .. id .. " deleted successfully")
+
+        local data = result[1] or {}
+
+        local inventoryQuery = mysql:Delete("ax_inventories")
+        inventoryQuery:Where("id", data.inventory)
+        inventoryQuery:Execute()
+
+        if ( isfunction(callback) ) then
+            callback(true)
+        end
+    end)
     query:Execute()
 end
 
