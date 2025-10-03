@@ -62,10 +62,25 @@ function PANEL:PopulateItems()
     self.weightProgress:SetFraction(inventory:GetWeight() / inventory:GetMaxWeight())
     self.weightCounter:SetText(math.Round(inventory:GetWeight(), 2) .. "kg / " .. inventory:GetMaxWeight() .. "kg", true)
 
+    -- TODO: Sort categories alphabetically
+    -- TODO: Sort items within categories alphabetically
+    -- TODO: Allow pressing categories to collapse/expand them
+    -- TODO: Turn the item list into a grid layout instead of a constant vertical list
+
+    local categoryCache = {}
     for k, v in pairs(inventory:GetItems()) do
         if ( !ax.item.stored[v.class] ) then
             ax.util:PrintDebug("Item class '" .. tostring(v.class) .. "' not found in registry, skipping...")
             continue
+        end
+
+        if ( !categoryCache[v.category] ) then
+            local categoryPanel = self.container:Add("ax.text")
+            categoryPanel:SetFont("ax.huge.italic.bold")
+            categoryPanel:SetText(string.upper(v.category), true)
+            categoryPanel:Dock(TOP)
+
+            categoryCache[v.category] = true
         end
 
         local item = self.container:Add("ax.button.flat")
