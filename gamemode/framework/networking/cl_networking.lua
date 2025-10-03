@@ -402,6 +402,7 @@ end)
 net.Receive("ax.item.spawn", function()
     local itemID = net.ReadUInt(32)
     local itemClass = net.ReadString()
+    local itemData = net.ReadTable()
 
     local item = ax.item.stored[itemClass]
     if ( !istable(item) ) then
@@ -412,7 +413,7 @@ net.Receive("ax.item.spawn", function()
     -- Create item instance
     local itemObject = ax.item:Instance(itemID, itemClass)
     itemObject.inventory_id = 0
-    itemObject.data = {}
+    itemObject.data = itemData
 
     ax.item.instances[itemID] = itemObject
     ax.util:PrintDebug(string.format("Spawning item entity for item ID %d (%s)", itemID, itemClass))

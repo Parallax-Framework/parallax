@@ -294,6 +294,7 @@ if ( SERVER ) then
                 net.Start("ax.item.spawn")
                     net.WriteUInt(lastID, 32)
                     net.WriteString(class)
+                    net.WriteTable(data or {})
                 net.Broadcast()
 
                 if ( isfunction(callback) ) then
