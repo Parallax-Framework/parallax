@@ -994,4 +994,12 @@ function ax.util:GetSurfaceDataViaTrace(tr)
     return util.GetSurfaceData(tr.SurfaceProps)
 end
 
+--- Pads a number with leading zeroes until it reaches the desired digit length.
+-- @param num number: The number to pad.
+-- @param digits number: The total amount of digits the result should have.
+-- @return string: The padded number as a string.
+function ax.util:PadNumber(num, digits)
+    return string.format("%0" .. tostring(digits) .. "d", num)
+end
+
 ax.util:Include("store_factory.lua")
