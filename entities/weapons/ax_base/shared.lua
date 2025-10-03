@@ -204,16 +204,20 @@ function SWEP:ShootBullet(damage, num, cone)
         AmmoType = self.Primary.Ammo
     }
 
+    if ( self.Primary.TracerName ) then
+        bullet.TracerName = self.Primary.TracerName
+    end
+
     viewPunchAngle.x = self.Primary.Recoil / 4
     viewPunchAngle.y = math.Rand(-self.Primary.Recoil, self.Primary.Recoil) / 2
     viewPunchAngle.z = math.Rand(-self.Primary.Recoil, self.Primary.Recoil) / 4
 
     owner:FireBullets(bullet)
-    owner:ViewPunch(viewPunchAngle)
     owner:LagCompensation(false)
+    owner:ViewPunch(viewPunchAngle)
 
     -- Kick up the client's view on the shooting client
-    if ( CLIENT and IsFirstTimePredicted() ) then
+    if ( IsFirstTimePredicted() and ( CLIENT or game.SinglePlayer() ) ) then
         local eyeAng = owner:EyeAngles()
         eyeAng.p = eyeAng.p - viewPunchAngle.x / 3
         eyeAng.y = eyeAng.y - viewPunchAngle.y / 3
