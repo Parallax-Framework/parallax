@@ -278,7 +278,17 @@ function GM:PlayerDisconnected(client)
     AX_CLIENT_QUEUE[steamID64] = nil
 end
 
-function GM:GetFallDamage( client, speed )
+function GM:GetFallDamage(client, speed)
     -- https://github.com/Facepunch/garrysmod/blob/master/garrysmod/gamemodes/base/gamemode/player.lua#L756
     return ( speed - 526.5 ) * ( 100 / 396 ) -- the Source SDK value
+end
+
+function GM:OnPlayerItemPickup(client, entity, item)
+    entity:EmitSound("items/itempickup.wav")
+end
+
+function GM:OnPlayerItemAction(client, item, action)
+    if ( action == "drop" ) then
+        client:EmitSound("Flesh.ImpactSoft")
+    end
 end

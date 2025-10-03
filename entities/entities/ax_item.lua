@@ -46,10 +46,24 @@ if ( SERVER ) then
         if ( inventory:GetWeight() + item:GetWeight() <= inventory:GetMaxWeight() ) then
             local success, reason = ax.item:Transfer(item, 0, inventory, function(success)
                 if ( success ) then
-                    activator:Notify("You have picked up: " .. (item:GetName() or "Unknown Item"))
+                    ax.util:PrintDebug(color_success, string.format(
+                        "Player %s picked up item %s from world inventory to inventory %s.",
+                        tostring(activator),
+                        tostring(item.id),
+                        tostring(inventory.id)
+                    ))
+
+                    hook.Run("OnPlayerItemPickup", activator, self, item)
+
                     SafeRemoveEntity(self)
                 else
-                    activator:Notify("Failed to pick up item: " .. (item:GetName() or "Unknown Item"))
+                    ax.util:PrintWarning(string.format(
+                        "Player %s failed to pick up item %s from world inventory to inventory %s, due to %s.",
+                        tostring(activator),
+                        tostring(item.id),
+                        tostring(inventory.id),
+                        tostring(reason or "Unknown Reason")
+                    ))
                 end
             end)
 

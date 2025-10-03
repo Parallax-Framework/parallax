@@ -60,7 +60,7 @@ net.Receive("ax.inventory.item.action", function(length, client)
         end
     end
 
-    hook.Run("PlayerUsedItemAction", client, item, action)
+    hook.Run("OnPlayerItemAction", client, item, action)
 end)
 
 util.AddNetworkString("ax.character.create")

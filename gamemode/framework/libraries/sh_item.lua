@@ -50,12 +50,8 @@ function ax.item:Include(path)
                     return true
                 end,
                 OnRun = function(action, item, client)
-                    -- TODO: Implement item dropping, use ax.item:Transfer() to move item to world inventory (ID 0), then spawn entity
-                    -- Example: ax.item:Transfer(item, item.inventory, worldInventory, function(success) ... end)
-
                     local inventoryID = 0
                     for k, v in pairs(ax.character.instances) do
-                        print(v:GetInventoryID(), item:GetInventoryID())
                         if ( v:GetInventoryID() == item:GetInventoryID() ) then
                             inventoryID = v:GetInventoryID()
                             break
@@ -63,15 +59,26 @@ function ax.item:Include(path)
                     end
 
                     if ( !inventoryID or inventoryID <= 0 ) then
-                        client:Notify("You cannot drop this item right now.")
+                        client:Notify("You cannot drop this item right now!")
                         return false
                     end
 
                     local success, reason = ax.item:Transfer(item, inventoryID, 0, function(success)
                         if ( success ) then
-                            client:Notify("You have dropped: " .. (item:GetName() or "Unknown Item"))
+                            ax.util:PrintDebug(color_success, string.format(
+                                "Player %s dropped item %s from inventory %s to world inventory.",
+                                tostring(client),
+                                tostring(item.id),
+                                tostring(inventoryID)
+                            ))
                         else
-                            client:Notify("Failed to drop item: " .. (item:GetName() or "Unknown Item"))
+                            ax.util:PrintWarning(string.format(
+                                "Player %s failed to drop item %s from inventory %s to world inventory, due to %s.",
+                                tostring(client),
+                                tostring(item.id),
+                                tostring(inventoryID),
+                                tostring(reason or "Unknown Reason")
+                            ))
                         end
                     end)
 
@@ -181,9 +188,7 @@ if ( SERVER ) then
         local dropPos
         if ( fromInventoryID != 0 and toInventoryID == 0 ) then
             local owner = fromInventory:GetOwner()
-            print(fromInventory, owner)
             if ( istable(owner) and IsValid(owner:GetOwner()) ) then
-                print("here")
                 local trace = {}
                 trace.start = owner:GetOwner():GetShootPos()
                 trace.endpos = trace.start + (owner:GetOwner():GetAimVector() * 96)
@@ -235,8 +240,6 @@ if ( SERVER ) then
                     itemEntity:SetPos(dropPos or vector_origin)
                     itemEntity:Spawn()
                     itemEntity:Activate()
-
-                    callback(true, item)
 
                     ax.util:PrintDebug("Broadcasting to all clients (world inventory)")
                 else
