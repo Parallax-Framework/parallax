@@ -59,6 +59,25 @@ end
 function GM:InitPostEntity()
     if ( SERVER ) then
         ax.database:Connect() -- TODO: Allow schemas to connect to their own databases
+
+        local groundItems = ax.data:Get("world_items", {}, { scope = "map", human = true })
+        for itemID, v in pairs(groundItems) do
+            ax.item:Instance(itemID, v.class)
+
+            local entity = ents.Create("ax_item")
+            entity:SetItemID(itemID)
+            entity:SetItemClass(v.class)
+            entity:SetPos(v.position)
+            entity:SetAngles(v.angles)
+            entity:Spawn()
+            entity:Activate()
+
+            net.Start("ax.item.spawn")
+                net.WriteUInt(itemID, 32)
+                net.WriteString(v.class)
+                net.WriteTable(v.data or {})
+            net.Broadcast()
+        end
     else
         ax.joinTime = os.time()
     end

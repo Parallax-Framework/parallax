@@ -259,6 +259,21 @@ function GM:ShutDown() -- PlayerDisconnected isn't called on p2p/singleplayer
             client:Save()
         end
     end
+
+    local items = ents.FindByClass( "ax_item" )
+    local output = {}
+    for i = #items, 1, -1 do
+        local item = items[i]
+
+        output[ item:GetItemID() ] = {
+            class = item:GetItemClass(),
+            position = item:GetPos(),
+            angles = item:GetAngles(),
+            data = item:GetItemTable():GetData() or {}
+        }
+    end
+
+    ax.data:Set("world_items", output, { scope = "map", human = true })
 end
 
 function GM:PlayerDisconnected(client)
