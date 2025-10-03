@@ -222,3 +222,17 @@ ax.command:Add("PlyUnWhitelist", {
         return target:Nick() .. "( " .. target:SteamName() .. " ) has been unwhitelisted for " .. factionTable.name .. "."
     end
 })
+
+ax.command:Add("PlyRespawn", {
+    description = "Respawn a player.",
+    arguments = {
+        { name = "target", type = ax.type.player }
+    },
+    OnRun = function(client, target)
+        if ( !IsValid(target) ) then return "Invalid player." end
+
+        target:Spawn()
+
+        return "Player " .. target:Nick() .. " has been respawned."
+    end
+})
