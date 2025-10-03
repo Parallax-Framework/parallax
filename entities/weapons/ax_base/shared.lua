@@ -31,7 +31,8 @@ SWEP.Primary = {
     Recoil = 1,
     Sound = Sound("Weapon_Pistol.Single"),
     SoundEmpty = Sound("Weapon_Pistol.Empty"),
-    NumShots = 1
+    NumShots = 1,
+    TracerName = "Tracer"
 }
 
 SWEP.Secondary = {
@@ -200,9 +201,21 @@ function SWEP:ShootBullet(damage, num, cone)
         Dir = owner:GetAimVector(),
         Spread = spreadVector,
         Tracer = 1,
+        TracerName = "none",
         Damage = damage,
         AmmoType = self.Primary.Ammo
     }
+
+    local trace = util.TraceLine({
+        start = bullet.Src,
+        endpos = bullet.Src + bullet.Dir * 32768,
+        filter = owner,
+        mask = MASK_SHOT
+    })
+
+    if ( self.OnShootBullet ) then
+        self:OnShootBullet(bullet, trace)
+    end
 
     if ( self.Primary.TracerName ) then
         bullet.TracerName = self.Primary.TracerName
