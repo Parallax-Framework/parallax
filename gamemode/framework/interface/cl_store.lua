@@ -98,27 +98,27 @@ function PANEL:Populate(tab, scroller, type, category)
     end
 
     local subCategoryCache = {}
-    for key, data in SortedPairs(rows) do
-        if ( data.subCategory and !subCategoryCache[data.subCategory] ) then
-            local subCategoryLabel = self.container:Add("ax.text")
+    for key, entry in SortedPairs(rows) do
+        if ( entry.data.subCategory and !subCategoryCache[entry.data.subCategory] ) then
+            local subCategoryLabel = scroller:Add("ax.text")
             subCategoryLabel:SetFont("ax.huge.italic.bold")
-            subCategoryLabel:SetText(string.upper(data.subCategory), true)
+            subCategoryLabel:SetText(string.upper(ax.util:UniqueIDToName(ax.localization:GetPhrase(entry.data.subCategory))), true)
             subCategoryLabel:Dock(TOP)
 
-            subCategoryCache[data.subCategory] = subCategoryLabel
+            subCategoryCache[entry.data.subCategory] = subCategoryLabel
         end
 
-        if ( data.type == ax.type.bool ) then
+        if ( entry.type == ax.type.bool ) then
             local btn = scroller:Add("ax.store.bool")
             btn:Dock(TOP)
             btn:SetType(type)
             btn:SetKey(key)
-        elseif ( data.type == ax.type.number ) then
+        elseif ( entry.type == ax.type.number ) then
             local btn = scroller:Add("ax.store.number")
             btn:Dock(TOP)
             btn:SetType(type)
             btn:SetKey(key)
-        elseif ( data.type == ax.type.string ) then
+        elseif ( entry.type == ax.type.string ) then
             local btn = scroller:Add("ax.store.string")
             btn:Dock(TOP)
             btn:SetType(type)
@@ -127,17 +127,21 @@ function PANEL:Populate(tab, scroller, type, category)
             local label = scroller:Add("ax.text")
             label:Dock(TOP)
             label:SetFont("ax.large.italic")
-            label:SetText(string.format("Unsupported type '%s' for key: %s", ax.type:Format(data.type), tostring(key)), true)
+            label:SetText(string.format("Unsupported type '%s' for key: %s", ax.type:Format(entry.type), tostring(key)), true)
             label:SetContentAlignment(5)
             label:SetTextColor(Color(200, 200, 200))
         end
     end
 
+    PrintTable(subCategoryCache)
+
     -- Remove the sub categories if there is only one
-    if ( table.Count(subCategoryCache) <= 1 ) then
+    if ( table.Count(subCategoryCache) == 1 ) then
         for k, v in pairs(subCategoryCache) do
             v:Remove()
         end
+
+        ax.util:PrintDebug("ax.store: Removed subcategory labels for category '" .. tostring(category) .. "' due to only one existing.")
     end
 end
 

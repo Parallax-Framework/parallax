@@ -212,7 +212,7 @@ function ax.util:CreateStore(spec)
         local result = {}
 
         for key, entry in pairs(store.registry) do
-            result[key] = { type = entry.type, default = entry.default, data = table.Copy(entry.data) }
+            result[key] = table.Copy(entry)
         end
 
         return result
@@ -224,7 +224,7 @@ function ax.util:CreateStore(spec)
         for key, entry in pairs(store.registry) do
             local entryCategory = entry.data.category or "misc"
             if ( ax.util:FindString(entryCategory, category) ) then
-                result[key] = { type = entry.type, default = entry.default, data = table.Copy(entry.data) }
+                result[key] = table.Copy(entry)
             end
         end
 
