@@ -1,178 +1,171 @@
+local title
+
 local PANEL = {}
 
 function PANEL:Init()
-    local parent = self:GetParent()
-
     self.payload = {}
+    self.tabs = {}
 
-    self:SetPos(0, 0)
-    self:SetSize(ScrW(), ScrH())
-
-    self.factionSelection = self:Add("ax.transition")
-    self.factionSelection:SlideToFront()
-
-    self:CreateNavigation(self.factionSelection, "back", function()
-        self:SlideDown()
-        parent.splash:SlideToFront()
-    end)
-
-    local title = self.factionSelection:Add("ax.text")
-    title:Dock(TOP)
-    title:DockMargin(ScreenScale(32), ScreenScaleH(32), 0, 0)
-    title:SetFont("ax.huge.bold")
-    title:SetText("SELECT YOUR FACTION")
-
-    local factionList = self.factionSelection:Add("ax.scroller.horizontal")
-    factionList:Dock(FILL)
-    factionList:DockMargin(ScreenScale(32), ScreenScaleH(32) * 2, ScreenScale(32), ScreenScaleH(32))
-    factionList:InvalidateParent(true)
-    factionList.Paint = nil
-
-    factionList.btnLeft:SetAlpha(0)
-    factionList.btnRight:SetAlpha(0)
-
-    local factions = table.Copy(ax.faction:GetAll())
-    table.sort(factions, function(a, b)
-        local aSort = a.sortOrder or 100
-        local bSort = b.sortOrder or 100
-
-        -- If the sort orders are equal, sort by name
-        if ( aSort == bSort ) then
-            return a.name < b.name
-        end
-
-        return aSort < bSort
-    end)
-
-    for i = 1, #factions do
-        local v = factions[i]
-        if ( !ax.faction:CanBecome(v.index, ax.client) ) then continue end
-
-        local name = (v.name and string.upper(v.name)) or "UNKNOWN FACTION"
-        local description = (v.description and string.upper(v.description)) or "UNKNOWN FACTION DESCRIPTION"
-        description = ax.util:CapTextWord(description, factionList:GetTall() / 2) -- Unreliable, but it works for now
-
-        local descriptionWrapped = ax.util:GetWrappedText(description, "ax.regular.bold", math.min(factionList:GetTall() * 1.125, factionList:GetWide() / 2))
-
-        local factionButton = factionList:Add("ax.button.flat")
-        factionButton:Dock(LEFT)
-        factionButton:DockMargin(8, 0, 8, 0)
-        factionButton:SetText("", true, true)
-        factionButton:SetWide(math.min(factionList:GetTall() * 1.25, factionList:GetWide() / 2))
-
-        factionButton.DoClick = function()
-            self.payload.faction = v.index
-
-            self.factionSelection:SlideLeft()
-            self.characterOptions:SlideToFront()
-            self:PopulateVars()
-        end
-
-        local banner = v.image or hook.Run("GetFactionBanner", v.index) or "gamepadui/hl2/chapter14"
-        if ( isstring( banner ) ) then
-            banner = ax.util:GetMaterial(banner)
-        end
-
-        local image = factionButton:Add("EditablePanel")
-        image:Dock(FILL)
-        image:SetMouseInputEnabled(false)
-        image:SetSize(factionButton:GetTall(), factionButton:GetTall())
-        image.Paint = function(this, width, height)
-            local imageHeight = height * 0.75
-            imageHeight = math.Round(imageHeight)
-
-            surface.SetDrawColor(color_white)
-            surface.SetMaterial(banner)
-            surface.DrawTexturedRect(0, 0, width, imageHeight)
-
-            local inertia = factionButton:GetInertia()
-            local boxHeightStatic = (height * 0.15)
-            boxHeightStatic = math.Round(boxHeightStatic)
-
-            local boxHeight = boxHeightStatic * inertia
-            boxHeight = math.Round(boxHeight)
-            ax.render.Draw(0, 0, imageHeight - boxHeight, width, boxHeight, Color(255, 255, 255, 255 * inertia))
-
-            local textColor = factionButton:GetTextColor()
-            local hovered = factionButton:IsHovered()
-            local font = "ax.huge"
-            if ( v.Font ) then
-                font = v.Font
-            elseif ( name:len() > 22 ) then
-                font = "ax.massive"
-            end
-
-            if ( hovered ) then
-                font = font .. ".bold"
-            end
-
-            draw.SimpleText(name, font, ScreenScale(8), imageHeight - boxHeight + boxHeightStatic / 2, textColor, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
-
-            local textHeight = ax.util:GetTextHeight("ax.regular.bold") / 1.5
-            for d = 1, #descriptionWrapped do
-                draw.SimpleText(descriptionWrapped[d], "ax.regular.bold", ScreenScale(8), imageHeight - boxHeight + boxHeightStatic + (d - 1) * textHeight, ColorAlpha(textColor, 255 * inertia), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
-            end
-        end
-
-        factionList:AddPanel(factionButton)
+    -- Set payloads to defaults
+    local vars = self:GetVars()
+    for k, v in pairs(vars) do
+        self.payload[k] = v.default
     end
 
-    self.characterOptions = self:Add("ax.transition")
-    self.characterOptions:StartAtRight()
-
-    self:CreateNavigation(self.characterOptions, "back", function()
-        self.characterOptions:SlideRight()
-        self.factionSelection:SlideToFront(nil, function()
-            self:ClearVars()
-        end)
-    end, "finish", function()
-        net.Start("ax.character.create")
-            net.WriteTable(self.payload)
-        net.SendToServer()
-
-        local client = ax.client
-        local clientTable = client:GetTable()
-        local characters = clientTable.axCharacters or {}
-        if ( !client:GetCharacter() and characters[1] == nil ) then
-            timer.Simple(0.1, function()
-                net.Start("ax.character.load")
-                    net.WriteUInt(#ax.character.instances, 32)
-                net.SendToServer()
-            end)
-        end
-    end)
-
-    title = self.characterOptions:Add("ax.text")
-    title:Dock(TOP)
-    title:DockMargin(ScreenScale(32), ScreenScaleH(32), 0, 0)
-    title:SetFont("ax.huge.bold")
-    title:SetText("CUSTOMIZE YOUR CHARACTER")
-
-    self.characterOptions.container = self.characterOptions:Add("EditablePanel")
-    self.characterOptions.container:Dock(FILL)
-    self.characterOptions.container:DockMargin(ScreenScale(196), ScreenScaleH(32), ScreenScale(196), 0)
-    self.characterOptions.container:InvalidateParent(true)
-
-    -- Character options will be automatically populated based on the selected faction
+    self:StartAtBottom()
+    self:ClearVars(category)
 end
 
-function PANEL:ClearVars()
-    local container = self.characterOptions.container
-    if ( !container ) then return end
+function PANEL:OnSlideStart()
+    self:PopulateTabs()
+end
+
+function PANEL:GetVars()
+    local vars = table.Copy(ax.character.vars)
+    for k, v in pairs(vars) do
+        v.category = v.category or "misc"
+        v.sortOrder = v.sortOrder or 100
+    end
+
+    return vars
+end
+
+function PANEL:PopulateTabs()
+    local vars = self:GetVars()
+
+    local index = 1
+    for k, v in SortedPairsByMemberValue(vars, "category") do
+        if ( v.hide ) then continue end
+
+        local category = v.category or "misc"
+
+        local tab = self.tabs[category]
+        if ( !tab ) then
+            tab = self:CreatePage(category)
+            tab.index = index
+            tab:StartAtRight()
+            tab:CreateNavigation(tab, "back", function()
+                if ( tab.index == 1 ) then
+                    self:SlideDown(nil, function()
+                        self:ClearVars()
+                    end)
+                    self:GetParent().splash:SlideToFront()
+                else
+                    for k2, v2 in pairs(self.tabs) do
+                        if ( tab.index - 1 == v2.index ) then
+                            if ( !IsValid(v2) ) then continue end
+
+                            tab:SlideRight()
+                            v2:SlideToFront()
+                            self:ClearVars(k2)
+                            self:PopulateVars(k2)
+                            break
+                        end
+                    end
+                end
+            end, "next", function()
+                for k2, v2 in pairs(self.tabs) do
+                    if ( tab.index + 1 == v2.index ) then
+                        if ( !IsValid(v2) ) then continue end
+
+                        tab:SlideLeft()
+                        v2:SlideToFront()
+                        self:ClearVars(k2)
+                        self:PopulateVars(k2)
+                        break
+                    elseif ( tab.index == #self.tabs ) then
+                        net.Start("ax.character.create")
+                            net.WriteTable(self.payload)
+                        net.SendToServer()
+
+                        local client = ax.client
+                        local clientTable = client:GetTable()
+                        local characters = clientTable.axCharacters or {}
+                        if ( !client:GetCharacter() and characters[1] == nil ) then
+                            timer.Simple(0.1, function()
+                                net.Start("ax.character.load")
+                                    net.WriteUInt(#ax.character.instances, 32)
+                                net.SendToServer()
+                            end)
+                        end
+                    end
+                end
+            end)
+
+            tab.container = tab:Add("EditablePanel")
+            tab.container:Dock(FILL)
+            tab.container:DockMargin(ScreenScale(32), ScreenScaleH(32), ScreenScale(32), ScreenScaleH(32))
+            tab.container:InvalidateParent(true)
+
+            self.tabs[category] = tab
+
+            title = tab:Add("ax.text")
+            title:SetFont("ax.huge.bold")
+            title:SetText(string.upper(category))
+            title:Dock(TOP)
+            title:DockMargin(ScreenScale(32), ScreenScaleH(32), 0, 0)
+
+            index = index + 1
+        end
+    end
+
+    for k, v in SortedPairs(self.tabs) do
+        if ( v.index != 1 ) then continue end
+
+        v:SlideToFront(0)
+        self:PopulateVars(k)
+    end
+end
+
+function PANEL:GetContainer(category)
+    category = category or "misc"
+
+    local container = self.tabs[category]
+    if ( !IsValid(container) ) then return end
+
+    container = container.container
+    if ( !IsValid(container) ) then return end
+
+    return container
+end
+
+function PANEL:ClearVars(category)
+    if ( !category ) then
+        for k, v in pairs(self.tabs) do
+            self:ClearVars(k)
+        end
+
+        return
+    end
+
+    local container = self:GetContainer(category)
+    if ( !IsValid(container) ) then return end
 
     container:Clear()
 end
 
-function PANEL:PopulateVars()
-    local container = self.characterOptions.container
-    if ( !container ) then return end
+function PANEL:PopulateVars(category)
+    local vars = self:GetVars()
 
-    for k, v in pairs(ax.character.vars) do
+    category = category or "misc"
+
+    local container = self:GetContainer(category)
+    if ( !IsValid(container) ) then return end
+
+    for k, v in SortedPairsByMemberValue(vars, "sortOrder") do
         if ( !v.validate ) then continue end
         if ( v.hide ) then continue end
+        if ( (v.category or "misc") != category ) then continue end
 
         if ( isfunction(v.populate) ) then
-            v:populate(container, self.payload)
+            local ok, err = pcall(function()
+                v:populate(container, self.payload)
+            end)
+
+            if ( !ok ) then
+                ax.util:PrintWarning(("Failed to populate character var '%s': %s"):format(tostring(k), tostring(err)))
+            end
+
             continue
         end
 
@@ -183,12 +176,18 @@ function PANEL:PopulateVars()
             option:Dock(TOP)
 
             local entry = container:Add("ax.text.entry")
-            entry:SetText(v.default)
+            entry:SetPlaceholderText(v.default)
             entry:Dock(TOP)
             entry:DockMargin(0, 0, 0, ScreenScaleH(16))
 
             entry.OnValueChange = function(this)
                 self.payload[k] = this:GetText()
+
+                if ( self.OnPayloadChanged ) then
+                    self:OnPayloadChanged(self.payload)
+                end
+
+                hook.Run("OnPayloadChanged", self.payload)
             end
 
             if ( isfunction(v.populatePost) ) then
@@ -209,6 +208,12 @@ function PANEL:PopulateVars()
 
             slider.OnValueChanged = function(this, value)
                 self.payload[k] = value
+
+                if ( self.OnPayloadChanged ) then
+                    self:OnPayloadChanged(self.payload)
+                end
+
+                hook.Run("OnPayloadChanged", self.payload)
             end
 
             if ( isfunction(v.populatePost) ) then
@@ -216,6 +221,42 @@ function PANEL:PopulateVars()
             end
         end
     end
+
+    if ( self.OnPopulateVars ) then
+        self:OnPopulateVars(container, category, self.payload)
+    end
+
+    hook.Run("OnCharacterPopulateVars", container, category, self.payload)
 end
 
-vgui.Register("ax.main.create", PANEL, "ax.transition")
+function PANEL:OnPopulateVars(container, category, payload)
+    if ( ax.util:FindString(category, "misc") ) then
+        self.miscModel = container:Add("DModelPanel")
+        self.miscModel:SetModel(payload.model or "models/props_c17/oildrum001.mdl")
+        self.miscModel:SetWide(container:GetWide() / 4)
+        self.miscModel:SetFOV(ScreenScale(12))
+        self.miscModel:Dock(LEFT)
+        self.miscModel:DockMargin(0, 0, ScreenScale(32), 0)
+        self.miscModel:SetZPos(-1)
+
+        self.miscModel.LayoutEntity = function(this, entity)
+            this:RunAnimation()
+            entity:SetAngles(Angle(0, 90, 0))
+        end
+    end
+end
+
+function PANEL:OnPayloadChanged(payload)
+    if ( IsValid(self.miscModel) ) then
+        if ( payload.model and self.miscModel:GetModel() != payload.model ) then
+            self.miscModel:SetModel(payload.model)
+        end
+
+        self.miscModel:GetEntity():SetSkin(payload.skin or 0)
+    end
+end
+
+function PANEL:Paint(width, height)
+end
+
+vgui.Register("ax.main.create", PANEL, "ax.transition.pages")

@@ -298,6 +298,12 @@ function PANEL:PerformLayout()
             v:ApplySchemeSettings()
         end
 
+        -- Get the left & right dock from each panel and add it to the x position
+        if ( v.GetDockMargin ) then
+            local l, t, r, b = v:GetDockMargin()
+            x = x + (l or 0) + (r or 0)
+        end
+
         x = x + v:GetWide() - self.m_iOverlap
     end
 

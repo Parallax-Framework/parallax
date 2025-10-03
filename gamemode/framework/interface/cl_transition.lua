@@ -24,6 +24,8 @@ function PANEL:Init()
     self.widthOffset = 0
     self.heightOffset = 0
 
+    self.navigations = {}
+
     self:SetSize(parent:GetWide() + self.widthOffset, parent:GetTall() + self.heightOffset)
     self:SetPos(self.xOffset, self.yOffset)
 
@@ -116,7 +118,37 @@ function PANEL:CreateNavigation(parent, backText, backCallback, nextText, nextCa
 
     navigation:SetTall(math.max(backButton:GetTall(), nextButton and nextButton:GetTall() or 0))
 
+    self.navigations[#self.navigations + 1] = navigation
+
     return navigation
+end
+
+function PANEL:DeleteAllNavigations()
+    for k, v in pairs(self.navigations) do
+        if ( IsValid(v) ) then
+            v:Remove()
+        end
+    end
+end
+
+function PANEL:DeleteNavigationButtons()
+    for k, v in pairs(self.navigations) do
+        for _, btn in pairs(v:GetChildren()) do
+            if ( IsValid(btn) and btn.DoClick ) then
+                btn:Remove()
+            end
+        end
+    end
+end
+
+function PANEL:DeleteNavigationButtonByText(text)
+    for k, v in pairs(self.navigations) do
+        for _, btn in pairs(v:GetChildren()) do
+            if ( IsValid(btn) and btn.DoClick and ax.util:FindString(text, btn:GetText()) ) then
+                btn:Remove()
+            end
+        end
+    end
 end
 
 function PANEL:StartAtLeft()
@@ -369,4 +401,4 @@ function PANEL:Paint(width, height)
     ax.render.Draw(0, 0, 0, width, height, Color(0, 0, 0, 150))
 end
 
-vgui.Register("ax.transition.pages", PANEL, "EditablePanel")
+vgui.Register("ax.transition.pages", PANEL, "ax.transition")
