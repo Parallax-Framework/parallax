@@ -198,6 +198,32 @@ ax.character:RegisterVar("name", {
         end
 
         return true
+    end,
+    populatePost = function(this, container, payload, option, entry)
+        local factionData = ax.faction:Get(payload.faction)
+        if ( !factionData ) then return end
+
+        entry:SetPlaceholderText(factionData:GetDefaultName(ax.client) or "Enter your character's name")
+
+        if ( factionData.allowNonAscii == true ) then
+            entry:SetAllowNonAsciiCharacters(true)
+        elseif ( factionData.allowNonAscii == false ) then
+            entry:SetAllowNonAsciiCharacters(false)
+        else
+            -- Don't change the default setting
+        end
+
+        if ( factionData.GetDefaultName ) then
+            local name, disable = factionData:GetDefaultName(ax.client)
+            if ( disable == true ) then
+                entry:SetDisabled(true)
+            else
+                entry:SetDisabled(false)
+            end
+
+            payload.name = name
+            entry:SetText(name)
+        end
     end
 })
 
