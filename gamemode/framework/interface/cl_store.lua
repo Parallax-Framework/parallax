@@ -97,7 +97,17 @@ function PANEL:Populate(tab, scroller, type, category)
         return
     end
 
+    local subCategoryCache = {}
     for key, data in SortedPairs(rows) do
+        if ( data.subCategory and !subCategoryCache[data.subCategory] ) then
+            local subCategoryLabel = self.container:Add("ax.text")
+            subCategoryLabel:SetFont("ax.huge.italic.bold")
+            subCategoryLabel:SetText(string.upper(data.subCategory), true)
+            subCategoryLabel:Dock(TOP)
+
+            subCategoryCache[data.subCategory] = subCategoryLabel
+        end
+
         if ( data.type == ax.type.bool ) then
             local btn = scroller:Add("ax.store.bool")
             btn:Dock(TOP)
@@ -120,6 +130,13 @@ function PANEL:Populate(tab, scroller, type, category)
             label:SetText(string.format("Unsupported type '%s' for key: %s", ax.type:Format(data.type), tostring(key)), true)
             label:SetContentAlignment(5)
             label:SetTextColor(Color(200, 200, 200))
+        end
+    end
+
+    -- Remove the sub categories if there is only one
+    if ( table.Count(subCategoryCache) <= 1 ) then
+        for k, v in pairs(subCategoryCache) do
+            v:Remove()
         end
     end
 end
