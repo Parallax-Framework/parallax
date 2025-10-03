@@ -104,6 +104,7 @@ if ( SERVER ) then
 
         ax.util:PrintDebug(string.format("Found %d character IDs for %s", #characterIDs, client:SteamID64()))
 
+        -- TODO sync world inventory, or smth idk
         -- TODO: Find a way to optimize this to use fewer pyramids
         local inventoryIDs = {}
         if ( characterIDs[1] != nil ) then
