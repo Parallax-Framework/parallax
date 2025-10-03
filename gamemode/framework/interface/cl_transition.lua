@@ -124,28 +124,38 @@ function PANEL:CreateNavigation(parent, backText, backCallback, nextText, nextCa
 end
 
 function PANEL:DeleteAllNavigations()
-    for k, v in pairs(self.navigations) do
-        if ( IsValid(v) ) then
-            v:Remove()
+    for i = 1, #self.navigations do
+        if ( IsValid(self.navigations[i]) ) then
+            self.navigations[i]:Remove()
         end
     end
 end
 
 function PANEL:DeleteNavigationButtons()
-    for k, v in pairs(self.navigations) do
-        for _, btn in pairs(v:GetChildren()) do
-            if ( IsValid(btn) and btn.DoClick ) then
-                btn:Remove()
+    for i = 1, #self.navigations do
+        local nav = self.navigations[i]
+        local children = nav:GetChildren()
+        if ( children[ 1 ] == nil ) then return end
+
+        for j = 1, #children do
+            local child = children[ j ]
+            if ( IsValid(child) and child.DoClick ) then
+                child:Remove()
             end
         end
     end
 end
 
 function PANEL:DeleteNavigationButtonByText(text)
-    for k, v in pairs(self.navigations) do
-        for _, btn in pairs(v:GetChildren()) do
-            if ( IsValid(btn) and btn.DoClick and ax.util:FindString(text, btn:GetText()) ) then
-                btn:Remove()
+    for i = 1, #self.navigations do
+        local nav = self.navigations[i]
+        local children = nav:GetChildren()
+        if ( children[ 1 ] == nil ) then return end
+
+        for j = 1, #children do
+            local child = children[ j ]
+            if ( IsValid(child) and child.DoClick and ax.util:FindString(text, child:GetText()) ) then
+                child:Remove()
             end
         end
     end
