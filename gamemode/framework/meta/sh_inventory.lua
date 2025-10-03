@@ -161,8 +161,7 @@ if ( SERVER ) then
                     return false
                 end
 
-                local itemObject = setmetatable(item, ax.item.meta)
-                itemObject.id = lastID
+                local itemObject = ax.item:Instance(lastID, class)
                 itemObject.data = data or {}
                 itemObject.inventory_id = self.id
 
