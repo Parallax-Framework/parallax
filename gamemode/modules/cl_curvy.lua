@@ -24,9 +24,14 @@ local renderCache = {} -- Frame-based render caching
 
 -- Cached option values - updated only when changed
 local cachedOptions = {
+    enabled = true,
     segments = 256,
     curveAmount = 64,
     dynamicLOD = true,
+    hudOnly = false,
+    intensityScale = 1.0,
+    frameSkipThreshold = 30,
+    maxFrameSkip = 2,
     lastUpdate = 0
 }
 
@@ -55,13 +60,18 @@ function ax.curvy:UpdateOptions()
     local now = CurTime_local()
     if ( now - cachedOptions.lastUpdate < 0.1 ) then return end -- Update max 10x per second
     
+    cachedOptions.enabled = ax.option:Get("curvyEnabled")
     cachedOptions.segments = ax.option:Get("curvySegments")
     cachedOptions.curveAmount = ax.option:Get("curvyCurveAmount")
     cachedOptions.dynamicLOD = ax.option:Get("curvyDynamicLOD")
+    cachedOptions.hudOnly = ax.option:Get("curvyHUDOnly")
+    cachedOptions.intensityScale = ax.option:Get("curvyIntensityScale")
+    cachedOptions.frameSkipThreshold = ax.option:Get("curvyFrameSkipThreshold")
+    cachedOptions.maxFrameSkip = ax.option:Get("curvyMaxFrameSkip")
     cachedOptions.lastUpdate = now
 end
 
--- Optimized FPS tracking with less frequent updates
+-- Optimized FPS tracking with configurable thresholds
 function ax.curvy:UpdatePerformanceStats()
     local now = CurTime_local()
     if ( now - perfStats.lastFPSUpdate < 0.2 ) then return end -- Update 5x per second
@@ -86,10 +96,11 @@ function ax.curvy:GetOptimalSegments(width, height)
     local basePixels = 1920 * 1080
     local viewportScale = math_min(1.0, basePixels / math_max(1, pixelCount))
     
-    -- FPS-based LOD
+    -- FPS-based LOD with configurable threshold
     local fpsScale = 1.0
-    if ( perfStats.fpsAvg < 45 ) then
-        fpsScale = math_max(0.25, perfStats.fpsAvg / 45)
+    local threshold = cachedOptions.frameSkipThreshold
+    if ( perfStats.fpsAvg < threshold ) then
+        fpsScale = math_max(0.25, perfStats.fpsAvg / threshold)
     end
     
     local finalScale = math_min(viewportScale, fpsScale)
@@ -274,7 +285,7 @@ function ax.curvy:RenderCurvedMesh(mat, width, height)
 
     self:UpdateOptions()
     local segments = self:GetOptimalSegments(width, height)
-    local curveAmount = cachedOptions.curveAmount
+    local curveAmount = cachedOptions.curveAmount * cachedOptions.intensityScale
 
     local meshObj = self:GetCurveMesh(segments, curveAmount, width, height)
     if ( !meshObj ) then return end
@@ -319,26 +330,30 @@ function ax.curvy:HUDPaint(drawFunc, rtName)
     local client = LocalPlayer()
     if ( hook.Run("HUDShouldDraw") == false ) then return end
 
+    self:UpdateOptions()
+    
+    -- Early exit if curvy is disabled
+    if ( !cachedOptions.enabled ) then
+        if ( drawFunc ) then
+            drawFunc(ScrW_local(), ScrH_local(), client)
+        end
+        hook.Run("HUDPaintCurvy", ScrW_local(), ScrH_local(), client, false)
+        return
+    end
+
     local width, height = ScrW_local(), ScrH_local()
     rtName = rtName or "main"
 
-    -- Performance-based frame skipping for very low FPS
+    -- Performance-based frame skipping with configurable threshold
     self:UpdatePerformanceStats()
-    if ( perfStats.fpsAvg < 20 ) then
+    local threshold = cachedOptions.frameSkipThreshold
+    local maxSkip = cachedOptions.maxFrameSkip
+    
+    if ( perfStats.fpsAvg < threshold ) then
         perfStats.frameSkip = (perfStats.frameSkip or 0) + 1
-        if ( perfStats.frameSkip % 2 == 0 ) then return end -- Skip every other frame
+        if ( perfStats.frameSkip % maxSkip == 0 ) then return end -- Skip frames based on setting
     else
         perfStats.frameSkip = 0
-    end
-
-    -- Cheap mode: draw directly without curve
-    if ( ax.option:Get("curvyCheap") ) then
-        if ( drawFunc ) then
-            drawFunc(width, height, client)
-        end
-
-        hook.Run("HUDPaintCurvy", width, height, client, false)
-        return
     end
 
     -- Render to target and draw with curve
@@ -358,18 +373,23 @@ function ax.curvy:PostRender()
     local client = LocalPlayer()
     if ( hook.Run("HUDShouldDraw") == false ) then return end
 
+    self:UpdateOptions()
+    
+    -- Early exit if curvy is disabled or HUD-only mode is enabled
+    if ( !cachedOptions.enabled or cachedOptions.hudOnly ) then
+        hook.Run("PostRenderCurvy", ScrW_local(), ScrH_local(), client, false)
+        return
+    end
+
     local width, height = ScrW_local(), ScrH_local()
     local rt = "post"
 
-    -- Performance-based frame skipping
-    if ( perfStats.frameSkip and perfStats.frameSkip % 2 == 0 and perfStats.fpsAvg < 20 ) then 
+    -- Performance-based frame skipping with configurable settings
+    local threshold = cachedOptions.frameSkipThreshold
+    local maxSkip = cachedOptions.maxFrameSkip
+    
+    if ( perfStats.frameSkip and perfStats.frameSkip % maxSkip == 0 and perfStats.fpsAvg < threshold ) then 
         return 
-    end
-
-    -- Cheap mode: just run the hook and return
-    if ( ax.option:Get("curvyCheap") ) then
-        hook.Run("PostRenderCurvy", width, height, client, false)
-        return
     end
 
     -- Render to target and draw with curve
@@ -459,6 +479,14 @@ hook.Add("OnReloaded", "ax.curvy.Reload", function()
     renderCache = {}
     
     -- Reset cached values
+    cachedOptions.enabled = true
+    cachedOptions.segments = 256
+    cachedOptions.curveAmount = 64
+    cachedOptions.dynamicLOD = true
+    cachedOptions.hudOnly = false
+    cachedOptions.intensityScale = 1.0
+    cachedOptions.frameSkipThreshold = 30
+    cachedOptions.maxFrameSkip = 2
     cachedOptions.lastUpdate = 0
     perfStats.fpsAvg = 60
     perfStats.lastFPSUpdate = 0
