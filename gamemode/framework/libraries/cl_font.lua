@@ -75,6 +75,10 @@ function ax.font:CreateFamily(name, font, size, familiesOverride, fontData)
                 antialias = true
             }
 
+            if ( createFontData.blursize ) then
+                createFontData.blursize = math.max(2, math.floor(size / 8))
+            end
+
             table.Merge(createFontData, fontData or {})
 
             surface.CreateFont("ax." .. name .. "." .. family, createFontData)
@@ -86,6 +90,10 @@ function ax.font:CreateFamily(name, font, size, familiesOverride, fontData)
                 italic = ax.util:FindString(family, "italic"),
                 antialias = true
             }
+
+            if ( createFontData.blursize ) then
+                createFontData.blursize = math.max(2, math.floor(size / 8))
+            end
 
             table.Merge(createFontData, fontData or {})
 
