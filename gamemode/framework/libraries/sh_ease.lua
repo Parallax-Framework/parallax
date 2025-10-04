@@ -58,6 +58,36 @@ ax.ease.list = {
 -- @param endValue The ending value for the interpolation (number, color table, vector, or angle).
 -- @return The interpolated value based on the easing function.
 function ax.ease:Lerp(easeType, time, startValue, endValue)
+    if ( type(easeType) != "string" ) then
+        error("[easeLerp] easeType must be a string, got: " .. type(easeType))
+    end
+
+    if ( type(time) != "number" ) then
+        error("[easeLerp] time must be a number, got: " .. type(time))
+    end
+
+    if ( startValue == nil or endValue == nil ) then
+        error("[easeLerp] startValue and endValue must not be nil")
+    end
+
+    if ( easeType == "Linear" ) then
+        -- Simple linear interpolation
+        if ( istable(startValue) and istable(endValue) ) then
+            return {
+                r = Lerp(time, startValue.r, endValue.r),
+                g = Lerp(time, startValue.g, endValue.g),
+                b = Lerp(time, startValue.b, endValue.b),
+                a = Lerp(time, startValue.a or 255, endValue.a or 255)
+            }
+        elseif ( isvector(startValue) and isvector(endValue) ) then
+            return LerpVector(time, startValue, endValue)
+        elseif ( isangle(startValue) and isangle(endValue) ) then
+            return LerpAngle(time, startValue, endValue)
+        else
+            return Lerp(time, startValue, endValue)
+        end
+    end
+
     local easeFunc = ax.ease.list[easeType]
     if ( !easeFunc ) then
         error("[easeLerp] Invalid easing type: " .. tostring(easeType))
