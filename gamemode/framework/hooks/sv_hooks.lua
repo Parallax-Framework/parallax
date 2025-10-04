@@ -247,6 +247,10 @@ function GM:PlayerCanHearPlayersVoice(listener, speaker)
     return true, true
 end
 
+function GM:CanPlayerSuicide( client )
+    return false
+end
+
 function GM:ShutDown() -- PlayerDisconnected isn't called on p2p/singleplayer
     if ( !game.IsDedicated() ) then
         for _, client in player.Iterator() do
