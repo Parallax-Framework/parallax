@@ -154,6 +154,12 @@ function ax.util:CreateStore(spec)
             ax.util:SafeCall(regEntry.data.OnChanged, oldValue, coerced, key)
         end
 
+        if ( spec.name == "ax.config" ) then
+            hook.Run("OnConfigChanged", key, oldValue, coerced)
+        elseif ( spec.name == "ax.option" ) then
+            hook.Run("OnOptionChanged", key, oldValue, coerced)
+        end
+
         if ( !bNoSave ) then
             self:Save()
         end
@@ -257,6 +263,12 @@ function ax.util:CreateStore(spec)
         end
 
         ax.util:PrintDebug(spec.name, "Loaded", loaded, "settings from", spec.path)
+
+        if ( spec.name == "ax.config" ) then
+            hook.Run("OnConfigsLoaded")
+        elseif ( spec.name == "ax.option" ) then
+            hook.Run("OnOptionsLoaded")
+        end
 
         return true
     end
