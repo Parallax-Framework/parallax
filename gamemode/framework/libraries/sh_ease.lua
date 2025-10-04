@@ -58,11 +58,11 @@ ax.ease.list = {
 -- @param endValue The ending value for the interpolation (number, color table, vector, or angle).
 -- @return The interpolated value based on the easing function.
 function ax.ease:Lerp(easeType, time, startValue, endValue)
-    if ( type(easeType) != "string" ) then
+    if ( !isstring( easeType ) ) then
         error("[easeLerp] easeType must be a string, got: " .. type(easeType))
     end
 
-    if ( type(time) != "number" ) then
+    if ( !isnumber( time ) ) then
         error("[easeLerp] time must be a number, got: " .. type(time))
     end
 
