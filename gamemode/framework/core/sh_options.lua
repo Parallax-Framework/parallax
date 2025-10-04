@@ -10,3 +10,4 @@
 ]]
 
 ax.option:Add("performanceAnimations", ax.type.bool, true, { category = "performance", description = "Enable or disable interface animations." })
+ax.option:Add( "keybindTest", ax.type.number, 0, { keybind = true, category = "controls", description = "Test keybind option." })
