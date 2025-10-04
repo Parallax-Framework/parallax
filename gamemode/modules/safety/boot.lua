@@ -12,5 +12,5 @@
 local MODULE = MODULE
 
 MODULE.Name = "Weapon Safety"
-MODULE.Description = "Manages per-player weapon safety state with server authority"
+MODULE.Description = "Manages per-player weapon safety state with server authority."
 MODULE.Author = "Riggs"
