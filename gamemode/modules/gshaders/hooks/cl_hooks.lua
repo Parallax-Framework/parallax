@@ -38,7 +38,7 @@ local r_csm = GetSafeConVar("r_csm")
 
 -- Helper function to safely set convar value
 local function SafeSetConVar(cvar, value)
-    if ( cvar and IsValid(cvar) ) then
+    if ( cvar ) then
         cvar:SetInt(value)
     end
 end
