@@ -184,6 +184,9 @@ function GM:PostDrawTranslucentRenderables(depth, skybox)
     end
 end
 
+function GM:DrawDeathNotice( _x, _y )
+end
+
 ax.viewstack:RegisterModifier("ragdoll", function(client, view)
     if ( !IsValid(client) or client:InVehicle() ) then return end
 
