@@ -96,49 +96,83 @@ function PANEL:Populate(tab, scroller, type, category)
         return
     end
 
-    local subCategoryCache = {}
-    for key, entry in SortedPairs(rows) do
-        if ( entry.data.subCategory and !subCategoryCache[entry.data.subCategory] ) then
+    -- Group entries by subcategory for proper organization
+    local groupedEntries = {}
+    local hasSubCategories = false
+    
+    for key, entry in pairs(rows) do
+        local subCat = entry.data.subCategory or "general"
+        if ( entry.data.subCategory ) then
+            hasSubCategories = true
+        end
+        
+        if ( !groupedEntries[subCat] ) then
+            groupedEntries[subCat] = {}
+        end
+        
+        groupedEntries[subCat][key] = entry
+    end
+    
+    -- Sort subcategories alphabetically, but put "general" first if it exists
+    local sortedSubCategories = {}
+    for subCat, _ in pairs(groupedEntries) do
+        table.insert(sortedSubCategories, subCat)
+    end
+    
+    table.sort(sortedSubCategories, function(a, b)
+        if ( a == "general" ) then return true end
+        if ( b == "general" ) then return false end
+        return a < b
+    end)
+    
+    -- Only show subcategory headers if there are actual subcategories (not just "general")
+    local showSubCategoryHeaders = hasSubCategories and table.Count(groupedEntries) > 1
+    
+    for _, subCat in ipairs(sortedSubCategories) do
+        local entries = groupedEntries[subCat]
+        
+        -- Add subcategory header (except for "general" when there's only one subcategory)
+        if ( showSubCategoryHeaders and subCat != "general" ) then
             local subCategoryLabel = scroller:Add("ax.text")
             subCategoryLabel:SetFont("ax.huge.italic.bold")
-            subCategoryLabel:SetText(string.upper(ax.util:UniqueIDToName(ax.localization:GetPhrase(entry.data.subCategory))), true)
+            subCategoryLabel:SetText(string.upper(ax.util:UniqueIDToName(ax.localization:GetPhrase(subCat))), true)
             subCategoryLabel:Dock(TOP)
-
-            subCategoryCache[entry.data.subCategory] = subCategoryLabel
         end
-
-        if ( entry.type == ax.type.bool ) then
-            local btn = scroller:Add("ax.store.bool")
-            btn:Dock(TOP)
-            btn:SetType(type)
-            btn:SetKey(key)
-        elseif ( entry.type == ax.type.number ) then
-            local btn = scroller:Add("ax.store.number")
-            btn:Dock(TOP)
-            btn:SetType(type)
-            btn:SetKey(key)
-        elseif ( entry.type == ax.type.string ) then
-            local btn = scroller:Add("ax.store.string")
-            btn:Dock(TOP)
-            btn:SetType(type)
-            btn:SetKey(key)
-        else
-            local label = scroller:Add("ax.text")
-            label:Dock(TOP)
-            label:SetFont("ax.large.italic")
-            label:SetText(string.format("Unsupported type '%s' for key: %s", ax.type:Format(entry.type), tostring(key)), true)
-            label:SetContentAlignment(5)
-            label:SetTextColor(Color(200, 200, 200))
+        
+        -- Add entries for this subcategory
+        for key, entry in SortedPairs(entries) do
+            if ( entry.type == ax.type.bool ) then
+                local btn = scroller:Add("ax.store.bool")
+                btn:Dock(TOP)
+                btn:SetType(type)
+                btn:SetKey(key)
+            elseif ( entry.type == ax.type.number ) then
+                local btn = scroller:Add("ax.store.number")
+                btn:Dock(TOP)
+                btn:SetType(type)
+                btn:SetKey(key)
+            elseif ( entry.type == ax.type.string ) then
+                local btn = scroller:Add("ax.store.string")
+                btn:Dock(TOP)
+                btn:SetType(type)
+                btn:SetKey(key)
+            else
+                local label = scroller:Add("ax.text")
+                label:Dock(TOP)
+                label:SetFont("ax.large.italic")
+                label:SetText(string.format("Unsupported type '%s' for key: %s", ax.type:Format(entry.type), tostring(key)), true)
+                label:SetContentAlignment(5)
+                label:SetTextColor(Color(200, 200, 200))
+            end
         end
-    end
-
-    -- Remove the sub categories if there is only one
-    if ( table.Count(subCategoryCache) == 1 ) then
-        for k, v in pairs(subCategoryCache) do
-            v:Remove()
+        
+        -- Add spacing between subcategories (except for the last one)
+        if ( showSubCategoryHeaders and subCat != sortedSubCategories[#sortedSubCategories] ) then
+            local spacer = scroller:Add("EditablePanel")
+            spacer:Dock(TOP)
+            spacer:SetTall(ScreenScale(8))
+            spacer.Paint = nil
         end
-
-        ax.util:PrintDebug("ax.store: Removed subcategory labels for category '" .. tostring(category) .. "' due to only one existing.")
     end
 end
 
