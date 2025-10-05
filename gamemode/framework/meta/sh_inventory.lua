@@ -65,6 +65,24 @@ function inventory:GetOwner()
     return owner
 end
 
+function inventory:HasItem(identifier)
+    if ( isnumber(identifier) ) then
+        for id, v in pairs(self.items) do
+            if ( id == identifier ) then
+                return true
+            end
+        end
+    elseif ( isstring(identifier) ) then
+        for id, v in pairs(self.items) do
+            if ( v.class == identifier ) then
+                return true
+            end
+        end
+    end
+
+    return false
+end
+
 function inventory:IsReceiver(client)
     for i = 1, #self.receivers do
         if ( self.receivers[i] == client ) then
