@@ -24,77 +24,213 @@ function ax.item:Initialize()
         self:Include("parallax/gamemode/modules/" .. modules[i] .. "/items")
     end
 
-    -- TODO: Refresh item instances to update any changes made to item definitions
-    -- For example, actions currently do not update on existing items for some reason, at least the drop action doesn't update...
-    -- Haven't looked into item specific actions yet.
+    -- Refresh item instances to update any changes made to item definitions
+    self:RefreshItemInstances()
+end
+
+-- Refresh all existing item instances to reflect updated item definitions
+function ax.item:RefreshItemInstances()
+    local refreshedCount = 0
+    local errorCount = 0
+    
+    for instanceID, itemInstance in pairs(self.instances) do
+        if ( istable(itemInstance) and itemInstance.class ) then
+            local storedItem = self.stored[itemInstance.class]
+            if ( istable(storedItem) ) then
+                -- Update the metatable to point to the refreshed stored item
+                setmetatable(itemInstance, {
+                    __index = storedItem,
+                    __tostring = storedItem.__tostring
+                })
+                refreshedCount = refreshedCount + 1
+                ax.util:PrintDebug("Refreshed item instance ID " .. instanceID .. " (class: " .. itemInstance.class .. ")")
+            else
+                ax.util:PrintWarning("Item instance ID " .. instanceID .. " references unknown class: " .. tostring(itemInstance.class))
+                errorCount = errorCount + 1
+            end
+        end
+    end
+    
+    if ( refreshedCount > 0 ) then
+        ax.util:PrintSuccess("Refreshed " .. refreshedCount .. " item instances with updated definitions")
+    end
+    
+    if ( errorCount > 0 ) then
+        ax.util:PrintWarning("Failed to refresh " .. errorCount .. " item instances due to missing definitions")
+    end
+    
+    if ( refreshedCount == 0 and errorCount == 0 ) then
+        ax.util:PrintDebug("No item instances found to refresh")
+    end
 end
 
 function ax.item:Include(path)
-    local files, _ = file.Find(path .. "/*.lua", "LUA")
+    -- Load in three passes: bases first, then regular items, then directory-based items with inheritance
+    self:LoadBasesFromDirectory(path .. "/base")
+    self:LoadItemsFromDirectory(path)
+    self:LoadItemsWithInheritance(path)
+end
 
-    for i = 1, #files do
-        local fileName = files[i]
-
-        local itemName = string.StripExtension(fileName)
-        local prefix = string.sub(itemName, 1, 3)
-        if ( prefix == "sh_" or prefix == "cl_" or prefix == "sv_" ) then
-            itemName = string.sub(itemName, 4)
-        end
-
-        ITEM = setmetatable({ class = itemName }, ax.item.meta)
-            ITEM:AddAction("drop", {
-                name = "Drop",
-                icon = "icon16/arrow_down.png",
-                order = 1,
-                CanUse = function(this, client)
-                    return true
-                end,
-                OnRun = function(action, item, client)
-                    local inventoryID = 0
-                    for k, v in pairs(ax.character.instances) do
-                        if ( v:GetInventoryID() == item:GetInventoryID() ) then
-                            inventoryID = v:GetInventoryID()
-                            break
-                        end
-                    end
-
-                    if ( !inventoryID or inventoryID <= 0 ) then
-                        client:Notify("You cannot drop this item right now!")
-                        return false
-                    end
-
-                    local success, reason = ax.item:Transfer(item, inventoryID, 0, function(success)
-                        if ( success ) then
-                            ax.util:PrintDebug(color_success, string.format(
-                                "Player %s dropped item %s from inventory %s to world inventory.",
-                                tostring(client),
-                                tostring(item.id),
-                                tostring(inventoryID)
-                            ))
-                        else
-                            ax.util:PrintWarning(string.format(
-                                "Player %s failed to drop item %s from inventory %s to world inventory, due to %s.",
-                                tostring(client),
-                                tostring(item.id),
-                                tostring(inventoryID),
-                                tostring(reason or "Unknown Reason")
-                            ))
-                        end
-                    end)
-
-                    if ( success == false ) then
-                        client:Notify(string.format("Failed to drop item: %s", reason or "Unknown Reason"))
-                    end
-
-                    return false
+-- Helper function to create default drop action for items
+function ax.item:CreateDefaultDropAction()
+    return {
+        name = "Drop",
+        icon = "icon16/arrow_down.png",
+        order = 1,
+        CanUse = function(this, client)
+            return true
+        end,
+        OnRun = function(action, item, client)
+            local inventoryID = 0
+            for k, v in pairs(ax.character.instances) do
+                if ( v:GetInventoryID() == item:GetInventoryID() ) then
+                    inventoryID = v:GetInventoryID()
+                    break
                 end
-            })
+            end
 
-            ax.util:Include(path .. "/" .. fileName, "shared")
-            ax.util:PrintSuccess("Item \"" .. tostring(ITEM.name) .. "\" initialized successfully.")
+            if ( !inventoryID or inventoryID <= 0 ) then
+                client:Notify("You cannot drop this item right now!")
+                return false
+            end
+
+            local success, reason = ax.item:Transfer(item, inventoryID, 0, function(success)
+                if ( success ) then
+                    ax.util:PrintDebug(color_success, string.format(
+                        "Player %s dropped item %s from inventory %s to world inventory.",
+                        tostring(client),
+                        tostring(item.id),
+                        tostring(inventoryID)
+                    ))
+                else
+                    ax.util:PrintWarning(string.format(
+                        "Player %s failed to drop item %s from inventory %s to world inventory, due to %s.",
+                        tostring(client),
+                        tostring(item.id),
+                        tostring(inventoryID),
+                        tostring(reason or "Unknown Reason")
+                    ))
+                end
+            end)
+
+            if ( success == false ) then
+                client:Notify(string.format("Failed to drop item: %s", reason or "Unknown Reason"))
+            end
+
+            return false
+        end
+    }
+end
+
+-- First pass: Load base items from base/ directory
+function ax.item:LoadBasesFromDirectory(basePath)
+    local baseFiles, _ = file.Find(basePath .. "/*.lua", "LUA")
+    if ( !baseFiles or #baseFiles == 0 ) then
+        ax.util:PrintDebug("No base items found in " .. basePath)
+        return
+    end
+
+    for i = 1, #baseFiles do
+        local fileName = baseFiles[i]
+        local itemName = self:ExtractItemName(fileName)
+
+        ITEM = setmetatable({ class = itemName, isBase = true }, ax.item.meta)
+            ITEM:AddAction("drop", self:CreateDefaultDropAction())
+            ax.util:Include(basePath .. "/" .. fileName, "shared")
+            ax.util:PrintSuccess("Item base \"" .. tostring(ITEM.name or itemName) .. "\" initialized successfully.")
             ax.item.stored[itemName] = ITEM
         ITEM = nil
     end
+end
+
+-- Second pass: Load regular items from root directory
+function ax.item:LoadItemsFromDirectory(path)
+    local files, _ = file.Find(path .. "/*.lua", "LUA")
+    if ( !files or #files == 0 ) then
+        return
+    end
+
+    for i = 1, #files do
+        local fileName = files[i]
+        local itemName = self:ExtractItemName(fileName)
+
+        ITEM = setmetatable({ class = itemName }, ax.item.meta)
+            ITEM:AddAction("drop", self:CreateDefaultDropAction())
+            ax.util:Include(path .. "/" .. fileName, "shared")
+            ax.util:PrintSuccess("Item \"" .. tostring(ITEM.name or itemName) .. "\" initialized successfully.")
+            ax.item.stored[itemName] = ITEM
+        ITEM = nil
+    end
+end
+
+-- Third pass: Load items from subdirectories that correspond to base items
+function ax.item:LoadItemsWithInheritance(path)
+    local _, directories = file.Find(path .. "/*", "LUA")
+    if ( !directories or #directories == 0 ) then
+        return
+    end
+
+    for i = 1, #directories do
+        local dirName = directories[i]
+        
+        -- Skip the base directory as it's already processed
+        if ( dirName == "base" ) then continue end
+        
+        -- Check if there's a corresponding base item
+        local baseItem = ax.item.stored[dirName]
+        if ( !istable(baseItem) or !baseItem.isBase ) then
+            -- No base found, treat as regular directory recursion
+            self:LoadItemsFromDirectory(path .. "/" .. dirName)
+            continue
+        end
+
+        -- Load items in this directory with the base item as parent
+        self:LoadItemsWithBase(path .. "/" .. dirName, dirName, baseItem)
+    end
+end
+
+-- Load items from a directory with a specific base item inheritance
+function ax.item:LoadItemsWithBase(dirPath, baseName, baseItem)
+    local subFiles, _ = file.Find(dirPath .. "/*.lua", "LUA")
+    if ( !subFiles or #subFiles == 0 ) then
+        return
+    end
+
+    for j = 1, #subFiles do
+        local fileName = subFiles[j]
+        local itemName = self:ExtractItemName(fileName)
+
+        -- Create item with base item inheritance
+        ITEM = setmetatable({ class = itemName, base = baseName }, {
+            __index = function(t, k)
+                -- First check the item itself
+                local val = rawget(t, k)
+                if ( val != nil ) then return val end
+                
+                -- Then check the base item
+                if ( baseItem[k] != nil ) then return baseItem[k] end
+                
+                -- Finally check the item meta
+                return ax.item.meta[k]
+            end
+        })
+
+        ax.util:Include(dirPath .. "/" .. fileName, "shared")
+        ax.util:PrintSuccess("Item \"" .. tostring(ITEM.name or itemName) .. "\" (base: " .. baseName .. ") initialized successfully.")
+        ax.item.stored[itemName] = ITEM
+        ITEM = nil
+    end
+end
+
+-- Helper function to extract clean item name from filename
+function ax.item:ExtractItemName(fileName)
+    local itemName = string.StripExtension(fileName)
+    local prefix = string.sub(itemName, 1, 3)
+    if ( prefix == "sh_" or prefix == "cl_" or prefix == "sv_" ) then
+        itemName = string.sub(itemName, 4)
+    end
+
+    return itemName
 end
 
 function ax.item:Get(identifier)
