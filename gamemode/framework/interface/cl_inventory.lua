@@ -165,68 +165,69 @@ function PANEL:PopulateItems()
                 representativeItem = v,
                 shouldStack = false,
                 maxStack = 1
-            })
+            }
         end
     end
-    
+
     -- Sort categories alphabetically with more robust sorting
     local sortedCategories = {}
     for categoryName, stacks in pairs(categorizedItems) do
-        table.insert(sortedCategories, categoryName)
+        sortedCategories[ #sortedCategories + 1 ] = categoryName
     end
-    
+
     -- Use case-insensitive sorting for consistency
     table.sort(sortedCategories, function(a, b)
         return string.lower(tostring(a)) < string.lower(tostring(b))
     end)
-    
+
     -- Store the sorted category order for PerformLayout
     self.sortedCategoryOrder = sortedCategories
-    
+
     -- Create grid layout for each category in sorted order
-    for _, categoryName in ipairs(sortedCategories) do
+    for i = 1, #sortedCategories do
+        local categoryName = sortedCategories[i]
         local stacks = categorizedItems[categoryName]
         -- Add category header
         local categoryPanel = self.container:Add("ax.text")
-        
+
         -- Use user preference for italic styling
         local useItalic = ax.option:Get("inventoryCategoriesItalic", false)
         local categoryFont = useItalic and "ax.huge.italic.bold" or "ax.huge.bold"
-        
+
         categoryPanel:SetFont(categoryFont)
         categoryPanel:SetText(string.upper(categoryName), true)
         categoryPanel:SetPos(0, currentY)
         categoryPanel:SetSize(containerWidth, categoryHeight)
-        
+
         -- Store category data for responsive layout
         self.gridItems[categoryName] = {
             header = categoryPanel,
             items = {}
         }
-        
+
         currentY = currentY + categoryHeight
-        
+
         -- Create grid for stacks in this category
         local currentColumn = 0
         local currentRow = 0
-        
+
         for i, stack in ipairs(stacks) do
             local itemX = currentColumn * itemWidth
             local itemY = currentY + (currentRow * itemHeight)
-            
+
             local representativeItem = stack.representativeItem
-            
+
             local item = self.container:Add("ax.button.flat")
             item:SetFont("ax.small")
             item:SetFontDefault("ax.small")
             item:SetFontHovered("ax.regular.bold")
-            
+
             -- Display stack count in item name if stacked
             local displayName = representativeItem:GetName() or tostring(representativeItem)
             if ( stack.stackCount > 1 ) then
                 displayName = displayName .. " (x" .. stack.stackCount .. ")"
             end
-            
+
             item:SetText(displayName, true)
             item:SetContentAlignment(4)
             item:SetTextInset(itemHeight + ScreenScale(2), 0)
@@ -238,7 +239,7 @@ function PANEL:PopulateItems()
                 self.info:Clear()
                 self:PopulateInfo(stack)
             end
-            
+
             -- Store item reference for responsive layout
             table.insert(self.gridItems[categoryName].items, item)
 
@@ -248,7 +249,7 @@ function PANEL:PopulateItems()
             icon:SetModel(representativeItem:GetModel() or "models/props_junk/wood_crate001a.mdl")
             icon:SetMouseInputEnabled(false)
             icon:Dock(LEFT)
-            
+
             -- Move to next position in grid
             currentColumn = currentColumn + 1
             if ( currentColumn >= gridColumns ) then
@@ -256,7 +257,7 @@ function PANEL:PopulateItems()
                 currentRow = currentRow + 1
             end
         end
-        
+
         -- Update currentY for next category (account for the rows we used)
         local rowsUsed = math.ceil(#stacks / gridColumns)
         currentY = currentY + (rowsUsed * itemHeight)
@@ -441,44 +442,45 @@ function PANEL:PerformLayout(width, height)
         if ( IsValid(categoryPanel) ) then
             categoryPanel:SetPos(0, currentY)
             categoryPanel:SetSize(containerWidth, categoryHeight)
-            
+
             -- Update font based on user preference
             local useItalic = ax.option:Get("inventoryCategoriesItalic", false)
             local categoryFont = useItalic and "ax.huge.italic.bold" or "ax.huge.bold"
             categoryPanel:SetFont(categoryFont)
         end
-        
+
         currentY = currentY + categoryHeight
-        
+
         -- Reposition items in grid
         local currentColumn = 0
         local currentRow = 0
-        
-        for i, item in ipairs(categoryData.items) do
+
+        for i = 1, #categoryData.items do
+            local item = categoryData.items[i]
             if ( IsValid(item) ) then
                 local itemX = currentColumn * itemWidth
                 local itemY = currentY + (currentRow * itemHeight)
-                
+
                 item:SetPos(itemX, itemY)
                 item:SetSize(itemWidth, itemHeight)
-                
+
                 -- Update text inset for new size
                 item:SetTextInset(itemHeight + ScreenScale(2), 0)
-                
+
                 -- Update icon size
                 local icon = item:GetChildren()[1]
                 if ( IsValid(icon) ) then
                     icon:SetWide(itemHeight)
                 end
             end
-            
+
             currentColumn = currentColumn + 1
             if ( currentColumn >= gridColumns ) then
                 currentColumn = 0
                 currentRow = currentRow + 1
             end
         end
-        
+
         -- Update currentY for next category
         local rowsUsed = math.ceil(#categoryData.items / gridColumns)
         currentY = currentY + (rowsUsed * itemHeight)
