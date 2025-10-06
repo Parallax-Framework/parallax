@@ -436,7 +436,7 @@ function PANEL:PerformLayout(width, height)
 
     -- Use the same sorted order as PopulateItems
     for _ = 1, #self.sortedCategoryOrder do
-        local categoryName = self.sortedCategoryOrder[i]
+        local categoryName = self.sortedCategoryOrder[_]
         local categoryData = self.gridItems[categoryName]
         if ( !categoryData ) then continue end
         -- Reposition category header
