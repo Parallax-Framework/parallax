@@ -66,17 +66,11 @@ function inventory:GetOwner()
 end
 
 function inventory:HasItem(identifier)
-    if ( isnumber(identifier) ) then
-        for id, v in pairs(self.items) do
-            if ( id == identifier ) then
-                return true
-            end
-        end
-    elseif ( isstring(identifier) ) then
-        for id, v in pairs(self.items) do
-            if ( v.class == identifier ) then
-                return true
-            end
+    for id, v in pairs(self.items) do
+        if ( isnumber(identifier) and id == identifier ) then
+            return true
+        elseif ( isstring(identifier) and v.class == identifier ) then
+            return true
         end
     end
 
