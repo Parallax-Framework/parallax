@@ -104,11 +104,11 @@ function PANEL:PopulateItems()
     local containerWidth = self.container:GetWide()
     local itemWidth = containerWidth / gridColumns
     local itemHeight = ScreenScaleH(32)
-    local categoryHeight = ScreenScale(24)
-    
+    local categoryHeight = ScreenScale(24) -- use ScreenScaleH?
+
     local currentY = 0
-    local categoryCache = {}
-    
+    local categoryCache = {}-- not used
+
     -- Organize items by category first, with stacking support
     local categorizedItems = {}
     for k, v in pairs(inventory:GetItems()) do
@@ -313,7 +313,8 @@ function PANEL:PopulateInfo(stack)
     local description = representativeItem:GetDescription() or "No description available."
     local descriptionWrapped = ax.util:GetWrappedText(description, "ax.regular", ScreenScale(128) - ScreenScale(16))
 
-    for _, line in ipairs(descriptionWrapped) do
+    for _ = 1, #descriptionWrapped do
+        local line = descriptionWrapped[_]
         local descLine = self.info:Add("ax.text")
         descLine:Dock(TOP)
         descLine:SetFont("ax.regular")
@@ -383,7 +384,7 @@ function PANEL:PopulateInfo(stack)
 
         if ( k == "drop" and stack.stackCount > 1 ) then
             actionButton.DoRightClick = function()
-                local itemToUse = stack.stackedItems[1]
+                local itemToUse = stack.stackedItems[1] -- not used
                 Derma_StringRequest(
                     "Drop Item",
                     "Enter the quantity to drop (max " .. stack.stackCount .. "):",
