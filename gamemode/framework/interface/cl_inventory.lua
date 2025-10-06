@@ -85,7 +85,7 @@ function PANEL:PopulateItems()
     if ( !character or !inventory ) then return end
 
     self.container:Clear()
-    
+
     -- Initialize grid items storage for responsive layout
     self.gridItems = {}
 
@@ -424,18 +424,19 @@ end
 
 function PANEL:PerformLayout(width, height)
     if ( !self.gridItems or !self.sortedCategoryOrder ) then return end
-    
+
     -- Recalculate grid layout based on current container width
     local gridColumns = 4
     local containerWidth = self.container:GetWide()
     local itemWidth = containerWidth / gridColumns
     local itemHeight = ScreenScaleH(32)
     local categoryHeight = ScreenScale(24)
-    
+
     local currentY = 0
-    
+
     -- Use the same sorted order as PopulateItems
-    for _, categoryName in ipairs(self.sortedCategoryOrder) do
+    for _ = 1, #self.sortedCategoryOrder do
+        local categoryName = self.sortedCategoryOrder[i]
         local categoryData = self.gridItems[categoryName]
         if ( !categoryData ) then continue end
         -- Reposition category header
