@@ -116,20 +116,20 @@ function PANEL:PopulateItems()
             ax.util:PrintDebug("Item class '" .. tostring(v.class) .. "' not found in registry, skipping...")
             continue
         end
-        
+
         -- Ensure category is a string and normalize it
         local category = tostring(v.category or "Miscellaneous")
-        
+
         if ( !categorizedItems[category] ) then
             categorizedItems[category] = {}
         end
-        
+
         -- Check if item should stack with existing items
         local itemClass = v.class
         local itemTemplate = ax.item.stored[itemClass]
         local shouldStack = itemTemplate.shouldStack or false
         local maxStack = itemTemplate.maxStack or 1
-        
+
         if ( shouldStack ) then
             -- Look for existing stack of the same class
             local foundStack = false
@@ -137,15 +137,15 @@ function PANEL:PopulateItems()
                 if ( existingStack.class == itemClass and existingStack.stackCount < maxStack ) then
                     -- Add to existing stack
                     existingStack.stackCount = existingStack.stackCount + 1
-                    table.insert(existingStack.stackedItems, v)
+                    existingStack.stackedItems[ #existingStack.stackedItems + 1 ] = v
                     foundStack = true
                     break
                 end
             end
-            
+
             if ( !foundStack ) then
                 -- Create new stack
-                table.insert(categorizedItems[category], {
+                categorizedItems[category][ #categorizedItems[category] + 1 ] = {
                     class = itemClass,
                     category = category,
                     stackCount = 1,
@@ -153,11 +153,11 @@ function PANEL:PopulateItems()
                     representativeItem = v, -- Use first item as display representative
                     shouldStack = shouldStack,
                     maxStack = maxStack
-                })
+                }
             end
         else
             -- Non-stackable item, add individually
-            table.insert(categorizedItems[category], {
+            categorizedItems[category][ #categorizedItems[category] + 1 ] = {
                 class = itemClass,
                 category = category,
                 stackCount = 1,
