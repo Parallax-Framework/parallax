@@ -361,7 +361,7 @@ function PANEL:PopulateInfo(stack)
                 ax.util:PrintError("No valid item in stack can perform action '" .. k .. "'.")
                 return
             end
-            
+
             net.Start("ax.inventory.item.action")
                 net.WriteUInt(itemToUse.id, 32)
                 net.WriteString(k)
