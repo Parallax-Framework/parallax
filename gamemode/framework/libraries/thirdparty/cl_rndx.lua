@@ -687,5 +687,3 @@ function RNDX.SetDefaultShape(shape)
 	DEFAULT_SHAPE = shape or SHAPE_FIGMA
 	DEFAULT_DRAW_FLAGS = DEFAULT_SHAPE
 end
-
-return RNDX
