@@ -48,6 +48,14 @@ function ax.command:Add(name, def)
     def.adminOnly = def.adminOnly or false
     def.superAdminOnly = def.superAdminOnly or false
 
+    if ( !def.CanRun ) then
+        CAMI.RegisterPrivilege({
+            Name = "Command - " .. def.name,
+            MinAccess = def.superAdminOnly and "superadmin" or (def.adminOnly and "admin" or "user"),
+            Description = "Allows the user to run the command: " .. def.name
+        })
+    end
+
     -- Store the command
     self.registry[name] = def
     ax.util:PrintDebug("ax.command:Add - Command \"" .. name .. "\" registered successfully")
@@ -156,6 +164,11 @@ function ax.command:HasAccess(caller, def)
         local canRun, reason = def.CanRun(caller)
         if ( canRun == false ) then
             return false, reason or "You do not have permission to use this command"
+        end
+    else
+        local hasAccess, err = CAMI.PlayerHasAccess(caller, "Command - " .. def.name, nil)
+        if ( hasAccess == false ) then
+            return false, err or "You do not have permission to use this command"
         end
     end
 
