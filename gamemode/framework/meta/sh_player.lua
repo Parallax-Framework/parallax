@@ -255,3 +255,20 @@ function ax.player.meta:Notify(text, type, length)
         ax.notification:Add(text, type, length)
     end
 end
+
+function ax.player.meta:SyncRelay()
+    for k, v in pairs( ax.relay.data["global"] or {} ) do
+        self:SetRelay( k, v, false, self )
+    end
+
+    for entityIndex, data in pairs( ax.relay.data ) do
+        if ( entityIndex == "global" ) then continue end
+
+        local ent = Entity( tonumber( entityIndex ) or 0 )
+        if ( !IsValid( ent ) or ( ent:IsPlayer() and ent:SteamID64() != entityIndex ) ) then continue end
+
+        for k, v in pairs( data ) do
+            ent:SetRelay( k, v, false, self )
+        end
+    end
+end
