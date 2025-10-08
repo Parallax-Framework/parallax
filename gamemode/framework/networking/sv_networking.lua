@@ -48,9 +48,15 @@ net.Receive("ax.inventory.item.action", function(length, client)
         return
     end
 
+    local actionTable = item.actions[action]
+    if ( !istable( item.actions[action] ) ) then
+        ax.util:PrintError("Item with ID " .. itemID .. " does not have action '" .. action .. "'.")
+        return
+    end
+
     if ( !item:CanInteract(client, action) ) then return end
 
-    local bRemoveAfter = item.actions[action]:OnRun(item, client)
+    local bRemoveAfter = actionTable:OnRun(item, client)
     if ( bRemoveAfter == nil or !isbool(bRemoveAfter) ) then bRemoveAfter = false end
 
     if ( bRemoveAfter ) then
@@ -58,6 +64,11 @@ net.Receive("ax.inventory.item.action", function(length, client)
         if ( istable(inventory) ) then
             inventory:RemoveItem(item.id)
         end
+    end
+
+    local soundVar = "sound_" .. string.lower(action)
+    if ( actionTable[ soundVar ] ) then
+        client:EmitSound( Sound( actionTable[ soundVar ] ) )
     end
 
     hook.Run("OnPlayerItemAction", client, item, action)
