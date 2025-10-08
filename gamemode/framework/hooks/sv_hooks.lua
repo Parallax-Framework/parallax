@@ -231,11 +231,6 @@ function GM:PlayerDisconnected(client)
 
         if ( inv:IsReceiver(client) ) then
             inv:RemoveReceiver(client)
-
-            net.Start("ax.inventory.receiver.remove")
-                net.WriteUInt(inv.id, 32)
-                net.WritePlayer(client)
-            net.Broadcast()
         end
     end
 end
