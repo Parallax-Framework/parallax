@@ -220,6 +220,7 @@ end
 
 function GM:PlayerReady(client)
     client:Spawn()
+    client:SyncRelay()
 end
 
 function GM:PlayerDisconnected(client)
