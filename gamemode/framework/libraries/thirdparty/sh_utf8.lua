@@ -2806,7 +2806,7 @@ local tableConcat = table.concat
 -- @realm shared
 -- @param str string The string to convert.
 -- @return string Returns a string representing the value of a string converted to lower-case.
-function utf8:Lower(str)
+function utf8.lower(str)
     local len = 1
     local lowercase = {}
     for _, char in utf8Codes(str) do
@@ -2821,7 +2821,7 @@ end
 -- @realm shared
 -- @param str string The string to convert.
 -- @return string Returns a string representing the value of a string converted to upper-case.
-function utf8:Upper(str)
+function utf8.upper(str)
     local len = 1
     local uppercase = {}
     for _, char in utf8Codes(str) do
