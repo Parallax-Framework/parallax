@@ -140,6 +140,8 @@ function ax.bind:Translate( ... )
     local parts = {}
 
     local keysLength = select( "#", ... )
+    if ( keysLength < 1 ) then return "NONE" end
+
     for i = 1, keysLength do
         local key = select( i, ... )
         local translation = self.translations[ key ] or tostring( key )
@@ -147,7 +149,7 @@ function ax.bind:Translate( ... )
         parts[ #parts + 1 ] = translation
     end
 
-    return table.concat( parts, "+" )
+    return table.concat( parts, " + " )
 end
 
 --- Register a key bind.
