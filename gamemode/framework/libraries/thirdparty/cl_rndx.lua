@@ -687,3 +687,5 @@ function RNDX.SetDefaultShape(shape)
 	DEFAULT_SHAPE = shape or SHAPE_FIGMA
 	DEFAULT_DRAW_FLAGS = DEFAULT_SHAPE
 end
+
+ax.render = RNDX -- eon, if you are going to update this file, please add a global reference to it, thanks
