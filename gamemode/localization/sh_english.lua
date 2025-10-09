@@ -41,5 +41,6 @@ EN["unknown"] = "Unknown"
 EN["volume"] = "Volume"
 EN["welcome"] = "Welcome"
 EN["yes"] = "Yes"
+EN["interface"] = "Interface"
 
 ax.localization:Register("en", EN)

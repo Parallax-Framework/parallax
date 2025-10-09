@@ -29,7 +29,6 @@ function ax.localization:GetPhrase(phrase, ...)
     local langCode = CLIENT and GetConVar("gmod_language"):GetString() or "en"
     local lang = ax.localization.langs[langCode]
     if ( !istable(lang) or !lang[phrase] ) then
-        ax.util:PrintWarning("Phrase \"" .. phrase .. "\" not found in language \"" .. langCode .. "\"")
         return phrase
     end
 
@@ -39,7 +38,8 @@ function ax.localization:GetPhrase(phrase, ...)
         return phrase
     end
 
-    if ( ... ) then
+    local argCount = select("#", ...)
+    if ( argCount > 0 ) then
         translation = string.format(translation, ...)
     end
 
