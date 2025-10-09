@@ -206,7 +206,7 @@ ax.viewstack:RegisterModifier("ragdoll", function(client, view)
         ang:RotateAroundAxis(ang:Forward(), 270)
 
         return {
-            origin = pos,
+            origin = pos + ang:Forward() * 10,
             angles = ang,
             fov = view.fov
         }
