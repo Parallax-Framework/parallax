@@ -308,4 +308,15 @@ function GM:OnPlayerItemAction(client, item, action)
     end
 end
 
-GM.SendDeathNotice = nil
+function GM:ShouldSendDeathNotice( attacker, inflictor, victim, flags )
+    return false
+end
+
+GM.SendDeathNoticeUnaltered = GM.SendDeathNoticeUnaltered or GM.SendDeathNotice
+function GM:SendDeathNotice( attacker, inflictor, victim, flags )
+    if ( hook.Run( "ShouldSendDeathNotice", attacker, inflictor, victim, flags ) == false ) then
+        return
+    end
+
+    return self:SendDeathNoticeUnaltered( attacker, inflictor, victim, flags )
+end
