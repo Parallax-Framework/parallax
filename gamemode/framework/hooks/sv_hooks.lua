@@ -307,3 +307,5 @@ function GM:OnPlayerItemAction(client, item, action)
         client:EmitSound("Flesh.ImpactSoft")
     end
 end
+
+GM.SendDeathNotice = nil
