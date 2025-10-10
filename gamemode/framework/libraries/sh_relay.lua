@@ -71,7 +71,9 @@ function GetRelay( name, fallback )
     return ax.relay.data["global"][name] != nil and ax.relay.data["global"][name] or fallback
 end
 
-hook.Add( "OnEntityRemoved", "ax.relay.cleanup", function( ent )
+hook.Add( "EntityRemoved", "ax.relay.cleanup", function( ent, fullUpdate )
+    if ( fullUpdate ) then return end
+
     local index = tostring( ent:EntIndex() )
     if ( ent:IsPlayer() ) then
         index = ent:SteamID64()
