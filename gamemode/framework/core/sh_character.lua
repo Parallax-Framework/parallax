@@ -331,6 +331,17 @@ ax.character:RegisterVar("skin", {
 
         return true
     end,
+    canPopulate = function(this, payload, client)
+        local factionData = ax.faction:Get(payload.faction)
+        if ( !factionData ) then return false end
+
+        -- Allow customizable skins by default, unless faction specifically disables it
+        if ( factionData.allowSkinCustomization == false ) then
+            return false
+        end
+
+        return true
+    end,
     populate = function(this, container, payload)
         local option = container:Add("ax.text")
         option:SetFont("ax.regular.bold")
