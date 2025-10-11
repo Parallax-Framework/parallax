@@ -104,6 +104,14 @@ net.Receive("ax.character.create", function(length, client)
             return
         end
 
+        -- Check if this variable can be populated during character creation (server-side validation)
+        local canPop, reason = ax.character:CanPopulateVar(k, payload, client)
+        if ( !canPop ) then
+            ax.util:PrintError(("Client '%s' attempted to send data for restricted character variable '%s': %s"):format(client:SteamID64(), tostring(k), reason or "Unknown reason"))
+            client:Notify("Invalid character data submitted.", "error")
+            return
+        end
+
         if ( var.validate and var:validate(v) ) then
             newPayload[k] = v
         else

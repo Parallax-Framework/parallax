@@ -71,6 +71,29 @@ function ax.character:SetVar(char, name, value, isNetworked, recipients)
     end
 end
 
+-- Server-side validation function to check if a variable can be populated during character creation
+function ax.character:CanPopulateVar(varName, payload, client)
+    local varTable = self.vars[varName]
+    if ( !istable(varTable) ) then
+        return false, "Invalid character variable"
+    end
+
+    if ( isfunction(varTable.canPopulate) ) then
+        local success, result = pcall(function()
+            return varTable:canPopulate(payload, client)
+        end)
+
+        if ( !success ) then
+            return false, "canPopulate callback failed: " .. tostring(result)
+        end
+
+        return result, result and nil or "Variable not available for this configuration"
+    end
+
+    -- If no canPopulate function, allow by default
+    return true, nil
+end
+
 function ax.character:RegisterVar(name, data)
     if ( !isstring(name) or !istable(data) ) then
         ax.util:PrintError("Invalid arguments provided to ax.character:RegisterVar()")
