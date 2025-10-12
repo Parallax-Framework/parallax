@@ -39,39 +39,40 @@ function ax.class:Include(directory)
     directory = string.gsub(directory, "\\", "/")
     directory = string.gsub(directory, "^/+", "") -- Remove leading slashes
 
-    local files, directories = file.Find(directory .. "/*.lua", "LUA")
+    ax.util:PrintDebug(color_info, "Including class files from directory: " .. directory)
 
+    local files, directories = file.Find(directory .. "/*.lua", "LUA")
     if ( files[1] != nil ) then
         for i = 1, #files do
             local fileName = files[i]
 
-            local clsUniqueID = string.StripExtension(fileName)
-            local prefix = string.sub(clsUniqueID, 1, 3)
+            local uniqueID = string.StripExtension(fileName)
+            local prefix = string.sub(uniqueID, 1, 3)
             if ( prefix == "sh_" or prefix == "cl_" or prefix == "sv_" ) then
-                clsUniqueID = string.sub(clsUniqueID, 4)
+                uniqueID = string.sub(uniqueID, 4)
             end
 
-            local existing = self.stored[clsUniqueID]
+            local existing = self.stored[uniqueID]
             local index = (istable(existing) and existing.index) or (#self.instances + 1)
 
             if ( existing ) then
-                ax.util:PrintDebug(color_warning, "Class \"" .. clsUniqueID .. "\" already exists, overwriting file: " .. fileName)
+                ax.util:PrintDebug(color_warning, "Faction \"" .. uniqueID .. "\" already exists, overwriting file: " .. fileName)
             end
 
-            CLASS = { id = clsUniqueID, index = index }
-                if ( !isnumber(CLASS.Faction) ) then
+            CLASS = { id = uniqueID, index = index }
+                ax.util:Include(directory .. "/" .. fileName, "shared")
+                ax.util:PrintDebug(color_success, "CLASS \"" .. (CLASS.Name or CLASS.name or CLASS.id) .. "\" initialised successfully.")
+
+                if ( !isnumber(CLASS.faction) ) then
                     ax.util:PrintDebug(color_error, "Class \"" .. CLASS.id .. "\" does not have faction ID, skipping file: " .. fileName)
                     continue
                 end
 
-                local factionTable = ax.faction:Get(CLASS.Faction)
+                local factionTable = ax.faction:Get(CLASS.faction)
                 if ( !istable(factionTable) ) then
                     ax.util:PrintDebug(color_error, "Class \"" .. CLASS.id .. "\" uses an invalid faction ID skipping file: " .. fileName)
                     continue
                 end
-
-                ax.util:Include(directory .. "/" .. fileName, "shared")
-                ax.util:PrintDebug(color_success, "CLASS \"" .. (CLASS.Name or CLASS.name or CLASS.id) .. "\" initialised successfully.")
 
                 if ( !istable(factionTable.Classes) ) then factionTable.Classes = {} end
                 factionTable.Classes[CLASS.id] = CLASS
@@ -80,6 +81,8 @@ function ax.class:Include(directory)
                 self.instances[CLASS.index] = CLASS
             CLASS = nil
         end
+    else
+        ax.util:PrintDebug(color_warning, "No class files found in directory: " .. directory)
     end
 
     if ( directories[1] != nil ) then
@@ -92,19 +95,18 @@ function ax.class:Include(directory)
     return true
 end
 
-function ax.class:Get(id)
-    if ( isstring(id) and self.stored[id] ) then
-        return self.stored[id]
-    elseif ( isnumber(id) and self.instances[id] ) then
-        return self.instances[id]
+function ax.class:Get(identifier)
+    if ( isstring(identifier) and self.stored[identifier] ) then
+        return self.stored[identifier]
+    elseif ( isnumber(identifier) and self.instances[identifier] ) then
+        return self.instances[identifier]
     end
 
+    -- If all fails, run loops
     for i = 1, #self.instances do
-        if ( isnumber(id) and self.instances[i].index == id ) then
+        if ( isnumber(identifier) and self.instances[i].index == identifier ) then
             return self.instances[i]
-        elseif ( isstring(id) and ( ax.util:FindString(self.instances[i].Name, id) or ax.util:FindString(self.instances[i].id, id) ) ) then
-            return self.instances[i]
-        elseif ( istable(id) and isnumber(id.id) and self.instances[i].id == id.id ) then
+        elseif ( isstring(identifier) and ( ax.util:FindString(self.instances[i].name or "", identifier) or ax.util:FindString(self.instances[i].id, identifier) ) ) then
             return self.instances[i]
         end
     end
@@ -129,4 +131,16 @@ function ax.class:CanBecome(class, client)
     end
 
     return true, nil
+end
+
+function ax.class:GetAll()
+    return self.instances
+end
+
+function ax.class:IsValid(class)
+    if ( self:Get(class) != nil ) then
+        return true
+    end
+
+    return false
 end
