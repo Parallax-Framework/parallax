@@ -146,6 +146,24 @@ function GM:PlayerInitialSpawn(client)
         v:ChatPrint(Color(60, 220, 120), "Player " .. client:SteamName() .. " has joined the server.")
     end
 
+    -- Handle bot character creation automatically
+    if ( client:IsBot() ) then
+        if ( ax.config:Get("botSupport", true) ) then
+            ax.util:PrintDebug("Bot detected: " .. client:SteamName() .. ", creating character automatically...")
+            
+            -- Small delay to ensure faction system is ready
+            timer.Simple(0.1, function()
+                if ( IsValid(client) ) then
+                    ax.util:CreateBotCharacter(client)
+                end
+            end)
+        else
+            ax.util:PrintDebug("Bot detected but bot support is disabled: " .. client:SteamName())
+        end
+        
+        return -- Skip normal player initialization for bots
+    end
+
     timer.Create("ax.player.save." .. steamID64, 300, 1, function()
         if ( !IsValid(client) ) then return end
 
@@ -158,6 +176,26 @@ function GM:PlayerInitialSpawn(client)
 
     AX_CLIENT_QUEUE[steamID64] = true
     hook.Run("PlayerQueued", client)
+end
+
+function GM:PlayerDisconnected(client)
+    local steamID64 = client:SteamID64()
+    
+    -- Clean up bot characters from memory
+    if ( client:IsBot() ) then
+        local character = client:GetCharacter()
+        if ( character and character.isBot ) then
+            ax.character.instances[character.id] = nil
+            ax.util:PrintDebug("Cleaned up temporary bot character: " .. (character:GetName() or "Unknown"))
+        end
+    end
+    
+    -- Clean up timers and other player data
+    timer.Remove("ax.player.save." .. steamID64)
+    
+    if ( client:GetTable().axJoinTime ) then
+        client:GetTable().axJoinTime = nil
+    end
 end
 
 gameevent.Listen("player_disconnect")

@@ -62,7 +62,8 @@ function ax.character:SetVar(char, name, value, isNetworked, recipients)
 
     char.vars[name] = value
 
-    if ( SERVER and isNetworked ) then
+    -- Skip networking for bot characters since they don't need client-side updates
+    if ( SERVER and isNetworked and !char.isBot ) then
         net.Start("ax.character.var")
             net.WriteUInt(char:GetID(), 32)
             net.WriteString(name)

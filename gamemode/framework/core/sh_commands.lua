@@ -236,3 +236,96 @@ ax.command:Add("PlyRespawn", {
         return "Player " .. target:Nick() .. " has been respawned."
     end
 })
+
+ax.command:Add("BotAdd", {
+    description = "Add a bot to the server for testing purposes.",
+    adminOnly = true,
+    arguments = {
+        { name = "name", type = ax.type.string, optional = true }
+    },
+    OnRun = function(client, name)
+        if ( SERVER ) then
+            local botName = name or "TestBot"
+            RunConsoleCommand("bot")
+            
+            return "Adding bot: " .. botName
+        else
+            return "This command can only be run on the server."
+        end
+    end
+})
+
+ax.command:Add("BotKick", {
+    description = "Remove all bots from the server.",
+    adminOnly = true,
+    OnRun = function(client)
+        if ( SERVER ) then
+            local count = 0
+            for _, target in player.Iterator() do
+                if ( target:IsBot() ) then
+                    target:Kick("Removed by admin")
+                    count = count + 1
+                end
+            end
+            
+            return "Removed " .. count .. " bot(s) from the server."
+        else
+            return "This command can only be run on the server."
+        end
+    end
+})
+
+ax.command:Add("BotSupport", {
+    description = "Enable or disable automatic bot character creation.",
+    adminOnly = true,
+    arguments = {
+        { name = "enabled", type = ax.type.bool }
+    },
+    OnRun = function(client, enabled)
+        if ( SERVER ) then
+            ax.config:Set("botSupport", enabled)
+            ax.config:Save()
+            
+            return "Bot support " .. (enabled and "enabled" or "disabled") .. "."
+        else
+            return "This command can only be run on the server."
+        end
+    end
+})
+
+ax.command:Add("BotList", {
+    description = "List all bots currently on the server.",
+    adminOnly = true,
+    OnRun = function(client)
+        if ( SERVER ) then
+            local bots = {}
+            for _, ply in player.Iterator() do
+                if ( ply:IsBot() ) then
+                    local character = ply:GetCharacter()
+                    local charName = character and character:GetName() or "No Character"
+                    local faction = character and ax.faction:Get(character:GetFaction()) 
+                    local factionName = faction and faction.name or "No Faction"
+                    
+                    table.insert(bots, {
+                        name = ply:SteamName(),
+                        character = charName,
+                        faction = factionName
+                    })
+                end
+            end
+            
+            if ( #bots == 0 ) then
+                return "No bots currently on the server."
+            end
+            
+            local result = "Bots on server (" .. #bots .. "):\n"
+            for i, bot in ipairs(bots) do
+                result = result .. "  " .. bot.name .. " (" .. bot.character .. " - " .. bot.faction .. ")\n"
+            end
+            
+            return result
+        else
+            return "This command can only be run on the server."
+        end
+    end
+})

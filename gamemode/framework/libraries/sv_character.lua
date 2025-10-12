@@ -86,19 +86,25 @@ function ax.character:Load(client, character)
     clientData.axCharacter = character
     ax.character:Sync(client, character)
 
-    local inventory = ax.inventory.instances[character.vars.inventory]
-    if ( istable(inventory) ) then
-        inventory:AddReceiver(client)
-        ax.inventory:Sync(inventory)
+    -- Only handle inventory for non-bot characters
+    if ( !character.isBot and character.vars.inventory and character.vars.inventory > 0 ) then
+        local inventory = ax.inventory.instances[character.vars.inventory]
+        if ( istable(inventory) ) then
+            inventory:AddReceiver(client)
+            ax.inventory:Sync(inventory)
+        end
     end
 
     client:KillSilent()
     client:SetTeam(character.vars.faction)
     client:Spawn()
 
-    net.Start("ax.character.load")
-        net.WriteUInt(character.id, 32)
-    net.Send(client)
+    -- Only send character load message to real players, not bots
+    if ( !client:IsBot() ) then
+        net.Start("ax.character.load")
+            net.WriteUInt(character.id, 32)
+        net.Send(client)
+    end
 
     hook.Run("PlayerLoadedCharacter", client, character)
 end

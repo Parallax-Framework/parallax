@@ -18,3 +18,4 @@ ax.config:Add("notificationInTime", ax.type.number, 0.22, { min = 0.05, max = 1.
 ax.config:Add("notificationOutTime", ax.type.number, 0.20, { min = 0.05, max = 1.0, decimals = 2, bNetworked = true, category = "notifications" })
 ax.config:Add("notificationEasing", ax.type.string, "OutCubic", { description = "Easing for notification animations", bNetworked = true, category = "notifications" })
 ax.config:Add("notificationSound", ax.type.string, "ui/hint.wav", { description = "Sound to play when a notification appears (path relative to sound/)", bNetworked = true, category = "notifications" })
+ax.config:Add("botSupport", ax.type.bool, true, { description = "Enable automatic character creation for bots.", bNetworked = false })
