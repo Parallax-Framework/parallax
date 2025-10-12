@@ -92,12 +92,22 @@ net.Receive("ax.character.create", function(length, client)
         return
     end
 
-    local newPayload = {
-        steamID64 = client:SteamID64(),
-        schema = engine.ActiveGamemode(),
-    }
+    PrintTable(payload)
 
-    for k, v in pairs(payload) do
+    local vars = {}
+    for k, v in pairs(ax.character.vars) do
+        if ( !v.validate ) then continue end
+        if ( v.hide ) then continue end
+
+        -- Only include variables that can be populated during character creation
+        local canPop, reason = ax.character:CanPopulateVar(k, payload, client)
+        if ( canPop ) then
+            vars[k] = payload[k] != nil and payload[k] or NULL
+        end
+    end
+    
+    local newPayload = {}
+    for k, v in pairs(vars) do
         local var = ax.character.vars[k]
         if ( !var ) then
             ax.util:PrintError("Invalid character variable '" .. k .. "' provided in payload.")
@@ -108,17 +118,27 @@ net.Receive("ax.character.create", function(length, client)
         local canPop, reason = ax.character:CanPopulateVar(k, payload, client)
         if ( !canPop ) then
             ax.util:PrintError(("Client '%s' attempted to send data for restricted character variable '%s': %s"):format(client:SteamID64(), tostring(k), reason or "Unknown reason"))
-            client:Notify("Invalid character data submitted.", "error")
+            client:Notify(reason or "Invalid character data submitted.")
             return
         end
 
-        if ( var.validate and var:validate(v) ) then
+        if ( var.validate ) then
+            local result, err = var:validate(v, payload, client)
+            if ( !result ) then
+                client:Notify(err or "Invalid character data submitted.")
+                ax.util:PrintWarning(("Validation failed for character variable '%s' from client '%s': %s"):format(tostring(k), client:SteamID64(), tostring(err)))
+                return
+            end
+
             newPayload[k] = v
         else
-            ax.util:PrintError("Validation failed for character variable '" .. k .. "': " .. v)
-            return
+            ax.util:PrintWarning(("Character variable '%s' does not have a validation function. Accepting raw data from client '%s'."):format(tostring(k), client:SteamID64()))
+            newPayload[k] = v
         end
     end
+
+    newPayload.steamID64 = client:SteamID64()
+    newPayload.schema = engine.ActiveGamemode()
 
     ax.util:PrintDebug("Creating character for " .. client:SteamID64() .. " with payload: " .. util.TableToJSON(newPayload))
 
@@ -134,7 +154,7 @@ net.Receive("ax.character.create", function(length, client)
         local clientData = client:GetTable()
 
         clientData.axCharacters = clientData.axCharacters or {}
-        clientData.axCharacters[ #clientData.axCharacters + 1 ] = character
+        clientData.axCharacters[#clientData.axCharacters + 1] = character
 
         ax.inventory.instances[inventory.id] = inventory
         ax.character.instances[character.id] = character
