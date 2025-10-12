@@ -46,6 +46,8 @@ function PANEL:SetType(type)
     categories = table.Copy(categories)
     table.sort(categories, function(a, b) return a < b end)
 
+    local categoryButtons = {}
+
     for k, v in SortedPairsByValue(categories) do
         local button = self.categories:Add("ax.button.flat")
         button:Dock(TOP)
@@ -60,22 +62,56 @@ function PANEL:SetType(type)
 
         button.tab = tab
         button.tab.index = tab.index
+        button.category = v  -- Store the category name for reference
+
+        -- Store button reference for later use
+        categoryButtons[v] = button
 
         button.DoClick = function()
+            -- Track last selected category per store type
+            if ( type == "config" ) then
+                ax.gui.storeLastConfig = v
+            elseif ( type == "option" ) then
+                ax.gui.storeLastOption = v
+            end
+
             self:TransitionToPage(button.tab.index, ax.option:Get("tabFadeTime", 0.25))
             self:Populate(tab, scroller, type, v)
         end
     end
 
+    -- Store reference for later use
+    self.categoryButtons = categoryButtons
+
     -- Adjust all pages now that we know the final width of categories
     for k, v in ipairs(self:GetPages()) do
         v:SetXOffset(self.categories:GetWide() + ScreenScale(32))
         v:SetWidthOffset(-self.categories:GetWide() - ScreenScale(32))
+    end
 
-        if ( k == 1 ) then
-            self:TransitionToPage(v.index, 0, true)
-            self:Populate(v, v:GetChildren()[1], type, categories[1])
-        end
+    -- Determine which category to show initially
+    local targetCategory = nil
+    local targetButton = nil
+
+    -- Check for last selected category for this store type
+    if ( type == "config" and ax.gui.storeLastConfig and self.categoryButtons[ax.gui.storeLastConfig] ) then
+        targetCategory = ax.gui.storeLastConfig
+        targetButton = self.categoryButtons[ax.gui.storeLastConfig]
+    elseif ( type == "option" and ax.gui.storeLastOption and self.categoryButtons[ax.gui.storeLastOption] ) then
+        targetCategory = ax.gui.storeLastOption
+        targetButton = self.categoryButtons[ax.gui.storeLastOption]
+    end
+
+    -- Default to first category if no saved preference or saved category doesn't exist
+    if ( !targetCategory or !targetButton ) then
+        targetCategory = categories[1]
+        targetButton = self.categoryButtons[targetCategory]
+    end
+
+    -- Show the target page
+    if ( targetButton and targetButton.tab ) then
+        self:TransitionToPage(targetButton.tab.index, 0, true)
+        self:Populate(targetButton.tab, targetButton.tab:GetChildren()[1], type, targetCategory)
     end
 end
 
