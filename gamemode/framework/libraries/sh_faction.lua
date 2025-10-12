@@ -64,25 +64,27 @@ function ax.faction:Include(directory)
     directory = string.gsub(directory, "\\", "/")
     directory = string.gsub(directory, "^/+", "") -- Remove leading slashes
 
+    ax.util:PrintDebug(color_info, "Including faction files from directory: " .. directory)
+
     local files, directories = file.Find(directory .. "/*.lua", "LUA")
     if ( files[1] != nil ) then
         for i = 1, #files do
             local fileName = files[i]
 
-            local facUniqueID = string.StripExtension(fileName)
-            local prefix = string.sub(facUniqueID, 1, 3)
+            local uniqueID = string.StripExtension(fileName)
+            local prefix = string.sub(uniqueID, 1, 3)
             if ( prefix == "sh_" or prefix == "cl_" or prefix == "sv_" ) then
-                facUniqueID = string.sub(facUniqueID, 4)
+                uniqueID = string.sub(uniqueID, 4)
             end
 
-            local existing = self.stored[facUniqueID]
+            local existing = self.stored[uniqueID]
             local index = (istable(existing) and existing.index) or (#self.instances + 1)
 
             if ( existing ) then
-                ax.util:PrintDebug(color_warning, "Faction \"" .. facUniqueID .. "\" already exists, overwriting file: " .. fileName)
+                ax.util:PrintDebug(color_warning, "Faction \"" .. uniqueID .. "\" already exists, overwriting file: " .. fileName)
             end
 
-            FACTION = { id = facUniqueID, index = index }
+            FACTION = { id = uniqueID, index = index }
                 FACTION.GetModels = function(this)
                     return this.models or DEFAULT_MODELS
                 end
@@ -96,6 +98,8 @@ function ax.faction:Include(directory)
                 self.instances[FACTION.index] = FACTION
             FACTION = nil
         end
+    else
+        ax.util:PrintDebug(color_warning, "No faction files found in directory: " .. directory)
     end
 
     if ( directories[1] != nil ) then
@@ -108,18 +112,23 @@ function ax.faction:Include(directory)
     return true
 end
 
--- Get a faction by its ID or name
-function ax.faction:Get(id)
-    if ( isstring(id) and self.stored[id] ) then
-        return self.stored[id]
-    elseif ( isnumber(id) and self.instances[id] ) then
-        return self.instances[id]
+-- Get a faction by ID, name, or table
+function ax.faction:Get(identifier)
+    if ( isstring(identifier) ) then
+        return self.stored[identifier] or self.instances[identifier]
+    elseif ( isnumber(identifier) ) then
+        return self.instances[identifier]
+    elseif ( istable(identifier) and isnumber(identifier.id) ) then
+        return self.instances[identifier.id]
     end
 
+    -- If all fails, run loops
     for i = 1, #self.instances do
-        if ( isnumber(id) and self.instances[i].index == id ) then
+        if ( isnumber(identifier) and self.instances[i].index == identifier ) then
             return self.instances[i]
-        elseif ( isstring(id) and ( ax.util:FindString(self.instances[i].name, id) or ax.util:FindString(self.instances[i].id, id) ) ) then
+        elseif ( isstring(identifier) and ( ax.util:FindString(self.instances[i].name or "", identifier) or ax.util:FindString(self.instances[i].id, identifier) ) ) then
+            return self.instances[i]
+        elseif ( istable(identifier) and isnumber(identifier.id) and self.instances[i].id == identifier.id ) then
             return self.instances[i]
         end
     end
