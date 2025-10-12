@@ -41,6 +41,40 @@ function GM:PlayerStartVoice()
     end
 end
 
+local vignette = ax.util:GetMaterial("parallax/overlays/vignette.png", "noclamp smooth")
+local vignetteColor = Color(0, 0, 0, 255)
+function GM:HUDPaintBackground()
+    if ( hook.Run("ShouldDrawVignette") != false ) then
+        local client = ax.client
+        if ( !IsValid(client) ) then return end
+
+        local scrW, scrH = ScrW(), ScrH()
+        local trace = util.TraceLine({
+            start = client:GetShootPos(),
+            endpos = client:GetShootPos() + client:GetAimVector() * 96,
+            filter = client,
+            mask = MASK_SHOT
+        })
+
+        if ( trace.Hit and trace.HitPos:DistToSqr(client:GetShootPos()) < 96 ^ 2 ) then
+            vignetteColor.a = Lerp(FrameTime(), vignetteColor.a, 255)
+        else
+            vignetteColor.a = Lerp(FrameTime(), vignetteColor.a, 100)
+        end
+
+        if ( hook.Run("ShouldDrawDefaultVignette") != false ) then
+            surface.SetDrawColor(vignetteColor)
+            surface.SetMaterial(vignette)
+            surface.DrawTexturedRect(0, 0, scrW, scrH)
+        end
+
+        hook.Run("DrawVignette", 1 - (vignetteColor.a / 255))
+    end
+end
+
+function GM:DrawVignette(fraction)
+end
+
 function GM:PostRenderCurvy(width, height, client, isCurved)
     ax.notification:Render()
 end
