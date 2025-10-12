@@ -472,6 +472,8 @@ ax.character:RegisterVar("model", {
         if ( IsValid(client) and client:GetModel() != value ) then
             client:SetModel(value)
         end
+
+        character:SetSkin(0, true) -- Reset skin to 0 when model changes, as skins are model-specific
     end
 })
 

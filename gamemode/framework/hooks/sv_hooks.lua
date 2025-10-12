@@ -92,7 +92,7 @@ function GM:PlayerLoadout(client)
     local character = client:GetCharacter()
     if ( character ) then
         client:SetModel(character:GetModel())
-        client:SetSkin(character:GetData("skin", 0))
+        client:SetSkin(character:GetSkin())
 
         local bodyGroups = character:GetData("bodygroups", {})
         for k, v in pairs(bodyGroups) do
