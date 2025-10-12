@@ -195,6 +195,44 @@ ax.command:Add("CharSetFaction", {
     end
 })
 
+ax.command:Add("CharSetClass", {
+    description = "Set the class of a character.",
+    arguments = {
+        { name = "target", type = ax.type.character, optional = true },
+        { name = "class", type = ax.type.string }
+    },
+    OnRun = function(client, target, class)
+        if ( !target ) then
+            target = client:GetCharacter()
+        end
+
+        if ( !target ) then
+            return "Invalid character."
+        end
+
+        local classTable = ax.class:Get(class)
+        if ( !classTable ) then
+            return "Invalid class."
+        end
+
+        target:SetClass(classTable.index, true)
+        target:Save()
+
+        -- Call OnTransferred callback if it exists on the new class
+        if ( isfunction(classTable.OnTransferred) ) then
+            local player = target:GetOwner()
+            if ( IsValid(player) ) then
+                local success, err = pcall(classTable.OnTransferred, classTable, player)
+                if ( !success ) then
+                    ax.util:PrintError("Error in class OnTransferred callback: " .. tostring(err))
+                end
+            end
+        end
+
+        return "Class set to " .. classTable.name
+    end
+})
+
 ax.command:Add("PlyWhitelist", {
     description = "Whitelist a player for a faction.",
     arguments = {
