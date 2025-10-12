@@ -421,7 +421,7 @@ function ax.curvy:CreateRenderTargetMaterial(name, texture)
         local mat = materials[matName]
         -- Only update texture if it's actually different
         if ( mat:GetTexture("$basetexture") != texture ) then
-            mat:SetTexture( "$basetexture", texture )
+            mat:SetTexture("$basetexture", texture)
         end
 
         return mat

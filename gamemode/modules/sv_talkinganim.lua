@@ -106,6 +106,4 @@ function MODULE:PlayerSay(client, text, teamChat)
     if ( string.len(text) > 0 ) then
         self:PlayTalkingAnimation(client)
     end
-
-    print("Player is talking:", text)
 end
