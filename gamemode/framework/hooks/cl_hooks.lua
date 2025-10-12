@@ -280,6 +280,16 @@ function GM:HUDPaintCurvy(width, height, client, isCurved)
     
     -- Draw target ID system
     DrawTargetID()
+
+    -- Draw version watermark
+    if ( ax.version and ax.version.version ) then
+        local versionText = string.format("Parallax v%s", ax.version.version)
+        if ( ax.version.commitHash ) then
+            versionText = versionText .. " (" .. ax.version.commitHash .. ")"
+        end
+        
+        draw.SimpleText(versionText, "ax.tiny.bold", ScreenScale(4), height - ScreenScaleH(4), Color(255, 255, 255, 50), TEXT_ALIGN_LEFT, TEXT_ALIGN_BOTTOM)
+    end
 end
 
 function GM:PostDrawTranslucentRenderables(depth, skybox)
