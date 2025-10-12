@@ -91,6 +91,18 @@ function MODULE:DrawPlayers()
         local steamID64 = target:SteamID64()
         local name = target:Nick() or "Unknown"
         local teamName = team.GetName(target:Team()) or "Unknown"
+        local character = target:GetCharacter()
+        if ( character ) then
+            name = character:GetName() or name
+
+            local class = character:GetClass()
+            if ( class ) then
+                local classTable = ax.class.instances[class]
+                if ( classTable ) then
+                    teamName = teamName .. " (" .. (classTable.name or "Unknown") .. ")"
+                end
+            end
+        end
         local health = target:Health() or 0
         local maxHealth = target:GetMaxHealth() or 100
         local armor = target:Armor() or 0
