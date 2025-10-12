@@ -172,8 +172,24 @@ ax.command:Add("CharSetFaction", {
             return "Invalid faction."
         end
 
+        -- Get the old faction before changing
+        local oldFaction = target:GetFaction()
+        local oldFactionTable = ax.faction:Get(oldFaction)
+
+        -- Set the new faction
         target:SetFaction(factionTable.index, true)
         target:Save()
+
+        -- Call OnTransferred callback if it exists on the new faction
+        if ( isfunction(factionTable.OnTransferred) ) then
+            local player = target:GetOwner()
+            if ( IsValid(player) ) then
+                local success, err = pcall(factionTable.OnTransferred, factionTable, player, oldFaction)
+                if ( !success ) then
+                    ax.util:PrintError("Error in faction OnTransferred callback: " .. tostring(err))
+                end
+            end
+        end
 
         return "Faction set to " .. factionTable.name
     end
