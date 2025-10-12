@@ -12,7 +12,23 @@ function PANEL:Init()
         if ( !v.validate ) then continue end
         if ( v.hide ) then continue end
 
-        self.payload[k] = v.default
+        -- Check if the variable can be populated during character creation
+        if ( isfunction(v.canPopulate) ) then
+            local canPop, err = pcall(function()
+                return v:canPopulate(self.payload, ax.client)
+            end)
+
+            if ( !canPop ) then
+                ax.util:PrintWarning(("Failed to check canPopulate for character var '%s': %s"):format(tostring(k), tostring(err)))
+                continue
+            end
+
+            if ( !err ) then
+                continue -- canPopulate returned false, skip this variable
+            end
+        end
+
+        -- self.payload[k] = v.default -- Disabled default population for now
     end
 
     self:StartAtBottom()
