@@ -351,9 +351,22 @@ function PANEL:PopulateInfo(stack)
             local itemToUse
             -- Iterate through stacked items to find one that can perform the action and if we have it in the inventory still
             for _, stackedItem in pairs(stack.stackedItems) do
-                if ( stackedItem.actions and stackedItem.actions[k] and self.inventory:HasItem(stackedItem.id) ) then
-                    itemToUse = stackedItem
-                    break
+                -- Get the item template to check for actions
+                local itemTemplate = ax.item.stored[stackedItem.class]
+                if ( itemTemplate and itemTemplate.actions and itemTemplate.actions[k] ) then
+                    -- Check if we still have this item in inventory
+                    local hasItem = false
+                    for itemId, invItem in pairs(self.inventory:GetItems()) do
+                        if ( invItem.id == stackedItem.id ) then
+                            hasItem = true
+                            break
+                        end
+                    end
+
+                    if ( hasItem ) then
+                        itemToUse = stackedItem
+                        break
+                    end
                 end
             end
 
@@ -377,7 +390,7 @@ function PANEL:PopulateInfo(stack)
             end
 
             -- If we used the last item in the stack, close info panel
-            if ( stack.stackCount < 1 or self.inventory:HasItem(itemToUse.class) == false ) then
+            if ( stack.stackCount < 1 ) then
                 self:InfoClose()
             end
         end
