@@ -217,33 +217,33 @@ net.Receive("ax.player.var", function()
     local client = net.ReadPlayer()
     if ( !IsValid(client) ) then return end
 
-    local name = net.ReadString()
+    local key = net.ReadString()
     local value = net.ReadType()
 
     local clientTable = client:GetTable()
-    if ( !istable(clientTable.vars) ) then
-        clientTable.vars = {}
+    if ( !istable(clientTable.axVars) ) then
+        clientTable.axVars = {}
     end
 
-    clientTable.vars[name] = value
+    clientTable.axVars[key] = value
 end)
 
-net.Receive( "ax.player.data", function()
+net.Receive("ax.player.data", function()
     local client = net.ReadPlayer()
     if ( !IsValid(client) ) then return end
 
     local key, value = net.ReadString(), net.ReadType()
 
     local clientTable = client:GetTable()
-    if ( !istable(clientTable.vars) ) then
-        clientTable.vars = {}
+    if ( !istable(clientTable.axVars) ) then
+        clientTable.axVars = {}
     end
 
-    if ( !istable(clientTable.vars.data) ) then
-        clientTable.vars.data = {}
+    if ( !istable(clientTable.axVars.data) ) then
+        clientTable.axVars.data = {}
     end
 
-    clientTable.vars.data[key] = value
+    clientTable.axVars.data[key] = value
 end)
 
 net.Receive("ax.inventory.sync", function()
