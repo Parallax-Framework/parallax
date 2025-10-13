@@ -34,13 +34,13 @@
 
 -- Create the option store
 local optionSpec = {
-    name = "ax.option",
+    name = "option",
     path = "parallax/options.json",
     authority = "client",
     net = {
         sync = "ax.option.sync",
         set = "ax.option.set",
-        request = "ax.option.request"
+        request = "option.request"
     },
     perPlayer = true,
     networkedFlagKey = "bNetworked"

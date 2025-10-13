@@ -22,7 +22,7 @@
 
 -- Create the config store
 local configSpec = {
-    name = "ax.config",
+    name = "config",
     path = "parallax/config.json",
     authority = "server",
     net = {
