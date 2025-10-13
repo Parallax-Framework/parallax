@@ -105,7 +105,7 @@ net.Receive("ax.character.create", function(length, client)
             vars[k] = payload[k] != nil and payload[k] or NULL
         end
     end
-    
+
     local newPayload = {}
     for k, v in pairs(vars) do
         local var = ax.character.vars[k]
