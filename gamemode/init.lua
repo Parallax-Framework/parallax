@@ -15,8 +15,8 @@ ax = ax or {util = {}, config = {}, options = {}, character = {}, inventory = {}
 
 AddCSLuaFile("cl_init.lua")
 
-AddCSLuaFile("framework/util.lua")
-include("framework/util.lua")
+AddCSLuaFile("framework/util/boot.lua")
+include("framework/util/boot.lua")
 
 AddCSLuaFile("framework/boot.lua")
 include("framework/boot.lua")
