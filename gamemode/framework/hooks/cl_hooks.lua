@@ -77,6 +77,16 @@ end
 
 function GM:PostRenderCurvy(width, height, client, isCurved)
     ax.notification:Render()
+
+    -- Draw version watermark
+    if ( ax.version and ax.version.version ) then
+        local versionText = string.format("Parallax v%s", ax.version.version)
+        if ( ax.version.commitHash ) then
+            versionText = versionText .. " (" .. ax.version.commitHash .. ")"
+        end
+
+        draw.SimpleText(versionText, "ax.tiny.bold", ScreenScale(4), height - ScreenScaleH(4), Color(255, 255, 255, 50), TEXT_ALIGN_LEFT, TEXT_ALIGN_BOTTOM)
+    end
 end
 
 function GM:HUDDrawTargetID()
@@ -311,19 +321,9 @@ function GM:HUDPaintCurvy(width, height, client, isCurved)
             ax.render.DrawMaterial(0, iconX, iconY, iconSize, iconSize, Color(255, 255, 255, 200), talkingIcon)
         end
     end
-    
+
     -- Draw target ID system
     DrawTargetID()
-
-    -- Draw version watermark
-    if ( ax.version and ax.version.version ) then
-        local versionText = string.format("Parallax v%s", ax.version.version)
-        if ( ax.version.commitHash ) then
-            versionText = versionText .. " (" .. ax.version.commitHash .. ")"
-        end
-        
-        draw.SimpleText(versionText, "ax.tiny.bold", ScreenScale(4), height - ScreenScaleH(4), Color(255, 255, 255, 50), TEXT_ALIGN_LEFT, TEXT_ALIGN_BOTTOM)
-    end
 end
 
 function GM:PostDrawTranslucentRenderables(depth, skybox)
