@@ -1,131 +1,221 @@
+
 # Item Creation Manual (Schema Developers)
 
-This manual explains how to define items within your schema using Parallax.
-Items are content objects (weapons, consumables, resources, etc.) that can be registered, spawned, networked, and interacted with by players.
-
-Parallax provides a simple item registration API and a file layout that lets schemas keep their items organized and hot-reload friendly.
+This manual explains how to define items within your schema using Parallax. Items are content objects (weapons, consumables, resources, etc.) that can be registered, spawned, networked, and interacted with by players. Parallax provides a flexible item registration API, hot-reload support, and conventions for advanced features.
 
 ---
 
-## Folder layout
+## Folder layout & conventions
 
-Schema items live under:
-- `gamemode/schema/items/` — recommended for schema-owned items
-- `gamemode/items/` — framework/global items (avoid modifying here in schemas)
+- **Schema items:** Place in `gamemode/schema/items/` (recommended)
+- **Framework/global items:** Place in `gamemode/items/` (avoid modifying in schemas)
+- **Base items:** Use `base/` subdirectory for inheritance (see below)
+- **Realm prefixes:**
+  - `sh_` for shared
+  - `sv_` for server-only
+  - `cl_` for client-only
 
-Files follow the GMod realm prefix convention when needed:
-- `sh_` for shared
-- `sv_` for server-only
-- `cl_` for client-only
-
-Parallax auto-includes these directories during boot and on hot-reload.
+Parallax auto-includes these directories during boot and hot-reload. Items are loaded in three passes: bases, regular items, and items with inheritance.
 
 ---
+
 
 ## Minimal item example
 
 Create a file at `gamemode/schema/items/sh_water.lua`:
 
 ```lua
-local ITEM = {}
-ITEM.uniqueID   = "water_bottle"
+-- Display info (uniqueID is assigned automatically by the framework)
 ITEM.name       = "Water Bottle"
 ITEM.description= "A refreshing bottle of water."
 ITEM.category   = "Consumables"
 ITEM.model      = "models/props_junk/PopCan01a.mdl"
+
+-- Inventory and trading properties
 ITEM.weight     = 0.2
-ITEM.stackable  = true
+ITEM.shouldStack= true
 ITEM.maxStack   = 5
 ITEM.price      = 5
 
--- Called when the item is used (e.g., from inventory)
-function ITEM:OnUse(client)
+-- Optional: camera preview config for UI
+ITEM.camera = {
+  pos = Vector(0, 0, 50),
+  ang = Angle(0, 0, 0),
+  fov = 70
+}
+
+-- Add a custom action (visible in the item's context menu)
+ITEM:AddAction("drink", {
+  name = "Drink",
+  description = "Drink the water bottle.",
+  icon = "icon16/drink.png",
+  OnRun = function(action, item, client)
     if ( SERVER ) then
-        client:SetHealth(math.min(client:Health() + 5, client:GetMaxHealth()))
-        ax.util:PrintDebug("ITEM:", self.uniqueID, "used by", client:Nick())
+      client:SetHealth(math.min(client:Health() + 5, client:GetMaxHealth()))
+      client:Notify("You drink the water and feel refreshed!", "info")
     end
-    return true -- consume one stack unit
-end
-
--- Optional: validation or custom tooltip text
-function ITEM:GetTooltip()
-    return "Restores 5 HP"
-end
-
-return ITEM
+    return true -- remove the item after use
+  end,
+  CanUse = function(action, item, client)
+    return true -- always allow
+  end
+})
 ```
 
-Parallax will register the returned `ITEM` table automatically.
-Use `developer 1` in console to see hot-reload logs.
+**Tips:**
+- Use shared (`sh_`) files for most items; branch logic by realm inside action handlers (`if SERVER`/`if CLIENT`).
+- Add custom actions for context menu options and advanced behavior.
+- Use the camera field for better UI previews.
+- Parallax registers the `ITEM` table automatically. Use `developer 1` in console to see hot-reload logs and debug output.
 
 ---
 
-## Required fields
+## Advanced features & patterns
 
-- `uniqueID` (string): Stable identifier, lowercase with underscores
+### Stacking
+- Use `ITEM.shouldStack` (or `ITEM.stackable`) and `ITEM.maxStack` for stackable items.
+
+### Custom actions
+- Add actions with `ITEM:AddAction("action_name", { ... })`.
+- Actions support `name`, `description`, `icon`, `OnRun`, and `CanUse`.
+  See the minimal item example above for a complete action definition (with `OnRun` and `CanUse`).
+
+### Camera configuration
+- `ITEM.camera = { pos, ang, fov }` customizes UI preview.
+
+### Weapon & ammo integration
+- Weapons: `ITEM.isWeapon`, `ITEM.weaponClass`, `ITEM.weaponType`
+- Ammo: `ITEM.isAmmo`, `ITEM.ammoType`, `ITEM.ammoAmount`
+- Use actions for equip/unequip/use logic.
+
+### Inheritance & base items
+- Place base items in `base/` (e.g., `base/sh_weapons.lua`).
+- Items in subdirectories (e.g., `items/weapons/`) inherit from their base.
+- Override fields and methods as needed.
+
+### Hooks & methods
+- Use `ITEM:AddAction(name, def)` to define behavior entries with `OnRun` and `CanUse`.
+- A default `drop` action is provided by the framework; schemas can add more.
+- Framework-level item methods are available via the item meta (see internals), but per-item behavior should be implemented through actions.
+
+### Custom fields
+- Add arbitrary fields for schema-specific logic (e.g., `camera`, `weaponClass`).
+
+---
+
+## Required & recommended fields
+
 - `name` (string): Display name
-
-Recommended:
 - `description` (string)
-- `category` (string): Used for filters and UI grouping
+- `category` (string): For filters/UI grouping
 - `model` (string): World/inventory model
-- `weight` (number): For inventory capacity systems
-- `stackable` (boolean) and `maxStack` (number)
+- `weight` (number): For inventory systems
+- `shouldStack`/`stackable` (boolean) and `maxStack` (number)
 - `price` (number): For trading/UI listings
 
 ---
 
-## Hooks and methods on ITEM
+## Example: Weapon item
 
-- `ITEM:OnUse(client) -> boolean`:
-  Return true to consume one unit. Return false to block use.
-- `ITEM:OnDrop(client, position) -> boolean`:
-  Called when dropping from inventory.
-- `ITEM:OnPickup(client, entity) -> boolean`:
-  Called when picking up from the world.
-- `ITEM:CanUse(client) -> boolean`:
-  Custom validation before use.
-- `ITEM:GetTooltip() -> string|nil`:
-  Extra text shown in UI.
-- `ITEM:GetWeight() -> number`:
-  Override dynamic weight if needed.
-
-Hooks typically run server-side for state changes; client-side hooks affect UI.
-Use `if SERVER then ... end` or `if CLIENT then ... end` blocks inside methods when behavior differs per realm.
+```lua
+ITEM.name = "Stunstick"
+ITEM.description = "A shocking melee baton used by the Civil Protection."
+ITEM.model = Model("models/weapons/w_stunbaton.mdl")
+ITEM.category = "Weapons"
+ITEM.weight = 2
+ITEM.price = 0
+ITEM.isWeapon = true
+ITEM.weaponClass = "weapon_stunstick"
+ITEM.weaponType = "Melee"
+```
 
 ---
 
-## Spawning items in the world
+## Example: Ammo item
 
 ```lua
--- Server-side example: spawn an item entity for pickup
-local function SpawnItem(uniqueID, pos, ang)
-    local ent = ents.Create("ax_item")
-    ent:SetItemID(uniqueID)
-    ent:SetPos(pos)
-    ent:SetAngles(ang or Angle(0,0,0))
-    ent:Spawn()
-    return ent
-end
-
--- Usage
-SpawnItem("water_bottle", Vector(0,0,64))
+ITEM.name = "9mm Ammo"
+ITEM.description = "A box of 9mm ammunition, contains 30 rounds."
+ITEM.model = Model("models/items/boxsrounds.mdl")
+ITEM.category = "Ammunition"
+ITEM.weight = 0.3
+ITEM.price = 0
+ITEM.isAmmo = true
+ITEM.ammoType = "pistol"
+ITEM.ammoAmount = 30
 ```
 
-The `ax_item` entity handles networking and persistence for item instances.
+---
+
+
+## Spawning items in the world
+
+Parallax provides robust helpers for spawning items, handling persistence, networking, and entity creation. **Always prefer using these over direct entity creation.**
+
+### Using `ax.item:Spawn`
+
+This is the recommended way to spawn an item in the world:
+
+```lua
+-- Server-side: spawn an item by class at a position and angle
+ax.item:Spawn("water_bottle", Vector(0,0,64), Angle(0,0,0), function(entity, itemObject)
+  print("Spawned item entity:", entity, "with item object:", itemObject)
+end)
+```
+
+**Parameters:**
+- `class` (string): The item class id (derived from the filename without realm prefix, e.g., `sh_water.lua` → `water`)
+- `pos` (Vector): World position
+- `ang` (Angle): World angle
+- `callback` (function): Optional; called with the entity and item object after spawn
+- `data` (table): Optional; extra item data
+
+This function handles database persistence, entity creation, networking, and callback invocation. The spawned entity will be a valid `ax_item` with all item data attached.
+
+### Moving items from inventory to world
+
+To move an item from a player's inventory to the world, use:
+
+```lua
+ax.item:Transfer(item, fromInventoryID, 0, function(success)
+  if success then
+    print("Item dropped to world!")
+  end
+end)
+```
+
+This will handle all logic for removing the item from the inventory, spawning it in the world, and updating persistence/networking.
+
+### Direct entity creation (not recommended)
+
+You can still use direct entity creation for advanced cases, but you must manually set up item data and persistence:
+
+```lua
+local ent = ents.Create("ax_item")
+ent:SetItemID(itemID)
+ent:SetItemClass("water_bottle")
+ent:SetPos(Vector(0,0,64))
+ent:Spawn()
+```
+
+However, this bypasses Parallax's persistence and networking helpers. Use only if you need custom behavior not covered by the framework.
+
+---
+
+The `ax_item` entity handles networking and persistence for item instances. Prefer using `ax.item:Spawn` and `ax.item:Transfer` for all world item operations.
 
 ---
 
 ## Inventory integration
 
-Schemas typically provide an inventory system module. Items are added to or removed from player inventories via schema APIs. For custom behavior, use `ITEM:OnUse`, `ITEM:OnDrop`, and `ITEM:OnPickup`.
+Items are added to or removed from player inventories via schema APIs. For custom behavior, use hooks and actions as described above.
 
 ---
 
 ## Best practices
 
-- Keep `uniqueID` stable; changing it breaks saves and references.
 - Prefer shared (`sh_`) files; branch logic by realm inside methods.
+- Use base items for inheritance and shared logic.
 - Avoid heavy logic in item files; delegate to modules/services.
 - Use `ax.util:PrintDebug` for developer logs and `developer 1` for verbosity.
 - Add LDOC comments on public item methods to populate API docs.
@@ -135,13 +225,7 @@ Schemas typically provide an inventory system module. Items are added to or remo
 ## Troubleshooting
 
 - Item not appearing? Check logs for registration errors and confirm the file lives under a loaded items directory.
-- Use `lua_openscript_cl` / `lua_openscript` to reload during development, or rely on Parallax hot-reload if enabled.
+- Enable verbose debugging:
+  - Run `developer 1` in console to enable Parallax debug output
+  - Run `ax_debug_realm 3` to see both client and server realm logs (`1` = client, `2` = server, `3` = both)
 - Ensure models exist in content addons and paths are correct.
-
----
-
-## See also
-
-- `modules/` for inventory and UI systems
-- `entities/entities/ax_item.lua` for item entity behavior
-- `gamemode/framework/store_factory.lua` for config/options that may affect item behavior (e.g., stack limits)
