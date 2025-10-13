@@ -29,7 +29,9 @@ function PANEL:Init()
     end
 
     -- Now create our own buttons
-    if ( ax.client.axCharacter ) then
+    -- Play button (only show if we have a character)
+    local allowPlay = hook.Run("ShouldCreatePlayButton", self)
+    if ( ax.client.axCharacter and allowPlay != false ) then
         local playButton = self.buttons:Add("ax.button")
         playButton:Dock(TOP)
         playButton:SetText("play")
@@ -38,40 +40,56 @@ function PANEL:Init()
         end
     end
 
-    local createButton = self.buttons:Add("ax.button")
-    createButton:Dock(TOP)
-    createButton:SetText("create")
-    createButton.DoClick = function()
-        self:SlideLeft()
-        parent.create:SlideToFront()
+    -- Create character button
+    local allowCreate = hook.Run("ShouldCreateCreateButton", self)
+    if ( allowCreate != false ) then
+        local createButton = self.buttons:Add("ax.button")
+        createButton:Dock(TOP)
+        createButton:SetText("create")
+        createButton.DoClick = function()
+            self:SlideLeft()
+            parent.create:SlideToFront()
+        end
     end
 
-    local loadButton = self.buttons:Add("ax.button")
-    loadButton:Dock(TOP)
-    loadButton:SetText("load")
-    loadButton.DoClick = function()
-        self:SlideLeft()
-        parent.load:SlideToFront()
+    -- Load character button
+    local allowLoad = hook.Run("ShouldCreateLoadButton", self)
+    if ( allowLoad != false ) then
+        local loadButton = self.buttons:Add("ax.button")
+        loadButton:Dock(TOP)
+        loadButton:SetText("load")
+        loadButton.DoClick = function()
+            self:SlideLeft()
+            parent.load:SlideToFront()
+        end
     end
 
-    local optionsButton = self.buttons:Add("ax.button")
-    optionsButton:Dock(TOP)
-    optionsButton:SetText("options")
-    optionsButton.DoClick = function()
-        self:SlideLeft()
-        parent.options:SlideToFront()
+    -- Options button
+    local allowOptions = hook.Run("ShouldCreateOptionsButton", self)
+    if ( allowOptions != false ) then
+        local optionsButton = self.buttons:Add("ax.button")
+        optionsButton:Dock(TOP)
+        optionsButton:SetText("options")
+        optionsButton.DoClick = function()
+            self:SlideLeft()
+            parent.options:SlideToFront()
+        end
     end
 
-    local disconnectButton = self.buttons:Add("ax.button")
-    disconnectButton:Dock(TOP)
-    disconnectButton:SetText("disconnect")
-    disconnectButton.DoClick = function()
-        Derma_Query("Are you sure you want to disconnect?", "Disconnect",
-            "Yes", function()
-                RunConsoleCommand("disconnect")
-            end,
-            "No", function() end
-        )
+    -- Disconnect button
+    local allowDisconnect = hook.Run("ShouldCreateDisconnectButton", self)
+    if ( allowDisconnect != false ) then
+        local disconnectButton = self.buttons:Add("ax.button")
+        disconnectButton:Dock(TOP)
+        disconnectButton:SetText("disconnect")
+        disconnectButton.DoClick = function()
+            Derma_Query("Are you sure you want to disconnect?", "Disconnect",
+                "Yes", function()
+                    RunConsoleCommand("disconnect")
+                end,
+                "No", function() end
+            )
+        end
     end
 
     -- Now we need to add docking to the bottom of each button
