@@ -200,14 +200,14 @@ if ( SERVER ) then
     end
 else
     function ax.player.meta:EnsurePlayer(callback)
-        local t = self:GetTable()
-        if ( t.axReady ) then
+        local clientTable = self:GetTable()
+        if ( clientTable.axReady ) then
             if ( isfunction(callback) ) then callback(true) end
             return
         end
 
-        t.axEnsureCallbacks = t.axEnsureCallbacks or {}
-        t.axEnsureCallbacks[#t.axEnsureCallbacks + 1] = callback
+        clientTable.axEnsureCallbacks = clientTable.axEnsureCallbacks or {}
+        clientTable.axEnsureCallbacks[#clientTable.axEnsureCallbacks + 1] = callback
     end
 end
 
