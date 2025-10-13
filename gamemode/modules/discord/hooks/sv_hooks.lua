@@ -45,7 +45,7 @@ function MODULE:PlayerSpawnProp(client, model)
     )
 end
 
-concommand.Add("parallax_discord_test", function(client, _, args)
+concommand.Add("ax_discord_test", function(client, _, args)
     if ( IsValid(client) and !client:IsAdmin() ) then return end
 
     local kind = (args and args[1]) or "public"

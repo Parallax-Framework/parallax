@@ -96,7 +96,7 @@ function ax.util:PrintSuccess(...)
 end
 
 local developer = GetConVar("developer")
-local debugRealm = CreateConVar("parallax_debug_realm", "0", {FCVAR_ARCHIVE, FCVAR_REPLICATED}, "Set to 1 to enable debug messages on the client, 2 for server, 3 for both.")
+local debugRealm = CreateConVar("ax_debug_realm", "0", {FCVAR_ARCHIVE, FCVAR_REPLICATED}, "Set to 1 to enable debug messages on the client, 2 for server, 3 for both.")
 
 --- Print a debug message
 -- @param ... any Values to print for debugging
