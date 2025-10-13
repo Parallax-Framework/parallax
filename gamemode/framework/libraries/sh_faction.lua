@@ -114,12 +114,10 @@ end
 
 -- Get a faction by ID, name, or table
 function ax.faction:Get(identifier)
-    if ( isstring(identifier) ) then
-        return self.stored[identifier] or self.instances[identifier]
-    elseif ( isnumber(identifier) ) then
+    if ( isstring(identifier) and self.stored[identifier] ) then
+        return self.stored[identifier]
+    elseif ( isnumber(identifier) and self.instances[identifier] ) then
         return self.instances[identifier]
-    elseif ( istable(identifier) and isnumber(identifier.id) ) then
-        return self.instances[identifier.id]
     end
 
     -- If all fails, run loops
@@ -127,8 +125,6 @@ function ax.faction:Get(identifier)
         if ( isnumber(identifier) and self.instances[i].index == identifier ) then
             return self.instances[i]
         elseif ( isstring(identifier) and ( ax.util:FindString(self.instances[i].name or "", identifier) or ax.util:FindString(self.instances[i].id, identifier) ) ) then
-            return self.instances[i]
-        elseif ( istable(identifier) and isnumber(identifier.id) and self.instances[i].id == identifier.id ) then
             return self.instances[i]
         end
     end
