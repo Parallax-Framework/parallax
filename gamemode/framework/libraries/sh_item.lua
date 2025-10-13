@@ -32,7 +32,7 @@ end
 function ax.item:RefreshItemInstances()
     local refreshedCount = 0
     local errorCount = 0
-    
+
     for instanceID, itemInstance in pairs(self.instances) do
         if ( istable(itemInstance) and itemInstance.class ) then
             local storedItem = self.stored[itemInstance.class]
@@ -50,15 +50,15 @@ function ax.item:RefreshItemInstances()
             end
         end
     end
-    
+
     if ( refreshedCount > 0 ) then
         ax.util:PrintSuccess("Refreshed " .. refreshedCount .. " item instances with updated definitions")
     end
-    
+
     if ( errorCount > 0 ) then
         ax.util:PrintWarning("Failed to refresh " .. errorCount .. " item instances due to missing definitions")
     end
-    
+
     if ( refreshedCount == 0 and errorCount == 0 ) then
         ax.util:PrintDebug("No item instances found to refresh")
     end
@@ -172,10 +172,10 @@ function ax.item:LoadItemsWithInheritance(path)
 
     for i = 1, #directories do
         local dirName = directories[i]
-        
+
         -- Skip the base directory as it's already processed
         if ( dirName == "base" ) then continue end
-        
+
         -- Check if there's a corresponding base item
         local baseItem = ax.item.stored[dirName]
         if ( !istable(baseItem) or !baseItem.isBase ) then
@@ -206,10 +206,10 @@ function ax.item:LoadItemsWithBase(dirPath, baseName, baseItem)
                 -- First check the item itself
                 local val = rawget(t, k)
                 if ( val != nil ) then return val end
-                
+
                 -- Then check the base item
                 if ( baseItem[k] != nil ) then return baseItem[k] end
-                
+
                 -- Finally check the item meta
                 return ax.item.meta[k]
             end
