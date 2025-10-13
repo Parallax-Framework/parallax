@@ -7,13 +7,13 @@ This manual explains how to define items within your schema using Parallax. Item
 
 ## Folder layout & conventions
 
-- **Schema items:** Place in `gamemode/schema/items/` (recommended)
-- **Framework/global items:** Place in `gamemode/items/` (avoid modifying in schemas)
-- **Base items:** Use `base/` subdirectory for inheritance (see below)
-- **Realm prefixes:**
-  - `sh_` for shared
-  - `sv_` for server-only
-  - `cl_` for client-only
+* **Schema items:** Place in `gamemode/schema/items/` (recommended)
+* **Framework/global items:** Place in `gamemode/items/` (avoid modifying in schemas)
+* **Base items:** Use `base/` subdirectory for inheritance (see below)
+* **Realm prefixes:**
+  * `sh_` for shared
+  * `sv_` for server-only
+  * `cl_` for client-only
 
 Parallax auto-includes these directories during boot and hot-reload. Items are loaded in three passes: bases, regular items, and items with inheritance.
 
@@ -63,55 +63,55 @@ ITEM:AddAction("drink", {
 ```
 
 **Tips:**
-- Use shared (`sh_`) files for most items; branch logic by realm inside action handlers (`if SERVER`/`if CLIENT`).
-- Add custom actions for context menu options and advanced behavior.
-- Use the camera field for better UI previews.
-- Parallax registers the `ITEM` table automatically. Use `developer 1` in console to see hot-reload logs and debug output.
+* Use shared (`sh_`) files for most items; branch logic by realm inside action handlers (`if SERVER`/`if CLIENT`).
+* Add custom actions for context menu options and advanced behavior.
+* Use the camera field for better UI previews.
+* Parallax registers the `ITEM` table automatically. Use `developer 1` in console to see hot-reload logs and debug output.
 
 ---
 
 ## Advanced features & patterns
 
 ### Stacking
-- Use `ITEM.shouldStack` (or `ITEM.stackable`) and `ITEM.maxStack` for stackable items.
+* Use `ITEM.shouldStack` (or `ITEM.stackable`) and `ITEM.maxStack` for stackable items.
 
 ### Custom actions
-- Add actions with `ITEM:AddAction("action_name", { ... })`.
-- Actions support `name`, `description`, `icon`, `OnRun`, and `CanUse`.
+* Add actions with `ITEM:AddAction("action_name", { ... })`.
+* Actions support `name`, `description`, `icon`, `OnRun`, and `CanUse`.
   See the minimal item example above for a complete action definition (with `OnRun` and `CanUse`).
 
 ### Camera configuration
-- `ITEM.camera = { pos, ang, fov }` customizes UI preview.
+* `ITEM.camera = { pos, ang, fov }` customizes UI preview.
 
 ### Weapon & ammo integration
-- Weapons: `ITEM.isWeapon`, `ITEM.weaponClass`, `ITEM.weaponType`
-- Ammo: `ITEM.isAmmo`, `ITEM.ammoType`, `ITEM.ammoAmount`
-- Use actions for equip/unequip/use logic.
+* Weapons: `ITEM.isWeapon`, `ITEM.weaponClass`, `ITEM.weaponType`
+* Ammo: `ITEM.isAmmo`, `ITEM.ammoType`, `ITEM.ammoAmount`
+* Use actions for equip/unequip/use logic.
 
 ### Inheritance & base items
-- Place base items in `base/` (e.g., `base/sh_weapons.lua`).
-- Items in subdirectories (e.g., `items/weapons/`) inherit from their base.
-- Override fields and methods as needed.
+* Place base items in `base/` (e.g., `base/sh_weapons.lua`).
+* Items in subdirectories (e.g., `items/weapons/`) inherit from their base.
+* Override fields and methods as needed.
 
 ### Hooks & methods
-- Use `ITEM:AddAction(name, def)` to define behavior entries with `OnRun` and `CanUse`.
-- A default `drop` action is provided by the framework; schemas can add more.
-- Framework-level item methods are available via the item meta (see internals), but per-item behavior should be implemented through actions.
+* Use `ITEM:AddAction(name, def)` to define behavior entries with `OnRun` and `CanUse`.
+* A default `drop` action is provided by the framework; schemas can add more.
+* Framework-level item methods are available via the item meta (see internals), but per-item behavior should be implemented through actions.
 
 ### Custom fields
-- Add arbitrary fields for schema-specific logic (e.g., `camera`, `weaponClass`).
+* Add arbitrary fields for schema-specific logic (e.g., `camera`, `weaponClass`).
 
 ---
 
 ## Required & recommended fields
 
-- `name` (string): Display name
-- `description` (string)
-- `category` (string): For filters/UI grouping
-- `model` (string): World/inventory model
-- `weight` (number): For inventory systems
-- `shouldStack`/`stackable` (boolean) and `maxStack` (number)
-- `price` (number): For trading/UI listings
+* `name` (string): Display name
+* `description` (string)
+* `category` (string): For filters/UI grouping
+* `model` (string): World/inventory model
+* `weight` (number): For inventory systems
+* `shouldStack`/`stackable` (boolean) and `maxStack` (number)
+* `price` (number): For trading/UI listings
 
 ---
 
@@ -164,11 +164,11 @@ end)
 ```
 
 **Parameters:**
-- `class` (string): The item class id (derived from the filename without realm prefix, e.g., `sh_water.lua` → `water`)
-- `pos` (Vector): World position
-- `ang` (Angle): World angle
-- `callback` (function): Optional; called with the entity and item object after spawn
-- `data` (table): Optional; extra item data
+* `class` (string): The item class id (derived from the filename without realm prefix, e.g., `sh_water.lua` → `water`)
+* `pos` (Vector): World position
+* `ang` (Angle): World angle
+* `callback` (function): Optional; called with the entity and item object after spawn
+* `data` (table): Optional; extra item data
 
 This function handles database persistence, entity creation, networking, and callback invocation. The spawned entity will be a valid `ax_item` with all item data attached.
 
@@ -214,18 +214,18 @@ Items are added to or removed from player inventories via schema APIs. For custo
 
 ## Best practices
 
-- Prefer shared (`sh_`) files; branch logic by realm inside methods.
-- Use base items for inheritance and shared logic.
-- Avoid heavy logic in item files; delegate to modules/services.
-- Use `ax.util:PrintDebug` for developer logs and `developer 1` for verbosity.
-- Add LDOC comments on public item methods to populate API docs.
+* Prefer shared (`sh_`) files; branch logic by realm inside methods.
+* Use base items for inheritance and shared logic.
+* Avoid heavy logic in item files; delegate to modules/services.
+* Use `ax.util:PrintDebug` for developer logs and `developer 1` for verbosity.
+* Add LDOC comments on public item methods to populate API docs.
 
 ---
 
 ## Troubleshooting
 
-- Item not appearing? Check logs for registration errors and confirm the file lives under a loaded items directory.
-- Enable verbose debugging:
-  - Run `developer 1` in console to enable Parallax debug output
-  - Run `ax_debug_realm 3` to see both client and server realm logs (`1` = client, `2` = server, `3` = both)
-- Ensure models exist in content addons and paths are correct.
+* Item not appearing? Check logs for registration errors and confirm the file lives under a loaded items directory.
+* Enable verbose debugging:
+  * Run `developer 1` in console to enable Parallax debug output
+  * Run `ax_debug_realm 3` to see both client and server realm logs (`1` = client, `2` = server, `3` = both)
+* Ensure models exist in content addons and paths are correct.
