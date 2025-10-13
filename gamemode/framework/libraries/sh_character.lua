@@ -41,7 +41,7 @@ function ax.character:GetVar(char, name, fallback)
     return char.vars[name] == nil and fallback or char.vars[name]
 end
 
-function ax.character:SetVar(char, name, value, isNetworked, recipients)
+function ax.character:SetVar(char, name, value, bNoNetworking, recipients)
     local varTable = ax.character.vars[name]
     if ( !istable(varTable) ) then
         ax.util:PrintError("Invalid character variable name provided to ax.character:SetVar()")
@@ -49,7 +49,7 @@ function ax.character:SetVar(char, name, value, isNetworked, recipients)
     end
 
     if ( isfunction(varTable.changed) ) then
-        local success, err = pcall(varTable.changed, char, value, isNetworked, recipients)
+        local success, err = pcall(varTable.changed, char, value, bNoNetworking, recipients)
         if ( !success ) then
             ax.util:PrintError("Error occurred in character variable changed callback:", err)
             return
@@ -63,7 +63,7 @@ function ax.character:SetVar(char, name, value, isNetworked, recipients)
     char.vars[name] = value
 
     -- Skip networking for bot characters since they don't need client-side updates
-    if ( SERVER and isNetworked and !char.isBot ) then
+    if ( SERVER and !bNoNetworking and !char.isBot ) then
         net.Start("ax.character.var")
             net.WriteUInt(char:GetID(), 32)
             net.WriteString(name)
@@ -126,22 +126,22 @@ function ax.character:RegisterVar(name, data)
 
     if ( !data.bNoSetter ) then
         local nameSet = "Set" .. prettyName
-        ax.character.meta[nameSet] = function(char, value, isNetworked, recipients)
+        ax.character.meta[nameSet] = function(char, value, bNoNetworking, recipients)
             if ( isfunction(data.Set) ) then
                 if ( !istable(char.vars) ) then char.vars = {} end
 
-                data:Set(char, value, isNetworked, recipients)
+                data:Set(char, value, bNoNetworking, recipients)
 
                 -- Call changed callback if present
                 if ( isfunction(data.changed) ) then
                     -- Protect the callback to avoid crashes
-                    local success, err = pcall(data.changed, char, value, isNetworked, recipients)
+                    local success, err = pcall(data.changed, char, value, bNoNetworking, recipients)
                     if ( !success ) then
                         ax.util:PrintError("Error occurred in character variable changed callback:", err)
                     end
                 end
             else
-                ax.character:SetVar(char, name, value, isNetworked, recipients)
+                ax.character:SetVar(char, name, value, bNoNetworking, recipients)
             end
         end
     end
