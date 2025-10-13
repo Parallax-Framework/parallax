@@ -12,7 +12,7 @@
 --- Utility helpers used across the Parallax framework (printing, file handling, text utilities, etc.).
 -- @module ax.util
 
---- User and character finder utilities for Parallax Framework.
+--- User and character finder utilities.
 -- @section find_utilities
 
 --- Find a specific piece of text within a larger body of text (case-insensitive).

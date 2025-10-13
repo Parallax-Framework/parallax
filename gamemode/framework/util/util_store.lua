@@ -12,7 +12,7 @@
 --- Utility helpers used across the Parallax framework (printing, file handling, text utilities, etc.).
 -- @module ax.util
 
---- Store factory utilities for Parallax Framework.
+--- Store factory utilities.
 -- Provides a canonical pattern for creating configurable stores used by
 -- config (server→client broadcast settings) and option (client→server
 -- preferences). Stores support registration, defaults, persistence, and

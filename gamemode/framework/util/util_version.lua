@@ -12,7 +12,7 @@
 --- Utility helpers used across the Parallax framework (printing, file handling, text utilities, etc.).
 -- @module ax.util
 
---- Versioning utilities for Parallax Framework.
+--- Versioning utilities.
 -- @section version_utilities
 
 --- Internal: read parallax-version.json from GAME or DATA and parse

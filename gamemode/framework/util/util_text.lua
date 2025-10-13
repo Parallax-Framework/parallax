@@ -12,7 +12,7 @@
 --- Utility helpers used across the Parallax framework (printing, file handling, text utilities, etc.).
 -- @module ax.util
 
---- Text utilities for Parallax Framework.
+--- Text utilities.
 -- @section text_utilities
 
 --- Cap text to a maximum number of characters, adding ellipsis when trimmed.

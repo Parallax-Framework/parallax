@@ -12,7 +12,7 @@
 --- Utility helpers used across the Parallax framework (printing, file handling, text utilities, etc.).
 -- @module ax.util
 
---- Printing and logging helpers for Parallax Framework.
+--- Printing and logging helpers.
 -- @section print_utilities
 
 --- Prepares a package of arguments for printing (converts entities to readable values).

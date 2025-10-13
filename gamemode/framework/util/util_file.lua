@@ -12,7 +12,7 @@
 --- Utility helpers used across the Parallax framework (printing, file handling, text utilities, etc.).
 -- @module ax.util
 
---- File and JSON helpers for Parallax Framework.
+--- File and JSON helpers.
 -- @section file_utilities
 
 --- Detects the realm of a file based on its name.
