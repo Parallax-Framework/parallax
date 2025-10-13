@@ -4,7 +4,8 @@ on:
   push:
     branches: [ main ]
     paths:
-      - gamemode/**      # tweak to your tree
+      - gamemode/**
+      - manuals/**
       - config.ld
       - ldoc.css
       - .github/workflows/docs.yml
