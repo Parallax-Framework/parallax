@@ -10,6 +10,7 @@ style = true -- looks for ldoc.css next to this config (drop your overrides here
 format = "markdown" -- optional; LDoc will fall back if a parser isn't installed
 
 -- input: scan your gamemode, skip vendored libs
+topics = "manuals"
 file = {
   "gamemode",
   exclude = {
