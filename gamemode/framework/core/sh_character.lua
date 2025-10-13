@@ -78,7 +78,11 @@ ax.character:RegisterVar("faction", {
         local buttonWidth = ScreenScale(256)
         for i = 1, #factions do
             local v = factions[i]
-            if ( !ax.faction:CanBecome(v.index, ax.client) ) then continue end
+            local can, reason = ax.faction:CanBecome(v.index, ax.client)
+            if ( !can ) then
+                ax.util:PrintDebug("Not showing faction '" .. v.name .. "' in selection: " .. reason)
+                continue
+            end
 
             local name = (v.name and string.upper(v.name)) or "UNKNOWN FACTION"
             local description = (v.description and string.upper(v.description)) or "UNKNOWN FACTION DESCRIPTION"
