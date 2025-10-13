@@ -8,6 +8,7 @@ description = "Documentation for the Parallax framework"
 dir = "public"
 style = true -- looks for ldoc.css next to this config (drop your overrides here)
 format = "markdown" -- optional; LDoc will fall back if a parser isn't installed
+use_markdown_titles = true
 
 -- input: scan your gamemode, skip vendored libs
 topics = "manuals"
@@ -24,7 +25,8 @@ merge = true -- merge files that declare the same @module
 -- parsing / presentation
 boilerplate         = true   -- ignore leading license banners
 all                 = true   -- include locals/private for full API surface
-sort                = false  -- keep source order; set true for alpha
+sort                = true   -- keep source order; set true for alpha
+sort_modules        = true  -- sort modules alphabetically in nav
 backtick_references = true   -- turn `like.this` into links when possible
 readme              = "README.md" -- include a project README at the top
 
