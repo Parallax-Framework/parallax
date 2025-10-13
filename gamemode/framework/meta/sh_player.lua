@@ -115,23 +115,23 @@ if ( SERVER ) then
     end
 
     function ax.player.meta:Save()
-        local t = self:GetTable()
-        if ( !istable(t.vars.data) ) then t.vars.data = {} end
+        local clientTable = self:GetTable()
+        if ( !istable(clientTable.axVars.data) ) then clientTable.axVars.data = {} end
 
         -- Build an update query for the players table using the registered schema
         local query = mysql:Update("ax_players")
         query:Where("steamid64", self:SteamID64())
 
         -- Ensure the data table exists and always save it as JSON
-        query:Update("data", util.TableToJSON(t.vars.data or {}))
+        query:Update("data", util.TableToJSON(clientTable.axVars.data or {}))
 
         -- Iterate registered vars and persist fields that declare a database column
         for name, meta in pairs(ax.player.vars or {}) do
             if ( istable(meta) and meta.field ) then
                 local val = nil
 
-                if ( istable(t.vars) ) then
-                    val = t.vars[name]
+                if ( istable(clientTable.axVars) ) then
+                    val = clientTable.axVars[name]
                 end
 
                 -- Fall back to default if not present
