@@ -14,7 +14,6 @@ use_markdown_titles = true
 topics = "manuals"
 file = {
   "gamemode",
-  "manuals",
   exclude = {
     "gamemode/framework/libraries/thirdparty",
   }
