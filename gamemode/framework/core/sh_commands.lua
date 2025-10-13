@@ -247,7 +247,8 @@ ax.command:Add("PlyWhitelist", {
         if ( factionTable.isDefault ) then return "This faction does not require whitelisting." end
 
         local whitelists = target:GetData("whitelists", {})
-        whitelists[factionTable.index] = true
+        whitelists[factionTable.id] = true
+
         target:SetData("whitelists", whitelists)
         target:Save()
 
@@ -269,7 +270,8 @@ ax.command:Add("PlyUnWhitelist", {
         if ( factionTable.isDefault ) then return "This faction does not require whitelisting." end
 
         local whitelists = target:GetData("whitelists", {})
-        whitelists[factionTable.index] = nil
+        whitelists[factionTable.id] = nil
+
         target:SetData("whitelists", whitelists)
         target:Save()
 

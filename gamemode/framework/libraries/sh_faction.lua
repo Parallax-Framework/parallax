@@ -137,8 +137,12 @@ function ax.faction:Get(identifier)
 end
 
 -- Check if a faction can be joined
-function ax.faction:CanBecome(faction, client)
-    local factionTable = self:Get(faction)
+function ax.faction:CanBecome(identifier, client)
+    local factionTable = self:Get(identifier)
+    if ( !factionTable ) then
+        return false, "That faction does not exist."
+    end
+
     local try, catch = hook.Run("CanBecomeFaction", factionTable, client)
     if ( try == false and isstring(catch) and #catch > 0 ) then
         return try, catch

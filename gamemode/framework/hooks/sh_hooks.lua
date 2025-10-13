@@ -40,8 +40,9 @@ function GM:OnReloaded()
 end
 
 function GM:CanBecomeFaction(factionTable, client)
-    local whitelists = client:GetData( "whitelists", {} )
-    if ( !factionTable.isDefault and !whitelists[ factionTable.index ] ) then
+    local whitelists = client:GetData("whitelists", {})
+    print("Checking faction:", factionTable.id, "isDefault:", factionTable.isDefault)
+    if ( !factionTable.isDefault and !whitelists[factionTable.id] ) then
         return false, "You are not whitelisted for this faction."
     end
 
