@@ -150,7 +150,7 @@ function GM:PlayerInitialSpawn(client)
     if ( client:IsBot() ) then
         if ( ax.config:Get("botSupport", true) ) then
             ax.util:PrintDebug("Bot detected: " .. client:SteamName() .. ", creating character automatically...")
-            
+
             -- Small delay to ensure faction system is ready
             timer.Simple(0.1, function()
                 if ( IsValid(client) ) then
@@ -160,7 +160,7 @@ function GM:PlayerInitialSpawn(client)
         else
             ax.util:PrintDebug("Bot detected but bot support is disabled: " .. client:SteamName())
         end
-        
+
         return -- Skip normal player initialization for bots
     end
 
@@ -180,7 +180,7 @@ end
 
 function GM:PlayerDisconnected(client)
     local steamID64 = client:SteamID64()
-    
+
     -- Clean up bot characters from memory
     if ( client:IsBot() ) then
         local character = client:GetCharacter()
@@ -189,10 +189,10 @@ function GM:PlayerDisconnected(client)
             ax.util:PrintDebug("Cleaned up temporary bot character: " .. (character:GetName() or "Unknown"))
         end
     end
-    
+
     -- Clean up timers and other player data
     timer.Remove("ax.player.save." .. steamID64)
-    
+
     if ( client:GetTable().axJoinTime ) then
         client:GetTable().axJoinTime = nil
     end
@@ -213,6 +213,8 @@ function GM:StartCommand(client, userCmd)
     if ( AX_CLIENT_QUEUE[steamID64] and !userCmd:IsForced() ) then
         AX_CLIENT_QUEUE[steamID64] = nil
 
+        ax.util:PrintDebug("Client " .. steamID64 .. " has sent full update request, initializing player...")
+
         client:EnsurePlayer(function(ok)
             if ( !ok ) then
                 ax.util:PrintError("Proceeding despite player DB ensure failure for " .. steamID64)
@@ -227,17 +229,23 @@ function GM:StartCommand(client, userCmd)
                     end
 
                     local data = result[1]
-                    client:GetTable().axData = util.JSONToTable(data.data) or {}
+                    for k, v in pairs(ax.player.vars) do
+                        local field = v.field
+                        local var = data[field] or v.default
 
-                    client:SetPlayTime(tonumber(data.play_time) or 0)
-                    client:SetLastJoin(tonumber(data.last_join) or os.time())
-                    client:SetLastLeave(tonumber(data.last_leave) or 0)
+                        if ( v.field == "data" ) then
+                            var = util.JSONToTable(var) or v.default or {}
+                        end
+
+                        ax.player:SetVar(client, k, var)
+                    end
+
+                    client:SetNameVar(client:SteamName()) -- Update the steam name in db
+                    client:SetLastJoin(os.time())
 
                     ax.util:PrintDebug("Loaded player data for " .. steamID64)
                 end)
             query:Execute()
-
-            client:SetLastJoin(os.time(), true, client)
 
             ax.character:Restore(client, function(characters)
                 hook.Run("PlayerReady", client)
@@ -293,7 +301,6 @@ function GM:ShutDown() -- PlayerDisconnected isn't called on p2p/singleplayer
 
             client:SetLastLeave(os.time())
             client:SetPlayTime(playtime)
-
             client:Save()
         end
     end
@@ -320,7 +327,6 @@ function GM:PlayerDisconnected(client)
 
     client:SetLastLeave(os.time())
     client:SetPlayTime(playtime)
-
     client:Save()
 
     local steamID64 = client:SteamID64()
