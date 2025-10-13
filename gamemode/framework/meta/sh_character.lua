@@ -66,11 +66,11 @@ function character:GetClassData()
     return ax.class:Get(self.vars.class)
 end
 
-function character:HasFlags( flags )
-    local data = self:GetData( "flags", "" )
+function character:HasFlags(flags)
+    local data = self:GetData("flags", "")
     for i = 1, #flags do
-        local letter = flags[ i ]
-        if ( !ax.util:FindString( data, letter ) ) then
+        local letter = flags[i]
+        if ( !ax.util:FindString(data, letter) ) then
             return false
         end
     end
@@ -79,84 +79,84 @@ function character:HasFlags( flags )
 end
 
 if ( SERVER ) then
-    function character:GiveFlags( flags )
+    function character:GiveFlags(flags)
         if ( !isstring(flags) or #flags < 1 ) then return end
 
         for i = 1, #flags do
-            local letter = flags[ i ]
-            local flagData = ax.flag:Get( letter )
-            if ( !istable( flagData ) ) then continue end
+            local letter = flags[i]
+            local flagData = ax.flag:Get(letter)
+            if ( !istable(flagData) ) then continue end
 
-            if ( self:HasFlags( letter ) ) then continue end
+            if ( self:HasFlags(letter) ) then continue end
 
-            self:SetData( "flags", self:GetData( "flags", "" ) .. letter )
+            self:SetData("flags", self:GetData("flags", "") .. letter)
             self:Save()
 
-            if ( isfunction( flagData.OnGiven ) ) then
-                flagData:OnGiven( self )
+            if ( isfunction(flagData.OnGiven) ) then
+                flagData:OnGiven(self)
             end
 
-            hook.Run( "CharacterFlagGiven", self, letter )
+            hook.Run("CharacterFlagGiven", self, letter)
         end
     end
 
-    function character:TakeFlags( flags )
+    function character:TakeFlags(flags)
         if ( !isstring(flags) or #flags < 1 ) then return end
 
         for i = 1, #flags do
-            local letter = flags[ i ]
-            local flagData = ax.flag:Get( letter )
-            if ( !istable( flagData ) ) then continue end
+            local letter = flags[i]
+            local flagData = ax.flag:Get(letter)
+            if ( !istable(flagData) ) then continue end
 
-            if ( !self:HasFlags( letter ) ) then continue end
+            if ( !self:HasFlags(letter) ) then continue end
 
-            local newFlags = self:GetData( "flags", "" )
-            newFlags = string.Replace( newFlags, letter, "" )
+            local newFlags = self:GetData("flags", "")
+            newFlags = string.Replace(newFlags, letter, "")
 
-            self:SetData( "flags", newFlags )
+            self:SetData("flags", newFlags)
             self:Save()
 
-            if ( isfunction( flagData.OnTaken ) ) then
-                flagData:OnTaken( self )
+            if ( isfunction(flagData.OnTaken) ) then
+                flagData:OnTaken(self)
             end
 
-            hook.Run( "CharacterFlagTaken", self, letter )
+            hook.Run("CharacterFlagTaken", self, letter)
         end
     end
 
-    function character:SetFlags( flags )
+    function character:SetFlags(flags)
         if ( !isstring(flags) ) then return end
 
-        local concantecated = table.concat( string.Explode( "", flags ) )
+        local concatenated = table.concat(string.Explode("", flags))
 
-        local current = self:GetData( "flags", "" )
+        local current = self:GetData("flags", "")
         for i = 1, #current do
-            local letter = current[ i ]
-            if ( ax.util:FindString( concantecated, letter ) ) then continue end
+            local letter = current[i]
+            if ( ax.util:FindString(concatenated, letter) ) then continue end
 
-            local flagData = ax.flag:Get( letter )
-            if ( !istable( flagData ) ) then continue end
+            local flagData = ax.flag:Get(letter)
+            if ( !istable(flagData) ) then continue end
 
-            if ( isfunction( flagData.OnTaken ) ) then
-                flagData:OnTaken( self )
+            if ( isfunction(flagData.OnTaken) ) then
+                flagData:OnTaken(self)
             end
 
-            hook.Run( "CharacterFlagTaken", self, letter )
+            hook.Run("CharacterFlagTaken", self, letter)
         end
 
-        self:SetData( "flags", concantecated )
+        self:SetData("flags", concatenated)
         self:Save()
 
-        for i = 1, #concantecated do
-            local letter = concantecated[i]
-            local flagData = ax.flag:Get( letter )
-            if ( !istable( flagData ) ) then continue end
+        for i = 1, #concatenated do
+            local letter = concatenated[i]
+            local flagData = ax.flag:Get(letter)
+            if ( !istable(flagData) ) then continue end
 
-            if ( isfunction( flagData.OnGiven ) ) then
-                flagData:OnGiven( self )
+            if ( isfunction(flagData.OnGiven) ) then
+                flagData:OnGiven(self)
             end
 
-            hook.Run( "CharacterFlagGiven", self, letter )
+            hook.Run("CharacterFlagGiven", self, letter)
         end
     end
 
