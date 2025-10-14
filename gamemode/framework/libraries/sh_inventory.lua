@@ -9,6 +9,10 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
+--- Inventory management system for creating, storing, and retrieving inventory data.
+-- Supports item storage, weight limits, and synchronization between server and clients.
+-- @module ax.inventory
+
 ax.inventory = ax.inventory or {}
 ax.inventory.meta = ax.inventory.meta or {}
 ax.inventory.instances = ax.inventory.instances or {}
