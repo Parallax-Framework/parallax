@@ -9,6 +9,10 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
+--- Chat system for registering chat types with commands, permissions, and custom formatting.
+-- Supports message preprocessing with shortcuts, capitalization, and punctuation normalization.
+-- @module ax.chat
+
 ax.chat = ax.chat or {}
 ax.chat.registry = ax.chat.registry or {}
 
