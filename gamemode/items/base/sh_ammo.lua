@@ -27,6 +27,7 @@ ITEM:AddAction("use", {
 
         client:GiveAmmo(ammoAmount, ammoType)
         client:Notify("You have used the item: " .. item:GetName() .. " and gained " .. ammoAmount .. " " .. ammoType .. " ammo.", "info")
+
         return true -- Returning true removes the item after use
     end,
     CanUse = function(action, item, client)
