@@ -13,6 +13,8 @@
 -- Adapted from the Helix framework with modifications for the Parallax framework.
 -- @module ax.type
 
+--- List of supported types with their corresponding IDs.
+-- @table ax.type
 ax.type = ax.type or {
     [1]         = "string",
     [2]         = "text",
