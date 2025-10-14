@@ -264,7 +264,7 @@ function ax.util:CreateStore(spec)
         local result = {}
 
         for key, entry in pairs(store.registry) do
-            local category = entry.data.category or "General"
+            local category = entry.data.category or "general"
             result[category] = true
         end
 
