@@ -11,6 +11,10 @@
 
 include("shared.lua")
 
+function SWEP:Initialize()
+    self:SetHoldType(self.HoldType or "pistol")
+end
+
 SWEP.BobScale = 0 -- Disable default gmod bobbing
 SWEP.SwayScale = 0 -- Disable default gmod swaying
 
