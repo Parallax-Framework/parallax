@@ -9,6 +9,9 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
+--- Command library for registering and executing commands.
+-- @module ax.command
+
 ax.command = ax.command or {}
 ax.command.registry = {}
 ax.command.prefixes = ax.command.prefixes or {"/", "!"}
