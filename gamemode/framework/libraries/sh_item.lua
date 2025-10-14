@@ -72,6 +72,7 @@ function ax.item:Include(path)
 end
 
 -- Helper function to create default drop action for items
+local success, reason -- No idea why glualint is being weird about this
 function ax.item:CreateDefaultDropAction()
     return {
         name = "Drop",
@@ -94,7 +95,7 @@ function ax.item:CreateDefaultDropAction()
                 return false
             end
 
-            local success, reason = ax.item:Transfer(item, inventoryID, 0, function(success)
+            success, reason = ax.item:Transfer(item, inventoryID, 0, function(_)
                 if ( success ) then
                     ax.util:PrintDebug(color_success, string.format(
                         "Player %s dropped item %s from inventory %s to world inventory.",
