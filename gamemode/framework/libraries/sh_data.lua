@@ -13,7 +13,6 @@
 -- Stores files under the Garry's Mod `data/` folder with options for
 -- global, project, or map-scoped storage. Returns cached values by
 -- default and supports human-readable JSON output.
--- @realm shared
 -- @module ax.data
 
 ax.data = ax.data or {}
