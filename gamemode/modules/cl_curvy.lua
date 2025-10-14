@@ -4,14 +4,14 @@ MODULE.Name = "Curvy"
 MODULE.Description = "Adds a curvy visual style to HUD elements."
 MODULE.Author = "Riggs"
 
-ax.option:Add("curvyEnabled", ax.type.bool, true, { category = "curvy", description = "Enable or disable the curvy visual effect entirely." })
-ax.option:Add("curvyCurveAmount", ax.type.number, 64, { category = "curvy", subCategory = "appearance", min = 0, max = 256, decimals = 0, description = "Controls how curved the screen appears. Higher values = more curve." })
-ax.option:Add("curvySegments", ax.type.number, 256, { category = "curvy", subCategory = "performance", min = 16, max = 512, decimals = 0, description = "Number of segments used to create the curve. Higher = smoother but slower." })
-ax.option:Add("curvyDynamicLOD", ax.type.bool, true, { category = "curvy", subCategory = "performance", description = "Automatically reduce curve segments when FPS is low." })
-ax.option:Add("curvyHUDOnly", ax.type.bool, false, { category = "curvy", subCategory = "appearance", description = "Only apply curve effect to HUD elements, not post-render effects." })
-ax.option:Add("curvyIntensityScale", ax.type.number, 1.0, { category = "curvy", subCategory = "appearance", min = 0.1, max = 2.0, decimals = 1, description = "Global intensity multiplier for all curve effects." })
-ax.option:Add("curvyFrameSkipThreshold", ax.type.number, 30, { category = "curvy", subCategory = "performance", min = 15, max = 60, decimals = 0, description = "FPS threshold below which frame skipping begins." })
-ax.option:Add("curvyMaxFrameSkip", ax.type.number, 2, { category = "curvy", subCategory = "performance", min = 1, max = 5, decimals = 0, description = "Maximum number of frames to skip in a row when FPS is low." })
+ax.option:Add("curvyEnabled", ax.type.bool, true, { category = "visual", subCategory = "curvy", description = "Enable or disable the curvy visual effect entirely." })
+ax.option:Add("curvyCurveAmount", ax.type.number, 64, { category = "visual", subCategory = "curvy", min = 0, max = 256, decimals = 0, description = "Controls how curved the screen appears. Higher values = more curve." })
+ax.option:Add("curvySegments", ax.type.number, 256, { category = "visual", subCategory = "curvy", min = 16, max = 512, decimals = 0, description = "Number of segments used to create the curve. Higher = smoother but slower." })
+ax.option:Add("curvyDynamicLOD", ax.type.bool, true, { category = "visual", subCategory = "curvy", description = "Automatically reduce curve segments when FPS is low." })
+ax.option:Add("curvyHUDOnly", ax.type.bool, false, { category = "visual", subCategory = "curvy", description = "Only apply curve effect to HUD elements, not post-render effects." })
+ax.option:Add("curvyIntensityScale", ax.type.number, 1.0, { category = "visual", subCategory = "curvy", min = 0.1, max = 2.0, decimals = 1, description = "Global intensity multiplier for all curve effects." })
+ax.option:Add("curvyFrameSkipThreshold", ax.type.number, 30, { category = "visual", subCategory = "curvy", min = 15, max = 60, decimals = 0, description = "FPS threshold below which frame skipping begins." })
+ax.option:Add("curvyMaxFrameSkip", ax.type.number, 2, { category = "visual", subCategory = "curvy", min = 1, max = 5, decimals = 0, description = "Maximum number of frames to skip in a row when FPS is low." })
 
 ax.curvy = ax.curvy or {}
 

@@ -1,1 +1,1 @@
-ax.option:Add("adminESP", ax.type.bool, false, { category = "admin", description = "Enable or disable admin ESP." })
+ax.option:Add("adminESP", ax.type.bool, false, { category = "admin", subCategory = "tools", description = "Enable or disable admin ESP." })

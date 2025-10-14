@@ -260,28 +260,30 @@ function GM:HUDPaintCurvy(width, height, client, isCurved)
         local barWidth, barHeight = ScreenScale(64), ScreenScaleH(8)
         local barX, barY = ScreenScale(8), ScreenScaleH(8) + barHeight / 2
 
-        -- Draw health icon
-        ax.render.DrawMaterial(0, barX, barY - barHeight / 2, barHeight * 2, barHeight * 2, healthColor, healthIcon)
-        barX = barX + barHeight * 2 + ScreenScale(4)
+        -- Draw health icon and bar if enabled
+        if ( ax.option:Get("hudShowHealthBar", true) ) then
+            ax.render.DrawMaterial(0, barX, barY - barHeight / 2, barHeight * 2, barHeight * 2, healthColor, healthIcon)
+            barX = barX + barHeight * 2 + ScreenScale(4)
 
-        -- Draw health bar background
-        ax.render.Draw(barHeight, barX, barY, barWidth, barHeight, Color(0, 0, 0, 150))
+            -- Draw health bar background
+            ax.render.Draw(barHeight, barX, barY, barWidth, barHeight, Color(0, 0, 0, 150))
 
-        -- Interpolated health value for smooth transitions
-        local targetHealth = math.Clamp(client:Health(), 0, 100)
-        client._axCurvyHealth = client._axCurvyHealth or targetHealth
-        client._axCurvyHealth = Lerp(math.Clamp(FrameTime() * 10, 0, 1), client._axCurvyHealth, targetHealth)
+            -- Interpolated health value for smooth transitions
+            local targetHealth = math.Clamp(client:Health(), 0, 100)
+            client._axCurvyHealth = client._axCurvyHealth or targetHealth
+            client._axCurvyHealth = Lerp(math.Clamp(FrameTime() * 10, 0, 1), client._axCurvyHealth, targetHealth)
 
-        local healthFraction = client._axCurvyHealth / 100
-        local fillWidth = math.max(0, barWidth * healthFraction - ScreenScale(2))
+            local healthFraction = client._axCurvyHealth / 100
+            local fillWidth = math.max(0, barWidth * healthFraction - ScreenScale(2))
 
-        -- Draw health bar fill using interpolated value
-        ax.render.Draw(barHeight, barX + ScreenScale(1), barY + ScreenScaleH(1), fillWidth, barHeight - ScreenScaleH(2), healthColor)
+            -- Draw health bar fill using interpolated value
+            ax.render.Draw(barHeight, barX + ScreenScale(1), barY + ScreenScaleH(1), fillWidth, barHeight - ScreenScaleH(2), healthColor)
 
-        -- Draw armor icon and bar if player has armor
-        if ( client:Armor() > 0 ) then
             barX = barX + barWidth + ScreenScale(8)
+        end
 
+        -- Draw armor icon and bar if player has armor and armor bars are enabled
+        if ( client:Armor() > 0 and ax.option:Get("hudShowArmorBar", true) ) then
             ax.render.DrawMaterial(0, barX, barY - barHeight / 2, barHeight * 2, barHeight * 2, armorColor, armorIcon)
             barX = barX + barHeight * 2 + ScreenScale(4)
 

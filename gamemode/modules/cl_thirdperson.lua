@@ -4,12 +4,12 @@ MODULE.Name = "Third Person"
 MODULE.Description = "Adds third-person camera functionality to the gamemode."
 MODULE.Author = "Riggs"
 
-ax.config:Add("thirdperson", ax.type.bool, true, { category = "camera", subCategory = "thirdPerson" })
-ax.option:Add("thirdperson", ax.type.bool, false, { category = "camera", subCategory = "thirdPerson" })
-ax.option:Add("thirdpersonX", ax.type.number, 25, { category = "camera", subCategory = "thirdPerson" })
-ax.option:Add("thirdpersonY", ax.type.number, 0, { category = "camera", subCategory = "thirdPerson" })
-ax.option:Add("thirdpersonZ", ax.type.number, -50, { category = "camera", subCategory = "thirdPerson" })
-ax.option:Add("thirdpersonFollowHead", ax.type.bool, true, { category = "camera", subCategory = "thirdPerson", description = "Make the third-person camera follow the player's model head movements." })
+ax.config:Add("thirdperson", ax.type.bool, true, { category = "camera", subCategory = "thirdperson" })
+ax.option:Add("thirdperson", ax.type.bool, false, { category = "camera", subCategory = "thirdperson" })
+ax.option:Add("thirdpersonX", ax.type.number, 25, { category = "camera", subCategory = "thirdperson" })
+ax.option:Add("thirdpersonY", ax.type.number, 0, { category = "camera", subCategory = "thirdperson" })
+ax.option:Add("thirdpersonZ", ax.type.number, -50, { category = "camera", subCategory = "thirdperson" })
+ax.option:Add("thirdpersonFollowHead", ax.type.bool, true, { category = "camera", subCategory = "thirdperson", description = "Make the third-person camera follow the player's model head movements." })
 
 local FIXED_RADIUS = 6
 

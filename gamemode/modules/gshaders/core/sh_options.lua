@@ -29,10 +29,10 @@ local shaderConVars = {
 for _, shader in ipairs(shaderConVars) do
     local convar = GetConVar(shader.name)
     if ( convar ) then
-        ax.option:Add(shader.option, ax.type.bool, false, { 
-            category = "shaders", 
-            subCategory = shader.subCat, 
-            description = shader.desc 
+        ax.option:Add(shader.option, ax.type.bool, false, {
+            category = "visual",
+            subCategory = "shaders",
+            description = shader.desc
         })
         ax.util:PrintDebug("Created shader option: " .. shader.option .. " for convar: " .. shader.name)
     else

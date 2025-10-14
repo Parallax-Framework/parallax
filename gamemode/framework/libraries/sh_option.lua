@@ -13,9 +13,11 @@
     Option System - Per-client preferences with optional server sync
 
     Examples:
-    ax.option:Add("headbob", ax.type.bool, true, { category = "view" })
+    ax.option:Add("headbob", ax.type.bool, true, { category = "camera", subCategory = "view" })
     ax.option:Add("language", ax.type.array, "english", {
         bNetworked = true,
+        category = "general",
+        subCategory = "basic",
         populate = function() return { english = "English", german = "German", french = "French" } end
     })
 
