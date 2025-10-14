@@ -9,6 +9,11 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
+--- Player management system for creating, storing, and retrieving player data.
+-- Supports player variables with custom getters, setters, and change callbacks.
+-- Includes networking for synchronizing player data between server and clients.
+-- @module ax.player
+
 ax.player = ax.player or {}
 ax.player.meta = FindMetaTable("Player")
 ax.player.vars = ax.player.vars or {}
