@@ -77,7 +77,7 @@ if ( SERVER ) then
                     id = v.id,
                     class = v.class,
                     data = v.data or {},
-                    inventory_id = v.inventory_id
+                    inventoryID = v.inventoryID
                 }
             end
         end
@@ -155,7 +155,7 @@ if ( SERVER ) then
                                         if ( !item ) then continue end
 
                                         local itemObject = ax.item:Instance(itemData.id, itemData.class)
-                                        itemObject.inventory_id = itemData.inventory_id
+                                        itemObject.inventoryID = itemData.inventory_id
                                         itemObject.data = util.JSONToTable(itemData.data) or {}
 
                                         ax.item.instances[itemObject.id] = itemObject

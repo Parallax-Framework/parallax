@@ -350,6 +350,9 @@ if ( SERVER ) then
 
                 if ( istable(toInventory) and toInventoryID != 0 ) then
                     toInventory.items[item.id] = item
+                    item.inventoryID = toInventoryID  -- Update the item's inventory reference
+                elseif ( toInventoryID == 0 ) then
+                    item.inventoryID = 0  -- Item is now in world inventory
                 end
 
                 if ( fromInventory != 0 ) then

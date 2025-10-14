@@ -269,7 +269,7 @@ net.Receive("ax.inventory.sync", function()
         local itemData = inventoryItems[i]
         if ( istable(itemData) and isnumber(itemData.id) ) then
             local itemObject = ax.item:Instance(itemData.id, itemData.class)
-            itemObject.inventory_id = inventoryID
+            itemObject.inventoryID = inventoryID
             itemObject.data = itemData.data or {}
 
             ax.item.instances[itemObject.id] = itemObject
@@ -307,10 +307,9 @@ end)
 
 net.Receive("ax.inventory.item.add", function()
     local inventoryID = net.ReadUInt(32)
-    local item_id = net.ReadUInt(32)
-    local item_class = net.ReadString()
-    local item_data = net.ReadTable()
-    local inventory_id = net.ReadUInt(32)
+    local itemID = net.ReadUInt(32)
+    local itemClass = net.ReadString()
+    local itemData = net.ReadTable()
 
     local inventory = ax.inventory.instances[inventoryID]
     if ( !istable(inventory) ) then
@@ -318,12 +317,12 @@ net.Receive("ax.inventory.item.add", function()
         return
     end
 
-    local itemObject = ax.item:Instance(item_id, item_class)
-    itemObject.inventory_id = inventory_id
-    itemObject.data = item_data or {}
+    local itemObject = ax.item:Instance(itemID, itemClass)
+    itemObject.inventoryID = inventoryID
+    itemObject.data = itemData or {}
 
-    inventory.items[item_id] = itemObject
-    ax.item.instances[item_id] = itemObject
+    inventory.items[itemID] = itemObject
+    ax.item.instances[itemID] = itemObject
 
     if ( IsValid(ax.gui.inventory) ) then
         ax.gui.inventory:PopulateItems()
@@ -340,10 +339,10 @@ net.Receive("ax.inventory.item.remove", function()
         return
     end
 
-    for item_id in pairs(inv.items) do
-        if ( item_id == itemID ) then
-            inv.items[item_id] = nil
-            ax.item.instances[item_id] = nil
+    for invItemID in pairs(inv.items) do
+        if ( invItemID == itemID ) then
+            inv.items[invItemID] = nil
+            ax.item.instances[invItemID] = nil
             break
         end
     end
@@ -396,7 +395,7 @@ net.Receive("ax.item.transfer", function()
         fromInventory.items[item.id] = nil
     end
 
-    item.inventory_id = toInventoryID
+    item.inventoryID = toInventoryID
 
     -- Add to the new inventory, if applicable
     if ( toInventoryID != 0 ) then
@@ -423,7 +422,7 @@ net.Receive("ax.item.spawn", function()
 
     -- Create item instance
     local itemObject = ax.item:Instance(itemID, itemClass)
-    itemObject.inventory_id = 0
+    itemObject.inventoryID = 0
     itemObject.data = itemData
 
     ax.item.instances[itemID] = itemObject

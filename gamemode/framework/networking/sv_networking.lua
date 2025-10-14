@@ -58,18 +58,18 @@ net.Receive("ax.inventory.item.action", function(length, client)
     if ( !item:CanInteract(client, action) ) then return end
 
     local bRemoveAfter = actionTable:OnRun(item, client)
-    if ( bRemoveAfter == nil or !isbool(bRemoveAfter) ) then bRemoveAfter = false end
-
-    if ( bRemoveAfter ) then
-        local inventory = ax.inventory.instances[item.invID]
+    if ( bRemoveAfter == true ) then
+        local inventory = ax.inventory.instances[item.inventoryID]
         if ( istable(inventory) ) then
             inventory:RemoveItem(item.id)
+        else
+            ax.util:PrintError("Failed to remove item ID " .. item.id .. " after action '" .. action .. "' because its inventory does not exist.")
         end
     end
 
     local soundVar = "sound_" .. string.lower(action)
-    if ( actionTable[ soundVar ] ) then
-        client:EmitSound( Sound( actionTable[ soundVar ] ) )
+    if ( actionTable[soundVar] ) then
+        client:EmitSound(Sound(actionTable[soundVar]))
     end
 
     hook.Run("OnPlayerItemAction", client, item, action)

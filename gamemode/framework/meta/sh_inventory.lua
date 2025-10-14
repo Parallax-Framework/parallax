@@ -175,18 +175,17 @@ if ( SERVER ) then
 
                 local itemObject = ax.item:Instance(lastID, class)
                 itemObject.data = data or {}
-                itemObject.inventory_id = self.id
+                itemObject.inventoryID = self.id
 
-                ax.item.instances[ lastID ] = itemObject
+                ax.item.instances[lastID] = itemObject
 
-                self.items[ lastID ] = itemObject
+                self.items[lastID] = itemObject
 
                 net.Start("ax.inventory.item.add")
                     net.WriteUInt(self.id, 32)
-                    net.WriteUInt( itemObject.id, 32 )
-                    net.WriteString( itemObject.class )
-                    net.WriteTable( itemObject.data )
-                    net.WriteUInt( itemObject.inventory_id, 32 )
+                    net.WriteUInt(itemObject.id, 32)
+                    net.WriteString(itemObject.class)
+                    net.WriteTable(itemObject.data)
                 net.Send(self:GetReceivers())
 
                 return true
@@ -195,9 +194,13 @@ if ( SERVER ) then
     end
 
     function inventory:RemoveItem(itemID)
-        if ( !istable(self.items) ) then self.items = {} return end
+        if ( !istable(self.items) ) then
+            ax.util:PrintWarning("Invalid inventory items table.")
+            self.items = {}
+            return
+        end
 
-        if ( isstring( itemID ) and ax.item.stored[ itemID ] ) then
+        if ( isstring(itemID) and ax.item.stored[itemID] ) then
             for _, v in pairs(self.items) do
                 if ( v.class == itemID ) then
                     itemID = v.id
@@ -205,6 +208,8 @@ if ( SERVER ) then
                 end
             end
         end
+
+        ax.util:PrintDebug("Attempting to remove item ID " .. tostring(itemID) .. " from inventory " .. self.id)
 
         for item_id, item_data in pairs(self.items) do
             if ( item_id == itemID ) then
@@ -223,6 +228,8 @@ if ( SERVER ) then
                             net.WriteUInt(self.id, 32)
                             net.WriteUInt(itemID, 32)
                         net.Send(self:GetReceivers())
+
+                        ax.util:PrintDebug("Removed item ID " .. itemID .. " from inventory " .. self.id)
 
                         return true
                     end)
