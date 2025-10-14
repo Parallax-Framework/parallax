@@ -9,6 +9,10 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
+--- Faction management system for creating, storing, and retrieving faction data.
+-- Supports default player models, faction joining restrictions, and team setup.
+-- @module ax.faction
+
 ax.faction = ax.faction or {}
 ax.faction.instances = ax.faction.instances or {}
 ax.faction.stored = ax.faction.stored or {}
@@ -29,7 +33,8 @@ function ax.faction:Initialize()
     end
 end
 
-local DEFAULT_MODELS = {
+--- Default models used if a faction does not specify its own.
+FACTION_DEFAULT_MODELS = {
     Model("models/humans/group01/male_01.mdl"),
     Model("models/humans/group01/male_02.mdl"),
     Model("models/humans/group01/male_04.mdl"),
@@ -86,7 +91,7 @@ function ax.faction:Include(directory)
 
             FACTION = { id = uniqueID, index = index }
                 FACTION.GetModels = function(this)
-                    return this.models or DEFAULT_MODELS
+                    return this.models or FACTION_DEFAULT_MODELS
                 end
 
                 ax.util:Include(directory .. "/" .. fileName, "shared")
