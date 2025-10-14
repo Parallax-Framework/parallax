@@ -121,7 +121,7 @@ ax.character:RegisterVar("faction", {
             image:SetMouseInputEnabled(false)
             image:SetSize(factionButton:GetTall(), factionButton:GetTall())
             image:Dock(FILL)
-            image.Paint = function(this, width, height)
+            image.Paint = function(_, width, height)
                 local imageHeight = height * 0.75
                 imageHeight = math.Round(imageHeight)
 
@@ -205,7 +205,7 @@ ax.character:RegisterVar("name", {
         end
 
         if ( factionData and factionData.GetDefaultName ) then
-            local defaultName, disable = factionData:GetDefaultName(client)
+            local _, disable = factionData:GetDefaultName(client)
             if ( disable == true ) then
                 return true
             end
@@ -260,7 +260,7 @@ ax.character:RegisterVar("name", {
 
         -- Each word must start with an uppercase letter and not be ALL CAPS
         for word in string.gmatch(trimmed, "%S+") do
-            if ( not string.find(word, "^[%u]") ) then
+            if ( !string.find(word, "^[%u]") ) then
                 return false, "Each part of your character's name must start with an uppercase letter. Please capitalize the first letter of each name (e.g., 'John Smith', not 'john smith')."
             end
 
@@ -291,8 +291,6 @@ ax.character:RegisterVar("name", {
             entry:SetAllowNonAsciiCharacters(true)
         elseif ( factionData.allowNonAscii == false ) then
             entry:SetAllowNonAsciiCharacters(false)
-        else
-            -- Don't change the default setting
         end
 
         if ( factionData.GetDefaultName ) then
@@ -461,7 +459,7 @@ ax.character:RegisterVar("model", {
                 hook.Run("OnPayloadChanged", payload)
             end
 
-            modelButton.PaintOver = function(this, width, height)
+            modelButton.PaintOver = function(_, width, height)
                 if ( payload.model == v ) then
                     surface.SetDrawColor(0, 150, 255, 100)
                     surface.DrawRect(0, 0, width, height)
@@ -518,7 +516,7 @@ ax.character:RegisterVar("skin", {
         slider:SetValue(payload.skin or 0)
         slider:Dock(TOP)
         slider:DockMargin(0, 0, 0, ScreenScaleH(16))
-        slider.OnValueChanged = function(this, value)
+        slider.OnValueChanged = function(_, value)
             payload.skin = math.floor(value)
 
             if ( ax.gui.main.create.OnPayloadChanged ) then
