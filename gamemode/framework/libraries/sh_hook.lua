@@ -9,7 +9,7 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
---- Custom function based hooks.
+--- Hook system for registering and managing custom hook types, internally handles Schema and Module hooks.
 -- @module ax.hook
 
 ax.hook = {}
