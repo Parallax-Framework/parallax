@@ -9,6 +9,10 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
+--- Font management system for creating and storing fonts used throughout the Parallax Framework.
+-- Supports font families with various styles and weights.
+-- @module ax.font
+
 ax.font = ax.font or {}
 ax.font.stored = ax.font.stored or {}
 
@@ -118,7 +122,7 @@ end
 concommand.Add("ax_font_list", function(client, cmd, args)
     ax.util:Print("Available fonts:")
 
-    for name, data in (args[1] and SortedPairsByMemberValue(ax.font.stored, "size", true) or SortedPairs(ax.font.stored)) do
+    for name, data in args[1] and SortedPairsByMemberValue(ax.font.stored, "size", true) or SortedPairs(ax.font.stored) do
         ax.util:Print(" - " .. name)
     end
 end, nil, "List all available fonts in the Parallax Framework", FCVAR_HIDDEN)
@@ -136,3 +140,31 @@ concommand.Add("ax_font_wipe", function(client, cmd, args)
 
     ax.util:Print("Wiped and reloaded all Parallax Framework fonts.")
 end, nil, "Wipe and reload all Parallax Framework fonts", FCVAR_HIDDEN)
+
+--- Available fonts registered in the Parallax Framework
+FONTS = {
+    "ax.tiny",
+    "ax.tiny.bold",
+    "ax.tiny.italic",
+    "ax.tiny.italic.bold",
+    "ax.small",
+    "ax.small.bold",
+    "ax.small.italic",
+    "ax.small.italic.bold",
+    "ax.regular",
+    "ax.regular.bold",
+    "ax.regular.italic",
+    "ax.regular.italic.bold",
+    "ax.large",
+    "ax.large.bold",
+    "ax.large.italic",
+    "ax.large.italic.bold",
+    "ax.massive",
+    "ax.massive.bold",
+    "ax.massive.italic",
+    "ax.massive.italic.bold",
+    "ax.huge",
+    "ax.huge.bold",
+    "ax.huge.italic",
+    "ax.huge.italic.bold"
+}
