@@ -9,6 +9,11 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
+--- Character management system for creating, storing, and retrieving character data.
+-- Supports character variables with custom getters, setters, and change callbacks.
+-- Includes networking for synchronizing character data between server and clients.
+-- @module ax.character
+
 ax.character = ax.character or {}
 ax.character.instances = ax.character.instances or {}
 ax.character.meta = ax.character.meta or {}
