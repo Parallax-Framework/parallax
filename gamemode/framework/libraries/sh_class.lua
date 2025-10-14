@@ -9,6 +9,10 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
+--- Class management system for creating, storing, and retrieving class data.
+-- Supports class variables, faction associations, and validation checks.
+-- @module ax.class
+
 ax.class = ax.class or {}
 ax.class.instances  = ax.class.instances or {}
 ax.class.stored = ax.class.stored or {}
