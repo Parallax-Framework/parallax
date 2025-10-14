@@ -9,7 +9,10 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
--- Credits to Helix for the original database library.
+--- Database management system for handling connections, schema definitions, and table creation.
+-- Utilizes the mysqloo module for MySQL connectivity and operations.
+-- Originally adapted from the Helix framework with modifications for the Parallax framework.
+-- @module ax.database
 
 ax.database = ax.database or {
     schema = {},
