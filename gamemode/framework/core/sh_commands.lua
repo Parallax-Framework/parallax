@@ -49,7 +49,7 @@ ax.command:Add("CharSetModel", {
     OnRun = function(client, target, model)
         if ( !target) then return "Invalid character." end
 
-        target:SetModel(model, true)
+        target:SetModel(model)
         target:Save()
 
         return "Model set to " .. model
@@ -97,7 +97,7 @@ ax.command:Add("CharSetName", {
             return
         end
 
-        target:SetName(name, true)
+        target:SetName(name)
         target:Save()
 
         return "Name set to " .. name
@@ -177,7 +177,7 @@ ax.command:Add("CharSetFaction", {
         local oldFactionTable = ax.faction:Get(oldFaction)
 
         -- Set the new faction
-        target:SetFaction(factionTable.index, true)
+        target:SetFaction(factionTable.index)
         target:Save()
 
         -- Call OnTransferred callback if it exists on the new faction
@@ -215,7 +215,7 @@ ax.command:Add("CharSetClass", {
             return "Invalid class."
         end
 
-        target:SetClass(classTable.index, true)
+        target:SetClass(classTable.index)
         target:Save()
 
         -- Call OnTransferred callback if it exists on the new class
@@ -256,6 +256,28 @@ ax.command:Add("PlyWhitelist", {
     end
 })
 
+ax.command:Add("PlyWhitelistAll", {
+    description = "Whitelist a player for all factions.",
+    arguments = {
+        { name = "target", type = ax.type.player }
+    },
+    OnRun = function(client, target)
+        if ( !IsValid(target) ) then return "Invalid player." end
+
+        local whitelists = {}
+        for _, faction in pairs(ax.faction:GetAll()) do
+            if ( !faction.isDefault ) then
+                whitelists[faction.id] = true
+            end
+        end
+
+        target:SetData("whitelists", whitelists)
+        target:Save()
+
+        return target:Nick() .. "( " .. target:SteamName() .. " ) has been whitelisted for all factions."
+    end
+})
+
 ax.command:Add("PlyUnWhitelist", {
     description = "Remove a player's whitelist for a faction.",
     arguments = {
@@ -276,6 +298,21 @@ ax.command:Add("PlyUnWhitelist", {
         target:Save()
 
         return target:Nick() .. "( " .. target:SteamName() .. " ) has been unwhitelisted for " .. factionTable.name .. "."
+    end
+})
+
+ax.command:Add("PlyUnWhitelistAll", {
+    description = "Remove a player's whitelist for all factions.",
+    arguments = {
+        { name = "target", type = ax.type.player }
+    },
+    OnRun = function(client, target)
+        if ( !IsValid(target) ) then return "Invalid player." end
+
+        target:SetData("whitelists", {})
+        target:Save()
+
+        return target:Nick() .. "( " .. target:SteamName() .. " ) has been unwhitelisted from all factions."
     end
 })
 
