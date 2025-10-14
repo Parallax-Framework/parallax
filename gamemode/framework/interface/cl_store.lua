@@ -16,7 +16,7 @@ function PANEL:Init()
     self:InvalidateParent(true)
 
     self.categories = self:Add("ax.scroller.vertical")
-    self.categories:SetSize(ScreenScale(32), ScrH() - ScreenScaleH(32))
+    self.categories:SetSize(ScreenScale(32), ScrH() - ScreenScaleH(64))
 
     self.container = self:Add("EditablePanel")
     self.container:Dock(FILL)

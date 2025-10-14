@@ -84,6 +84,25 @@ function PANEL:PopulateItems()
 
     if ( !character or !inventory ) then return end
 
+    -- Check if current info panel should be closed due to inventory changes
+    if ( self.stack and istable(self.stack) ) then
+        local stackStillExists = false
+        for _, stackedItem in pairs(self.stack.stackedItems or {}) do
+            for itemId, invItem in pairs(inventory:GetItems()) do
+                if ( invItem.id == stackedItem.id ) then
+                    stackStillExists = true
+                    break
+                end
+            end
+            if ( stackStillExists ) then break end
+        end
+
+        if ( !stackStillExists ) then
+            self:InfoClose()
+            self.stack = nil
+        end
+    end
+
     self.container:Clear()
 
     -- Initialize grid items storage for responsive layout
@@ -100,14 +119,13 @@ function PANEL:PopulateItems()
     -- TODO: Add pagination for large inventories
 
     -- Grid layout configuration
-    local gridColumns = 4
+    local gridColumns = ax.option:Get("inventoryColumns", 4)
     local containerWidth = self.container:GetWide()
     local itemWidth = containerWidth / gridColumns
     local itemHeight = ScreenScaleH(32)
-    local categoryHeight = ScreenScale(24) -- use ScreenScaleH?
+    local categoryHeight = ScreenScaleH(24) -- use ScreenScaleH?
 
     local currentY = 0
-    local categoryCache = {}-- not used
 
     -- Organize items by category first, with stacking support
     local categorizedItems = {}
@@ -211,7 +229,7 @@ function PANEL:PopulateItems()
         local currentColumn = 0
         local currentRow = 0
 
-        for i, stack in ipairs(stacks) do
+        for _, stack in ipairs(stacks) do
             local itemX = currentColumn * itemWidth
             local itemY = currentY + (currentRow * itemHeight)
 
@@ -380,24 +398,12 @@ function PANEL:PopulateInfo(stack)
                 net.WriteString(k)
             net.SendToServer()
 
-            -- Update the stack table
-            for i = #stack.stackedItems, 1, -1 do
-                if ( stack.stackedItems[i].id == itemToUse.id ) then
-                    table.remove(stack.stackedItems, i)
-                    stack.stackCount = stack.stackCount - 1
-                    break
-                end
-            end
-
-            -- If we used the last item in the stack, close info panel
-            if ( stack.stackCount < 1 ) then
-                self:InfoClose()
-            end
+            -- Don't update local stack here - wait for server to confirm the action
+            -- and trigger inventory refresh through proper networking
         end
 
         if ( k == "drop" and stack.stackCount > 1 ) then
             actionButton.DoRightClick = function()
-                local itemToUse = stack.stackedItems[1] -- not used
                 Derma_StringRequest(
                     "Drop Item",
                     "Enter the quantity to drop (max " .. stack.stackCount .. "):",
@@ -409,8 +415,8 @@ function PANEL:PopulateInfo(stack)
                         for i = 1, quantity do
                             timer.Simple(i * 0.1, function()
                                 if ( !IsValid(self) ) then return end
-                                if ( !istable(stack) or #stack.stackedItems < 1 ) then return end
-                                local item = stack.stackedItems[1]
+                                if ( !istable(stack) or #stack.stackedItems < i ) then return end
+                                local item = stack.stackedItems[i]
                                 if ( !istable(item) ) then return end
 
                                 net.Start("ax.inventory.item.action")
@@ -418,15 +424,11 @@ function PANEL:PopulateInfo(stack)
                                     net.WriteString("drop")
                                 net.SendToServer()
                             end)
-
-                            -- Remove from local stack immediately for responsiveness
-                            table.remove(stack.stackedItems, 1)
                         end
 
-                        -- If dropping entire stack, close info panel
-                        if ( quantity >= stack.stackCount ) then
-                            self:InfoClose()
-                        end
+                        -- Close info panel immediately for user feedback
+                        -- Server will handle the actual inventory updates
+                        self:InfoClose()
                     end,
                     nil
                 )
@@ -439,11 +441,11 @@ function PANEL:PerformLayout(width, height)
     if ( !self.gridItems or !self.sortedCategoryOrder ) then return end
 
     -- Recalculate grid layout based on current container width
-    local gridColumns = 4
+    local gridColumns = ax.option:Get("inventoryColumns", 4)
     local containerWidth = self.container:GetWide()
     local itemWidth = containerWidth / gridColumns
     local itemHeight = ScreenScaleH(32)
-    local categoryHeight = ScreenScale(24)
+    local categoryHeight = ScreenScaleH(24)
 
     local currentY = 0
 
