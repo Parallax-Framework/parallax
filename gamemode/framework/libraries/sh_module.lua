@@ -9,6 +9,10 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
+--- Module management system for loading and retrieving modules.
+-- Supports automatic inclusion of module files and directories.
+-- @module ax.module
+
 ax.module = ax.module or {}
 ax.module.stored = ax.module.stored or {}
 
