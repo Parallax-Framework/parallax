@@ -114,12 +114,12 @@ if ( CLIENT ) then
     -- @tparam[opt="generic"] string type One of: generic, info, success, warning, error
     -- @tparam[opt=5] number length Seconds to remain visible (excluding animation).
     function ax.notification:Add(text, type, length)
-        if ( !ax.config:Get("notificationEnabled", true) ) then return end
+        if ( !ax.option:Get("notificationEnabled", true) ) then return end
 
         table.insert(self.queue, {
             text = tostring(text or ""),
             type = type or "generic",
-            length = tonumber(length) or (ax.config:Get("notificationDefaultLength", 5) or 5)
+            length = tonumber(length) or (ax.option:Get("notificationDefaultLength", 5) or 5)
         })
 
         self:Next()
@@ -138,7 +138,7 @@ if ( CLIENT ) then
     -- @tparam table data
     function ax.notification:Show(data)
         local sw, sh = ScrW(), ScrH()
-        local maxWFrac = (ax.config:Get("notificationMaxWidthFraction", self.maxWidthFrac)) or self.maxWidthFrac
+        local maxWFrac = 0.42 -- Use hardcoded value as intended
         local maxW = math.floor(sw * maxWFrac)
 
         surface.SetFont(self.font)
@@ -191,7 +191,9 @@ if ( CLIENT ) then
             outFadeTime = outFadeTime
         }
 
-        ax.client:EmitSound("parallax.ui.notification.in")
+        if ( ax.option:Get("notificationSounds", true) ) then
+            ax.client:EmitSound("parallax.ui.notification.in")
+        end
 
         p:Motion(0.25, {
             Easing = "OutQuad",
@@ -230,12 +232,46 @@ if ( CLIENT ) then
     end
 
     function ax.notification:Render()
-        if ( !ax.config:Get("notificationEnabled", true) ) then return end
+        if ( !ax.option:Get("notificationEnabled", true) ) then return end
         if ( self.active[ 1 ] == nil ) then return end
 
         local sw, sh = ScrW(), ScrH()
-        local baseY = sh - ScreenScaleH(32)
-        local cx = math.floor(sw / 2)
+        local notificationScale = ax.option:Get("notificationScale", 1.0)
+        local position = ax.option:Get("notificationPosition", "bottomcenter")
+
+        -- Calculate position based on user preference
+        local baseX, baseY, anchorX, anchorY
+        if ( position == "topright" ) then
+            baseX = sw - self.paddingX
+            baseY = ScreenScaleH(32)
+            anchorX = TEXT_ALIGN_RIGHT
+            anchorY = 1 -- grow downward
+        elseif ( position == "topleft" ) then
+            baseX = self.paddingX
+            baseY = ScreenScaleH(32)
+            anchorX = TEXT_ALIGN_LEFT
+            anchorY = 1 -- grow downward
+        elseif ( position == "topcenter" ) then
+            baseX = sw / 2
+            baseY = ScreenScaleH(32)
+            anchorX = TEXT_ALIGN_CENTER
+            anchorY = 1 -- grow downward
+        elseif ( position == "bottomright" ) then
+            baseX = sw - self.paddingX
+            baseY = sh - ScreenScaleH(32)
+            anchorX = TEXT_ALIGN_RIGHT
+            anchorY = -1 -- grow upward
+        elseif ( position == "bottomleft" ) then
+            baseX = self.paddingX
+            baseY = sh - ScreenScaleH(32)
+            anchorX = TEXT_ALIGN_LEFT
+            anchorY = -1 -- grow upward
+        else -- bottomcenter (default behavior)
+            baseX = sw / 2
+            baseY = sh - ScreenScaleH(32)
+            anchorX = TEXT_ALIGN_CENTER
+            anchorY = -1 -- grow upward
+        end
 
         surface.SetFont(self.font)
 
@@ -252,9 +288,23 @@ if ( CLIENT ) then
                 local stack = p.stack or 0
                 local offset = p.offset or 0
 
-                local fullW, h = t.width, t.height
-                local x = cx - math.floor(fullW / 2)
-                local y = baseY - stack - offset - h
+                local fullW, h = t.width * notificationScale, t.height * notificationScale
+
+                -- Position based on anchor
+                local x, y
+                if ( anchorX == TEXT_ALIGN_RIGHT ) then
+                    x = baseX - fullW
+                elseif ( anchorX == TEXT_ALIGN_CENTER ) then
+                    x = baseX - (fullW / 2)
+                else -- TEXT_ALIGN_LEFT
+                    x = baseX
+                end
+
+                if ( anchorY == 1 ) then -- growing downward
+                    y = baseY + (stack + offset)
+                else -- growing upward
+                    y = baseY - (stack + offset + h)
+                end
 
                 -- Progress logic per-phase
                 local now = CurTime()
@@ -325,13 +375,15 @@ if ( CLIENT ) then
                 local col = Color(32, 32, 32)
 
                 -- draw text (render beneath matte foreground). It will be revealed as the foreground shrinks.
-                local ty = y + self.paddingY
-                local tx = x + self.paddingX
+                local scaledPaddingX = self.paddingX * notificationScale
+                local scaledPaddingY = self.paddingY * notificationScale
+                local ty = y + scaledPaddingY
+                local tx = x + scaledPaddingX
                 local textA = clamp(t.textAlpha or 0, 0, 255)
                 for k = 1, #t.lines do
                     local line = t.lines[k]
                     draw.SimpleText(line, self.font, tx, ty, Color(200, 200, 200, textA), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
-                    ty = ty + t.lineHeight
+                    ty = ty + (t.lineHeight * notificationScale)
                 end
 
                 -- draw the matte foreground rectangle driven by barFill (this is the element that shrinks to reveal)
