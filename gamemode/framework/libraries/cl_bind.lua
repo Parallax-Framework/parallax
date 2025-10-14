@@ -1,3 +1,18 @@
+--[[
+    Parallax Framework
+    Copyright (c) 2025 Parallax Framework Contributors
+
+    This file is part of the Parallax Framework and is licensed under the MIT License.
+    You may use, copy, modify, merge, publish, distribute, and sublicense this file
+    under the terms of the LICENSE file included with this project.
+
+    Attribution is required. If you use or modify this file, you must retain this notice.
+]]
+
+--- Advanced key binding system allowing registration of key combinations with press and release callbacks.
+-- Supports multiple simultaneous key presses and overlapping combinations.
+-- @module ax.bind
+
 ax.bind = ax.bind or {}
 ax.bind.stored = ax.bind.stored or {}
 ax.bind.activeButtons = 0
@@ -136,20 +151,23 @@ ax.bind.translations = {
     [KEY_XSTICK2_UP] = "XSTICK2_UP",
 }
 
+--- Translate a list of KEY* constants into a human-readable string.
+-- @param ... A variable number of KEY* constants.
+-- @treturn string The translated key combination, or "NONE
 function ax.bind:Translate( ... )
     local parts = {}
 
-    local keysLength = select( "#", ... )
+    local keysLength = select("#", ...)
     if ( keysLength < 1 ) then return "NONE" end
 
     for i = 1, keysLength do
-        local key = select( i, ... )
-        local translation = self.translations[ key ] or tostring( key )
+        local key = select(i, ...)
+        local translation = self.translations[key] or tostring(key)
 
-        parts[ #parts + 1 ] = translation
+        parts[#parts + 1] = translation
     end
 
-    return table.concat( parts, " + " )
+    return table.concat(parts, " + ")
 end
 
 --- Register a key bind.
@@ -158,32 +176,32 @@ end
 -- @tparam number keys Bitmask of KEY* constants representing the keys to bind.
 -- @tparam function callback Function called as callback(client, key) when fired.
 -- @treturn boolean True if the bind was registered; false otherwise.
-function ax.bind:Bind( keys, callbackPressed, callbackReleased )
-    if ( !isnumber( keys ) or keys <= 0 ) then
-        ax.util:PrintError( "Invalid keys provided to ax.bind:Bind()" )
+function ax.bind:Bind(keys, callbackPressed, callbackReleased)
+    if ( !isnumber(keys) or keys <= 0 ) then
+        ax.util:PrintError("Invalid keys provided to ax.bind:Bind()")
         return false
     end
 
-    if ( istable( self.stored[keys] ) ) then
-        ax.util:PrintWarning( "Overwriting existing bind for keys '" .. tostring(keys) .. "'" )
+    if ( istable(self.stored[keys]) ) then
+        ax.util:PrintWarning("Overwriting existing bind for keys '" .. tostring(keys) .. "'")
     end
 
-    if ( !isnumber( keys ) or keys <= 0 ) then
-        ax.util:PrintError( "Invalid keys provided to ax.bind:Bind()" )
+    if ( !isnumber(keys) or keys <= 0 ) then
+        ax.util:PrintError("Invalid keys provided to ax.bind:Bind()")
         return false
     end
 
-    if ( !isfunction( callback ) ) then
-        ax.util:PrintError( "Invalid callback provided to ax.bind:Bind()" )
+    if ( !isfunction(callbackPressed) ) then
+        ax.util:PrintError("Invalid callback provided to ax.bind:Bind()")
         return false
     end
 
-    self.stored[ keys ] = { callbackPressed = callbackPressed, callbackReleased = callbackReleased }
+    self.stored[keys] = { callbackPressed = callbackPressed, callbackReleased = callbackReleased }
     return true
 end
 
-hook.Add( "PlayerButtonDown" , "ax.bind", function(client, key)
-    local buttons = bit.bor( ax.bind.activeButtons, key )
+hook.Add("PlayerButtonDown", "ax.bind", function(client, key)
+    local buttons = bit.bor(ax.bind.activeButtons, key)
     ax.bind.activeButtons = buttons
 
     local bind = ax.bind.stored[ buttons ]
@@ -192,7 +210,7 @@ hook.Add( "PlayerButtonDown" , "ax.bind", function(client, key)
     end
 end)
 
-hook.Add( "PlayerButtonUp", "ax.bind", function(client, key)
+hook.Add("PlayerButtonUp", "ax.bind", function(client, key)
     local bind = ax.bind.stored[ ax.bind.activeButtons ]
     if ( istable( bind ) and isfunction( bind.callbackReleased ) ) then
         bind:callbackReleased()
