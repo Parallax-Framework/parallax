@@ -198,6 +198,19 @@ net.Receive("ax.character.var", function()
     character.vars[name] = value
 end)
 
+net.Receive("ax.character.bot.sync", function()
+    local characterId = net.ReadUInt(32)
+    local botCharacter = net.ReadTable()
+
+    -- Restore metatable for bot character
+    botCharacter = setmetatable(botCharacter, ax.character.meta)
+
+    -- Add to character instances so clients can find it
+    ax.character.instances[characterId] = botCharacter
+
+    ax.util:PrintDebug("Received bot character sync: " .. (botCharacter:GetName() or "Unknown") .. " (ID: " .. characterId .. ")")
+end)
+
 net.Receive("ax.character.setnameprompt", function()
     local target = ax.character:Get(net.ReadUInt(32))
     if ( !istable(target) ) then

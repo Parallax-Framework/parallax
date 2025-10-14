@@ -17,6 +17,7 @@ util.AddNetworkString("ax.character.sync")
 util.AddNetworkString("ax.character.restore")
 util.AddNetworkString("ax.character.var")
 util.AddNetworkString("ax.character.setnameprompt")
+util.AddNetworkString("ax.character.bot.sync")
 
 util.AddNetworkString("ax.relay.update")
 

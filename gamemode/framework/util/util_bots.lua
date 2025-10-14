@@ -119,8 +119,7 @@ function ax.util:CreateBotCharacter(client)
     -- Create temporary character in memory (not saved to database)
     local character = setmetatable({}, ax.character.meta)
 
-    -- Use negative IDs for bots to avoid conflicts with real character IDs
-    character.id = -(client:UserID()) -- Negative user ID ensures uniqueness
+    character.id = client:SteamID64() -- Use SteamID64 as unique identifier
     character.vars = {}
     character.isBot = true -- Mark as bot character
 
@@ -146,6 +145,10 @@ function ax.util:CreateBotCharacter(client)
 
     -- Load the character directly
     ax.character:Load(client, character)
+
+    -- Sync bot character to all clients so they can receive variable updates
+    ax.character:SyncBotToClients(character)
+
     ax.util:PrintSuccess("Bot character created and loaded: " .. botName)
 
     return true

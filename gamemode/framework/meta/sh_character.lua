@@ -165,8 +165,8 @@ if ( SERVER ) then
 
         self.vars.data[key] = value
 
-        -- Skip networking for bot characters and when explicitly disabled
-        if ( !bNoNetworking and !self.isBot ) then
+        -- Network character data changes to all clients
+        if ( !bNoNetworking ) then
             net.Start("ax.character.var")
                 net.WriteUInt(self:GetID(), 32)
                 net.WriteString(key)

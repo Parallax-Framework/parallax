@@ -62,14 +62,37 @@ function ax.character:SetVar(char, name, value, bNoNetworking, recipients)
 
     char.vars[name] = value
 
-    -- Skip networking for bot characters since they don't need client-side updates
-    if ( SERVER and !bNoNetworking and !char.isBot ) then
+    -- Network character variable changes to all clients
+    if ( SERVER and !bNoNetworking ) then
+        if ( char.isBot ) then
+            self:SyncBotToClients(char, recipients)
+            return
+        end
+
         net.Start("ax.character.var")
             net.WriteUInt(char:GetID(), 32)
             net.WriteString(name)
             net.WriteType(value)
         net.Send(recipients or player.GetAll())
     end
+end
+
+-- Sync a bot character to all clients so they can receive variable updates
+function ax.character:SyncBotToClients(char, recipients)
+    if ( CLIENT ) then return end
+
+    if ( !istable(char) or !char.isBot ) then
+        ax.util:PrintError("Invalid bot character provided to ax.character:SyncBotToClients()")
+        return
+    end
+
+    -- Send bot character data to clients
+    net.Start("ax.character.bot.sync")
+        net.WriteUInt(char:GetID(), 32)
+        net.WriteTable(char)
+    net.Send(recipients or player.GetAll())
+
+    ax.util:PrintDebug("Synced bot character to clients: " .. char:GetName() .. " (ID: " .. char:GetID() .. ")")
 end
 
 -- Server-side validation function to check if a variable can be populated during character creation
