@@ -9,8 +9,8 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
---- Toast-style notifications displayed above all VGUI.
--- Renders at the bottom-center in GM:PostRenderVGUI so it always draws on top.
+--- Half-Life Alyx style notifications displayed above all VGUI.
+-- Renders at the bottom-center in GM:PostRender so it always draws on top.
 -- Animations are driven by ax.motion for smooth slide/fade and stacking.
 -- @module ax.notification
 
