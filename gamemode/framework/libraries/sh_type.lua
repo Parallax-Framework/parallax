@@ -9,8 +9,7 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
---- ax.type
--- The type library provides utilities for type detection, sanitization, and formatting.
+--- The type library provides utilities for type detection, sanitization, and formatting.
 -- Adapted from the Helix framework with modifications for the Parallax framework.
 -- @module ax.type
 
