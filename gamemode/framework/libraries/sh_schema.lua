@@ -9,6 +9,10 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
+--- Schema management system for initializing and loading schemas.
+-- Handles inclusion of schema-specific files and directories.
+-- @module ax.schema
+
 ax.schema = ax.schema or {}
 
 function ax.schema:Initialize()
