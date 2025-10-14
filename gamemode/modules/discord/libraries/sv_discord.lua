@@ -9,14 +9,14 @@ function ax.discord.relay:CheckDependencies()
         local ok, _ = pcall(require, "gwsockets")
         ax.discord.relay.hasGWSockets = ok and istable(GWSockets or _G.GWSockets)
         if ( !ax.discord.relay.hasGWSockets and cfg.useWebSocket ) then
-            ax.util:PrintError("Missing 'gwsockets' module. WebSocket relay disabled until installed.")
+            ax.util:PrintWarning("Missing 'gwsockets' module. WebSocket relay disabled until installed.")
         end
     end
 
     -- gm_chttp (preferred for HTTPS to webhooks)
     ax.discord.relay.hasCHTTP = isfunction(CHTTP)
     if ( !ax.discord.relay.hasCHTTP ) then
-        ax.util:PrintError("Missing 'gm_chttp' module. Falling back to HTTP() where possible.")
+        ax.util:PrintWarning("Missing 'gm_chttp' module. Falling back to HTTP() where possible.")
     end
 
     -- Summarize
@@ -26,7 +26,7 @@ function ax.discord.relay:CheckDependencies()
     end
 
     if ( !(cfg.channels and next(cfg.channels)) and !(cfg.useWebSocket and cfg.webSocketURL != "")) then
-        ax.util:PrintError("No webhook or websocket configured. Set channels map, Public/Private webhooks, or webSocketURL.")
+        ax.util:PrintWarning("No webhook or websocket configured. Set channels map, Public/Private webhooks, or webSocketURL.")
     end
 end
 
@@ -54,7 +54,7 @@ function ax.discord.relay:ConnectWebSocket()
     end
 
     function ws:onDisconnected()
-        ax.util:PrintError("WebSocket relay disconnected.")
+        ax.util:PrintWarning("WebSocket relay disconnected.")
         timer.Simple(5, function() ax.discord.relay:ConnectWebSocket() end)
     end
 
