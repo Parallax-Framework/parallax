@@ -323,7 +323,10 @@ function GM:HUDPaintCurvy(width, height, client, isCurved)
     end
 
     -- Draw target ID system
-    DrawTargetID()
+    shouldDraw = hook.Run("ShouldDrawTargetID")
+    if ( shouldDraw != false ) then
+        DrawTargetID()
+    end
 end
 
 function GM:PostDrawTranslucentRenderables(depth, skybox)
