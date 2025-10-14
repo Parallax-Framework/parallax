@@ -13,8 +13,8 @@
     Config System - Server-owned settings with optional client networking
 
     Examples:
-    ax.config:Add("thirdperson", ax.type.bool, true, { description = "Enable third-person view.", bNetworked = true })
-    ax.config:Add("gravityScale", ax.type.number, 1, { min = 0.1, max = 3, decimals = 2, bNetworked = true })
+    ax.config:Add("thirdperson", ax.type.bool, true, { description = "Enable third-person view.", bNetworked = true, category = "camera", subCategory = "thirdperson" })
+    ax.config:Add("gravityScale", ax.type.number, 1, { min = 0.1, max = 3, decimals = 2, bNetworked = true, category = "gameplay", subCategory = "physics" })
 
     ax.config:Set("thirdperson", false)
     print(ax.config:Get("thirdperson", true))  -- server: source of truth; client: cached
