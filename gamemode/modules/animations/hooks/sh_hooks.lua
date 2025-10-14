@@ -344,12 +344,29 @@ function MODULE:TranslateActivity(client, act)
     local oldAct = clientTable.axLastAct or -1
 
     local newAct = client:TranslateWeaponActivity(act)
+    -- When the weapon didn't translate the act we map it to HL2MP idle variants.
     if ( act == newAct ) then
-        return IdleActivityTranslate[act]
+        local mapped = IdleActivityTranslate[act]
+        if ( mapped ) then
+            newAct = mapped
+        end
     end
 
     local class = ax.animations:GetModelClass(client:GetModel())
-    if ( !class ) then return end
+    if ( !class ) then
+        -- Still allow external overrides even if we cannot resolve a model class.
+        local override = hook.Run("OverrideActivity", client, act, newAct, {
+            modelClass = class,
+            holdType = ( IsValid(client:GetActiveWeapon()) and client:GetActiveWeapon():GetHoldType() ) or client:GetHoldType(),
+            animTable = clientTable.axAnimations
+        })
+
+        if ( override != nil ) then
+            newAct = override
+        end
+
+        return newAct
+    end
 
     if ( class:find("player") and client:InVehicle() ) then
         return newAct
@@ -373,6 +390,17 @@ function MODULE:TranslateActivity(client, act)
         elseif ( client.m_bJumping ) then
             newAct = ACT_GLIDE
         end
+    end
+
+    -- External override hook (post internal anim table resolution, pre sequence resolution)
+    local override = hook.Run("OverrideActivity", client, act, newAct, {
+        modelClass = class,
+        holdType = ( IsValid(client:GetActiveWeapon()) and client:GetActiveWeapon():GetHoldType() ) or client:GetHoldType(),
+        animTable = clientTable.axAnimations
+    })
+
+    if ( override != nil ) then
+        newAct = override
     end
 
     if ( isstring(newAct) ) then
