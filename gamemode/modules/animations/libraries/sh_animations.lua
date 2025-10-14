@@ -605,8 +605,8 @@ ax.animations.stored["player_overwatch"] = {
         ["reload"] = "gesture_reload_shotgun"
     },
     ["ar2"] = {
-        [ACT_MP_STAND_IDLE] = {"idle1_ar2", "combatidle1"},
-        [ACT_MP_WALK] = {"walk_all_ar2", "walk_aiming_all_ar2"},
+        [ACT_MP_STAND_IDLE] = {"idle1_ar2", "idle_ar2"},
+        [ACT_MP_WALK] = {"walk_all_ar2", "walk_ar2"},
         [ACT_MP_RUN] = {"runall_ar2", "run_ar2"},
         [ACT_MP_CROUCH_IDLE] = {"cidle_passive", "cidle_ar2"},
         [ACT_MP_CROUCHWALK] = {"cwalk_passive", "cwalk_ar2"},
