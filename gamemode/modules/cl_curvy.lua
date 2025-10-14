@@ -19,7 +19,6 @@ local renderTargets = {}
 local materials = {}
 local meshCache = {}
 local meshObjects = {} -- Pre-built mesh objects
-local lastFrameCount = 0
 local renderCache = {} -- Frame-based render caching
 
 -- Cached option values - updated only when changed
@@ -44,7 +43,6 @@ local perfStats = {
 
 -- Micro-optimizations: localize frequently-used globals
 local math_sin = math.sin
-local math_cos = math.cos
 local math_pi = math.pi
 local math_max = math.max
 local math_min = math.min
@@ -59,7 +57,7 @@ local ScrH_local = ScrH
 function ax.curvy:UpdateOptions()
     local now = CurTime_local()
     if ( now - cachedOptions.lastUpdate < 0.1 ) then return end -- Update max 10x per second
-    
+
     cachedOptions.enabled = ax.option:Get("curvyEnabled")
     cachedOptions.segments = ax.option:Get("curvySegments")
     cachedOptions.curveAmount = ax.option:Get("curvyCurveAmount")
@@ -75,7 +73,7 @@ end
 function ax.curvy:UpdatePerformanceStats()
     local now = CurTime_local()
     if ( now - perfStats.lastFPSUpdate < 0.2 ) then return end -- Update 5x per second
-    
+
     local ft = FrameTime_local() or 0.016
     local fps = 1 / math_max(0.0001, ft)
     perfStats.fpsAvg = perfStats.fpsAvg * 0.85 + fps * 0.15
@@ -86,23 +84,23 @@ end
 function ax.curvy:GetOptimalSegments(width, height)
     self:UpdateOptions()
     self:UpdatePerformanceStats()
-    
+
     local baseSegments = cachedOptions.segments
-    
+
     if ( !cachedOptions.dynamicLOD ) then return baseSegments end
-    
+
     -- Viewport-based LOD: reduce segments for larger viewports
     local pixelCount = width * height
     local basePixels = 1920 * 1080
     local viewportScale = math_min(1.0, basePixels / math_max(1, pixelCount))
-    
+
     -- FPS-based LOD with configurable threshold
     local fpsScale = 1.0
     local threshold = cachedOptions.frameSkipThreshold
     if ( perfStats.fpsAvg < threshold ) then
         fpsScale = math_max(0.25, perfStats.fpsAvg / threshold)
     end
-    
+
     local finalScale = math_min(viewportScale, fpsScale)
     return math_max(16, math_floor(baseSegments * finalScale))
 end
@@ -194,12 +192,12 @@ end
 
 function ax.curvy:GetCurveMesh(segments, curveAmount, width, height)
     local cacheKey = ("%d_%d_%d_%d"):format(segments, curveAmount, width, height)
-    
+
     -- Return pre-built mesh object if available
     if ( meshObjects[cacheKey] ) then
         return meshObjects[cacheKey]
     end
-    
+
     -- Check for cached mesh data
     if ( meshCache[cacheKey] ) then
         -- Build mesh object from cached data
@@ -213,7 +211,7 @@ function ax.curvy:GetCurveMesh(segments, curveAmount, width, height)
                 mesh.AdvanceVertex()
             end
         mesh.End()
-        
+
         meshObjects[cacheKey] = meshObj
         meshCache[cacheKey] = nil -- Free the vertex data
         return meshObj
@@ -222,12 +220,12 @@ function ax.curvy:GetCurveMesh(segments, curveAmount, width, height)
     -- Generate new mesh data (optimized version)
     local meshData = {}
     local vertexCount = 0
-    
+
     -- Pre-calculate values outside the loop
     local segFloat = segments
     local widthStep = width / segFloat
     local piDivSeg = math_pi / segFloat
-    
+
     for i = 0, segments - 1 do
         local u1 = i / segFloat
         local u2 = (i + 1) / segFloat
@@ -275,7 +273,7 @@ function ax.curvy:GetCurveMesh(segments, curveAmount, width, height)
             mesh.AdvanceVertex()
         end
     mesh.End()
-    
+
     meshObjects[cacheKey] = meshObj
     return meshObj
 end
@@ -293,7 +291,7 @@ function ax.curvy:RenderCurvedMesh(mat, width, height)
     cam.IgnoreZ(true)
     render.CullMode(MATERIAL_CULLMODE_CW)
     render.SetMaterial(mat)
-    
+
     -- Draw the pre-built mesh object (much faster)
     meshObj:Draw()
 
@@ -304,12 +302,12 @@ end
 function ax.curvy:RenderToTarget(rtName, width, height, drawFunc, ...)
     local frameCount = engine.TickCount()
     local cacheKey = rtName .. "_" .. width .. "_" .. height
-    
+
     -- Skip if we already rendered this target this frame
     if ( renderCache[cacheKey] == frameCount ) then
         return self:EnsureRenderTarget(rtName, width, height)
     end
-    
+
     local texture = self:EnsureRenderTarget(rtName, width, height)
 
     render.PushRenderTarget(texture)
@@ -320,7 +318,7 @@ function ax.curvy:RenderToTarget(rtName, width, height, drawFunc, ...)
             end
         cam.End2D()
     render.PopRenderTarget()
-    
+
     renderCache[cacheKey] = frameCount
     return texture
 end
@@ -331,7 +329,7 @@ function ax.curvy:HUDPaint(drawFunc, rtName)
     if ( hook.Run("HUDShouldDraw") == false ) then return end
 
     self:UpdateOptions()
-    
+
     -- Early exit if curvy is disabled
     if ( !cachedOptions.enabled ) then
         if ( drawFunc ) then
@@ -348,7 +346,7 @@ function ax.curvy:HUDPaint(drawFunc, rtName)
     self:UpdatePerformanceStats()
     local threshold = cachedOptions.frameSkipThreshold
     local maxSkip = cachedOptions.maxFrameSkip
-    
+
     if ( perfStats.fpsAvg < threshold ) then
         perfStats.frameSkip = (perfStats.frameSkip or 0) + 1
         if ( perfStats.frameSkip % maxSkip == 0 ) then return end -- Skip frames based on setting
@@ -374,7 +372,7 @@ function ax.curvy:PostRender()
     if ( hook.Run("HUDShouldDraw") == false ) then return end
 
     self:UpdateOptions()
-    
+
     -- Early exit if curvy is disabled or HUD-only mode is enabled
     if ( !cachedOptions.enabled or cachedOptions.hudOnly ) then
         hook.Run("PostRenderCurvy", ScrW_local(), ScrH_local(), client, false)
@@ -387,9 +385,9 @@ function ax.curvy:PostRender()
     -- Performance-based frame skipping with configurable settings
     local threshold = cachedOptions.frameSkipThreshold
     local maxSkip = cachedOptions.maxFrameSkip
-    
-    if ( perfStats.frameSkip and perfStats.frameSkip % maxSkip == 0 and perfStats.fpsAvg < threshold ) then 
-        return 
+
+    if ( perfStats.frameSkip and perfStats.frameSkip % maxSkip == 0 and perfStats.fpsAvg < threshold ) then
+        return
     end
 
     -- Render to target and draw with curve
@@ -405,7 +403,7 @@ end
 function ax.curvy:CleanupRenderCache()
     local frameCount = engine.TickCount()
     local cutoff = frameCount - 10 -- Keep last 10 frames
-    
+
     for key, frame in pairs(renderCache) do
         if ( frame < cutoff ) then
             renderCache[key] = nil
@@ -471,13 +469,13 @@ hook.Add("OnReloaded", "ax.curvy.Reload", function()
             meshObj:Destroy()
         end
     end
-    
+
     renderTargets = {}
     materials = {}
     meshCache = {}
     meshObjects = {}
     renderCache = {}
-    
+
     -- Reset cached values
     cachedOptions.enabled = true
     cachedOptions.segments = 256
