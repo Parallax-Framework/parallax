@@ -14,10 +14,12 @@ ax.chat:Add("ic", {
     description = "Speak in-character",
     noCommand = true,
     OnRun = function(client, message)
-        return Color(230, 230, 110, 255), client:Nick() .. " says, \"" .. ax.chat:Format(message) .. "\""
+        local icColor = ax.config:Get("chatColorIC", Color(230, 230, 110, 255))
+        return icColor, client:Nick() .. " says, \"" .. ax.chat:Format(message) .. "\""
     end,
     CanHear = function(speaker, listener)
-        return speaker:GetPos():Distance(listener:GetPos()) <= 400
+        local distance = ax.config:Get("chatICDistance", 400)
+        return speaker:GetPos():Distance(listener:GetPos()) <= distance
     end
 })
 
@@ -25,10 +27,12 @@ ax.chat:Add("looc", {
     displayName = "Local Out of Character",
     description = "Speak local out of character",
     OnRun = function(client, message)
-        return Color(110, 10, 10), "(LOOC) ", color_white, client:SteamName() .. ": " .. message
+        local oocColor = ax.config:Get("chatColorOOC", Color(110, 10, 10))
+        return oocColor, "(LOOC) ", color_white, client:SteamName() .. ": " .. message
     end,
     CanHear = function(speaker, listener)
-        return listener:GetCharacter() == nil or speaker:GetPos():Distance(listener:GetPos()) <= 600
+        local distance = ax.config:Get("chatOOCDistance", 600)
+        return listener:GetCharacter() == nil or speaker:GetPos():Distance(listener:GetPos()) <= distance
     end
 })
 
@@ -36,7 +40,8 @@ ax.chat:Add("ooc", {
     displayName = "Out of Character",
     description = "Speak out of character",
     OnRun = function(client, message)
-        return Color(110, 10, 10), "(OOC) ", color_white, client:SteamName() .. ": " .. message
+        local oocColor = ax.config:Get("chatColorOOC", Color(110, 10, 10))
+        return oocColor, "(OOC) ", color_white, client:SteamName() .. ": " .. message
     end,
     CanHear = function(speaker, listener)
         return true
@@ -54,6 +59,7 @@ ax.chat:Add("me", {
         return "* " .. client:Nick() .. " " .. txt
     end,
     CanHear = function(speaker, listener)
-        return speaker:GetPos():Distance(listener:GetPos()) <= 600
+        local distance = ax.config:Get("chatMeDistance", 600)
+        return speaker:GetPos():Distance(listener:GetPos()) <= distance
     end
 })
