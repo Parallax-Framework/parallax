@@ -9,9 +9,7 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
---- Advanced panel animation handler using easing for custom fields.
--- Supports delays, per-field animation isolation, and cancelation.
--- @realm shared
+--- Advanced panel animation handler using easing for custom fields. Supports delays, per-field animation isolation, and cancelation.
 -- @module ax.motion
 
 ax.motion = ax.motion or {}
