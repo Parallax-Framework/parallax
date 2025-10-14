@@ -16,7 +16,7 @@
 
 ax.ease = ax.ease or {}
 
--- Internal mapping of available easing functions
+--- Internal mapping of available easing functions
 ax.ease.list = {
     InBack = math.ease.InBack,
     InBounce = math.ease.InBounce,
