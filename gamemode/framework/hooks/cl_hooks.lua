@@ -31,6 +31,8 @@ function GM:OnEntityCreated(entity)
     if ( entity == LocalPlayer() and !IsValid(ax.client) ) then
         ax.client = LocalPlayer()
 
+        LocalPlayer = function() return ax.client end
+
         hook.Run("OnClientCached", ax.client)
     end
 end
