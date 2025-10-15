@@ -83,8 +83,8 @@ function PANEL:Init()
 
     -- Create a top bar for buttons instead of a left column
     self.buttons = self:Add("EditablePanel")
-    self.buttons:SetSize(ScrW() - ScreenScale(32), ScreenScaleH(32))
-    self.buttons:SetPos(ScreenScale(16), -ScreenScaleH(32))
+    self.buttons:SetSize(ScrW() - ax.util:UIScreenScale(32), ax.util:UIScreenScaleH(32))
+    self.buttons:SetPos(ax.util:UIScreenScale(16), -ax.util:UIScreenScaleH(32))
 
     self.buttons.x = self.buttons:GetX()
     self.buttons.y = self.buttons:GetY()
@@ -94,7 +94,7 @@ function PANEL:Init()
 
     -- Slide down animation from above
     self.buttons:Motion(ax.option:Get("tabFadeTime", 0.25), {
-        Target = {x = ScreenScale(16), y = ScreenScaleH(16), alpha = 255},
+        Target = {x = ax.util:UIScreenScale(16), y = ax.util:UIScreenScaleH(16), alpha = 255},
         Easing = "OutQuad",
         Think = function(vars)
             self.buttons:SetPos(vars.x, vars.y)
@@ -139,10 +139,10 @@ function PANEL:Init()
 
         local tab = self:CreatePage()
         -- Account for top bar: offset content downward by the height of the bar
-        tab:SetXOffset(ScreenScale(32))
-        tab:SetYOffset(self.buttons:GetTall() + ScreenScaleH(32))
-        tab:SetWidthOffset(-ScreenScale(32) * 2)
-        tab:SetHeightOffset(-self.buttons:GetTall() - ScreenScaleH(64))
+        tab:SetXOffset(ax.util:UIScreenScale(32))
+        tab:SetYOffset(self.buttons:GetTall() + ax.util:UIScreenScaleH(32))
+        tab:SetWidthOffset(-ax.util:UIScreenScale(32) * 2)
+        tab:SetHeightOffset(-self.buttons:GetTall() - ax.util:UIScreenScaleH(64))
         self.tabs[k] = tab
         button.tab = tab
 
@@ -204,7 +204,7 @@ function PANEL:Close(callback)
     end)
 
     self.buttons:Motion(fadeDuration, {
-        Target = {x = ScreenScale(16), y = -self.buttons:GetTall() - ScreenScaleH(16), alpha = 0},
+        Target = {x = ax.util:UIScreenScale(16), y = -self.buttons:GetTall() - ax.util:UIScreenScaleH(16), alpha = 0},
         Easing = "OutQuad",
         Think = function(this)
             self.buttons:SetPos(this.x, this.y)

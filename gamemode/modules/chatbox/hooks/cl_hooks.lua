@@ -1,16 +1,16 @@
 local MODULE = MODULE
 
 function MODULE:GetChatboxSize()
-    local width = ScreenScale(192)
-    local height = ScreenScaleH(128)
+    local width = ax.util:UIScreenScale(192)
+    local height = ax.util:UIScreenScaleH(128)
 
     return width, height
 end
 
 function MODULE:GetChatboxPos()
     local _, height = self:GetChatboxSize()
-    local x = ScreenScale(8)
-    local y = ScreenScaleH(8)
+    local x = ax.util:UIScreenScale(8)
+    local y = ax.util:UIScreenScaleH(8)
     y = ScrH() - height - y
 
     return x, y

@@ -118,12 +118,12 @@ function ax.font:CreateFamily(name, font, size, familiesOverride, fontData)
 end
 
 function ax.font:Load()
-    ax.font:CreateFamily("tiny", "GorDIN Regular", ScreenScaleH(6))
-    ax.font:CreateFamily("small", "GorDIN Regular", ScreenScaleH(8))
-    ax.font:CreateFamily("regular", "GorDIN Regular", ScreenScaleH(10))
-    ax.font:CreateFamily("large", "GorDIN Regular", ScreenScaleH(16))
-    ax.font:CreateFamily("massive", "GorDIN Regular", ScreenScaleH(24))
-    ax.font:CreateFamily("huge", "GorDIN Regular", ScreenScaleH(32))
+    ax.font:CreateFamily("tiny", "GorDIN Regular", ax.util:UIScreenScaleH(6))
+    ax.font:CreateFamily("small", "GorDIN Regular", ax.util:UIScreenScaleH(8))
+    ax.font:CreateFamily("regular", "GorDIN Regular", ax.util:UIScreenScaleH(10))
+    ax.font:CreateFamily("large", "GorDIN Regular", ax.util:UIScreenScaleH(16))
+    ax.font:CreateFamily("massive", "GorDIN Regular", ax.util:UIScreenScaleH(24))
+    ax.font:CreateFamily("huge", "GorDIN Regular", ax.util:UIScreenScaleH(32))
 
     hook.Run("LoadFonts")
 end

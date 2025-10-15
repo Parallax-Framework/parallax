@@ -69,7 +69,7 @@ function PANEL:SizeToContents()
     self:SizeToContentsInternal()
 
     local width, height = self:GetSize()
-    self:SetSize(width + ScreenScale(8), height + ScreenScaleH(8))
+    self:SetSize(width + ax.util:UIScreenScale(8), height + ax.util:UIScreenScaleH(8))
 end
 
 function PANEL:OnMousePressed(mouseCode)
@@ -199,12 +199,12 @@ AccessorFunc(PANEL, "textInsetYHovered", "TextInsetYHovered", FORCE_NUMBER)
 function PANEL:Init()
     BaseClass.Init(self)
 
-    self.baseHeight = ScreenScaleH(20)
-    self.baseHeightMotion = ScreenScaleH(20)
-    self.baseHeightHovered = ScreenScaleH(20) * 1.25
-    self.textInsetX = ScreenScale(2)
+    self.baseHeight = ax.util:UIScreenScaleH(20)
+    self.baseHeightMotion = ax.util:UIScreenScaleH(20)
+    self.baseHeightHovered = ax.util:UIScreenScaleH(20) * 1.25
+    self.textInsetX = ax.util:UIScreenScale(2)
     self.textInsetXMotion = 0
-    self.textInsetXHovered = ScreenScale(8)
+    self.textInsetXHovered = ax.util:UIScreenScale(8)
     self.textInsetY = 0
     self.textInsetYMotion = 0
     self.textInsetYHovered = 0
@@ -228,7 +228,7 @@ function PANEL:SizeToContents()
     BaseClass.SizeToContents(self)
 
     local width, _ = self:GetSize()
-    self:SetSize(width + ScreenScale(8), self.baseHeight)
+    self:SetSize(width + ax.util:UIScreenScale(8), self.baseHeight)
 end
 
 function PANEL:Think()
@@ -323,7 +323,7 @@ function PANEL:Paint(width, height)
     local backgroundColor = Color(self.textColor.r / 8, self.textColor.g / 8, self.textColor.b / 8)
 
     ax.render.Draw(0, 0, 0, width, height, ColorAlpha(backgroundColor, 100 * self.inertia))
-    ax.render.Draw(0, 0, 0, ScreenScale(4) * self.inertia, height, Color(self.textColor.r, self.textColor.g, self.textColor.b, 200 * self.inertia))
+    ax.render.Draw(0, 0, 0, ax.util:UIScreenScale(4) * self.inertia, height, Color(self.textColor.r, self.textColor.g, self.textColor.b, 200 * self.inertia))
 end
 
 vgui.Register("ax.button", PANEL, "ax.button.core")
@@ -366,7 +366,7 @@ function PANEL:SizeToContents()
         BaseClass.SizeToContents(self)
 
         local width, height = self:GetSize()
-        self:SetSize(width + ScreenScale(8), height + ScreenScaleH(8))
+        self:SetSize(width + ax.util:UIScreenScale(8), height + ax.util:UIScreenScaleH(8))
 
         return
     end
@@ -382,8 +382,8 @@ function PANEL:SizeToContents()
     self.height = oldHeight
 
     if ( !self.wasHovered ) then
-        width = width + ScreenScale(8)
-        height = height + ScreenScaleH(8)
+        width = width + ax.util:UIScreenScale(8)
+        height = height + ax.util:UIScreenScaleH(8)
     end
 
     self:Motion(0.25, {

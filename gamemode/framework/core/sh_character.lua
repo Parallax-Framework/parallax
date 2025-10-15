@@ -55,7 +55,7 @@ ax.character:RegisterVar("faction", {
 
         local factionList = container:Add("ax.scroller.horizontal")
         factionList:Dock(FILL)
-        factionList:DockMargin(0, ScreenScaleH(32), 0, 0)
+        factionList:DockMargin(0, ax.util:UIScreenScaleH(32), 0, 0)
         factionList:InvalidateParent(true)
         factionList.Paint = nil
 
@@ -75,7 +75,7 @@ ax.character:RegisterVar("faction", {
             return aSort < bSort
         end)
 
-        local buttonWidth = ScreenScale(256)
+        local buttonWidth = ax.util:UIScreenScale(256)
         for i = 1, #factions do
             local v = factions[i]
             local can, reason = ax.faction:CanBecome(v.index, ax.client)
@@ -88,13 +88,13 @@ ax.character:RegisterVar("faction", {
             local description = (v.description and string.upper(v.description)) or "UNKNOWN FACTION DESCRIPTION"
             description = ax.util:CapTextWord(description, buttonWidth / 2) -- Unreliable, but it works for now
 
-            local descriptionWrapped = ax.util:GetWrappedText(description, "ax.regular.bold", buttonWidth - ScreenScale(16))
+            local descriptionWrapped = ax.util:GetWrappedText(description, "ax.regular.bold", buttonWidth - ax.util:UIScreenScale(16))
 
             local factionButton = factionList:Add("ax.button.flat")
             factionButton:SetText("", true, true)
             factionButton:SetWide(buttonWidth)
             factionButton:Dock(LEFT)
-            factionButton:DockMargin(ScreenScale(2), 0, ScreenScale(2), 0)
+            factionButton:DockMargin(ax.util:UIScreenScale(2), 0, ax.util:UIScreenScale(2), 0)
 
             factionButton.DoClick = function()
                 payload.faction = v.index
@@ -150,11 +150,11 @@ ax.character:RegisterVar("faction", {
                     font = font .. ".bold"
                 end
 
-                draw.SimpleText(name, font, ScreenScale(8), imageHeight - boxHeight + boxHeightStatic / 2, textColor, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+                draw.SimpleText(name, font, ax.util:UIScreenScale(8), imageHeight - boxHeight + boxHeightStatic / 2, textColor, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
 
                 local textHeight = ax.util:GetTextHeight("ax.regular.bold") / 1.5
                 for d = 1, #descriptionWrapped do
-                    draw.SimpleText(descriptionWrapped[d], "ax.regular.bold", ScreenScale(8), imageHeight - boxHeight + boxHeightStatic + (d - 1) * textHeight, ColorAlpha(textColor, 255 * inertia), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+                    draw.SimpleText(descriptionWrapped[d], "ax.regular.bold", ax.util:UIScreenScale(8), imageHeight - boxHeight + boxHeightStatic + (d - 1) * textHeight, ColorAlpha(textColor, 255 * inertia), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
                 end
             end
 
@@ -432,7 +432,7 @@ ax.character:RegisterVar("model", {
         local layout = container:Add("DIconLayout")
         layout:SetStretchHeight(true)
         layout:Dock(TOP)
-        layout:DockMargin(0, 0, 0, ScreenScaleH(16))
+        layout:DockMargin(0, 0, 0, ax.util:UIScreenScaleH(16))
 
         local factionID = payload.faction
         if ( !factionID or ax.faction:Get(factionID) == nil ) then
@@ -515,7 +515,7 @@ ax.character:RegisterVar("skin", {
         slider:SetDecimals(0)
         slider:SetValue(payload.skin or 0)
         slider:Dock(TOP)
-        slider:DockMargin(0, 0, 0, ScreenScaleH(16))
+        slider:DockMargin(0, 0, 0, ax.util:UIScreenScaleH(16))
         slider.OnValueChanged = function(_, value)
             payload.skin = math.floor(value)
 
