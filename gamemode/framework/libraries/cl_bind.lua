@@ -170,12 +170,14 @@ function ax.bind:Translate( ... )
     return table.concat(parts, " + ")
 end
 
---- Register a key bind.
--- Triggers when all buttons in `keys` are held and one of them is pressed.
--- @tparam string uclass Unique identifier for this binding.
--- @tparam number keys Bitmask of KEY* constants representing the keys to bind.
--- @tparam function callback Function called as callback(client, key) when fired.
--- @treturn boolean True if the bind was registered; false otherwise.
+--- Register a key bind with press and release callbacks.
+-- Triggers when all buttons in the key combination are held and one of them is pressed.
+-- @realm client
+-- @param keys number Bitmask of KEY* constants representing the keys to bind
+-- @param callbackPressed function Function called when the key combination is pressed
+-- @param callbackReleased function Optional function called when keys are released
+-- @return boolean True if the bind was registered, false otherwise
+-- @usage ax.bind:Bind(bit.bor(KEY_LALT, KEY_E), function() print("Alt+E pressed") end)
 function ax.bind:Bind(keys, callbackPressed, callbackReleased)
     if ( !isnumber(keys) or keys <= 0 ) then
         ax.util:PrintError("Invalid keys provided to ax.bind:Bind()")

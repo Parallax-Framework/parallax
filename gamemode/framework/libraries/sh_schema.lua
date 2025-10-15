@@ -15,6 +15,12 @@
 
 ax.schema = ax.schema or {}
 
+--- Initialize the active schema and load all its components.
+-- Loads the schema's boot file, includes all directories in proper order,
+-- and initializes factions, classes, items, and modules.
+-- @realm shared
+-- @return boolean True if initialization succeeded, false if boot file failed to load
+-- @usage ax.schema:Initialize()
 function ax.schema:Initialize()
     SCHEMA = SCHEMA or { Folder = engine.ActiveGamemode() }
 

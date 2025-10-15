@@ -19,6 +19,11 @@ ax.character.instances = ax.character.instances or {}
 ax.character.meta = ax.character.meta or {}
 ax.character.vars = ax.character.vars or {}
 
+--- Get a character by their unique ID.
+-- @realm shared
+-- @param id number The character's unique ID
+-- @return table|nil The character table if found, nil if invalid ID or not found
+-- @usage local character = ax.character:Get(123)
 function ax.character:Get(id)
     if ( !isnumber(id) ) then
         ax.util:PrintError("Invalid character ID provided to ax.character:Get()")
@@ -28,6 +33,14 @@ function ax.character:Get(id)
     return ax.character.instances[id]
 end
 
+--- Get a character variable's value.
+-- Retrieves a character variable with fallback to default or provided fallback value.
+-- @realm shared
+-- @param char table The character instance
+-- @param name string The variable name to retrieve
+-- @param fallback any Optional fallback value if variable is not set
+-- @return any The variable value, default value, or fallback
+-- @usage local description = ax.character:GetVar(character, "description", "No description")
 function ax.character:GetVar(char, name, fallback)
     local varTable = ax.character.vars[name]
     if ( !istable(varTable) ) then
@@ -46,6 +59,15 @@ function ax.character:GetVar(char, name, fallback)
     return char.vars[name] == nil and fallback or char.vars[name]
 end
 
+--- Set a character variable's value.
+-- Updates a character variable and handles networking and change callbacks.
+-- @realm shared
+-- @param char table The character instance
+-- @param name string The variable name to set
+-- @param value any The new value to set
+-- @param bNoNetworking boolean Optional flag to disable networking (server only)
+-- @param recipients table Optional specific recipients for networking (server only)
+-- @usage ax.character:SetVar(character, "description", "A mysterious figure")
 function ax.character:SetVar(char, name, value, bNoNetworking, recipients)
     local varTable = ax.character.vars[name]
     if ( !istable(varTable) ) then
@@ -82,7 +104,12 @@ function ax.character:SetVar(char, name, value, bNoNetworking, recipients)
     end
 end
 
--- Sync a bot character to all clients so they can receive variable updates
+--- Sync a bot character to all clients for variable updates.
+-- Sends bot character data to clients so they can receive variable changes.
+-- @realm server
+-- @param char table The bot character instance
+-- @param recipients table Optional specific recipients, defaults to all players
+-- @usage ax.character:SyncBotToClients(botCharacter)
 function ax.character:SyncBotToClients(char, recipients)
     if ( CLIENT ) then return end
 
@@ -100,7 +127,14 @@ function ax.character:SyncBotToClients(char, recipients)
     ax.util:PrintDebug("Synced bot character to clients: " .. char:GetName() .. " (ID: " .. char:GetID() .. ")")
 end
 
--- Server-side validation function to check if a variable can be populated during character creation
+--- Check if a variable can be populated during character creation.
+-- Server-side validation to determine if a variable is available for population.
+-- @realm server
+-- @param varName string The variable name to check
+-- @param payload table Character creation payload data
+-- @param client Player The client creating the character
+-- @return boolean, string|nil True if allowed, false if not. Error message if denied.
+-- @usage local canPop, reason = ax.character:CanPopulateVar("description", data, player)
 function ax.character:CanPopulateVar(varName, payload, client)
     local varTable = self.vars[varName]
     if ( !istable(varTable) ) then
@@ -123,6 +157,13 @@ function ax.character:CanPopulateVar(varName, payload, client)
     return true, nil
 end
 
+--- Register a new character variable.
+-- Creates a character variable with getter/setter methods and database integration.
+-- Automatically generates Get/Set methods unless disabled with bNoGetter/bNoSetter.
+-- @realm shared
+-- @param name string The variable name
+-- @param data table Variable configuration including default, field, fieldType, etc.
+-- @usage ax.character:RegisterVar("description", {default = "", fieldType = ax.type.text})
 function ax.character:RegisterVar(name, data)
     if ( !isstring(name) or !istable(data) ) then
         ax.util:PrintError("Invalid arguments provided to ax.character:RegisterVar()")

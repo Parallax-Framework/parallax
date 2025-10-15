@@ -46,10 +46,14 @@ ax.type = ax.type or {
 }
 
 --- Sanitizes a value to match the specified type ID.
--- @param typeID number The type ID to sanitize the value to.
--- @param value any The value to sanitize.
--- @return any The sanitized value, or nil if the value could not be sanitized.
+-- Converts and validates values to ensure they conform to the expected type.
+-- Returns nil if the value cannot be sanitized to the target type.
+-- @realm shared
+-- @param typeID number The type ID to sanitize the value to
+-- @param value any The value to sanitize
+-- @return any The sanitized value, or nil if sanitization failed
 -- @usage local sanitizedValue = ax.type:Sanitise(ax.type.number, "123") -- returns 123
+-- @usage local player = ax.type:Sanitise(ax.type.player, "John") -- returns player entity or nil
 function ax.type:Sanitise(typeID, value)
     if ( typeID == nil or value == nil ) then return nil end
 
@@ -108,9 +112,13 @@ local checkTypeMap = {
 }
 
 --- Detects the type ID of a given value.
--- @param value any The value to detect the type of.
--- @return number|nil The detected type ID, or nil if the type could not be determined.
+-- Automatically determines the appropriate type constant for any Lua value.
+-- Useful for dynamic type checking and validation.
+-- @realm shared
+-- @param value any The value to detect the type of
+-- @return number|nil The detected type ID, or nil if the type could not be determined
 -- @usage local typeID = ax.type:Detect("example") -- returns ax.type.string
+-- @usage local typeID = ax.type:Detect(Vector(1,2,3)) -- returns ax.type.vector
 function ax.type:Detect(value)
     local luaType = type(value)
     local mapped = basicTypeMap[luaType]
@@ -146,9 +154,12 @@ local typeNames = {
 }
 
 --- Formats a type ID into a human-readable string.
--- @param typeID number The type ID to format.
--- @return string The formatted type name.
+-- Converts type constants into user-friendly names for display purposes.
+-- @realm shared
+-- @param typeID number The type ID to format
+-- @return string The formatted type name
 -- @usage local typeName = ax.type:Format(ax.type.color) -- returns "Color"
+-- @usage local typeName = ax.type:Format(ax.type.player) -- returns "Player"
 function ax.type:Format(typeID)
     if ( typeID == nil ) then return "Unknown" end
 

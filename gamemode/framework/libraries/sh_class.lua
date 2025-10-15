@@ -17,6 +17,11 @@ ax.class = ax.class or {}
 ax.class.instances  = ax.class.instances or {}
 ax.class.stored = ax.class.stored or {}
 
+--- Initialize the class system by loading all class files.
+-- Automatically includes classes from framework, modules, and schema directories.
+-- Called during framework boot to set up all available classes.
+-- @realm shared
+-- @usage ax.class:Initialize()
 function ax.class:Initialize()
     self:Include("parallax/gamemode/classes")
 
@@ -33,6 +38,13 @@ function ax.class:Initialize()
     end
 end
 
+--- Include and load class files from a directory.
+-- Recursively searches for class .lua files and loads them into the class system.
+-- Automatically handles shared/client/server file prefixes.
+-- @realm shared
+-- @param directory string The directory path to search for class files
+-- @return boolean True if the operation completed successfully, false on error
+-- @usage ax.class:Include("parallax/gamemode/classes")
 function ax.class:Include(directory)
     if ( !isstring(directory) or directory == "" ) then
         ax.util:PrintError("Include: Invalid directory parameter provided")
@@ -99,6 +111,13 @@ function ax.class:Include(directory)
     return true
 end
 
+--- Get a class by its identifier.
+-- Supports lookup by unique ID string, index number, name, or partial name matching.
+-- @realm shared
+-- @param identifier string|number The class ID, index, or name to search for
+-- @return table|nil The class table if found, nil otherwise
+-- @usage local class = ax.class:Get("security")
+-- @usage local class = ax.class:Get(1)
 function ax.class:Get(identifier)
     if ( isstring(identifier) and self.stored[identifier] ) then
         return self.stored[identifier]
@@ -118,6 +137,13 @@ function ax.class:Get(identifier)
     return nil
 end
 
+--- Check if a player can become a specific class.
+-- Runs through hook validation and class-specific CanBecome functions.
+-- @realm shared
+-- @param class string|number The class ID, index, or name
+-- @param client Player The player entity to check permissions for
+-- @return boolean, string|nil True if allowed, false if not. Error message if denied.
+-- @usage local canBecome, reason = ax.class:CanBecome("security", player)
 function ax.class:CanBecome(class, client)
     local classTable = self:Get(faction)
     local try, catch = hook.Run("CanBecomeClass", classTable, client)
@@ -137,10 +163,21 @@ function ax.class:CanBecome(class, client)
     return true, nil
 end
 
+--- Get all loaded class instances.
+-- Returns the complete list of classes indexed by their ID.
+-- @realm shared
+-- @return table Array of all class instances
+-- @usage local allClasses = ax.class:GetAll()
 function ax.class:GetAll()
     return self.instances
 end
 
+--- Check if a class exists and is valid.
+-- Validates class existence by attempting to retrieve it.
+-- @realm shared
+-- @param class string|number The class identifier to validate
+-- @return boolean True if the class exists, false otherwise
+-- @usage if ax.class:IsValid("security") then print("Class exists") end
 function ax.class:IsValid(class)
     if ( self:Get(class) != nil ) then
         return true

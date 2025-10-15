@@ -9,11 +9,21 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
+--- Item management system for creating, storing, and managing game items.
+-- Supports item inheritance, base items, actions, and instance management.
+-- Includes automatic loading from framework, schema, and module directories.
+-- @module ax.item
+
 ax.item = ax.item or {}
 ax.item.stored = ax.item.stored or {}
 ax.item.instances = ax.item.instances or {}
 ax.item.meta = ax.item.meta or {}
 
+--- Initialize the item system by loading all item files.
+-- Automatically includes items from framework, schema, and modules directories.
+-- Called during framework boot to set up all available items and refresh instances.
+-- @realm shared
+-- @usage ax.item:Initialize()
 function ax.item:Initialize()
     self:Include("parallax/gamemode/items")
     self:Include(engine.ActiveGamemode() .. "/gamemode/items")
@@ -28,7 +38,11 @@ function ax.item:Initialize()
     self:RefreshItemInstances()
 end
 
--- Refresh all existing item instances to reflect updated item definitions
+--- Refresh all existing item instances to reflect updated item definitions.
+-- Updates metatables of existing item instances to use the latest stored item definitions.
+-- Called automatically during initialization to ensure consistency after hot-reloading.
+-- @realm shared
+-- @usage ax.item:RefreshItemInstances()
 function ax.item:RefreshItemInstances()
     local refreshedCount = 0
     local errorCount = 0
@@ -123,7 +137,12 @@ function ax.item:CreateDefaultDropAction()
     }
 end
 
--- First pass: Load base items from base/ directory
+--- Load base items from a specific directory.
+-- First pass of item loading that sets up base items with the isBase flag.
+-- Base items serve as parent classes for other items to inherit from.
+-- @realm shared
+-- @param basePath string The directory path containing base item files
+-- @usage ax.item:LoadBasesFromDirectory("parallax/gamemode/items/base")
 function ax.item:LoadBasesFromDirectory(basePath)
     local baseFiles, _ = file.Find(basePath .. "/*.lua", "LUA")
     if ( !baseFiles or #baseFiles == 0 ) then
@@ -144,7 +163,12 @@ function ax.item:LoadBasesFromDirectory(basePath)
     end
 end
 
--- Second pass: Load regular items from root directory
+--- Load regular items from a directory.
+-- Second pass of item loading that sets up regular items without inheritance.
+-- Items loaded here get default drop actions and are stored in the item registry.
+-- @realm shared
+-- @param path string The directory path containing item files
+-- @usage ax.item:LoadItemsFromDirectory("parallax/gamemode/items")
 function ax.item:LoadItemsFromDirectory(path)
     local files, _ = file.Find(path .. "/*.lua", "LUA")
     if ( !files or #files == 0 ) then
@@ -164,7 +188,12 @@ function ax.item:LoadItemsFromDirectory(path)
     end
 end
 
--- Third pass: Load items from subdirectories that correspond to base items
+--- Load items from subdirectories with inheritance from base items.
+-- Third pass that loads items from subdirectories, checking for corresponding base items.
+-- If a base item exists, items inherit from it; otherwise they're loaded as regular items.
+-- @realm shared
+-- @param path string The root directory path to search for subdirectories
+-- @usage ax.item:LoadItemsWithInheritance("parallax/gamemode/items")
 function ax.item:LoadItemsWithInheritance(path)
     local _, directories = file.Find(path .. "/*", "LUA")
     if ( !directories or #directories == 0 ) then
@@ -190,7 +219,14 @@ function ax.item:LoadItemsWithInheritance(path)
     end
 end
 
--- Load items from a directory with a specific base item inheritance
+--- Load items from a directory with inheritance from a specific base item.
+-- Loads items that inherit properties and methods from a specified base item.
+-- Items maintain their own identity while gaining base functionality.
+-- @realm shared
+-- @param dirPath string The directory path containing items to inherit from base
+-- @param baseName string The name of the base item for reference
+-- @param baseItem table The base item table to inherit from
+-- @usage ax.item:LoadItemsWithBase("parallax/gamemode/items/weapon", "weapon", weaponBase)
 function ax.item:LoadItemsWithBase(dirPath, baseName, baseItem)
     local subFiles, _ = file.Find(dirPath .. "/*.lua", "LUA")
     if ( !subFiles or #subFiles == 0 ) then

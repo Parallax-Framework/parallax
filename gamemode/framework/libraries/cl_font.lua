@@ -37,6 +37,15 @@ local families = {
     ["italic.bold"] = "GorDIN Black"
 }
 
+--- Create a font family with various styles and weights.
+-- Generates multiple font variations (bold, italic, etc.) from a base font definition.
+-- @realm client
+-- @param name string The base name for the font family
+-- @param font string The font face name to use
+-- @param size number The base font size
+-- @param familiesOverride table Optional override for font family definitions
+-- @param fontData table Optional additional font data to merge
+-- @usage ax.font:CreateFamily("header", "Arial", 24)
 function ax.font:CreateFamily(name, font, size, familiesOverride, fontData)
     if ( !font or font == "" ) then
         ax.util:PrintError("Failed to create font family '" .. name .. "': Font is not defined.")
