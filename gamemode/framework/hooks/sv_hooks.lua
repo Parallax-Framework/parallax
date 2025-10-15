@@ -251,6 +251,7 @@ function GM:StartCommand(client, userCmd)
                 hook.Run("PlayerReady", client)
 
                 ax.inventory:Restore(client)
+                ax.relay:Sync( client )
             end)
         end)
 
