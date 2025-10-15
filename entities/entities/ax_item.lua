@@ -27,10 +27,6 @@ if ( SERVER ) then
         self:PhysWake()
     end
 
-    function ENT:UpdateTransmitState()
-        return TRANSMIT_PVS
-    end
-
     function ENT:Use(activator, caller)
         if ( !IsValid(activator) or !activator:IsPlayer() ) then return end
 
