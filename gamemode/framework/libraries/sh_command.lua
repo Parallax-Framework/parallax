@@ -9,7 +9,9 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
---- Command library for registering and executing commands.
+--- Command system for registering and executing chat/console commands.
+-- Supports arguments, permissions, aliases, and CAMI integration.
+-- Automatically handles networking between client and server.
 -- @module ax.command
 
 ax.command = ax.command or {}
@@ -21,13 +23,12 @@ if ( SERVER ) then
     util.AddNetworkString("ax.command.run")
 end
 
---[[
-    Register a command with the system.
-    @realm shared
-    @param string name The command name
-    @param table def Command definition table
-    @usage ax.command:Add("test", { description = "Test command", OnRun = function(client) end })
-]]
+--- Register a command with the system.
+-- Creates a new command with validation, permissions, and automatic CAMI integration.
+-- @realm shared
+-- @param name string The command name (will be normalized)
+-- @param def table Command definition with OnRun, description, arguments, etc.
+-- @usage ax.command:Add("test", { description = "Test command", OnRun = function(client) end })
 function ax.command:Add(name, def)
     if ( !isstring(name) or name == "" ) then
         ax.util:PrintError("ax.command:Add - Invalid command name provided")
@@ -76,21 +77,21 @@ function ax.command:Add(name, def)
     end
 end
 
---[[
-    Returns all commands.
-    @realm shared
-]]
+--- Get all registered commands.
+-- Returns the complete registry of all commands and their definitions.
+-- @realm shared
+-- @return table Table containing all command definitions
+-- @usage local allCommands = ax.command:GetAll()
 function ax.command:GetAll()
     return self.registry
 end
 
---[[
-    Find all commands matching a partial name or alias.
-    @realm shared
-    @param string partial The partial string to search for
-    @return table Table of matching commands {name = def}
-    @usage local matches = ax.command:FindAll("pm")
-]]
+--- Find all commands matching a partial name or alias.
+-- Performs case-insensitive search for commands starting with the partial string.
+-- @realm shared
+-- @param partial string The partial string to search for
+-- @return table Table of matching commands {name = def}
+-- @usage local matches = ax.command:FindAll("pm")
 function ax.command:FindAll(partial)
     if ( !isstring(partial) or partial == "" ) then
         return {}
@@ -109,13 +110,12 @@ function ax.command:FindAll(partial)
     return results
 end
 
---[[
-    Find the closest single possible command match.
-    @realm shared
-    @param string partial The partial command name to search for
-    @return table|nil The closest matching command definition or nil if not found
-    @usage local command = ax.command:FindClosest("test")
-]]
+--- Find the closest single possible command match.
+-- Returns the best matching command when multiple partial matches exist.
+-- @realm shared
+-- @param partial string The partial command name to search for
+-- @return table|nil The closest matching command definition or nil if not found
+-- @usage local command = ax.command:FindClosest("test")
 function ax.command:FindClosest(partial)
     local matches = self:FindAll(partial)
     local bestMatch = nil
@@ -133,14 +133,13 @@ function ax.command:FindClosest(partial)
     return bestMatch
 end
 
---[[
-    Check if a caller has access to run a command.
-    @realm shared
-    @param Entity caller The player or console (nil) attempting to run the command
-    @param table def The command definition
-    @return bool, string Whether access is granted and optional reason
-    @usage local canRun, reason = ax.command:HasAccess(client, def)
-]]
+--- Check if a caller has access to run a command.
+-- Validates permissions through admin checks, custom functions, and CAMI integration.
+-- @realm shared
+-- @param caller Entity The player or console (nil) attempting to run the command
+-- @param def table The command definition
+-- @return boolean, string Whether access is granted and optional reason
+-- @usage local canRun, reason = ax.command:HasAccess(client, def)
 function ax.command:HasAccess(caller, def)
     if ( !istable(def) ) then
         return false, "Invalid command definition"
@@ -178,14 +177,13 @@ function ax.command:HasAccess(caller, def)
     return true
 end
 
---[[
-    Extract and validate arguments from raw input string.
-    @realm shared
-    @param table def Command definition
-    @param string raw Raw argument string
-    @return table|nil, string Parsed values or nil with error message
-    @usage local values, err = ax.command:ExtractArgs(def, "player1 hello world")
-]]
+--- Extract and validate arguments from raw input string.
+-- Parses command arguments according to type definitions and validates them.
+-- @realm shared
+-- @param def table Command definition containing argument specifications
+-- @param raw string Raw argument string from user input
+-- @return table|nil, string Parsed values or nil with error message
+-- @usage local values, err = ax.command:ExtractArgs(def, "player1 hello world")
 function ax.command:ExtractArgs(def, raw)
     raw = raw or ""
 

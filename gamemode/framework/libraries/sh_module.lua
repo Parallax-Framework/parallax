@@ -16,6 +16,12 @@
 ax.module = ax.module or {}
 ax.module.stored = ax.module.stored or {}
 
+--- Include and load modules from a directory path.
+-- Automatically loads both single-file modules and directory-based modules with boot.lua.
+-- For directory modules, includes all standard framework directories in proper order.
+-- @realm shared
+-- @param path string The directory path to search for modules
+-- @usage ax.module:Include("parallax/gamemode/modules")
 function ax.module:Include(path)
     local files, directories = file.Find(path .. "/*", "LUA")
 
@@ -83,6 +89,12 @@ function ax.module:Include(path)
     end
 end
 
+--- Get a loaded module by its unique identifier.
+-- Retrieves a module that has been previously loaded.
+-- @realm shared
+-- @param name string The module's unique identifier
+-- @return table|nil The module table if found, nil otherwise
+-- @usage local myModule = ax.module:Get("example_module")
 function ax.module:Get(name)
     if ( !name or name == "" ) then return nil end
 
@@ -95,6 +107,12 @@ function ax.module:Get(name)
     return module
 end
 
+--- Check if a module is loaded.
+-- Tests whether a module with the given name has been successfully loaded.
+-- @realm shared
+-- @param name string The module's unique identifier
+-- @return boolean True if the module is loaded, false otherwise
+-- @usage if ax.module:IsLoaded("example_module") then print("Module available") end
 function ax.module:IsLoaded(name)
     if ( !name or name == "" ) then return false end
 

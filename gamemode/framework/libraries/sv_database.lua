@@ -27,6 +27,16 @@ ax.database = ax.database or {
     }
 }
 
+--- Connect to the database using specified parameters.
+-- Establishes connection using mysqloo module with configurable database settings.
+-- @realm server
+-- @param module string Database module type (default: "sqlite")
+-- @param hostname string Database hostname (default: "localhost")
+-- @param user string Database username (default: "root")
+-- @param password string Database password (default: "")
+-- @param database string Database name (default: "parallax")
+-- @param port number Database port (default: 3306)
+-- @usage ax.database:Connect("mysql", "localhost", "user", "pass", "gamedb")
 function ax.database:Connect(module, hostname, user, password, database, port)
     module = module or "sqlite"
     hostname = hostname or "localhost"
@@ -39,6 +49,13 @@ function ax.database:Connect(module, hostname, user, password, database, port)
     mysql:Connect(hostname, user, password, database, port)
 end
 
+--- Add a field to the database schema.
+-- Adds a new field to a specified table schema, handling queuing if database isn't ready.
+-- @realm server
+-- @param schemaType string The table name to add the field to
+-- @param field string The field name to add
+-- @param fieldType number The ax.type constant for the field type
+-- @usage ax.database:AddToSchema("ax_characters", "description", ax.type.text)
 function ax.database:AddToSchema(schemaType, field, fieldType)
     if ( !self.type[fieldType] ) then
         error(string.format("attempted to add field in schema with invalid type '%s'", fieldType))
@@ -53,7 +70,13 @@ function ax.database:AddToSchema(schemaType, field, fieldType)
     self:InsertSchema(schemaType, field, fieldType)
 end
 
--- this is only ever used internally
+--- Insert a field into the database schema (internal use).
+-- Directly modifies database schema and table structure.
+-- @realm server
+-- @param schemaType string The table name
+-- @param field string The field name
+-- @param fieldType number The ax.type constant for the field type
+-- @usage ax.database:InsertSchema("ax_characters", "description", ax.type.text)
 function ax.database:InsertSchema(schemaType, field, fieldType)
     local schema = self.schema[schemaType]
     if ( !schema ) then
@@ -75,6 +98,10 @@ function ax.database:InsertSchema(schemaType, field, fieldType)
     end
 end
 
+--- Create the default database tables for the framework.
+-- Sets up schema tracking, players, characters, and inventories tables.
+-- @realm server
+-- @usage ax.database:CreateTables()
 function ax.database:CreateTables()
     local query
 

@@ -9,6 +9,8 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
+--- Server-side character management for database operations and character lifecycle.
+-- Handles character creation, loading, saving, and synchronization with clients.
 -- @module ax.character
 
 ax.character = ax.character or {}
@@ -16,6 +18,13 @@ ax.character.instances = ax.character.instances or {}
 ax.character.meta = ax.character.meta or {}
 ax.character.vars = ax.character.vars or {}
 
+--- Create a new character in the database.
+-- Creates a character with the provided payload data and automatically creates an inventory.
+-- Calls the callback with the character and inventory objects upon completion.
+-- @realm server
+-- @param payload table Character creation data containing variable values
+-- @param callback function Optional callback function called with (character, inventory) or (false) on failure
+-- @usage ax.character:Create({name = "John Doe", description = "A citizen"}, function(char, inv) end)
 function ax.character:Create(payload, callback)
     local creationTime = math.floor(os.time())
 
@@ -81,6 +90,13 @@ function ax.character:Create(payload, callback)
     query:Execute()
 end
 
+--- Load a character for a player.
+-- Associates a character with a player, syncs character data, and sets up inventory.
+-- Automatically respawns the player after loading the character.
+-- @realm server
+-- @param client Player The player entity to load the character for
+-- @param character table The character object to load
+-- @usage ax.character:Load(player, characterObject)
 function ax.character:Load(client, character)
     local clientData = client:GetTable()
     character.player = client
@@ -111,6 +127,12 @@ function ax.character:Load(client, character)
     hook.Run("PlayerLoadedCharacter", client, character)
 end
 
+--- Restore all characters for a player from the database.
+-- Loads all characters associated with the player's SteamID64 and sends them to the client.
+-- @realm server
+-- @param client Player The player entity to restore characters for
+-- @param callback function Optional callback function called with the character array
+-- @usage ax.character:Restore(player, function(characters) print("Loaded", #characters, "characters") end)
 function ax.character:Restore(client, callback)
     local clientData = client:GetTable()
     clientData.axCharacters = clientData.axCharacters or {}
@@ -158,6 +180,12 @@ function ax.character:Restore(client, callback)
     query:Execute()
 end
 
+--- Delete a character from the database.
+-- Permanently removes a character and its associated inventory from the database.
+-- @realm server
+-- @param id number The character ID to delete
+-- @param callback function Optional callback function called with success boolean
+-- @usage ax.character:Delete(123, function(success) print("Deleted:", success) end)
 function ax.character:Delete(id, callback)
     local query = mysql:Delete("ax_characters")
     query:Where("id", id)
@@ -186,6 +214,12 @@ function ax.character:Delete(id, callback)
     query:Execute()
 end
 
+--- Synchronize character data to all clients.
+-- Broadcasts character information to all connected players for client-side access.
+-- @realm server
+-- @param client Player The player associated with the character
+-- @param character table The character object to synchronize
+-- @usage ax.character:Sync(player, characterObject)
 function ax.character:Sync(client, character)
     net.Start("ax.character.sync")
         net.WritePlayer(client)

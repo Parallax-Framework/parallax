@@ -9,6 +9,14 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
+--- Option system for per-client preferences with optional server synchronization.
+-- Client-owned settings that can optionally sync to server for gameplay features.
+-- Supports local persistence and automatic networking for multiplayer consistency.
+-- @module ax.option
+-- @usage ax.option:Add("headbob", ax.type.bool, true, { category = "camera" })
+-- @usage ax.option:Set("headbob", false)  -- saves client-side; networks if bNetworked=true
+-- @usage local lang = ax.option:Get(player, "language", "english")  -- server reading player option
+
 --[[
     Option System - Per-client preferences with optional server sync
 

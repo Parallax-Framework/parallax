@@ -9,6 +9,14 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
+--- Configuration system for server-owned settings with optional client networking.
+-- Server maintains the authoritative config values and can optionally sync them to clients.
+-- Supports categorization, validation, and automatic persistence to JSON files.
+-- @module ax.config
+-- @usage ax.config:Add("thirdperson", ax.type.bool, true, { description = "Enable third-person view.", bNetworked = true, category = "camera" })
+-- @usage ax.config:Set("thirdperson", false)
+-- @usage print(ax.config:Get("thirdperson", true))  -- server: source of truth; client: cached
+
 --[[
     Config System - Server-owned settings with optional client networking
 

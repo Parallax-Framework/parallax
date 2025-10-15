@@ -18,6 +18,14 @@ ax.player = ax.player or {}
 ax.player.meta = FindMetaTable("Player")
 ax.player.vars = ax.player.vars or {}
 
+--- Get a player variable's value.
+-- Retrieves a player variable with fallback to default or provided fallback value.
+-- @realm shared
+-- @param client Player The player entity
+-- @param key string The variable name to retrieve
+-- @param fallback any Optional fallback value if variable is not set
+-- @return any The variable value, default value, or fallback
+-- @usage local data = ax.player:GetVar(player, "customData", "default")
 function ax.player:GetVar(client, key, fallback)
     local varTable = ax.player.vars[key]
     if ( !istable(varTable) ) then
@@ -37,6 +45,15 @@ function ax.player:GetVar(client, key, fallback)
     return clientTable.axVars[key] == nil and fallback or clientTable.axVars[key]
 end
 
+--- Set a player variable's value.
+-- Updates a player variable and handles networking and change callbacks.
+-- @realm shared
+-- @param client Player The player entity
+-- @param key string The variable name to set
+-- @param value any The new value to set
+-- @param bNoNetworking boolean Optional flag to disable networking (server only)
+-- @param recipients table Optional specific recipients for networking (server only)
+-- @usage ax.player:SetVar(player, "customData", "new value")
 function ax.player:SetVar(client, key, value, bNoNetworking, recipients)
     local varTable = ax.player.vars[key]
     if ( !istable(varTable) ) then
@@ -67,6 +84,13 @@ function ax.player:SetVar(client, key, value, bNoNetworking, recipients)
     end
 end
 
+--- Register a new player variable.
+-- Creates a player variable with getter/setter methods and database integration.
+-- Automatically generates Get/Set methods unless disabled with bNoGetter/bNoSetter.
+-- @realm shared
+-- @param key string The variable name
+-- @param data table Variable configuration including default, field, fieldType, etc.
+-- @usage ax.player:RegisterVar("customData", {default = "", fieldType = ax.type.text})
 function ax.player:RegisterVar(key, data)
     if ( !isstring(key) or !istable(data) ) then
         ax.util:PrintError("Invalid arguments provided to ax.player:RegisterVar()")
