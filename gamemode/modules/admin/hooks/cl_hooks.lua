@@ -34,7 +34,7 @@ function MODULE:DrawItems()
         local scr = item:GetPos():ToScreen()
         if ( !scr.visible ) then continue end
 
-        local cls = item:GetItemClass() or "unknown"
+        local cls = item:GetRelay( "itemClass" ) or "unknown"
         stacks_by_class[cls] = stacks_by_class[cls] or {}
 
         local placed = false

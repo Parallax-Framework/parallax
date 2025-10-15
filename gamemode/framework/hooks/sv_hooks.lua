@@ -310,8 +310,8 @@ function GM:ShutDown() -- PlayerDisconnected isn't called on p2p/singleplayer
     for i = #items, 1, -1 do
         local item = items[i]
 
-        output[ item:GetItemID() ] = {
-            class = item:GetItemClass(),
+        output[ item:GetRelay( "itemID" ) ] = {
+            class = item:GetRelay( "itemClass" ),
             position = item:GetPos(),
             angles = item:GetAngles(),
             data = item:GetItemTable():GetData() or {}

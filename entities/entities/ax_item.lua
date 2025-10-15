@@ -12,7 +12,7 @@ function ENT:SetupDataTables()
 end
 
 function ENT:GetItemTable()
-    return ax.item.instances[self:GetItemID()]
+    return ax.item.instances[self:GetRelay("itemID")]
 end
 
 if ( SERVER ) then

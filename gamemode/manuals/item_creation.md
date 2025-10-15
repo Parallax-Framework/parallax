@@ -192,8 +192,8 @@ You can still use direct entity creation for advanced cases, but you must manual
 
 ```lua
 local ent = ents.Create("ax_item")
-ent:SetItemID(itemID)
-ent:SetItemClass("water_bottle")
+ent:SetRelay("itemID", itemID)
+ent:SetRelay("itemClass", class)
 ent:SetPos(Vector(0,0,64))
 ent:Spawn()
 ```

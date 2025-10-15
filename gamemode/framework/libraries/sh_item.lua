@@ -375,8 +375,8 @@ if ( SERVER ) then
                         return false, "Failed to create item entity."
                     end
 
-                    itemEntity:SetItemID(item.id)
-                    itemEntity:SetItemClass(item.class)
+                    itemEntity:SetRelay("itemID", item.id)
+                    itemEntity:SetRelay("itemClass", item.class)
                     itemEntity:SetPos(dropPos or vector_origin)
                     itemEntity:Spawn()
                     itemEntity:Activate()
@@ -424,8 +424,8 @@ if ( SERVER ) then
                 local itemObject = ax.item:Instance(lastID, class)
 
                 local entity = ents.Create("ax_item")
-                entity:SetItemID(lastID)
-                entity:SetItemClass(class)
+                entity:SetRelay("itemID", lastID)
+                entity:SetRelay("itemClass", class)
                 entity:SetPos(pos)
                 entity:SetAngles(ang)
                 entity:Spawn()
