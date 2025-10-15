@@ -16,14 +16,14 @@
 -- @section bot_utilities
 
 --- Global utility table storing first names for bot name generation
-BOT_FIRST_NAMES = {
+AX_BOT_FIRST_NAMES = {
     "Alex", "Jordan", "Casey", "Morgan", "Taylor", "Jamie", "Riley", "Avery",
     "Quinn", "Sage", "Cameron", "Rowan", "Blake", "Phoenix", "Reese", "Parker",
     "Drew", "Emery", "Finley", "Hayden", "Logan", "River", "Skyler", "Dakota"
 }
 
 --- Global utility table storing last names for bot name generation
-BOT_LAST_NAMES = {
+AX_BOT_LAST_NAMES = {
     "Anderson", "Baker", "Clark", "Davis", "Evans", "Foster", "Garcia", "Harris",
     "Johnson", "Kelly", "Lewis", "Martin", "Nelson", "Parker", "Quinn", "Rodriguez",
     "Smith", "Taylor", "Walker", "Wilson", "Young", "Brown", "Miller", "Moore"
