@@ -119,8 +119,8 @@ if ( CLIENT ) then
     -- @param height number Height in pixels
     -- @param color Color Color of the blur overlay (alpha used)
     -- @usage ax.util:DrawBlur(16,10,10,200,100,Color(255,255,255,180))
-    function ax.util:DrawBlur(r, x, y, width, height, color)
-        ax.render.Draw(r, x, y, width, height, color, ax.render.BLUR)
+    function ax.util:DrawBlur(x, y, w, h, flags, tl, tr, bl, br, thickness)
+        ax.render.DrawBlur(x, y, w, h, flags, tl, tr, bl, br, thickness)
     end
 
     --- Resolve a gradient material path by a short name.
