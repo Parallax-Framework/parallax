@@ -83,9 +83,9 @@ if ( CLIENT ) then
 
     -- style defaults (can be overridden by config where noted)
     ax.notification.maxVisible = math.max(1, math.floor(ScrH() / 64)) -- max toasts visible at once
-    ax.notification.paddingX = ScreenScale(16)
-    ax.notification.paddingY = ScreenScaleH(2)
-    ax.notification.spacing = ScreenScaleH(2)
+    ax.notification.paddingX = ax.util:UIScreenScale(16)
+    ax.notification.paddingY = ax.util:UIScreenScaleH(2)
+    ax.notification.spacing = ax.util:UIScreenScaleH(2)
     ax.notification.font = "ax.regular.bold"
     ax.notificationMaxWidthFraction = 0.5
     ax.notificationInTime = 0.25
@@ -243,32 +243,32 @@ if ( CLIENT ) then
         local baseX, baseY, anchorX, anchorY
         if ( position == "topright" ) then
             baseX = sw - self.paddingX
-            baseY = ScreenScaleH(32)
+            baseY = ax.util:UIScreenScaleH(32)
             anchorX = TEXT_ALIGN_RIGHT
             anchorY = 1 -- grow downward
         elseif ( position == "topleft" ) then
             baseX = self.paddingX
-            baseY = ScreenScaleH(32)
+            baseY = ax.util:UIScreenScaleH(32)
             anchorX = TEXT_ALIGN_LEFT
             anchorY = 1 -- grow downward
         elseif ( position == "topcenter" ) then
             baseX = sw / 2
-            baseY = ScreenScaleH(32)
+            baseY = ax.util:UIScreenScaleH(32)
             anchorX = TEXT_ALIGN_CENTER
             anchorY = 1 -- grow downward
         elseif ( position == "bottomright" ) then
             baseX = sw - self.paddingX
-            baseY = sh - ScreenScaleH(32)
+            baseY = sh - ax.util:UIScreenScaleH(32)
             anchorX = TEXT_ALIGN_RIGHT
             anchorY = -1 -- grow upward
         elseif ( position == "bottomleft" ) then
             baseX = self.paddingX
-            baseY = sh - ScreenScaleH(32)
+            baseY = sh - ax.util:UIScreenScaleH(32)
             anchorX = TEXT_ALIGN_LEFT
             anchorY = -1 -- grow upward
         else -- bottomcenter (default behavior)
             baseX = sw / 2
-            baseY = sh - ScreenScaleH(32)
+            baseY = sh - ax.util:UIScreenScaleH(32)
             anchorX = TEXT_ALIGN_CENTER
             anchorY = -1 -- grow upward
         end

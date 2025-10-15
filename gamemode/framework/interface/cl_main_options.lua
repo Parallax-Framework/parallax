@@ -13,10 +13,10 @@ function PANEL:Init()
 
     local settings = self:Add("ax.store")
     settings:SetType("option")
-    settings:DockMargin(ScreenScale(32), ScreenScaleH(32), ScreenScale(32), ScreenScaleH(32))
+    settings:DockMargin(ax.util:UIScreenScale(32), ax.util:UIScreenScaleH(32), ax.util:UIScreenScale(32), ax.util:UIScreenScaleH(32))
 
     for _, tab in ipairs(settings:GetPages()) do
-        tab:DockPadding(0, 0, ScreenScale(64), 0)
+        tab:DockPadding(0, 0, ax.util:UIScreenScale(64), 0)
     end
 end
 

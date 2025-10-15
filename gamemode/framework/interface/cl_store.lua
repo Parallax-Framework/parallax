@@ -16,11 +16,11 @@ function PANEL:Init()
     self:InvalidateParent(true)
 
     self.categories = self:Add("ax.scroller.vertical")
-    self.categories:SetSize(ScreenScale(32), ScrH() - ScreenScaleH(64))
+    self.categories:SetSize(ax.util:UIScreenScale(32), ScrH() - ax.util:UIScreenScaleH(64))
 
     self.container = self:Add("EditablePanel")
     self.container:Dock(FILL)
-    self.container:DockMargin(0, ScreenScaleH(16) + self.categories:GetTall(), 0, 0)
+    self.container:DockMargin(0, ax.util:UIScreenScaleH(16) + self.categories:GetTall(), 0, 0)
     self.container.Paint = nil
 end
 
@@ -53,7 +53,7 @@ function PANEL:SetType(type)
         button:Dock(TOP)
         button:SetText(ax.util:UniqueIDToName(ax.localization:GetPhrase(v)), true)
 
-        self.categories:SetWide(math.max(self.categories:GetWide(), button:GetWide() + ScreenScale(16)))
+        self.categories:SetWide(math.max(self.categories:GetWide(), button:GetWide() + ax.util:UIScreenScale(16)))
 
         local tab = self:CreatePage()
 
@@ -85,8 +85,8 @@ function PANEL:SetType(type)
 
     -- Adjust all pages now that we know the final width of categories
     for k, v in ipairs(self:GetPages()) do
-        v:SetXOffset(self.categories:GetWide() + ScreenScale(32))
-        v:SetWidthOffset(-self.categories:GetWide() - ScreenScale(32))
+        v:SetXOffset(self.categories:GetWide() + ax.util:UIScreenScale(32))
+        v:SetWidthOffset(-self.categories:GetWide() - ax.util:UIScreenScale(32))
     end
 
     -- Determine which category to show initially
@@ -222,7 +222,7 @@ function PANEL:Populate(tab, scroller, type, category)
         if ( showSubCategoryHeaders and subCat != sortedSubCategories[#sortedSubCategories] ) then
             local spacer = scroller:Add("EditablePanel")
             spacer:Dock(TOP)
-            spacer:SetTall(ScreenScale(8))
+            spacer:SetTall(ax.util:UIScreenScale(8))
             spacer.Paint = nil
         end
     end
@@ -241,14 +241,14 @@ function PANEL:Init()
 
     self:SetContentAlignment(4)
     self:SetText("unknown")
-    self:SetTextInset(ScreenScale(8), 0)
+    self:SetTextInset(ax.util:UIScreenScale(8), 0)
 
     self.value = self:Add("ax.text")
     self.value:Dock(RIGHT)
-    self.value:DockMargin(0, 0, ScreenScale(8), 0)
+    self.value:DockMargin(0, 0, ax.util:UIScreenScale(8), 0)
     self.value:SetText("unknown")
     self.value:SetFont("ax.large")
-    self.value:SetWide(ScreenScale(192))
+    self.value:SetWide(ax.util:UIScreenScale(192))
     self.value:SetContentAlignment(6)
     self.value.Think = function(this)
         this:SetTextColor(self:GetTextColor())
@@ -374,12 +374,12 @@ function PANEL:Init()
 
     self:SetContentAlignment(4)
     self:SetText("unknown")
-    self:SetTextInset(ScreenScale(8), 0)
+    self:SetTextInset(ax.util:UIScreenScale(8), 0)
 
     self.slider = self:Add("DNumSlider") -- TODO: Custom slider, making it look like the Gamepad UI
     self.slider:Dock(RIGHT)
-    self.slider:DockMargin(0, 0, ScreenScale(8), 0)
-    self.slider:SetWide(ScreenScale(192))
+    self.slider:DockMargin(0, 0, ax.util:UIScreenScale(8), 0)
+    self.slider:SetWide(ax.util:UIScreenScale(192))
     self.slider:SetMinMax(0, 100)
     self.slider:SetDecimals(0)
     self.slider:SetValue(0)
@@ -484,12 +484,12 @@ function PANEL:Init()
 
     self:SetContentAlignment(4)
     self:SetText("unknown")
-    self:SetTextInset(ScreenScale(8), 0)
+    self:SetTextInset(ax.util:UIScreenScale(8), 0)
 
     self.entry = self:Add("ax.text.entry")
     self.entry:Dock(RIGHT)
-    self.entry:DockMargin(0, ScreenScale(4), ScreenScale(8), ScreenScale(4))
-    self.entry:SetWide(ScreenScale(192))
+    self.entry:DockMargin(0, ax.util:UIScreenScale(4), ax.util:UIScreenScale(8), ax.util:UIScreenScale(4))
+    self.entry:SetWide(ax.util:UIScreenScale(192))
     self.entry:SetText("unknown")
     self.entry.OnValueChanged = function(this, value)
         if ( self.type == "config" ) then
