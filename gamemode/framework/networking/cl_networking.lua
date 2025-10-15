@@ -361,6 +361,13 @@ net.Receive("ax.relay.update", function()
     ax.relay.data[index][name] = value
 end)
 
+net.Receive("ax.relay.sync", function()
+    local data = net.ReadTable()
+    if ( !istable(data) ) then return end
+
+    ax.relay.data = data
+end)
+
 net.Receive("ax.item.transfer", function()
     local itemID = net.ReadUInt(32)
     local fromInventoryID = net.ReadUInt(32)

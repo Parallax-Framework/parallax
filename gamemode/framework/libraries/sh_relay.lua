@@ -12,6 +12,18 @@
 ax.relay = ax.relay or {}
 ax.relay.data = ax.relay.data or {}
 
+if ( SERVER ) then
+    function ax.relay:Sync( recipients )
+        net.Start( "ax.relay.sync" )
+            net.WriteTable( ax.relay.data )
+        if ( recipients ) then
+            net.Send( recipients )
+        else
+            net.Broadcast()
+        end
+    end
+end
+
 local ENTITY = FindMetaTable("Entity")
 function ENTITY:SetRelay(name, value, bNoNetworking, recipients)
     if ( !isstring(name) ) then

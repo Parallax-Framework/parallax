@@ -20,6 +20,7 @@ util.AddNetworkString("ax.character.setnameprompt")
 util.AddNetworkString("ax.character.bot.sync")
 
 util.AddNetworkString("ax.relay.update")
+util.AddNetworkString("ax.relay.sync")
 
 util.AddNetworkString("ax.inventory.sync")
 util.AddNetworkString("ax.inventory.receiver.add")
