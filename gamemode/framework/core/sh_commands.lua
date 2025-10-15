@@ -65,13 +65,8 @@ ax.command:Add("CharSetSkin", {
     OnRun = function(client, target, skin)
         if ( !target ) then return "Invalid character." end
 
-        target:SetData("skin", skin)
+        target:SetSkin(skin)
         target:Save()
-
-        local targetPlayer = target:GetOwner()
-        if ( IsValid(targetPlayer) ) then
-            targetPlayer:SetSkin(skin)
-        end
 
         return "Skin set to " .. skin
     end
