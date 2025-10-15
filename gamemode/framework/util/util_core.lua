@@ -371,7 +371,7 @@ function ax.util:UIScreenScale(value)
 end
 
 --- Scale a ScreenScaleH value using the user's UI scale preference.
--- @realm client  
+-- @realm client
 -- @param value number The base value to pass to ScreenScaleH
 -- @return number The ScreenScaleH'd and UI-scaled value
 -- @usage local scaledHeight = ax.util:UIScreenScaleH(32)

@@ -127,17 +127,13 @@ function ax.util:IncludeDirectory(directory, fromLua, toSkip)
     for i = 1, #files do
         local fileName = files[i]
         local filePath = directory .. fileName
-        if ( string.EndsWith(fileName, ".lua") ) then
-            -- Skip files in the toSkip list
-            if ( toSkip and toSkip[fileName] ) then
-                ax.util:PrintDebug("Skipping file in toSkip list: " .. fileName)
-                continue
-            end
-
-            ax.util:Include(filePath)
-        else
-            ax.util:PrintWarning("Skipping non-Lua file in directory: " .. filePath)
+        -- Skip files in the toSkip list
+        if ( toSkip and toSkip[fileName] ) then
+            ax.util:PrintDebug("Skipping file in toSkip list: " .. fileName)
+            continue
         end
+
+        ax.util:Include(filePath)
     end
 
     -- Recursively include all subdirectories
