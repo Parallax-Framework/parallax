@@ -63,8 +63,8 @@ if ( SERVER ) then
         end
 
         local package = {}
-        if ( def.OnRun ) then
-            local result = { def.OnRun(client, ...) }
+        if ( isfunction(def.OnRun) ) then
+            local result = { def:OnRun(client, ...) }
             if ( #result == 0 ) then return end
 
             package = result
@@ -75,17 +75,18 @@ if ( SERVER ) then
         local clients = {}
         for _, v in player.Iterator() do
             if ( v == client ) then
-                table.insert(clients, v)
-            elseif ( def.CanHear ) then
-                if ( def.CanHear(client, v) ) then
-                    table.insert(clients, v)
+                clients[ #clients + 1 ] = v
+            elseif ( isfunction(def.CanHear) ) then
+                if ( def:CanHear(client, v) ) then
+                    clients[ #clients + 1 ] = v
                 end
             else
-                table.insert(clients, v)
+                clients[ #clients + 1 ] = v
             end
         end
 
-        for _, v in ipairs(clients) do
+        for i = 1, #clients do
+            local v = clients[i]
             v:ChatPrint(unpack(package))
         end
     end
