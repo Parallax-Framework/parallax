@@ -32,6 +32,15 @@ ax.config:Add("chatICDistance", ax.type.number, 400, {
     subCategory = "distances"
 })
 
+ax.config:Add("chatYellDistance", ax.type.number, 700, {
+    description = "Maximum distance for Yell chat",
+    min = 100,
+    max = 2000,
+    decimals = 0,
+    category = "chat",
+    subCategory = "distances"
+})
+
 ax.config:Add("chatOOCDistance", ax.type.number, 600, {
     description = "Maximum distance for LOOC (local out-of-character) chat",
     min = 100,
@@ -53,6 +62,13 @@ ax.config:Add("chatMeDistance", ax.type.number, 600, {
 -- Chat colors (networked for client consistency)
 ax.config:Add("chatColorIC", ax.type.color, Color(230, 230, 110), {
     description = "Color for IC chat",
+    bNetworked = true,
+    category = "chat",
+    subCategory = "colors"
+})
+
+ax.config:Add("chatColorYell", ax.type.color, Color(255, 0, 0), {
+    description = "Color for Yell chat",
     bNetworked = true,
     category = "chat",
     subCategory = "colors"

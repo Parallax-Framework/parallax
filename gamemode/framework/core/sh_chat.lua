@@ -23,6 +23,19 @@ ax.chat:Add("ic", {
     end
 })
 
+ax.chat:Add("yell", {
+    displayName = "Yell",
+    description = "Yell at someone",
+    OnRun = function(client, message)
+        local yellColor = ax.config:Get("chatColorYell", Color(255, 0, 0))
+        return yellColor, client:Nick() .. " yells, \"" .. ax.chat:Format(message) .. "\""
+    end,
+    CanHear = function(speaker, listener)
+        local distance = ax.config:Get("chatYellDistance", 700)
+        return speaker:GetPos():Distance(listener:GetPos()) <= distance
+    end
+})
+
 ax.chat:Add("looc", {
     displayName = "Local Out of Character",
     description = "Speak local out of character",
