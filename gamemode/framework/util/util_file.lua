@@ -45,6 +45,20 @@ function ax.util:DetectFileRealm(file)
     return "shared"
 end
 
+local function SafeInclude(path)
+    local success, err = pcall(include, path)
+    if ( !success ) then
+        ax.util:PrintWarning("Failed to include file: " .. path .. " - Error: " .. err)
+    end
+end
+
+local function SafeIncludeCS(path)
+    local success, err = pcall(AddCSLuaFile, path)
+    if ( !success ) then
+        ax.util:PrintWarning("Failed to AddCSLuaFile for: " .. path .. " - Error: " .. err)
+    end
+end
+
 --- Includes a Lua file, handling AddCSLuaFile/include based on realm.
 -- @param path string Path to the Lua file to include (relative to gamemode)
 -- @param realm string|nil Optional realm hint: "client", "server", or "shared"
@@ -53,6 +67,11 @@ end
 function ax.util:Include(path, realm)
     if ( !isstring(path) or path == "" ) then
         ax.util:PrintError("Include: Invalid path parameter provided")
+        return false
+    end
+
+    if ( !string.EndsWith(path, ".lua") ) then
+        ax.util:PrintWarning("Include: Path does not end with .lua: " .. path)
         return false
     end
 
@@ -68,18 +87,18 @@ function ax.util:Include(path, realm)
     -- Include the file based on the realm
     if ( realm == "client" ) then
         if ( SERVER ) then
-            AddCSLuaFile(path)
+            SafeIncludeCS(path)
         else
-            include(path)
+            SafeInclude(path)
         end
     elseif ( SERVER and realm == "server" ) then
-        include(path)
+        SafeInclude(path)
     else
         if ( SERVER ) then
-            AddCSLuaFile(path)
+            SafeIncludeCS(path)
         end
 
-        include(path)
+        SafeInclude(path)
     end
 
     -- Print debug information if developer mode is enabled
