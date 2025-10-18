@@ -55,7 +55,8 @@ function ax.character:Create(payload, callback)
         end
 
         -- Override creationTime
-        character.vars.creationTime = creationTime
+        character:SetCreationTime( creationTime )
+        character:Save()
 
         -- Turn the data into a table rather than JSON from the database
         character.vars.data = util.JSONToTable(character.vars.data)

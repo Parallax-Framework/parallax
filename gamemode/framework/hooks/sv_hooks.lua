@@ -242,6 +242,7 @@ function GM:StartCommand(client, userCmd)
 
                     client:SetNameVar(client:SteamName()) -- Update the steam name in db
                     client:SetLastJoin(os.time())
+                    client:Save()
 
                     ax.util:PrintDebug("Loaded player data for " .. steamID64)
                 end)
