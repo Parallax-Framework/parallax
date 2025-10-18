@@ -9,6 +9,9 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
+-- Queue for character variable updates that arrive before character sync
+local characterVarQueue = {}
+
 net.Receive("ax.player.ready", function(len)
     local clientTable = LocalPlayer():GetTable()
     if ( clientTable.axReady ) then return end
@@ -61,6 +64,19 @@ net.Receive("ax.character.create", function(len)
         local character = setmetatable(charData, ax.character.meta)
         ax.character.instances[character.id] = character
         clientData.axCharacters[#clientData.axCharacters + 1] = character
+
+        -- Process any queued variable updates for this character
+        if ( characterVarQueue[character.id] ) then
+            if ( !istable(character.vars) ) then
+                character.vars = {}
+            end
+
+            for varName, varValue in pairs(characterVarQueue[character.id]) do
+                character.vars[varName] = varValue
+            end
+
+            characterVarQueue[character.id] = nil
+        end
     end
 
     -- Now we can safely get the character
@@ -127,6 +143,19 @@ net.Receive("ax.character.sync", function()
     client:GetTable().axCharacter = character
 
     ax.character.instances[character.id] = setmetatable(character, ax.character.meta)
+
+    -- Process any queued variable updates for this character
+    if ( characterVarQueue[character.id] ) then
+        if ( !istable(character.vars) ) then
+            character.vars = {}
+        end
+
+        for varName, varValue in pairs(characterVarQueue[character.id]) do
+            character.vars[varName] = varValue
+        end
+
+        characterVarQueue[character.id] = nil
+    end
 end)
 
 net.Receive("ax.character.restore", function()
@@ -144,6 +173,19 @@ net.Receive("ax.character.restore", function()
         local character = setmetatable(charData, ax.character.meta)
         ax.character.instances[character.id] = character
         clientData.axCharacters[ #clientData.axCharacters + 1 ] = character
+
+        -- Process any queued variable updates for this character
+        if ( characterVarQueue[character.id] ) then
+            if ( !istable(character.vars) ) then
+                character.vars = {}
+            end
+
+            for varName, varValue in pairs(characterVarQueue[character.id]) do
+                character.vars[varName] = varValue
+            end
+
+            characterVarQueue[character.id] = nil
+        end
     end
 
     hook.Run("OnCharactersRestored", characters)
@@ -189,7 +231,9 @@ net.Receive("ax.character.var", function()
 
     local character = ax.character:Get(characterId)
     if ( !character ) then
-        -- Silently ignore var updates for characters we don't have (e.g., during creation)
+        -- Queue the var update until the character is synced
+        characterVarQueue[characterId] = characterVarQueue[characterId] or {}
+        characterVarQueue[characterId][name] = value
         return
     end
 
