@@ -11,13 +11,15 @@ net.Receive("ax.animations.update", function()
     clientTable.axHoldType = holdType
     clientTable.axLastAct = -1
 
-    -- Turn IK off and then on, but only if we're not in noclip
-    client:SetIK(false)
-    timer.Simple(0.1, function()
-        if ( IsValid(client) ) then
-            client:SetIK(client:GetMoveType() != MOVETYPE_NOCLIP)
-        end
-    end)
+    -- Turn IK off and then on, but only if we're not in noclip and IK is enabled
+    if ( ax.config:Get("animationsIKEnabled") ) then
+        client:SetIK(false)
+        timer.Simple(0.1, function()
+            if ( IsValid(client) ) then
+                client:SetIK(client:GetMoveType() != MOVETYPE_NOCLIP)
+            end
+        end)
+    end
 end)
 
 net.Receive("ax.sequence.reset", function()
