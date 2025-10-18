@@ -17,7 +17,6 @@ ax.config:Add("language", ax.type.string, "en", {
 
 ax.config:Add("botSupport", ax.type.bool, true, {
     description = "Enable automatic character creation for bots.",
-    bNetworked = false,
     category = "general",
     subCategory = "basic"
 })
@@ -62,21 +61,18 @@ ax.config:Add("chatMeDistance", ax.type.number, 600, {
 -- Chat colors (networked for client consistency)
 ax.config:Add("chatColorIC", ax.type.color, Color(230, 230, 110), {
     description = "Color for IC chat",
-    bNetworked = true,
     category = "chat",
     subCategory = "colors"
 })
 
 ax.config:Add("chatColorYell", ax.type.color, Color(255, 0, 0), {
     description = "Color for Yell chat",
-    bNetworked = true,
     category = "chat",
     subCategory = "colors"
 })
 
 ax.config:Add("chatColorOOC", ax.type.color, Color(110, 10, 10), {
     description = "Color for OOC/LOOC chat",
-    bNetworked = true,
     category = "chat",
     subCategory = "colors"
 })
@@ -94,28 +90,24 @@ ax.config:Add("movementBunnyhopReduction", ax.type.number, 0.5, {
 -- Console color configurations (networked for consistency)
 ax.config:Add("consoleColorPrint", ax.type.color, Color(100, 150, 255), {
     description = "Color for framework print messages",
-    bNetworked = true,
     category = "interface",
     subCategory = "console"
 })
 
 ax.config:Add("consoleColorWarning", ax.type.color, Color(255, 200, 100), {
     description = "Color for framework warning messages",
-    bNetworked = true,
     category = "interface",
     subCategory = "console"
 })
 
 ax.config:Add("consoleColorSuccess", ax.type.color, Color(100, 255, 100), {
     description = "Color for framework success messages",
-    bNetworked = true,
     category = "interface",
     subCategory = "console"
 })
 
 ax.config:Add("consoleColorDebug", ax.type.color, Color(150, 150, 150), {
     description = "Color for framework debug messages",
-    bNetworked = true,
     category = "interface",
     subCategory = "console"
 })
@@ -126,14 +118,12 @@ ax.config:Add("fontScaleMultiplier", ax.type.number, 1.0, {
     min = 0.5,
     max = 2.0,
     decimals = 2,
-    bNetworked = true,
     category = "interface",
     subCategory = "display"
 })
 
 ax.config:Add("fontAntialiasEnabled", ax.type.bool, true, {
     description = "Enable font antialiasing",
-    bNetworked = true,
     category = "interface",
     subCategory = "display"
 })

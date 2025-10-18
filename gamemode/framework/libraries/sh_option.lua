@@ -14,7 +14,7 @@
 -- Supports local persistence and automatic networking for multiplayer consistency.
 -- @module ax.option
 -- @usage ax.option:Add("headbob", ax.type.bool, true, { category = "camera" })
--- @usage ax.option:Set("headbob", false)  -- saves client-side; networks if bNetworked=true
+-- @usage ax.option:Set("headbob", false)  -- saves client-side; networks if bNoNetworking=false
 -- @usage local lang = ax.option:Get(player, "language", "english")  -- server reading player option
 
 --[[
@@ -23,7 +23,6 @@
     Examples:
     ax.option:Add("headbob", ax.type.bool, true, { category = "camera", subCategory = "view" })
     ax.option:Add("language", ax.type.array, "english", {
-        bNetworked = true,
         category = "general",
         subCategory = "basic",
         populate = function() return { english = "English", german = "German", french = "French" } end
@@ -31,7 +30,7 @@
 
     if CLIENT then
         print(ax.option:Get("headbob", true))
-        ax.option:Set("headbob", false)  -- saves client-side; networks only if bNetworked=true
+        ax.option:Set("headbob", false)  -- saves client-side; networks only if bNoNetworking=false
         ax.option:Sync()                 -- push all networked options now
     end
 
@@ -52,8 +51,7 @@ local optionSpec = {
         set = "ax.option.set",
         request = "option.request"
     },
-    perPlayer = true,
-    networkedFlagKey = "bNetworked"
+    perPlayer = true
 }
 
 ax.option = ax.util:CreateStore(optionSpec)

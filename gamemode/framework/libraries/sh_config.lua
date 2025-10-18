@@ -13,7 +13,7 @@
 -- Server maintains the authoritative config values and can optionally sync them to clients.
 -- Supports categorization, validation, and automatic persistence to JSON files.
 -- @module ax.config
--- @usage ax.config:Add("thirdperson", ax.type.bool, true, { description = "Enable third-person view.", bNetworked = true, category = "camera" })
+-- @usage ax.config:Add("thirdperson", ax.type.bool, true, { description = "Enable third-person view.", category = "camera" })
 -- @usage ax.config:Set("thirdperson", false)
 -- @usage print(ax.config:Get("thirdperson", true))  -- server: source of truth; client: cached
 
@@ -21,8 +21,8 @@
     Config System - Server-owned settings with optional client networking
 
     Examples:
-    ax.config:Add("thirdperson", ax.type.bool, true, { description = "Enable third-person view.", bNetworked = true, category = "camera", subCategory = "thirdperson" })
-    ax.config:Add("gravityScale", ax.type.number, 1, { min = 0.1, max = 3, decimals = 2, bNetworked = true, category = "gameplay", subCategory = "physics" })
+    ax.config:Add("thirdperson", ax.type.bool, true, { description = "Enable third-person view.", category = "camera", subCategory = "thirdperson" })
+    ax.config:Add("gravityScale", ax.type.number, 1, { min = 0.1, max = 3, decimals = 2, bNoNetworking = true, category = "gameplay", subCategory = "physics" })
 
     ax.config:Set("thirdperson", false)
     print(ax.config:Get("thirdperson", true))  -- server: source of truth; client: cached
@@ -37,8 +37,7 @@ local configSpec = {
         init = "ax.config.init",
         set = "ax.config.set"
     },
-    perPlayer = false,
-    networkedFlagKey = "bNetworked"
+    perPlayer = false
 }
 
 ax.config = ax.util:CreateStore(configSpec)
