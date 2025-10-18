@@ -102,7 +102,7 @@ net.Receive("ax.character.create", function(length, client)
         if ( v.hide ) then continue end
 
         -- Only include variables that can be populated during character creation
-        local canPop, reason = ax.character:CanPopulateVar(k, payload, client)
+        local canPop = ax.character:CanPopulateVar(k, payload, client)
         if ( canPop ) then
             vars[k] = payload[k] != nil and payload[k] or NULL
         end
