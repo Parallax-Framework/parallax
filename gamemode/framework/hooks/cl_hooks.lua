@@ -153,9 +153,6 @@ local function DrawTargetID()
 
     -- Only draw if we have some alpha
     if ( targetIDAlpha > 5 and IsValid(targetIDTarget) ) then
-        local scrW, scrH = ScrW(), ScrH()
-        local centerX, centerY = scrW * 0.5, scrH * 0.5
-
         -- Get character information
         local character = targetIDTarget:GetCharacter()
         local displayName = character and character.vars.name or targetIDTarget:Name()
