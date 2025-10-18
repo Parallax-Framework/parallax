@@ -407,7 +407,7 @@ ax.character:RegisterVar("model", {
         local valid = false
         for k, v in ipairs(factionData:GetModels()) do
             if ( istable(v) ) then
-                if ( table.HasValue(string.lower(v), string.lower(value)) ) then -- Yeah Ik table.HasValue is bad but idc
+                if ( table.HasValue(string.lower(v[1]), string.lower(value)) ) then -- Yeah Ik table.HasValue is bad but idc
                     valid = true
                     break
                 end
