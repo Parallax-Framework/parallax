@@ -28,7 +28,7 @@ ax.chat:Add("yell", {
     description = "Yell at someone",
     OnRun = function(self, client, message)
         local yellColor = ax.config:Get("chatColorYell", Color(255, 175, 0))
-        return yellColor, client:Nick() .. " yells, \"" .. ax.chat:Format(message) .. "\""
+        return yellColor, client:Nick() .. " yells, \"" .. ax.chat:Format( string.upper( message ) ) .. "\""
     end,
     CanHear = function(speaker, listener)
         local distance = ax.config:Get("chatYellDistance", 700)
