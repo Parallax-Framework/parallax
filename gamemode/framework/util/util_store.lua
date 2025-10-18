@@ -54,12 +54,12 @@ function ax.util:CreateStore(spec)
     -- @param key string Setting key
     -- @param type any ax.type data type (e.g. ax.type.number)
     -- @param default any Default value
-    -- @param data table Additional metadata (category, bNetworked, min/max/decimals,
+    -- @param data table Additional metadata (category, bNoNetworking, min/max/decimals,
     -- populate=function, OnChanged=function)
     -- @return boolean True if added, false on invalid params
     function store:Add(key, type, default, data)
         if ( !isstring(key) or !type or default == nil ) then
-            ax.util:PrintDebug(spec.name, "Add: Invalid parameters for key", key)
+            ax.util:PrintDebug(spec.name, " Add: Invalid parameters for key ", key)
             return false
         end
 
@@ -73,7 +73,7 @@ function ax.util:CreateStore(spec)
 
         store.defaults[key] = default
 
-        if ( data.bNetworked ) then
+        if ( !data.bNoNetworking ) then
             store.networkedKeys[key] = true
         end
 
@@ -84,7 +84,7 @@ function ax.util:CreateStore(spec)
                 if ( coerced != nil ) then
                     store.values[key] = coerced
                 else
-                    ax.util:PrintDebug(spec.name, "Add: Failed to coerce stored value for", key, ":", err)
+                    ax.util:PrintDebug(spec.name, " Add: Failed to coerce stored value for ", key, ": ", err)
                     store.values[key] = default
                 end
             else
@@ -94,7 +94,7 @@ function ax.util:CreateStore(spec)
             store.values[key] = default
         end
 
-        ax.util:PrintDebug(spec.name, "Added setting:", key, "=", store.values[key])
+        ax.util:PrintDebug(spec.name, " Added setting: ", key, " = ", store.values[key])
 
         return true
     end
@@ -110,7 +110,7 @@ function ax.util:CreateStore(spec)
         if ( spec.name == "option" and SERVER and IsValid(key) and key:IsPlayer() ) then
             local client, actualKey, fallback = key, default, select(3, ...) or nil
             if ( !ax.util:IsValidPlayer(client) ) then
-                ax.util:PrintDebug(spec.name, "Get: Invalid player provided")
+                ax.util:PrintDebug(spec.name, " Get: Invalid player provided")
                 return fallback
             end
 
@@ -163,19 +163,19 @@ function ax.util:CreateStore(spec)
     -- @return boolean True if the value changed, false otherwise
     function store:Set(key, value, bNoSave)
         if ( !isstring(key) ) then
-            ax.util:PrintDebug(spec.name, "Set: Invalid key")
+            ax.util:PrintDebug(spec.name, " Set: Invalid key")
             return false
         end
 
         local regEntry = store.registry[key]
         if ( !regEntry ) then
-            ax.util:PrintDebug(spec.name, "Set: Unknown key ", key)
+            ax.util:PrintDebug(spec.name, " Set: Unknown key ", key)
             return false
         end
 
         local coerced, err = ax.type:Sanitise(regEntry.type, value)
         if ( coerced == nil ) then
-            ax.util:PrintDebug(spec.name, "Set: Invalid value for ", key, ":", err)
+            ax.util:PrintDebug(spec.name, " Set: Invalid value for ", key, ": ", err)
             return false
         end
 
@@ -313,7 +313,7 @@ function ax.util:CreateStore(spec)
 
         local data = ax.util:ReadJSON(spec.path)
         if ( !data ) then
-            ax.util:PrintDebug(spec.name, "Load: No data file found at", spec.path)
+            ax.util:PrintDebug(spec.name, " Load: No data file found at ", spec.path)
             return false
         end
 
@@ -326,12 +326,12 @@ function ax.util:CreateStore(spec)
                     store.values[key] = coerced
                     loaded = loaded + 1
                 else
-                    ax.util:PrintDebug(spec.name, "Load: Failed to coerce", key, ":", err)
+                    ax.util:PrintDebug(spec.name, " Load: Failed to coerce ", key, ": ", err)
                 end
             end
         end
 
-        ax.util:PrintDebug(spec.name, "Loaded", loaded, "settings from", spec.path)
+        ax.util:PrintDebug(spec.name, " Loaded ", loaded, " settings from ", spec.path)
 
         if ( spec.name == "config" ) then
             hook.Run("OnConfigsLoaded")
@@ -358,9 +358,9 @@ function ax.util:CreateStore(spec)
 
         local success = ax.util:WriteJSON(spec.path, data)
         if ( success ) then
-            ax.util:PrintDebug(spec.name, "Saved", table.Count(data), "settings to", spec.path)
+            ax.util:PrintDebug(spec.name, " Saved ", table.Count(data), " settings to ", spec.path)
         else
-            ax.util:PrintDebug(spec.name, "Failed to save settings to", spec.path)
+            ax.util:PrintWarning(spec.name, " Failed to save settings to ", spec.path)
         end
 
         return success
@@ -388,7 +388,7 @@ function ax.util:CreateStore(spec)
                     net.WriteTable(networked)
                 net.Send(recipients)
 
-                ax.util:PrintDebug(spec.name, "Synced", table.Count(networked), "config keys to clients")
+                ax.util:PrintDebug(spec.name, " Synced ", table.Count(networked), "config keys to clients")
             end
         elseif ( spec.name == "option" and CLIENT ) then
             local networked = {}
@@ -401,7 +401,7 @@ function ax.util:CreateStore(spec)
                     net.WriteTable(networked)
                 net.SendToServer()
 
-                ax.util:PrintDebug(spec.name, "Synced", table.Count(networked), "option keys to server")
+                ax.util:PrintDebug(spec.name, " Synced ", table.Count(networked), "option keys to server")
             end
         end
     end
@@ -427,7 +427,7 @@ function ax.util:CreateStore(spec)
                         self:HandleConfigChange(store.registry[key], nil, value, key)
                     end
 
-                    ax.util:PrintDebug(spec.name, "Received initial config:", table.Count(data), "keys")
+                    ax.util:PrintDebug(spec.name, " Received initial config: ", table.Count(data), " keys")
                 end)
 
                 net.Receive(spec.net.set, function()
@@ -438,7 +438,7 @@ function ax.util:CreateStore(spec)
 
                     self:HandleConfigChange(store.registry[key], oldValue, value, key)
 
-                    ax.util:PrintDebug(spec.name, "Received config update:", key, "=", value)
+                    ax.util:PrintDebug(spec.name, " Received config update: ", key, " = ", value)
                 end)
             end
         elseif ( spec.name == "option" ) then
@@ -457,7 +457,7 @@ function ax.util:CreateStore(spec)
                         SERVER_CACHE[client][key] = value
                     end
 
-                    ax.util:PrintDebug(spec.name, "Received option sync from", client:Nick(), ":", table.Count(data), "keys")
+                    ax.util:PrintDebug(spec.name, " Received option sync from ", client:Nick(), ": ", table.Count(data), " keys")
                 end)
 
                 net.Receive(spec.net.set, function(len, client)
@@ -469,7 +469,7 @@ function ax.util:CreateStore(spec)
                     SERVER_CACHE[client] = SERVER_CACHE[client] or {}
                     SERVER_CACHE[client][key] = value
 
-                    ax.util:PrintDebug(spec.name, "Received option update from", client:Nick(), ":", key, "=", value)
+                    ax.util:PrintDebug(spec.name, " Received option update from ", client:Nick(), ": ", key, " = ", value)
                 end)
 
                 hook.Add("PlayerDisconnected", "option.Cleanup", function(client)
