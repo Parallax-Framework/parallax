@@ -199,6 +199,11 @@ function ax.util:CreateStore(spec)
 
         store.values[key] = coerced
 
+        -- Update CONFIG_CACHE immediately on client for optimistic UI updates
+        if ( CLIENT and spec.name == "config" ) then
+            CONFIG_CACHE[key] = coerced
+        end
+
         if ( isfunction(regEntry.data.OnChanged) ) then
             ax.util:SafeCall(regEntry.data.OnChanged, oldValue, coerced, key)
         end
@@ -219,15 +224,32 @@ function ax.util:CreateStore(spec)
                     net.WriteString(key)
                     net.WriteType(coerced)
                 net.Broadcast()
+
+                ax.util:PrintDebug(spec.name, " Broadcasted config update: ", key, " = ", coerced)
+            elseif ( spec.name == "config" and CLIENT ) then
+                net.Start(spec.net.set)
+                    net.WriteString(key)
+                    net.WriteType(coerced)
+                net.SendToServer()
+
+                ax.util:PrintDebug(spec.name, " Sending config update: ", key, " = ", coerced)
+            elseif ( spec.name == "option" and SERVER ) then
+                -- No-op; server does not push option changes to clients
             elseif ( spec.name == "option" and CLIENT ) then
                 net.Start(spec.net.set)
                     net.WriteString(key)
                     net.WriteType(coerced)
                 net.SendToServer()
+
+                ax.util:PrintDebug(spec.name, " Sending option update: ", key, " = ", coerced)
+            else
+                ax.util:PrintWarning(spec.name, " Unknown network state for option update: ", key, " = ", coerced)
             end
+        else
+            ax.util:PrintWarning(spec.name, " Set: ", key, " = ", coerced, " (not networked)")
         end
 
-        ax.util:PrintDebug(spec.name, "Set: ", key, "=", coerced)
+        ax.util:PrintDebug(spec.name, " Set: ", key, " = ", coerced)
 
         return true
     end
@@ -417,6 +439,24 @@ function ax.util:CreateStore(spec)
 
                 hook.Add("PlayerReady", "config.Init", function(client)
                     store:Sync(client)
+                end)
+
+                -- Handle config changes from clients (requires admin permission)
+                net.Receive(spec.net.set, function(len, client)
+                    if ( !ax.util:IsValidPlayer(client) or !client:IsAdmin() ) then
+                        ax.util:PrintWarning(spec.name, "Unauthorized config change attempt from", IsValid(client) and client:Nick() or "invalid client")
+                        return
+                    end
+
+                    local key = net.ReadString()
+                    local value = net.ReadType()
+
+                    local success = store:Set(key, value)
+                    if ( success ) then
+                        ax.util:PrintDebug(spec.name, " Config changed by ", client:Nick(), ": ", key, " = ", value)
+                    else
+                        ax.util:PrintWarning(spec.name, " Failed to set config ", key, " from ", client:Nick())
+                    end
                 end)
             elseif ( CLIENT ) then
                 net.Receive(spec.net.init, function()
