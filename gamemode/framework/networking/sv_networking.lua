@@ -211,6 +211,7 @@ net.Receive("ax.character.load", function(length, client)
         end
 
         prevChar.player = NULL
+        ax.character:Sync(client, prevChar)
         hook.Run("PlayerUnloadedCharacter", client, prevChar)
     end
 
