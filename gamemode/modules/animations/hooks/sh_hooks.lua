@@ -456,6 +456,8 @@ function MODULE:DoAnimationEvent(client, event, data)
     local clientTable = client:GetTable()
     if ( event == PLAYERANIMEVENT_ATTACK_PRIMARY ) then
         local animTable = clientTable.axAnimations
+        if ( !animTable ) then return end
+
         local desired = animTable.shoot or ACT_MP_ATTACK_STAND_PRIMARYFIRE
         if ( client:IsFlagSet(FL_ANIMDUCKING) ) then
             desired = animTable.shoot_crouch or animTable.shoot or ACT_MP_ATTACK_CROUCH_PRIMARYFIRE
