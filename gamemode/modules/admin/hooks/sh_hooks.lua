@@ -8,16 +8,20 @@ function MODULE:PlayerNoClip(client, desiredState)
     if ( desiredState ) then
         client:SetNoDraw(true)
         client:SetNotSolid(true)
-        client:SetNoTarget(true)
         client:DrawWorldModel(false)
         client:DrawShadow(false)
-        client:GodEnable()
+
+        if ( SERVER ) then
+            client:SetNoTarget(true)
+        end
     else
         client:SetNoDraw(false)
         client:SetNotSolid(false)
-        client:SetNoTarget(false)
         client:DrawWorldModel(true)
         client:DrawShadow(true)
-        client:GodDisable()
+
+        if ( SERVER ) then
+            client:SetNoTarget(false)
+        end
     end
 end
