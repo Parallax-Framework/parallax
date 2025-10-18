@@ -189,7 +189,7 @@ net.Receive("ax.character.var", function()
 
     local character = ax.character:Get(characterId)
     if ( !character ) then
-        ax.util:PrintError("Character with ID " .. characterId .. " not found")
+        -- Silently ignore var updates for characters we don't have (e.g., during creation)
         return
     end
 
