@@ -153,7 +153,7 @@ function ax.database:CreateTables()
             if ( !istable(result) ) then return end
 
             for _, v in pairs(result) do
-                self.schema[v.table] = util.JSONToTable(v.columns)
+                self.schema[v.table] = ax.util:SafeParseTable(v.columns)
             end
 
             -- update schema if needed

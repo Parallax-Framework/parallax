@@ -59,7 +59,7 @@ function ax.character:Create(payload, callback)
         character:Save()
 
         -- Turn the data into a table rather than JSON from the database
-        character.vars.data = util.JSONToTable(character.vars.data)
+        character.vars.data = ax.util:SafeParseTable(character.vars.data)
 
         ax.character.instances[character.id] = character
 
@@ -164,7 +164,7 @@ function ax.character:Restore(client, callback)
             end
 
             -- Turn the data into a table rather than JSON from the database
-            character.vars.data = util.JSONToTable(character.vars.data)
+            character.vars.data = ax.util:SafeParseTable(character.vars.data)
 
             ax.character.instances[character.id] = character
             clientData.axCharacters[ #clientData.axCharacters + 1 ] = character
