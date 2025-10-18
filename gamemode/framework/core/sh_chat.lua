@@ -13,11 +13,11 @@ ax.chat:Add("ic", {
     displayName = "IC",
     description = "Speak in-character",
     noCommand = true,
-    OnRun = function(self, client, message)
+    OnRun = function(this, client, message)
         local icColor = ax.config:Get("chatColorIC", Color(230, 230, 110, 255))
         return icColor, client:Nick() .. " says, \"" .. ax.chat:Format(message) .. "\""
     end,
-    CanHear = function(speaker, listener)
+    CanHear = function(this, speaker, listener)
         local distance = ax.config:Get("chatICDistance", 400)
         return speaker:GetPos():Distance(listener:GetPos()) <= distance
     end
@@ -26,11 +26,11 @@ ax.chat:Add("ic", {
 ax.chat:Add("yell", {
     displayName = "Yell",
     description = "Yell at someone",
-    OnRun = function(self, client, message)
+    OnRun = function(this, client, message)
         local yellColor = ax.config:Get("chatColorYell", Color(255, 175, 0))
         return yellColor, client:Nick() .. " yells, \"" .. ax.chat:Format( string.upper( message ) ) .. "\""
     end,
-    CanHear = function(speaker, listener)
+    CanHear = function(this, speaker, listener)
         local distance = ax.config:Get("chatYellDistance", 700)
         return speaker:GetPos():Distance(listener:GetPos()) <= distance
     end
@@ -39,11 +39,11 @@ ax.chat:Add("yell", {
 ax.chat:Add("looc", {
     displayName = "Local Out of Character",
     description = "Speak local out of character",
-    OnRun = function(self, client, message)
+    OnRun = function(this, client, message)
         local oocColor = ax.config:Get("chatColorOOC", Color(110, 10, 10))
         return oocColor, "(LOOC) ", color_white, client:SteamName() .. ": " .. message
     end,
-    CanHear = function(speaker, listener)
+    CanHear = function(this, speaker, listener)
         local distance = ax.config:Get("chatOOCDistance", 600)
         return listener:GetCharacter() == nil or speaker:GetPos():Distance(listener:GetPos()) <= distance
     end
@@ -52,18 +52,18 @@ ax.chat:Add("looc", {
 ax.chat:Add("ooc", {
     displayName = "Out of Character",
     description = "Speak out of character",
-    OnRun = function(self, client, message)
+    OnRun = function(this, client, message)
         local oocColor = ax.config:Get("chatColorOOC", Color(110, 10, 10))
         return oocColor, "(OOC) ", color_white, client:SteamName() .. ": " .. message
     end,
-    CanHear = function(speaker, listener)
+    CanHear = function(this, speaker, listener)
         return true
     end
 })
 
 ax.chat:Add("me", {
     description = "Perform an action in third person",
-    OnRun = function(self, client, message)
+    OnRun = function(this, client, message)
         local txt = ax.chat:Format(message)
         if ( #txt > 0 ) then
             txt = txt:sub(1,1):lower() .. txt:sub(2)
@@ -71,7 +71,7 @@ ax.chat:Add("me", {
 
         return "* " .. client:Nick() .. " " .. txt
     end,
-    CanHear = function(speaker, listener)
+    CanHear = function(this, speaker, listener)
         local distance = ax.config:Get("chatMeDistance", 600)
         return speaker:GetPos():Distance(listener:GetPos()) <= distance
     end
