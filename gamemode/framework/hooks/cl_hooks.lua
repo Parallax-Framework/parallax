@@ -380,7 +380,13 @@ ax.viewstack:RegisterModifier("ragdoll", function(client, view)
             return
         end
 
-        local matrix = ragdoll:GetBoneMatrix(ragdoll:LookupBone("ValveBiped.Bip01_Head1"))
+        local boneId = ragdoll:LookupBone("ValveBiped.Bip01_Head1")
+        if ( !isnumber( boneId ) ) then
+            ax.util:PrintDebug("Player ragdoll has no \"ValveBiped.Bip01_Head1\" bone!")
+            return
+        end
+
+        local matrix = ragdoll:GetBoneMatrix(boneId)
         local pos = matrix:GetTranslation()
         local ang = matrix:GetAngles()
 
