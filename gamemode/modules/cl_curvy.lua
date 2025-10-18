@@ -335,7 +335,9 @@ function ax.curvy:HUDPaint(drawFunc, rtName)
         if ( drawFunc ) then
             drawFunc(ScrW_local(), ScrH_local(), client)
         end
+
         hook.Run("HUDPaintCurvy", ScrW_local(), ScrH_local(), client, false)
+
         return
     end
 
@@ -448,9 +450,11 @@ hook.Add("PostRenderVGUI", "ax.curvy.PostRender", function()
 end)
 
 -- Clean up render cache periodically
+local lastCleanup = 0
 hook.Add("Think", "ax.curvy.Cleanup", function()
-    if ( math.random(1, 600) == 1 ) then -- ~1% chance per frame (roughly every 10 seconds at 60fps)
+    if ( CurTime() - lastCleanup > 10 ) then -- Every 10 seconds
         ax.curvy:CleanupRenderCache()
+        lastCleanup = CurTime()
     end
 end)
 
