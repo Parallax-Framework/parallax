@@ -51,6 +51,19 @@ net.Receive("ax.character.create", function(len)
         return
     end
 
+    -- Read the character list first before trying to access the character
+    local clientData = ax.client:GetTable()
+    clientData.axCharacters = {}
+
+    local characters = net.ReadTable()
+    for i = 1, #characters do
+        local charData = characters[i]
+        local character = setmetatable(charData, ax.character.meta)
+        ax.character.instances[character.id] = character
+        clientData.axCharacters[#clientData.axCharacters + 1] = character
+    end
+
+    -- Now we can safely get the character
     local character = ax.character:Get(characterID)
     if ( !istable(character) ) then
         ax.util:PrintError("Character with ID " .. characterID .. " not found.")
@@ -73,17 +86,6 @@ net.Receive("ax.character.create", function(len)
             end)
             main.splash:SlideToFront()
         end
-    end
-
-    local clientData = ax.client:GetTable()
-    clientData.axCharacters = {}
-
-    local characters = net.ReadTable()
-    for i = 1, #characters do
-        local charData = characters[i]
-        character = setmetatable(charData, ax.character.meta)
-        ax.character.instances[character.id] = character
-        clientData.axCharacters[#clientData.axCharacters + 1] = character
     end
 
     hook.Run("PlayerCreatedCharacter", client, character)
