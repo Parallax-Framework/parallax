@@ -252,7 +252,29 @@ function GM:StartCommand(client, userCmd)
                 hook.Run("PlayerReady", client)
 
                 ax.inventory:Restore(client)
-                ax.relay:Sync( client )
+                ax.relay:Sync(client)
+
+                -- Sync all existing active characters from other players
+                for _, otherClient in player.Iterator() do
+                    if ( !IsValid(otherClient) or otherClient == client ) then continue end
+
+                    local otherCharacter = otherClient:GetCharacter()
+                    if ( !istable(otherCharacter) ) then continue end
+
+                    ax.character:Sync(otherClient, otherCharacter, client)
+                end
+
+                -- Sync all world items (inventoryID = 0) to the newly joined player
+                for itemID, item in pairs(ax.item.instances) do
+                    if ( !istable(item) or item.inventoryID != 0 ) then continue end
+
+                    net.Start("ax.inventory.item.add")
+                        net.WriteUInt(0, 32) -- World inventory ID
+                        net.WriteUInt(item.id, 32)
+                        net.WriteString(item.class)
+                        net.WriteTable(item.data or {})
+                    net.Send(client)
+                end
             end)
         end)
 

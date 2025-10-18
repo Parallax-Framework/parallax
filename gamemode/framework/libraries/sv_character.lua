@@ -215,15 +215,21 @@ function ax.character:Delete(id, callback)
     query:Execute()
 end
 
---- Synchronize character data to all clients.
--- Broadcasts character information to all connected players for client-side access.
+--- Synchronize character data to all clients or a specific recipient.
+-- Broadcasts character information to all connected players or a specific player for client-side access.
 -- @realm server
 -- @param client Player The player associated with the character
 -- @param character table The character object to synchronize
+-- @param recipient Player Optional specific recipient; if nil, broadcasts to all
 -- @usage ax.character:Sync(player, characterObject)
-function ax.character:Sync(client, character)
+-- @usage ax.character:Sync(player, characterObject, newPlayer)
+function ax.character:Sync(client, character, recipient)
     net.Start("ax.character.sync")
         net.WritePlayer(client)
         net.WriteTable(character)
-    net.Broadcast()
+    if ( recipient ) then
+        net.Send(recipient)
+    else
+        net.Broadcast()
+    end
 end
