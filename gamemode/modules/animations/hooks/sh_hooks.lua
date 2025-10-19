@@ -105,24 +105,25 @@ function MODULE:HandlePlayerSwimming(client, velocity, clientTable)
     return true
 end
 
-function MODULE:HandlePlayerLanding(client, velocity, wasOnGround)
-    if ( client:GetMoveType() == MOVETYPE_NOCLIP ) then return end
-    if ( client:IsOnGround() and !wasOnGround ) then
-        local land = ACT_LAND
-        local clientTable = client:GetTable()
-        local animTable = clientTable.axAnimations
-        if ( animTable and animTable.land ) then
-            land = animTable.land
-        end
+function MODULE:OnPlayerHitGround(client, inWater, onFloater, speed)
+    if ( inWater or onFloater or SERVER ) then return end
 
-        if ( isstring(land) ) then
-            land = client:LookupSequence(land)
-        elseif ( istable(land) ) then
-            land = client:LookupSequence(land[math.random(#land)])
-        end
+    if ( CLIENT and !IsFirstTimePredicted() ) then return end
 
-        client:PlayGesture(GESTURE_SLOT_JUMP, land)
+    local land = ACT_LAND
+    local clientTable = client:GetTable()
+    local animTable = clientTable.axAnimations
+    if ( animTable and animTable.land ) then
+        land = animTable.land
     end
+
+    if ( isstring(land) ) then
+        land = client:LookupSequence(land)
+    elseif ( istable(land) ) then
+        land = client:LookupSequence(land[math.random(#land)])
+    end
+
+    client:PlayGesture(GESTURE_SLOT_JUMP, land)
 end
 
 function MODULE:HandlePlayerDriving(client, clientTable)
@@ -292,8 +293,6 @@ function MODULE:CalcMainActivity(client, velocity)
     client:SetPoseParameter("head_yaw", headYaw)
     client:SetPoseParameter("head_pitch", headPitch)
 
-    self:HandlePlayerLanding(client, velocity, clientTable.m_bWasOnGround)
-
     if !( self:HandlePlayerNoClipping(client, velocity, clientTable) or
         self:HandlePlayerDriving(client, clientTable) or
         self:HandlePlayerVaulting(client, velocity, clientTable) or
@@ -318,7 +317,6 @@ function MODULE:CalcMainActivity(client, velocity)
     local seqOverride = clientTable.CalcSeqOverride
     clientTable.CalcSeqOverride = -1
 
-    clientTable.m_bWasOnGround = client:IsOnGround()
     clientTable.m_bWasNoclipping = (client:GetMoveType() == MOVETYPE_NOCLIP and !client:InVehicle())
 
     return clientTable.CalcIdeal, seqOverride or clientTable.CalcSeqOverride
