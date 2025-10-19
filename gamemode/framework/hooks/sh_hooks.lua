@@ -22,26 +22,57 @@ function GM:Initialize()
     end
 end
 
-local reloaded = false
-function GM:OnReloaded()
-    if ( reloaded ) then return end
-    reloaded = true
+local function OnHotReloadOnce()
+    -- In developer mode, only reload files changed in the last 60 seconds
+    local timeFilter = GetConVar("developer"):GetInt() > 0 and 60 or nil
+    if ( timeFilter ) then
+        ax.util:PrintDebug("OnReloaded: Using time filter of " .. timeFilter .. " seconds for hot-reload optimization")
+    end
 
-    ax.util:IncludeDirectory("parallax/gamemode/localization", true)
-    ax.faction:Include("parallax/gamemode/factions")
-    ax.class:Include("parallax/gamemode/classes")
-    ax.item:Include("parallax/gamemode/items")
-    ax.module:Include("parallax/gamemode/modules")
-    ax.schema:Initialize()
+    ax.util:IncludeDirectory("parallax/gamemode/localization", true, nil, timeFilter)
+    ax.faction:Include("parallax/gamemode/factions", timeFilter)
+    ax.class:Include("parallax/gamemode/classes", timeFilter)
+    ax.item:Include("parallax/gamemode/items", timeFilter)
+    ax.module:Include("parallax/gamemode/modules", timeFilter)
+    ax.schema:Initialize(timeFilter)
 
     if ( CLIENT ) then
         ax.font:Load()
     end
 end
 
+local DEBOUNCE = 0.15
+local NAME = "ax.reload.debounce." .. (SERVER and "sv" or CLIENT and "cl")
+hook.Add("OnReloaded", NAME, function()
+    local r = ax._reload
+    local now = SysTime()
+
+    if ( r.frame == FrameNumber() ) then
+        ax.util:PrintDebug("OnReloaded: Already processed this frame, skipping")
+        return
+    end
+
+    r.frame = FrameNumber()
+    r.pingAt = now
+
+    if ( r.armed ) then
+        ax.util:PrintDebug("OnReloaded: Reload already armed, skipping re-arming")
+        return
+    end
+
+    r.armed = true
+
+    timer.Create(NAME, 0.05, 0, function()
+        if ( SysTime() - r.pingAt >= DEBOUNCE ) then
+            timer.Remove(NAME)
+            r.armed = false
+            OnHotReloadOnce()
+        end
+    end)
+end)
+
 function GM:CanBecomeFaction(factionTable, client)
     local whitelists = client:GetData("whitelists", {})
-    print("Checking faction:", factionTable.id, "isDefault:", factionTable.isDefault)
     if ( !factionTable.isDefault and !whitelists[factionTable.id] ) then
         return false, "You are not whitelisted for this faction."
     end
