@@ -441,39 +441,42 @@ function ax.curvy:CreateRenderTargetMaterial(name, texture)
     return mat
 end
 
-hook.Add("HUDPaint", "ax.curvy.HUDPaint", function()
-    ax.curvy:HUDPaint()
-end)
+-- Module hooks - automatically called by the framework's hook system
 
-hook.Add("PostRenderVGUI", "ax.curvy.PostRender", function()
+function MODULE:HUDPaint()
+    ax.curvy:HUDPaint()
+end
+
+function MODULE:PostRenderVGUI()
     ax.curvy:PostRender()
-end)
+end
 
 -- Clean up render cache periodically
 local lastCleanup = 0
-hook.Add("Think", "ax.curvy.Cleanup", function()
+function MODULE:Think()
     if ( CurTime() - lastCleanup > 10 ) then -- Every 10 seconds
         ax.curvy:CleanupRenderCache()
         lastCleanup = CurTime()
     end
-end)
+end
 
-hook.Add("OnScreenSizeChanged", "ax.curvy.ScreenResize", function()
+function MODULE:OnScreenSizeChanged()
     renderTargets = {}
     meshCache = {}
     meshObjects = {}
     renderCache = {}
     perfStats.fpsAvg = 60 -- Reset performance tracking
-end)
+end
 
-hook.Add("OnReloaded", "ax.curvy.Reload", function()
-    -- Destroy mesh objects properly
+function MODULE:OnReloaded()
+    -- Destroy mesh objects properly from previous load
     for _, meshObj in pairs(meshObjects) do
         if ( meshObj and meshObj.Destroy ) then
             meshObj:Destroy()
         end
     end
 
+    -- Clear all caches
     renderTargets = {}
     materials = {}
     meshCache = {}
@@ -493,4 +496,4 @@ hook.Add("OnReloaded", "ax.curvy.Reload", function()
     perfStats.fpsAvg = 60
     perfStats.lastFPSUpdate = 0
     perfStats.frameSkip = 0
-end)
+end
