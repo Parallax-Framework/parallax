@@ -1,5 +1,12 @@
 local MODULE = MODULE
 
+function MODULE:InitPostEntity()
+    -- Create the chatbox immediately so messages can be received before the player opens chat
+    if ( !IsValid(ax.gui.chatbox) ) then
+        ax.gui.chatbox = vgui.Create("ax.chatbox")
+    end
+end
+
 function MODULE:GetChatboxSize()
     local width = ax.util:UIScreenScale(192)
     local height = ax.util:UIScreenScaleH(128)
