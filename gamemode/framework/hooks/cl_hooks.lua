@@ -332,9 +332,10 @@ function GM:PostDrawTranslucentRenderables(depth, skybox)
     if ( skybox ) then return end
 
     -- Draw voice chat icons above players' heads
+    local ft = FrameTime()
+    local curTime = CurTime()
     for _, client in player.Iterator() do
-        if ( !IsValid(client) or client == LocalPlayer() ) then continue end
-        if ( !client:IsSpeaking() ) then continue end
+        if ( !IsValid(client) or !client:Alive() or client == ax.client or !client:IsSpeaking() ) then continue end
 
         local headBone = client:LookupBone("ValveBiped.Bip01_Head1")
         if ( !headBone ) then continue end
@@ -349,11 +350,11 @@ function GM:PostDrawTranslucentRenderables(depth, skybox)
         local angle = Angle(0, eyeAngles.y - 90, 90)
         local size = 96 * (1 + client:VoiceVolume())
 
-        client._axCurvyVoiceIconSize = client._axCurvyVoiceIconSize or size
-        client._axCurvyVoiceIconSize = Lerp(math.Clamp(FrameTime() * 10, 0, 1), client._axCurvyVoiceIconSize, size)
-        size = client._axCurvyVoiceIconSize
+        client.axVoiceIconSize = client.axVoiceIconSize or size
+        client.axVoiceIconSize = Lerp(math.Clamp(ft * 10, 0, 1), client.axVoiceIconSize, size)
+        size = client.axVoiceIconSize
 
-        pos.z = pos.z + math.sin(CurTime()) * size / 96
+        pos.z = pos.z + math.sin(curTime) * size / 96
 
         cam.Start3D2D(pos, angle, 0.1)
             local iconMaterial = talkingIcon
