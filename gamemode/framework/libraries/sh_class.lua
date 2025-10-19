@@ -45,7 +45,7 @@ end
 -- @param directory string The directory path to search for class files
 -- @return boolean True if the operation completed successfully, false on error
 -- @usage ax.class:Include("parallax/gamemode/classes")
-function ax.class:Include(directory)
+function ax.class:Include(directory, timeFilter)
     if ( !isstring(directory) or directory == "" ) then
         ax.util:PrintError("Include: Invalid directory parameter provided")
         return false
@@ -61,6 +61,18 @@ function ax.class:Include(directory)
     if ( files[1] != nil ) then
         for i = 1, #files do
             local fileName = files[i]
+            local filePath = directory .. "/" .. fileName
+
+            -- Check file modification time if timeFilter is provided
+            if ( isnumber(timeFilter) and timeFilter > 0 ) then
+                local fileTime = file.Time(filePath, "LUA")
+                local currentTime = os.time()
+
+                if ( fileTime and (currentTime - fileTime) > timeFilter ) then
+                    ax.util:PrintDebug("Skipping unchanged class file (modified " .. (currentTime - fileTime) .. "s ago): " .. fileName)
+                    continue
+                end
+            end
 
             local uniqueID = string.StripExtension(fileName)
             local prefix = string.sub(uniqueID, 1, 3)

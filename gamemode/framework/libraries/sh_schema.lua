@@ -21,7 +21,7 @@ ax.schema = ax.schema or {}
 -- @realm shared
 -- @return boolean True if initialization succeeded, false if boot file failed to load
 -- @usage ax.schema:Initialize()
-function ax.schema:Initialize()
+function ax.schema:Initialize(timeFilter)
     SCHEMA = SCHEMA or { Folder = engine.ActiveGamemode() }
 
     ax.hook:Register("SCHEMA")
@@ -33,12 +33,12 @@ function ax.schema:Initialize()
         return false
     end
 
-    ax.util:IncludeDirectory(active .. "/gamemode/schema/libraries", true)
-    ax.util:IncludeDirectory(active .. "/gamemode/schema/meta", true)
-    ax.util:IncludeDirectory(active .. "/gamemode/schema/core", true)
-    ax.util:IncludeDirectory(active .. "/gamemode/schema/hooks", true)
-    ax.util:IncludeDirectory(active .. "/gamemode/schema/networking", true)
-    ax.util:IncludeDirectory(active .. "/gamemode/schema/interface", true)
+    ax.util:IncludeDirectory(active .. "/gamemode/schema/libraries", true, nil, timeFilter)
+    ax.util:IncludeDirectory(active .. "/gamemode/schema/meta", true, nil, timeFilter)
+    ax.util:IncludeDirectory(active .. "/gamemode/schema/core", true, nil, timeFilter)
+    ax.util:IncludeDirectory(active .. "/gamemode/schema/hooks", true, nil, timeFilter)
+    ax.util:IncludeDirectory(active .. "/gamemode/schema/networking", true, nil, timeFilter)
+    ax.util:IncludeDirectory(active .. "/gamemode/schema/interface", true, nil, timeFilter)
 
     ax.util:IncludeDirectory(active .. "/gamemode/schema", true, {
         ["libraries"] = true,
@@ -51,13 +51,13 @@ function ax.schema:Initialize()
         ["classes"] = true,
         ["items"] = true,
         ["boot.lua"] = true
-    })
+    }, timeFilter)
 
-    ax.faction:Include(active .. "/gamemode/schema/factions")
-    ax.class:Include(active .. "/gamemode/schema/classes")
-    ax.item:Include(active .. "/gamemode/schema/items")
+    ax.faction:Include(active .. "/gamemode/schema/factions", timeFilter)
+    ax.class:Include(active .. "/gamemode/schema/classes", timeFilter)
+    ax.item:Include(active .. "/gamemode/schema/items", timeFilter)
 
-    ax.module:Include(active .. "/gamemode/modules")
+    ax.module:Include(active .. "/gamemode/modules", timeFilter)
 
     -- Initialize the schema
     ax.util:PrintSuccess("Schema \"" .. active .. "\" initialized successfully.")

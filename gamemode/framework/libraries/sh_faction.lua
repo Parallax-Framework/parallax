@@ -71,7 +71,7 @@ FACTION_DEFAULT_MODELS = {
 -- @param directory string The directory path to search for faction files
 -- @return boolean True if the operation completed successfully, false on error
 -- @usage ax.faction:Include("parallax/gamemode/factions")
-function ax.faction:Include(directory)
+function ax.faction:Include(directory, timeFilter)
     if ( !isstring(directory) or directory == "" ) then
         ax.util:PrintError("Include: Invalid directory parameter provided")
         return false
@@ -87,6 +87,18 @@ function ax.faction:Include(directory)
     if ( files[1] != nil ) then
         for i = 1, #files do
             local fileName = files[i]
+            local filePath = directory .. "/" .. fileName
+
+            -- Check file modification time if timeFilter is provided
+            if ( isnumber(timeFilter) and timeFilter > 0 ) then
+                local fileTime = file.Time(filePath, "LUA")
+                local currentTime = os.time()
+
+                if ( fileTime and (currentTime - fileTime) > timeFilter ) then
+                    ax.util:PrintDebug("Skipping unchanged faction file (modified " .. (currentTime - fileTime) .. "s ago): " .. fileName)
+                    continue
+                end
+            end
 
             local uniqueID = string.StripExtension(fileName)
             local prefix = string.sub(uniqueID, 1, 3)

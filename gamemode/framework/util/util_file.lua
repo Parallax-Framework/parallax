@@ -28,18 +28,14 @@ function ax.util:DetectFileRealm(file)
     fileName = string.lower(fileName)
 
     -- Client-side patterns
-    if ( string.Left( fileName, 3 ) == "cl_" ) then
-        self:PrintDebug("Detected client-side file: " .. fileName)
+    if ( string.StartWith(fileName, "cl_") ) then
         return "client"
     end
 
     -- Server-side patterns
-    if ( string.Left( fileName, 3 ) == "sv_" ) then
-        self:PrintDebug("Detected server-side file: " .. fileName)
+    if ( string.StartWith(fileName, "sv_") ) then
         return "server"
     end
-
-    self:PrintDebug("Detected shared file: " .. fileName)
 
     -- Shared patterns (default for sh_ prefix or no clear indication)
     return "shared"
@@ -101,8 +97,6 @@ function ax.util:Include(path, realm)
         SafeInclude(path)
     end
 
-    -- Print debug information if developer mode is enabled
-    ax.util:PrintDebug("Included file: " .. path .. " with realm: " .. realm)
     return true
 end
 
@@ -112,7 +106,7 @@ end
 -- @param toSkip table|nil Optional set of filenames or directory names to skip
 -- @return boolean True if directory processed
 -- @usage ax.util:IncludeDirectory("framework/libraries/")
-function ax.util:IncludeDirectory(directory, fromLua, toSkip)
+function ax.util:IncludeDirectory(directory, fromLua, toSkip, timeFilter)
     if ( !isstring(directory) or directory == "" ) then
         ax.util:PrintError("IncludeDirectory: Invalid directory parameter provided")
         return false
@@ -146,10 +140,22 @@ function ax.util:IncludeDirectory(directory, fromLua, toSkip)
     for i = 1, #files do
         local fileName = files[i]
         local filePath = directory .. fileName
+
         -- Skip files in the toSkip list
         if ( toSkip and toSkip[fileName] ) then
-            ax.util:PrintDebug("Skipping file in toSkip list: " .. fileName)
             continue
+        end
+
+        -- Check file modification time if timeFilter is provided
+        if ( isnumber(timeFilter) and timeFilter > 0 ) then
+            local fileTime = file.Time(filePath, "LUA")
+            print(filePath, fileTime)
+            local currentTime = os.time()
+
+            if ( fileTime and (currentTime - fileTime) < timeFilter ) then
+                ax.util:PrintWarning("Skipping unchanged file (modified " .. (currentTime - fileTime) .. "s ago): " .. fileName)
+                continue
+            end
         end
 
         ax.util:Include(filePath)
@@ -159,16 +165,12 @@ function ax.util:IncludeDirectory(directory, fromLua, toSkip)
     for i = 1, #directories do
         local dirName = directories[i]
         if ( toSkip and toSkip[dirName] ) then
-            ax.util:PrintDebug("Skipping directory in toSkip list: " .. dirName)
             continue
         end
 
-        ax.util:PrintDebug("Recursively including directory: " .. dirName)
-        ax.util:IncludeDirectory(directory .. dirName .. "/", true, toSkip)
+        ax.util:IncludeDirectory(directory .. dirName .. "/", true, toSkip, timeFilter)
     end
 
-    -- Print debug information if developer mode is enabled
-    ax.util:PrintDebug("Included directory: " .. directory)
     return true
 end
 

@@ -78,11 +78,11 @@ function ax.item:RefreshItemInstances()
     end
 end
 
-function ax.item:Include(path)
+function ax.item:Include(path, timeFilter)
     -- Load in three passes: bases first, then regular items, then directory-based items with inheritance
-    self:LoadBasesFromDirectory(path .. "/base")
-    self:LoadItemsFromDirectory(path)
-    self:LoadItemsWithInheritance(path)
+    self:LoadBasesFromDirectory(path .. "/base", timeFilter)
+    self:LoadItemsFromDirectory(path, timeFilter)
+    self:LoadItemsWithInheritance(path, timeFilter)
 end
 
 -- Helper function to create default drop action for items
@@ -143,7 +143,7 @@ end
 -- @realm shared
 -- @param basePath string The directory path containing base item files
 -- @usage ax.item:LoadBasesFromDirectory("parallax/gamemode/items/base")
-function ax.item:LoadBasesFromDirectory(basePath)
+function ax.item:LoadBasesFromDirectory(basePath, timeFilter)
     local baseFiles, _ = file.Find(basePath .. "/*.lua", "LUA")
     if ( !baseFiles or #baseFiles == 0 ) then
         ax.util:PrintDebug("No base items found in " .. basePath)
@@ -152,11 +152,24 @@ function ax.item:LoadBasesFromDirectory(basePath)
 
     for i = 1, #baseFiles do
         local fileName = baseFiles[i]
+        local filePath = basePath .. "/" .. fileName
+
+        -- Check file modification time if timeFilter is provided
+        if ( isnumber(timeFilter) and timeFilter > 0 ) then
+            local fileTime = file.Time(filePath, "LUA")
+            local currentTime = os.time()
+
+            if ( fileTime and (currentTime - fileTime) > timeFilter ) then
+                ax.util:PrintDebug("Skipping unchanged item base file (modified " .. (currentTime - fileTime) .. "s ago): " .. fileName)
+                continue
+            end
+        end
+
         local itemName = self:ExtractItemName(fileName)
 
         ITEM = setmetatable({ class = itemName, isBase = true }, ax.item.meta)
             ITEM:AddAction("drop", self:CreateDefaultDropAction())
-            ax.util:Include(basePath .. "/" .. fileName, "shared")
+            ax.util:Include(filePath, "shared")
             ax.util:PrintSuccess("Item base \"" .. tostring(ITEM.name or itemName) .. "\" initialized successfully.")
             ax.item.stored[itemName] = ITEM
         ITEM = nil
@@ -169,7 +182,7 @@ end
 -- @realm shared
 -- @param path string The directory path containing item files
 -- @usage ax.item:LoadItemsFromDirectory("parallax/gamemode/items")
-function ax.item:LoadItemsFromDirectory(path)
+function ax.item:LoadItemsFromDirectory(path, timeFilter)
     local files, _ = file.Find(path .. "/*.lua", "LUA")
     if ( !files or #files == 0 ) then
         return
@@ -177,11 +190,24 @@ function ax.item:LoadItemsFromDirectory(path)
 
     for i = 1, #files do
         local fileName = files[i]
+        local filePath = path .. "/" .. fileName
+
+        -- Check file modification time if timeFilter is provided
+        if ( isnumber(timeFilter) and timeFilter > 0 ) then
+            local fileTime = file.Time(filePath, "LUA")
+            local currentTime = os.time()
+
+            if ( fileTime and (currentTime - fileTime) > timeFilter ) then
+                ax.util:PrintDebug("Skipping unchanged item file (modified " .. (currentTime - fileTime) .. "s ago): " .. fileName)
+                continue
+            end
+        end
+
         local itemName = self:ExtractItemName(fileName)
 
         ITEM = setmetatable({ class = itemName }, ax.item.meta)
             ITEM:AddAction("drop", self:CreateDefaultDropAction())
-            ax.util:Include(path .. "/" .. fileName, "shared")
+            ax.util:Include(filePath, "shared")
             ax.util:PrintSuccess("Item \"" .. tostring(ITEM.name or itemName) .. "\" initialized successfully.")
             ax.item.stored[itemName] = ITEM
         ITEM = nil
@@ -194,7 +220,7 @@ end
 -- @realm shared
 -- @param path string The root directory path to search for subdirectories
 -- @usage ax.item:LoadItemsWithInheritance("parallax/gamemode/items")
-function ax.item:LoadItemsWithInheritance(path)
+function ax.item:LoadItemsWithInheritance(path, timeFilter)
     local _, directories = file.Find(path .. "/*", "LUA")
     if ( !directories or #directories == 0 ) then
         return
@@ -210,12 +236,12 @@ function ax.item:LoadItemsWithInheritance(path)
         local baseItem = ax.item.stored[dirName]
         if ( !istable(baseItem) or !baseItem.isBase ) then
             -- No base found, treat as regular directory recursion
-            self:LoadItemsFromDirectory(path .. "/" .. dirName)
+            self:LoadItemsFromDirectory(path .. "/" .. dirName, timeFilter)
             continue
         end
 
         -- Load items in this directory with the base item as parent
-        self:LoadItemsWithBase(path .. "/" .. dirName, dirName, baseItem)
+        self:LoadItemsWithBase(path .. "/" .. dirName, dirName, baseItem, timeFilter)
     end
 end
 
@@ -227,7 +253,7 @@ end
 -- @param baseName string The name of the base item for reference
 -- @param baseItem table The base item table to inherit from
 -- @usage ax.item:LoadItemsWithBase("parallax/gamemode/items/weapon", "weapon", weaponBase)
-function ax.item:LoadItemsWithBase(dirPath, baseName, baseItem)
+function ax.item:LoadItemsWithBase(dirPath, baseName, baseItem, timeFilter)
     local subFiles, _ = file.Find(dirPath .. "/*.lua", "LUA")
     if ( !subFiles or #subFiles == 0 ) then
         return
@@ -235,6 +261,19 @@ function ax.item:LoadItemsWithBase(dirPath, baseName, baseItem)
 
     for j = 1, #subFiles do
         local fileName = subFiles[j]
+        local filePath = dirPath .. "/" .. fileName
+
+        -- Check file modification time if timeFilter is provided
+        if ( isnumber(timeFilter) and timeFilter > 0 ) then
+            local fileTime = file.Time(filePath, "LUA")
+            local currentTime = os.time()
+
+            if ( fileTime and (currentTime - fileTime) > timeFilter ) then
+                ax.util:PrintDebug("Skipping unchanged item file (modified " .. (currentTime - fileTime) .. "s ago): " .. fileName)
+                continue
+            end
+        end
+
         local itemName = self:ExtractItemName(fileName)
 
         -- Create item with base item inheritance

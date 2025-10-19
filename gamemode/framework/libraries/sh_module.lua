@@ -22,12 +22,24 @@ ax.module.stored = ax.module.stored or {}
 -- @realm shared
 -- @param path string The directory path to search for modules
 -- @usage ax.module:Include("parallax/gamemode/modules")
-function ax.module:Include(path)
+function ax.module:Include(path, timeFilter)
     local files, directories = file.Find(path .. "/*", "LUA")
 
     if ( files[1] != nil ) then
         for i = 1, #files do
             local fileName = files[i]
+            local filePath = path .. "/" .. fileName
+
+            -- Check file modification time if timeFilter is provided
+            if ( isnumber(timeFilter) and timeFilter > 0 ) then
+                local fileTime = file.Time(filePath, "LUA")
+                local currentTime = os.time()
+
+                if ( fileTime and (currentTime - fileTime) > timeFilter ) then
+                    ax.util:PrintDebug("Skipping unchanged module file (modified " .. (currentTime - fileTime) .. "s ago): " .. fileName)
+                    continue
+                end
+            end
 
             local moduleName = string.StripExtension(fileName)
             local prefix = string.sub(moduleName, 1, 3)
@@ -36,7 +48,7 @@ function ax.module:Include(path)
             end
 
             MODULE = { UniqueID = moduleName }
-                ax.util:Include(path .. "/" .. fileName)
+                ax.util:Include(filePath)
                 ax.util:PrintSuccess("Module \"" .. tostring(MODULE.Name) .. "\" initialized successfully.")
                 ax.module.stored[moduleName] = MODULE
             MODULE = nil
@@ -48,38 +60,52 @@ function ax.module:Include(path)
             local dirName = directories[i]
             local bootFile = path .. "/" .. dirName .. "/boot.lua"
             if ( file.Exists(bootFile, "LUA") ) then
-                MODULE = { UniqueID = dirName }
+                -- Check boot file modification time if timeFilter is provided
+                local shouldSkip = false
+                if ( isnumber(timeFilter) and timeFilter > 0 ) then
+                    local fileTime = file.Time(bootFile, "LUA")
+                    local currentTime = os.time()
 
-                ax.util:Include(bootFile, "shared")
+                    if ( fileTime and (currentTime - fileTime) > timeFilter ) then
+                        ax.util:PrintDebug("Skipping unchanged module boot file (modified " .. (currentTime - fileTime) .. "s ago): " .. bootFile)
+                        shouldSkip = true
+                    end
+                end
 
-                ax.util:IncludeDirectory(path .. "/" .. dirName .. "/libraries", true)
-                ax.util:IncludeDirectory(path .. "/" .. dirName .. "/meta", true)
-                ax.util:IncludeDirectory(path .. "/" .. dirName .. "/core", true)
-                ax.util:IncludeDirectory(path .. "/" .. dirName .. "/hooks", true)
-                ax.util:IncludeDirectory(path .. "/" .. dirName .. "/networking", true)
-                ax.util:IncludeDirectory(path .. "/" .. dirName .. "/interface", true)
+                if ( !shouldSkip ) then
+                    MODULE = { UniqueID = dirName }
 
-                ax.util:IncludeDirectory(path .. "/" .. dirName, true, {
-                    ["libraries"] = true,
-                    ["meta"] = true,
-                    ["core"] = true,
-                    ["hooks"] = true,
-                    ["networking"] = true,
-                    ["interface"] = true,
-                    ["factions"] = true,
-                    ["classes"] = true,
-                    ["items"] = true,
-                    ["boot.lua"] = true
-                })
+                    ax.util:Include(bootFile, "shared")
 
-                ax.faction:Include(path .. "/" .. dirName .. "/factions")
-                ax.class:Include(path .. "/" .. dirName .. "/classes")
-                ax.item:Include(path .. "/" .. dirName .. "/items")
+                    ax.util:IncludeDirectory(path .. "/" .. dirName .. "/libraries", true, nil, timeFilter)
+                    ax.util:IncludeDirectory(path .. "/" .. dirName .. "/meta", true, nil, timeFilter)
+                    ax.util:IncludeDirectory(path .. "/" .. dirName .. "/core", true, nil, timeFilter)
+                    ax.util:IncludeDirectory(path .. "/" .. dirName .. "/hooks", true, nil, timeFilter)
+                    ax.util:IncludeDirectory(path .. "/" .. dirName .. "/networking", true, nil, timeFilter)
+                    ax.util:IncludeDirectory(path .. "/" .. dirName .. "/interface", true, nil, timeFilter)
 
-                ax.util:PrintSuccess("Module \"" .. tostring(MODULE.Name) .. "\" initialized successfully.")
-                ax.module.stored[MODULE.UniqueID] = MODULE
+                    ax.util:IncludeDirectory(path .. "/" .. dirName, true, {
+                        ["libraries"] = true,
+                        ["meta"] = true,
+                        ["core"] = true,
+                        ["hooks"] = true,
+                        ["networking"] = true,
+                        ["interface"] = true,
+                        ["factions"] = true,
+                        ["classes"] = true,
+                        ["items"] = true,
+                        ["boot.lua"] = true
+                    }, timeFilter)
 
-                MODULE = nil
+                    ax.faction:Include(path .. "/" .. dirName .. "/factions", timeFilter)
+                    ax.class:Include(path .. "/" .. dirName .. "/classes", timeFilter)
+                    ax.item:Include(path .. "/" .. dirName .. "/items", timeFilter)
+
+                    ax.util:PrintSuccess("Module \"" .. tostring(MODULE.Name) .. "\" initialized successfully.")
+                    ax.module.stored[MODULE.UniqueID] = MODULE
+
+                    MODULE = nil
+                end
             end
         end
     end
