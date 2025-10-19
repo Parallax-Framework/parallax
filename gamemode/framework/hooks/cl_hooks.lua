@@ -376,7 +376,6 @@ ax.viewstack:RegisterModifier("ragdoll", function(client, view)
     if ( ragdollIndex != -1 and !client:Alive() ) then
         local ragdoll = ents.GetByIndex(ragdollIndex)
         if ( !IsValid(ragdoll) ) then
-            client:SetRelay("ax.ragdoll.index", -1)
             return
         end
 
