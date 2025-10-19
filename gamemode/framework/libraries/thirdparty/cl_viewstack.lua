@@ -80,8 +80,8 @@ local function merge_view(base, patch)
     if patch.fov and patch.fov ~= base.fov then base.fov = patch.fov end
     if patch.znear and patch.znear ~= base.znear then base.znear = patch.znear end
     if patch.zfar and patch.zfar ~= base.zfar then base.zfar = patch.zfar end
-    if patch.drawviewer ~= nil and patch.drawviewer ~= base.drawviewer then 
-        base.drawviewer = patch.drawviewer 
+    if patch.drawviewer ~= nil and patch.drawviewer ~= base.drawviewer then
+        base.drawviewer = patch.drawviewer
     end
     return base
 end
@@ -169,14 +169,14 @@ end
 local function sort_by_prio_then_name(list, sortedFlag)
     -- Skip sorting if already sorted and no changes
     if sortedFlag and PERF_STATS[sortedFlag] then return end
-    
+
     table_sort(list, function(x, y)
         local px = x.prio or 0
         local py = y.prio or 0
         if px ~= py then return px < py end
         return tostring_local(x.name) < tostring_local(y.name)
     end)
-    
+
     if sortedFlag then
         PERF_STATS[sortedFlag] = true
     end
@@ -204,10 +204,10 @@ end
 function ax.viewstack:Blacklist(name, state)
     local newState = state ~= false
     if BLACKLIST[name] == newState then return end -- No change needed
-    
+
     BLACKLIST[name] = newState
     local enabled = not newState
-    
+
     -- Apply to captured hooks
     if CAPTURED then
         for _, h in ipairs_local(CAPTURED) do
@@ -219,7 +219,7 @@ function ax.viewstack:Blacklist(name, state)
             if h.name == name then h.enabled = enabled end
         end
     end
-    
+
     -- Apply to modifiers
     for _, m in ipairs_local(MODS) do
         if m.name == name then m.enabled = enabled end
@@ -233,41 +233,41 @@ end
 function ax.viewstack:SetPriority(name, prio)
     local newPrio = tonumber_local(prio) or 0
     if PRIORITY[name] == newPrio then return end -- No change needed
-    
+
     PRIORITY[name] = newPrio
     local needsSort = false
-    
+
     -- Update captured hooks
     if CAPTURED then
         for _, h in ipairs_local(CAPTURED) do
-            if h.name == name then 
+            if h.name == name then
                 h.prio = newPrio
                 needsSort = true
             end
         end
         if needsSort then sort_by_prio_then_name(CAPTURED) end
     end
-    
+
     needsSort = false
     if CAPTURED_VIEWMODEL then
         for _, h in ipairs_local(CAPTURED_VIEWMODEL) do
-            if h.name == name then 
+            if h.name == name then
                 h.prio = newPrio
                 needsSort = true
             end
         end
         if needsSort then sort_by_prio_then_name(CAPTURED_VIEWMODEL) end
     end
-    
+
     -- Update modifiers and mark for re-sort
     for _, m in ipairs_local(MODS) do
-        if m.name == name then 
+        if m.name == name then
             m.prio = newPrio
             PERF_STATS.modsSorted = false
         end
     end
     for _, m in ipairs_local(MODS_VIEWMODEL) do
-        if m.name == name then 
+        if m.name == name then
             m.prio = newPrio
             PERF_STATS.viewmodelModsSorted = false
         end
@@ -278,7 +278,7 @@ end
 function ax.viewstack:Enable()
     hook.Add("CalcView", "__ax_viewstack_dispatcher", function(client, origin, angles, fov, znear, zfar)
         update_perf_stats()
-        
+
         -- Base view seeded from engine params
         local view = {
             origin = origin,
@@ -296,7 +296,7 @@ function ax.viewstack:Enable()
         -- 1) run modern modifiers (sort only when needed)
         if #MODS > 0 then
             sort_by_prio_then_name(MODS, "modsSorted")
-            
+
             for _, m in ipairs_local(MODS) do
                 if m.enabled and not BLACKLIST[m.name] then
                     local ok, patch = pcall_local(m.fn, client, view)
@@ -330,7 +330,7 @@ function ax.viewstack:Enable()
 
     hook.Add("CalcViewModelView", "__ax_viewstack_viewmodel_dispatcher", function(weapon, viewmodel, oldPos, oldAng, pos, ang)
         update_perf_stats()
-        
+
         -- Base viewmodel view seeded from engine params
         local viewmodelView = {
             pos = pos,
@@ -344,7 +344,7 @@ function ax.viewstack:Enable()
         -- 1) run modern viewmodel modifiers (sort only when needed)
         if #MODS_VIEWMODEL > 0 then
             sort_by_prio_then_name(MODS_VIEWMODEL, "viewmodelModsSorted")
-            
+
             for _, m in ipairs_local(MODS_VIEWMODEL) do
                 if m.enabled and not BLACKLIST[m.name] then
                     local ok, patch = pcall_local(m.fn, weapon, viewmodelView)
@@ -457,7 +457,11 @@ end
 
 boot()
 
+-- Clean up existing hook to prevent duplicates on reload
+hook.Remove("OnReloaded", "ax.viewstack.reload")
+
 hook.Add("OnReloaded", "ax.viewstack.reload", function()
+    ax.viewstack:Disable()
     ax.viewstack.__booted = false
     boot()
 end)
