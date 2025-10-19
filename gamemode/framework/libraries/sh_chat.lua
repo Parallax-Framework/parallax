@@ -41,6 +41,7 @@ function ax.chat:Add(name, def)
                 end
 
                 if ( def.OnRun ) then
+                    message = hook.Run("PlayerMessageSend", client, name, message) or message
                     ax.chat:Send(client, name, message)
                 end
             end
@@ -62,32 +63,32 @@ if ( SERVER ) then
             return
         end
 
-        local package = {}
+        local packaged = {}
         if ( isfunction(def.OnRun) ) then
             local result = { def:OnRun(client, ...) }
             if ( #result == 0 ) then return end
 
-            package = result
+            packaged = result
         else
-            package = { ... }
+            packaged = { ... }
         end
 
         local clients = {}
         for _, v in player.Iterator() do
             if ( v == client ) then
-                clients[ #clients + 1 ] = v
+                clients[#clients + 1] = v
             elseif ( isfunction(def.CanHear) ) then
                 if ( def:CanHear(client, v) ) then
-                    clients[ #clients + 1 ] = v
+                    clients[#clients + 1] = v
                 end
             else
-                clients[ #clients + 1 ] = v
+                clients[#clients + 1] = v
             end
         end
 
         for i = 1, #clients do
             local v = clients[i]
-            v:ChatPrint(unpack(package))
+            v:ChatPrint(unpack(packaged))
         end
     end
 end

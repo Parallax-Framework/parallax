@@ -16,7 +16,7 @@ function chat.AddText(...)
     -- Search the arguments for a custom font input using <font=FontName>message</font>
     for i = 1, #arguments do
         local v = arguments[i]
-        if ( type(v) == "string" ) then
+        if ( isstring(v) ) then
             local fontTag = string.match(v, "<font=([^>]+)>")
             if ( fontTag ) then
                 font = fontTag

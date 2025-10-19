@@ -42,6 +42,10 @@ function MODULE:PlayerSay(client, text, teamChat)
         return ""
     end
 
+    print("PlayerSay passed:", text)
+    text = hook.Run("PlayerMessageSend", client, "ic", text)
+    print("PlayerSay returned:", text)
+
     -- Format regular chat messages
     if ( hook.Run("ShouldFormatMessage", client, text) != false ) then
         text = ax.chat:Format(text)
