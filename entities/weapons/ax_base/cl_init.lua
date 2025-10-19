@@ -36,8 +36,8 @@ function SWEP:_StartIronsightLerp(aiming)
     self._ironTo = aiming and 1 or 0
 end
 
--- Think doesn't run when reloading, so we have to do this in ViewModelDrawn
-function SWEP:ViewModelDrawn()
+-- Think doesn't run when reloading, so we have to do this in DrawHUD
+function SWEP:DrawHUD()
     local owner = self:GetOwner()
     if ( owner != ax.client ) then return end
 
