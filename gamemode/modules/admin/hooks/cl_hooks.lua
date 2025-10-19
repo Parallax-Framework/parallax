@@ -1,10 +1,9 @@
 local MODULE = MODULE or {}
 
 function MODULE:LoadFonts()
-    ax.font:CreateFamily("tiny.admin", "Courier New", ax.util:UIScreenScaleH(4))
-    ax.font:CreateFamily("small.admin", "Courier New", ax.util:UIScreenScaleH(6))
-    ax.font:CreateFamily("regular.admin", "Courier New", ax.util:UIScreenScaleH(8))
-    ax.font:CreateFamily("large.admin", "Courier New", ax.util:UIScreenScaleH(14))
+    ax.font:CreateFamily("small.admin", "Courier New", ax.util:UIScreenScaleH(5))
+    ax.font:CreateFamily("regular.admin", "Courier New", ax.util:UIScreenScaleH(6))
+    ax.font:CreateFamily("large.admin", "Courier New", ax.util:UIScreenScaleH(12))
     ax.font:CreateFamily("huge.admin", "Courier New", ax.util:UIScreenScaleH(24))
     ax.font:CreateFamily("massive.admin", "Courier New", ax.util:UIScreenScaleH(32))
 end
@@ -67,9 +66,7 @@ function MODULE:DrawItems()
             if ( !stored ) then continue end
 
             local displayName = stored:GetName() or "Unknown Item"
-            local cls = displayName
-
-            draw.SimpleTextOutlined(cls, "ax.regular.admin", x, y + 4, Color(255, 255, 0), TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM, 1, Color(0, 0, 0))
+            draw.SimpleTextOutlined(displayName, "ax.regular.admin", x, y + 4, Color(255, 255, 0), TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM, 1, Color(0, 0, 0))
 
             if ( count > 1 ) then
                 draw.SimpleTextOutlined("x" .. tostring(count), "ax.small.admin", x, y - 4, Color(255, 200, 0), TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP, 1, Color(0, 0, 0))
@@ -83,17 +80,17 @@ function MODULE:DrawPlayers()
     if ( !IsValid(client) or !client:IsAdmin() ) then return end
 
     for _, target in player.Iterator() do
-        --if ( target == client or !IsValid(target) or !target:Alive() ) then continue end
+        if ( target == client or !IsValid(target) ) then continue end
 
         local scr = target:GetPos():ToScreen()
         if ( !scr.visible ) then continue end
 
         local steamID64 = target:SteamID64()
-        local name = target:Nick() or "Unknown"
+        local name = target:SteamName()
         local teamName = team.GetName(target:Team()) or "Unknown"
         local character = target:GetCharacter()
         if ( character ) then
-            name = character:GetName() or name
+            name = character:GetName() .. " [" .. target:EntIndex() .. "][" .. name .. "]"
 
             local class = character:GetClass()
             if ( class ) then
@@ -103,36 +100,39 @@ function MODULE:DrawPlayers()
                 end
             end
         end
+
         local health = target:Health() or 0
         local maxHealth = target:GetMaxHealth() or 100
         local armor = target:Armor() or 0
+        local maxArmor = target:GetMaxArmor() or 100
 
         local yOffset = 0
+        local ySpacing = draw.GetFontHeight("ax.regular.admin.bold") / 1.25
 
         draw.SimpleTextOutlined(steamID64, "ax.regular.admin", scr.x, scr.y + yOffset, Color(255, 0, 0), TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM, 1, Color(0, 0, 0))
-        yOffset = yOffset + draw.GetFontHeight("ax.regular.admin.bold") / 1.25
+        yOffset = yOffset + ySpacing
 
         draw.SimpleTextOutlined(name, "ax.regular.admin.bold", scr.x, scr.y + yOffset, Color(0, 255, 255), TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM, 1, Color(0, 0, 0))
-        yOffset = yOffset + draw.GetFontHeight("ax.regular.admin.bold") / 1.25
+        yOffset = yOffset + ySpacing
 
         draw.SimpleTextOutlined(teamName, "ax.regular.admin", scr.x, scr.y + yOffset, team.GetColor(target:Team()) or Color(255, 255, 255), TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM, 1, Color(0, 0, 0))
-        yOffset = yOffset + draw.GetFontHeight("ax.regular.admin.bold") / 1.25
+        yOffset = yOffset + ySpacing
 
         local healthText = "HP: " .. tostring(health) .. " / " .. tostring(maxHealth)
         draw.SimpleTextOutlined(healthText, "ax.regular.admin", scr.x, scr.y + yOffset, Color(0, 255, 0), TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM, 1, Color(0, 0, 0))
-        yOffset = yOffset + draw.GetFontHeight("ax.regular.admin.bold") / 1.25
+        yOffset = yOffset + ySpacing
 
         if ( armor > 0 ) then
-            local armorText = "AR: " .. tostring(armor)
+            local armorText = "AR: " .. tostring(armor) .. " / " .. tostring(maxArmor)
             draw.SimpleTextOutlined(armorText, "ax.regular.admin", scr.x, scr.y + yOffset, Color(0, 150, 255), TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM, 1, Color(0, 0, 0))
-            yOffset = yOffset + draw.GetFontHeight("ax.regular.admin.bold") / 1.25
+            yOffset = yOffset + ySpacing
         end
 
         local weapon = target:GetActiveWeapon()
         if ( IsValid(weapon) ) then
             local wepName = weapon:GetPrintName() or "Unknown"
             draw.SimpleTextOutlined(wepName, "ax.regular.admin", scr.x, scr.y + yOffset, Color(255, 255, 0), TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM, 1, Color(0, 0, 0))
-            yOffset = yOffset + draw.GetFontHeight("ax.regular.admin.bold") / 1.25
+            yOffset = yOffset + ySpacing
         end
     end
 end
