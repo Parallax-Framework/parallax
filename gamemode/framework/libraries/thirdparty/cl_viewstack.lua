@@ -245,7 +245,7 @@ end
 -- @tparam Angle angles
 -- @tparam number fov
 -- @treturn table base view
-function ax.viewstack:_BaseView(client, origin, angles, fov)
+function ax.viewstack:BaseView(client, origin, angles, fov)
     return {
         origin = origin or client:EyePos(),
         angles = angles or client:EyeAngles(),
@@ -254,42 +254,38 @@ function ax.viewstack:_BaseView(client, origin, angles, fov)
     }
 end
 
-if CLIENT then
-    hook.Add("CalcView", "ax.viewstack.CalcView", function(client, origin, angles, fov, znear, zfar)
-        if ( !ax.viewstack.enabled ) then return end
-        if ( ax.viewstack.inCalc ) then return end
-        ax.viewstack.inCalc = true
+hook.Add("CalcView", "ax.viewstack.CalcView", function(client, origin, angles, fov, znear, zfar)
+    if ( !ax.viewstack.enabled ) then return end
+    if ( ax.viewstack.inCalc ) then return end
+    ax.viewstack.inCalc = true
 
-        ax.client = client or ax.client
+    local base = ax.viewstack:BaseView(client, origin, angles, fov)
+    base.znear = znear
+    base.zfar = zfar
 
-        local base = ax.viewstack:_BaseView(client, origin, angles, fov)
-        base.znear = znear
-        base.zfar = zfar
+    local out = ax.viewstack:RunCamera(client, base)
+    ax.viewstack.inCalc = false
+    if ( out ) then
+        return {
+            origin = out.origin,
+            angles = out.angles,
+            fov = out.fov,
+            znear = out.znear,
+            zfar = out.zfar,
+            drawviewer = out.drawviewer
+        }
+    end
+end)
 
-        local out = ax.viewstack:RunCamera(client, base)
-        ax.viewstack.inCalc = false
-        if ( out ) then
-            return {
-                origin = out.origin,
-                angles = out.angles,
-                fov = out.fov,
-                znear = out.znear,
-                zfar = out.zfar,
-                drawviewer = out.drawviewer
-            }
-        end
-    end)
+hook.Add("CalcViewModelView", "ax.viewstack.CalcViewModelView", function(weapon, viewmodel, oldPos, oldAng, client)
+    if ( !ax.viewstack.enabled ) then return end
+    if ( ax.viewstack.inVM ) then return end
+    ax.viewstack.inVM = true
 
-    hook.Add("CalcViewModelView", "ax.viewstack.CalcViewModelView", function(weapon, viewmodel, oldPos, oldAng, client)
-        if ( !ax.viewstack.enabled ) then return end
-        if ( ax.viewstack.inVM ) then return end
-        ax.viewstack.inVM = true
-
-        local base = { pos = oldPos, ang = oldAng, fov = nil }
-        local out = ax.viewstack:RunViewModel(weapon, base)
-        ax.viewstack.inVM = false
-        if ( out ) then
-            return out.pos or oldPos, out.ang or oldAng, out.fov
-        end
-    end)
-end
+    local base = { pos = oldPos, ang = oldAng, fov = nil }
+    local out = ax.viewstack:RunViewModel(weapon, base)
+    ax.viewstack.inVM = false
+    if ( out ) then
+        return out.pos or oldPos, out.ang or oldAng, out.fov
+    end
+end)
