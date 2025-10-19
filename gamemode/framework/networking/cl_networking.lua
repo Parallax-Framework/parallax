@@ -119,6 +119,7 @@ net.Receive("ax.character.load", function()
     end
 
     local clientData = client:GetTable()
+    clientData.axCharacterPrevious = clientData.axCharacter
     clientData.axCharacter = character
 
     if ( IsValid(ax.gui.main) ) then
@@ -127,7 +128,7 @@ net.Receive("ax.character.load", function()
 
     client:ScreenFade(SCREENFADE.IN, color_black, 4, 1)
 
-    hook.Run("PlayerLoadedCharacter", client, character)
+    hook.Run("PlayerLoadedCharacter", client, character, clientData.axCharacterPrevious)
 end)
 
 net.Receive("ax.character.sync", function()

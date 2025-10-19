@@ -102,6 +102,7 @@ function ax.character:Load(client, character)
     local clientData = client:GetTable()
     character.player = client
 
+    clientData.axCharacterPrevious = clientData.axCharacter
     clientData.axCharacter = character
     ax.character:Sync(client, character)
 
@@ -125,7 +126,7 @@ function ax.character:Load(client, character)
         net.Send(client)
     end
 
-    hook.Run("PlayerLoadedCharacter", client, character)
+    hook.Run("PlayerLoadedCharacter", client, character, clientData.axCharacterPrevious)
 end
 
 --- Restore all characters for a player from the database.
