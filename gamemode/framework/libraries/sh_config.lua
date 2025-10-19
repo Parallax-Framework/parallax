@@ -28,7 +28,7 @@
     print(ax.config:Get("thirdperson", true))  -- server: source of truth; client: cached
 ]]
 
--- Create the config store
+-- Create the config store (preserve existing store during hot-reload)
 local configSpec = {
     name = "config",
     path = "parallax/config.json",
@@ -40,10 +40,17 @@ local configSpec = {
     perPlayer = false
 }
 
-ax.config = ax.util:CreateStore(configSpec)
-ax.config:_setupNetworking()
+-- Check if store library was updated or if store doesn't exist yet
+local storeLibTime = file.Time("gamemodes/parallax/gamemode/framework/util/util_store.lua", "GAME") or 0
+local needsRebuild = !ax.config.Add or (ax.config._libTime and ax.config._libTime != storeLibTime)
 
--- Load config on server startup
-if ( SERVER ) then
-    ax.config:Load()
+if ( needsRebuild ) then
+    local oldStore = ax.config.Add and ax.config or nil
+    ax.config = ax.util:CreateStore(configSpec, oldStore)
+    ax.config:_setupNetworking()
+
+    -- Load config on server startup (only if not migrating from old store)
+    if ( SERVER and !oldStore ) then
+        ax.config:Load()
+    end
 end

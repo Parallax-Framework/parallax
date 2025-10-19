@@ -41,7 +41,7 @@
     end
 ]]
 
--- Create the option store
+-- Create the option store (preserve existing store during hot-reload)
 local optionSpec = {
     name = "option",
     path = "parallax/options.json",
@@ -54,10 +54,17 @@ local optionSpec = {
     perPlayer = true
 }
 
-ax.option = ax.util:CreateStore(optionSpec)
-ax.option:_setupNetworking()
+-- Check if store library was updated or if store doesn't exist yet
+local storeLibTime = file.Time("gamemodes/parallax/gamemode/framework/util/util_store.lua", "GAME") or 0
+local needsRebuild = !ax.option or !ax.option.Add or (ax.option._libTime and ax.option._libTime != storeLibTime)
 
--- Load options on client startup
-if ( CLIENT ) then
-    ax.option:Load()
+if ( needsRebuild ) then
+    local oldStore = (ax.option and ax.option.Add) and ax.option or nil
+    ax.option = ax.util:CreateStore(optionSpec, oldStore)
+    ax.option:_setupNetworking()
+
+    -- Load options on client startup (only if not migrating from old store)
+    if ( CLIENT and !oldStore ) then
+        ax.option:Load()
+    end
 end

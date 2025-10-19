@@ -19,6 +19,9 @@
 -- optional networking of specific keys.
 -- @section store
 
+-- Store library modification time - used to detect when rebuild is needed
+local STORE_LIB_TIME = file.Time("gamemodes/parallax/gamemode/framework/util/util_store.lua", "GAME") or 0
+
 --- Create a new store instance.
 -- @realm shared
 -- @param spec table Store specification with fields:
@@ -26,6 +29,7 @@
 --  - authority (string): "server" or "client" — side that persists values
 --  - path (string): JSON file path under DATA for persistence
 --  - net (table): net channel names (init, set, sync, request as applicable)
+-- @param oldStore table Optional existing store to migrate data from during hot-reload
 -- @return table Store object with methods for registration, get/set, IO, and networking
 -- @usage
 -- local store = ax.util:CreateStore({
@@ -34,7 +38,7 @@
 --     path = ax.util:BuildDataPath("config", { human = true }),
 --     net = { init = "config.init", set = "config.set" }
 -- })
-function ax.util:CreateStore(spec)
+function ax.util:CreateStore(spec, oldStore)
     local store = {}
 
     -- Internal state
@@ -42,6 +46,16 @@ function ax.util:CreateStore(spec)
     store.defaults = {}
     store.values = {}
     store.networkedKeys = {}
+    store._libTime = STORE_LIB_TIME
+
+    -- Migrate data from old store if provided
+    if ( istable(oldStore) ) then
+        if ( istable(oldStore.registry) ) then store.registry = table.Copy(oldStore.registry) end
+        if ( istable(oldStore.defaults) ) then store.defaults = table.Copy(oldStore.defaults) end
+        if ( istable(oldStore.values) ) then store.values = table.Copy(oldStore.values) end
+        if ( istable(oldStore.networkedKeys) ) then store.networkedKeys = table.Copy(oldStore.networkedKeys) end
+        ax.util:PrintDebug("Store '" .. spec.name .. "' migrated data from previous instance during hot-reload")
+    end
 
     -- Client-side cache for config values (when received from server)
     local CONFIG_CACHE = {}
@@ -233,8 +247,6 @@ function ax.util:CreateStore(spec)
                 net.SendToServer()
 
                 ax.util:PrintDebug(spec.name, " Sending config update: ", key, " = ", coerced)
-            elseif ( spec.name == "option" and SERVER ) then
-                -- No-op; server does not push option changes to clients
             elseif ( spec.name == "option" and CLIENT ) then
                 net.Start(spec.net.set)
                     net.WriteString(key)
