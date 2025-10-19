@@ -9,16 +9,16 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
-local ALWAYS_RAISED = {}
-ALWAYS_RAISED["gmod_tool"] = true
-ALWAYS_RAISED["gmod_camera"] = true
-ALWAYS_RAISED["weapon_physgun"] = true
+AX_ALWAYS_RAISED = {}
+AX_ALWAYS_RAISED["gmod_tool"] = true
+AX_ALWAYS_RAISED["gmod_camera"] = true
+AX_ALWAYS_RAISED["weapon_physgun"] = true
 
 function ax.player.meta:IsWeaponRaised()
     if ( ax.config:Get("weapon.raise.alwaysraised", false) ) then return true end
 
     local weapon = self:GetActiveWeapon()
-    if ( IsValid(weapon) and ( ALWAYS_RAISED[weapon:GetClass()] or weapon.AlwaysRaised ) ) then return true end
+    if ( IsValid(weapon) and ( AX_ALWAYS_RAISED[weapon:GetClass()] or weapon.AlwaysRaised ) ) then return true end
 
     return self:GetRelay("ax.weapon.raised", false)
 end

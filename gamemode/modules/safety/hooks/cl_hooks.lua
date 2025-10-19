@@ -9,8 +9,6 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
-local MODULE = MODULE
-
 local LOWERED_POS = Vector(0, 0, 0)
 local LOWERED_ANGLES = Angle(10, 10, 0)
 local LOWERED_LERP = {pos = Vector(0, 0, 0), angles = Angle(0, 0, 0)}

@@ -9,11 +9,9 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
-local MODULE = MODULE
-
 ax.command:Add("ToggleRaise", {
     description = "Toggle whether the player is raising their weapon.",
     OnRun = function(client, arg)
-        client:SetWeaponRaised( !client:IsWeaponRaised() )
+        client:SetWeaponRaised(!client:IsWeaponRaised())
     end
 })
