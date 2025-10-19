@@ -97,6 +97,7 @@ ax.character:RegisterVar("faction", {
             factionButton:DockMargin(ax.util:UIScreenScale(2), 0, ax.util:UIScreenScale(2), 0)
 
             factionButton.DoClick = function()
+                payload = {}
                 payload.faction = v.index
 
                 for k2, v2 in pairs(ax.gui.main.create.tabs) do
@@ -442,15 +443,21 @@ ax.character:RegisterVar("model", {
 
         local size = math.min(container:GetWide() / 8, 128)
         for k, v in pairs(ax.faction:Get(factionID):GetModels()) do
-            if ( istable(v) ) then v = v[1] end
+            local model = v
+            local skin = 0
+            if ( istable(v) ) then
+                model = v[1]
+                skin = v[2] or 0
+            end
 
             local modelButton = layout:Add("SpawnIcon")
-            modelButton:SetModel(v)
+            modelButton:SetModel(model, skin)
             modelButton:SetSize(size, size)
-            modelButton:SetTooltip(v)
+            modelButton:SetTooltip(model)
 
             modelButton.DoClick = function()
-                payload.model = v
+                payload.model = model
+                payload.skin = skin
 
                 if ( ax.gui.main.create.OnPayloadChanged ) then
                     ax.gui.main.create:OnPayloadChanged(payload)
@@ -460,7 +467,7 @@ ax.character:RegisterVar("model", {
             end
 
             modelButton.PaintOver = function(_, width, height)
-                if ( payload.model == v ) then
+                if ( payload.model == model ) then
                     surface.SetDrawColor(0, 150, 255, 100)
                     surface.DrawRect(0, 0, width, height)
                 end
