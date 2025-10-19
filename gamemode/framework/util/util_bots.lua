@@ -33,8 +33,8 @@ AX_BOT_LAST_NAMES = {
 -- @return string A randomly generated full name
 -- @usage local name = ax.util:GenerateBotName()
 function ax.util:GenerateBotName()
-    local firstName = BOT_FIRST_NAMES[math.random(#BOT_FIRST_NAMES)]
-    local lastName = BOT_LAST_NAMES[math.random(#BOT_LAST_NAMES)]
+    local firstName = AX_BOT_FIRST_NAMES[math.random(#AX_OT_FIRST_NAMES)]
+    local lastName = AX_BOT_LAST_NAMES[math.random(#AX_BOT_LAST_NAMES)]
     return firstName .. " " .. lastName
 end
 
