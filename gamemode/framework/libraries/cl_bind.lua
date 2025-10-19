@@ -202,6 +202,10 @@ function ax.bind:Bind(keys, callbackPressed, callbackReleased)
     return true
 end
 
+-- Clean up existing hooks to prevent duplicates on reload
+hook.Remove("PlayerButtonDown", "ax.bind")
+hook.Remove("PlayerButtonUp", "ax.bind")
+
 hook.Add("PlayerButtonDown", "ax.bind", function(client, key)
     local buttons = bit.bor(ax.bind.activeButtons, key)
     ax.bind.activeButtons = buttons

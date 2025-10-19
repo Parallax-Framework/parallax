@@ -278,6 +278,9 @@ concommand.Add("ax_derma_hideall", function()
     Derma_HideAll()
 end)
 
+-- Clean up existing hook to prevent duplicates on reload
+hook.Remove("OnReloaded", "ax_derma_hideall")
+
 hook.Add("OnReloaded", "ax_derma_hideall", function()
     Derma_HideAll()
 end)

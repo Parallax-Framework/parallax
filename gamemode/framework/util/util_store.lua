@@ -437,7 +437,10 @@ function ax.util:CreateStore(spec)
                 util.AddNetworkString(spec.net.init)
                 util.AddNetworkString(spec.net.set)
 
-                hook.Add("PlayerReady", "config.Init", function(client)
+                -- Clean up existing hook to prevent duplicates on reload
+                hook.Remove("PlayerReady", "ax.config.Init")
+
+                hook.Add("PlayerReady", "ax.config.Init", function(client)
                     store:Sync(client)
                 end)
 
@@ -512,7 +515,10 @@ function ax.util:CreateStore(spec)
                     ax.util:PrintDebug(spec.name, " Received option update from ", client:Nick(), ": ", key, " = ", value)
                 end)
 
-                hook.Add("PlayerDisconnected", "option.Cleanup", function(client)
+                -- Clean up existing hook to prevent duplicates on reload
+                hook.Remove("PlayerDisconnected", "ax.option.Cleanup")
+
+                hook.Add("PlayerDisconnected", "ax.option.Cleanup", function(client)
                     SERVER_CACHE[client] = nil
                 end)
 
@@ -526,7 +532,11 @@ function ax.util:CreateStore(spec)
                 store.RequestPlayerSync = requestSync
             elseif ( CLIENT ) then
                 net.Receive(spec.net.request, function() store:Sync() end)
-                hook.Add("InitPostEntity", "option.AutoSync", function()
+
+                -- Clean up existing hook to prevent duplicates on reload
+                hook.Remove("InitPostEntity", "ax.option.AutoSync")
+
+                hook.Add("InitPostEntity", "ax.option.AutoSync", function()
                     timer.Simple(2, function()
                         store:Sync()
                     end)

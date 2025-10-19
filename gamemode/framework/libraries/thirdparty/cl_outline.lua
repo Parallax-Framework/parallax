@@ -419,6 +419,11 @@ local function RenderOutlines()
     ResetCurrentListsSize()
 end
 
+-- Clean up existing hooks to prevent duplicates on reload
+hook.Remove("PreDrawViewModels", "RenderOutlines")
+hook.Remove("PreDrawEffects", "RenderOutlines")
+hook.Remove("RenderScreenspaceEffects", "RenderOutlines")
+
 hook.Add("PreDrawViewModels", "RenderOutlines", function()
     SetRenderType(OUTLINE_RENDERTYPE_BEFORE_VM)
     RenderOutlines()

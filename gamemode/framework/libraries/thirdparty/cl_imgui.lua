@@ -55,6 +55,9 @@ imgui.Hook("PreRender", "Input", function()
     end
 end)
 
+-- Clean up existing hook to prevent duplicates on reload
+hook.Remove("NotifyShouldTransmit", "IMGUI / ClearRenderBounds")
+
 hook.Add("NotifyShouldTransmit", "IMGUI / ClearRenderBounds", function(ent, shouldTransmit)
     if shouldTransmit and ent._imguiRBExpansion then
         ent._imguiRBExpansion = nil

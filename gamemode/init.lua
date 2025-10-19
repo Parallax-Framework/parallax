@@ -20,3 +20,6 @@ include("framework/util/boot.lua")
 
 AddCSLuaFile("framework/boot.lua")
 include("framework/boot.lua")
+
+hook.Remove("OnEntityCreated", "CreateWidgets")
+hook.Remove("PlayerTick", "TickWidgets")

@@ -134,6 +134,9 @@ function GetRelay(name, fallback)
     return ax.relay.data["global"][name] != nil and ax.relay.data["global"][name] or fallback
 end
 
+-- Clean up existing hook to prevent duplicates on reload
+hook.Remove("EntityRemoved", "ax.relay.cleanup")
+
 hook.Add("EntityRemoved", "ax.relay.cleanup", function(ent, fullUpdate)
     if ( fullUpdate ) then return end
 

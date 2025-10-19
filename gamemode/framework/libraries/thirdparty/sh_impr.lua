@@ -2,6 +2,10 @@ local playerSteamID64 = {}
 local playerSteamID = {}
 local playerAccountID = {}
 
+-- Clean up existing hooks to prevent duplicates on reload
+hook.Remove("OnEntityCreated", "ax.Impr.OnEntityCreated")
+hook.Remove("EntityRemoved", "ax.Impr.EntityRemoved")
+
 hook.Add("OnEntityCreated", "ax.Impr.OnEntityCreated", function(ent)
     if ( !ent:IsPlayer() ) then return end
 

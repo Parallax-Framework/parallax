@@ -55,6 +55,11 @@ local function SetupVersion()
     BroadcastVersion(ax.version)
 end
 
+-- Clean up existing hooks to prevent duplicates on reload
+hook.Remove("Initialize", "ax.version.setup")
+hook.Remove("OnReloaded", "ax.version.reload")
+hook.Remove("PlayerInitialSpawn", "ax.version.send_on_join")
+
 -- Initialize on server start
 hook.Add("Initialize", "ax.version.setup", function()
     SetupVersion()

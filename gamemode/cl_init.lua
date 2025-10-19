@@ -15,3 +15,8 @@ ax = ax or {util = {}, config = {}, options = {}, character = {}, inventory = {}
 
 include("framework/util/boot.lua")
 include("framework/boot.lua")
+
+hook.Remove("PostDrawEffects", "RenderHalos")
+hook.Remove("OnEntityCreated", "CreateWidgets")
+hook.Remove("PlayerTick", "TickWidgets")
+hook.Remove("PostDrawEffects", "RenderWidgets")

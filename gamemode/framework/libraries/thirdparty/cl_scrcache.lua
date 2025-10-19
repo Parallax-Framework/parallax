@@ -13,6 +13,9 @@ function ScrH()
     return cScrH
 end
 
+-- Clean up existing hook to prevent duplicates on reload
+hook.Remove("OnScreenSizeChanged", "ax.screensize.changed")
+
 hook.Add("OnScreenSizeChanged", "ax.screensize.changed", function(_, _, newW, newH)
     cScrW = newW
     cScrH = newH

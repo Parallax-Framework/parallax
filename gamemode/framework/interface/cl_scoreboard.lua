@@ -124,6 +124,9 @@ end
 
 vgui.Register("ax.tab.scoreboard", PANEL, "EditablePanel")
 
+-- Clean up existing hook to prevent duplicates on reload
+hook.Remove("PopulateTabButtons", "ax.tab.scoreboard")
+
 hook.Add("PopulateTabButtons", "ax.tab.scoreboard", function(buttons)
     buttons["scoreboard"] = {
         Populate = function(this, panel)
