@@ -41,7 +41,9 @@ local function GET_SHADER(name)
 	return SHADERS_VERSION:gsub("%.", "_") .. "_" .. name
 end
 
-local BLUR_RT = GetRenderTargetEx("RNDX" .. SHADERS_VERSION .. SysTime(),
+-- CRITICAL FIX: Use a fixed name instead of SysTime() to prevent RT leak on reload
+-- The old code created a NEW render target every single reload, causing massive GPU memory leaks
+local BLUR_RT = GetRenderTargetEx("RNDX_BLUR_RT_" .. SHADERS_VERSION,
 	1024, 1024,
 	RT_SIZE_LITERAL,
 	MATERIAL_RT_DEPTH_SEPARATE,

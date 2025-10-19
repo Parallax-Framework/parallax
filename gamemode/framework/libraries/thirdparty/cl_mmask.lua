@@ -20,21 +20,32 @@ local masks = {}
 masks.source = {}
 masks.dest   = {}
 
-masks.source.rt = GetRenderTargetEx("MelonMasks_Source",      ScrW(), ScrH(), RT_SIZE_NO_CHANGE, MATERIAL_RT_DEPTH_SEPARATE, bit.bor(1, 256), 0, IMAGE_FORMAT_BGRA8888)
-masks.dest.rt   = GetRenderTargetEx("MelonMasks_Destination", ScrW(), ScrH(), RT_SIZE_NO_CHANGE, MATERIAL_RT_DEPTH_SEPARATE, bit.bor(1, 256), 0, IMAGE_FORMAT_BGRA8888)
+-- FIX: Only create RTs and materials if they don't exist to prevent leak on reload
+if not masks.source.rt then
+    masks.source.rt = GetRenderTargetEx("MelonMasks_Source",      ScrW(), ScrH(), RT_SIZE_NO_CHANGE, MATERIAL_RT_DEPTH_SEPARATE, bit.bor(1, 256), 0, IMAGE_FORMAT_BGRA8888)
+end
 
-masks.source.mat = CreateMaterial("MelonMasks_Source", "UnlitGeneric", {
-    ["$basetexture"] = masks.source.rt:GetName(),
-    ["$translucent"] = "1",
-    ["$vertexalpha"] = "1",
-    ["$vertexcolor"] = "1",
-})
-masks.dest.mat    = CreateMaterial("MelonMasks_Destination", "UnlitGeneric", {
-    ["$basetexture"] = masks.dest.rt:GetName(),
-    ["$translucent"] = "1",
-    ["$vertexalpha"] = "1",
-    ["$vertexcolor"] = "1",
-})
+if not masks.dest.rt then
+    masks.dest.rt   = GetRenderTargetEx("MelonMasks_Destination", ScrW(), ScrH(), RT_SIZE_NO_CHANGE, MATERIAL_RT_DEPTH_SEPARATE, bit.bor(1, 256), 0, IMAGE_FORMAT_BGRA8888)
+end
+
+if not masks.source.mat then
+    masks.source.mat = CreateMaterial("MelonMasks_Source", "UnlitGeneric", {
+        ["$basetexture"] = masks.source.rt:GetName(),
+        ["$translucent"] = "1",
+        ["$vertexalpha"] = "1",
+        ["$vertexcolor"] = "1",
+    })
+end
+
+if not masks.dest.mat then
+    masks.dest.mat    = CreateMaterial("MelonMasks_Destination", "UnlitGeneric", {
+        ["$basetexture"] = masks.dest.rt:GetName(),
+        ["$translucent"] = "1",
+        ["$vertexalpha"] = "1",
+        ["$vertexcolor"] = "1",
+    })
+end
 
 
 ----
@@ -366,5 +377,3 @@ end )
 ---
 --- End of examples
 ---
-
-

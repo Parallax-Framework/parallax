@@ -46,7 +46,12 @@ local outline_mat_settings = {
     ["$alphatest"] = 1,
     ["$smooth"] = 0,
 }
-local outline_mat = CreateMaterial("ttt2_outline", "UnlitGeneric", outline_mat_settings)
+
+-- FIX: Check if material exists before creating to prevent leak on reload
+local outline_mat = Material("ttt2_outline")
+if outline_mat:IsError() then
+    outline_mat = CreateMaterial("ttt2_outline", "UnlitGeneric", outline_mat_settings)
+end
 
 -- no pp/copy: we restore the screen using DrawTextureToScreenRect to avoid brightness shifts
 
