@@ -259,17 +259,24 @@ end
 function PANEL:OnPopulateVars(container, category, payload)
     if ( ax.util:FindString(category, "misc") ) then
         self.miscModel = container:Add("DModelPanel")
-        self.miscModel:SetModel(payload.model or "models/props_c17/oildrum001.mdl")
-        self.miscModel:SetWide(container:GetWide() / 4)
+        self.miscModel:SetModel(payload.model or "models/player.mdl")
+        self.miscModel:SetWide(0)
         self.miscModel:SetFOV(ax.util:UIScreenScale(12))
         self.miscModel:Dock(LEFT)
-        self.miscModel:DockMargin(0, 0, ax.util:UIScreenScale(32), 0)
+        self.miscModel:DockMargin(0, 0, 0, 0)
         self.miscModel:SetZPos(-1)
 
         self.miscModel.LayoutEntity = function(this, entity)
             this:RunAnimation()
             entity:SetAngles(Angle(0, 90, 0))
         end
+
+        local entity = self.miscModel:GetEntity()
+        if ( IsValid(entity) ) then
+            entity:SetSkin(payload.skin or 0)
+        end
+
+        payload.skin = nil -- Prevent skin from being set again in OnPayloadChanged
     end
 end
 
@@ -277,6 +284,19 @@ function PANEL:OnPayloadChanged(payload)
     if ( IsValid(self.miscModel) ) then
         if ( payload.model and self.miscModel:GetModel() != payload.model ) then
             self.miscModel:SetModel(payload.model)
+            if ( self.miscModel:GetWide() == 0 ) then
+                self.miscModel:Motion(1, {
+                    Target = {
+                        width = self.miscModel:GetParent():GetWide() / 4,
+                        rightPadding = ax.util:UIScreenScale(32)
+                    },
+                    Easing = "OutQuad",
+                    Think = function(this)
+                        self.miscModel:SetWide(this.width)
+                        self.miscModel:DockMargin(0, 0, this.rightPadding, 0)
+                    end
+                })
+            end
         end
 
         self.miscModel:GetEntity():SetSkin(payload.skin or 0)
