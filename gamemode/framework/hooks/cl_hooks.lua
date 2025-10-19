@@ -102,7 +102,7 @@ local hide = {
     ["CHudChat"] = true,
     ["CHudAmmo"] = true,
     ["CHudSecondaryAmmo"] = true,
-    ["CHudCrosshair"] = true
+    ["CHudCrosshair"] = true,
 }
 
 function GM:HUDShouldDraw(name)
