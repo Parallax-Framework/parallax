@@ -12,6 +12,7 @@
 DeriveGamemode("sandbox")
 
 ax = ax or {util = {}, config = {}, options = {}, character = {}, inventory = {}, item = {}}
+ax._reload = ax._reload or { pingAt = 0, armed = false, frame = -1 }
 
 AddCSLuaFile("cl_init.lua")
 
