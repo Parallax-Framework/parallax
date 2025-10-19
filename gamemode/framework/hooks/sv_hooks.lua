@@ -41,6 +41,10 @@ function GM:DoPlayerDeath(client, attacker, damageInfo)
     ragdoll:SetAngles(client:GetAngles())
     ragdoll:Spawn()
     ragdoll:Activate()
+    ragdoll:CallOnRemove("ax.ragdoll.cleanup", function()
+        if ( !IsValid(client) ) then return end
+        client:SetRelay("ax.ragdoll.index", -1)
+    end)
 
     local physicsObject = ragdoll:GetPhysicsObject()
     if ( IsValid(physicsObject) ) then
