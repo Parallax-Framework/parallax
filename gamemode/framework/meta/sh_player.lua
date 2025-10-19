@@ -57,6 +57,9 @@ function ax.player.meta:GetClassData()
     return nil
 end
 
+-- Cache for gesture sequence lookups to avoid repeated LookupSequence calls
+ax.player.gestureCache = ax.player.gestureCache or {}
+
 function ax.player.meta:PlayGesture(slot, sequence)
     if ( !isnumber(slot) or slot < 0 or slot > 6 ) then
         ax.util:PrintError("Invalid gesture slot provided to Player:PlayGesture()")
@@ -64,8 +67,19 @@ function ax.player.meta:PlayGesture(slot, sequence)
     end
 
     if ( isstring(sequence) ) then
-        sequence = self:LookupSequence(sequence)
-        ax.util:PrintDebug("Player:PlayGesture() - Converted string sequence to ID:", sequence)
+        local modelPath = self:GetModel()
+        local cacheKey = modelPath .. ":" .. sequence
+
+        -- Check cache first
+        if ( ax.player.gestureCache[cacheKey] ) then
+            sequence = ax.player.gestureCache[cacheKey]
+            ax.util:PrintDebug("Player:PlayGesture() - Using cached sequence ID:", sequence)
+        else
+            -- Lookup and cache the result
+            sequence = self:LookupSequence(sequence)
+            ax.player.gestureCache[cacheKey] = sequence
+            ax.util:PrintDebug("Player:PlayGesture() - Converted string sequence to ID and cached:", sequence)
+        end
     end
 
     sequence = sequence or -1
