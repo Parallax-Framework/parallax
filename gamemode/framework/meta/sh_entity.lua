@@ -67,6 +67,7 @@ function ENTITY:EmitQueuedSound(soundNames, soundLevel, pitchPercent, volume, ch
 
     for _, snd in ipairs(soundNames) do
         local duration = SoundDuration(snd) or 0
+        duration = duration + 0.1 -- small buffer to prevent clipping
         totalDuration = totalDuration + duration
 
         timer.Simple(delay, function()
