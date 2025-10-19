@@ -199,6 +199,10 @@ function GM:PlayerDisconnected(client)
 end
 
 gameevent.Listen("player_disconnect")
+
+-- Clean up existing hook to prevent duplicates on reload
+hook.Remove("player_disconnect", "Parallax.PlayerDisconnected")
+
 hook.Add("player_disconnect", "Parallax.PlayerDisconnected", function(data)
     local name = data.name
     local reason = data.reason
@@ -313,7 +317,8 @@ function GM:PlayerCanHearPlayersVoice(listener, speaker)
     return true, true
 end
 
-function GM:CanPlayerSuicide( client )
+function GM:CanPlayerSuicide(client)
+    ax.util:PrintDebug("Player " .. client:SteamID64() .. " attempted suicide.")
     return false
 end
 
@@ -334,15 +339,17 @@ function GM:ShutDown() -- PlayerDisconnected isn't called on p2p/singleplayer
     for i = #items, 1, -1 do
         local item = items[i]
 
-        output[ item:GetRelay( "itemID" ) ] = {
-            class = item:GetRelay( "itemClass" ),
+        output[item:GetRelay("itemID")] = {
+            class = item:GetRelay("itemClass"),
             position = item:GetPos(),
             angles = item:GetAngles(),
             data = item:GetItemTable():GetData() or {}
         }
     end
 
-    ax.data:Set("world_items", output, { scope = "map", human = true })
+    ax.data:Set("world_items", output, {
+        scope = "map", human = true
+    })
 end
 
 function GM:PlayerDisconnected(client)
