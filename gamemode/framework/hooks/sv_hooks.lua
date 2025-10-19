@@ -66,6 +66,76 @@ function GM:DoPlayerDeath(client, attacker, damageInfo)
     client:SetRelay("ax.ragdoll.index", ragdoll:EntIndex())
 end
 
+function GM:PlayerDeathSound(client)
+    local deathSound = hook.Run("GetPlayerDeathSound", client)
+    if ( deathSound ) then
+        client:EmitSound(deathSound, 70, 100, 1, CHAN_STATIC)
+    end
+
+    return true
+end
+
+function GM:PlayerHurt(client, attacker, healthRemaining, damageInfo)
+    if ( healthRemaining <= 0 ) then return end
+
+    local painSound = hook.Run("GetPlayerPainSound", client, attacker, healthRemaining, damageInfo)
+    if ( painSound ) then
+        client:EmitSound(painSound, 70, 100, 1, CHAN_STATIC)
+    end
+end
+
+function GM:GetPlayerDeathSound(client)
+    local deathSound = "vo/npc/male01/pain07.wav"
+    local character = client:GetCharacter()
+    if ( character ) then
+        local classData = character:GetClassData()
+        if ( classData and classData.deathSound ) then
+            deathSound = classData.deathSound
+        else
+            local factionData = character:GetFactionData()
+            if ( factionData and factionData.deathSound ) then
+                deathSound = factionData.deathSound
+            end
+        end
+    end
+
+    if ( istable(deathSound) ) then
+        deathSound = deathSound[math.random(#deathSound)]
+    elseif ( isfunction(deathSound) ) then
+        deathSound = deathSound(client)
+    else
+        deathSound = tostring(deathSound)
+    end
+
+    return deathSound
+end
+
+function GM:GetPlayerPainSound(client, attacker, healthRemaining, damageInfo)
+    local painSound = "vo/npc/male01/pain0" .. math.random(1, 6) .. ".wav"
+    local character = client:GetCharacter()
+    if ( character ) then
+        local classData = character:GetClassData()
+        if ( classData and classData.painSound ) then
+            painSound = classData.painSound
+        else
+            local factionData = character:GetFactionData()
+            if ( factionData and factionData.painSound ) then
+                painSound = factionData.painSound
+            end
+        end
+    end
+
+    if ( istable(painSound) ) then
+        painSound = painSound[math.random(#painSound)]
+    elseif ( isfunction(painSound) ) then
+        painSound = painSound(client, attacker, healthRemaining, damageInfo)
+    else
+        painSound = tostring(painSound)
+    end
+
+    return painSound
+end
+
 function GM:PlayerSpawn(client)
     client:RemoveAllItems()
 
