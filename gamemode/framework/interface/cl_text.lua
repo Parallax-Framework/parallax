@@ -123,7 +123,7 @@ function PANEL:Init()
     self:SetCursorColor(color_white)
     self:SetHighlightColor(color_white)
 
-    self:SetTall(ax.util:UIScreenScale(12))
+    self:SetTall(draw.GetFontHeight("ax.regular") + 8)
 end
 
 function PANEL:SizeToContents()
@@ -134,7 +134,7 @@ function PANEL:SizeToContents()
 end
 
 function PANEL:Paint(width, height)
-    ax.render.Draw(ax.util:UIScreenScale(1) + ax.util:UIScreenScaleH(1), 0, 0, width, height, Color(0, 0, 0, 150))
+    ax.render.Draw(0, 0, 0, width, height, Color(0, 0, 0, 150))
 
     BaseClass.Paint(self, width, height)
 end
