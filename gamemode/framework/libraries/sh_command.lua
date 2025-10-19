@@ -475,6 +475,7 @@ if ( SERVER ) then
             else
                 print("Usage: ax_command <command> [arguments]")
             end
+
             return
         end
 
@@ -486,6 +487,7 @@ if ( SERVER ) then
             else
                 print(msg)
             end
+
             return
         end
 
