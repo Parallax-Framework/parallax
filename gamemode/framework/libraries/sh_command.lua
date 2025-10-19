@@ -15,7 +15,7 @@
 -- @module ax.command
 
 ax.command = ax.command or {}
-ax.command.registry = {}
+ax.command.registry = ax.command.registry or {}
 ax.command.prefixes = ax.command.prefixes or {"/", "!"}
 
 -- Server-side networking setup

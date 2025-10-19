@@ -12,8 +12,8 @@
 --- Hook system for registering and managing custom hook types, internally handles Schema and Module hooks.
 -- @module ax.hook
 
-ax.hook = {}
-ax.hook.stored = {}
+ax.hook = ax.hook or {}
+ax.hook.stored = ax.hook.stored or {}
 
 --- Registers a new hook type.
 -- @realm shared

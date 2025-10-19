@@ -14,7 +14,7 @@
 -- @module ax.class
 
 ax.class = ax.class or {}
-ax.class.instances  = ax.class.instances or {}
+ax.class.instances = ax.class.instances or {}
 ax.class.stored = ax.class.stored or {}
 
 --- Initialize the class system by loading all class files.
