@@ -44,7 +44,7 @@ end
 local DEBOUNCE = 0.15
 local NAME = "ax.reload.debounce." .. (SERVER and "sv" or CLIENT and "cl")
 hook.Add("OnReloaded", NAME, function()
-    local r = ax._reload
+    local r = ax._reload or { pingAt = 0, armed = false, frame = -1 }
     local now = SysTime()
 
     if ( r.frame == FrameNumber() ) then
