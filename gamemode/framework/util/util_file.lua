@@ -149,7 +149,6 @@ function ax.util:IncludeDirectory(directory, fromLua, toSkip, timeFilter)
         -- Check file modification time if timeFilter is provided
         if ( isnumber(timeFilter) and timeFilter > 0 ) then
             local fileTime = file.Time(filePath, "LUA")
-            print(filePath, fileTime)
             local currentTime = os.time()
 
             if ( fileTime and (currentTime - fileTime) < timeFilter ) then

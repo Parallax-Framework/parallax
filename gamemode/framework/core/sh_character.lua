@@ -372,8 +372,6 @@ ax.character:RegisterVar("description", {
             return false, "Character description should use proper capitalization for readability. Please capitalize the first letter of sentences and proper nouns."
         end
 
-        print(this, value, table.ToString(payload), client)
-
         return true
     end,
     populatePost = function(this, container, payload, option, entry)
@@ -492,7 +490,6 @@ ax.character:RegisterVar("skin", {
     default = 0,
     sortOrder = 4,
     validate = function(this, value, payload, client)
-        print(this, value, table.ToString(payload), client)
         if ( !tonumber(value) ) then
             return false, "You must select a valid skin number for your character model. Please use the slider to choose a skin variant (usually 0-16) that you prefer for your character's appearance."
         end
