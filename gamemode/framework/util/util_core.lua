@@ -368,6 +368,10 @@ end
 -- @return number The ScreenScale'd and UI-scaled value
 -- @usage local scaledPadding = ax.util:ScreenScale(16)
 function ax.util:ScreenScale(value)
+    if ( SERVER ) then
+        return value
+    end
+
     return self:Scale(ScreenScale(value))
 end
 
@@ -377,6 +381,10 @@ end
 -- @return number The ScreenScaleH'd and UI-scaled value
 -- @usage local scaledHeight = ax.util:ScreenScaleH(32)
 function ax.util:ScreenScaleH(value)
+    if ( SERVER ) then
+        return value
+    end
+
     return self:Scale(ScreenScaleH(value))
 end
 
