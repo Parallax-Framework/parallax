@@ -87,12 +87,16 @@ function PANEL:OnMousePressed(mouseCode)
 
     -- Unsure about this, but it does a nice little flicker effect
     -- Could convert this into a cooldown timer if needed
+
+    -- comment@bloodycop6385 > This is NOT a nice little flicker effect
+    --[[
     self:SetEnabled(false)
     timer.Simple(0.1, function()
         if ( IsValid(self) ) then
             self:SetEnabled(true)
         end
     end)
+    ]]
 
     if ( self.soundClick ) then
         surface.PlaySound(self.soundClick)
