@@ -133,10 +133,14 @@ function PANEL:SizeToContents()
     self:SetSize(width + 8, height + 4)
 end
 
+function PANEL:PaintInternal(width, height)
+    BaseClass.Paint(self, width, height)
+end
+
 function PANEL:Paint(width, height)
     ax.render.Draw(0, 0, 0, width, height, Color(0, 0, 0, 150))
 
-    BaseClass.Paint(self, width, height)
+    self:PaintInternal(width, height)
 end
 
 function PANEL:ShouldPlayTypeSound()
