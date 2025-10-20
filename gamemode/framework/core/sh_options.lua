@@ -23,6 +23,12 @@ ax.option:Add("uiScale", ax.type.number, 1.0, {
     description = "UI element scaling factor (affects notifications, panels, etc.)"
 })
 
+ax.option:Add("buttonDisableFlicker", ax.type.bool, false, {
+    category = "interface",
+    subCategory = "display",
+    description = "Disable button flicker effect on click"
+})
+
 ax.option:Add("inventoryColumns", ax.type.number, 4, {
     category = "interface",
     subCategory = "inventory",
