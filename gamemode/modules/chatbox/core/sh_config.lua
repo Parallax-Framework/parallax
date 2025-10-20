@@ -8,9 +8,3 @@
 
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
-
-local MODULE = MODULE
-
-MODULE.Name = "Chatbox"
-MODULE.Description = "Movable, resizable, tabbed chat with rich markdown and mention highlighting."
-MODULE.Author = "Riggs"
