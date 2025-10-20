@@ -37,10 +37,9 @@ function PANEL:Init()
 
     self.categories = self:Add("ax.scroller.horizontal")
     self.categories:Dock(TOP)
-    self.categories:DockPadding(4, 4, 4, 4)
     self.categories:InvalidateParent(true)
     self.categories.Paint = function(this, width, height)
-        ax.render.Draw(8, 0, 0, width, height, Color(0, 0, 0, 150))
+        ax.render.Draw(0, 0, 0, width, height, Color(0, 0, 0, 150))
     end
 
     -- Enable dragging the chatbox by grabbing the top bar
@@ -230,7 +229,7 @@ function PANEL:Init()
     self.recommendations.maxSelection = 0
     self.recommendations.Paint = function(this, width, height)
         ax.util:DrawBlur(0, 0, 0, width, height, Color(255, 255, 255, 150))
-        ax.render.Draw(8, 0, 0, width, height, Color(0, 0, 0, 150))
+        ax.render.Draw(0, 0, 0, width, height, Color(0, 0, 0, 150))
     end
 
     -- Resizer handle (corner-based, position-adaptive)
@@ -241,9 +240,8 @@ function PANEL:Init()
     self.sizer:SetCursor("sizenesw")
     self.sizer.Paint = function(this, w, h)
         surface.SetDrawColor(255, 255, 255, 25)
-        -- simple corner grip
-        for i = 0, 3 do
-            surface.DrawLine(w - 1 - i * 4, 0, w - 1, i * 4)
+        for i = 0, math.floor(ScreenScaleH(1)) do
+            surface.DrawLine(w - 1 - i * ScreenScaleH(2), 0, w - 1, i * ScreenScaleH(2))
         end
     end
     self.sizer.OnMousePressed = function(this, code)
@@ -392,10 +390,10 @@ function PANEL:PopulateRecommendations(text)
             rec:DockMargin(4, 4, 4, 0)
             rec.index = i
             rec.Paint = function(_, width, height)
-                ax.render.Draw(8, 0, 0, width, height, Color(0, 0, 0, 150))
+                ax.render.Draw(0, 0, 0, width, height, Color(0, 0, 0, 150))
 
                 if ( self.recommendations.indexSelect == i ) then
-                    ax.render.Draw(8, 0, 0, width, height, Color(200, 50, 50, 150))
+                    ax.render.Draw(0, 0, 0, width, height, Color(200, 50, 50, 150))
                 end
             end
 
@@ -486,6 +484,7 @@ function PANEL:SelectRecommendation(identifier)
         local command = recommendations[i]
         if ( command.displayName == identifier ) then
             self.recommendations.indexSelect = i
+
             for j = 1, #self.recommendations.panels do
                 local panel = self.recommendations.panels[j]
                 panel.index = panel.index or 1
@@ -493,6 +492,7 @@ function PANEL:SelectRecommendation(identifier)
                     self.recommendations:ScrollToChild(panel)
                 end
             end
+
             return
         end
     end
@@ -538,24 +538,19 @@ end
 
 function PANEL:Paint(width, height)
     ax.util:DrawBlur(8, 0, 0, width, height, Color(255, 255, 255, 150))
-    ax.render.Draw(8, 0, 0, width, height, Color(0, 0, 0, 150))
+    ax.render.Draw(0, 0, 0, width, height, Color(0, 0, 0, 150))
 end
 
 function PANEL:PerformLayout(width, height)
     -- Recompute dynamic layout on size changes
     if ( IsValid(self.categories) and IsValid(self.entry) and IsValid(self.history) ) then
-        local w, h = self:GetSize()
-        local histW = w - 16
-        local histH = h - 24 - self.categories:GetTall() - self.entry:GetTall()
-        self.history:SetSize(math.max(0, histW), math.max(0, histH))
-        self.history:SetPos(8, self.categories:GetTall() + 8)
+        self.history:SetSize(width, height - self.categories:GetTall() - self.entry:GetTall() - ScreenScaleH(6))
+        self.history:SetPos(ScreenScale(2), self.categories:GetTall() + ScreenScaleH(2))
     end
 
     if ( IsValid(self.recommendations) and IsValid(self.history) ) then
-        local rw = self.history:GetWide()
-        local rh = math.max(0, self.history:GetTall() - 8)
-        self.recommendations:SetSize(rw, rh)
-        self.recommendations:SetPos(8, self.history:GetY() + self.history:GetTall() - self.recommendations:GetTall() - 8)
+        self.recommendations:SetSize(width, height - self.categories:GetTall() - self.entry:GetTall() - ScreenScaleH(2))
+        self.recommendations:SetPos(0, self.categories:GetTall())
     end
 
     if ( IsValid(self.sizer) ) then
