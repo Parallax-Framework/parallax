@@ -23,28 +23,8 @@ function PANEL:Init()
     self.chatType = "ic"
     self.chatTypePrevious = "ic"
 
-    -- Base/default size
     self:SetSize(hook.Run("GetChatboxSize"))
-
-    -- Restore saved size if available
-    local sw = tonumber(cookie.GetString("ax.chatbox.w") or "")
-    local sh = tonumber(cookie.GetString("ax.chatbox.h") or "")
-    if ( sw and sh ) then
-        local minW, minH = ax.util:ScreenScale(128), ax.util:ScreenScaleH(128)
-        local maxW, maxH = ScrW(), ScrH()
-        self:SetSize(math.Clamp(sw, minW, maxW), math.Clamp(sh, minH, maxH))
-    end
-
-    -- Try to restore last saved position if available, otherwise use hook default
-    local cx = tonumber(cookie.GetString("ax.chatbox.x") or "")
-    local cy = tonumber(cookie.GetString("ax.chatbox.y") or "")
-    if ( cx and cy ) then
-        local maxX = math.max(0, ScrW() - self:GetWide())
-        local maxY = math.max(0, ScrH() - self:GetTall())
-        self:SetPos(math.Clamp(cx, 0, maxX), math.Clamp(cy, 0, maxY))
-    else
-        self:SetPos(hook.Run("GetChatboxPos"))
-    end
+    self:SetPos(hook.Run("GetChatboxPos"))
 
     self.categories = self:Add("ax.scroller.horizontal")
     self.categories:Dock(TOP)
@@ -69,14 +49,14 @@ function PANEL:Init()
                 local rx, ry = hook.Run("GetChatboxPos")
                 self:SetPos(rx, ry)
 
-                cookie.Set("ax.chatbox.x", tostring(rx))
-                cookie.Set("ax.chatbox.y", tostring(ry))
+                ax.option:Set("chatBoxX", rx)
+                ax.option:Set("chatBoxY", ry)
             end)
             menu:AddOption("Reset Size", function()
                 local rw, rh = hook.Run("GetChatboxSize")
                 self:SetSize(rw, rh)
-                cookie.Set("ax.chatbox.w", tostring(rw))
-                cookie.Set("ax.chatbox.h", tostring(rh))
+                ax.option:Set("chatBoxWidth", rw)
+                ax.option:Set("chatBoxHeight", rh)
                 self:InvalidateLayout(true)
             end)
             menu:Open()
@@ -89,8 +69,8 @@ function PANEL:Init()
 
             -- Persist new position
             local x, y = self:GetPos()
-            cookie.Set("ax.chatbox.x", tostring(x))
-            cookie.Set("ax.chatbox.y", tostring(y))
+            ax.option:Set("chatBoxX", x)
+            ax.option:Set("chatBoxY", y)
         end
     end
     self.categories.Think = function(this)
@@ -145,16 +125,16 @@ function PANEL:Init()
             net.Start("ax.chatbox.send")
                 net.WriteString(text)
             net.SendToServer()
-            -- Save to history
+
             self.historyCache = self.historyCache or {}
             table.insert(self.historyCache, 1, text)
-            -- keep reasonable limit
-            if ( #self.historyCache > 100 ) then
+
+            if ( #self.historyCache > 128 ) then
                 table.remove(self.historyCache, #self.historyCache)
             end
 
             this:SetText("")
-            -- Reset history index
+
             self.historyIndex = 0
         end
 
@@ -287,8 +267,8 @@ function PANEL:Init()
             this:MouseCapture(false)
 
             local w, h = self:GetSize()
-            cookie.Set("ax.chatbox.w", tostring(w))
-            cookie.Set("ax.chatbox.h", tostring(h))
+            ax.option:Set("chatBoxWidth", w)
+            ax.option:Set("chatBoxHeight", h)
         end
     end
     self.sizer.Think = function(this)

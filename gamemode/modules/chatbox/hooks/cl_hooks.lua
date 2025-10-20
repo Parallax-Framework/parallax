@@ -19,19 +19,11 @@ function MODULE:InitPostEntity()
 end
 
 function MODULE:GetChatboxSize()
-    local width = ax.util:ScreenScale(192)
-    local height = ax.util:ScreenScaleH(128)
-
-    return width, height
+    return ax.option:Get("chatBoxWidth"), ax.option:Get("chatBoxHeight")
 end
 
 function MODULE:GetChatboxPos()
-    local _, height = self:GetChatboxSize()
-    local x = ax.util:ScreenScale(8)
-    local y = ax.util:ScreenScaleH(8)
-    y = ScrH() - height - y
-
-    return x, y
+    return ax.option:Get("chatBoxX"), ax.option:Get("chatBoxY")
 end
 
 function MODULE:PlayerBindPress(client, bind, pressed)
