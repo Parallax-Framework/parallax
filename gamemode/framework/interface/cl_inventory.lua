@@ -31,7 +31,7 @@ function PANEL:Init()
 
     self.weightProgress = self:Add("DProgress")
     self.weightProgress:SetFraction(inventory:GetWeight() / inventory:GetMaxWeight())
-    self.weightProgress:SetTall(ax.util:UIScreenScale(12))
+    self.weightProgress:SetTall(ax.util:ScreenScale(12))
     self.weightProgress:Dock(TOP)
     self.weightProgress.Paint = function(this, width, height)
         ax.render.Draw(0, 0, 0, width, height, Color(0, 0, 0, 150))
@@ -54,11 +54,11 @@ end
 
 function PANEL:InfoOpen()
     self.info:Motion(0.25, {
-        Target = {wide = ax.util:UIScreenScale(128), fraction = 1.0},
+        Target = {wide = ax.util:ScreenScale(128), fraction = 1.0},
         Easing = "OutQuad",
         Think = function(this)
             self.info:SetWide(this.wide)
-            self.info:DockMargin(ax.util:UIScreenScale(16) * this.fraction, 0, 0, 0)
+            self.info:DockMargin(ax.util:ScreenScale(16) * this.fraction, 0, 0, 0)
             -- Trigger layout update as info panel expands
             self:PerformLayout()
         end
@@ -71,7 +71,7 @@ function PANEL:InfoClose()
         Easing = "OutQuad",
         Think = function(this)
             self.info:SetWide(this.wide)
-            self.info:DockMargin(ax.util:UIScreenScale(16) * this.fraction, 0, 0, 0)
+            self.info:DockMargin(ax.util:ScreenScale(16) * this.fraction, 0, 0, 0)
             -- Trigger layout update as info panel collapses
             self:PerformLayout()
         end
@@ -122,8 +122,8 @@ function PANEL:PopulateItems()
     local gridColumns = ax.option:Get("inventoryColumns", 4)
     local containerWidth = self.container:GetWide()
     local itemWidth = containerWidth / gridColumns
-    local itemHeight = ax.util:UIScreenScaleH(32)
-    local categoryHeight = ax.util:UIScreenScaleH(24) -- use ScreenScaleH?
+    local itemHeight = ax.util:ScreenScaleH(32)
+    local categoryHeight = ax.util:ScreenScaleH(24) -- use ScreenScaleH?
 
     local currentY = 0
 
@@ -248,7 +248,7 @@ function PANEL:PopulateItems()
 
             item:SetText(displayName, true)
             item:SetContentAlignment(4)
-            item:SetTextInset(itemHeight + ax.util:UIScreenScale(2), 0)
+            item:SetTextInset(itemHeight + ax.util:ScreenScale(2), 0)
             item:SetPos(itemX, itemY)
             item:SetSize(itemWidth, itemHeight)
 
@@ -263,7 +263,7 @@ function PANEL:PopulateItems()
 
             local icon = item:Add("SpawnIcon")
             icon:SetWide(itemHeight)
-            icon:DockMargin(0, 0, ax.util:UIScreenScale(4), 0)
+            icon:DockMargin(0, 0, ax.util:ScreenScale(4), 0)
             icon:SetModel(representativeItem:GetModel() or "models/props_junk/wood_crate001a.mdl")
             icon:SetMouseInputEnabled(false)
             icon:Dock(LEFT)
@@ -292,8 +292,8 @@ function PANEL:PopulateInfo(stack)
 
     local icon = self.info:Add("DModelPanel")
     icon:Dock(TOP)
-    icon:DockMargin(0, 0, 0, ax.util:UIScreenScaleH(8))
-    icon:SetTall(ax.util:UIScreenScaleH(128))
+    icon:DockMargin(0, 0, 0, ax.util:ScreenScaleH(8))
+    icon:SetTall(ax.util:ScreenScaleH(128))
     icon:SetModel(representativeItem:GetModel() or "models/props_junk/wood_crate001a.mdl")
     icon:SetMouseInputEnabled(false)
     icon.PerformLayout = function(this, width, height)
@@ -325,11 +325,11 @@ function PANEL:PopulateInfo(stack)
         stackInfo:SetFont("ax.small.italic")
         stackInfo:SetText("Stack: " .. stack.stackCount .. " / " .. stack.maxStack, true)
         stackInfo:SetContentAlignment(5)
-        stackInfo:DockMargin(0, 0, 0, ax.util:UIScreenScaleH(4))
+        stackInfo:DockMargin(0, 0, 0, ax.util:ScreenScaleH(4))
     end
 
     local description = representativeItem:GetDescription() or "No description available."
-    local descriptionWrapped = ax.util:GetWrappedText(description, "ax.regular", ax.util:UIScreenScale(128) - ax.util:UIScreenScale(16))
+    local descriptionWrapped = ax.util:GetWrappedText(description, "ax.regular", ax.util:ScreenScale(128) - ax.util:ScreenScale(16))
 
     for _ = 1, #descriptionWrapped do
         local line = descriptionWrapped[_]
@@ -348,7 +348,7 @@ function PANEL:PopulateInfo(stack)
         noActions:SetFont("ax.regular.italic")
         noActions:SetText("No actions available for this item.", true)
         noActions:SizeToContentsY()
-        noActions:DockMargin(0, 0, 0, ax.util:UIScreenScaleH(4))
+        noActions:DockMargin(0, 0, 0, ax.util:ScreenScaleH(4))
         noActions:SetContentAlignment(5)
 
         return
@@ -444,8 +444,8 @@ function PANEL:PerformLayout(width, height)
     local gridColumns = ax.option:Get("inventoryColumns", 4)
     local containerWidth = self.container:GetWide()
     local itemWidth = containerWidth / gridColumns
-    local itemHeight = ax.util:UIScreenScaleH(32)
-    local categoryHeight = ax.util:UIScreenScaleH(24)
+    local itemHeight = ax.util:ScreenScaleH(32)
+    local categoryHeight = ax.util:ScreenScaleH(24)
 
     local currentY = 0
 
@@ -482,7 +482,7 @@ function PANEL:PerformLayout(width, height)
                 item:SetSize(itemWidth, itemHeight)
 
                 -- Update text inset for new size
-                item:SetTextInset(itemHeight + ax.util:UIScreenScale(2), 0)
+                item:SetTextInset(itemHeight + ax.util:ScreenScale(2), 0)
 
                 -- Update icon size
                 local icon = item:GetChildren()[1]

@@ -95,16 +95,16 @@ function PANEL:Init()
     -- Now we need to add docking to the bottom of each button
     for _, button in ipairs(self.buttons:GetCanvas():GetChildren()) do
         if ( IsValid(button) and button.SetTall ) then
-            button:DockMargin(0, 0, 0, ax.util:UIScreenScaleH(8))
+            button:DockMargin(0, 0, 0, ax.util:ScreenScaleH(8))
         end
     end
 end
 
 function PANEL:PerformLayout()
-    self.title:SetPos(ax.util:UIScreenScale(32), ScrH() / 3)
-    self.subtitle:SetPos(ax.util:UIScreenScale(32), ScrH() / 3 + self.title:GetTall())
+    self.title:SetPos(ax.util:ScreenScale(32), ScrH() / 3)
+    self.subtitle:SetPos(ax.util:ScreenScale(32), ScrH() / 3 + self.title:GetTall())
 
-    self.buttons:SetPos(ax.util:UIScreenScale(32), ScrH() / 3 + self.title:GetTall() + self.subtitle:GetTall() + ax.util:UIScreenScaleH(16))
+    self.buttons:SetPos(ax.util:ScreenScale(32), ScrH() / 3 + self.title:GetTall() + self.subtitle:GetTall() + ax.util:ScreenScaleH(16))
     self.buttons:SetSize(ScrW() / 6, ScrH() / 3)
 end
 

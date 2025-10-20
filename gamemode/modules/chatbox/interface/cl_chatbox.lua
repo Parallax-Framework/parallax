@@ -19,7 +19,7 @@ function PANEL:Init()
     local sw = tonumber(cookie.GetString("ax.chatbox.w") or "")
     local sh = tonumber(cookie.GetString("ax.chatbox.h") or "")
     if ( sw and sh ) then
-        local minW, minH = ax.util:UIScreenScale(128), ax.util:UIScreenScaleH(128)
+        local minW, minH = ax.util:ScreenScale(128), ax.util:ScreenScaleH(128)
         local maxW, maxH = ScrW(), ScrH()
         self:SetSize(math.Clamp(sw, minW, maxW), math.Clamp(sh, minH, maxH))
     end

@@ -87,7 +87,7 @@ function GM:PostRenderCurvy(width, height, client, isCurved)
             versionText = versionText .. " (" .. ax.version.commitHash .. ")"
         end
 
-        draw.SimpleText(versionText, "ax.tiny.bold", ax.util:UIScreenScale(4), height - ax.util:UIScreenScaleH(4), Color(255, 255, 255, 50), TEXT_ALIGN_LEFT, TEXT_ALIGN_BOTTOM)
+        draw.SimpleText(versionText, "ax.tiny.bold", ax.util:ScreenScale(4), height - ax.util:ScreenScaleH(4), Color(255, 255, 255, 50), TEXT_ALIGN_LEFT, TEXT_ALIGN_BOTTOM)
     end
 end
 
@@ -157,12 +157,12 @@ local function DrawTargetID(client)
         local description = character and character.vars.description or ""
 
         -- Wrap and cap description text
-        local maxWidth = ax.util:UIScreenScale(128) -- Maximum width for description
+        local maxWidth = ax.util:ScreenScale(128) -- Maximum width for description
         local descriptionLines = {}
 
         if ( description and description != "" ) then
             -- First cap the description to a reasonable length
-            description = ax.util:CapTextWord(description, ax.util:UIScreenScale(32))
+            description = ax.util:CapTextWord(description, ax.util:ScreenScale(32))
             -- Then wrap it to fit within our max width
             descriptionLines = ax.util:GetWrappedText(description, "ax.small.italic", maxWidth)
         end
@@ -186,13 +186,13 @@ local function DrawTargetID(client)
                 descW = math.max(descW, lineW or 0)
                 totalDescH = totalDescH + (lineH or 14)
             end
-            descH = totalDescH + ax.util:UIScreenScale(1) * (#descriptionLines - 1) -- Add spacing between lines
+            descH = totalDescH + ax.util:ScreenScale(1) * (#descriptionLines - 1) -- Add spacing between lines
         end
 
         -- Calculate panel dimensions with padding
-        local padding = ax.util:UIScreenScale(4)
+        local padding = ax.util:ScreenScale(4)
         local panelW = math.max(nameW or 100, descW or 0) + padding * 2
-        local panelH = (nameH or 16) + (#descriptionLines > 0 and descH + ax.util:UIScreenScale(2) or 0) + padding * 2
+        local panelH = (nameH or 16) + (#descriptionLines > 0 and descH + ax.util:ScreenScale(2) or 0) + padding * 2
 
         -- Position above the target player in 2D space
         local targetPos = targetIDTarget:GetPos() + targetIDTarget:OBBCenter() * 1.5
@@ -225,7 +225,7 @@ local function DrawTargetID(client)
 
         -- Draw description lines if available
         if ( #descriptionLines > 0 ) then
-            textY = textY + (nameH or 16) + ax.util:UIScreenScale(2)
+            textY = textY + (nameH or 16) + ax.util:ScreenScale(2)
             surface.SetFont(descFont)
             surface.SetTextColor(descColor)
 
@@ -237,7 +237,7 @@ local function DrawTargetID(client)
 
                 surface.SetTextPos(panelX + panelW * 0.5 - lineW * 0.5, textY)
                 surface.DrawText(line)
-                textY = textY + lineH + ax.util:UIScreenScale(1)
+                textY = textY + lineH + ax.util:ScreenScale(1)
             end
         end
     end
@@ -254,13 +254,13 @@ function GM:HUDPaintCurvy(width, height, client, isCurved)
 
     local shouldDraw = hook.Run("ShouldDrawHealthHUD")
     if ( shouldDraw != false ) then
-        local barWidth, barHeight = ax.util:UIScreenScale(64), ax.util:UIScreenScaleH(8)
-        local barX, barY = ax.util:UIScreenScale(8), ax.util:UIScreenScaleH(8) + barHeight / 2
+        local barWidth, barHeight = ax.util:ScreenScale(64), ax.util:ScreenScaleH(8)
+        local barX, barY = ax.util:ScreenScale(8), ax.util:ScreenScaleH(8) + barHeight / 2
 
         -- Draw health icon and bar if enabled
         if ( ax.option:Get("hudShowHealthBar", true) ) then
             ax.render.DrawMaterial(0, barX, barY - barHeight / 2, barHeight * 2, barHeight * 2, healthColor, healthIcon)
-            barX = barX + barHeight * 2 + ax.util:UIScreenScale(4)
+            barX = barX + barHeight * 2 + ax.util:ScreenScale(4)
 
             -- Draw health bar background
             ax.render.Draw(barHeight, barX, barY, barWidth, barHeight, Color(0, 0, 0, 150))
@@ -271,18 +271,18 @@ function GM:HUDPaintCurvy(width, height, client, isCurved)
             client.axHealth = Lerp(math.Clamp(FrameTime() * 10, 0, 1), client.axHealth, targetHealth)
 
             local healthFraction = client.axHealth / 100
-            local fillWidth = math.max(0, barWidth * healthFraction - ax.util:UIScreenScale(2))
+            local fillWidth = math.max(0, barWidth * healthFraction - ax.util:ScreenScale(2))
 
             -- Draw health bar fill using interpolated value
-            ax.render.Draw(barHeight, barX + ax.util:UIScreenScale(1), barY + ax.util:UIScreenScaleH(1), fillWidth, barHeight - ax.util:UIScreenScaleH(2), healthColor)
+            ax.render.Draw(barHeight, barX + ax.util:ScreenScale(1), barY + ax.util:ScreenScaleH(1), fillWidth, barHeight - ax.util:ScreenScaleH(2), healthColor)
 
-            barX = barX + barWidth + ax.util:UIScreenScale(8)
+            barX = barX + barWidth + ax.util:ScreenScale(8)
         end
 
         -- Draw armor icon and bar if player has armor and armor bars are enabled
         if ( client:Armor() > 0 and ax.option:Get("hudShowArmorBar", true) ) then
             ax.render.DrawMaterial(0, barX, barY - barHeight / 2, barHeight * 2, barHeight * 2, armorColor, armorIcon)
-            barX = barX + barHeight * 2 + ax.util:UIScreenScale(4)
+            barX = barX + barHeight * 2 + ax.util:ScreenScale(4)
 
             ax.render.Draw(barHeight, barX, barY, barWidth, barHeight, Color(0, 0, 0, 150))
 
@@ -291,16 +291,16 @@ function GM:HUDPaintCurvy(width, height, client, isCurved)
             client.axArmor = Lerp(math.Clamp(FrameTime() * 10, 0, 1), client.axArmor, targetArmor)
 
             local armorFraction = client.axArmor / 100
-            local armorFillWidth = math.max(0, barWidth * armorFraction - ax.util:UIScreenScale(2))
+            local armorFillWidth = math.max(0, barWidth * armorFraction - ax.util:ScreenScale(2))
 
-            ax.render.Draw(barHeight, barX + ax.util:UIScreenScale(1), barY + ax.util:UIScreenScaleH(1), armorFillWidth, barHeight - ax.util:UIScreenScaleH(2), armorColor)
+            ax.render.Draw(barHeight, barX + ax.util:ScreenScale(1), barY + ax.util:ScreenScaleH(1), armorFillWidth, barHeight - ax.util:ScreenScaleH(2), armorColor)
         end
 
         -- Draw voice chat icon if player is talking
         local iconMaterial = talkingIcon
         if ( client:IsSpeaking() ) then
             local iconSize = barHeight * 2
-            local iconX = width - ax.util:UIScreenScale(8) - iconSize
+            local iconX = width - ax.util:ScreenScale(8) - iconSize
             local iconY = height / 2 - iconSize / 2
 
             local iconColor = Color(255, 255, 255, 200)
@@ -312,8 +312,8 @@ function GM:HUDPaintCurvy(width, height, client, isCurved)
         -- Draw talking icon if player is typing
         if ( IsValid(ax.gui.chatbox) and ax.gui.chatbox:GetAlpha() >= 255 ) then
             local iconSize = barHeight * 2
-            local iconX = width - ax.util:UIScreenScale(8) - iconSize
-            local iconY = height / 2 - iconSize / 2 + (client:IsSpeaking() and iconSize + ax.util:UIScreenScale(4) or 0)
+            local iconX = width - ax.util:ScreenScale(8) - iconSize
+            local iconY = height / 2 - iconSize / 2 + (client:IsSpeaking() and iconSize + ax.util:ScreenScale(4) or 0)
 
             ax.render.DrawMaterial(0, iconX, iconY, iconSize, iconSize, Color(255, 255, 255, 200), talkingIcon)
         end

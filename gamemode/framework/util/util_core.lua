@@ -352,12 +352,13 @@ end
 -- @realm client
 -- @param value number The base value to scale
 -- @return number The scaled value
--- @usage local scaledSize = ax.util:UIScale(16) -- 16 * uiScale option
-function ax.util:UIScale(value)
+-- @usage local scaledSize = ax.util:Scale(16) -- 16 * uiScale option
+function ax.util:Scale(value)
     if ( CLIENT and ax and ax.option ) then
         local uiScale = ax.option:Get("uiScale", 1.0)
         return value * uiScale
     end
+
     return value
 end
 
@@ -365,18 +366,18 @@ end
 -- @realm client
 -- @param value number The base value to pass to ScreenScale
 -- @return number The ScreenScale'd and UI-scaled value
--- @usage local scaledPadding = ax.util:UIScreenScale(16)
-function ax.util:UIScreenScale(value)
-    return self:UIScale(ScreenScale(value))
+-- @usage local scaledPadding = ax.util:ScreenScale(16)
+function ax.util:ScreenScale(value)
+    return self:Scale(ScreenScale(value))
 end
 
 --- Scale a ScreenScaleH value using the user's UI scale preference.
 -- @realm client
 -- @param value number The base value to pass to ScreenScaleH
 -- @return number The ScreenScaleH'd and UI-scaled value
--- @usage local scaledHeight = ax.util:UIScreenScaleH(32)
-function ax.util:UIScreenScaleH(value)
-    return self:UIScale(ScreenScaleH(value))
+-- @usage local scaledHeight = ax.util:ScreenScaleH(32)
+function ax.util:ScreenScaleH(value)
+    return self:Scale(ScreenScaleH(value))
 end
 
 --- Pads a number with leading zeroes until it reaches the desired digit length.

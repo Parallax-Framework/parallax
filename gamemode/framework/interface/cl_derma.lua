@@ -67,11 +67,11 @@ function Derma_Message(text, title, buttonText)
 
     local label = frame:Add("ax.text")
     label:Dock(TOP)
-    label:DockMargin(0, ax.util:UIScreenScaleH(8), 0, 0)
+    label:DockMargin(0, ax.util:ScreenScaleH(8), 0, 0)
     label:SetFont("ax.huge.bold")
     label:SetText(string.upper(title), true)
 
-    local wrapped = ax.util:GetWrappedText(text, "ax.regular", frame:GetWide() - ax.util:UIScreenScale(16))
+    local wrapped = ax.util:GetWrappedText(text, "ax.regular", frame:GetWide() - ax.util:ScreenScale(16))
     local textHeight = 0
     for i = 1, #wrapped do
         local line = wrapped[i]
@@ -92,7 +92,7 @@ function Derma_Message(text, title, buttonText)
     end
 
     btnPanel:SetTall(btn:GetTall())
-    frame:SetTall(label:GetTall() + textHeight + btnPanel:GetTall() + ax.util:UIScreenScaleH(24))
+    frame:SetTall(label:GetTall() + textHeight + btnPanel:GetTall() + ax.util:ScreenScaleH(24))
     frame:Center()
 
     frame:MakePopup()
@@ -126,11 +126,11 @@ function Derma_Query(text, title, ...)
 
     local label = frame:Add("ax.text")
     label:Dock(TOP)
-    label:DockMargin(0, ax.util:UIScreenScaleH(8), 0, 0)
+    label:DockMargin(0, ax.util:ScreenScaleH(8), 0, 0)
     label:SetFont("ax.huge.bold")
     label:SetText(string.upper(title), true)
 
-    local wrapped = ax.util:GetWrappedText(text, "ax.regular", frame:GetWide() - ax.util:UIScreenScale(16))
+    local wrapped = ax.util:GetWrappedText(text, "ax.regular", frame:GetWide() - ax.util:ScreenScale(16))
     local textHeight = 0
     for i = 1, #wrapped do
         local line = wrapped[i]
@@ -142,7 +142,7 @@ function Derma_Query(text, title, ...)
 
     local btnPanel = frame:Add("EditablePanel")
     btnPanel:Dock(BOTTOM)
-    btnPanel:SetTall(ax.util:UIScreenScaleH(24))
+    btnPanel:SetTall(ax.util:ScreenScaleH(24))
 
     local numOptions = 0
 
@@ -154,7 +154,7 @@ function Derma_Query(text, title, ...)
 
         local btn = btnPanel:Add("ax.button.flat")
         btn:Dock(LEFT)
-        btn:DockMargin(0, 0, ax.util:UIScreenScale(4), 0)
+        btn:DockMargin(0, 0, ax.util:ScreenScale(4), 0)
         btn:SetText(txt, true)
         btn.DoClick = function()
             frame:Close()
@@ -164,7 +164,7 @@ function Derma_Query(text, title, ...)
         numOptions = numOptions + 1
     end
 
-    frame:SetTall(label:GetTall() + textHeight + btnPanel:GetTall() + ax.util:UIScreenScaleH(24))
+    frame:SetTall(label:GetTall() + textHeight + btnPanel:GetTall() + ax.util:ScreenScaleH(24))
     frame:Center()
 
     frame:MakePopup()
@@ -205,11 +205,11 @@ function Derma_StringRequest(title, text, defaultText, onEnter, onCancel, okText
 
     local label = frame:Add("ax.text")
     label:Dock(TOP)
-    label:DockMargin(0, ax.util:UIScreenScaleH(8), 0, 0)
+    label:DockMargin(0, ax.util:ScreenScaleH(8), 0, 0)
     label:SetFont("ax.huge.bold")
     label:SetText(string.upper(title), true)
 
-    local wrapped = ax.util:GetWrappedText(text, "ax.regular", frame:GetWide() - ax.util:UIScreenScale(16))
+    local wrapped = ax.util:GetWrappedText(text, "ax.regular", frame:GetWide() - ax.util:ScreenScale(16))
     local textHeight = 0
     for i = 1, #wrapped do
         local line = wrapped[i]
@@ -222,7 +222,7 @@ function Derma_StringRequest(title, text, defaultText, onEnter, onCancel, okText
 
     local entry = frame:Add("ax.text.entry")
     entry:Dock(TOP)
-    entry:DockMargin(0, ax.util:UIScreenScaleH(8), 0, ax.util:UIScreenScaleH(8))
+    entry:DockMargin(0, ax.util:ScreenScaleH(8), 0, ax.util:ScreenScaleH(8))
     entry:SetText(defaultText)
     entry.OnEnter = function()
         frame:Close()
@@ -250,7 +250,7 @@ function Derma_StringRequest(title, text, defaultText, onEnter, onCancel, okText
 
     btnPanel:SetTall(math.max(btnOK:GetTall(), btnCancel:GetTall()))
 
-    frame:SetTall(label:GetTall() + textHeight + entry:GetTall() + btnPanel:GetTall() + ax.util:UIScreenScaleH(32))
+    frame:SetTall(label:GetTall() + textHeight + entry:GetTall() + btnPanel:GetTall() + ax.util:ScreenScaleH(32))
     frame:Center()
 
     entry:RequestFocus()

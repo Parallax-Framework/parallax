@@ -1,11 +1,11 @@
 local MODULE = MODULE or {}
 
 function MODULE:LoadFonts()
-    ax.font:CreateFamily("small.admin", "Courier New", ax.util:UIScreenScaleH(5))
-    ax.font:CreateFamily("regular.admin", "Courier New", ax.util:UIScreenScaleH(6))
-    ax.font:CreateFamily("large.admin", "Courier New", ax.util:UIScreenScaleH(12))
-    ax.font:CreateFamily("huge.admin", "Courier New", ax.util:UIScreenScaleH(24))
-    ax.font:CreateFamily("massive.admin", "Courier New", ax.util:UIScreenScaleH(32))
+    ax.font:CreateFamily("small.admin", "Courier New", ax.util:ScreenScaleH(5))
+    ax.font:CreateFamily("regular.admin", "Courier New", ax.util:ScreenScaleH(6))
+    ax.font:CreateFamily("large.admin", "Courier New", ax.util:ScreenScaleH(12))
+    ax.font:CreateFamily("huge.admin", "Courier New", ax.util:ScreenScaleH(24))
+    ax.font:CreateFamily("massive.admin", "Courier New", ax.util:ScreenScaleH(32))
 end
 
 function MODULE:HUDPaint()
@@ -23,7 +23,7 @@ function MODULE:HUDPaint()
 end
 
 function MODULE:DrawItems()
-    local THRESHOLD = ax.util:UIScreenScale(12) + ax.util:UIScreenScaleH(12) -- pixels; distance under which same-class items will stack visually
+    local THRESHOLD = ax.util:ScreenScale(12) + ax.util:ScreenScaleH(12) -- pixels; distance under which same-class items will stack visually
 
     local stacks_by_class = {}
 

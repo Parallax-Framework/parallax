@@ -105,7 +105,7 @@ function PANEL:PopulateTabs()
 
             tab.container = tab:Add("EditablePanel")
             tab.container:Dock(FILL)
-            tab.container:DockMargin(ax.util:UIScreenScale(32), ax.util:UIScreenScaleH(32), ax.util:UIScreenScale(32), ax.util:UIScreenScaleH(32))
+            tab.container:DockMargin(ax.util:ScreenScale(32), ax.util:ScreenScaleH(32), ax.util:ScreenScale(32), ax.util:ScreenScaleH(32))
             tab.container:InvalidateParent(true)
 
             self.tabs[category] = tab
@@ -114,7 +114,7 @@ function PANEL:PopulateTabs()
             title:SetFont("ax.huge.bold")
             title:SetText(string.upper(category))
             title:Dock(TOP)
-            title:DockMargin(ax.util:UIScreenScale(32), ax.util:UIScreenScaleH(32), 0, 0)
+            title:DockMargin(ax.util:ScreenScale(32), ax.util:ScreenScaleH(32), 0, 0)
 
             index = index + 1
         end
@@ -205,7 +205,7 @@ function PANEL:PopulateVars(category)
             local entry = container:Add("ax.text.entry")
             entry:SetPlaceholderText(v.default)
             entry:Dock(TOP)
-            entry:DockMargin(0, 0, 0, ax.util:UIScreenScaleH(16))
+            entry:DockMargin(0, 0, 0, ax.util:ScreenScaleH(16))
 
             entry.OnValueChange = function(this)
                 self.payload[k] = this:GetText()
@@ -231,7 +231,7 @@ function PANEL:PopulateVars(category)
             slider:SetMax(100)
             slider:SetValue(v.default)
             slider:Dock(TOP)
-            slider:DockMargin(0, 0, 0, ax.util:UIScreenScaleH(16))
+            slider:DockMargin(0, 0, 0, ax.util:ScreenScaleH(16))
 
             slider.OnValueChanged = function(this, value)
                 self.payload[k] = value
@@ -261,7 +261,7 @@ function PANEL:OnPopulateVars(container, category, payload)
         self.miscModel = container:Add("DModelPanel")
         self.miscModel:SetModel(payload.model or "models/player.mdl")
         self.miscModel:SetWide(0)
-        self.miscModel:SetFOV(ax.util:UIScreenScale(12))
+        self.miscModel:SetFOV(ax.util:ScreenScale(12))
         self.miscModel:Dock(LEFT)
         self.miscModel:DockMargin(0, 0, 0, 0)
         self.miscModel:SetZPos(-1)
@@ -288,7 +288,7 @@ function PANEL:OnPayloadChanged(payload)
                 self.miscModel:Motion(1, {
                     Target = {
                         width = self.miscModel:GetParent():GetWide() / 4,
-                        rightPadding = ax.util:UIScreenScale(32)
+                        rightPadding = ax.util:ScreenScale(32)
                     },
                     Easing = "OutQuad",
                     Think = function(this)

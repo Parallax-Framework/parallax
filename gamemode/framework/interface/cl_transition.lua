@@ -102,7 +102,7 @@ end
 function PANEL:CreateNavigation(parent, backText, backCallback, nextText, nextCallback)
     local navigation = parent:Add("EditablePanel")
     navigation:Dock(BOTTOM)
-    navigation:DockMargin(ax.util:UIScreenScale(32), 0, ax.util:UIScreenScale(32), ax.util:UIScreenScaleH(32))
+    navigation:DockMargin(ax.util:ScreenScale(32), 0, ax.util:ScreenScale(32), ax.util:ScreenScaleH(32))
 
     local backButton = navigation:Add("ax.button.flat")
     backButton:Dock(LEFT)
