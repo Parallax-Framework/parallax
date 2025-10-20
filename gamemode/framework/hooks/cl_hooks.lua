@@ -371,32 +371,26 @@ end
 ax.viewstack:RegisterModifier("ragdoll", function(client, view)
     if ( !IsValid(client) or client:InVehicle() ) then return end
 
-    local ragdollIndex = client:GetRelay("ax.ragdoll.index", -1)
-    if ( ragdollIndex != -1 and !client:Alive() ) then
-        local ragdoll = ents.GetByIndex(ragdollIndex)
-        if ( !IsValid(ragdoll) ) then
-            return
-        end
-
-        local boneId = ragdoll:LookupBone("ValveBiped.Bip01_Head1")
-        if ( !isnumber( boneId ) ) then
-            ax.util:PrintDebug("Player ragdoll has no \"ValveBiped.Bip01_Head1\" bone!")
-            return
-        end
-
-        local matrix = ragdoll:GetBoneMatrix(boneId)
-        local pos = matrix:GetTranslation()
-        local ang = matrix:GetAngles()
-
-        ang:RotateAroundAxis(ang:Up(), 270)
-        ang:RotateAroundAxis(ang:Forward(), 270)
-
-        return {
-            origin = pos + ang:Forward() * 10,
-            angles = ang,
-            fov = view.fov
-        }
+    local ragdoll = client:GetRagdollEntity()
+    if ( !IsValid(ragdoll) or client:Alive() ) then return end
+    local boneId = ragdoll:LookupBone("ValveBiped.Bip01_Head1")
+    if ( !isnumber( boneId ) ) then
+        ax.util:PrintDebug("Player ragdoll has no \"ValveBiped.Bip01_Head1\" bone!")
+        return
     end
+
+    local matrix = ragdoll:GetBoneMatrix(boneId)
+    local pos = matrix:GetTranslation()
+    local ang = matrix:GetAngles()
+
+    ang:RotateAroundAxis(ang:Up(), 270)
+    ang:RotateAroundAxis(ang:Forward(), 270)
+
+    return {
+        origin = pos + ang:Forward() * 10,
+        angles = ang,
+        fov = fov
+    }
 end, 10)
 
 local cameraFOV = CreateConVar("ax_camera_fov", "90", {FCVAR_ARCHIVE, FCVAR_REPLICATED}, "Set the camera FOV when using a view entity.")
