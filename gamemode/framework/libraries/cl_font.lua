@@ -69,7 +69,7 @@ function ax.font:CreateFamily(name, font, size, familiesOverride, fontData)
 
     -- Multiply depending on size
     if ( createFontData.blursize ) then
-        createFontData.blursize = math.max(2, math.floor(size / 8))
+        createFontData.blursize = math.floor(size / 4) + createFontData.blursize
     end
 
     surface.CreateFont("ax." .. name, createFontData)
@@ -88,11 +88,11 @@ function ax.font:CreateFamily(name, font, size, familiesOverride, fontData)
                 antialias = true
             }
 
-            if ( createFontData.blursize ) then
-                createFontData.blursize = math.max(2, math.floor(size / 8))
-            end
-
             table.Merge(createFontData, fontData or {})
+
+            if ( createFontData.blursize ) then
+                createFontData.blursize = math.floor(size / 4) + createFontData.blursize
+            end
 
             surface.CreateFont("ax." .. name .. "." .. family, createFontData)
         else
@@ -104,11 +104,11 @@ function ax.font:CreateFamily(name, font, size, familiesOverride, fontData)
                 antialias = true
             }
 
-            if ( createFontData.blursize ) then
-                createFontData.blursize = math.max(2, math.floor(size / 8))
-            end
-
             table.Merge(createFontData, fontData or {})
+
+            if ( createFontData.blursize ) then
+                createFontData.blursize = math.floor(size / 4) + createFontData.blursize
+            end
 
             surface.CreateFont("ax." .. name .. "." .. family, createFontData)
         end
@@ -151,7 +151,8 @@ concommand.Add("ax_font_wipe", function(client, cmd, args)
 end, nil, "Wipe and reload all Parallax Framework fonts", FCVAR_HIDDEN)
 
 --- Available fonts registered in the Parallax Framework
-FONTS = {
+-- @table AX_FONTS
+AX_FONTS = {
     "ax.tiny",
     "ax.tiny.bold",
     "ax.tiny.italic",
