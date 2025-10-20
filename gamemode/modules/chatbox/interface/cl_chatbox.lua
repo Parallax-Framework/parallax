@@ -26,6 +26,9 @@ function PANEL:Init()
     self:SetSize(hook.Run("GetChatboxSize"))
     self:SetPos(hook.Run("GetChatboxPos"))
 
+    print("Chatbox position:", self:GetPos())
+    print("Chatbox size:", self:GetSize())
+
     self.categories = self:Add("ax.scroller.horizontal")
     self.categories:Dock(TOP)
     self.categories:InvalidateParent(true)

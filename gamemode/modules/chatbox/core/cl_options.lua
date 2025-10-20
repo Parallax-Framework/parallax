@@ -9,13 +9,10 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
-local x, y, width, height = 0, 0, 0, 0
-if ( CLIENT ) then
-    width, height = ax.util:ScreenScale(192), ax.util:ScreenScaleH(128)
-    x, y = ax.util:ScreenScale(8), ScrH() - height - ax.util:ScreenScaleH(8)
-else
-    return
-end
+local width, height = 0, 0
+local x, y = 0, 0
+width, height = ax.util:ScreenScale(192), ax.util:ScreenScaleH(128)
+x, y = ax.util:ScreenScale(8), ScrH() - height - ax.util:ScreenScaleH(8)
 
 ax.option:Add("chatBoxWidth", ax.type.number, width, {
     description = "The width of the chat box.",
