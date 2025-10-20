@@ -83,9 +83,6 @@ if ( CLIENT ) then
 
     -- style defaults (can be overridden by config where noted)
     ax.notification.maxVisible = math.max(1, math.floor(ScrH() / 64)) -- max toasts visible at once
-    ax.notification.paddingX = ax.util:ScreenScale(16)
-    ax.notification.paddingY = ax.util:ScreenScaleH(2)
-    ax.notification.spacing = ax.util:ScreenScaleH(2)
     ax.notification.font = "ax.regular.bold"
     ax.notificationMaxWidthFraction = 0.5
     ax.notificationInTime = 0.25
@@ -234,6 +231,12 @@ if ( CLIENT ) then
     function ax.notification:Render()
         if ( !ax.option:Get("notificationEnabled", true) ) then return end
         if ( self.active[ 1 ] == nil ) then return end
+
+        if ( !ax.notification.paddingX and istable( ax.option ) ) then
+            ax.notification.paddingX = ax.util:ScreenScale(16)
+            ax.notification.paddingY = ax.util:ScreenScaleH(2)
+            ax.notification.spacing = ax.util:ScreenScaleH(2)
+        end
 
         local sw, sh = ScrW(), ScrH()
         local notificationScale = ax.option:Get("notificationScale", 1.0)
