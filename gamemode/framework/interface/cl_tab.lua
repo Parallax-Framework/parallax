@@ -168,6 +168,8 @@ function PANEL:Init()
         for k, v in SortedPairs(buttons) do
             self.tabs[k]:StartAtBottom()
             self:TransitionToPage(self.tabs[k].index, ax.option:Get("tabFadeTime", 0.25), true)
+
+            ax.gui.tabLast = k
             break
         end
     end
