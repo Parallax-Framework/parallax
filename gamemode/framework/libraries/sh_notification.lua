@@ -113,6 +113,10 @@ if ( CLIENT ) then
     function ax.notification:Add(text, type, length)
         if ( !ax.option:Get("notificationEnabled", true) ) then return end
 
+        ax.notification.paddingX = ax.util:ScreenScale(16)
+        ax.notification.paddingY = ax.util:ScreenScaleH(2)
+        ax.notification.spacing = ax.util:ScreenScaleH(2)
+
         table.insert(self.queue, {
             text = tostring(text or ""),
             type = type or "generic",
@@ -232,11 +236,9 @@ if ( CLIENT ) then
         if ( !ax.option:Get("notificationEnabled", true) ) then return end
         if ( self.active[ 1 ] == nil ) then return end
 
-        if ( !ax.notification.paddingX and istable( ax.option ) ) then
-            ax.notification.paddingX = ax.util:ScreenScale(16)
-            ax.notification.paddingY = ax.util:ScreenScaleH(2)
-            ax.notification.spacing = ax.util:ScreenScaleH(2)
-        end
+        ax.notification.paddingX = ax.util:ScreenScale(16)
+        ax.notification.paddingY = ax.util:ScreenScaleH(2)
+        ax.notification.spacing = ax.util:ScreenScaleH(2)
 
         local sw, sh = ScrW(), ScrH()
         local notificationScale = ax.option:Get("notificationScale", 1.0)
