@@ -9,6 +9,9 @@ function PANEL:Init()
 
     ax.gui.chatbox = self
 
+    self.chatType = "ic"
+    self.chatTypePrevious = "ic"
+
     -- Base/default size
     self:SetSize(hook.Run("GetChatboxSize"))
 
@@ -108,31 +111,23 @@ function PANEL:Init()
 
     local bottom = self:Add("EditablePanel")
     bottom:Dock(BOTTOM)
-    bottom:DockMargin(8, 8, 8, 8)
-
-    self.chatType = bottom:Add("ax.text.typewriter")
-    self.chatType:Dock(LEFT)
-    self.chatType:SetTextInset(8, 0)
-    self.chatType:SetFont("ax.chatbox.text")
-    self.chatType:SetText("IC", true, true)
-    self.chatType:SetTypingSpeed(0.05)
-    self.chatType.PostThink = function(this)
-        this:SetWide(ax.util:GetTextWidth(this:GetFont(), this:GetText()) + 16)
-    end
-    self.chatType.Paint = function(this, width, height)
-        ax.render.Draw(8, 0, 0, width, height, Color(0, 0, 0, 150))
-    end
 
     self.entry = bottom:Add("ax.text.entry")
     self.entry:Dock(FILL)
-    self.entry:DockMargin(8, 0, 0, 0)
+    self.entry:DockMargin(ScreenScale(2), ScreenScaleH(1), ScreenScale(2), ScreenScaleH(1))
     self.entry:SetFont("ax.chatbox.text")
     self.entry:SetPlaceholderText("Say something...")
     self.entry:SetDrawLanguageID(false)
     self.entry:SetTabbingDisabled(true)
+    self.entry.Paint = function(this, width, height)
+        this:PaintInternal(width, height)
+    end
 
     bottom:SizeToChildren(false, true)
-    bottom:SetTall(self.entry:GetTall() / 1.5)
+    bottom:SetTall(self.entry:GetTall())
+    bottom.Paint = function(this, width, height)
+        ax.render.Draw(0, 0, 0, width, height, Color(0, 0, 0, 150))
+    end
 
     self.entry.OnEnter = function(this)
         local text = this:GetValue()
@@ -157,14 +152,17 @@ function PANEL:Init()
     end
 
     self.entry.OnChange = function(this)
-        local chatType = "IC"
+        self.chatTypePrevious = self.chatType or "ic"
+        self.chatType = "ic"
+
         local text = this:GetValue()
         if ( string.sub(text, 1, 3) == ".//" ) then
             -- Check if it's a way of using local out of character chat using .// prefix
             local data = ax.command:FindClosest("looc")
             if ( data ) then
                 ax.chat.currentType = data.displayName
-                chatType = string.upper(data.name)
+                self.chatTypePrevious = self.chatType or "ic"
+                self.chatType = string.lower(data.name)
             end
         elseif ( string.sub(text, 1, 1) == "/" ) then
             -- This is a command, so we need to parse it
@@ -175,25 +173,16 @@ function PANEL:Init()
             local data = ax.command:FindClosest(command)
             if ( data ) then
                 ax.chat.currentType = data.displayName
-                chatType = string.upper(data.name)
+                self.chatTypePrevious = self.chatType or "ic"
+                self.chatType = string.lower(data.name)
                 self:SelectRecommendation(data.displayName)
             end
         else
             self:PopulateRecommendations()
         end
 
-        hook.Run("ChatboxOnTextChanged", text, chatType)
-
-        -- Prevent the chat type from being set to the same value
-        if ( ax.util:FindString(self.chatType.fullText, chatType) ) then
-            return
-        end
-
-        self.chatType.previousChatType = chatType or self.chatType.previousChatType or "IC"
-        self.chatType:SetText(chatType, true, true)
-        self.chatType:RestartTyping()
-
-        hook.Run("ChatboxOnChatTypeChanged", chatType, self.chatType.previousChatType)
+        hook.Run("ChatboxOnTextChanged", text, self.chatType)
+        hook.Run("ChatboxOnChatTypeChanged", self.chatType, self.chatTypePrevious)
     end
 
     self.entry.OnKeyCode = function(this, key)
@@ -348,11 +337,11 @@ function PANEL:Init()
         return self:GetSize()
     end
 
-    self:PerformLayout()
+    self:PerformLayout(self:GetWide(), self:GetTall())
 end
 
 function PANEL:GetChatType()
-    return self.chatType.previousChatType or "IC"
+    return "ic"
 end
 
 function PANEL:PopulateRecommendations(text)
@@ -484,9 +473,6 @@ function PANEL:CycleRecommendations()
     self.entry:RequestFocus()
     self.entry:SetCaretPos(2 + #data.name)
 
-    self.chatType:SetText(data.name:upper(), true, true)
-    self.chatType:RestartTyping()
-
     surface.PlaySound("ax.button.enter")
 end
 
@@ -527,8 +513,6 @@ function PANEL:SetVisible(visible)
         self.entry:SetText("")
         self.entry:SetCaretPos(0)
         self.entry:SetVisible(false)
-        self.chatType:SetText("IC", true, true)
-        self.chatType:RestartTyping()
     end
 
     hook.Run("ChatboxOnTextChanged", "", "IC")
