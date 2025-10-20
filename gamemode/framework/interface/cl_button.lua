@@ -72,8 +72,11 @@ function PANEL:SizeToContents()
     self:SetSize(width + ax.util:ScreenScale(8), height + ax.util:ScreenScaleH(8))
 end
 
+function PANEL:CanClick( mouseCode )
+end
+
 function PANEL:OnMousePressed(mouseCode)
-    if ( !self:IsEnabled() ) then return end
+    if ( !self:IsEnabled() or !self:CanClick(mouseCode) ) then return end
 
     if ( mouseCode == MOUSE_LEFT ) then
         if ( self.DoClick ) then
