@@ -255,6 +255,12 @@ net.Receive("ax.character.bot.sync", function()
     -- Add to character instances so clients can find it
     ax.character.instances[characterId] = botCharacter
 
+    -- Update the bot player's character reference if they exist
+    local botPlayer = botCharacter:GetOwner()
+    if ( IsValid(botPlayer) and botPlayer:IsBot() ) then
+        botPlayer:GetTable().axCharacter = botCharacter
+    end
+
     ax.util:PrintDebug("Received bot character sync: " .. (botCharacter:GetName() or "Unknown") .. " (ID: " .. characterId .. ")")
 end)
 
