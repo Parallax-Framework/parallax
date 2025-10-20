@@ -89,6 +89,8 @@ function ax.character:SetVar(char, name, value, bNoNetworking, recipients)
 
     char.vars[name] = value
 
+    ax.util:PrintDebug("Set character variable '" .. name .. "' to value: " .. tostring(value))
+
     -- Network character variable changes to all clients
     if ( SERVER and !bNoNetworking ) then
         if ( char.isBot ) then
@@ -101,6 +103,8 @@ function ax.character:SetVar(char, name, value, bNoNetworking, recipients)
             net.WriteString(name)
             net.WriteType(value)
         net.Send(recipients or player.GetAll())
+
+        ax.util:PrintDebug("Networked character variable '" .. name .. "' change to clients")
     end
 end
 

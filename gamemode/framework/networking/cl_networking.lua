@@ -226,15 +226,16 @@ net.Receive("ax.character.delete", function()
 end)
 
 net.Receive("ax.character.var", function()
-    local characterId = net.ReadUInt(32)
+    local characterID = net.ReadUInt(32)
     local name = net.ReadString()
     local value = net.ReadType()
 
-    local character = ax.character:Get(characterId)
+    local character = ax.character:Get(characterID)
     if ( !character ) then
         -- Queue the var update until the character is synced
-        characterVarQueue[characterId] = characterVarQueue[characterId] or {}
-        characterVarQueue[characterId][name] = value
+        characterVarQueue[characterID] = characterVarQueue[characterID] or {}
+        characterVarQueue[characterID][name] = value
+        ax.util:PrintDebug("Queued character variable '" .. name .. "' update for character ID " .. characterID .. ": " .. tostring(value))
         return
     end
 
@@ -243,17 +244,19 @@ net.Receive("ax.character.var", function()
     end
 
     character.vars[name] = value
+
+    ax.util:PrintDebug("Received character variable '" .. name .. "' update for character ID " .. characterID .. ": " .. tostring(value))
 end)
 
 net.Receive("ax.character.bot.sync", function()
-    local characterId = net.ReadUInt(32)
+    local characterID = net.ReadUInt(32)
     local botCharacter = net.ReadTable()
 
     -- Restore metatable for bot character
     botCharacter = setmetatable(botCharacter, ax.character.meta)
 
     -- Add to character instances so clients can find it
-    ax.character.instances[characterId] = botCharacter
+    ax.character.instances[characterID] = botCharacter
 
     -- Update the bot player's character reference if they exist
     local botPlayer = botCharacter:GetOwner()
@@ -261,7 +264,7 @@ net.Receive("ax.character.bot.sync", function()
         botPlayer:GetTable().axCharacter = botCharacter
     end
 
-    ax.util:PrintDebug("Received bot character sync: " .. (botCharacter:GetName() or "Unknown") .. " (ID: " .. characterId .. ")")
+    ax.util:PrintDebug("Received bot character sync: " .. (botCharacter:GetName() or "Unknown") .. " (ID: " .. characterID .. ")")
 end)
 
 net.Receive("ax.character.setnameprompt", function()
