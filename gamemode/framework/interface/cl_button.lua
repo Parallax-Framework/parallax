@@ -88,14 +88,16 @@ function PANEL:OnMousePressed(mouseCode)
         end
     end
 
-    -- Unsure about this, but it does a nice little flicker effect
-    -- Could convert this into a cooldown timer if needed
-    self:SetEnabled(false)
-    timer.Simple(0.1, function()
-        if ( IsValid(self) ) then
-            self:SetEnabled(true)
-        end
-    end)
+    -- Button click delay for flicker effect
+    local clickDelay = ax.option:Get("buttonClickDelay")
+    if ( clickDelay > 0 ) then
+        self:SetEnabled(false)
+        timer.Simple(clickDelay, function()
+            if ( IsValid(self) ) then
+                self:SetEnabled(true)
+            end
+        end)
+    end
 
     if ( self.soundClick ) then
         surface.PlaySound(self.soundClick)

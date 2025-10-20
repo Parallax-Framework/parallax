@@ -24,12 +24,21 @@ ax.option:Add("uiScale", ax.type.number, 1.0, {
 })
 
 ax.option:Add("inventoryColumns", ax.type.number, 4, {
-    min = 2,
-    max = 8,
-    decimals = 0,
     category = "interface",
     subCategory = "inventory",
-    description = "Number of columns in inventory grid layout"
+    description = "Number of columns in inventory grid layout",
+    min = 2,
+    max = 8,
+    decimals = 0
+})
+
+ax.option:Add("buttonClickDelay", ax.type.number, 0.1, {
+    category = "interface",
+    subCategory = "buttons",
+    description = "Delay in seconds before a button can be clicked again (creates a flicker effect).",
+    min = 0,
+    max = 1,
+    decimals = 2
 })
 
 -- Visual preference options
