@@ -123,9 +123,7 @@ end
 local targetIDTarget = nil
 local targetIDAlpha = 0
 local targetIDTargetAlpha = 0
-local function DrawTargetID()
-    local client = ax.client
-    if ( !IsValid(client) ) then return end
+local function DrawTargetID(client)
 
     -- Perform a trace to see what we're looking at
     local trace = util.TraceLine({
@@ -252,7 +250,7 @@ local armorColor = Color(100, 150, 255, 200)
 local talkingIcon = ax.util:GetMaterial("parallax/icons/hud/talking.png", "smooth mips")
 local speakingIcon = ax.util:GetMaterial("parallax/icons/hud/speaking.png", "smooth mips")
 function GM:HUDPaintCurvy(width, height, client, isCurved)
-    if ( !IsValid(client) ) then return end
+    if ( !IsValid(client) or !client:Alive() ) then return end
 
     local shouldDraw = hook.Run("ShouldDrawHealthHUD")
     if ( shouldDraw != false ) then
@@ -269,10 +267,10 @@ function GM:HUDPaintCurvy(width, height, client, isCurved)
 
             -- Interpolated health value for smooth transitions
             local targetHealth = math.Clamp(client:Health(), 0, 100)
-            client._axCurvyHealth = client._axCurvyHealth or targetHealth
-            client._axCurvyHealth = Lerp(math.Clamp(FrameTime() * 10, 0, 1), client._axCurvyHealth, targetHealth)
+            client.axHealth = client.axHealth or targetHealth
+            client.axHealth = Lerp(math.Clamp(FrameTime() * 10, 0, 1), client.axHealth, targetHealth)
 
-            local healthFraction = client._axCurvyHealth / 100
+            local healthFraction = client.axHealth / 100
             local fillWidth = math.max(0, barWidth * healthFraction - ax.util:UIScreenScale(2))
 
             -- Draw health bar fill using interpolated value
@@ -289,10 +287,10 @@ function GM:HUDPaintCurvy(width, height, client, isCurved)
             ax.render.Draw(barHeight, barX, barY, barWidth, barHeight, Color(0, 0, 0, 150))
 
             local targetArmor = math.Clamp(client:Armor(), 0, 100)
-            client._axCurvyArmor = client._axCurvyArmor or targetArmor
-            client._axCurvyArmor = Lerp(math.Clamp(FrameTime() * 10, 0, 1), client._axCurvyArmor, targetArmor)
+            client.axArmor = client.axArmor or targetArmor
+            client.axArmor = Lerp(math.Clamp(FrameTime() * 10, 0, 1), client.axArmor, targetArmor)
 
-            local armorFraction = client._axCurvyArmor / 100
+            local armorFraction = client.axArmor / 100
             local armorFillWidth = math.max(0, barWidth * armorFraction - ax.util:UIScreenScale(2))
 
             ax.render.Draw(barHeight, barX + ax.util:UIScreenScale(1), barY + ax.util:UIScreenScaleH(1), armorFillWidth, barHeight - ax.util:UIScreenScaleH(2), armorColor)
@@ -324,7 +322,7 @@ function GM:HUDPaintCurvy(width, height, client, isCurved)
     -- Draw target ID system
     shouldDraw = hook.Run("ShouldDrawTargetID")
     if ( shouldDraw != false ) then
-        DrawTargetID()
+        DrawTargetID(client)
     end
 end
 
