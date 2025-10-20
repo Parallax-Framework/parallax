@@ -97,7 +97,7 @@ ax.character:RegisterVar("faction", {
             factionButton:DockMargin(ax.util:ScreenScale(2), 0, ax.util:ScreenScale(2), 0)
 
             factionButton.DoClick = function()
-                payload = {}
+                payload = payload or {}
                 payload.faction = v.index
 
                 for k2, v2 in pairs(ax.gui.main.create.tabs) do
