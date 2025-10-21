@@ -49,7 +49,10 @@ function ax.player.meta:GetFactionData()
 end
 
 function ax.player.meta:GetClassData()
-    local classID = self:GetClass()
+    local char = self:GetCharacter()
+    if ( !char ) then return nil end
+
+    local classID = char:GetClass()
     if ( classID ) then
         return ax.class:Get(classID)
     end
