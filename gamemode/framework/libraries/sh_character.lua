@@ -226,14 +226,14 @@ function ax.character:RegisterVar(name, data)
 
             self.vars[alias] = data
 
-            local aliasPrettyName = string.upper( string.sub( alias, 1, 1 ) ) .. string.sub( alias, 2 )
+            local aliasPrettyName = string.upper(string.sub(alias, 1, 1)) .. string.sub(alias, 2)
 
             if ( !data.bNoGetter ) then
-                ax.character.meta[ "Get" .. aliasPrettyName ] = ax.character.meta["Get" .. prettyName]
+                ax.character.meta["Get" .. aliasPrettyName] = ax.character.meta["Get" .. prettyName]
             end
 
             if ( !data.bNoSetter ) then
-                ax.character.meta[ "Set" .. aliasPrettyName ] = ax.character.meta["Set" .. prettyName]
+                ax.character.meta["Set" .. aliasPrettyName] = ax.character.meta["Set" .. prettyName]
             end
         end
     end
