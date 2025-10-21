@@ -24,6 +24,8 @@ function GM:PlayerDeathThink(client)
 end
 
 function GM:DoPlayerDeath(client, attacker, damageInfo)
+    client:SetDSP(31)
+
     client:ResetRateLimit("respawn")
     client:RateLimit("respawn", 5)
 
@@ -185,6 +187,7 @@ function GM:PlayerLoadout(client)
     end
 
     client:SelectWeapon("ax_hands")
+    client:SetDSP(1)
 
     hook.Run("PostPlayerLoadout", client)
 
