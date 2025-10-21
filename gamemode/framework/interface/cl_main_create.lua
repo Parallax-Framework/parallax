@@ -49,6 +49,53 @@ function PANEL:GetVars()
     return vars
 end
 
+function PANEL:NavigateToNextTab(currentTab)
+    -- If this is the last tab, submit the character
+    if ( currentTab.index == table.Count(self.tabs) ) then
+        net.Start("ax.character.create")
+            net.WriteTable(self.payload)
+        net.SendToServer()
+
+        return
+    end
+
+    -- Otherwise, find and navigate to the next tab
+    for k2, v2 in pairs(self.tabs) do
+        if ( currentTab.index + 1 != v2.index ) then continue end
+        if ( !IsValid(v2) ) then continue end
+
+        currentTab:SlideLeft()
+        v2:SlideToFront()
+        self:ClearVars(k2)
+        self:PopulateVars(k2)
+        break
+    end
+end
+
+function PANEL:NavigateToPreviousTab(currentTab)
+    -- If this is the first tab, return to splash screen
+    if ( currentTab.index == 1 ) then
+        self:SlideDown(nil, function()
+            self:ClearVars()
+        end)
+        self:GetParent().splash:SlideToFront()
+
+        return
+    end
+
+    -- Otherwise, find and navigate to the previous tab
+    for k2, v2 in pairs(self.tabs) do
+        if ( currentTab.index - 1 != v2.index ) then continue end
+        if ( !IsValid(v2) ) then continue end
+
+        currentTab:SlideRight()
+        v2:SlideToFront()
+        self:ClearVars(k2)
+        self:PopulateVars(k2)
+        break
+    end
+end
+
 function PANEL:PopulateTabs()
     local vars = self:GetVars()
 
@@ -65,42 +112,9 @@ function PANEL:PopulateTabs()
             tab.index = index
             tab:StartAtRight()
             tab:CreateNavigation(tab, "back", function()
-                if ( tab.index == 1 ) then
-                    self:SlideDown(nil, function()
-                        self:ClearVars()
-                    end)
-                    self:GetParent().splash:SlideToFront()
-                else
-                    for k2, v2 in pairs(self.tabs) do
-                        if ( tab.index - 1 == v2.index ) then
-                            if ( !IsValid(v2) ) then continue end
-
-                            tab:SlideRight()
-                            v2:SlideToFront()
-                            self:ClearVars(k2)
-                            self:PopulateVars(k2)
-                            break
-                        end
-                    end
-                end
+                self:NavigateToPreviousTab(tab)
             end, "next", function()
-                for k2, v2 in pairs(self.tabs) do
-                    if ( tab.index == table.Count(self.tabs) ) then
-                        net.Start("ax.character.create")
-                            net.WriteTable(self.payload)
-                        net.SendToServer()
-
-                        break
-                    elseif ( tab.index + 1 == v2.index ) then
-                        if ( !IsValid(v2) ) then continue end
-
-                        tab:SlideLeft()
-                        v2:SlideToFront()
-                        self:ClearVars(k2)
-                        self:PopulateVars(k2)
-                        break
-                    end
-                end
+                self:NavigateToNextTab(tab)
             end)
 
             tab.container = tab:Add("EditablePanel")
@@ -257,7 +271,15 @@ function PANEL:PopulateVars(category)
 end
 
 function PANEL:OnPopulateVars(container, category, payload)
-    if ( ax.util:FindString(category, "misc") ) then
+    local targetCategory = category or "misc"
+    for k, v in pairs(self:GetVars()) do
+        if ( v.field == "model" ) then
+            targetCategory = v.category or "misc"
+            break
+        end
+    end
+
+    if ( ax.util:FindString(category, targetCategory) ) then
         self.miscModel = container:Add("DModelPanel")
         self.miscModel:SetModel(payload.model or "models/player.mdl")
         self.miscModel:SetWide(0)
