@@ -385,3 +385,37 @@ end
 function ax.util:PadNumber(num, digits)
     return string.format("%0" .. tostring(digits) .. "d", num)
 end
+
+--- Finds a target in the player's crosshair, with an optional range.
+-- @realm shared
+-- @player client Player to find the target for
+-- @entity target Target entity to check
+-- @number[opt=0.9] range Range to check for the target
+-- @treturn bool Whether or not the target is in the player's crosshair
+-- @usage -- returns true if Entity(2) is in Entity(1)'s crosshair
+-- print(ax.util:FindInCrosshair(Entity(1), Entity(2)))
+-- > true
+-- @usage -- returns true if Entity(2) is in Entity(1)'s crosshair within 0.5 range
+-- print(ax.util:FindInCrosshair(Entity(1), Entity(2), 0.5))
+-- > true
+-- @usage -- returns false if Entity(2) is not in Entity(1)'s crosshair within 0.1 range
+-- print(ax.util:FindInCrosshair(Entity(1), Entity(2), 0.1))
+-- > false
+function ax.util:FindInCrosshair(client, target, range)
+    if ( !IsValid(client) and !IsValid(target) ) then return end
+
+    if ( !range ) then
+        range = 0.9
+    end
+
+    range = math.Clamp(range, 0, 1)
+
+    local origin, originVector = client:EyePos(), client:GetAimVector()
+
+    local targetOrigin = target.EyePos and target:EyePos() or target:WorldSpaceCenter()
+    local direction = targetOrigin - origin
+
+    if ( originVector:Dot(direction:GetNormalized()) > range ) then return true end
+
+    return false
+end
