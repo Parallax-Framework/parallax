@@ -22,9 +22,11 @@ function GM:Initialize()
     end
 end
 
+AX_CONVAR_HOTRELOAD = AX_CONVAR_HOTRELOAD or CreateConVar("ax_hotreload", "1", FCVAR_ARCHIVE + FCVAR_REPLICATED, "Enable or disable hot-reloading of Parallax Framework components.")
+AX_CONVAR_HOTRELOAD_TIME = AX_CONVAR_HOTRELOAD_TIME or CreateConVar("ax_hotreload_time", "60", FCVAR_ARCHIVE + FCVAR_REPLICATED, "Time in seconds to use as a filter when hot-reloading. Set to 0 to disable filtering.")
+
 local function OnHotReloadOnce()
-    -- In developer mode, only reload files changed in the last 60 seconds
-    local timeFilter = GetConVar("developer"):GetInt() > 0 and 60 or nil
+    local timeFilter = AX_CONVAR_HOTRELOAD:GetBool() and AX_CONVAR_HOTRELOAD_TIME:GetInt() or nil
     if ( timeFilter ) then
         ax.util:PrintDebug("OnReloaded: Using time filter of " .. timeFilter .. " seconds for hot-reload optimization")
     end
