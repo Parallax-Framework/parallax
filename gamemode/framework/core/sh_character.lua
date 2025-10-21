@@ -100,17 +100,13 @@ ax.character:RegisterVar("faction", {
                 table.Empty(payload or {})
                 payload.faction = v.index
 
-                for k2, v2 in pairs(ax.gui.main.create.tabs) do
-                    if ( parent.index + 1 == v2.index ) then
-                        if ( !IsValid(v2) ) then continue end
-
-                        parent:SlideLeft()
-                        v2:SlideToFront()
-                        ax.gui.main.create:ClearVars(k2)
-                        ax.gui.main.create:PopulateVars(k2)
-                        break
-                    end
+                if ( ax.gui.main.create.OnPayloadChanged ) then
+                    ax.gui.main.create:OnPayloadChanged(payload)
                 end
+
+                hook.Run("OnPayloadChanged", payload)
+
+                ax.gui.main.create:NavigateToNextTab(parent)
             end
 
             local banner = v.image or hook.Run("GetFactionBanner", v.index) or "gamepadui/hl2/chapter14"
