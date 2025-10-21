@@ -32,8 +32,7 @@ function PANEL:Init()
     end
 
     self:StartAtBottom()
-    --self:ClearVars(category) -- comment@bloodycop6385 > 'category' is nil here.
-    self:ClearVars()
+    self:ClearVars() -- comment@bloodycop6385 > 'category' is nil here.
 end
 
 function PANEL:OnSlideStart()
