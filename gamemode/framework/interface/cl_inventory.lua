@@ -29,8 +29,11 @@ function PANEL:Init()
         ax.render.Draw(0, 0, 0, width, height, Color(0, 0, 0, 150))
     end
 
+    local maxWeight = inventory:GetMaxWeight()
+    local weight = inventory:GetWeight()
+
     self.weightProgress = self:Add("DProgress")
-    self.weightProgress:SetFraction(inventory:GetWeight() / inventory:GetMaxWeight())
+    self.weightProgress:SetFraction(weight / maxWeight)
     self.weightProgress:SetTall(ax.util:ScreenScale(12))
     self.weightProgress:Dock(TOP)
     self.weightProgress.Paint = function(this, width, height)
@@ -40,12 +43,11 @@ function PANEL:Init()
         ax.render.Draw(0, 0, 0, width * fraction, height, Color(100, 200, 175, 200))
     end
 
-    local maxWeight = inventory:GetMaxWeight()
-    local weight = math.Round(maxWeight * self.weightProgress:GetFraction(), 2)
+    local totalWeight = maxWeight * self.weightProgress:GetFraction()
 
     self.weightCounter = self.weightProgress:Add("ax.text")
     self.weightCounter:SetFont("ax.regular")
-    self.weightCounter:SetText(weight .. "kg / " .. maxWeight .. "kg", true)
+    self.weightCounter:SetText(totalWeight .. "kg / " .. maxWeight .. "kg", true)
     self.weightCounter:SetContentAlignment(5)
     self.weightCounter:Dock(FILL)
 
