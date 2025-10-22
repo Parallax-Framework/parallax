@@ -73,7 +73,12 @@ function item:GetActions()
 end
 
 function item:AddAction(name, actionData)
-    if ( !istable(self.actions) ) then self.actions = {} end
+    -- If actions table doesn't exist directly on this item (it's inherited), create a new one
+    if ( !rawget(self, "actions") ) then
+        -- Copy existing actions from inheritance chain to preserve base actions
+        local inheritedActions = self.actions or {}
+        self.actions = table.Copy(inheritedActions)
+    end
 
     self.actions[name] = actionData
 end
