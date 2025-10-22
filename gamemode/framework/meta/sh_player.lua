@@ -9,6 +9,9 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
+--- Player meta functions
+-- @module ax.player.meta
+
 ax.player.meta.GetNameInternal = ax.player.meta.GetNameInternal or ax.player.meta.GetName
 function ax.player.meta:GetName()
     local character = self:GetCharacter()
