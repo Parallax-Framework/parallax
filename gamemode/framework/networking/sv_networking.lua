@@ -225,23 +225,23 @@ net.Receive("ax.character.load", function(length, client)
     ax.character:Load(client, character)
 end)
 
-util.AddNetworkString( "ax.character.delete" )
-net.Receive( "ax.character.delete", function( length, client )
-    local id = net.ReadUInt( 32 )
-    if ( !isnumber( id ) or id < 1 ) then return end
+util.AddNetworkString("ax.character.delete")
+net.Receive("ax.character.delete", function(length, client)
+    local id = net.ReadUInt(32)
+    if ( !isnumber(id) or id < 1 ) then return end
 
-    local character = ax.character.instances[ id ]
-    if ( !istable( character ) ) then
-        ax.util:PrintError( "Character with ID " .. id .. " does not exist." )
+    local character = ax.character.instances[id]
+    if ( !istable(character) ) then
+        ax.util:PrintError("Character with ID " .. id .. " does not exist.")
         return
     end
 
     if ( character:GetSteamID64() != client:SteamID64() ) then
-        ax.util:PrintError( "Character ID " .. id .. " does not belong to " .. client:SteamID64() )
+        ax.util:PrintError("Character ID " .. id .. " does not belong to " .. client:SteamID64())
         return
     end
 
-    local try, catch = hook.Run( "CanPlayerDeleteCharacter", client, character )
+    local try, catch = hook.Run("CanPlayerDeleteCharacter", client, character)
     if ( try == false ) then
         if ( isstring(catch) and #catch > 0 ) then
             client:Notify(catch, "error")
@@ -250,14 +250,14 @@ net.Receive( "ax.character.delete", function( length, client )
         return
     end
 
-    ax.character:Delete( id, function( bSuccess )
+    ax.character:Delete(id, function(bSuccess)
         if ( bSuccess ) then
             local clientData = client:GetTable()
             local clientCharacters = clientData.axCharacters or {}
-            if ( istable( clientData.axCharacters ) ) then
+            if ( istable(clientData.axCharacters) ) then
                 for i = #clientCharacters, 1, -1 do
                     if ( clientCharacters[i].id == id ) then
-                        table.remove( clientCharacters, i )
+                        table.remove(clientCharacters, i)
                         break
                     end
                 end
