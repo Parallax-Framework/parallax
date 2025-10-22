@@ -181,8 +181,9 @@ end
 -- Items loaded here get default drop actions and are stored in the item registry.
 -- @realm shared
 -- @param path string The directory path containing item files
+-- @param prefix string Optional prefix to add to item class names (e.g., "ammo_" or "weapon_")
 -- @usage ax.item:LoadItemsFromDirectory("parallax/gamemode/items")
-function ax.item:LoadItemsFromDirectory(path, timeFilter)
+function ax.item:LoadItemsFromDirectory(path, timeFilter, prefix)
     local files, _ = file.Find(path .. "/*.lua", "LUA")
     if ( !files or #files == 0 ) then
         return
@@ -204,6 +205,10 @@ function ax.item:LoadItemsFromDirectory(path, timeFilter)
         end
 
         local itemName = self:ExtractItemName(fileName)
+        -- Add prefix if provided to avoid naming conflicts
+        if ( isstring(prefix) and prefix != "" ) then
+            itemName = prefix .. itemName
+        end
 
         ITEM = setmetatable({ class = itemName }, ax.item.meta)
             ITEM:AddAction("drop", self:CreateDefaultDropAction())
@@ -235,8 +240,8 @@ function ax.item:LoadItemsWithInheritance(path, timeFilter)
         -- Check if there's a corresponding base item
         local baseItem = ax.item.stored[dirName]
         if ( !istable(baseItem) or !baseItem.isBase ) then
-            -- No base found, treat as regular directory recursion
-            self:LoadItemsFromDirectory(path .. "/" .. dirName, timeFilter)
+            -- No base found, use directory name as prefix to avoid naming conflicts
+            self:LoadItemsFromDirectory(path .. "/" .. dirName, timeFilter, dirName .. "_")
             continue
         end
 
@@ -275,9 +280,11 @@ function ax.item:LoadItemsWithBase(dirPath, baseName, baseItem, timeFilter)
         end
 
         local itemName = self:ExtractItemName(fileName)
+        -- Prefix with base name to avoid collisions between different base types
+        local fullItemName = baseName .. "_" .. itemName
 
         -- Create item with base item inheritance
-        ITEM = setmetatable({ class = itemName, base = baseName }, {
+        ITEM = setmetatable({ class = fullItemName, base = baseName }, {
             __index = function(t, k)
                 -- First check the item itself
                 local val = rawget(t, k)
@@ -292,8 +299,8 @@ function ax.item:LoadItemsWithBase(dirPath, baseName, baseItem, timeFilter)
         })
 
         ax.util:Include(dirPath .. "/" .. fileName, "shared")
-        ax.util:PrintSuccess("Item \"" .. tostring(ITEM.name or itemName) .. "\" (base: " .. baseName .. ") initialized successfully.")
-        ax.item.stored[itemName] = ITEM
+        ax.util:PrintSuccess("Item \"" .. tostring(ITEM.name or fullItemName) .. "\" (base: " .. baseName .. ") initialized successfully.")
+        ax.item.stored[fullItemName] = ITEM
         ITEM = nil
     end
 end
