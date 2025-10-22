@@ -272,16 +272,65 @@ net.Receive( "ax.character.delete", function( length, client )
                 client:SetMoveType(MOVETYPE_NONE)
                 client:KillSilent()
 
-                client:SendLua( [[vgui.Create( "ax.main" )]] )
+                client:SendLua([[vgui.Create("ax.main")]])
             end
 
-            net.Start( "ax.character.delete" )
-                net.WriteUInt( id, 32 )
-            net.Send( client )
+            net.Start("ax.character.delete")
+                net.WriteUInt(id, 32)
+            net.Send(client)
 
-            hook.Run( "PlayerDeletedCharacter", client, id )
+            hook.Run("PlayerDeletedCharacter", client, id)
 
-            ax.character.instances[ id ] = nil
+            ax.character.instances[id] = nil
         end
-    end )
+    end)
+end)
+
+util.AddNetworkString("ax.spawnmenu.spawn.item")
+net.Receive("ax.spawnmenu.spawn.item", function(len, client)
+    -- TODO: Use CAMI to handle permissions
+    if ( !IsValid(client) or !client:IsSuperAdmin() ) then
+        ax.util:PrintWarning(string.format("Player %s attempted to spawn an item without permission", tostring(client)))
+        return
+    end
+
+    local itemClass = net.ReadString()
+    if ( !ax.item.stored[itemClass] ) then
+        client:Notify("Invalid item class: " .. tostring(itemClass))
+        ax.util:PrintWarning(string.format("Player %s attempted to spawn invalid item class: %s", tostring(client), tostring(itemClass)))
+        return
+    end
+
+    local item = ax.item.stored[itemClass]
+    if ( rawget(item, "isBase") == true ) then -- Use rawget to check only the item's own isBase property, not inherited from base
+        client:Notify("Cannot spawn base items")
+        return
+    end
+
+    local trace = client:GetEyeTrace()
+    local pos = trace.HitPos + trace.HitNormal * 16
+    local ang = trace.HitNormal:Angle()
+
+    ax.item:Spawn(itemClass, pos, ang, function(entity, itemInstance)
+        if ( IsValid(entity) and istable(itemInstance) ) then
+            ax.util:PrintSuccess(string.format(
+                "Player %s spawned item %s (class: %s) at %s",
+                tostring(client),
+                tostring(itemInstance.name or itemClass),
+                tostring(itemClass),
+                tostring(pos)
+            ))
+
+            -- Notify the player
+            -- client:Notify(string.format("Spawned %s", itemInstance.name or itemClass)) -- Commented out to reduce spam
+        else
+            ax.util:PrintError(string.format(
+                "Failed to spawn item %s for player %s",
+                tostring(itemClass),
+                tostring(client)
+            ))
+
+            client:Notify("Failed to spawn item")
+        end
+    end, {})
 end)
