@@ -387,8 +387,14 @@ if ( SERVER ) then
         end
 
         -- TODO: Turn this check into a hook so inventories can have custom rules in terms of what they can accept. That way we can also handle weight checks there too.
-        if ( toInventory != 0 and toInventory:GetWeight() + item:GetWeight() > toInventory:GetMaxWeight() ) then
-            return false, "The destination inventory cannot hold this item."
+        if ( toInventory != 0 and math.Round(toInventory:GetWeight() + item:GetWeight(), 2) > toInventory:GetMaxWeight() ) then
+            local message = "The destination inventory cannot hold this item."
+            local owner = toInventory:GetOwner()
+            if ( istable(owner) and IsValid(owner:GetOwner()) ) then
+                message = "Your inventory cannot hold this item."
+            end
+
+            return false, message
         end
 
         if ( istable(fromInventory) ) then
