@@ -41,9 +41,7 @@ local function GET_SHADER(name)
 	return SHADERS_VERSION:gsub("%.", "_") .. "_" .. name
 end
 
--- CRITICAL FIX: Use a fixed name instead of SysTime() to prevent RT leak on reload
--- The old code created a NEW render target every single reload, causing massive GPU memory leaks
-local BLUR_RT = GetRenderTargetEx("RNDX_BLUR_RT_" .. SHADERS_VERSION,
+local BLUR_RT = GetRenderTargetEx("RNDX" .. SHADERS_VERSION .. SysTime(),
 	1024, 1024,
 	RT_SIZE_LITERAL,
 	MATERIAL_RT_DEPTH_SEPARATE,
@@ -690,4 +688,4 @@ function RNDX.SetDefaultShape(shape)
 	DEFAULT_DRAW_FLAGS = DEFAULT_SHAPE
 end
 
-ax.render = RNDX -- eon, if you are going to update this file, please add a global reference to it, thanks
+ax.render = RNDX
