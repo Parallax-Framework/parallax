@@ -7,52 +7,108 @@ MODULE.Author = "Riggs"
 ax.config:Add("thirdperson", ax.type.bool, true, {
     category = "camera",
     subCategory = "thirdperson",
-    description = "Enable third-person camera functionality in the gamemode."
+    description = "Enable third-person camera functionality in the gamemode.",
+    bNoNetworking = true
 })
 
 ax.option:Add("thirdperson", ax.type.bool, false, {
     category = "camera",
     subCategory = "thirdperson",
-    description = "Toggle third-person camera."
+    description = "Toggle third-person camera.",
+    bNoNetworking = true
 })
 
 ax.option:Add("thirdpersonX", ax.type.number, 25, {
     category = "camera",
     subCategory = "thirdperson",
     description = "X offset for third-person camera.",
+    bNoNetworking = true,
     min = -100,
-    max = 100
+    max = 100,
+    decimals = 0
 })
 
 ax.option:Add("thirdpersonY", ax.type.number, 0, {
     category = "camera",
     subCategory = "thirdperson",
     description = "Y offset for third-person camera.",
+    bNoNetworking = true,
     min = -100,
-    max = 100
+    max = 100,
+    decimals = 0
 })
 
 ax.option:Add("thirdpersonZ", ax.type.number, -50, {
     category = "camera",
     subCategory = "thirdperson",
     description = "Z offset for third-person camera.",
+    bNoNetworking = true,
     min = -100,
-    max = 100
+    max = 100,
+    decimals = 0
 })
 
 ax.option:Add("thirdpersonFollowHead", ax.type.bool, true, {
     category = "camera",
     subCategory = "thirdperson",
-    description = "Make the third-person camera follow the player's model head movements."
+    description = "Make the third-person camera follow the player's model head movements.",
+    bNoNetworking = true
+})
+
+ax.option:Add("thirdpersonFollowTraceAngles", ax.type.bool, true, {
+    category = "camera",
+    subCategory = "thirdperson",
+    description = "Make the third-person camera follow the player's aim direction instead of view angles.",
+    bNoNetworking = true
+})
+
+ax.option:Add("thirdpersonFollowTraceFieldOfView", ax.type.bool, true, {
+    category = "camera",
+    subCategory = "thirdperson",
+    description = "Make the third-person camera FOV calculated based on the distance from the trace end point to the player.",
+    bNoNetworking = true
+})
+
+ax.option:Add("thirdpersonDesiredPositionInterpolation", ax.type.number, 5, {
+    category = "camera",
+    subCategory = "thirdperson",
+    description = "Interpolation speed for the third-person camera desired position. Lower values will be more smooth but also more slower to respond. Set to 0 to disable interpolation.",
+    bNoNetworking = true,
+    min = 0,
+    max = 20,
+    decimals = 0
+})
+
+ax.option:Add("thirdpersonDesiredAngleInterpolation", ax.type.number, 5, {
+    category = "camera",
+    subCategory = "thirdperson",
+    description = "Interpolation speed for the third-person camera desired angle. Lower values will be more smooth but also more slower to respond. Set to 0 to disable interpolation.",
+    bNoNetworking = true,
+    min = 0,
+    max = 20,
+    decimals = 0
+})
+
+ax.option:Add("thirdpersonDesiredFieldOfViewInterpolation", ax.type.number, 5, {
+    category = "camera",
+    subCategory = "thirdperson",
+    description = "Interpolation speed for the third-person camera desired FOV. Lower values will be more smooth but also more slower to respond. Set to 0 to disable interpolation.",
+    bNoNetworking = true,
+    min = 0,
+    max = 20,
+    decimals = 0
 })
 
 if ( SERVER ) then return end
 
 local FIXED_RADIUS = 6
+local curPos
+local curAng
+local curFOV
 
 -- LVS is gay and already used the ShouldDrawThirdPerson hook, so we have to use a different name
 function MODULE:ShouldUseThirdPerson(client)
-    if ( !client:Alive() or client:InVehicle() ) then
+    if ( !client:Alive() or client:InVehicle() or client:GetObserverMode() != OBS_MODE_NONE or !client:Alive() or client:GetMoveType() == MOVETYPE_NOCLIP ) then
         return false
     end
 
@@ -72,6 +128,18 @@ end
 ax.viewstack:RegisterModifier("thirdperson", function(client, view)
     if ( hook.Run("ShouldUseThirdPerson", client) == false ) then return end
 
+    if ( !curPos ) then
+        curPos = view.origin
+    end
+
+    if ( !curAng ) then
+        curAng = view.angles
+    end
+
+    if ( !curFOV ) then
+        curFOV = 0
+    end
+
     -- start from the player's eye position
     local startPos = client:EyePos()
     local head = client:LookupBone("ValveBiped.Bip01_Head1")
@@ -87,7 +155,7 @@ ax.viewstack:RegisterModifier("thirdperson", function(client, view)
     -- desired camera offset relative to view angles
     local desiredPos = startPos + ang:Forward() * ax.option:Get("thirdpersonZ") + ang:Right() * ax.option:Get("thirdpersonX") + ang:Up() * ax.option:Get("thirdpersonY")
 
-    local tr = util.TraceHull({
+    local traceCamera = util.TraceHull({
         start = startPos,
         endpos = desiredPos,
         mins = Vector(-FIXED_RADIUS, -FIXED_RADIUS, -FIXED_RADIUS),
@@ -96,14 +164,57 @@ ax.viewstack:RegisterModifier("thirdperson", function(client, view)
         mask = MASK_SOLID
     })
 
-    if ( tr.Hit ) then
-        desiredPos = tr.HitPos - ang:Forward() * FIXED_RADIUS
+    if ( traceCamera.Hit ) then
+        desiredPos = traceCamera.HitPos - ang:Forward() * FIXED_RADIUS
+    end
+
+    local trace = util.TraceLine({
+        start = client:GetShootPos(),
+        endpos = client:GetShootPos() + client:GetAimVector() * 2048,
+        filter = client,
+        mask = MASK_SOLID
+    })
+
+    local desiredAng = ang
+    if ( ax.option:Get("thirdpersonFollowTraceAngles") ) then
+        local traceAng = (trace.HitPos - desiredPos):Angle()
+        desiredAng = traceAng
+    end
+
+    local desiredFOV = 0
+
+    local posInterpSpeed = ax.option:Get("thirdpersonDesiredPositionInterpolation")
+    local angInterpSpeed = ax.option:Get("thirdpersonDesiredAngleInterpolation")
+    local fovInterpSpeed = ax.option:Get("thirdpersonDesiredFieldOfViewInterpolation")
+
+    local ft = math.Clamp(FrameTime(), 0, 0.1)
+    if ( posInterpSpeed > 0 ) then
+        curPos = LerpVector(ft * posInterpSpeed, curPos, desiredPos)
+    else
+        curPos = desiredPos
+    end
+
+    if ( angInterpSpeed > 0 ) then
+        curAng = LerpAngle(ft * angInterpSpeed, curAng, desiredAng)
+    else
+        curAng = desiredAng
+    end
+
+    if ( ax.option:Get("thirdpersonFollowTraceFieldOfView") ) then
+        local distance = trace.StartPos:Distance(trace.HitPos)
+        desiredFOV = math.Remap(distance / 4, 0, 2048, 0, 75)
+    end
+
+    if ( fovInterpSpeed > 0 ) then
+        curFOV = Lerp(ft * fovInterpSpeed, curFOV, desiredFOV)
+    else
+        curFOV = desiredFOV
     end
 
     return {
-        origin = desiredPos,
-        angles = ang,
-        fov = view.fov
+        origin = curPos,
+        angles = curAng,
+        fov = view.fov - curFOV
     }
 end, 1)
 
