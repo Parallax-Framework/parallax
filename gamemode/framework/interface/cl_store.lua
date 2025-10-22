@@ -435,9 +435,9 @@ function PANEL:SetKey(key)
     if ( self.type == "config" ) then
         if ( ax.config:Get(key) == nil ) then
             self:SetText("unknown")
-            self.slider:SetValue(0)
             self.slider:SetMinMax(0, 100)
             self.slider:SetDecimals(0)
+            self.slider:SetValue(0)
             self.type = "unknown"
             ax.util:PrintError("ax.store.number: Key '" .. tostring(key) .. "' does not exist in config store")
             return
@@ -450,23 +450,23 @@ function PANEL:SetKey(key)
     elseif ( self.type == "option" ) then
         if ( ax.option:Get(key) == nil ) then
             self:SetText("unknown")
-            self.slider:SetValue(0)
             self.slider:SetMinMax(0, 100)
             self.slider:SetDecimals(0)
+            self.slider:SetValue(0)
             self.type = "unknown"
             ax.util:PrintError("ax.store.number: Key '" .. tostring(key) .. "' does not exist in option store")
             return
         end
 
         self:SetText(ax.util:UniqueIDToName(key))
-        self.slider:SetValue(ax.option:Get(key) or 0)
         self.slider:SetMinMax(ax.option:GetData(key).min or 0, ax.option:GetData(key).max or 100)
         self.slider:SetDecimals(ax.option:GetData(key).decimals or 0)
+        self.slider:SetValue(ax.option:Get(key) or 0)
     else
         self:SetText("unknown")
-        self.slider:SetValue(0)
         self.slider:SetMinMax(0, 100)
         self.slider:SetDecimals(0)
+        self.slider:SetValue(0)
         self.type = "unknown"
         ax.util:PrintError("ax.store.number: Unknown type '" .. tostring(self.type) .. "' for key '" .. tostring(key) .. "'")
     end
