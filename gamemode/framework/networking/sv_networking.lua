@@ -94,8 +94,6 @@ net.Receive("ax.character.create", function(length, client)
         return
     end
 
-    PrintTable(payload)
-
     local vars = {}
     for k, v in pairs(ax.character.vars) do
         if ( !v.validate ) then continue end
