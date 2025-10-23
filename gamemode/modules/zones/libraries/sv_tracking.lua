@@ -11,9 +11,7 @@
 
 -- @module ax.zones
 
---- Server-side entity tracking for zone enter/exit/visibility events.
--- @realm server
--- @table ax.zones.tracking
+ax.zones = ax.zones or {}
 ax.zones.tracked = ax.zones.tracked or {}
 
 -- Hysteresis parameters for dominant zone switching

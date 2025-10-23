@@ -11,6 +11,8 @@
 
 -- @module ax.zones
 
+ax.zones = ax.zones or {}
+
 util.AddNetworkString("ax.zones.drawdebug")
 
 --- Print a list of all zones to the console.

@@ -11,6 +11,8 @@
 
 -- @module ax.zones
 
+ax.zones = ax.zones or {}
+
 util.AddNetworkString("ax.zones.sync")
 
 --- Synchronize zones to all clients.

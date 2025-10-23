@@ -11,6 +11,8 @@
 
 -- @module ax.zones
 
+ax.zones = ax.zones or {}
+
 --- Load zones from disk for the current map.
 -- @realm server
 function ax.zones:Load()

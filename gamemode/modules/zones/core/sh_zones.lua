@@ -11,6 +11,8 @@
 
 -- @module ax.zones
 
+ax.zones = ax.zones or {}
+
 -- Box zone type
 ax.zones:RegisterType("box", {
     --- Validate a box zone specification.

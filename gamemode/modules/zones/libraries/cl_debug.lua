@@ -11,6 +11,8 @@
 
 -- @module ax.zones
 
+ax.zones = ax.zones or {}
+
 local debugEnabled = false
 
 net.Receive("ax.zones.drawdebug", function()

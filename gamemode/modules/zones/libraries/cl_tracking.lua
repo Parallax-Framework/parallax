@@ -11,6 +11,8 @@
 
 -- @module ax.zones
 
+ax.zones = ax.zones or {}
+
 -- Client-side tracking state for local player
 ax.zones.clientTracking = ax.zones.clientTracking or {
     physical = {},

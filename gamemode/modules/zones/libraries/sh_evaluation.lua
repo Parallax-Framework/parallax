@@ -11,6 +11,8 @@
 
 -- @module ax.zones
 
+ax.zones = ax.zones or {}
+
 --- Get all physical zones that contain a position.
 -- @realm shared
 -- @tparam Vector pos Position to test
