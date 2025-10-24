@@ -11,6 +11,16 @@
 
 local PANEL = {}
 
+-- Helper function to get the appropriate store based on type string
+local function GetStoreByType(storeType)
+    if ( storeType == "config" ) then
+        return ax.config
+    elseif ( storeType == "option" ) then
+        return ax.option
+    end
+    return nil
+end
+
 function PANEL:Init()
     self:Dock(FILL)
     self:InvalidateParent(true)
@@ -30,19 +40,16 @@ function PANEL:SetType(type)
         return
     end
 
-    self.categories:Clear()
-    self.container:Clear()
-
-    local categories = {}
-    if ( type == "config" ) then
-        categories = ax.config:GetAllCategories()
-    elseif ( type == "option" ) then
-        categories = ax.option:GetAllCategories()
-    else
+    local store = GetStoreByType(type)
+    if ( !store ) then
         ax.util:PrintError("ax.store: Unknown type '" .. tostring(type) .. "'")
         return
     end
 
+    self.categories:Clear()
+    self.container:Clear()
+
+    local categories = store:GetAllCategories()
     categories = table.Copy(categories)
     table.sort(categories, function(a, b) return a < b end)
 
@@ -123,15 +130,13 @@ function PANEL:Populate(tab, scroller, type, category)
     if ( !type or type == "" ) then return end
     if ( !category or category == "" ) then return end
 
-    local rows = {}
-    if ( type == "config" ) then
-        rows = ax.config:GetAllByCategory(category)
-    elseif ( type == "option" ) then
-        rows = ax.option:GetAllByCategory(category)
-    else
+    local store = GetStoreByType(type)
+    if ( !store ) then
         ax.util:PrintError("ax.store: Unknown type '" .. tostring(type) .. "'")
         return
     end
+
+    local rows = store:GetAllByCategory(category)
 
     if ( table.IsEmpty(rows) ) then
         local label = scroller:Add("ax.text")
