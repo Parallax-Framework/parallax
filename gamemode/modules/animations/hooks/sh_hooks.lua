@@ -15,9 +15,10 @@ function MODULE:HandlePlayerJumping(client, velocity, clientTable)
     end
 
     if ( !clientTable.m_bJumping and !client:OnGround() and client:WaterLevel() <= 0) then
+        local curTime = CurTime()
         if ( !clientTable.m_fGroundTime ) then
-            clientTable.m_fGroundTime = CurTime()
-        elseif ( ( CurTime() - clientTable.m_fGroundTime ) > 0 and velocity:Length2DSqr() < 0.25 ) then
+            clientTable.m_fGroundTime = curTime
+        elseif ( ( curTime - clientTable.m_fGroundTime ) > 0 and velocity:Length2DSqr() < 0.25 ) then
             clientTable.m_bJumping = true
             clientTable.m_bFirstJumpFrame = false
             clientTable.m_flJumpStartTime = 0
@@ -30,16 +31,16 @@ function MODULE:HandlePlayerJumping(client, velocity, clientTable)
             client:AnimRestartMainSequence()
         end
 
-        if ( ( client:WaterLevel() >= 2 ) or ( ( CurTime() - clientTable.m_flJumpStartTime ) > 0.2 and client:OnGround() ) ) then
+        local curTime = CurTime()
+        if ( ( client:WaterLevel() >= 2 ) or ( ( curTime - clientTable.m_flJumpStartTime ) > 0.2 and client:OnGround() ) ) then
             clientTable.m_bJumping = false
             clientTable.m_fGroundTime = nil
             client:AnimRestartMainSequence()
+            return false
         end
 
-        if ( clientTable.m_bJumping ) then
-            clientTable.CalcIdeal = ACT_MP_JUMP
-            return true
-        end
+        clientTable.CalcIdeal = ACT_MP_JUMP
+        return true
     end
 
     return false
