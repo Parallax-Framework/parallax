@@ -8,3 +8,5 @@
 
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
+
+-- TODO: Implement chatbox server configs such as max message length, history size, etc.

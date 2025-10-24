@@ -53,7 +53,7 @@ function MODULE:PlayerSay(client, text, teamChat)
         return ""
     end
 
-    text = hook.Run("PlayerMessageSend", client, "ic", text)
+    text = hook.Run("PlayerMessageSend", client, "ic", text) or text
 
     -- Format regular chat messages
     if ( hook.Run("ShouldFormatMessage", client, text) != false ) then
