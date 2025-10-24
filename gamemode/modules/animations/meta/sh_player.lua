@@ -24,6 +24,8 @@ function ax.player.meta:GetHoldType()
 end
 
 if ( SERVER ) then
+    ax.animations.forcedSequenceCallbacks = ax.animations.forcedSequenceCallbacks or {}
+
     function ax.player.meta:LeaveSequence()
         local prevent = hook.Run("PrePlayerLeaveSequence", self)
         if ( prevent != nil and prevent == false ) then return end
@@ -32,11 +34,12 @@ if ( SERVER ) then
             net.WritePlayer(self)
         net.Broadcast()
 
-        self:SetRelay("sequence.callback", nil)
+        local callback = ax.animations.forcedSequenceCallbacks[self:SteamID64()]
+        ax.animations.forcedSequenceCallbacks[self:SteamID64()] = nil
+
         self:SetRelay("sequence.forced", nil)
         self:SetMoveType(MOVETYPE_WALK)
 
-        local callback = self:GetRelay("sequence.callback")
         if ( isfunction(callback) ) then
             callback(self)
         end
@@ -67,14 +70,15 @@ if ( SERVER ) then
         self:SetCycle(0)
         self:SetPlaybackRate(1)
         self:SetRelay("sequence.forced", sequenceID)
-        self:SetRelay("sequence.callback", callback or nil)
+
+        ax.animations.forcedSequenceCallbacks[self:SteamID64()] = callback or nil
 
         if ( !noFreeze ) then
             self:SetMoveType(MOVETYPE_NONE)
         end
 
         if ( sequenceTime > 0 ) then
-            timer.Create("ax.Sequence." .. self:SteamID64(), sequenceTime, 1, function()
+            timer.Create("ax.sequence." .. self:SteamID64(), sequenceTime, 1, function()
                 self:LeaveSequence()
             end)
 
