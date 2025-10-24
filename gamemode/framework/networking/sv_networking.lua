@@ -46,7 +46,23 @@ net.Receive("ax.inventory.item.action", function(length, client)
 
     local item = ax.item.instances[itemID]
     if ( !istable(item) ) then
-        ax.util:PrintError("Item with ID " .. itemID .. " does not exist.")
+        local validIDs = {}
+        for id in pairs(ax.item.instances) do
+            table.insert(validIDs, id)
+        end
+
+        table.sort(validIDs)
+
+        ax.util:PrintError(string.format(
+            "Item with ID %d does not exist. Player: %s (%s), Action: '%s', Valid IDs: [%s], Total items: %d",
+            itemID,
+            client:Nick(),
+            client:SteamID(),
+            action,
+            table.concat(validIDs, ", "),
+            table.Count(ax.item.instances)
+        ))
+
         return
     end
 
