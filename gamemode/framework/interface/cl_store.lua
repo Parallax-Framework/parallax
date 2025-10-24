@@ -238,15 +238,132 @@ end
 
 vgui.Register("ax.store", PANEL, "ax.transition.pages")
 
+-- Base panel for store elements
 PANEL = {}
+
+function PANEL:GetStore()
+    return GetStoreByType(self.type)
+end
 
 function PANEL:Init()
     self.type = "unknown"
     self.key = "unknown"
+    self.bInitializing = true
 
     self:SetContentAlignment(4)
     self:SetText("unknown")
     self:SetTextInset(ax.util:ScreenScale(8), 0)
+
+    self.reset = self:Add("ax.button.flat")
+    self.reset:SetText("R")
+    self.reset.DoClick = function()
+        local store = self:GetStore()
+        if ( !store ) then
+            self:HandleError("Unknown type")
+            return
+        end
+
+        local default = store:GetDefault(self.key)
+
+        store:Set(self.key, default)
+
+        if ( self.UpdateDisplay ) then
+            self:UpdateDisplay()
+        end
+    end
+end
+
+function PANEL:HandleError(message)
+    self:SetText("unknown")
+    self.type = "unknown"
+    ax.util:PrintError(string.format("ax.store.%s: %s for key '%s'", self.elementType or "base", message, tostring(self.key)))
+end
+
+function PANEL:SetType(type)
+    if ( !type or type == "" ) then
+        self:HandleError("Invalid type")
+        return
+    end
+
+    local store = GetStoreByType(type)
+    if ( !store ) then
+        self:HandleError("Unknown type '" .. tostring(type) .. "'")
+        return
+    end
+
+    self.type = type
+    self:SetText(ax.util:UniqueIDToName(self.key))
+
+    if ( self.UpdateDisplay ) then
+        self:UpdateDisplay()
+    end
+end
+
+function PANEL:SetKey(key)
+    if ( !key or key == "" ) then
+        self.key = "unknown"
+        self:HandleError("Invalid key")
+        return
+    end
+
+    local store = self:GetStore()
+    if ( !store ) then
+        self:HandleError("Unknown type")
+        return
+    end
+
+    if ( store:Get(key) == nil ) then
+        self:HandleError("Key '" .. tostring(key) .. "' does not exist in " .. self.type .. " store")
+        return
+    end
+
+    self.key = key
+    self:SetText(ax.util:UniqueIDToName(key))
+
+    if ( self.UpdateDisplay ) then
+        self:UpdateDisplay()
+    end
+end
+
+function PANEL:PerformLayout(width, height)
+    self.reset:SetSize(height / 1.5, height / 1.5)
+    local textWidth = ax.util:GetTextWidth(self:GetFont(), self:GetText())
+    self.reset:SetPos(textWidth + ax.util:ScreenScale(16), (height - self.reset:GetTall()) / 2)
+
+    local store = self:GetStore()
+    if ( store ) then
+        local default = store:GetDefault(self.key)
+        local value = store:Get(self.key)
+
+        self.reset:SetVisible(value != default)
+    end
+end
+
+function PANEL:PaintAdditional(width, height)
+    local store = self:GetStore()
+    if ( !store ) then return end
+
+    local default = store:GetDefault(self.key)
+    local value = store:Get(self.key)
+
+    if ( value == default ) then return end
+    ax.util:DrawGradient("left", 0, 0, width / 3, height, ColorAlpha(self:GetTextColor(), 100))
+end
+
+function PANEL:UpdateDisplay()
+    -- Override in child panels
+end
+
+vgui.Register("ax.store.base", PANEL, "ax.button.flat")
+
+-- Boolean store element
+PANEL = {}
+
+DEFINE_BASECLASS("ax.store.base")
+
+function PANEL:Init()
+    BaseClass.Init(self)
+    self.elementType = "bool"
 
     self.value = self:Add("ax.text")
     self.value:Dock(RIGHT)
@@ -261,71 +378,15 @@ function PANEL:Init()
     end
 end
 
-function PANEL:SetType(type)
-    if ( !type or type == "" ) then
-        self:SetText("unknown")
+function PANEL:UpdateDisplay()
+    local store = self:GetStore()
+    if ( !store ) then
         self.value:SetText("unknown")
-        self.type = "unknown"
-        ax.util:PrintError("ax.store.bool: Invalid type '" .. tostring(type) .. "' for key '" .. tostring(self.key) .. "'")
         return
     end
 
-    if ( type == "config" ) then
-        self:SetText(ax.util:UniqueIDToName(self.key))
-        self.value:SetText(ax.config:Get(self.key) and "Enabled" or "Disabled")
-    elseif ( type == "option" ) then
-        self:SetText(ax.util:UniqueIDToName(self.key))
-        self.value:SetText(ax.option:Get(self.key) and "Enabled" or "Disabled")
-    else
-        self:SetText("unknown")
-        self.value:SetText("unknown")
-        self.type = "unknown"
-        ax.util:PrintError("ax.store.bool: Unknown type '" .. tostring(type) .. "' for key '" .. tostring(self.key) .. "'")
-        return
-    end
-
-    self.type = type
-end
-
-function PANEL:SetKey(key)
-    if ( !key or key == "" ) then
-        self:SetText("unknown")
-        self.value:SetText("unknown")
-        self.key = "unknown"
-        ax.util:PrintError("ax.store.bool: Invalid key '" .. tostring(key) .. "'")
-        return
-    end
-
-    if ( self.type == "config" ) then
-        if ( ax.config:Get(key) == nil ) then
-            self:SetText("unknown")
-            self.value:SetText("unknown")
-            self.type = "unknown"
-            ax.util:PrintError("ax.store.bool: Key '" .. tostring(key) .. "' does not exist in config store")
-            return
-        end
-
-        self:SetText(ax.util:UniqueIDToName(key))
-        self.value:SetText(string.format("<%s>", ax.config:Get(key) and "Enabled" or "Disabled"), true)
-    elseif ( self.type == "option" ) then
-        if ( ax.option:Get(key) == nil ) then
-            self:SetText("unknown")
-            self.value:SetText("unknown")
-            self.type = "unknown"
-            ax.util:PrintError("ax.store.bool: Key '" .. tostring(key) .. "' does not exist in option store")
-            return
-        end
-
-        self:SetText(ax.util:UniqueIDToName(key))
-        self.value:SetText(string.format("<%s>", ax.option:Get(key) and "Enabled" or "Disabled"), true)
-    else
-        self:SetText("unknown")
-        self.value:SetText("unknown")
-        self.type = "unknown"
-        ax.util:PrintError("ax.store.bool: Unknown type '" .. tostring(self.type) .. "' for key '" .. tostring(key) .. "'")
-    end
-
-    self.key = key
+    local value = store:Get(self.key)
+    self.value:SetText(string.format("<%s>", value and "Enabled" or "Disabled"), true)
 end
 
 function PANEL:DoClick()
@@ -333,55 +394,39 @@ function PANEL:DoClick()
 end
 
 function PANEL:Toggle()
-    if ( self.type == "config" ) then
-        local current = ax.config:Get(self.key)
-        if ( current == nil ) then
-            ax.util:PrintError("ax.store.bool: Key '" .. tostring(self.key) .. "' does not exist in config store")
-            self:SetText("unknown")
-            self.value:SetText("unknown")
-            self.type = "unknown"
-            return
-        end
-
-        ax.config:Set(self.key, !current)
-
-        self:SetText(ax.util:UniqueIDToName(self.key))
-        self.value:SetText(string.format("<%s>", ax.config:Get(self.key) and "Enabled" or "Disabled"), true)
-    elseif ( self.type == "option" ) then
-        local current = ax.option:Get(self.key)
-        if ( current == nil ) then
-            ax.util:PrintError("ax.store.bool: Key '" .. tostring(self.key) .. "' does not exist in option store")
-            self:SetText("unknown")
-            self.value:SetText("unknown")
-            self.type = "unknown"
-            return
-        end
-
-        ax.option:Set(self.key, !current)
-
-        self:SetText(ax.util:UniqueIDToName(self.key))
-        self.value:SetText(string.format("<%s>", ax.option:Get(self.key) and "Enabled" or "Disabled"), true)
-    else
-        self:SetText("unknown")
-        self.value:SetText("unknown")
-        self.type = "unknown"
-        ax.util:PrintError("ax.store.bool: Unknown type '" .. tostring(self.type) .. "' for key '" .. tostring(self.key) .. "'")
+    local store = self:GetStore()
+    if ( !store ) then
+        self:HandleError("Unknown type")
+        return
     end
+
+    local current = store:Get(self.key)
+    if ( current == nil ) then
+        self:HandleError("Key does not exist in store")
+        return
+    end
+
+    store:Set(self.key, !current)
+    self:UpdateDisplay()
 end
 
-vgui.Register("ax.store.bool", PANEL, "ax.button.flat")
+function PANEL:SetKey(key)
+    BaseClass.SetKey(self, key)
+    self.bInitializing = false
+end
 
+vgui.Register("ax.store.bool", PANEL, "ax.store.base")
+
+-- Number store element
 PANEL = {}
 
+DEFINE_BASECLASS("ax.store.base")
+
 function PANEL:Init()
-    self.type = "unknown"
-    self.key = "unknown"
+    BaseClass.Init(self)
+    self.elementType = "number"
 
-    self:SetContentAlignment(4)
-    self:SetText("unknown")
-    self:SetTextInset(ax.util:ScreenScale(8), 0)
-
-    self.slider = self:Add("DNumSlider") -- TODO: Custom slider, making it look like the Gamepad UI
+    self.slider = self:Add("DNumSlider")
     self.slider:Dock(RIGHT)
     self.slider:DockMargin(0, 0, ax.util:ScreenScale(8), 0)
     self.slider:SetWide(ax.util:ScreenScale(192))
@@ -389,10 +434,10 @@ function PANEL:Init()
     self.slider:SetDecimals(0)
     self.slider:SetValue(0)
     self.slider.OnValueChanged = function(this, value)
-        if ( self.type == "config" ) then
-            ax.config:Set(self.key, value)
-        elseif ( self.type == "option" ) then
-            ax.option:Set(self.key, value)
+        if ( self.bInitializing ) then return end
+        local store = self:GetStore()
+        if ( store ) then
+            store:Set(self.key, value)
         end
     end
     self.slider.Think = function(this)
@@ -402,94 +447,30 @@ function PANEL:Init()
     end
 end
 
-function PANEL:SetType(type)
-    if ( !type or type == "" ) then
-        self:SetText("unknown")
-        self.slider:SetValue(0)
-        self.type = "unknown"
-        ax.util:PrintError("ax.store.number: Invalid type '" .. tostring(type) .. "' for key '" .. tostring(self.key) .. "'")
-        return
-    end
-
-    if ( type == "config" ) then
-        self:SetText(ax.util:UniqueIDToName(self.key))
-        self.slider:SetValue(ax.config:Get(self.key) or 0)
-    elseif ( type == "option" ) then
-        self:SetText(ax.util:UniqueIDToName(self.key))
-        self.slider:SetValue(ax.option:Get(self.key) or 0)
-    else
-        self:SetText("unknown")
-        self.slider:SetValue(0)
-        self.type = "unknown"
-        ax.util:PrintError("ax.store.number: Unknown type '" .. tostring(type) .. "' for key '" .. tostring(self.key) .. "'")
-        return
-    end
-
-    self.type = type
-end
-
 function PANEL:SetKey(key)
-    if ( !key or key == "" ) then
-        self:SetText("unknown")
-        self.slider:SetValue(0)
-        self.key = "unknown"
-        ax.util:PrintError("ax.store.number: Invalid key '" .. tostring(key) .. "'")
-        return
-    end
+    BaseClass.SetKey(self, key)
 
-    if ( self.type == "config" ) then
-        if ( ax.config:Get(key) == nil ) then
-            self:SetText("unknown")
-            self.slider:SetMinMax(0, 100)
-            self.slider:SetDecimals(0)
-            self.slider:SetValue(0)
-            self.type = "unknown"
-            ax.util:PrintError("ax.store.number: Key '" .. tostring(key) .. "' does not exist in config store")
-            return
-        end
+    local store = self:GetStore()
+    if ( !store or store:Get(key) == nil ) then return end
 
-        self:SetText(ax.util:UniqueIDToName(key))
-        self.slider:SetValue(ax.config:Get(key) or 0)
-        self.slider:SetMinMax(ax.config:GetData(key).min or 0, ax.config:GetData(key).max or 100)
-        self.slider:SetDecimals(ax.config:GetData(key).decimals or 0)
-    elseif ( self.type == "option" ) then
-        if ( ax.option:Get(key) == nil ) then
-            self:SetText("unknown")
-            self.slider:SetMinMax(0, 100)
-            self.slider:SetDecimals(0)
-            self.slider:SetValue(0)
-            self.type = "unknown"
-            ax.util:PrintError("ax.store.number: Key '" .. tostring(key) .. "' does not exist in option store")
-            return
-        end
+    local data = store:GetData(key)
+    self.slider:SetMinMax(data.min or 0, data.max or 100)
+    self.slider:SetDecimals(data.decimals or 0)
+    self.slider:SetValue(store:Get(key))
 
-        self:SetText(ax.util:UniqueIDToName(key))
-        self.slider:SetMinMax(ax.option:GetData(key).min or 0, ax.option:GetData(key).max or 100)
-        self.slider:SetDecimals(ax.option:GetData(key).decimals or 0)
-        self.slider:SetValue(ax.option:Get(key) or 0)
-    else
-        self:SetText("unknown")
-        self.slider:SetMinMax(0, 100)
-        self.slider:SetDecimals(0)
-        self.slider:SetValue(0)
-        self.type = "unknown"
-        ax.util:PrintError("ax.store.number: Unknown type '" .. tostring(self.type) .. "' for key '" .. tostring(key) .. "'")
-    end
-
-    self.key = key
+    self.bInitializing = false
 end
 
-vgui.Register("ax.store.number", PANEL, "ax.button.flat")
+vgui.Register("ax.store.number", PANEL, "ax.store.base")
 
+-- String store element
 PANEL = {}
 
-function PANEL:Init()
-    self.type = "unknown"
-    self.key = "unknown"
+DEFINE_BASECLASS("ax.store.base")
 
-    self:SetContentAlignment(4)
-    self:SetText("unknown")
-    self:SetTextInset(ax.util:ScreenScale(8), 0)
+function PANEL:Init()
+    BaseClass.Init(self)
+    self.elementType = "string"
 
     self.entry = self:Add("ax.text.entry")
     self.entry:Dock(RIGHT)
@@ -497,81 +478,27 @@ function PANEL:Init()
     self.entry:SetWide(ax.util:ScreenScale(192))
     self.entry:SetText("unknown")
     self.entry.OnValueChanged = function(this, value)
-        if ( self.type == "config" ) then
-            ax.config:Set(self.key, value)
-        elseif ( self.type == "option" ) then
-            ax.option:Set(self.key, value)
+        if ( self.bInitializing ) then return end
+        local store = self:GetStore()
+        if ( store ) then
+            store:Set(self.key, value)
         end
     end
-
-    -- TODO: Make it resemble more like the Gamepad UI
 end
 
-function PANEL:SetType(type)
-    if ( !type or type == "" ) then
-        self:SetText("unknown")
+function PANEL:UpdateDisplay()
+    local store = self:GetStore()
+    if ( !store ) then
         self.entry:SetText("unknown")
-        self.type = "unknown"
-        ax.util:PrintError("ax.store.string: Invalid type '" .. tostring(type) .. "' for key '" .. tostring(self.key) .. "'")
         return
     end
 
-    if ( type == "config" ) then
-        self:SetText(ax.util:UniqueIDToName(self.key))
-        self.entry:SetText(ax.config:Get(self.key) or "unknown")
-    elseif ( type == "option" ) then
-        self:SetText(ax.util:UniqueIDToName(self.key))
-        self.entry:SetText(ax.option:Get(self.key) or "unknown")
-    else
-        self:SetText("unknown")
-        self.entry:SetText("unknown")
-        self.type = "unknown"
-        ax.util:PrintError("ax.store.string: Unknown type '" .. tostring(type) .. "' for key '" .. tostring(self.key) .. "'")
-        return
-    end
-
-    self.type = type
+    self.entry:SetText(store:Get(self.key) or "unknown")
 end
 
 function PANEL:SetKey(key)
-    if ( !key or key == "" ) then
-        self:SetText("unknown")
-        self.entry:SetText("unknown")
-        self.key = "unknown"
-        ax.util:PrintError("ax.store.string: Invalid key '" .. tostring(key) .. "'")
-        return
-    end
-
-    if ( self.type == "config" ) then
-        if ( ax.config:Get(key) == nil ) then
-            self:SetText("unknown")
-            self.entry:SetText("unknown")
-            self.type = "unknown"
-            ax.util:PrintError("ax.store.string: Key '" .. tostring(key) .. "' does not exist in config store")
-            return
-        end
-
-        self:SetText(ax.util:UniqueIDToName(key))
-        self.entry:SetText(ax.config:Get(key) or "unknown")
-    elseif ( self.type == "option" ) then
-        if ( ax.option:Get(key) == nil ) then
-            self:SetText("unknown")
-            self.entry:SetText("unknown")
-            self.type = "unknown"
-            ax.util:PrintError("ax.store.string: Key '" .. tostring(key) .. "' does not exist in option store")
-            return
-        end
-
-        self:SetText(ax.util:UniqueIDToName(key))
-        self.entry:SetText(ax.option:Get(key) or "unknown")
-    else
-        self:SetText("unknown")
-        self.entry:SetText("unknown")
-        self.type = "unknown"
-        ax.util:PrintError("ax.store.string: Unknown type '" .. tostring(self.type) .. "' for key '" .. tostring(key) .. "'")
-    end
-
-    self.key = key
+    BaseClass.SetKey(self, key)
+    self.bInitializing = false
 end
 
-vgui.Register("ax.store.string", PANEL, "ax.button.flat")
+vgui.Register("ax.store.string", PANEL, "ax.store.base")
