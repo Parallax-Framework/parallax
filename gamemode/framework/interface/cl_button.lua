@@ -329,6 +329,10 @@ function PANEL:Paint(width, height)
 
     ax.render.Draw(0, 0, 0, width, height, ColorAlpha(backgroundColor, 100 * self.inertia))
     ax.render.Draw(0, 0, 0, ax.util:ScreenScale(4) * self.inertia, height, Color(self.textColor.r, self.textColor.g, self.textColor.b, 200 * self.inertia))
+
+    if ( self.PaintAdditional ) then
+        self:PaintAdditional(width, height)
+    end
 end
 
 vgui.Register("ax.button", PANEL, "ax.button.core")
@@ -402,6 +406,10 @@ end
 
 function PANEL:Paint(width, height)
     ax.render.Draw(0, 0, 0, width, height, ColorAlpha(self.backgroundColor, self.backgroundAlphaHovered * self.inertia))
+
+    if ( self.PaintAdditional ) then
+        self:PaintAdditional(width, height)
+    end
 end
 
 vgui.Register("ax.button.flat", PANEL, "ax.button.core")
