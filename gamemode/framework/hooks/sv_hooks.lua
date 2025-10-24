@@ -72,7 +72,7 @@ end
 function GM:PlayerDeathSound(client)
     local deathSound = hook.Run("GetPlayerDeathSound", client)
     if ( deathSound ) then
-        client:EmitSound(deathSound, 70, 100, 1, CHAN_STATIC)
+        client:EmitSound(deathSound, 80, 100, 1, CHAN_STATIC)
     end
 
     return true
@@ -83,7 +83,7 @@ function GM:PlayerHurt(client, attacker, healthRemaining, damageInfo)
 
     local painSound = hook.Run("GetPlayerPainSound", client, attacker, healthRemaining, damageInfo)
     if ( painSound ) then
-        client:EmitSound(painSound, 70, 100, 1, CHAN_STATIC)
+        client:EmitSound(painSound, 80, 100, 1, CHAN_STATIC)
     end
 end
 
