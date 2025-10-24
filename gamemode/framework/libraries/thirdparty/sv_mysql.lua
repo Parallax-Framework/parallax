@@ -464,7 +464,7 @@ end
 function QUERY_CLASS:Execute(bQueueQuery)
     local queryString = nil
     local parameters = nil
-    local queryType = string.lower(self.queryType)
+    local queryType = utf8.lower(self.queryType)
 
     if (queryType == "select") then
         queryString, parameters = BuildSelectQuery(self)

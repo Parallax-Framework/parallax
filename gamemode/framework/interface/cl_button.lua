@@ -224,7 +224,7 @@ function PANEL:SetText(text)
     BaseClass.SetText(self, text)
 
     text = self:GetText()
-    text = string.upper(text)
+    text = utf8.upper(text)
 
     self:SetTextInternal(text)
 end
@@ -361,7 +361,7 @@ function PANEL:SetText(text)
     BaseClass.SetText(self, text)
 
     text = self:GetText()
-    text = string.upper(text)
+    text = utf8.upper(text)
 
     self:SetTextInternal(text)
 end

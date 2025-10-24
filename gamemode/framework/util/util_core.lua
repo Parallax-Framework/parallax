@@ -131,7 +131,7 @@ if ( CLIENT ) then
     function ax.util:GetGradientPath(name)
         if ( !isstring(name) or name == "" ) then return "vgui/gradient-l" end
 
-        local lname = string.lower(name)
+        local lname = utf8.lower(name)
         if ( lname == "left" or lname == "l" or lname == 1 ) then return "vgui/gradient-l" end
         if ( lname == "right" or lname == "r" or lname == 2 ) then return "vgui/gradient-r" end
         if ( lname == "top" or lname == "up" or lname == "u" or lname == 3 ) then return "vgui/gradient-u" end

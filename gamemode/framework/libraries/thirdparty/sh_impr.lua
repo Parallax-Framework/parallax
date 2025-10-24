@@ -41,7 +41,7 @@ function player.GetBySteamID64(steamID64)
 end
 
 function player.GetBySteamID(steamID)
-    steamID = string.upper(steamID)
+    steamID = utf8.upper(steamID)
 
     local ent = playerSteamID[steamID]
     if ( !IsValid(ent) ) then

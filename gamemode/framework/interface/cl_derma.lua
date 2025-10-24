@@ -69,7 +69,7 @@ function Derma_Message(text, title, buttonText)
     label:Dock(TOP)
     label:DockMargin(0, ax.util:ScreenScaleH(8), 0, 0)
     label:SetFont("ax.huge.bold")
-    label:SetText(string.upper(title), true)
+    label:SetText(utf8.upper(title), true)
 
     local wrapped = ax.util:GetWrappedText(text, "ax.regular", frame:GetWide() - ax.util:ScreenScale(16))
     local textHeight = 0
@@ -128,7 +128,7 @@ function Derma_Query(text, title, ...)
     label:Dock(TOP)
     label:DockMargin(0, ax.util:ScreenScaleH(8), 0, 0)
     label:SetFont("ax.huge.bold")
-    label:SetText(string.upper(title), true)
+    label:SetText(utf8.upper(title), true)
 
     local wrapped = ax.util:GetWrappedText(text, "ax.regular", frame:GetWide() - ax.util:ScreenScale(16))
     local textHeight = 0
@@ -207,7 +207,7 @@ function Derma_StringRequest(title, text, defaultText, onEnter, onCancel, okText
     label:Dock(TOP)
     label:DockMargin(0, ax.util:ScreenScaleH(8), 0, 0)
     label:SetFont("ax.huge.bold")
-    label:SetText(string.upper(title), true)
+    label:SetText(utf8.upper(title), true)
 
     local wrapped = ax.util:GetWrappedText(text, "ax.regular", frame:GetWide() - ax.util:ScreenScale(16))
     local textHeight = 0

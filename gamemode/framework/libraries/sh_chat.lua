@@ -173,9 +173,9 @@ local function normalize_spacing(text)
 end
 
 local function capitalize_sentences(text)
-    text = string.gsub(text, "^%s*([%l])", string.upper)
+    text = string.gsub(text, "^%s*([%l])", utf8.upper)
     text = string.gsub(text, "([%.%!%?]%s+)([%l])", function(punct, ch)
-        return punct .. string.upper(ch)
+        return punct .. utf8.upper(ch)
     end)
 
     return text
@@ -192,8 +192,8 @@ local function fix_pronoun_i(text)
 end
 
 local function detect_capitalization(text)
-    if ( string.upper(text) == text ) then return "upper" end
-    if ( string.lower(text) == text ) then return "lower" end
+    if ( utf8.upper(text) == text ) then return "upper" end
+    if ( utf8.lower(text) == text ) then return "lower" end
 
     return "mixed"
 end
@@ -216,7 +216,7 @@ function ax.chat:Format(message)
     end
 
     if ( capStyle == "upper" ) then
-        message = string.upper(message)
+        message = utf8.upper(message)
     end
 
     return message

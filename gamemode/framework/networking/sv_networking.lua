@@ -68,7 +68,7 @@ net.Receive("ax.inventory.item.action", function(length, client)
         end
     end
 
-    local soundVar = "sound_" .. string.lower(action)
+    local soundVar = "sound_" .. utf8.lower(action)
     if ( actionTable[soundVar] ) then
         client:EmitSound(Sound(actionTable[soundVar]))
     end

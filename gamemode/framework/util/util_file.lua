@@ -25,7 +25,11 @@ function ax.util:DetectFileRealm(file)
         return "shared"
     end
 
-    fileName = string.lower(fileName)
+    if ( utf8 and utf8.lower ) then
+        fileName = utf8.lower(fileName)
+    else
+        fileName = string.lower(fileName)
+    end
 
     -- Client-side patterns
     if ( string.StartWith(fileName, "cl_") ) then

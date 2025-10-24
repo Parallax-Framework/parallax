@@ -51,7 +51,7 @@ local function GetConsoleColor(colorType)
     }
 
     if ( ax and ax.config and ax.config.Get ) then
-        local configKey = "consoleColor" .. string.upper(colorType:sub(1,1)) .. colorType:sub(2)
+        local configKey = "consoleColor" .. utf8.upper(colorType:sub(1,1)) .. colorType:sub(2)
         return ax.config:Get(configKey, fallbackColors[colorType])
     end
 

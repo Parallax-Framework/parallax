@@ -717,14 +717,14 @@ ax.animations.stored["player_metrocop"] = {
 function ax.animations:SetModelClass(model, class)
     if ( !model or !class ) then return end
 
-    class = string.lower(class)
+    class = utf8.lower(class)
 
     if ( !self.stored[class] ) then
         ax.util:PrintError("Animation class '" .. class .. "' does not exist!")
         return false
     end
 
-    model = string.lower(model)
+    model = utf8.lower(model)
 
     self.translations[model] = class
 end
@@ -732,7 +732,7 @@ end
 function ax.animations:GetModelClass(model)
     if ( !model ) then return end
 
-    model = string.lower(model)
+    model = utf8.lower(model)
 
     -- Look for a translation
     if ( self.translations[model] ) then

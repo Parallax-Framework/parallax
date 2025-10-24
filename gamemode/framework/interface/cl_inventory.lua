@@ -197,7 +197,7 @@ function PANEL:PopulateItems()
 
     -- Use case-insensitive sorting for consistency
     table.sort(sortedCategories, function(a, b)
-        return string.lower(tostring(a)) < string.lower(tostring(b))
+        return utf8.lower(tostring(a)) < utf8.lower(tostring(b))
     end)
 
     -- Store the sorted category order for PerformLayout
@@ -215,7 +215,7 @@ function PANEL:PopulateItems()
         local categoryFont = useItalic and "ax.huge.italic.bold" or "ax.huge.bold"
 
         categoryPanel:SetFont(categoryFont)
-        categoryPanel:SetText(string.upper(categoryName), true)
+        categoryPanel:SetText(utf8.upper(categoryName), true)
         categoryPanel:SetPos(0, currentY)
         categoryPanel:SetSize(containerWidth, categoryHeight)
 

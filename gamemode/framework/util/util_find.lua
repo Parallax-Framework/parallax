@@ -26,8 +26,13 @@ function ax.util:FindString(str, find)
         return false
     end
 
-    str = string.lower(str)
-    find = string.lower(find)
+    if ( utf8 and utf8.lower ) then
+        str = utf8.lower(str)
+        find = utf8.lower(find)
+    else
+        str = string.lower(str)
+        find = string.lower(find)
+    end
 
     return string.find(str, find) != nil
 end
@@ -109,7 +114,7 @@ function ax.util:FindCharacter(identifier)
             local name = char:GetName()
             if ( name == identifier ) then
                 return char -- exact match
-            elseif ( string.lower(name) == string.lower(identifier) ) then
+            elseif ( utf8.lower(name) == utf8.lower(identifier) ) then
                 return char -- case-insensitive exact match
             elseif ( self:FindString(name, identifier) ) then
                 return char -- partial match

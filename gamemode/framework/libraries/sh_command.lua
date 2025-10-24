@@ -69,7 +69,7 @@ function ax.command:Add(name, def)
         local aliases = istable(def.alias) and def.alias or {def.alias}
         for _, alias in ipairs(aliases) do
             if ( isstring(alias) and alias != "" ) then
-                local normalizedAlias = string.lower(alias)
+                local normalizedAlias = utf8.lower(alias)
                 self.registry[normalizedAlias] = def
                 ax.util:PrintDebug("ax.command:Add - Alias \"" .. normalizedAlias .. "\" registered for \"" .. name .. "\"")
             end
@@ -97,7 +97,7 @@ function ax.command:FindAll(partial)
         return {}
     end
 
-    partial = string.lower(partial)
+    partial = utf8.lower(partial)
 
     local results = {}
     for name, def in pairs(self.registry) do
@@ -258,11 +258,11 @@ function ax.command:Parse(text)
     -- Split first word from rest
     local spacePos = string.find(text, " ")
     if ( spacePos ) then
-        local name = string.lower(string.sub(text, 1, spacePos - 1))
+        local name = utf8.lower(string.sub(text, 1, spacePos - 1))
         local rawArgs = string.Trim(string.sub(text, spacePos + 1))
         return name, rawArgs
     else
-        return string.lower(text), ""
+        return utf8.lower(text), ""
     end
 end
 
@@ -280,7 +280,7 @@ function ax.command:Run(caller, name, rawArgs)
         return false, "Invalid command name"
     end
 
-    name = string.lower(name)
+    name = utf8.lower(name)
 
     local def = self.registry[name]
     if ( !def ) then
@@ -363,7 +363,7 @@ function ax.command:Help(name)
         return "Invalid command name"
     end
 
-    local def = self.registry[string.lower(name)]
+    local def = self.registry[utf8.lower(name)]
     if ( !def ) then
         return "Unknown command: " .. name
     end
@@ -438,7 +438,7 @@ function ax.command:ConvertArgument(value, argDef)
 
         return num
     elseif ( argDef.type == ax.type.bool ) then
-        local lower = string.lower(value)
+        local lower = utf8.lower(value)
         if ( lower == "true" or lower == "1" or lower == "yes" ) then
             return true
         elseif ( lower == "false" or lower == "0" or lower == "no" ) then

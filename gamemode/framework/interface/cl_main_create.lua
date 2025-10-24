@@ -126,7 +126,7 @@ function PANEL:PopulateTabs()
 
             title = tab:Add("ax.text")
             title:SetFont("ax.huge.bold")
-            title:SetText(string.upper(category))
+            title:SetText(utf8.upper(category))
             title:Dock(TOP)
             title:DockMargin(ax.util:ScreenScale(32), ax.util:ScreenScaleH(32), 0, 0)
 
@@ -213,7 +213,7 @@ function PANEL:PopulateVars(category)
         if ( v.fieldType == ax.type.string ) then
             local option = container:Add("ax.text")
             option:SetFont("ax.regular.bold")
-            option:SetText(string.upper(ax.util:UniqueIDToName(k)))
+            option:SetText(utf8.upper(ax.util:UniqueIDToName(k)))
             option:Dock(TOP)
 
             local entry = container:Add("ax.text.entry")
@@ -237,7 +237,7 @@ function PANEL:PopulateVars(category)
         elseif ( v.fieldType == ax.type.number ) then
             local option = container:Add("ax.text")
             option:SetFont("ax.regular.bold")
-            option:SetText(string.upper(ax.util:UniqueIDToName(k)))
+            option:SetText(utf8.upper(ax.util:UniqueIDToName(k)))
             option:Dock(TOP)
 
             local slider = container:Add("DNumSlider")

@@ -107,7 +107,7 @@ function ax.player:RegisterVar(key, data)
         ax.database:AddToSchema("ax_players", data.field, data.fieldType or ax.type.string)
     end
 
-    local prettyName = string.upper(string.sub(key, 1, 1)) .. string.sub(key, 2)
+    local prettyName = utf8.upper(string.sub(key, 1, 1)) .. string.sub(key, 2)
 
     if ( !data.bNoGetter ) then
         local keyGet = "Get" .. prettyName
@@ -145,7 +145,7 @@ function ax.player:RegisterVar(key, data)
 
             self.vars[alias] = data
 
-            local aliasPrettyName = string.upper( string.sub( alias, 1, 1 ) ) .. string.sub( alias, 2 )
+            local aliasPrettyName = utf8.upper( string.sub( alias, 1, 1 ) ) .. string.sub( alias, 2 )
 
             if ( !data.bNoGetter ) then
                 ax.player.meta[ "Get" .. aliasPrettyName ] = ax.player.meta[ "Get" .. prettyName ]

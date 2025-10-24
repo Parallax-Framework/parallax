@@ -84,8 +84,8 @@ ax.character:RegisterVar("faction", {
                 continue
             end
 
-            local name = (v.name and string.upper(v.name)) or "UNKNOWN FACTION"
-            local description = (v.description and string.upper(v.description)) or "UNKNOWN FACTION DESCRIPTION"
+            local name = (v.name and utf8.upper(v.name)) or "UNKNOWN FACTION"
+            local description = (v.description and utf8.upper(v.description)) or "UNKNOWN FACTION DESCRIPTION"
             description = ax.util:CapTextWord(description, buttonWidth / 2) -- Unreliable, but it works for now
 
             local descriptionWrapped = ax.util:GetWrappedText(description, "ax.regular.bold", buttonWidth - ax.util:ScreenScale(16))
@@ -261,7 +261,7 @@ ax.character:RegisterVar("name", {
                 return false, "Each part of your character's name must start with an uppercase letter. Please capitalize the first letter of each name (e.g., 'John Smith', not 'john smith')."
             end
 
-            if ( string.len(word) > 1 and word == string.upper(word) ) then
+            if ( string.len(word) > 1 and word == utf8.upper(word) ) then
                 return false, "Please avoid using ALL CAPS in character names. Use proper capitalization instead (e.g., 'Smith' instead of 'SMITH')."
             end
 
@@ -364,7 +364,7 @@ ax.character:RegisterVar("description", {
 
         -- Enforce capitalization: require at least one uppercase letter among alphabetic characters
         local lettersOnly = string.gsub(trimmed, "[^%a]", "")
-        if ( lettersOnly != "" and lettersOnly == string.lower(lettersOnly) ) then
+        if ( lettersOnly != "" and lettersOnly == utf8.lower(lettersOnly) ) then
             return false, "Character description should use proper capitalization for readability. Please capitalize the first letter of sentences and proper nouns."
         end
 
@@ -402,11 +402,11 @@ ax.character:RegisterVar("model", {
         local valid = false
         for k, v in ipairs(factionData:GetModels()) do
             if ( istable(v) ) then
-                if ( string.lower(v[1]) == string.lower(value) ) then
+                if ( utf8.lower(v[1]) == utf8.lower(value) ) then
                     valid = true
                     break
                 end
-            elseif ( string.lower(v) == string.lower(value) ) then
+            elseif ( utf8.lower(v) == utf8.lower(value) ) then
                 valid = true
                 break
             end
@@ -421,7 +421,7 @@ ax.character:RegisterVar("model", {
     populate = function(this, container, payload)
         local option = container:Add("ax.text")
         option:SetFont("ax.regular.bold")
-        option:SetText(string.upper(ax.util:UniqueIDToName(this.key)))
+        option:SetText(utf8.upper(ax.util:UniqueIDToName(this.key)))
         option:Dock(TOP)
 
         local layout = container:Add("DIconLayout")
@@ -506,7 +506,7 @@ ax.character:RegisterVar("skin", {
     populate = function(this, container, payload)
         local option = container:Add("ax.text")
         option:SetFont("ax.regular.bold")
-        option:SetText(string.upper(ax.util:UniqueIDToName(this.key)))
+        option:SetText(utf8.upper(ax.util:UniqueIDToName(this.key)))
         option:Dock(TOP)
 
         local slider = container:Add("DNumSlider")

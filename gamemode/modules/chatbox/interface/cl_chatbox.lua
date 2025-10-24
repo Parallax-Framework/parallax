@@ -155,7 +155,7 @@ function PANEL:Init()
             if ( data ) then
                 ax.chat.currentType = data.displayName
                 self.chatTypePrevious = self.chatType or "ic"
-                self.chatType = string.lower(data.name)
+                self.chatType = utf8.lower(data.name)
             end
         elseif ( string.sub(text, 1, 1) == "/" ) then
             -- This is a command, so we need to parse it
@@ -167,7 +167,7 @@ function PANEL:Init()
             if ( data ) then
                 ax.chat.currentType = data.displayName
                 self.chatTypePrevious = self.chatType or "ic"
-                self.chatType = string.lower(data.name)
+                self.chatType = utf8.lower(data.name)
                 self:SelectRecommendation(data.displayName)
             end
         else
