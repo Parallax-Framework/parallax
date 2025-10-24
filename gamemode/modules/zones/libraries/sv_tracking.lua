@@ -170,7 +170,11 @@ local function UpdateTracking(ent)
 end
 
 --- Tick hook to update all tracked entities.
+local nextTick = 0
 hook.Add("Tick", "ax.zones.tracking", function()
+    if ( CurTime() < nextTick ) then return end
+    nextTick = CurTime() + 1
+
     for id, state in pairs(ax.zones.tracked) do
         if ( !IsValid(state.entity) ) then
             ax.zones.tracked[id] = nil
