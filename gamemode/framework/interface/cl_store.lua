@@ -331,7 +331,7 @@ function PANEL:PerformLayout(width, height)
     self.reset:SetPos(textWidth + ax.util:ScreenScale(16), (height - self.reset:GetTall()) / 2)
 
     local store = self:GetStore()
-    if ( store ) then
+    if ( store and isfunction(store.GetDefault) and isfunction(store.Get) ) then
         local default = store:GetDefault(self.key)
         local value = store:Get(self.key)
 
@@ -341,7 +341,7 @@ end
 
 function PANEL:PaintAdditional(width, height)
     local store = self:GetStore()
-    if ( !store ) then return end
+    if ( !store or !isfunction(store.GetDefault) or !isfunction(store.Get) ) then return end
 
     local default = store:GetDefault(self.key)
     local value = store:Get(self.key)
@@ -362,7 +362,6 @@ PANEL = {}
 DEFINE_BASECLASS("ax.store.base")
 
 function PANEL:Init()
-    BaseClass.Init(self)
     self.elementType = "bool"
 
     self.value = self:Add("ax.text")
@@ -423,7 +422,6 @@ PANEL = {}
 DEFINE_BASECLASS("ax.store.base")
 
 function PANEL:Init()
-    BaseClass.Init(self)
     self.elementType = "number"
 
     self.slider = self:Add("DNumSlider")
@@ -469,7 +467,6 @@ PANEL = {}
 DEFINE_BASECLASS("ax.store.base")
 
 function PANEL:Init()
-    BaseClass.Init(self)
     self.elementType = "string"
 
     self.entry = self:Add("ax.text.entry")
