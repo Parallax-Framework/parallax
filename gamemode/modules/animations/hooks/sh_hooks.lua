@@ -226,7 +226,11 @@ function MODULE:UpdateAnimation(client, velocity, maxseqgroundspeed)
             local steer = vehicle:GetPoseParameter("vehicle_steer")
             steer = steer * 2 - 1
             if ( vehicle:GetClass() == "prop_vehicle_prisoner_pod" ) then
-                steer = 0 client:SetPoseParameter("aim_yaw", math.NormalizeAngle(client:GetAimVector():Angle().y - vehicle:GetAngles().y - 90))
+                steer = 0
+                -- Calculate aim yaw directly without creating Angle object
+                local aimVec = client:GetAimVector()
+                local aimYaw = deg(atan2(aimVec.y, aimVec.x))
+                client:SetPoseParameter("aim_yaw", normalizeAngle(aimYaw - vehicle:GetAngles().y - 90))
             end
 
             client:SetPoseParameter("vehicle_steer", steer)
@@ -248,10 +252,11 @@ function MODULE:GrabEarAnimation(client, clientTable)
         return
     end
 
+    local frameTimeMult = FrameTime() * 5
     if ( client:IsTyping() ) then
-        clientTable.ChatGestureWeight = math.Approach(clientTable.ChatGestureWeight, 1, FrameTime() * 5)
+        clientTable.ChatGestureWeight = math.Approach(clientTable.ChatGestureWeight, 1, frameTimeMult)
     else
-        clientTable.ChatGestureWeight = math.Approach(clientTable.ChatGestureWeight, 0, FrameTime() * 5)
+        clientTable.ChatGestureWeight = math.Approach(clientTable.ChatGestureWeight, 0, frameTimeMult)
     end
 
     if ( clientTable.ChatGestureWeight > 0 ) then
@@ -291,26 +296,30 @@ function MODULE:CalcMainActivity(client, velocity)
         return -1, forcedSequence
     end
 
+    local clientTable = client:GetTable()
     clientTable.CalcIdeal = ACT_MP_STAND_IDLE
 
     local eyeAngles = client:EyeAngles()
-    local aimVector = client:GetAimVector()
-    local aimVectorAng = aimVector:Angle()
     local renderAng = client:GetRenderAngles()
 
-    client:SetPoseParameter("move_yaw", normalizeAngle(vectorAngle(velocity).y - eyeAngles.y))
+    -- Cache velocity yaw calculation (avoid creating Angle object)
+    local velocityYaw = deg(atan2(velocity.y, velocity.x))
+    client:SetPoseParameter("move_yaw", normalizeAngle(velocityYaw - eyeAngles.y))
 
+    -- Cache normalized angle differences
     local aimYaw = normalizeAngle(renderAng.y - eyeAngles.y)
     local aimPitch = normalizeAngle(renderAng.p - eyeAngles.p)
 
     client:SetPoseParameter("aim_yaw", aimYaw)
     client:SetPoseParameter("aim_pitch", aimPitch)
 
-    local headYaw = normalizeAngle(renderAng.y - aimVectorAng.y)
-    local headPitch = normalizeAngle(renderAng.p - aimVectorAng.p)
+    -- Calculate aim vector angles directly (avoid creating Angle object)
+    local aimVector = client:GetAimVector()
+    local aimVectorYaw = deg(atan2(aimVector.y, aimVector.x))
+    local aimVectorPitch = deg(asin(-aimVector.z))
 
-    client:SetPoseParameter("head_yaw", headYaw)
-    client:SetPoseParameter("head_pitch", headPitch)
+    client:SetPoseParameter("head_yaw", normalizeAngle(renderAng.y - aimVectorYaw))
+    client:SetPoseParameter("head_pitch", normalizeAngle(renderAng.p - aimVectorPitch))
 
     if !( self:HandlePlayerNoClipping(client, velocity, clientTable) or
         self:HandlePlayerDriving(client, clientTable) or
