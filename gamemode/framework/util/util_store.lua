@@ -167,6 +167,19 @@ function ax.util:CreateStore(spec, oldStore)
         return table.Copy(regEntry.data)
     end
 
+
+    --- Get the default value for a key.
+    -- @realm shared
+    -- @param key string Setting key
+    -- @return any Default value or nil if unknown
+    function store:GetDefault(key)
+        if ( !isstring(key) ) then
+            return nil
+        end
+
+        return store.defaults[key]
+    end
+
     --- Set a value in the store.
     -- Coerces to the registered type, clamps numbers, validates array choices,
     -- triggers OnChanged and global hooks, persists, and handles networking.
@@ -206,7 +219,14 @@ function ax.util:CreateStore(spec, oldStore)
             end
         end
 
-        local oldValue = store.values[key]
+        -- For configs on client, check CONFIG_CACHE for current value, not store.values
+        local oldValue
+        if ( CLIENT and spec.name == "config" ) then
+            oldValue = CONFIG_CACHE[key]
+        else
+            oldValue = store.values[key]
+        end
+
         if ( oldValue == coerced ) then
             return false
         end
