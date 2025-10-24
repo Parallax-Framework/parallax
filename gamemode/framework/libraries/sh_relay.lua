@@ -18,11 +18,11 @@ ax.relay = ax.relay or {}
 ax.relay.data = ax.relay.data or {}
 
 if ( SERVER ) then
-    function ax.relay:Sync( recipients )
-        net.Start( "ax.relay.sync" )
-            net.WriteTable( ax.relay.data )
+    function ax.relay:Sync(recipients)
+        net.Start("ax.relay.sync")
+            net.WriteTable(ax.relay.data)
         if ( recipients ) then
-            net.Send( recipients )
+            net.Send(recipients)
         else
             net.Broadcast()
         end
@@ -60,7 +60,7 @@ function ENTITY:SetRelay(name, value, bNoNetworking, recipients)
             net.WriteString(name)
             net.WriteType(value)
         if ( recipients ) then
-            net.Send( recipients )
+            net.Send(recipients)
         else
             net.Broadcast()
         end
@@ -112,7 +112,7 @@ function SetRelay(name, value, bNoNetworking, recipients)
             net.WriteString(name)
             net.WriteType(value)
         if ( recipients ) then
-            net.Send( recipients )
+            net.Send(recipients)
         else
             net.Broadcast()
         end
