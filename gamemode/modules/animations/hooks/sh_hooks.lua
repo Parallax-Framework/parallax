@@ -329,7 +329,7 @@ function MODULE:CalcMainActivity(client, velocity)
         self:HandlePlayerDucking(client, velocity, clientTable) ) then
 
         local len2d = velocity:Length2DSqr()
-        if ( velocity[3] != 0 and len2d <= 16 ^ 2 ) then
+        if ( velocity[3] != 0 and len2d <= 256 ) then
             clientTable.CalcIdeal = ACT_GLIDE
         elseif ( len2d > 22500 ) then
             clientTable.CalcIdeal = ACT_MP_RUN
@@ -370,6 +370,7 @@ function MODULE:TranslateActivity(client, act)
     local oldAct = clientTable.axLastAct or -1
 
     local newAct = client:TranslateWeaponActivity(act)
+
     -- When the weapon didn't translate the act we map it to HL2MP idle variants.
     if ( act == newAct ) then
         local mapped = IdleActivityTranslate[act]
@@ -378,12 +379,16 @@ function MODULE:TranslateActivity(client, act)
         end
     end
 
+    -- Cache weapon and holdType for reuse
+    local activeWeapon = client:GetActiveWeapon()
+    local holdType = ( IsValid(activeWeapon) and activeWeapon:GetHoldType() ) or client:GetHoldType()
+
     local class = ax.animations:GetModelClass(client:GetModel())
     if ( !class ) then
         -- Still allow external overrides even if we cannot resolve a model class.
         local override = hook.Run("OverrideActivity", client, act, newAct, {
             modelClass = class,
-            holdType = ( IsValid(client:GetActiveWeapon()) and client:GetActiveWeapon():GetHoldType() ) or client:GetHoldType(),
+            holdType = holdType,
             animTable = clientTable.axAnimations
         })
 
@@ -421,7 +426,7 @@ function MODULE:TranslateActivity(client, act)
     -- External override hook (post internal anim table resolution, pre sequence resolution)
     local override = hook.Run("OverrideActivity", client, act, newAct, {
         modelClass = class,
-        holdType = ( IsValid(client:GetActiveWeapon()) and client:GetActiveWeapon():GetHoldType() ) or client:GetHoldType(),
+        holdType = holdType,
         animTable = clientTable.axAnimations
     })
 
@@ -432,14 +437,10 @@ function MODULE:TranslateActivity(client, act)
     if ( isstring(newAct) ) then
         local seq = client:LookupSequence(newAct)
         if ( seq != -1 ) then
-            clientTable.CalcSeqOverride = client:LookupSequence(newAct)
+            clientTable.CalcSeqOverride = seq
         end
     elseif ( istable(newAct) ) then
-        if ( !clientTable.CalcSeqOverrideTable ) then
-            clientTable.CalcSeqOverrideTable = client:LookupSequence(newAct[math.random(#newAct)])
-        end
-
-        if ( oldAct != newAct ) then
+        if ( !clientTable.CalcSeqOverrideTable or oldAct != newAct ) then
             clientTable.CalcSeqOverrideTable = client:LookupSequence(newAct[math.random(#newAct)])
         end
 
@@ -450,28 +451,36 @@ function MODULE:TranslateActivity(client, act)
         clientTable.axLastAct = newAct
     end
 
-    client.axNextTurn = client.axNextTurn or 0
-
+    -- Turning gesture handling
     -- https://github.com/TankNut/helix-plugins/blob/master/turning.lua
-    local diff = math.NormalizeAngle(client:GetRenderAngles().y - client:EyeAngles().y)
-    if ( !client:InVehicle() and math.abs(diff) >= 45 and client.axNextTurn <= CurTime() ) then
-        local gesture = diff > 0 and "gesture_turn_right_90" or "gesture_turn_left_90"
-        client:PlayGesture(GESTURE_SLOT_FLINCH, gesture)
+    if ( !client:InVehicle() ) then
+        client.axNextTurn = client.axNextTurn or 0
 
-        local duration = client:SequenceDuration(client:LookupSequence(gesture))
-        if ( duration <= 0 ) then
-            duration = 0.5
-        end
+        if ( client.axNextTurn <= CurTime() ) then
+            local diff = normalizeAngle(client:GetRenderAngles().y - client:EyeAngles().y)
+            local absDiff = diff < 0 and -diff or diff  -- math.abs without function call
 
-        client.axNextTurn = CurTime() + duration
+            if ( absDiff >= 45 ) then
+                local gesture = diff > 0 and "gesture_turn_right_90" or "gesture_turn_left_90"
+                local gestureSeq = client:LookupSequence(gesture)
 
-        if ( SERVER ) then
-            -- not sure if this is optimal, but it works
-            net.Start("ax.animations.update")
-                net.WritePlayer(client)
-                net.WriteTable(clientTable.axAnimations)
-                net.WriteString(client:GetHoldType())
-            net.Broadcast()
+                client:PlayGesture(GESTURE_SLOT_FLINCH, gestureSeq)
+
+                local duration = client:SequenceDuration(gestureSeq)
+                if ( duration <= 0 ) then
+                    duration = 0.5
+                end
+
+                client.axNextTurn = CurTime() + duration
+
+                if ( SERVER ) then
+                    net.Start("ax.animations.update")
+                        net.WritePlayer(client)
+                        net.WriteTable(clientTable.axAnimations)
+                        net.WriteString(holdType)
+                    net.Broadcast()
+                end
+            end
         end
     end
 
@@ -480,8 +489,9 @@ end
 
 function MODULE:DoAnimationEvent(client, event, data)
     local clientTable = client:GetTable()
+    local animTable = clientTable.axAnimations
+
     if ( event == PLAYERANIMEVENT_ATTACK_PRIMARY ) then
-        local animTable = clientTable.axAnimations
         if ( !animTable ) then return end
 
         local desired = animTable.shoot or ACT_MP_ATTACK_STAND_PRIMARYFIRE
@@ -506,7 +516,8 @@ function MODULE:DoAnimationEvent(client, event, data)
     elseif ( event == PLAYERANIMEVENT_ATTACK_SECONDARY ) then
         return ACT_VM_SECONDARYATTACK
     elseif ( event == PLAYERANIMEVENT_RELOAD ) then
-        local animTable = clientTable.axAnimations
+        if ( !animTable ) then return end
+
         local desired = animTable.reload or ACT_MP_RELOAD_STAND
         if ( client:IsFlagSet(FL_ANIMDUCKING) ) then
             desired = animTable.reload_crouch or animTable.reload or ACT_MP_RELOAD_CROUCH
