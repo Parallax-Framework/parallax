@@ -1,3 +1,9 @@
+-- Localize math functions for performance
+local normalizeAngle = math.NormalizeAngle
+local atan2 = math.atan2
+local deg = math.deg
+local asin = math.asin
+
 function MODULE:HandlePlayerJumping(client, velocity, clientTable)
     if ( !istable(clientTable) ) then
         clientTable = client:GetTable()
@@ -126,6 +132,10 @@ function MODULE:OnPlayerHitGround(client, inWater, onFloater, speed)
     client:PlayGesture(GESTURE_SLOT_JUMP, land)
 end
 
+-- Cache sequence IDs for vehicle animations
+local SEQ_SIT_ROLLERCOASTER = nil
+local SEQ_SIT = nil
+
 function MODULE:HandlePlayerDriving(client, clientTable)
     if ( !istable(clientTable) ) then
         clientTable = client:GetTable()
@@ -166,7 +176,13 @@ function MODULE:HandlePlayerDriving(client, clientTable)
         end
     end
 
-    local useAnims = ( clientTable.CalcSeqOverride == client:LookupSequence("sit_rollercoaster") or clientTable.CalcSeqOverride == client:LookupSequence("sit") )
+    -- Cache sequence lookups
+    if ( !SEQ_SIT_ROLLERCOASTER ) then
+        SEQ_SIT_ROLLERCOASTER = client:LookupSequence("sit_rollercoaster")
+        SEQ_SIT = client:LookupSequence("sit")
+    end
+
+    local useAnims = ( clientTable.CalcSeqOverride == SEQ_SIT_ROLLERCOASTER or clientTable.CalcSeqOverride == SEQ_SIT )
     if ( useAnims and client:GetAllowWeaponsInVehicle() and IsValid(client:GetActiveWeapon()) ) then
         local holdType = client:GetActiveWeapon():GetHoldType()
         if ( holdType == "smg" ) then
@@ -244,26 +260,28 @@ function MODULE:GrabEarAnimation(client, clientTable)
 end
 
 function MODULE:MouthMoveAnimation(client)
-    local flexes = {
-        client:GetFlexIDByName("jaw_drop"),
-        client:GetFlexIDByName("left_part"),
-        client:GetFlexIDByName("right_part"),
-        client:GetFlexIDByName("left_mouth_drop"),
-        client:GetFlexIDByName("right_mouth_drop")
-    }
+    local clientTable = client:GetTable()
+
+    -- Cache flex IDs per client to avoid repeated lookups
+    if ( !clientTable.axFlexCache ) then
+        clientTable.axFlexCache = {
+            client:GetFlexIDByName("jaw_drop"),
+            client:GetFlexIDByName("left_part"),
+            client:GetFlexIDByName("right_part"),
+            client:GetFlexIDByName("left_mouth_drop"),
+            client:GetFlexIDByName("right_mouth_drop")
+        }
+    end
 
     local weight = client:IsSpeaking() and math.Clamp(client:VoiceVolume() * 2, 0, 2) or 0
+    local flexes = clientTable.axFlexCache
     for i = 1, #flexes do
         client:SetFlexWeight(flexes[i], weight)
     end
 end
 
-local vectorAngle = FindMetaTable("Vector").Angle
-local normalizeAngle = math.NormalizeAngle
 function MODULE:CalcMainActivity(client, velocity)
-    local clientTable = client:GetTable()
-    local forcedSequence = clientTable["ax.sequence.forced"]
-
+    local forcedSequence = client:GetRelay("sequence.forced")
     if ( forcedSequence ) then
         if ( client:GetSequence() != forcedSequence ) then
             client:SetCycle(0)
