@@ -170,6 +170,7 @@ local function UpdateTracking(ent)
 end
 
 --- Tick hook to update all tracked entities.
+--[[
 local nextTick = 0
 hook.Add("Tick", "ax.zones.tracking", function()
     if ( CurTime() < nextTick ) then return end
@@ -183,6 +184,14 @@ hook.Add("Tick", "ax.zones.tracking", function()
 
         UpdateTracking(state.entity)
     end
+end)
+]]
+
+hook.Add("FinishMove", "ax.zones.tracking", function(ply, mv)
+    local state = ax.zones:GetTracking(ply)
+    if ( !state ) then return end
+
+    UpdateTracking(ply)
 end)
 
 --- Auto-track all players on join.
@@ -199,7 +208,7 @@ end)
 hook.Add("OnReloaded", "ax.zones.tracking", function()
     ax.zones.tracked = {}
 
-    for _, ply in ipairs(player.GetAll()) do
-        ax.zones:TrackEntity(ply)
+    for _, client in player.Iterator() do
+        ax.zones:TrackEntity(client)
     end
 end)
