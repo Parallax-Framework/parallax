@@ -13,7 +13,7 @@ ax.command:Add("echo", {
     arguments = {
         { name = "message", type = ax.type.text }
     },
-    OnRun = function(client, message)
+    OnRun = function(cmd, client, message)
         return "Echo: " .. message
     end
 })
@@ -27,7 +27,7 @@ ax.command:Add("random", {
         { name = "min", type = ax.type.number },
         { name = "max", type = ax.type.number }
     },
-    OnRun = function(client, min, max)
+    OnRun = function(cmd, client, min, max)
         if ( min > max ) then
             return "Minimum value cannot be greater than maximum"
         end
@@ -45,7 +45,7 @@ ax.command:Add("toggle", {
     arguments = {
         { name = "enabled", type = ax.type.bool }
     },
-    OnRun = function(client, enabled)
+    OnRun = function(cmd, client, enabled)
         return "Setting is now: " .. (enabled and "enabled" or "disabled")
     end
 })
@@ -63,7 +63,7 @@ ax.command:Add("color", {
             ["yellow"] = true
         }}
     },
-    OnRun = function(client, color)
+    OnRun = function(cmd, client, color)
         return "Your favorite color is now: " .. color
     end
 })
@@ -74,7 +74,7 @@ ax.command:Add("color", {
 ax.command:Add("admin_test", {
     description = "Test admin-only command",
     adminOnly = true,
-    OnRun = function(client)
+    OnRun = function(cmd, client)
         return "You are an admin!"
     end
 })
@@ -84,7 +84,7 @@ ax.command:Add("admin_test", {
 ]]
 ax.command:Add("vip_command", {
     description = "VIP only command with custom access control",
-    CanRun = function(caller)
+    CanRun = function(self, caller)
         if ( !IsValid(caller) ) then
             return false, "Console cannot use VIP commands"
         end
@@ -93,7 +93,7 @@ ax.command:Add("vip_command", {
         -- For now, just allow everyone for testing
         return true
     end,
-    OnRun = function(client)
+    OnRun = function(cmd, client)
         return "Welcome, VIP member!"
     end
 })

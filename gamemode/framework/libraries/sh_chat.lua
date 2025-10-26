@@ -35,7 +35,7 @@ function ax.chat:Add(name, def)
             arguments = {
                 { name = "message", type = ax.type.text }
             },
-            OnRun = function(client, message)
+            OnRun = function(cmd, client, message)
                 if ( !isstring(message) or message == "" ) then
                     return
                 end

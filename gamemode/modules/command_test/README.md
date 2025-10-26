@@ -73,7 +73,7 @@ Register a new command.
     OnConsole = function(caller, arg1, arg2, ...)
         -- Optional console-specific handler
     end,
-    CanRun = function(caller)
+    CanRun = function(self, caller)
         -- Optional custom access check
         return true -- or false, "reason"
     end
@@ -171,7 +171,7 @@ ax_command pm player1 hello
 ```lua
 ax.command:Add("vip_only", {
     description = "VIP members only",
-    CanRun = function(caller)
+    CanRun = function(self, caller)
         if !IsValid(caller) then return false, "Console not allowed" end
         if !caller:GetVIPStatus() then return false, "VIP required" end
         return true

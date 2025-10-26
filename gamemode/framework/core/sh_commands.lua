@@ -15,7 +15,7 @@ ax.command:Add("SetGravity", {
     arguments = {
         { name = "scale", type = ax.type.number, min = 0.1, max = 3, decimals = 2 }
     },
-    OnRun = function(client, scale)
+    OnRun = function(cmd, client, scale)
         RunConsoleCommand("sv_gravity", tostring(600 * scale))
         return "Gravity set to " .. scale .. "x"
     end
@@ -28,7 +28,7 @@ ax.command:Add("PM", {
         { name = "target", type = ax.type.player },
         { name = "message", type = ax.type.text }
     },
-    OnRun = function(client, target, message)
+    OnRun = function(cmd, client, target, message)
         if ( !IsValid(target) ) then
             return "Target player not found."
         end
@@ -46,7 +46,7 @@ ax.command:Add("CharSetModel", {
         { name = "target", type = ax.type.character },
         { name = "model", type = ax.type.text }
     },
-    OnRun = function(client, target, model)
+    OnRun = function(cmd, client, target, model)
         if ( !target) then return "Invalid character." end
 
         target:SetModel(model)
@@ -62,7 +62,7 @@ ax.command:Add("CharSetSkin", {
         { name = "target", type = ax.type.character },
         { name = "skin", type = ax.type.number }
     },
-    OnRun = function(client, target, skin)
+    OnRun = function(cmd, client, target, skin)
         if ( !target ) then return "Invalid character." end
 
         target:SetSkin(skin)
@@ -78,7 +78,7 @@ ax.command:Add("CharSetName", {
         { name = "target", type = ax.type.character, optional = true },
         { name = "name", type = ax.type.string, optional = true }
     },
-    OnRun = function(client, target, name)
+    OnRun = function(cmd, client, target, name)
         if ( !target ) then
             target = client:GetCharacter()
         end
@@ -105,7 +105,7 @@ ax.command:Add("CharGiveFlags", {
         { name = "target", type = ax.type.character },
         { name = "flags", type = ax.type.string }
     },
-    OnRun = function(client, target, flags)
+    OnRun = function(cmd, client, target, flags)
         if ( !target ) then target = client:GetCharacter() end
 
         target:GiveFlags(flags)
@@ -121,7 +121,7 @@ ax.command:Add("CharTakeFlags", {
         { name = "target", type = ax.type.character },
         { name = "flags", type = ax.type.string }
     },
-    OnRun = function(client, target, flags)
+    OnRun = function(cmd, client, target, flags)
         if ( !target ) then target = client:GetCharacter() end
 
         target:TakeFlags(flags)
@@ -137,7 +137,7 @@ ax.command:Add("CharSetFlags", {
         { name = "target", type = ax.type.character, optional = true },
         { name = "flags", type = ax.type.string }
     },
-    OnRun = function(client, target, flags)
+    OnRun = function(cmd, client, target, flags)
         if ( !target ) then target = client:GetCharacter() end
 
         target:SetFlags(flags)
@@ -153,7 +153,7 @@ ax.command:Add("CharSetFaction", {
         { name = "target", type = ax.type.character, optional = true },
         { name = "faction", type = ax.type.string }
     },
-    OnRun = function(client, target, faction)
+    OnRun = function(cmd, client, target, faction)
         if ( !target ) then
             target = client:GetCharacter()
         end
@@ -195,7 +195,7 @@ ax.command:Add("CharSetClass", {
         { name = "target", type = ax.type.character, optional = true },
         { name = "class", type = ax.type.string }
     },
-    OnRun = function(client, target, class)
+    OnRun = function(cmd, client, target, class)
         if ( !target ) then
             target = client:GetCharacter()
         end
@@ -233,7 +233,7 @@ ax.command:Add("PlyWhitelist", {
         { name = "target", type = ax.type.player },
         { name = "faction", type = ax.type.string }
     },
-    OnRun = function(client, target, faction)
+    OnRun = function(cmd, client, target, faction)
         if ( !IsValid(target) ) then return "Invalid player." end
 
         local factionTable = ax.faction:Get(faction)
@@ -255,7 +255,7 @@ ax.command:Add("PlyWhitelistAll", {
     arguments = {
         { name = "target", type = ax.type.player }
     },
-    OnRun = function(client, target)
+    OnRun = function(cmd, client, target)
         if ( !IsValid(target) ) then return "Invalid player." end
 
         local whitelists = {}
@@ -278,7 +278,7 @@ ax.command:Add("PlyUnWhitelist", {
         { name = "target", type = ax.type.player },
         { name = "faction", type = ax.type.string }
     },
-    OnRun = function(client, target, faction)
+    OnRun = function(cmd, client, target, faction)
         if ( !IsValid(target) ) then return "Invalid player." end
 
         local factionTable = ax.faction:Get(faction)
@@ -300,7 +300,7 @@ ax.command:Add("PlyUnWhitelistAll", {
     arguments = {
         { name = "target", type = ax.type.player }
     },
-    OnRun = function(client, target)
+    OnRun = function(cmd, client, target)
         if ( !IsValid(target) ) then return "Invalid player." end
 
         target:SetData("whitelists", {})
@@ -315,7 +315,7 @@ ax.command:Add("PlyRespawn", {
     arguments = {
         { name = "target", type = ax.type.player }
     },
-    OnRun = function(client, target)
+    OnRun = function(cmd, client, target)
         if ( !IsValid(target) ) then return "Invalid player." end
 
         target:Spawn()
@@ -330,7 +330,7 @@ ax.command:Add("BotAdd", {
     arguments = {
         { name = "name", type = ax.type.string, optional = true }
     },
-    OnRun = function(client, name)
+    OnRun = function(cmd, client, name)
         if ( SERVER ) then
             local botName = name or "TestBot"
             RunConsoleCommand("bot")
@@ -345,7 +345,7 @@ ax.command:Add("BotAdd", {
 ax.command:Add("BotKick", {
     description = "Remove all bots from the server.",
     adminOnly = true,
-    OnRun = function(client)
+    OnRun = function(cmd, client)
         if ( SERVER ) then
             local count = 0
             for _, target in player.Iterator() do
@@ -368,7 +368,7 @@ ax.command:Add("BotSupport", {
     arguments = {
         { name = "enabled", type = ax.type.bool }
     },
-    OnRun = function(client, enabled)
+    OnRun = function(cmd, client, enabled)
         if ( SERVER ) then
             ax.config:Set("botSupport", enabled)
             ax.config:Save()
@@ -383,7 +383,7 @@ ax.command:Add("BotSupport", {
 ax.command:Add("BotList", {
     description = "List all bots currently on the server.",
     adminOnly = true,
-    OnRun = function(client)
+    OnRun = function(cmd, client)
         if ( SERVER ) then
             local bots = {}
             for _, ply in player.Iterator() do

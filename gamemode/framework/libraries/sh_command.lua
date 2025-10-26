@@ -28,7 +28,7 @@ end
 -- @realm shared
 -- @param name string The command name (will be normalized)
 -- @param def table Command definition with OnRun, description, arguments, etc.
--- @usage ax.command:Add("test", { description = "Test command", OnRun = function(client) end })
+-- @usage ax.command:Add("test", { description = "Test command", OnRun = function(cmd, client) end })
 function ax.command:Add(name, def)
     if ( !isstring(name) or name == "" ) then
         ax.util:PrintError("ax.command:Add - Invalid command name provided")
@@ -52,7 +52,7 @@ function ax.command:Add(name, def)
     def.adminOnly = def.adminOnly or false
     def.superAdminOnly = def.superAdminOnly or false
 
-    if ( !def.CanRun ) then
+    if ( !isfunction(def.CanRun) and istable(CAMI) ) then
         CAMI.RegisterPrivilege({
             Name = "Command - " .. def.name,
             MinAccess = def.superAdminOnly and "superadmin" or (def.adminOnly and "admin" or "user"),
@@ -163,7 +163,7 @@ function ax.command:HasAccess(caller, def)
 
     -- Custom access check
     if ( isfunction(def.CanRun) ) then
-        local canRun, reason = def.CanRun(caller)
+        local canRun, reason = def:CanRun(caller)
         if ( canRun == false ) then
             return false, reason or "You do not have permission to use this command"
         end
@@ -308,6 +308,8 @@ function ax.command:Run(caller, name, rawArgs)
     else
         return false, "Command has no handler defined"
     end
+
+    table.insert( values, 1, def )
 
     -- Execute the command
     local success, result = pcall(handler, caller, unpack(values or {}))
