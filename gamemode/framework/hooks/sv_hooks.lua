@@ -371,18 +371,6 @@ function GM:PlayerReady(client)
     client:SyncRelay()
 end
 
-function GM:PlayerDisconnected(client)
-    local invKeys = table.GetKeys(ax.inventory.instances)
-    for i = 1, #invKeys do
-        local inv = ax.inventory.instances[invKeys[i]]
-        if ( !istable(inv) ) then continue end
-
-        if ( inv:IsReceiver(client) ) then
-            inv:RemoveReceiver(client)
-        end
-    end
-end
-
 function GM:OnDatabaseTablesCreated()
     ax.util:PrintDebug("Database tables created successfully.")
 end
@@ -433,6 +421,12 @@ function GM:PlayerDisconnected(client)
     client:SetLastLeave(os.time())
     client:SetPlayTime(playtime)
     client:Save()
+
+    for id, inv in pairs(ax.inventory.instances) do
+        if ( inv:IsReceiver(client) ) then
+            inv:RemoveReceiver(client)
+        end
+    end
 
     local steamID64 = client:SteamID64()
     if ( timer.Exists("ax.player.save." .. steamID64) ) then
