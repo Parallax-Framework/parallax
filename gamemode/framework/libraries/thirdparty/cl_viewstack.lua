@@ -259,7 +259,15 @@ hook.Add("CalcView", "ax.viewstack.CalcView", function(client, origin, angles, f
     if ( ax.viewstack.inCalc ) then return end
     ax.viewstack.inCalc = true
 
-    local base = ax.viewstack:BaseView(client, origin, angles, fov)
+    -- Support for LVS, because they love breaking everything
+    local pod = client:GetVehicle()
+    local vehicle = client.lvsGetVehicle and client:lvsGetVehicle() or nil
+    if ( IsValid(pod) and IsValid(vehicle) ) then
+        ax.viewstack.inCalc = false
+        return
+    end
+
+    local base = GAMEMODE.BaseClass:CalcView(client, origin, angles, fov, znear, zfar)
     base.znear = znear
     base.zfar = zfar
 
