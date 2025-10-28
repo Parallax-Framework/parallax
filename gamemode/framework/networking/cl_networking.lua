@@ -244,8 +244,6 @@ net.Receive("ax.character.var", function()
     end
 
     character.vars[name] = value
-
-    ax.util:PrintDebug("Received character variable '" .. name .. "' update for character ID " .. characterID .. ": " .. tostring(value))
 end)
 
 net.Receive("ax.character.bot.sync", function()
@@ -263,8 +261,6 @@ net.Receive("ax.character.bot.sync", function()
     if ( IsValid(botPlayer) and botPlayer:IsBot() ) then
         botPlayer:GetTable().axCharacter = botCharacter
     end
-
-    ax.util:PrintDebug("Received bot character sync: " .. (botCharacter:GetName() or "Unknown") .. " (ID: " .. characterID .. ")")
 end)
 
 net.Receive("ax.character.setnameprompt", function()
@@ -331,7 +327,6 @@ net.Receive("ax.inventory.sync", function()
 
             ax.item.instances[itemObject.id] = itemObject
             items[itemObject.id] = itemObject
-            ax.util:PrintDebug(string.format("Synchronized item %d (%s) in inventory %d", itemObject.id, itemObject.class, inventoryID))
         else
             ax.util:PrintError("Invalid item data received for inventory sync.")
         end
@@ -465,8 +460,6 @@ net.Receive("ax.item.transfer", function()
         toInventory.items[item.id] = item
     end
 
-    ax.util:PrintDebug(string.format("Item %d transferred from inventory %d to inventory %d", item.id, fromInventoryID, toInventoryID))
-
     if ( IsValid(ax.gui.inventory) ) then
         ax.gui.inventory:PopulateItems()
     end
@@ -489,5 +482,4 @@ net.Receive("ax.item.spawn", function()
     itemObject.data = itemData
 
     ax.item.instances[itemID] = itemObject
-    ax.util:PrintDebug(string.format("Spawning item entity for item ID %d (%s)", itemID, itemClass))
 end)

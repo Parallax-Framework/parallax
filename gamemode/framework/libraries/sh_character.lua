@@ -89,8 +89,6 @@ function ax.character:SetVar(char, name, value, bNoNetworking, recipients)
 
     char.vars[name] = value
 
-    ax.util:PrintDebug("Set character variable '" .. name .. "' to value: " .. tostring(value))
-
     -- Network character variable changes to all clients
     if ( SERVER and !bNoNetworking ) then
         if ( char.isBot ) then
@@ -103,8 +101,6 @@ function ax.character:SetVar(char, name, value, bNoNetworking, recipients)
             net.WriteString(name)
             net.WriteType(value)
         net.Send(recipients or player.GetAll())
-
-        ax.util:PrintDebug("Networked character variable '" .. name .. "' change to clients")
     end
 end
 
@@ -127,8 +123,6 @@ function ax.character:SyncBotToClients(char, recipients)
         net.WriteUInt(char:GetID(), 32)
         net.WriteTable(char)
     net.Send(recipients or player.GetAll())
-
-    ax.util:PrintDebug("Synced bot character to clients: " .. char:GetName() .. " (ID: " .. char:GetID() .. ")")
 end
 
 --- Check if a variable can be populated during character creation.
