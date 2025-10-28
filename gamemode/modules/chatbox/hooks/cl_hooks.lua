@@ -55,7 +55,7 @@ end
 function MODULE:PostDrawTranslucentRenderables()
     -- Draw a text above the player who is typing to indicate that they are typing.
     for _, client in player.Iterator() do
-        if ( !IsValid(client) or !client:Alive() or client == ax.client ) then continue end
+        if ( !IsValid(client) or !client:Alive() ) then continue end
 
         local distToSqr = client:EyePos():DistToSqr(EyePos())
         if ( distToSqr > 256 ^ 2 ) then continue end
@@ -65,6 +65,11 @@ function MODULE:PostDrawTranslucentRenderables()
 
         local pos = client:EyePos() + Vector(0, 0, 8)
         local typing = "Typing"
+
+        local head = client:LookupBone("ValveBiped.Bip01_Head1")
+        if ( head ) then
+            pos = client:GetBonePosition(head) + Vector(0, 0, 12)
+        end
 
         if ( string.StartsWith(text, "/me") ) then
             typing = "Performing"
