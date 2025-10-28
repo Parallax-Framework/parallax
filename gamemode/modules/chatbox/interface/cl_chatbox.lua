@@ -49,17 +49,18 @@ function PANEL:Init()
         elseif ( code == MOUSE_RIGHT ) then
             local menu = DermaMenu()
             menu:AddOption("Reset Position", function()
+                ax.option:SetToDefault("chatBoxX")
+                ax.option:SetToDefault("chatBoxY")
+
                 local rx, ry = hook.Run("GetChatboxPos")
                 self:SetPos(rx, ry)
-
-                ax.option:Set("chatBoxX", rx)
-                ax.option:Set("chatBoxY", ry)
             end)
             menu:AddOption("Reset Size", function()
+                ax.option:SetToDefault("chatBoxWidth")
+                ax.option:SetToDefault("chatBoxHeight")
+
                 local rw, rh = hook.Run("GetChatboxSize")
                 self:SetSize(rw, rh)
-                ax.option:Set("chatBoxWidth", rw)
-                ax.option:Set("chatBoxHeight", rh)
                 self:InvalidateLayout(true)
             end)
             menu:Open()

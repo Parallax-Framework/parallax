@@ -311,6 +311,23 @@ function ax.util:CreateStore(spec, oldStore)
         return true
     end
 
+    --- Set's a value to its default.
+    -- @realm shared
+    -- @param key string Setting key
+    -- @return boolean True if the value changed, false otherwise
+    function store:SetToDefault(key)
+        if ( !isstring(key) ) then
+            return false
+        end
+
+        local regEntry = store.registry[key]
+        if ( !regEntry ) then
+            return false
+        end
+
+        return store:Set(key, regEntry.default)
+    end
+
     --- Get a list of all categories present in the registry.
     -- @realm shared
     -- @return table Array of category names
