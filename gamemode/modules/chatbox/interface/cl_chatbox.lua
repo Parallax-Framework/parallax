@@ -105,7 +105,7 @@ function PANEL:Init()
 
     self.entry = bottom:Add("ax.text.entry")
     self.entry:Dock(FILL)
-    self.entry:DockMargin(ScreenScale(2), ScreenScaleH(1), ScreenScale(2), ScreenScaleH(1))
+    self.entry:DockMargin(ScreenScale(4), ScreenScaleH(2), ScreenScale(4), ScreenScaleH(2))
     self.entry:SetFont("ax.chatbox.text")
     self.entry:SetPlaceholderText("Say something...")
     self.entry:SetDrawLanguageID(false)
