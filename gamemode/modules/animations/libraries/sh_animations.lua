@@ -1,3 +1,14 @@
+--[[
+    Parallax Framework
+    Copyright (c) 2025 Parallax Framework Contributors
+
+    This file is part of the Parallax Framework and is licensed under the MIT License.
+    You may use, copy, modify, merge, publish, distribute, and sublicense this file
+    under the terms of the LICENSE file included with this project.
+
+    Attribution is required. If you use or modify this file, you must retain this notice.
+]]
+
 HOLDTYPE_TRANSLATOR = {}
 HOLDTYPE_TRANSLATOR[""] = "normal"
 HOLDTYPE_TRANSLATOR["physgun"] = "smg"
@@ -15,8 +26,19 @@ HOLDTYPE_TRANSLATOR["camera"] = "smg"
 HOLDTYPE_TRANSLATOR["magic"] = "normal"
 HOLDTYPE_TRANSLATOR["revolver"] = "pistol"
 
+--- Animation library
+-- @module ax.animations
+
 ax.animations = ax.animations or {}
+
+--- Stored animations for model classes
+-- @realm shared
+-- @table ax.animations.stored
 ax.animations.stored = ax.animations.stored or {}
+
+--- Translations cache for model classes
+-- @realm shared
+-- @table ax.animations.translations
 ax.animations.translations = ax.animations.translations or {}
 
 ax.animations.stored["citizen_male"] = {
@@ -714,6 +736,9 @@ ax.animations.stored["player_metrocop"] = {
     }
 }
 
+--- Sets a model class translation for a specific model.
+-- @param model The model to set the translation for.
+-- @param class The class to set the translation to.
 function ax.animations:SetModelClass(model, class)
     if ( !model or !class ) then return end
 
@@ -729,6 +754,9 @@ function ax.animations:SetModelClass(model, class)
     self.translations[model] = class
 end
 
+--- Gets the model class for a specific model.
+-- @param model The model to get the class for.
+-- @return The model class.
 function ax.animations:GetModelClass(model)
     if ( !model ) then return end
 
