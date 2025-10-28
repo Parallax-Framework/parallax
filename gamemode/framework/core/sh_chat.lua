@@ -26,12 +26,27 @@ ax.chat:Add("ic", {
 ax.chat:Add("yell", {
     displayName = "Yell",
     description = "Yell at someone",
+    alias = {"y", "shout"},
     OnRun = function(this, client, message)
         local yellColor = ax.config:Get("chatColorYell", Color(255, 175, 0))
         return yellColor, string.format("<font=ax.chatbox.text.bold>%s</font>", client:Nick() .. " yells, \"" .. ax.chat:Format(utf8.upper(message)) .. "\"")
     end,
     CanHear = function(this, speaker, listener)
         local distance = ax.config:Get("chatYellDistance", 700)
+        return speaker:GetPos():Distance(listener:GetPos()) <= distance
+    end
+})
+
+ax.chat:Add("whisper", {
+    displayName = "Whisper",
+    description = "Whisper to someone nearby",
+    alias = {"w"},
+    OnRun = function(this, client, message)
+        local whisperColor = ax.config:Get("chatColorWhisper", Color(0, 175, 255))
+        return whisperColor, string.format("<font=ax.chatbox.text.italic>%s</font>", client:Nick() .. " whispers, \"" .. ax.chat:Format(message) .. "\"")
+    end,
+    CanHear = function(this, speaker, listener)
+        local distance = ax.config:Get("chatWhisperDistance", 200)
         return speaker:GetPos():Distance(listener:GetPos()) <= distance
     end
 })

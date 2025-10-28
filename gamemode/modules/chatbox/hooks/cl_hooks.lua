@@ -83,3 +83,11 @@ function MODULE:PostDrawTranslucentRenderables()
         cam.End3D2D()
     end
 end
+
+function MODULE:GetTypingIndicatorText(client, text)
+    if ( string.StartsWith(text, "/whisper") or string.StartsWith(text, "/w") ) then
+        return "Whispering"
+    elseif ( string.StartsWith(text, "/yell") or string.StartsWith(text, "/y") or string.StartsWith(text, "/shout") ) then
+        return "Yelling"
+    end
+end

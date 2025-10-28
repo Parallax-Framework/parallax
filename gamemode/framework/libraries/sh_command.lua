@@ -104,6 +104,14 @@ function ax.command:FindAll(partial)
         if ( string.find(name, partial, 1, true) ) then
             -- Use the original command name, not the alias
             results[def.name] = def
+        elseif ( def.alias ) then
+            local aliases = istable(def.alias) and def.alias or {def.alias}
+            for _, alias in ipairs(aliases) do
+                if ( string.find(utf8.lower(alias), partial, 1, true) ) then
+                    results[def.name] = def
+                    break
+                end
+            end
         end
     end
 
@@ -126,6 +134,17 @@ function ax.command:FindClosest(partial)
             if ( length > bestLength ) then
                 bestLength = length
                 bestMatch = def
+            end
+        elseif ( def.alias ) then
+            local aliases = istable(def.alias) and def.alias or {def.alias}
+            for _, alias in ipairs(aliases) do
+                if ( string.StartWith(alias, partial) ) then
+                    local length = #alias
+                    if ( length > bestLength ) then
+                        bestLength = length
+                        bestMatch = def
+                    end
+                end
             end
         end
     end

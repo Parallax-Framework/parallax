@@ -32,6 +32,7 @@ function ax.chat:Add(name, def)
             displayName = def.displayName or ax.util:UniqueIDToName(name),
             description = def.description or "No description available.",
             chatCommand = true,
+            alias = def.alias,
             arguments = {
                 { name = "message", type = ax.type.text }
             },
