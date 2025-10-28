@@ -18,11 +18,12 @@ end
 
 -- Verify individual shader convars exist before creating options
 local shaderConVars = {
-    { name = "pp_ssao", option = "shaderSSAO", desc = "Enable or disable screen space ambient occlusion.", subCat = "ambientOcclusion" },
-    { name = "r_smaa", option = "shaderSMAA", desc = "Enable or disable subpixel morphological anti-aliasing.", subCat = "antiAliasing" },
-    { name = "r_fxaa", option = "shaderFXAA", desc = "Enable or disable fast approximate anti-aliasing.", subCat = "antiAliasing" },
-    { name = "pp_pbb", option = "shaderPhysicallyBasedBloom", desc = "Enable or disable physically based bloom.", subCat = "bloom" },
-    { name = "r_csm", option = "shaderCSM", desc = "Enable or disable cascaded shadow maps.", subCat = "csm" }
+    { name = "r_csm", option = "shaderCSM", desc = "Enable or disable cascaded shadow maps." },
+    { name = "r_fxaa", option = "shaderFXAA", desc = "Enable or disable fast approximate anti-aliasing." },
+    { name = "pp_pbb", option = "shaderPhysicallyBasedBloom", desc = "Enable or disable physically based bloom." },
+    { name = "r_smaa", option = "shaderSMAA", desc = "Enable or disable subpixel morphological anti-aliasing." },
+    { name = "pp_ssao_plus", option = "shaderSSAO", desc = "Enable or disable screen space ambient occlusion." },
+    { name = "r_sslr", option = "shaderSSLR", desc = "Enable or disable screen space local reflections." }
 }
 
 -- Only create options for convars that actually exist
@@ -32,7 +33,8 @@ for _, shader in ipairs(shaderConVars) do
         ax.option:Add(shader.option, ax.type.bool, false, {
             category = "visual",
             subCategory = "shaders",
-            description = shader.desc
+            description = shader.desc,
+            bNoNetworking = true -- We don't need to network shader options
         })
         ax.util:PrintDebug("Created shader option: " .. shader.option .. " for convar: " .. shader.name)
     else
