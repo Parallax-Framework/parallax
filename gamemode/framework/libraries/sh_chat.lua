@@ -35,7 +35,7 @@ function ax.chat:Add(name, def)
             arguments = {
                 { name = "message", type = ax.type.text }
             },
-            OnRun = function(cmd, client, message)
+            OnRun = function(client, message)
                 if ( !isstring(message) or message == "" ) then
                     return
                 end
@@ -54,8 +54,15 @@ end
 
 if ( SERVER ) then
     function ax.chat:Send(client, chatType, ...)
-        if ( !IsValid(client) or !client:IsPlayer() ) then return end
-        if ( !isstring(chatType) or chatType == "" ) then return end
+        if ( !IsValid(client) or !client:IsPlayer() ) then
+            ax.util:PrintError("ax.chat:Send - Invalid client provided")
+            return
+        end
+
+        if ( !isstring(chatType) or chatType == "" ) then
+            ax.util:PrintError("ax.chat:Send - Invalid chat type provided")
+            return
+        end
 
         local def = self.registry[chatType]
         if ( !def ) then
@@ -66,11 +73,15 @@ if ( SERVER ) then
         local packaged = {}
         if ( isfunction(def.OnRun) ) then
             local result = { def:OnRun(client, ...) }
-            if ( #result == 0 ) then return end
+            if ( #result == 0 ) then
+                ax.util:PrintWarning("ax.chat:Send - Chat type \"" .. chatType .. "\" OnRun did not return any values")
+                return
+            end
 
             packaged = result
         else
-            packaged = { ... }
+            packaged = {...}
+            ax.util:PrintWarning("ax.chat:Send - Chat type \"" .. chatType .. "\" has no OnRun function defined")
         end
 
         local clients = {}

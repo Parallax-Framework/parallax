@@ -11,7 +11,8 @@
 
 ax.command:Add("ToggleRaise", {
     description = "Toggle whether the player is raising their weapon.",
-    OnRun = function(cmd, client, arg)
+    OnRun = function(client, arg)
+        print(cmd, client, arg)
         client:SetWeaponRaised(!client:IsWeaponRaised())
     end
 })

@@ -28,7 +28,7 @@ end
 -- @realm shared
 -- @param name string The command name (will be normalized)
 -- @param def table Command definition with OnRun, description, arguments, etc.
--- @usage ax.command:Add("test", { description = "Test command", OnRun = function(cmd, client) end })
+-- @usage ax.command:Add("test", { description = "Test command", OnRun = function(client) end })
 function ax.command:Add(name, def)
     if ( !isstring(name) or name == "" ) then
         ax.util:PrintError("ax.command:Add - Invalid command name provided")
@@ -308,8 +308,6 @@ function ax.command:Run(caller, name, rawArgs)
     else
         return false, "Command has no handler defined"
     end
-
-    table.insert( values, 1, def )
 
     -- Execute the command
     local success, result = pcall(handler, caller, unpack(values or {}))
