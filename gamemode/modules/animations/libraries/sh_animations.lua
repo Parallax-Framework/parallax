@@ -744,7 +744,7 @@ ax.animations.stored["player_metrocop"] = {
         [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH, ACT_WALK_CROUCH},
         [ACT_MP_JUMP] = {"jump_slam", "jump_melee"},
         ["land"] = "jump_land",
-        ["attack"] = "swinggesture"
+        ["shoot"] = "swinggesture"
     }
 }
 
