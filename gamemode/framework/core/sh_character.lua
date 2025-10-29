@@ -109,8 +109,8 @@ ax.character:RegisterVar("faction", {
                 ax.gui.main.create:NavigateToNextTab(parent)
             end
 
-            local banner = v.image or hook.Run("GetFactionBanner", v.index) or "gamepadui/hl2/chapter14"
-            if ( isstring( banner ) ) then
+            local banner = v.image or hook.Run("GetFactionBanner", v.index) or "parallax/banners/unknown.png"
+            if ( isstring(banner) ) then
                 banner = ax.util:GetMaterial(banner)
             end
 
