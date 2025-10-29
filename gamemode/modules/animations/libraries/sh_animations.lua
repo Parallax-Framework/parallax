@@ -47,7 +47,8 @@ ax.animations.stored["citizen_male"] = {
         [ACT_MP_CROUCH_IDLE] = {ACT_COVER_LOW, ACT_COVER_LOW},
         [ACT_MP_WALK] = {ACT_WALK, ACT_WALK_AIM_RIFLE_STIMULATED},
         [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH, ACT_WALK_CROUCH_AIM_RIFLE},
-        [ACT_MP_RUN] = {ACT_RUN, ACT_RUN_AIM_RIFLE_STIMULATED}
+        [ACT_MP_RUN] = {ACT_RUN, ACT_RUN_AIM_RIFLE_STIMULATED},
+        ["land"] = "jump_holding_land"
     },
     ["pistol"] = {
         [ACT_MP_STAND_IDLE] = {ACT_IDLE, ACT_RANGE_ATTACK_PISTOL},
@@ -55,8 +56,9 @@ ax.animations.stored["citizen_male"] = {
         [ACT_MP_WALK] = {ACT_WALK, ACT_WALK_AIM_RIFLE_STIMULATED},
         [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH, ACT_WALK_CROUCH_AIM_RIFLE},
         [ACT_MP_RUN] = {ACT_RUN, ACT_RUN_AIM_RIFLE_STIMULATED},
-        ["attack"] = ACT_GESTURE_RANGE_ATTACK_PISTOL,
-        ["attack"] = ACT_RELOAD_PISTOL
+        ["shoot"] = "gesture_shoot_pistol",
+        ["reload"] = "gesture_reload_357",
+        ["land"] = "jump_holding_land"
     },
     ["smg"] = {
         [ACT_MP_STAND_IDLE] = {ACT_IDLE_SMG1_RELAXED, ACT_IDLE_ANGRY_SMG1},
@@ -64,8 +66,9 @@ ax.animations.stored["citizen_male"] = {
         [ACT_MP_WALK] = {ACT_WALK_RIFLE_RELAXED, ACT_WALK_AIM_RIFLE_STIMULATED},
         [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH_RIFLE, ACT_WALK_CROUCH_AIM_RIFLE},
         [ACT_MP_RUN] = {ACT_RUN_RIFLE_RELAXED, ACT_RUN_AIM_RIFLE_STIMULATED},
-        ["attack"] = ACT_GESTURE_RANGE_ATTACK_SMG1,
-        ["reload"] = ACT_GESTURE_RELOAD_SMG1
+        ["shoot"] = "gesture_shoot_smg1",
+        ["reload"] = "gesture_reload_smg1",
+        ["land"] = "jump_holding_land"
     },
     ["shotgun"] = {
         [ACT_MP_STAND_IDLE] = {ACT_IDLE_SHOTGUN_RELAXED, ACT_IDLE_ANGRY_SMG1},
@@ -73,7 +76,10 @@ ax.animations.stored["citizen_male"] = {
         [ACT_MP_WALK] = {ACT_WALK_RIFLE_RELAXED, ACT_WALK_AIM_RIFLE_STIMULATED},
         [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH_RIFLE, ACT_WALK_CROUCH_RIFLE},
         [ACT_MP_RUN] = {ACT_RUN_RIFLE_RELAXED, ACT_RUN_AIM_RIFLE_STIMULATED},
-        ["attack"] = ACT_GESTURE_RANGE_ATTACK_SHOTGUN
+        ["shoot"] = "gesture_shoot_shotgun",
+        ["shoot_crouch"] = "gesture_shoot_shotgun_crouch",
+        ["reload"] = "gesture_reload_shotgun",
+        ["land"] = "jump_holding_land"
     },
     ["ar2"] = {
         [ACT_MP_STAND_IDLE] = {ACT_IDLE_SMG1_RELAXED, ACT_IDLE_ANGRY_SMG1},
@@ -81,16 +87,9 @@ ax.animations.stored["citizen_male"] = {
         [ACT_MP_WALK] = {ACT_WALK_RIFLE_RELAXED, ACT_WALK_AIM_RIFLE_STIMULATED},
         [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH_RIFLE, ACT_WALK_CROUCH_AIM_RIFLE},
         [ACT_MP_RUN] = {ACT_RUN_RIFLE_RELAXED, ACT_RUN_AIM_RIFLE_STIMULATED},
-        ["attack"] = ACT_GESTURE_RANGE_ATTACK_SMG1,
-        ["reload"] = ACT_GESTURE_RELOAD_SMG1
-    },
-    ["grenade"] = {
-        [ACT_MP_STAND_IDLE] = {ACT_IDLE, ACT_IDLE_MANNEDGUN},
-        [ACT_MP_CROUCH_IDLE] = {ACT_COVER_LOW, ACT_RANGE_AIM_SMG1_LOW},
-        [ACT_MP_WALK] = {ACT_WALK, ACT_WALK_AIM_RIFLE_STIMULATED},
-        [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH, ACT_WALK_CROUCH_AIM_RIFLE},
-        [ACT_MP_RUN] = {ACT_RUN, ACT_RUN_RIFLE_STIMULATED},
-        ["attack"] = ACT_RANGE_ATTACK_THROW
+        ["shoot"] = "gesture_shoot_ar2",
+        ["reload"] = "gesture_reload_ar2",
+        ["land"] = "jump_holding_land"
     },
     ["melee"] = {
         [ACT_MP_STAND_IDLE] = {ACT_IDLE, ACT_IDLE_ANGRY_MELEE},
@@ -98,15 +97,18 @@ ax.animations.stored["citizen_male"] = {
         [ACT_MP_WALK] = {ACT_WALK, ACT_WALK_AIM_RIFLE},
         [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH, ACT_WALK_CROUCH},
         [ACT_MP_RUN] = {ACT_RUN, ACT_RUN},
-        ["attack"] = ACT_MELEE_ATTACK_SWING
+        ["shoot"] = "swing",
+        ["land"] = "jump_holding_land"
     },
-    ["glide"] = ACT_GLIDE,
-    ["vehicle"] = {
-        ["prop_vehicle_prisoner_pod"] = {"podpose", Vector(-3, 0, 0)},
-        ["prop_vehicle_jeep"] = {ACT_BUSY_SIT_CHAIR, Vector(14, 0, -14)},
-        ["prop_vehicle_airboat"] = {ACT_BUSY_SIT_CHAIR, Vector(8, 0, -20)},
-        ["chair"] = {ACT_BUSY_SIT_CHAIR, Vector(1, 0, -23)}
-    },
+    ["grenade"] = {
+        [ACT_MP_STAND_IDLE] = {ACT_IDLE, ACT_IDLE_MANNEDGUN},
+        [ACT_MP_CROUCH_IDLE] = {ACT_COVER_LOW, ACT_RANGE_AIM_SMG1_LOW},
+        [ACT_MP_WALK] = {ACT_WALK, ACT_WALK_AIM_RIFLE_STIMULATED},
+        [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH, ACT_WALK_CROUCH_AIM_RIFLE},
+        [ACT_MP_RUN] = {ACT_RUN, ACT_RUN_RIFLE_STIMULATED},
+        ["shoot"] = "grenthrow_gesture",
+        ["land"] = "jump_holding_land"
+    }
 }
 
 ax.animations.stored["citizen_female"] = {
