@@ -250,7 +250,8 @@ ax.animations.stored["metrocop"] = {
         [ACT_MP_RUN] = {"run_all_unarmed", "run_all_unarmed"},
         [ACT_MP_CROUCH_IDLE] = {ACT_COVER_PISTOL_LOW, ACT_COVER_SMG1_LOW},
         [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH, ACT_WALK_CROUCH},
-        ["shoot"] = "swinggesture"
+        ["shoot"] = "swinggesture",
+        ["land"] = "jump_holding_land"
     },
     ["pistol"] = {
         [ACT_MP_STAND_IDLE] = {{"pistolidle1", "pistolidle2", "pistolidle3"}, "pistolangryidle2"},
@@ -259,7 +260,8 @@ ax.animations.stored["metrocop"] = {
         [ACT_MP_CROUCH_IDLE] = {ACT_COVER_PISTOL_LOW, ACT_COVER_PISTOL_LOW},
         [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH, ACT_WALK_CROUCH},
         ["shoot"] = "gesture_shoot_pistol",
-        ["reload"] = "gesture_reload_pistol"
+        ["reload"] = "gesture_reload_357",
+        ["land"] = "jump_holding_land"
     },
     ["smg"] = {
         [ACT_MP_STAND_IDLE] = {{"smg1idle1", "smg1idle2"}, "smg1angryidle1"},
@@ -277,6 +279,7 @@ ax.animations.stored["metrocop"] = {
         [ACT_MP_CROUCH_IDLE] = {ACT_COVER_SMG1_LOW, ACT_COVER_SMG1_LOW},
         [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH, ACT_WALK_CROUCH},
         ["shoot"] = "gesture_shoot_shotgun",
+        ["shoot_crouch"] = "gesture_shoot_shotgun_crouch",
         ["reload"] = "gesture_reload_shotgun"
     },
     ["ar2"] = {
@@ -285,8 +288,8 @@ ax.animations.stored["metrocop"] = {
         [ACT_MP_RUN] = {"run_hold_ar2", "run_aiming_ar2_all"},
         [ACT_MP_CROUCH_IDLE] = {ACT_COVER_SMG1_LOW, ACT_COVER_SMG1_LOW},
         [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH, ACT_WALK_CROUCH},
-        ["shoot"] = "gesture_shoot_ar2",
-        ["reload"] = "gesture_reload_ar2"
+        ["shoot"] = "gesture_shoot_rpg",
+        ["reload"] = "gesture_reload_smg1"
     },
     ["melee"] = {
         [ACT_MP_STAND_IDLE] = {{"batonidle1", "batonidle2"}, "batonangryidle1"},
@@ -294,7 +297,8 @@ ax.animations.stored["metrocop"] = {
         [ACT_MP_RUN] = {"run_all", "run_all"},
         [ACT_MP_CROUCH_IDLE] = {ACT_COVER_PISTOL_LOW, ACT_COVER_PISTOL_LOW},
         [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH, ACT_WALK_CROUCH},
-        ["shoot"] = "swinggesture"
+        ["shoot"] = "swinggesture",
+        ["land"] = "jump_holding_land"
     },
     ["grenade"] = {
         [ACT_MP_STAND_IDLE] = {{"batonidle1", "batonidle2"}, "batonangryidle1"},
@@ -302,7 +306,8 @@ ax.animations.stored["metrocop"] = {
         [ACT_MP_RUN] = {"run_all", "run_all"},
         [ACT_MP_CROUCH_IDLE] = {ACT_COVER_PISTOL_LOW, ACT_COVER_PISTOL_LOW},
         [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH, ACT_WALK_CROUCH},
-        ["attack"] = "swinggesture"
+        ["shoot"] = "grenthrow_gesture",
+        ["land"] = "jump_holding_land"
     }
 }
 
