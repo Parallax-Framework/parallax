@@ -25,6 +25,8 @@ include("framework/boot.lua")
 hook.Remove("OnEntityCreated", "CreateWidgets")
 hook.Remove("PlayerTick", "TickWidgets")
 
+resource.AddWorkshop(3479969076) -- Parallax Content
+
 resource.AddFile("materials/parallax/banners/unknown.png")
 resource.AddFile("materials/parallax/icons/armor.png")
 resource.AddFile("materials/parallax/icons/health.png")
