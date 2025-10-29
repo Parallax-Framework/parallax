@@ -187,7 +187,7 @@ function ax.util:CreateStore(spec, oldStore)
     -- @param key string Setting key
     -- @param value any New value
     -- @param bNoSave boolean Optional; when true, skip persistence
-    -- @return boolean True if the value changed, false otherwise
+    -- @return boolean True if the value changed, false otherwise along with a reason
     function store:Set(key, value, bNoSave)
         if ( !isstring(key) ) then
             ax.util:PrintDebug(spec.name, " Set: Invalid key")
@@ -227,9 +227,10 @@ function ax.util:CreateStore(spec, oldStore)
             oldValue = store.values[key]
         end
 
-        if ( oldValue == coerced ) then
-            return false
-        end
+        -- if ( oldValue == coerced ) then
+        --     ax.util:PrintDebug(spec.name, " Set: ", key, " = ", coerced, " (no change)")
+        --     return false
+        -- end
 
         store.values[key] = coerced
 
