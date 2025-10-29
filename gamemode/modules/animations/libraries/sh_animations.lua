@@ -180,7 +180,7 @@ ax.animations.stored["overwatch"] = {
         [ACT_MP_WALK] = {"walkunarmed_all", ACT_WALK_RIFLE},
         [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH_RIFLE, ACT_WALK_CROUCH_RIFLE},
         [ACT_MP_RUN] = {ACT_RUN_AIM_RIFLE, ACT_RUN_AIM_RIFLE},
-        ["shoot"] = "gesture_shoot_357"
+        ["land"] = "jump_holding_land"
     },
     ["pistol"] = {
         [ACT_MP_STAND_IDLE] = {"idle_unarmed", ACT_IDLE_ANGRY_SMG1},
@@ -189,7 +189,8 @@ ax.animations.stored["overwatch"] = {
         [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH_RIFLE, ACT_WALK_CROUCH_RIFLE},
         [ACT_MP_RUN] = {ACT_RUN_AIM_RIFLE, ACT_RUN_AIM_RIFLE},
         ["shoot"] = "gesture_shoot_pistol",
-        ["reload"] = "gesture_reload_357"
+        ["reload"] = "gesture_reload_357",
+        ["land"] = "jump_holding_land"
     },
     ["smg"] = {
         [ACT_MP_STAND_IDLE] = {ACT_IDLE_SMG1, ACT_IDLE_ANGRY_SMG1},
@@ -198,7 +199,8 @@ ax.animations.stored["overwatch"] = {
         [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH_RIFLE, ACT_WALK_CROUCH_RIFLE},
         [ACT_MP_RUN] = {ACT_RUN_RIFLE, ACT_RUN_AIM_RIFLE},
         ["shoot"] = "gesture_shoot_smg1",
-        ["reload"] = "gesture_reload_smg1"
+        ["reload"] = "gesture_reload_smg1",
+        ["land"] = "jump_holding_land"
     },
     ["shotgun"] = {
         [ACT_MP_STAND_IDLE] = {ACT_IDLE_SMG1, ACT_IDLE_ANGRY_SHOTGUN},
@@ -207,7 +209,9 @@ ax.animations.stored["overwatch"] = {
         [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH_RIFLE, ACT_WALK_CROUCH_RIFLE},
         [ACT_MP_RUN] = {ACT_RUN_RIFLE, ACT_RUN_AIM_SHOTGUN},
         ["shoot"] = "gesture_shoot_shotgun",
-        ["reload"] = "gesture_reload_shotgun"
+        ["shoot_crouch"] = "gesture_shoot_shotgun_crouch",
+        ["reload"] = "gesture_reload_shotgun",
+        ["land"] = "jump_holding_land"
     },
     ["ar2"] = {
         [ACT_MP_STAND_IDLE] = {ACT_IDLE_SMG1, ACT_IDLE_ANGRY_SMG1},
@@ -216,15 +220,8 @@ ax.animations.stored["overwatch"] = {
         [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH_RIFLE, ACT_WALK_CROUCH_RIFLE},
         [ACT_MP_RUN] = {ACT_RUN_RIFLE, ACT_RUN_AIM_RIFLE},
         ["shoot"] = "gesture_shoot_ar2",
-        ["reload"] = "gesture_reload_ar2"
-    },
-    ["grenade"] = {
-        [ACT_MP_STAND_IDLE] = {"idle_unarmed", ACT_IDLE_ANGRY},
-        [ACT_MP_CROUCH_IDLE] = {ACT_CROUCHIDLE, ACT_CROUCHIDLE},
-        [ACT_MP_WALK] = {"walkunarmed_all", ACT_WALK_RIFLE},
-        [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH_RIFLE, ACT_WALK_CROUCH_RIFLE},
-        [ACT_MP_RUN] = {ACT_RUN_AIM_RIFLE, ACT_RUN_AIM_RIFLE},
-        ["attack"] = "gesture_shoot_357"
+        ["reload"] = "gesture_reload_ar2",
+        ["land"] = "jump_holding_land"
     },
     ["melee"] = {
         [ACT_MP_STAND_IDLE] = {"idle_unarmed", ACT_IDLE_ANGRY},
@@ -232,9 +229,18 @@ ax.animations.stored["overwatch"] = {
         [ACT_MP_WALK] = {"walkunarmed_all", ACT_WALK_RIFLE},
         [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH_RIFLE, ACT_WALK_CROUCH_RIFLE},
         [ACT_MP_RUN] = {ACT_RUN_AIM_RIFLE, ACT_RUN_AIM_RIFLE},
-        ["attack"] = ACT_MELEE_ATTACK_SWING_GESTURE
+        ["shoot"] = "swinggesture",
+        ["land"] = "jump_holding_land"
     },
-    ["glide"] = ACT_GLIDE
+    ["grenade"] = {
+        [ACT_MP_STAND_IDLE] = {"idle_unarmed", ACT_IDLE_ANGRY},
+        [ACT_MP_CROUCH_IDLE] = {ACT_CROUCHIDLE, ACT_CROUCHIDLE},
+        [ACT_MP_WALK] = {"walkunarmed_all", ACT_WALK_RIFLE},
+        [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH_RIFLE, ACT_WALK_CROUCH_RIFLE},
+        [ACT_MP_RUN] = {ACT_RUN_AIM_RIFLE, ACT_RUN_AIM_RIFLE},
+        ["shoot"] = "grenthrow_gesture",
+        ["land"] = "jump_holding_land"
+    }
 }
 
 ax.animations.stored["metrocop"] = {
