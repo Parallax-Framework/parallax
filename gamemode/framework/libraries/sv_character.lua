@@ -99,6 +99,21 @@ end
 -- @param character table The character object to load
 -- @usage ax.character:Load(player, characterObject)
 function ax.character:Load(client, character)
+    if ( !IsValid(client) ) then
+        ax.util:PrintError("Attempted to load character ID " .. character.id .. " for an invalid player")
+        return
+    end
+
+    if ( !istable(character) or character.id == nil ) then
+        ax.util:PrintError("Attempted to load an invalid character for player " .. client:SteamID64())
+        return
+    end
+
+    if ( character:GetSchema() != engine.ActiveGamemode() ) then
+        ax.util:PrintError("Attempted to load character ID " .. character.id .. " with mismatched schema (" .. character:GetSchema() .. " != " .. engine.ActiveGamemode() .. ")")
+        return
+    end
+
     local clientData = client:GetTable()
     character.player = client
 
@@ -154,6 +169,12 @@ function ax.character:Restore(client, callback)
         end
 
         for i = 1, #result do
+            local schema = result[i].schema
+            if ( schema != engine.ActiveGamemode() ) then
+                ax.util:PrintDebug("Skipping character ID " .. result[i].id .. " due to schema mismatch (" .. schema .. " != " .. engine.ActiveGamemode() .. ")")
+                continue
+            end
+
             local character = setmetatable({}, ax.character.meta)
             character.id = result[i].id
             character.vars = {}
@@ -199,6 +220,28 @@ function ax.character:Delete(id, callback)
             end
 
             return
+        end
+
+        if ( result[1] == nil ) then
+            ax.util:PrintError("No character found with ID " .. id .. " to delete")
+            if ( isfunction(callback) ) then
+                callback(false)
+            end
+
+            return
+        end
+
+        if ( result[1].schema != engine.ActiveGamemode() ) then
+            ax.util:PrintError("Attempted to delete character ID " .. id .. " with mismatched schema (" .. result[1].schema .. " != " .. engine.ActiveGamemode() .. ")")
+            if ( isfunction(callback) ) then
+                callback(false)
+            end
+
+            return
+        end
+
+        if ( ax.character.instances[id] ) then
+            ax.character.instances[id] = nil
         end
 
         ax.util:PrintDebug(color_success, "Character with ID " .. id .. " deleted successfully")
