@@ -15,9 +15,8 @@ include("shared.lua")
 
 util.AddNetworkString("ax.hands.reset")
 net.Receive("ax.hands.reset", function(length, client)
-    if ( !client:RateLimit("hands", 0.5) ) then return end
-
     if ( !IsValid(client) ) then return end
+    if ( !client:RateLimit("hands", 0.5) ) then return end
 
     local weapon = client:GetActiveWeapon()
     if ( !IsValid(weapon) ) then return end
@@ -182,7 +181,7 @@ function SWEP:Pickup()
 
         holdingPhysicsObject:AddGameFlag(FVPHYSICS_PLAYER_HELD)
 
-        local maxForce = ax.config:Get("hands.max.Force", 16500)
+        local maxForce = ax.config:Get("handsMaxForce", 16500)
         local vSize = self.axHoldingEntity:OBBMaxs() - self.axHoldingEntity:OBBMins()
         if ( self.axHoldingEntity:IsRagdoll() or math.max(vSize.x, vSize.y, vSize.z) > 60 ) then
             self.axConstraint = constraint.Ballsocket(self.axCarry, self.axHoldingEntity, 0, bone, holdingPhysicsObject:WorldToLocal(pos), maxForce / 3, 0, 1)

@@ -225,3 +225,39 @@ ax.config:Add("jumpPower", ax.type.number, 175, {
         end
     end
 })
+
+ax.config:Add("handsMaxForce", ax.type.number, 16500, {
+    description = "Maximum force applied by hands",
+    min = 1000,
+    max = 50000,
+    decimals = 0,
+    category = "gameplay",
+    subCategory = "interaction"
+})
+
+ax.config:Add("handsMaxThrowForce", ax.type.number, 150, {
+    description = "Maximum throw force applied by hands",
+    min = 100,
+    max = 5000,
+    decimals = 0,
+    category = "gameplay",
+    subCategory = "interaction"
+})
+
+ax.config:Add("handsRange", ax.type.number, 96, {
+    description = "Maximum range for hands interaction",
+    min = 50,
+    max = 500,
+    decimals = 0,
+    category = "gameplay",
+    subCategory = "interaction"
+})
+
+ax.config:Add("handsMaxCarry", ax.type.number, 160, {
+    description = "Maximum mass (in kg) that can be carried with hands",
+    min = 10,
+    max = 1000,
+    decimals = 0,
+    category = "gameplay",
+    subCategory = "interaction"
+})
