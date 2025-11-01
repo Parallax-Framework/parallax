@@ -15,7 +15,6 @@
 
 ax.bind = ax.bind or {}
 ax.bind.stored = ax.bind.stored or {}
-ax.bind.activeButtons = 0
 
 ax.bind.translations = {
     [KEY_NONE] = "NONE",
@@ -170,58 +169,117 @@ function ax.bind:Translate( ... )
     return table.concat(parts, " + ")
 end
 
---- Register a key bind with press and release callbacks.
--- Triggers when all buttons in the key combination are held and one of them is pressed.
--- @realm client
--- @param keys number Bitmask of KEY* constants representing the keys to bind
--- @param callbackPressed function Function called when the key combination is pressed
--- @param callbackReleased function Optional function called when keys are released
--- @return boolean True if the bind was registered, false otherwise
--- @usage ax.bind:Bind(bit.bor(KEY_LALT, KEY_E), function() print("Alt+E pressed") end)
-function ax.bind:Bind(keys, callbackPressed, callbackReleased)
-    if ( !isnumber(keys) or keys <= 0 ) then
-        ax.util:PrintError("Invalid keys provided to ax.bind:Bind()")
-        return false
+--[[
+ax.bind:Register( { KEY_LCTRL, KEY_K }, function()
+    print("You pressed LCTRL + K")
+end, function()
+    print("You released LCTRL + K")
+end )
+--]]
+
+--- Register a key combination with press and release callbacks.
+-- @param keys A table of KEY* constants representing the key combination.
+-- @param onPress A function to call when the key combination is pressed.
+-- @param onRelease A function to call when the key combination is released.
+function ax.bind:Register( keys, onPress, onRelease )
+    if ( !istable(keys) ) then
+        error("ax.bind:Register: 'keys' must be a table of KEY* constants", 2)
     end
 
-    if ( istable(self.stored[keys]) ) then
-        ax.util:PrintWarning("Overwriting existing bind for keys '" .. tostring(keys) .. "'")
+    if ( keys[1] == nil ) then
+        error("ax.bind:Register: 'keys' table must contain at least one key", 2)
     end
 
-    if ( !isnumber(keys) or keys <= 0 ) then
-        ax.util:PrintError("Invalid keys provided to ax.bind:Bind()")
-        return false
+    for i = 1, #keys do
+        local key = keys[i]
+        if ( !isnumber(key) or !self.translations[key] ) then
+            error("ax.bind:Register: 'keys' table must only contain KEY* constants", 2)
+        end
     end
 
-    if ( !isfunction(callbackPressed) ) then
-        ax.util:PrintError("Invalid callback provided to ax.bind:Bind()")
-        return false
-    end
+    local keyString = self:Translate( unpack(keys) )
 
-    self.stored[keys] = { callbackPressed = callbackPressed, callbackReleased = callbackReleased }
-    return true
+    self.stored[keyString] = {
+        keys = keys,
+        onPress = isfunction(onPress) and onPress or function() end,
+        onRelease = isfunction(onRelease) and onRelease or function() end,
+        isActive = false,
+    }
 end
 
--- Clean up existing hooks to prevent duplicates on reload
-hook.Remove("PlayerButtonDown", "ax.bind")
-hook.Remove("PlayerButtonUp", "ax.bind")
-
 hook.Add("PlayerButtonDown", "ax.bind", function(client, key)
-    local buttons = bit.bor(ax.bind.activeButtons, key)
-    ax.bind.activeButtons = buttons
+    -- Check all registered bindings to see if they should activate
+    for keyString, binding in pairs(ax.bind.stored) do
+        if ( binding.isActive ) then continue end
 
-    local bind = ax.bind.stored[ buttons ]
-    if ( istable( bind ) and isfunction( bind.callbackPressed ) ) then
-        bind:callbackPressed()
+        -- Only check bindings that contain the pressed key
+        local containsKey = false
+        for j = 1, #binding.keys do
+            if ( binding.keys[j] == key ) then
+                containsKey = true
+                break
+            end
+        end
+        if ( !containsKey ) then continue end
+
+        -- Check if all keys in this binding are pressed
+        local allPressed = true
+        for j = 1, #binding.keys do
+            local bindKey = binding.keys[j]
+            if ( !input.IsKeyDown(bindKey) ) then
+                allPressed = false
+                break
+            end
+        end
+
+        if ( allPressed ) then
+            binding.isActive = true
+            binding.onPress()
+        end
     end
 end)
 
 hook.Add("PlayerButtonUp", "ax.bind", function(client, key)
-    local bind = ax.bind.stored[ ax.bind.activeButtons ]
-    if ( istable( bind ) and isfunction( bind.callbackReleased ) ) then
-        bind:callbackReleased()
-    end
+    -- Check all active bindings to see if they should deactivate
+    for keyString, binding in pairs(ax.bind.stored) do
+        if ( !binding.isActive ) then continue end
 
-    local buttons = bit.band( ax.bind.activeButtons, bit.bnot( key ) )
-    ax.bind.activeButtons = buttons
+        -- Only check bindings that contain the released key
+        local containsKey = false
+        for j = 1, #binding.keys do
+            if ( binding.keys[j] == key ) then
+                containsKey = true
+                break
+            end
+        end
+
+        if ( !containsKey ) then continue end
+
+        -- Check if any key in this binding was released
+        local anyReleased = false
+        for j = 1, #binding.keys do
+            local bindKey = binding.keys[j]
+            if ( !input.IsKeyDown(bindKey) ) then
+                anyReleased = true
+                break
+            end
+        end
+
+        if ( anyReleased ) then
+            binding.isActive = false
+            binding.onRelease()
+        end
+    end
 end)
+
+ax.bind:Register( {KEY_J, KEY_G }, function()
+    print("You pressed J + G")
+end, function()
+    print("You released J + G")
+end )
+
+ax.bind:Register( {KEY_O, KEY_P }, function()
+    print("You pressed O + P")
+end, function()
+    print("You released O + P")
+end )
