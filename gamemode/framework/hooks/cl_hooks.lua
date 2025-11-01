@@ -9,10 +9,19 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
-function GM:ScoreboardShow()
-    if ( hook.Run("ShouldRenderMainMenu") ) then
-        return false
+
+function GM:Think()
+    if ( !vgui.CursorVisible() ) then
+        if ( !IsValid(ax.gui.main) and input.IsKeyDown(KEY_F1) ) then
+            vgui.Create("ax.main")
+        end
+
+        hook.Run("OnMenuInputCheck")
     end
+end
+
+function GM:ScoreboardShow()
+    if ( hook.Run("ShouldShowTab") == false ) then return end
 
     if ( !IsValid(ax.gui.tab) ) then
         vgui.Create("ax.tab")
