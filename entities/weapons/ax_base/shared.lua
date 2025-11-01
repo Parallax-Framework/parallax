@@ -124,7 +124,7 @@ function SWEP:GetIronSights()
 end
 
 function SWEP:IsEmpty()
-    return tobool(self:Clip1() <= 0)
+    return self:Clip1() <= 0
 end
 
 function SWEP:CanPrimaryAttack()
