@@ -119,7 +119,7 @@ local function VelocityRemove(entity, normalize)
     else
         local physicsObject = entity:GetPhysicsObject()
         local vel = IsValid(physicsObject) and physicsObject:GetVelocity() or entity:GetVelocity()
-        local len = math.min(ax.config:Get("hands.max.throw", 150), vel:Length2D())
+        local len = math.min(ax.config:Get("handsMaxThrowForce", 150), vel:Length2D())
 
         vel:Normalize()
         vel = vel * len
@@ -293,7 +293,7 @@ function SWEP:SecondaryAttack()
 
     local data = {}
     data.start = owner:GetShootPos()
-    data.endpos = data.start + owner:GetAimVector() * ax.config:Get("hands.range", 96)
+    data.endpos = data.start + owner:GetAimVector() * ax.config:Get("handsRange", 96)
     data.mask = MASK_SHOT
     data.filter = {self, owner}
     local traceData = util.TraceLine(data)
@@ -374,7 +374,7 @@ function SWEP:AllowPickup(target)
     return ( IsValid(physicsObject)
     and IsValid(owner)
     and !physicsObject:HasGameFlag(FVPHYSICS_NO_PLAYER_PICKUP)
-    and physicsObject:GetMass() < ax.config:Get("hands.max.Carry", 160)
+    and physicsObject:GetMass() < ax.config:Get("handsMaxCarry", 160)
     and !self:IsEntityStoodOn(target)
     and target.CanPickup != false )
     and hook.Run("CanPlayerPickup", owner, target) != false
