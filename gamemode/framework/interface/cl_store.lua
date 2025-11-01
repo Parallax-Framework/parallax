@@ -459,6 +459,17 @@ function PANEL:SetKey(key)
     self.bInitializing = false
 end
 
+function PANEL:UpdateDisplay()
+    local store = self:GetStore()
+    if ( !store ) then
+        self.slider:SetValue(0)
+        return
+    end
+
+    local value = store:Get(self.key)
+    self.slider:SetValue(value)
+end
+
 vgui.Register("ax.store.number", PANEL, "ax.store.base")
 
 -- String store element
