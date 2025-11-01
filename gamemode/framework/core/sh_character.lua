@@ -188,7 +188,7 @@ ax.character:RegisterVar("name", {
     field = "name",
     fieldType = ax.type.string,
     default = "Unnamed Character",
-    sortOrder = 1,
+    sortOrder = 10,
     validate = function(this, value, payload, client)
         if ( !isstring(value) or value == "" ) then
             return false, "Character name is required and cannot be left empty. Please enter a valid name for your character."
@@ -308,7 +308,7 @@ ax.character:RegisterVar("description", {
     field = "description",
     fieldType = ax.type.string,
     default = "This is a character description.",
-    sortOrder = 2,
+    sortOrder = 20,
     validate = function(this, value, payload, client)
         if ( !isstring(value) or value == "" ) then
             return false, "Character description is required and cannot be left empty. Please provide a description that tells other players about your character's appearance, personality, or background."
@@ -380,7 +380,7 @@ ax.character:RegisterVar("model", {
     field = "model",
     fieldType = ax.type.string,
     default = "models/player.mdl",
-    sortOrder = 3,
+    sortOrder = 30,
     validate = function(this, value, payload, client)
         if ( !isstring(value) or value == "" ) then
             return false, "You must select a character model before creating your character. Please choose one of the available models from the selection below."
@@ -422,10 +422,12 @@ ax.character:RegisterVar("model", {
         local option = container:Add("ax.text")
         option:SetFont("ax.regular.bold")
         option:SetText(utf8.upper(ax.util:UniqueIDToName(this.key)))
+        option:SetZPos(this.sortOrder - 1)
         option:Dock(TOP)
 
         local layout = container:Add("DIconLayout")
         layout:SetStretchHeight(true)
+        layout:SetZPos(this.sortOrder)
         layout:Dock(TOP)
         layout:DockMargin(0, 0, 0, ax.util:ScreenScaleH(16))
 
@@ -484,7 +486,7 @@ ax.character:RegisterVar("skin", {
     field = "skin",
     fieldType = ax.type.number,
     default = 0,
-    sortOrder = 4,
+    sortOrder = 40,
     validate = function(this, value, payload, client)
         if ( !tonumber(value) ) then
             return false, "You must select a valid skin number for your character model. Please use the slider to choose a skin variant (usually 0-16) that you prefer for your character's appearance."
@@ -507,6 +509,7 @@ ax.character:RegisterVar("skin", {
         local option = container:Add("ax.text")
         option:SetFont("ax.regular.bold")
         option:SetText(utf8.upper(ax.util:UniqueIDToName(this.key)))
+        option:SetZPos(this.sortOrder - 1)
         option:Dock(TOP)
 
         local slider = container:Add("DNumSlider")
@@ -514,6 +517,7 @@ ax.character:RegisterVar("skin", {
         slider:SetMax(16)
         slider:SetDecimals(0)
         slider:SetValue(payload.skin or 0)
+        slider:SetZPos(this.sortOrder)
         slider:Dock(TOP)
         slider:DockMargin(0, 0, 0, ax.util:ScreenScaleH(16))
         slider.OnValueChanged = function(_, value)

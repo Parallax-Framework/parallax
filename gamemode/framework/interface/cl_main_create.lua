@@ -41,9 +41,11 @@ end
 
 function PANEL:GetVars()
     local vars = table.Copy(ax.character.vars)
+    local sortOrder = 0
     for k, v in pairs(vars) do
         v.category = v.category or "misc"
-        v.sortOrder = v.sortOrder or 100
+        v.sortOrder = v.sortOrder or sortOrder
+        sortOrder = sortOrder + 2
     end
 
     return vars
@@ -214,10 +216,12 @@ function PANEL:PopulateVars(category)
             local option = container:Add("ax.text")
             option:SetFont("ax.regular.bold")
             option:SetText(utf8.upper(ax.util:UniqueIDToName(k)))
+            option:SetZPos(v.sortOrder - 1)
             option:Dock(TOP)
 
             local entry = container:Add("ax.text.entry")
             entry:SetPlaceholderText(v.default)
+            entry:SetZPos(v.sortOrder)
             entry:Dock(TOP)
             entry:DockMargin(0, 0, 0, ax.util:ScreenScaleH(16))
 
@@ -238,12 +242,15 @@ function PANEL:PopulateVars(category)
             local option = container:Add("ax.text")
             option:SetFont("ax.regular.bold")
             option:SetText(utf8.upper(ax.util:UniqueIDToName(k)))
+            option:SetZPos(v.sortOrder - 1)
             option:Dock(TOP)
 
             local slider = container:Add("DNumSlider")
-            slider:SetMin(0)
-            slider:SetMax(100)
+            slider:SetDecimals(v.decimals or 0)
+            slider:SetMin(v.min or 0)
+            slider:SetMax(v.max or 100)
             slider:SetValue(v.default)
+            slider:SetZPos(v.sortOrder)
             slider:Dock(TOP)
             slider:DockMargin(0, 0, 0, ax.util:ScreenScaleH(16))
 
