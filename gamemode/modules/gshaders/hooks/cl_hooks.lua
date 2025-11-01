@@ -108,7 +108,7 @@ function MODULE:OnOptionChanged(key, oldValue, newValue)
     elseif ( key == "shaderCSM" ) then
         SafeSetConVar(r_csm, csm and 1 or 0)
     elseif ( key == "shaderSSLR" ) then
-        SafeSetConVar(r_sslr, newValue and 1 or 0)
+        SafeSetConVar(r_sslr, sslr and 1 or 0)
     end
 end
 
