@@ -109,7 +109,7 @@ function ax.character:Load(client, character)
         return
     end
 
-    if ( character:GetSchema() != engine.ActiveGamemode() ) then
+    if ( !client:IsBot() and character:GetSchema() != engine.ActiveGamemode() ) then
         ax.util:PrintError("Attempted to load character ID " .. character.id .. " with mismatched schema (" .. character:GetSchema() .. " != " .. engine.ActiveGamemode() .. ")")
         return
     end
