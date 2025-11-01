@@ -451,7 +451,7 @@ function GM:OnPlayerItemAction(client, item, action)
     end
 end
 
-function GM:ShouldSendDeathNotice( attacker, inflictor, victim, flags )
+function GM:ShouldSendDeathNotice(attacker, inflictor, victim, flags)
     return false
 end
 
