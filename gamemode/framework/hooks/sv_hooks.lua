@@ -143,11 +143,11 @@ function GM:PlayerSpawn(client)
     client:RemoveAllItems()
 
     client:SetRelay("ax.ragdoll.index", -1)
-    client:SetSlowWalkSpeed(70)
-    client:SetWalkSpeed(90)
-    client:SetCrouchedWalkSpeed(0.7)
-    client:SetJumpPower(175)
-    client:SetRunSpeed(200)
+    client:SetSlowWalkSpeed(ax.config:Get("walkSlowSpeed"))
+    client:SetWalkSpeed(ax.config:Get("walkSpeed"))
+    client:SetCrouchedWalkSpeed(ax.config:Get("crouchedWalkSpeed"))
+    client:SetJumpPower(ax.config:Get("jumpPower"))
+    client:SetRunSpeed(ax.config:Get("runSpeed"))
 
     hook.Run("PlayerLoadout", client)
 end

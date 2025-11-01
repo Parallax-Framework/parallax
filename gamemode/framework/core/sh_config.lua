@@ -155,3 +155,73 @@ ax.config:Add("maxInventoryWeight", ax.type.number, 30.0, {
     category = "gameplay",
     subCategory = "inventory"
 })
+
+ax.config:Add("walkSpeed", ax.type.number, 90, {
+    description = "Default walking speed",
+    min = 50,
+    max = 500,
+    decimals = 0,
+    category = "gameplay",
+    subCategory = "movement",
+    OnChanged = function(_valOld, valNew)
+        for k, v in player.Iterator() do
+            v:SetWalkSpeed(valNew)
+        end
+    end
+})
+
+ax.config:Add("runSpeed", ax.type.number, 200, {
+    description = "Default running speed",
+    min = 100,
+    max = 600,
+    decimals = 0,
+    category = "gameplay",
+    subCategory = "movement",
+    OnChanged = function(_valOld, valNew)
+        for k, v in player.Iterator() do
+            v:SetRunSpeed(valNew)
+        end
+    end
+})
+
+ax.config:Add("walkSlowSpeed", ax.type.number, 70, {
+    description = "Default slow walking speed",
+    min = 20,
+    max = 300,
+    decimals = 0,
+    category = "gameplay",
+    subCategory = "movement",
+    OnChanged = function(_valOld, valNew)
+        for k, v in player.Iterator() do
+            v:SetSlowWalkSpeed(valNew)
+        end
+    end
+})
+
+ax.config:Add("crouchedWalkSpeed", ax.type.number, 0.7, {
+    description = "Default crouched walking speed",
+    min = 0.0,
+    max = 1.0,
+    decimals = 1,
+    category = "gameplay",
+    subCategory = "movement",
+    OnChanged = function(_valOld, valNew)
+        for k, v in player.Iterator() do
+            v:SetCrouchedWalkSpeed(valNew)
+        end
+    end
+})
+
+ax.config:Add("jumpPower", ax.type.number, 175, {
+    description = "Default jump power",
+    min = 100,
+    max = 500,
+    decimals = 0,
+    category = "gameplay",
+    subCategory = "movement",
+    OnChanged = function(_valOld, valNew)
+        for k, v in player.Iterator() do
+            v:SetJumpPower(valNew)
+        end
+    end
+})
