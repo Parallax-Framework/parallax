@@ -119,3 +119,19 @@ end
 
 function GM:CanPlayerInteractItem( client, item, action )
 end
+
+function GM:ShowHelp(client)
+    return false
+end
+
+function GM:ShowTeam(client)
+    return false
+end
+
+function GM:ShowSpare1(client)
+    return false
+end
+
+function GM:ShowSpare2(client)
+    return false
+end
