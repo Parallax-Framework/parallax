@@ -58,6 +58,13 @@ SWEP.IronSightsSensitivity = 0.5
 SWEP.IronSightsToggle = false
 SWEP.IronSightsDelay = 0.25
 
+-- Muzzle flash light configuration
+SWEP.MuzzleLightColor = Color(255, 200, 150)
+SWEP.MuzzleLightBrightness = 2
+SWEP.MuzzleLightSize = 256
+SWEP.MuzzleLightDecay = 1000
+SWEP.MuzzleLightDuration = 0.1
+
 -- View offset configuration (idle / lowered positioning)
 -- Can be overridden per-weapon (e.g. SWEP.ViewOffsetPos = Vector(x,y,z))
 SWEP.ViewOffsetPos = Vector(0, 0, 0)
@@ -165,6 +172,19 @@ function SWEP:PrimaryAttack()
     if ( CLIENT and IsFirstTimePredicted() ) then
         self:EmitSound(self.Primary.Sound, nil, nil, nil, CHAN_STATIC)
         owner:MuzzleFlash()
+
+        -- Add muzzle flash light
+        local dlight = DynamicLight(self:EntIndex())
+        if ( dlight ) then
+            dlight.pos = owner:GetShootPos() + owner:GetAimVector() * 30
+            dlight.r = self.MuzzleLightColor.r
+            dlight.g = self.MuzzleLightColor.g
+            dlight.b = self.MuzzleLightColor.b
+            dlight.brightness = self.MuzzleLightBrightness
+            dlight.Decay = self.MuzzleLightDecay
+            dlight.Size = self.MuzzleLightSize
+            dlight.DieTime = CurTime() + self.MuzzleLightDuration
+        end
     end
 
     -- Shared or server-side: shooting logic
