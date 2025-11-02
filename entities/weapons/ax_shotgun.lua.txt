@@ -21,6 +21,8 @@ SWEP.Base = "ax_base"  -- This tells the weapon to inherit from our enhanced bas
 SWEP.PrintName = "Parallax Shotgun"  -- The name that shows up in the spawn menu
 SWEP.Author = "Riggs"  -- Your name or team name
 SWEP.Category = "Parallax"  -- The category in the spawn menu
+SWEP.Spawnable = true -- Whether players can spawn this weapon
+SWEP.AdminOnly = false -- Whether only admins can spawn this weapon
 
 -- Primary fire settings - this controls how the weapon shoots
 SWEP.Primary = {
