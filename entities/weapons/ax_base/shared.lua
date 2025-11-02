@@ -85,6 +85,18 @@ SWEP.Reloading = {
     SoundEmpty = Sound("Weapon_Pistol.ReloadEmpty")
 }
 
+-- Shotgun reload configuration
+SWEP.ShotgunReload = false
+SWEP.ShotgunInsertAnim = ACT_VM_RELOAD
+SWEP.ShotgunPumpAnim = ACT_SHOTGUN_RELOAD_FINISH
+SWEP.ShotgunInsertSound = Sound("Weapon_Shotgun.Reload")
+SWEP.ShotgunPumpSound = Sound("Weapon_Shotgun.Special1")
+
+-- Pump after shoot configuration
+SWEP.PumpAfterShoot = false
+SWEP.PumpSound = Sound("Weapon_Shotgun.Special1")
+SWEP.PumpAnim = ACT_SHOTGUN_PUMP
+
 function SWEP:Precache()
     util.PrecacheSound(self.Primary.Sound)
     util.PrecacheModel(self.ViewModel)
@@ -161,6 +173,11 @@ function SWEP:PrimaryAttack()
 
     if ( !self:CanPrimaryAttack() ) then return end
 
+    -- Interrupt shotgun reload if shooting
+    if ( self:GetReloading() and self.ShotgunReload ) then
+        self:FinishShotgunReload()
+    end
+
     local delay = self.Primary.Delay
     if ( self.Primary.RPM ) then
         delay = 60 / self.Primary.RPM
@@ -200,6 +217,16 @@ function SWEP:PrimaryAttack()
     owner:SetAnimation(PLAYER_ATTACK1)
 
     self:PlayAnimation(self.Primary.Sequence, self.Primary.PlaybackRate)
+
+    -- Pump after shoot for shotguns
+    if ( self.PumpAfterShoot ) then
+        timer.Simple(0.1, function()
+            if ( IsValid(self) ) then
+                self:EmitSound(self.PumpSound, nil, nil, nil, CHAN_STATIC)
+                self:PlayAnimation(self.PumpAnim, 1)
+            end
+        end)
+    end
 end
 
 function SWEP:SecondaryAttack()
@@ -291,35 +318,84 @@ function SWEP:Reload()
     if ( !IsValid(owner) ) then return end
     if ( !self:CanReload() ) then return end
 
-    local anim = self.Reloading.Sequence
-    if ( self:IsEmpty() ) then
-        anim = self.Reloading.SequenceEmpty or anim
+    if ( self.ShotgunReload ) then
+        self:StartShotgunReload()
+    else
+        local anim = self.Reloading.Sequence
+        if ( self:IsEmpty() ) then
+            anim = self.Reloading.SequenceEmpty or anim
+        end
+
+        local rate = self.Reloading.PlaybackRate or 1
+        self:PlayAnimation(anim, rate)
+
+        local path = self.Reloading.Sound
+        if ( self:IsEmpty() ) then
+            path = self.Reloading.SoundEmpty or path
+        end
+
+        self:EmitSound(path, nil, nil, nil, CHAN_STATIC)
+
+        local duration = self:GetActiveAnimationDuration()
+        if ( duration > 0 ) then
+            self:SetReloading(true)
+
+            timer.Simple(duration, function()
+                if ( IsValid(self) ) then
+                    self:SetReloading(false)
+                end
+            end)
+        end
+
+        self:DefaultReload(ACT_VM_RELOAD)
     end
-
-    local rate = self.Reloading.PlaybackRate or 1
-    self:PlayAnimation(anim, rate)
-
-    local path = self.Reloading.Sound
-    if ( self:IsEmpty() ) then
-        path = self.Reloading.SoundEmpty or path
-    end
-
-    self:EmitSound(path, nil, nil, nil, CHAN_STATIC)
-
-    local duration = self:GetActiveAnimationDuration()
-    if ( duration > 0 ) then
-        self:SetReloading(true)
-
-        timer.Simple(duration, function()
-            if ( IsValid(self) ) then
-                self:SetReloading(false)
-            end
-        end)
-    end
-
-    self:DefaultReload(ACT_VM_RELOAD)
 end
 
 function SWEP:CanReload()
     return self:Clip1() < self:GetMaxClip1() and self:Ammo1() > 0
+end
+
+function SWEP:StartShotgunReload()
+    if ( !self:CanReload() or self:GetReloading() ) then
+        return
+    end
+
+    self:SetReloading(true)
+    self:InsertShell()
+end
+
+function SWEP:InsertShell()
+    if ( self:Clip1() >= self:GetMaxClip1() or self:Ammo1() <= 0 ) then
+        self:FinishShotgunReload()
+        return
+    end
+
+    local owner = self:GetOwner()
+    if ( IsValid(owner) and owner:IsPlayer() ) then
+        owner:RemoveAmmo(1, self.Primary.Ammo)
+    end
+
+    self:SetClip1(self:Clip1() + 1)
+
+    self:PlayAnimation(self.ShotgunInsertAnim, 1)
+    self:EmitSound(self.ShotgunInsertSound, nil, nil, nil, CHAN_STATIC)
+
+    local duration = self:GetActiveAnimationDuration()
+    timer.Simple(duration, function()
+        if ( IsValid(self) ) then
+            self:InsertShell()
+        end
+    end)
+end
+
+function SWEP:FinishShotgunReload()
+    self:PlayAnimation(self.ShotgunPumpAnim, 1)
+    self:EmitSound(self.ShotgunPumpSound, nil, nil, nil, CHAN_STATIC)
+
+    local duration = self:GetActiveAnimationDuration()
+    timer.Simple(duration, function()
+        if ( IsValid(self) ) then
+            self:SetReloading(false)
+        end
+    end)
 end
