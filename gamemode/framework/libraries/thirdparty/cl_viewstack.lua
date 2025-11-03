@@ -285,8 +285,15 @@ hook.Add("CalcView", "ax.viewstack.CalcView", function(client, origin, angles, f
     end
 end)
 
-hook.Add("CalcViewModelView", "ax.viewstack.CalcViewModelView", function(weapon, viewmodel, oldPos, oldAng, client)
+hook.Add("CalcViewModelView", "ax.viewstack.CalcViewModelView", function(weapon, viewmodel, oldPos, oldAng, newPos, newAng)
     if ( !ax.viewstack.enabled ) then return end
+
+    if ( !IsValid(weapon) or !IsValid(viewmodel) ) then return end
+
+    local client = weapon:GetOwner()
+    if ( !IsValid(client) or !client:IsPlayer() or client != LocalPlayer() or client:InVehicle() or !client:Alive() ) then return end
+    if ( hook.Run("ShouldDrawLocalPlayer", client) == true ) then return end
+
     if ( ax.viewstack.inVM ) then return end
     ax.viewstack.inVM = true
 
