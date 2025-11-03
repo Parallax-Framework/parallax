@@ -72,7 +72,7 @@ function ax.localization:GetPhrase(phrase, ...)
     return translation
 end
 
-cvars.RemoveChangeCallback("gmod_language", "ax_localisation_change")
+cvars.RemoveChangeCallback("gmod_language", "ax_localization_change")
 cvars.AddChangeCallback("gmod_language", function(convar, oldValue, newValue)
     ax.util:PrintDebug("Language changed from \"" .. oldValue .. "\" to \"" .. newValue .. "\"")
 
@@ -87,6 +87,6 @@ cvars.AddChangeCallback("gmod_language", function(convar, oldValue, newValue)
 
         ax.gui[_] = nil
     end
-end, "ax_localisation_change")
+end, "ax_localization_change")
 
-ax.localisation = ax.localization
+ax.localization = ax.localization
