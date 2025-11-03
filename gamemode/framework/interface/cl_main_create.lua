@@ -1,3 +1,14 @@
+﻿--[[
+    Parallax Framework
+    Copyright (c) 2025 Parallax Framework Contributors
+
+    This file is part of the Parallax Framework and is licensed under the MIT License.
+    You may use, copy, modify, merge, publish, distribute, and sublicense this file
+    under the terms of the LICENSE file included with this project.
+
+    Attribution is required. If you use or modify this file, you must retain this notice.
+]]
+
 local title
 
 local PANEL = {}
@@ -6,13 +17,11 @@ function PANEL:Init()
     self.payload = {}
     self.tabs = {}
 
-    -- Set payloads to defaults
     local vars = self:GetVars()
     for k, v in pairs(vars) do
         if ( !v.validate ) then continue end
         if ( v.hide ) then continue end
 
-        -- Check if the variable can be populated during character creation
         if ( isfunction(v.canPopulate) ) then
             local canPop, err = pcall(function()
                 return v:canPopulate(self.payload, ax.client)
@@ -24,15 +33,17 @@ function PANEL:Init()
             end
 
             if ( !err ) then
-                continue -- canPopulate returned false, skip this variable
+                continue
             end
         end
 
-        -- self.payload[k] = v.default -- Disabled default population for now
+        if ( v.default != nil and self.payload[k] == nil ) then
+            self.payload[k] = v.default
+        end
     end
 
     self:StartAtBottom()
-    self:ClearVars() -- comment@bloodycop6385 > 'category' is nil here.
+    self:ClearVars()
 end
 
 function PANEL:OnSlideStart()
@@ -52,7 +63,6 @@ function PANEL:GetVars()
 end
 
 function PANEL:NavigateToNextTab(currentTab)
-    -- If this is the last tab, submit the character
     if ( currentTab.index == table.Count(self.tabs) ) then
         net.Start("ax.character.create")
             net.WriteTable(self.payload)
@@ -61,7 +71,6 @@ function PANEL:NavigateToNextTab(currentTab)
         return
     end
 
-    -- Otherwise, find and navigate to the next tab
     for k2, v2 in pairs(self.tabs) do
         if ( currentTab.index + 1 != v2.index ) then continue end
         if ( !IsValid(v2) ) then continue end
@@ -75,7 +84,6 @@ function PANEL:NavigateToNextTab(currentTab)
 end
 
 function PANEL:NavigateToPreviousTab(currentTab)
-    -- If this is the first tab, return to splash screen
     if ( currentTab.index == 1 ) then
         self:SlideDown(nil, function()
             self:ClearVars()
@@ -85,7 +93,6 @@ function PANEL:NavigateToPreviousTab(currentTab)
         return
     end
 
-    -- Otherwise, find and navigate to the previous tab
     for k2, v2 in pairs(self.tabs) do
         if ( currentTab.index - 1 != v2.index ) then continue end
         if ( !IsValid(v2) ) then continue end
@@ -101,13 +108,64 @@ end
 function PANEL:PopulateTabs()
     local vars = self:GetVars()
 
-    local index = 1
+    local categories = {}
+    local categoryOrder = {}
+
     for k, v in SortedPairsByMemberValue(vars, "category") do
         if ( !v.validate ) then continue end
         if ( v.hide ) then continue end
 
         local category = v.category or "misc"
 
+        local canPop = true
+        if ( isfunction(v.canPopulate) ) then
+            local ok, res = pcall(function()
+                return v:canPopulate(self.payload, ax.client)
+            end)
+
+            if ( !ok ) then
+                ax.util:PrintWarning(("Failed to check canPopulate for character var '%s': %s"):format(tostring(k), tostring(res)))
+                canPop = false
+            else
+                if ( !res ) then
+                    canPop = false
+                end
+            end
+        end
+
+        if ( canPop ) then
+            categories[category] = categories[category] or {}
+            table.insert(categories[category], { key = k, var = v })
+
+            categoryOrder[category] = math.min(categoryOrder[category] or v.sortOrder, v.sortOrder)
+        end
+    end
+
+    local catList = {}
+
+    for name, _ in pairs(categories) do
+        local baseOrder = categoryOrder[name] or 0
+        local prefix = string.match(name, "^(%d+)[_%-]")
+        local orderKey = baseOrder
+
+        if ( prefix ) then
+            orderKey = tonumber(prefix) * 100000 + baseOrder
+        end
+
+        table.insert(catList, { name = name, order = orderKey })
+    end
+
+    table.sort(catList, function(a, b)
+        if ( a.order == b.order ) then
+            return a.name < b.name
+        end
+
+        return a.order < b.order
+    end)
+
+    local index = 1
+    for _, info in ipairs(catList) do
+        local category = info.name
         local tab = self.tabs[category]
         if ( !tab ) then
             tab = self:CreatePage(category)
@@ -184,7 +242,6 @@ function PANEL:PopulateVars(category)
         if ( v.hide ) then continue end
         if ( (v.category or "misc") != category ) then continue end
 
-        -- Check if the variable can be populated during character creation
         if ( isfunction(v.canPopulate) ) then
             local canPop, err = pcall(function()
                 return v:canPopulate(self.payload, ax.client)
@@ -196,7 +253,7 @@ function PANEL:PopulateVars(category)
             end
 
             if ( !err ) then
-                continue -- canPopulate returned false, skip this variable
+                continue
             end
         end
 
