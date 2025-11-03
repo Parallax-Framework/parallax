@@ -111,7 +111,7 @@ if ( CLIENT ) then
     -- @tparam[opt="generic"] string type One of: generic, info, success, warning, error
     -- @tparam[opt=5] number length Seconds to remain visible (excluding animation).
     function ax.notification:Add(text, type, length)
-        if ( !ax.option:Get("notificationEnabled", true) ) then return end
+        if ( !ax.option:Get("notification.enabled", true) ) then return end
 
         ax.notification.paddingX = ax.util:ScreenScale(16)
         ax.notification.paddingY = ax.util:ScreenScaleH(2)
@@ -120,7 +120,7 @@ if ( CLIENT ) then
         table.insert(self.queue, {
             text = tostring(text or ""),
             type = type or "generic",
-            length = tonumber(length) or (ax.option:Get("notificationDefaultLength", 5) or 5)
+            length = tonumber(length) or (ax.option:Get("notification.length.default", 5) or 5)
         })
 
         self:Next()
@@ -192,7 +192,7 @@ if ( CLIENT ) then
             outFadeTime = outFadeTime
         }
 
-        if ( ax.option:Get("notificationSounds", true) ) then
+        if ( ax.option:Get("notification.sounds", true) ) then
             ax.client:EmitSound("parallax.ui.notification.in")
         end
 
@@ -233,7 +233,7 @@ if ( CLIENT ) then
     end
 
     function ax.notification:Render()
-        if ( !ax.option:Get("notificationEnabled", true) ) then return end
+        if ( !ax.option:Get("notification.enabled", true) ) then return end
         if ( self.active[ 1 ] == nil ) then return end
 
         ax.notification.paddingX = ax.util:ScreenScale(16)
@@ -241,8 +241,8 @@ if ( CLIENT ) then
         ax.notification.spacing = ax.util:ScreenScaleH(2)
 
         local sw, sh = ScrW(), ScrH()
-        local notificationScale = ax.option:Get("notificationScale", 1.0)
-        local position = ax.option:Get("notificationPosition", "bottomcenter")
+        local notificationScale = ax.option:Get("notification.scale", 1.0)
+        local position = ax.option:Get("notification.position", "bottomcenter")
 
         -- Calculate position based on user preference
         local baseX, baseY, anchorX, anchorY

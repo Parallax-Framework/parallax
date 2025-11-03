@@ -58,7 +58,7 @@ function PANEL:SetType(type)
     for k, v in SortedPairsByValue(categories) do
         local button = self.categories:Add("ax.button.flat")
         button:Dock(TOP)
-        button:SetText(ax.util:UniqueIDToName(ax.localization:GetPhrase("category." .. v)))
+        button:SetText(ax.localization:GetPhrase("category." .. v))
 
         -- ["general"] = "General",
         -- ["category.general"] = "General",
@@ -157,7 +157,7 @@ function PANEL:Populate(tab, scroller, type, category)
     local hasSubCategories = false
 
     for key, entry in pairs(rows) do
-        local subCat = entry.data.subCategory or "general"
+        local subCat = entry.data.subCategory or ax.localization:GetPhrase("subcategory.general")
         if ( entry.data.subCategory ) then
             hasSubCategories = true
         end
@@ -191,7 +191,7 @@ function PANEL:Populate(tab, scroller, type, category)
         if ( showSubCategoryHeaders and subCat != "general" ) then
             local subCategoryLabel = scroller:Add("ax.text")
             subCategoryLabel:SetFont("ax.huge.italic.bold")
-            subCategoryLabel:SetText(utf8.upper(ax.util:UniqueIDToName(ax.localization:GetPhrase("subcategory." .. subCat))), true)
+            subCategoryLabel:SetText(utf8.upper(ax.localization:GetPhrase("subcategory." .. subCat)), true)
             subCategoryLabel:Dock(TOP)
         end
 
@@ -296,7 +296,7 @@ function PANEL:SetType(type)
     end
 
     self.type = type
-    self:SetText(ax.util:UniqueIDToName(self.key))
+    self:SetText( "just type set ahadhahdawdhuahduahd" )
 
     if ( self.UpdateDisplay ) then
         self:UpdateDisplay()
@@ -322,7 +322,7 @@ function PANEL:SetKey(key)
     end
 
     self.key = key
-    self:SetText( ax.util:UniqueIDToName( ax.localization:GetPhrase( key ) ) )
+    self:SetText( ax.localization:GetPhrase( self.type .. "." .. key ) )
 
     if ( self.UpdateDisplay ) then
         self:UpdateDisplay()

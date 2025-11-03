@@ -19,11 +19,11 @@ function MODULE:InitPostEntity()
 end
 
 function MODULE:GetChatboxSize()
-    return ax.option:Get("chatBoxWidth"), ax.option:Get("chatBoxHeight")
+    return ax.option:Get("chatbox.width"), ax.option:Get("chatbox.height")
 end
 
 function MODULE:GetChatboxPos()
-    return ax.option:Get("chatBoxX"), ax.option:Get("chatBoxY")
+    return ax.option:Get("chatbox.x"), ax.option:Get("chatbox.y")
 end
 
 function MODULE:PlayerBindPress(client, bind, pressed)

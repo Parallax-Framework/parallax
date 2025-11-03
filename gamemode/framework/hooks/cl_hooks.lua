@@ -267,7 +267,7 @@ function GM:HUDPaintCurvy(width, height, client, isCurved)
         local barX, barY = ax.util:ScreenScale(8), ax.util:ScreenScaleH(8) + barHeight / 2
 
         -- Draw health icon and bar if enabled
-        if ( ax.option:Get("hudShowHealthBar", true) ) then
+        if ( ax.option:Get("hud.bar.health.show", true) ) then
             ax.render.DrawMaterial(0, barX, barY - barHeight / 2, barHeight * 2, barHeight * 2, healthColor, healthIcon)
             barX = barX + barHeight * 2 + ax.util:ScreenScale(4)
 
@@ -289,7 +289,7 @@ function GM:HUDPaintCurvy(width, height, client, isCurved)
         end
 
         -- Draw armor icon and bar if player has armor and armor bars are enabled
-        if ( client:Armor() > 0 and ax.option:Get("hudShowArmorBar", true) ) then
+        if ( client:Armor() > 0 and ax.option:Get("hud.bar.armor.show", true) ) then
             ax.render.DrawMaterial(0, barX, barY - barHeight / 2, barHeight * 2, barHeight * 2, armorColor, armorIcon)
             barX = barX + barHeight * 2 + ax.util:ScreenScale(4)
 

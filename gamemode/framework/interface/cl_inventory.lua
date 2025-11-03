@@ -136,7 +136,7 @@ function PANEL:PopulateItems()
     -- TODO: Add pagination for large inventories
 
     -- Grid layout configuration
-    local gridColumns = ax.option:Get("inventoryColumns", 4)
+    local gridColumns = ax.option:Get("inventory.columns", 4)
     local containerWidth = self.container:GetWide()
     local itemWidth = containerWidth / gridColumns
     local itemHeight = ax.util:ScreenScaleH(32)
@@ -226,7 +226,7 @@ function PANEL:PopulateItems()
         local categoryPanel = self.container:Add("ax.text")
 
         -- Use user preference for italic styling
-        local useItalic = ax.option:Get("inventoryCategoriesItalic", false)
+        local useItalic = ax.option:Get("inventory.categories.italic", false)
         local categoryFont = useItalic and "ax.huge.italic.bold" or "ax.huge.bold"
 
         categoryPanel:SetFont(categoryFont)
@@ -458,7 +458,7 @@ function PANEL:PerformLayout(width, height)
     if ( !self.gridItems or !self.sortedCategoryOrder ) then return end
 
     -- Recalculate grid layout based on current container width
-    local gridColumns = ax.option:Get("inventoryColumns", 4)
+    local gridColumns = ax.option:Get("inventory.columns", 4)
     local containerWidth = self.container:GetWide()
     local itemWidth = containerWidth / gridColumns
     local itemHeight = ax.util:ScreenScaleH(32)
@@ -478,7 +478,7 @@ function PANEL:PerformLayout(width, height)
             categoryPanel:SetSize(containerWidth, categoryHeight)
 
             -- Update font based on user preference
-            local useItalic = ax.option:Get("inventoryCategoriesItalic", false)
+            local useItalic = ax.option:Get("inventory.categories.italic", false)
             local categoryFont = useItalic and "ax.huge.italic.bold" or "ax.huge.bold"
             categoryPanel:SetFont(categoryFont)
         end

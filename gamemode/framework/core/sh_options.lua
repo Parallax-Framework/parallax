@@ -92,10 +92,10 @@ ax.option:Add("notification.length.default", ax.type.number, 5, {
     description = "notification.length.default.help"
 })
 
-ax.option:Add("notifications.sounds", ax.type.bool, true, {
+ax.option:Add("notification.sounds", ax.type.bool, true, {
     category = "interface",
     subCategory = "hud",
-    description = "notifications.sounds.help"
+    description = "notification.sounds.help"
 })
 
 ax.option:Add("notification.position", ax.type.array, "bottomcenter", {

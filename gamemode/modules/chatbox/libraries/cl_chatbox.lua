@@ -46,7 +46,7 @@ function chat.AddText(...)
     local maxWidth = ax.gui.chatbox:GetWide() - 20
 
     -- Add a timestamp if enabled
-    if ( ax.option:Get("chatTimestamps", true) ) then
+    if ( ax.option:Get("chat.timestamps", true) ) then
         local timeStr = os.date("%H:%M")
         arguments = { Color(150, 150, 150), "[" .. timeStr .. "] ", unpack(arguments) }
     end

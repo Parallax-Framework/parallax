@@ -46,15 +46,15 @@ function PANEL:Init()
         elseif ( code == MOUSE_RIGHT ) then
             local menu = DermaMenu()
             menu:AddOption("Reset Position", function()
-                ax.option:SetToDefault("chatBoxX")
-                ax.option:SetToDefault("chatBoxY")
+                ax.option:SetToDefault("chatbox.x")
+                ax.option:SetToDefault("chatbox.y")
 
                 local rx, ry = hook.Run("GetChatboxPos")
                 self:SetPos(rx, ry)
             end)
             menu:AddOption("Reset Size", function()
-                ax.option:SetToDefault("chatBoxWidth")
-                ax.option:SetToDefault("chatBoxHeight")
+                ax.option:SetToDefault("chatbox.width")
+                ax.option:SetToDefault("chatbox.height")
 
                 local rw, rh = hook.Run("GetChatboxSize")
                 self:SetSize(rw, rh)
@@ -70,8 +70,8 @@ function PANEL:Init()
 
             -- Persist new position
             local x, y = self:GetPos()
-            ax.option:Set("chatBoxX", x)
-            ax.option:Set("chatBoxY", y)
+            ax.option:Set("chatbox.x", x)
+            ax.option:Set("chatbox.y", y)
         end
     end
     self.categories.Think = function(this)
@@ -268,8 +268,8 @@ function PANEL:Init()
             this:MouseCapture(false)
 
             local w, h = self:GetSize()
-            ax.option:Set("chatBoxWidth", w)
-            ax.option:Set("chatBoxHeight", h)
+            ax.option:Set("chatbox.width", w)
+            ax.option:Set("chatbox.height", h)
         end
     end
     self.sizer.Think = function(this)

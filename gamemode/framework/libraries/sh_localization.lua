@@ -14,7 +14,7 @@
 -- @module ax.localization
 
 ax.localization = ax.localization or {}
-ax.localization.langs = {}
+ax.localization.langs = ax.localization.langs or {}
 
 --- Register a localization language with translation table.
 -- Adds or merges translation strings for a specific language code.
@@ -34,6 +34,7 @@ function ax.localization:Register(name, translation)
     end
 
     self.langs[name] = table.Merge(self.langs[name] or {}, translation)
+
     ax.util:PrintDebug("Localization \"" .. name .. "\" registered successfully.")
 end
 

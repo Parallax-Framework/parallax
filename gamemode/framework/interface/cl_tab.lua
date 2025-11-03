@@ -256,7 +256,7 @@ function PANEL:Paint(width, height)
     local ft = FrameTime()
     local time = ft * 5
 
-    local performanceAnimations = ax.option:Get("performanceAnimations", true)
+    local performanceAnimations = ax.option:Get("performance.animations", true)
     if ( !performanceAnimations ) then
         time = 1
     end

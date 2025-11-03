@@ -355,7 +355,7 @@ if ( CLIENT ) then
     -- @return number The scaled value
     -- @usage local scaledSize = ax.util:Scale(16) -- 16 * uiScale option
     function ax.util:Scale(value)
-        local uiScale = ax.option:Get("uiScale", 1.0)
+        local uiScale = ax.option:Get("interface.scale", 1.0)
         return value * uiScale
     end
 
