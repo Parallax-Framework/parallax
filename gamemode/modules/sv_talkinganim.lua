@@ -110,7 +110,12 @@ function MODULE:PlayTalkingAnimation(client)
     end
 end
 
-function MODULE:PlayerSay(client, text, teamChat)
+concommand.Add("wos_talkanim_test", function(client, command, arguments)
+    if ( !IsValid(client) ) then return end
+    MODULE:PlayTalkingAnimation(client)
+end)
+
+function MODULE:PlayerMessageSent(client, chatType, text)
     if ( !IsValid(client) or !client:Alive() ) then return end
 
     -- Check if the player is talking

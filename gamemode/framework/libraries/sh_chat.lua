@@ -44,6 +44,7 @@ function ax.chat:Add(name, def)
                 if ( def.OnRun ) then
                     message = hook.Run("PlayerMessageSend", client, name, message) or message
                     ax.chat:Send(client, name, message)
+                    hook.Run("PlayerMessageSent", client, name, message)
                 end
             end
         })

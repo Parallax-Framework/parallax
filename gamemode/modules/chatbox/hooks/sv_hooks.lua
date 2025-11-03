@@ -62,5 +62,7 @@ function MODULE:PlayerSay(client, text, teamChat)
 
     ax.chat:Send(client, "ic", text)
 
+    hook.Run("PlayerMessageSent", client, "ic", text)
+
     return ""
 end
