@@ -90,4 +90,4 @@ cvars.AddChangeCallback("gmod_language", function(convar, oldValue, newValue)
     end
 end, "ax_localization_change")
 
-ax.localization = ax.localization
+ax.localisation = ax.localization
