@@ -210,11 +210,31 @@ end
 -- @param callback function Optional callback function called with success boolean
 -- @usage ax.character:Delete(123, function(success) print("Deleted:", success) end)
 function ax.character:Delete(id, callback)
-    local query = mysql:Delete("ax_characters")
-    query:Where("id", id)
-    query:Callback(function(result, status)
+    -- First fetch the character row to validate existence and schema
+    local sel = mysql:Select("ax_characters")
+    sel:Where("id", id)
+    sel:Callback(function(result, status)
+        ax.util:PrintDebug("ax.character:Delete - SELECT callback fired for ID " .. tostring(id))
+        ax.util:PrintDebug("mysql:IsConnected() = " .. tostring(mysql:IsConnected()))
+        ax.util:PrintDebug("engine.ActiveGamemode() = " .. tostring(engine.ActiveGamemode()))
+        ax.util:PrintDebug("SELECT result type = " .. type(result) .. ", status = " .. tostring(status) .. ", count = " .. tostring(result and #result or 0))
+        if ( istable(result) and result[1] ) then
+            -- Avoid dumping player references in the table; print core fields if present
+            ax.util:PrintDebug("SELECT row[1]: id=" .. tostring(result[1].id) .. ", schema=" .. tostring(result[1].schema) .. ", inventory=" .. tostring(result[1].inventory))
+        end
+
+        -- Print runtime instance if present for correlation
+        if ( ax.character.instances and ax.character.instances[id] ) then
+            local rc = ax.character.instances[id]
+            local model = rc.vars and rc.vars.model or "<nil>"
+            local name = rc.vars and rc.vars.name or "<nil>"
+            ax.util:PrintDebug("Runtime character exists: id=" .. tostring(id) .. ", name=" .. tostring(name) .. ", model=" .. tostring(model))
+        else
+            ax.util:PrintDebug("No runtime character instance for id " .. tostring(id))
+        end
+
         if ( result == false ) then
-            ax.util:PrintError("Failed to delete character with ID " .. id)
+            ax.util:PrintError("Failed to query character with ID " .. id .. " for deletion")
             if ( isfunction(callback) ) then
                 callback(false)
             end
@@ -223,6 +243,36 @@ function ax.character:Delete(id, callback)
         end
 
         if ( result[1] == nil ) then
+            -- If the database row is missing but a runtime instance exists, clean
+            -- up the runtime data and attempt to remove any associated inventory.
+            if ( ax.character.instances and ax.character.instances[id] ) then
+                ax.util:PrintWarning("No DB row for character ID " .. id .. " but runtime instance exists; cleaning up runtime state")
+
+                local rc = ax.character.instances[id]
+                local invID = rc and rc.vars and rc.vars.inventory and tonumber(rc.vars.inventory) or nil
+
+                -- Remove runtime character instance
+                ax.character.instances[id] = nil
+
+                -- Attempt to delete the associated inventory row if present
+                if ( invID and invID > 0 ) then
+                    ax.util:PrintDebug("Attempting to delete inventory ID " .. tostring(invID) .. " for missing character row")
+                    local inventoryQuery = mysql:Delete("ax_inventories")
+                    inventoryQuery:Where("id", invID)
+                    inventoryQuery:Execute()
+
+                    if ( ax.inventory and ax.inventory.instances and ax.inventory.instances[invID] ) then
+                        ax.inventory.instances[invID] = nil
+                    end
+                end
+
+                if ( isfunction(callback) ) then
+                    callback(true)
+                end
+
+                return
+            end
+
             ax.util:PrintError("No character found with ID " .. id .. " to delete")
             if ( isfunction(callback) ) then
                 callback(false)
@@ -231,8 +281,9 @@ function ax.character:Delete(id, callback)
             return
         end
 
-        if ( result[1].schema != engine.ActiveGamemode() ) then
-            ax.util:PrintError("Attempted to delete character ID " .. id .. " with mismatched schema (" .. result[1].schema .. " != " .. engine.ActiveGamemode() .. ")")
+        local row = result[1]
+        if ( row.schema != engine.ActiveGamemode() ) then
+            ax.util:PrintError("Attempted to delete character ID " .. id .. " with mismatched schema (" .. row.schema .. " != " .. engine.ActiveGamemode() .. ")")
             if ( isfunction(callback) ) then
                 callback(false)
             end
@@ -240,23 +291,46 @@ function ax.character:Delete(id, callback)
             return
         end
 
-        if ( ax.character.instances[id] ) then
-            ax.character.instances[id] = nil
-        end
+        -- Proceed to delete the character
+        local del = mysql:Delete("ax_characters")
+        del:Where("id", id)
+        del:Callback(function(delResult, delStatus)
+            ax.util:PrintDebug("ax.character:Delete - DELETE callback fired for ID " .. tostring(id) .. ", delStatus = " .. tostring(delStatus) .. ", delResult type = " .. type(delResult) .. ", count = " .. tostring(delResult and #delResult or 0))
 
-        ax.util:PrintDebug(color_success, "Character with ID " .. id .. " deleted successfully")
+            if ( delResult == false ) then
+                ax.util:PrintError("Failed to delete character with ID " .. id)
+                if ( isfunction(callback) ) then
+                    callback(false)
+                end
 
-        local data = result[1] or {}
+                return
+            end
 
-        local inventoryQuery = mysql:Delete("ax_inventories")
-        inventoryQuery:Where("id", data.inventory)
-        inventoryQuery:Execute()
+            -- Remove from runtime instances if present
+            if ( ax.character.instances[id] ) then
+                ax.character.instances[id] = nil
+            end
 
-        if ( isfunction(callback) ) then
-            callback(true)
-        end
+            ax.util:PrintDebug(color_success, "Character with ID " .. id .. " deleted successfully")
+
+            -- Delete the associated inventory if present
+            if ( row.inventory and tonumber(row.inventory) and tonumber(row.inventory) > 0 ) then
+                local inventoryQuery = mysql:Delete("ax_inventories")
+                inventoryQuery:Where("id", tonumber(row.inventory))
+                inventoryQuery:Execute()
+                -- Also remove runtime inventory instance if loaded
+                if ( ax.inventory and ax.inventory.instances and ax.inventory.instances[tonumber(row.inventory)] ) then
+                    ax.inventory.instances[tonumber(row.inventory)] = nil
+                end
+            end
+
+            if ( isfunction(callback) ) then
+                callback(true)
+            end
+        end)
+        del:Execute()
     end)
-    query:Execute()
+    sel:Execute()
 end
 
 --- Synchronize character data to all clients or a specific recipient.
