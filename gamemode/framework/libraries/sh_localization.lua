@@ -33,18 +33,14 @@ function ax.localization:Register(name, translation)
         return
     end
 
-    if ( istable(ax.localization.langs[name]) ) then
-        ax.localization.langs[name] = table.Merge(ax.localization.langs[name], translation)
-    end
-
-    self.langs[name] = translation
+    self.langs[name] = table.Merge(self.langs[name] or {}, translation)
     ax.util:PrintDebug("Localization \"" .. name .. "\" registered successfully.")
 end
 
 --- Get a localized phrase in the client's language.
 -- Looks up a phrase key and returns the translation for the current language.
 -- Falls back to the phrase key if no translation is found.
--- @realm shared  
+-- @realm shared
 -- @param phrase string The phrase key to look up
 -- @param ... any Optional format arguments for string.format
 -- @return string The translated phrase or the original phrase key if not found
