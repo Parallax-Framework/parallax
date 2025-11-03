@@ -1,3 +1,3 @@
-ax.localisation:Register("bg", {
+ax.localization:Register("bg", {
 	adminESP = "Админ ESP"
 })

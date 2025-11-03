@@ -110,7 +110,7 @@ ax.option:Add("thirdpersonDesiredFieldOfViewInterpolation", ax.type.number, 5, {
     decimals = 0
 })
 
-ax.localisation:Register("en", {
+ax.localization:Register("en", {
     thirdperson = "Third Person",
     thirdpersonX = "Third Person X Offset",
     thirdpersonY = "Third Person Y Offset",
@@ -123,7 +123,7 @@ ax.localisation:Register("en", {
     thirdpersonDesiredFieldOfViewInterpolation = "Third Person Desired Field Of View Interpolation"
 })
 
-ax.localisation:Register("bg", {
+ax.localization:Register("bg", {
     thirdperson = "Трето лице",
     thirdpersonX = "X изместване на камерата от трето лице",
     thirdpersonY = "Y изместване на камерата от трето лице",
