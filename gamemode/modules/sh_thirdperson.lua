@@ -110,6 +110,32 @@ ax.option:Add("thirdpersonDesiredFieldOfViewInterpolation", ax.type.number, 5, {
     decimals = 0
 })
 
+ax.localisation:Register("en", {
+    thirdperson = "Third Person",
+    thirdpersonX = "Third Person X Offset",
+    thirdpersonY = "Third Person Y Offset",
+    thirdpersonZ = "Third Person Z Offset",
+    thirdpersonFollowHead = "Third Person Follow Head",
+    thirdpersonFollowTraceAngles = "Third Person Follow Trace Angles",
+    thirdpersonFollowTraceFieldOfView = "Third Person Follow Trace Field Of View",
+    thirdpersonDesiredPositionInterpolation = "Third Person Desired Position Interpolation",
+    thirdpersonDesiredAngleInterpolation = "Third Person Desired Angle Interpolation",
+    thirdpersonDesiredFieldOfViewInterpolation = "Third Person Desired Field Of View Interpolation"
+})
+
+ax.localisation:Register("bg", {
+    thirdperson = "Трето лице",
+    thirdpersonX = "X изместване на камерата от трето лице",
+    thirdpersonY = "Y изместване на камерата от трето лице",
+    thirdpersonZ = "Z изместване на камерата от трето лице",
+    thirdpersonFollowHead = "Камерата от трето лице следва главата",
+    thirdpersonFollowTraceAngles = "Камерата от трето лице следва ъглите на траса",
+    thirdpersonFollowTraceFieldOfView = "Полето на виждане на камерата от трето лице следва траса",
+    thirdpersonDesiredPositionInterpolation = "Интерполация на желаната позиция на камерата от трето лице",
+    thirdpersonDesiredAngleInterpolation = "Интерполация на желания ъгъл на камерата от трето лице",
+    thirdpersonDesiredFieldOfViewInterpolation = "Интерполация на желаното поле на виждане на камерата от трето лице"
+})
+
 if ( SERVER ) then return end
 
 local FIXED_RADIUS = 6
@@ -128,12 +154,6 @@ function MODULE:ShouldUseThirdPerson(client)
     end
 
     return ax.option:Get("thirdperson")
-end
-
-function MODULE:ShouldDrawLocalPlayer(client)
-    if ( self:ShouldUseThirdPerson(client) ) then
-        return true
-    end
 end
 
 ax.viewstack:RegisterModifier("thirdperson", function(client, view)
@@ -225,7 +245,8 @@ ax.viewstack:RegisterModifier("thirdperson", function(client, view)
     return {
         origin = curPos,
         angles = curAng,
-        fov = view.fov - curFOV
+        fov = view.fov - curFOV,
+        drawviewer = true
     }
 end, 1)
 

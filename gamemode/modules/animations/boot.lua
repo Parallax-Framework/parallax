@@ -9,3 +9,7 @@ ax.config:Add("animationsIKEnabled", ax.type.bool, true, {
     subCategory = "general",
     description = "Enable Inverse Kinematics (IK) for player animations."
 })
+
+local LANG = {}
+LANG["animationsIKEnabled"] = "Включване на обратна кинематика (IK) за анимации на играча."
+ax.localization:Register("bg", LANG)

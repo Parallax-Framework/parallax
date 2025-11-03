@@ -14,7 +14,7 @@
 -- @module ax.localization
 
 ax.localization = ax.localization or {}
-ax.localization.langs = ax.localization.langs or {}
+ax.localization.langs = {}
 
 --- Register a localization language with translation table.
 -- Adds or merges translation strings for a specific language code.
@@ -71,3 +71,22 @@ function ax.localization:GetPhrase(phrase, ...)
 
     return translation
 end
+
+cvars.RemoveChangeCallback("gmod_language", "ax_localisation_change")
+cvars.AddChangeCallback("gmod_language", function(convar, oldValue, newValue)
+    ax.util:PrintDebug("Language changed from \"" .. oldValue .. "\" to \"" .. newValue .. "\"")
+
+    for _, panel in pairs(ax.gui) do
+        if ( IsValid( panel ) ) then
+            if ( isfunction(panel.OnLanguageChanged) ) then
+                panel:OnLanguageChanged(oldValue, newValue)
+            end
+
+            panel:Remove()
+        end
+
+        ax.gui[_] = nil
+    end
+end, "ax_localisation_change")
+
+ax.localisation = ax.localization

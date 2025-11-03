@@ -9,11 +9,6 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
-local gradientLeft = ax.util:GetMaterial("vgui/gradient-l")
-local gradientRight = ax.util:GetMaterial("vgui/gradient-r")
-local gradientTop = ax.util:GetMaterial("vgui/gradient-u")
-local gradientBottom = ax.util:GetMaterial("vgui/gradient-d")
-
 DEFINE_BASECLASS("EditablePanel")
 
 local PANEL = {}
@@ -108,7 +103,7 @@ function PANEL:Init()
         local button = self.buttons:Add("ax.button.flat")
         -- Dock left to make a horizontal row across the top
         button:Dock(LEFT)
-        button:SetText(k)
+        button:SetText( ax.localization:GetPhrase( "tab." .. k ) )
 
         button:SetUpdateSizeOnHover(true)
         button:SetSizeToContentsMotion(true)

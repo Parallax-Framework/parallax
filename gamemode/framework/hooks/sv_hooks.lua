@@ -143,11 +143,11 @@ function GM:PlayerSpawn(client)
     client:RemoveAllItems()
 
     client:SetRelay("ax.ragdoll.index", -1)
-    client:SetSlowWalkSpeed(ax.config:Get("walkSlowSpeed"))
-    client:SetWalkSpeed(ax.config:Get("walkSpeed"))
-    client:SetCrouchedWalkSpeed(ax.config:Get("crouchedWalkSpeed"))
-    client:SetJumpPower(ax.config:Get("jumpPower"))
-    client:SetRunSpeed(ax.config:Get("runSpeed"))
+    client:SetSlowWalkSpeed(ax.config:Get("speed.walk.slow"))
+    client:SetWalkSpeed(ax.config:Get("speed.walk"))
+    client:SetCrouchedWalkSpeed(ax.config:Get("speed.walk.crouched"))
+    client:SetJumpPower(ax.config:Get("jump.power"))
+    client:SetRunSpeed(ax.config:Get("speed.run"))
 
     hook.Run("PlayerLoadout", client)
 end
@@ -222,7 +222,7 @@ function GM:PlayerInitialSpawn(client)
 
     -- Handle bot character creation automatically
     if ( client:IsBot() ) then
-        if ( ax.config:Get("botSupport", true) ) then
+        if ( ax.config:Get("bot.support", true) ) then
             ax.util:PrintDebug("Bot detected: " .. client:SteamName() .. ", creating character automatically...")
 
             -- Small delay to ensure faction system is ready

@@ -47,7 +47,10 @@ function PANEL:Init()
 
     self.weightCounter = self.weightProgress:Add("ax.text")
     self.weightCounter:SetFont("ax.regular")
-    self.weightCounter:SetText(totalWeight .. "kg / " .. maxWeight .. "kg", true)
+
+    local weightText = ax.localization:GetPhrase("invWeight")
+
+    self.weightCounter:SetText(totalWeight .. weightText .. " / " .. maxWeight .. weightText, true)
     self.weightCounter:SetContentAlignment(5)
     self.weightCounter:Dock(FILL)
 
@@ -110,8 +113,9 @@ function PANEL:PopulateItems()
     -- Initialize grid items storage for responsive layout
     self.gridItems = {}
 
+    local weightText = ax.localization:GetPhrase("invWeight")
     self.weightProgress:SetFraction(inventory:GetWeight() / inventory:GetMaxWeight())
-    self.weightCounter:SetText(math.Round(inventory:GetWeight(), 2) .. "kg / " .. inventory:GetMaxWeight() .. "kg", true)
+    self.weightCounter:SetText(math.Round(inventory:GetWeight(), 2) .. weightText .. " / " .. inventory:GetMaxWeight() .. weightText, true)
 
     -- TODO: Sort categories alphabetically
     -- TODO: Sort items within categories alphabetically

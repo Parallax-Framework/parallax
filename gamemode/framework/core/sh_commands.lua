@@ -362,7 +362,7 @@ ax.command:Add("BotKick", {
     end
 })
 
-ax.command:Add("BotSupport", {
+ax.command:Add("bot.support", {
     description = "Enable or disable automatic bot character creation.",
     adminOnly = true,
     arguments = {
@@ -370,7 +370,7 @@ ax.command:Add("BotSupport", {
     },
     OnRun = function(client, enabled)
         if ( SERVER ) then
-            ax.config:Set("botSupport", enabled)
+            ax.config:Set("bot.support", enabled)
             ax.config:Save()
 
             return "Bot support " .. (enabled and "enabled" or "disabled") .. "."

@@ -58,7 +58,11 @@ function PANEL:SetType(type)
     for k, v in SortedPairsByValue(categories) do
         local button = self.categories:Add("ax.button.flat")
         button:Dock(TOP)
-        button:SetText(ax.util:UniqueIDToName(ax.localization:GetPhrase(v)), true)
+        button:SetText(ax.util:UniqueIDToName(ax.localization:GetPhrase("category." .. v)))
+
+        -- ["general"] = "General",
+        -- ["category.general"] = "General",
+        -- ["subcategory.general"] = "General",
 
         self.categories:SetWide(math.max(self.categories:GetWide(), button:GetWide() + ax.util:ScreenScale(16)))
 
@@ -187,7 +191,7 @@ function PANEL:Populate(tab, scroller, type, category)
         if ( showSubCategoryHeaders and subCat != "general" ) then
             local subCategoryLabel = scroller:Add("ax.text")
             subCategoryLabel:SetFont("ax.huge.italic.bold")
-            subCategoryLabel:SetText(utf8.upper(ax.util:UniqueIDToName(ax.localization:GetPhrase(subCat))), true)
+            subCategoryLabel:SetText(utf8.upper(ax.util:UniqueIDToName(ax.localization:GetPhrase("subcategory." .. subCat))), true)
             subCategoryLabel:Dock(TOP)
         end
 
@@ -318,7 +322,7 @@ function PANEL:SetKey(key)
     end
 
     self.key = key
-    self:SetText(ax.util:UniqueIDToName(key))
+    self:SetText( ax.util:UniqueIDToName( ax.localization:GetPhrase( key ) ) )
 
     if ( self.UpdateDisplay ) then
         self:UpdateDisplay()
@@ -385,7 +389,7 @@ function PANEL:UpdateDisplay()
     end
 
     local value = store:Get(self.key)
-    self.value:SetText(string.format("<%s>", value and "Enabled" or "Disabled"), true)
+    self.value:SetText(string.format("<%s>", value == true and ax.localization:GetPhrase( "enabled" ) or ax.localization:GetPhrase( "disabled" )))
 end
 
 function PANEL:DoClick()

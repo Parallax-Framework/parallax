@@ -9,12 +9,20 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
-ax.option:Add("performanceAnimations", ax.type.bool, true, { category = "interface", subCategory = "display", description = "Enable or disable interface animations." })
-ax.option:Add("inventoryCategoriesItalic", ax.type.bool, true, { category = "interface", subCategory = "inventory", description = "Display inventory categories in italic style." })
-ax.option:Add("keybindTest", ax.type.number, 0, { keybind = true, category = "general", subCategory = "basic", description = "Test keybind option." })
+ax.option:Add("performance.animations", ax.type.bool, true, {
+    category = "interface",
+    subCategory = "display",
+    description = "performance.animations.help"
+})
+
+ax.option:Add("inventory.categories.italic", ax.type.bool, true, {
+    category = "interface",
+    subCategory = "inventory",
+    description = "inventory.categories.italic.help"
+})
 
 -- UI scaling and layout options
-ax.option:Add("uiScale", ax.type.number, 1.0, {
+ax.option:Add("interface.scale", ax.type.number, 1.0, {
     min = 0.5,
     max = 2.0,
     decimals = 1,
@@ -23,90 +31,88 @@ ax.option:Add("uiScale", ax.type.number, 1.0, {
     description = "UI element scaling factor (affects notifications, panels, etc.)"
 })
 
-ax.option:Add("inventoryColumns", ax.type.number, 4, {
+ax.option:Add("inventory.columns", ax.type.number, 4, {
     category = "interface",
     subCategory = "inventory",
-    description = "Number of columns in inventory grid layout",
+    description = "inventories.columns.help",
     min = 2,
     max = 8,
     decimals = 0
 })
 
-ax.option:Add("buttonClickDelay", ax.type.number, 0.1, {
+ax.option:Add("button.delay.click", ax.type.number, 0.1, {
     category = "interface",
     subCategory = "buttons",
-    description = "Delay in seconds before a button can be clicked again (creates a flicker effect).",
+    description = "button.delay.click.help",
     min = 0,
     max = 1,
     decimals = 2
 })
 
 -- Visual preference options
-ax.option:Add("consolePrintColors", ax.type.bool, true, {
-    category = "interface",
-    subCategory = "console",
-    description = "Enable colored console output for framework messages"
-})
 
-ax.option:Add("hudShowHealthBar", ax.type.bool, true, {
+ax.option:Add("hud.bar.health.show", ax.type.bool, true, {
     category = "interface",
     subCategory = "hud",
-    description = "Show health bar when looking at other players"
+    description = "hud.bar.health.show.help"
 })
 
-ax.option:Add("hudShowArmorBar", ax.type.bool, true, {
+ax.option:Add("hud.bar.armor.show", ax.type.bool, true, {
     category = "interface",
     subCategory = "hud",
-    description = "Show armor bar when looking at other players"
+    description = "hud.bar.armor.show.help"
 })
 
 -- Chat preferences
-ax.option:Add("chatTimestamps", ax.type.bool, false, {
+ax.option:Add("chat.timestamps", ax.type.bool, false, {
     category = "chat",
     subCategory = "basic",
-    description = "Show timestamps in chat messages"
+    description = "chat.timestamps.help"
 })
 
-ax.option:Add("chatSounds", ax.type.bool, true, {
+ax.option:Add("chat.sounds", ax.type.bool, true, {
     category = "chat",
     subCategory = "basic",
-    description = "Play sound when receiving chat messages"
+    description = "chat.sounds.help"
 })
 
 -- Notification customization
-ax.option:Add("notificationEnabled", ax.type.bool, true, {
+ax.option:Add("notification.enabled", ax.type.bool, true, {
     category = "interface",
     subCategory = "hud",
-    description = "Enable client notifications"
+    description = "notification.enabled.help"
 })
 
-ax.option:Add("notificationDefaultLength", ax.type.number, 5, {
+ax.option:Add("notification.length.default", ax.type.number, 5, {
     min = 1,
     max = 20,
     decimals = 0,
     category = "interface",
     subCategory = "hud",
-    description = "Default notification display duration in seconds"
+    description = "notification.length.default.help"
 })
 
-ax.option:Add("notificationSounds", ax.type.bool, true, {
+ax.option:Add("notifications.sounds", ax.type.bool, true, {
     category = "interface",
     subCategory = "hud",
-    description = "Play sounds when notifications appear and disappear"
+    description = "notifications.sounds.help"
 })
 
-ax.option:Add("notificationPosition", ax.type.array, "bottomcenter", {
+ax.option:Add("notification.position", ax.type.array, "bottomcenter", {
     category = "interface",
     subCategory = "hud",
-    description = "Position for notification display",
-    choices = {"topright", "topleft", "topcenter", "bottomright", "bottomleft", "bottomcenter"}
+    description = "notification.position.help",
+    choices = {
+        ["topright"] = "Top Right", ["topleft"] = "Top Left", ["topcenter"] = "Top Center",
+        ["bottomright"] = "Bottom Right", ["bottomleft"] = "Bottom Left", ["bottomcenter"] = "Bottom Center"
+    }
 })
 
-ax.option:Add("notificationScale", ax.type.number, 1.0, {
+ax.option:Add("notification.scale", ax.type.number, 1.0, {
     min = 0.5,
     max = 2.0,
     decimals = 1,
     category = "interface",
     subCategory = "hud",
-    description = "Scale factor for notification size"
+    description = "notification.scale.help"
 })

@@ -42,7 +42,7 @@ function PANEL:SetText(text, bNoTranslate, bNoSizeToContents)
     if ( !text ) then return end
 
     if ( !bNoTranslate and text != "" ) then
-        text = ax.localization:GetPhrase(text)
+        text = ax.localization:GetPhrase( text )
     end
 
     self:SetTextInternal(text)
@@ -89,7 +89,7 @@ function PANEL:OnMousePressed(mouseCode)
     end
 
     -- Button click delay for flicker effect
-    local clickDelay = ax.option:Get("buttonClickDelay")
+    local clickDelay = ax.option:Get("button.delay.click")
     if ( clickDelay > 0 ) then
         self:SetEnabled(false)
         timer.Simple(clickDelay, function()

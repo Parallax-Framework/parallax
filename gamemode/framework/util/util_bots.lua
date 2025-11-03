@@ -91,7 +91,7 @@ function ax.util:CreateBotCharacter(client)
     end
 
     -- Check if bot support is enabled
-    if ( !ax.config:Get("botSupport", true) ) then
+    if ( !ax.config:Get("bot.support", true) ) then
         ax.util:PrintDebug("Bot support is disabled, skipping character creation for: " .. client:SteamName())
         return false
     end
