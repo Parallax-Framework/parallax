@@ -362,6 +362,7 @@ function SWEP:StartShotgunReload()
 
     self:SetReloading(true)
     self:InsertShell()
+    self:DefaultReload(ACT_VM_RELOAD)
 end
 
 function SWEP:InsertShell()
