@@ -41,23 +41,6 @@ function ax.util:PreparePackage(...)
     return package
 end
 
--- Helper function to get console colors (uses config if available, fallback to defaults)
-local function GetConsoleColor(colorType)
-    local fallbackColors = {
-        print = Color(100, 150, 255),
-        warning = Color(255, 200, 100),
-        success = Color(100, 255, 100),
-        debug = Color(150, 150, 150)
-    }
-
-    if ( ax and ax.config and ax.config.Get ) then
-        local configKey = "consoleColor" .. utf8.upper(colorType:sub(1,1)) .. colorType:sub(2)
-        return ax.config:Get(configKey, fallbackColors[colorType])
-    end
-
-    return fallbackColors[colorType]
-end
-
 --- Define colors for different print types (legacy globals for compatibility)
 color_print = Color(100, 150, 255)
 color_warning = Color(255, 200, 100)
@@ -70,7 +53,7 @@ color_debug = Color(150, 150, 150)
 -- @usage ax.util:Print("Server started")
 function ax.util:Print(...)
     local args = self:PreparePackage(...)
-    local printColor = GetConsoleColor("print")
+    local printColor = color_print
 
     MsgC(printColor, "[PARALLAX] ", unpack(args))
 
@@ -95,7 +78,7 @@ end
 -- @usage ax.util:PrintWarning("Deprecated API used")
 function ax.util:PrintWarning(...)
     local args = self:PreparePackage(...)
-    local warningColor = GetConsoleColor("warning")
+    local warningColor = color_warning
 
     MsgC(warningColor, "[PARALLAX] [WARNING] ", unpack(args))
 
@@ -108,7 +91,7 @@ end
 -- @usage ax.util:PrintSuccess("Configuration saved")
 function ax.util:PrintSuccess(...)
     local args = self:PreparePackage(...)
-    local successColor = GetConsoleColor("success")
+    local successColor = color_success
 
     MsgC(successColor, "[PARALLAX] [SUCCESS] ", unpack(args))
 
@@ -130,7 +113,7 @@ function ax.util:PrintDebug(...)
     end
 
     local args = self:PreparePackage(...)
-    local debugColor = GetConsoleColor("debug")
+    local debugColor = color_debug
 
     MsgC(debugColor, "[PARALLAX] [DEBUG] ", unpack(args))
 
