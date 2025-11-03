@@ -438,7 +438,8 @@ ax.character:RegisterVar("model", {
         end
 
         local size = math.min(container:GetWide() / 8, 128)
-        for k, v in pairs(ax.faction:Get(factionID):GetModels()) do
+        local models = ax.faction:Get(factionID):GetModels()
+        for k, v in pairs(models) do
             local model = v
             local skin = 0
             if ( istable(v) ) then
@@ -470,6 +471,41 @@ ax.character:RegisterVar("model", {
             end
         end
 
+        -- If the payload has no selected model yet, pick the first available model
+        -- and ensure the skin payload is set. This is important for factions that
+        -- force a skin via their model table and disable skin customization.
+        if ( !payload.model and models[1] ) then
+            local first = models[1]
+            if ( istable(first) ) then
+                payload.model = first[1]
+                payload.skin = first[2] or 0
+            else
+                payload.model = first
+                payload.skin = payload.skin or 0
+            end
+
+            if ( ax.gui.main.create.OnPayloadChanged ) then
+                ax.gui.main.create:OnPayloadChanged(payload)
+            end
+
+            hook.Run("OnPayloadChanged", payload)
+        end
+
+        -- If a model is already selected but the skin is unset (or nil), ensure
+        -- we populate the skin from the faction model entry so creation uses
+        -- the forced skin when customization is disabled.
+        if ( payload.model and payload.skin == nil ) then
+            for _, mv in ipairs(models) do
+                if ( istable(mv) and utf8.lower(mv[1]) == utf8.lower(payload.model) ) then
+                    payload.skin = mv[2] or 0
+                    break
+                elseif ( !istable(mv) and utf8.lower(mv) == utf8.lower(payload.model) ) then
+                    payload.skin = payload.skin or 0
+                    break
+                end
+            end
+        end
+
         layout:SizeToChildren(layout:GetStretchWidth(), layout:GetStretchHeight())
     end,
     changed = function(character, value, isNetworked, recipients)
@@ -478,7 +514,30 @@ ax.character:RegisterVar("model", {
             client:SetModel(value)
         end
 
-        character:SetSkin(0, true) -- Reset skin to 0 when model changes, as skins are model-specific
+        -- Reset or apply the correct skin when the model changes. If the faction
+        -- disallows skin customization, use the skin defined on the faction's
+        -- model entry (models can be tables like { modelPath, skinIndex }).
+        local factionData = character:GetFactionData()
+        if ( factionData and factionData.allowSkinCustomization == false ) then
+            local forcedSkin = 0
+            for _, mv in ipairs(factionData:GetModels() or {}) do
+                if ( istable(mv) ) then
+                    if ( utf8.lower(mv[1]) == utf8.lower(value) ) then
+                        forcedSkin = mv[2] or 0
+                        break
+                    end
+                else
+                    if ( utf8.lower(mv) == utf8.lower(value) ) then
+                        forcedSkin = 0
+                        break
+                    end
+                end
+            end
+
+            character:SetSkin(forcedSkin, true)
+        else
+            character:SetSkin(0, true) -- Reset skin to 0 when model changes, as skins are model-specific
+        end
     end
 })
 
@@ -492,14 +551,67 @@ ax.character:RegisterVar("skin", {
             return false, "You must select a valid skin number for your character model. Please use the slider to choose a skin variant (usually 0-16) that you prefer for your character's appearance."
         end
 
+        -- If the faction disallows skin customization, ensure the provided skin
+        -- matches the forced skin for the selected model (if any).
+        local factionData = nil
+        if ( payload and payload.faction ) then
+            factionData = ax.faction:Get(payload.faction)
+        end
+
+        if ( factionData and factionData.allowSkinCustomization == false ) then
+            -- Determine the forced skin for the chosen model
+            local forcedSkin = nil
+            if ( payload and payload.model ) then
+                for _, mv in ipairs(factionData:GetModels() or {}) do
+                    if ( istable(mv) ) then
+                        if ( utf8.lower(mv[1]) == utf8.lower(payload.model) ) then
+                            forcedSkin = mv[2] or 0
+                            break
+                        end
+                    else
+                        if ( utf8.lower(mv) == utf8.lower(payload.model) ) then
+                            forcedSkin = 0
+                            break
+                        end
+                    end
+                end
+            end
+
+            if ( forcedSkin != nil ) then
+                if ( tonumber(value) != tonumber(forcedSkin) ) then
+                    return false, "Skin value does not match the faction-forced skin for the selected model."
+                end
+            else
+                -- No forced skin found; disallow arbitrary skin values for safety
+                return false, "Skin customization is disabled for your selected faction."
+            end
+        end
+
         return true
     end,
     canPopulate = function(this, payload, client)
         local factionData = ax.faction:Get(payload.faction)
         if ( !factionData ) then return false end
 
-        -- Allow customizable skins by default, unless faction specifically disables it
+        -- Client-side: only show the skin slider when the faction allows skin
+        -- customization. If customization is disabled, hide the UI control.
+        if ( CLIENT ) then
+            return factionData.allowSkinCustomization != false
+        end
+
+        -- Server-side: allow population when customization is enabled. If the
+        -- faction disallows customization, permit population only when the
+        -- payload.model matches a faction model entry that defines a forced
+        -- skin so the server can accept & persist the forced skin value.
         if ( factionData.allowSkinCustomization == false ) then
+            if ( payload and payload.model ) then
+                for _, mv in ipairs(factionData:GetModels() or {}) do
+                    if ( istable(mv) and utf8.lower(mv[1]) == utf8.lower(payload.model) ) then
+                        return true
+                    end
+                end
+            end
+
             return false
         end
 
@@ -513,13 +625,13 @@ ax.character:RegisterVar("skin", {
         option:Dock(TOP)
 
         local slider = container:Add("DNumSlider")
+        slider:Dock(TOP)
+        slider:DockMargin(0, 0, 0, ax.util:ScreenScaleH(16))
+        slider:SetZPos(this.sortOrder)
         slider:SetMin(0)
         slider:SetMax(16)
         slider:SetDecimals(0)
         slider:SetValue(payload.skin or 0)
-        slider:SetZPos(this.sortOrder)
-        slider:Dock(TOP)
-        slider:DockMargin(0, 0, 0, ax.util:ScreenScaleH(16))
         slider.OnValueChanged = function(_, value)
             payload.skin = math.floor(value)
 

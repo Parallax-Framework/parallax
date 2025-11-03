@@ -304,8 +304,6 @@ function PANEL:OnPopulateVars(container, category, payload)
         if ( IsValid(entity) ) then
             entity:SetSkin(payload.skin or 0)
         end
-
-        payload.skin = nil -- Prevent skin from being set again in OnPayloadChanged
     end
 end
 
