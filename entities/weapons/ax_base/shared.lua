@@ -35,6 +35,11 @@ SWEP.Primary = {
     TracerName = "Tracer"
 }
 
+SWEP.Primary.Sequence = SWEP.Primary.Sequence or ACT_VM_PRIMARYATTACK
+SWEP.Primary.PlaybackRate = SWEP.Primary.PlaybackRate or 1
+SWEP.Primary.IronSequence = SWEP.Primary.IronSequence or nil
+SWEP.Primary.IronPlaybackRate = SWEP.Primary.IronPlaybackRate or 1
+
 SWEP.Secondary = {
     ClipSize = -1,
     DefaultClip = -1,
@@ -216,7 +221,15 @@ function SWEP:PrimaryAttack()
     self:TakePrimaryAmmo(1)
     owner:SetAnimation(PLAYER_ATTACK1)
 
-    self:PlayAnimation(self.Primary.Sequence, self.Primary.PlaybackRate)
+    local anim = self.Primary.Sequence
+    local rate = self.Primary.PlaybackRate or 1
+
+    if ( self:GetIronSights() and self.Primary.IronSequence ) then
+        anim = self.Primary.IronSequence
+        rate = self.Primary.IronPlaybackRate or rate
+    end
+
+    self:PlayAnimation(anim, rate)
 
     -- Pump after shoot for shotguns
     if ( self.PumpAfterShoot ) then
@@ -271,6 +284,13 @@ function SWEP:ShootBullet(damage, num, cone)
     viewPunchAngle.x = self.Primary.Recoil / 4
     viewPunchAngle.y = math.Rand(-self.Primary.Recoil, self.Primary.Recoil) / 2
     viewPunchAngle.z = math.Rand(-self.Primary.Recoil, self.Primary.Recoil) / 4
+
+    local iron = self:GetIronSights()
+    if ( iron ) then
+        viewPunchAngle.x = viewPunchAngle.x / 2
+        viewPunchAngle.y = viewPunchAngle.y / 2
+        viewPunchAngle.z = viewPunchAngle.z / 2
+    end
 
     owner:FireBullets(bullet)
     owner:LagCompensation(false)
