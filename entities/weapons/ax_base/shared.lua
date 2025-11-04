@@ -576,6 +576,12 @@ function SWEP:Reload()
     if ( !IsValid(owner) ) then return end
     if ( !self:CanReload() ) then return end
 
+    -- Interrupt/clear recoil recovery when reloading so recovery doesn't run
+    -- while reload animations are playing.
+    if ( self.ResetRecoilRecovery ) then
+        self:ResetRecoilRecovery()
+    end
+
     if ( self.ShotgunReload ) then
         self:StartShotgunReload()
     else
@@ -619,6 +625,9 @@ function SWEP:StartShotgunReload()
     end
 
     self:SetReloading(true)
+    if ( self.ResetRecoilRecovery ) then
+        self:ResetRecoilRecovery()
+    end
     self:InsertShell()
     self:DefaultReload(ACT_VM_RELOAD)
 end
