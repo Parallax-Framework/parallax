@@ -227,7 +227,7 @@ function SWEP:PrimaryAttack()
         -- Add muzzle flash light
         local dlight = DynamicLight(self:EntIndex())
         if ( dlight ) then
-            dlight.pos = owner:GetShootPos() + owner:GetAimVector() * 30
+            dlight.pos = owner:GetShootPos() + owner:GetAimVector() * 32
             dlight.r = self.MuzzleLightColor.r
             dlight.g = self.MuzzleLightColor.g
             dlight.b = self.MuzzleLightColor.b
