@@ -40,6 +40,21 @@ SWEP.Primary.PlaybackRate = SWEP.Primary.PlaybackRate or 1
 SWEP.Primary.IronSequence = SWEP.Primary.IronSequence or nil
 SWEP.Primary.IronPlaybackRate = SWEP.Primary.IronPlaybackRate or 1
 
+-- Recoil system configuration
+SWEP.RecoilPitch = 1.0 -- Vertical recoil per shot
+SWEP.RecoilYaw = 0.5 -- Horizontal recoil per shot (random direction)
+SWEP.RecoilPitchMin = nil -- Optional min pitch for random range
+SWEP.RecoilPitchMax = nil -- Optional max pitch for random range
+SWEP.RecoilYawMin = nil -- Optional min yaw for random range
+SWEP.RecoilYawMax = nil -- Optional max yaw for random range
+SWEP.RecoilInterpSpeed = 15.0 -- How fast recoil interpolates to target (higher = snappier)
+SWEP.RecoilRecoverySpeed = 10.0 -- How fast recoil recovers (degrees per second)
+SWEP.RecoilRecoveryDelay = 0.1 -- Delay before recovery starts after shooting
+SWEP.RecoilIronSightMultiplier = 0.5 -- Recoil multiplier when aiming down sights
+SWEP.RecoilMaxPitch = 15.0 -- Maximum accumulated vertical recoil
+SWEP.RecoilMaxYaw = 10.0 -- Maximum accumulated horizontal recoil
+SWEP.RecoilPattern = nil -- Optional table of {pitch, yaw} vectors for pattern-based recoil
+
 SWEP.Secondary = {
     ClipSize = -1,
     DefaultClip = -1,
@@ -127,6 +142,20 @@ local function IncludeFile(path)
 end
 
 IncludeFile("core/sh_anims.lua")
+
+function SWEP:Initialize()
+    BaseClass.Initialize(self)
+
+    -- Initialize recoil state
+    self.RecoilAccumPitch = 0
+    self.RecoilAccumYaw = 0
+    self.RecoilTargetPitch = 0
+    self.RecoilTargetYaw = 0
+    self.LastRecoilTime = 0
+    self.ShotsFired = 0
+    self.LastEyeAngles = Angle(0, 0, 0)
+    self.RecoilControl = 0
+end
 
 function SWEP:SetupDataTables()
     self:NetworkVar("Bool", 0, "Reloading")
@@ -281,27 +310,236 @@ function SWEP:ShootBullet(damage, num, cone)
         bullet.TracerName = self.Primary.TracerName
     end
 
-    viewPunchAngle.x = self.Primary.Recoil / 4
-    viewPunchAngle.y = math.Rand(-self.Primary.Recoil, self.Primary.Recoil) / 2
-    viewPunchAngle.z = math.Rand(-self.Primary.Recoil, self.Primary.Recoil) / 4
-
-    local iron = self:GetIronSights()
-    if ( iron ) then
-        viewPunchAngle.x = viewPunchAngle.x / 2
-        viewPunchAngle.y = viewPunchAngle.y / 2
-        viewPunchAngle.z = viewPunchAngle.z / 2
-    end
-
     owner:FireBullets(bullet)
     owner:LagCompensation(false)
-    owner:ViewPunch(viewPunchAngle)
 
-    -- Kick up the client's view on the shooting client
     if ( IsFirstTimePredicted() and ( CLIENT or game.SinglePlayer() ) ) then
-        local eyeAng = owner:EyeAngles()
-        eyeAng.p = eyeAng.p - viewPunchAngle.x / 3
-        eyeAng.y = eyeAng.y - viewPunchAngle.y / 3
-        owner:SetEyeAngles(eyeAng)
+        self:ApplyRecoil()
+    end
+end
+
+--[[
+    Applies recoil to the weapon. This accumulates recoil and modifies the player's view angles.
+    Respects ironsight multipliers and optional recoil patterns.
+]]
+function SWEP:ApplyRecoil()
+    if ( SERVER ) then return end
+
+    local owner = self:GetOwner()
+    if ( !IsValid(owner) or !owner:IsPlayer() ) then return end
+
+    -- Initialize recoil state if not present
+    self.RecoilAccumPitch = self.RecoilAccumPitch or 0
+    self.RecoilAccumYaw = self.RecoilAccumYaw or 0
+    self.RecoilTargetPitch = self.RecoilTargetPitch or 0
+    self.RecoilTargetYaw = self.RecoilTargetYaw or 0
+    self.LastRecoilTime = self.LastRecoilTime or 0
+    self.ShotsFired = self.ShotsFired or 0
+
+    -- Calculate recoil multiplier based on ironsights
+    local multiplier = 1.0
+    if ( self:GetIronSights() ) then
+        multiplier = self.RecoilIronSightMultiplier
+    end
+
+    -- Determine recoil amounts
+    local pitch, yaw
+
+    if ( self.RecoilPattern and #self.RecoilPattern > 0 ) then
+        -- Use pattern-based recoil
+        local patternIndex = ( self.ShotsFired % #self.RecoilPattern ) + 1
+        local pattern = self.RecoilPattern[patternIndex]
+        pitch = pattern.pitch or pattern[1] or self.RecoilPitch
+        yaw = pattern.yaw or pattern[2] or 0
+    else
+        -- Use random recoil
+        if ( self.RecoilPitchMin and self.RecoilPitchMax ) then
+            pitch = math.Rand(self.RecoilPitchMin, self.RecoilPitchMax)
+        else
+            pitch = self.RecoilPitch
+        end
+
+        if ( self.RecoilYawMin and self.RecoilYawMax ) then
+            yaw = math.Rand(self.RecoilYawMin, self.RecoilYawMax)
+        else
+            yaw = math.Rand(-self.RecoilYaw, self.RecoilYaw)
+        end
+    end
+
+    -- Apply multiplier
+    pitch = pitch * multiplier
+    yaw = yaw * multiplier
+
+    -- Set target recoil (will be interpolated in Think)
+    self.RecoilTargetPitch = math.Clamp(self.RecoilTargetPitch + pitch, 0, self.RecoilMaxPitch)
+    self.RecoilTargetYaw = math.Clamp(self.RecoilTargetYaw + yaw, -self.RecoilMaxYaw, self.RecoilMaxYaw)
+
+    -- Track state
+    self.LastRecoilTime = CurTime()
+    self.ShotsFired = self.ShotsFired + 1
+end
+
+--[[
+    Think hook for recoil interpolation and recovery.
+]]
+function SWEP:Think()
+    BaseClass.Think(self)
+
+    if ( CLIENT and IsFirstTimePredicted() ) then
+        self:RecoilInterpolation()
+        self:RecoilRecovery()
+    end
+end
+
+--[[
+    Interpolates current recoil toward target recoil for smooth camera movement.
+]]
+function SWEP:RecoilInterpolation()
+    if ( !IsValid(self:GetOwner()) ) then return end
+
+    local owner = self:GetOwner()
+    if ( !owner:IsPlayer() ) then return end
+
+    -- Initialize recoil state if not present
+    self.RecoilAccumPitch = self.RecoilAccumPitch or 0
+    self.RecoilAccumYaw = self.RecoilAccumYaw or 0
+    self.RecoilTargetPitch = self.RecoilTargetPitch or 0
+    self.RecoilTargetYaw = self.RecoilTargetYaw or 0
+
+    -- Detect player input that attempts to control/counter recoil. We measure
+    -- the change in eye angles between frames and consider movement that
+    -- opposes the recoil direction as "control". We smooth this into a
+    -- RecoilControl factor in [0,1]. Higher values reduce automatic recovery.
+    local curEye = owner:EyeAngles()
+    self.LastEyeAngles = self.LastEyeAngles or curEye
+
+    local eyeDeltaP = curEye.p - self.LastEyeAngles.p
+    local eyeDeltaY = curEye.y - self.LastEyeAngles.y
+
+    local function sign(x)
+        if ( x > 0 ) then return 1 end
+        if ( x < 0 ) then return -1 end
+        return 0
+    end
+
+    local opposePitch = math.max(0, eyeDeltaP) -- positive p movement opposes downward recoil
+    local recoilYawDir = sign(self.RecoilTargetYaw - self.RecoilAccumYaw)
+    local opposeYaw = 0
+    if ( recoilYawDir > 0 ) then
+        opposeYaw = math.max(0, -eyeDeltaY)
+    elseif ( recoilYawDir < 0 ) then
+        opposeYaw = math.max(0, eyeDeltaY)
+    end
+
+    local controlInstant = math.Clamp((opposePitch + math.abs(opposeYaw)) * 10, 0, 1)
+    self.RecoilControl = Lerp(8 * FrameTime(), self.RecoilControl or 0, controlInstant)
+
+    local delta = FrameTime()
+    local interpSpeed = self.RecoilInterpSpeed
+
+    -- Calculate differences
+    local pitchDiff = self.RecoilTargetPitch - self.RecoilAccumPitch
+    local yawDiff = self.RecoilTargetYaw - self.RecoilAccumYaw
+
+    -- If differences are negligible, snap to target
+    if ( math.abs(pitchDiff) < 0.001 and math.abs(yawDiff) < 0.001 ) then
+        self.RecoilAccumPitch = self.RecoilTargetPitch
+        self.RecoilAccumYaw = self.RecoilTargetYaw
+        return
+    end
+
+    -- Interpolate toward target
+    local pitchStep = pitchDiff * interpSpeed * delta
+    local yawStep = yawDiff * interpSpeed * delta
+
+    -- Apply to view angles
+    if ( math.abs(pitchStep) > 0.001 or math.abs(yawStep) > 0.001 ) then
+        local ang = owner:EyeAngles()
+        ang.p = ang.p - pitchStep
+        ang.y = ang.y + yawStep
+        owner:SetEyeAngles(ang)
+
+        -- Update accumulated recoil
+        self.RecoilAccumPitch = self.RecoilAccumPitch + pitchStep
+        self.RecoilAccumYaw = self.RecoilAccumYaw + yawStep
+    end
+
+    -- Update last eye angles for the next frame (capture player's input)
+    self.LastEyeAngles = curEye
+end
+
+--[[
+    Recovers accumulated recoil over time, smoothly returning view angles toward original position.
+]]
+function SWEP:RecoilRecovery()
+    if ( !IsValid(self:GetOwner()) ) then return end
+
+    local owner = self:GetOwner()
+    if ( !owner:IsPlayer() ) then return end
+
+    -- Initialize recoil state if not present
+    self.RecoilAccumPitch = self.RecoilAccumPitch or 0
+    self.RecoilAccumYaw = self.RecoilAccumYaw or 0
+    self.RecoilTargetPitch = self.RecoilTargetPitch or 0
+    self.RecoilTargetYaw = self.RecoilTargetYaw or 0
+    self.LastRecoilTime = self.LastRecoilTime or 0
+    self.ShotsFired = self.ShotsFired or 0
+
+    -- Check if we should start recovering
+    if ( CurTime() - self.LastRecoilTime < self.RecoilRecoveryDelay ) then
+        return
+    end
+
+    -- If no recoil target accumulated, reset shots fired counter
+    if ( self.RecoilTargetPitch <= 0.001 and math.abs(self.RecoilTargetYaw) <= 0.001 ) then
+        self.RecoilTargetPitch = 0
+        self.RecoilTargetYaw = 0
+        self.RecoilAccumPitch = 0
+        self.RecoilAccumYaw = 0
+        self.ShotsFired = 0
+        return
+    end
+
+    -- Calculate recovery amount for this frame
+    local delta = FrameTime()
+    -- If the player is actively countering recoil, lower automatic recovery
+    local controlFactor = math.Clamp(self.RecoilControl or 0, 0, 0.95)
+    local recoveryScale = math.Clamp(1 - controlFactor * 0.9, 0.05, 1)
+    local recoveryAmount = self.RecoilRecoverySpeed * delta * recoveryScale
+
+    -- Recover pitch target
+    local pitchRecovery = math.min(recoveryAmount, self.RecoilTargetPitch)
+    if ( pitchRecovery > 0 ) then
+        self.RecoilTargetPitch = self.RecoilTargetPitch - pitchRecovery
+    end
+
+    -- Recover yaw target
+    local yawRecovery = math.min(recoveryAmount, math.abs(self.RecoilTargetYaw))
+    if ( yawRecovery > 0 ) then
+        if ( self.RecoilTargetYaw > 0 ) then
+            self.RecoilTargetYaw = self.RecoilTargetYaw - yawRecovery
+        else
+            self.RecoilTargetYaw = self.RecoilTargetYaw + yawRecovery
+        end
+    end
+end
+
+
+--[[
+    Resets recoil accumulation/targets and delays recovery. Call when an action
+    interrupts normal firing/recovery (reloads, weapon swap, etc.).
+]]
+function SWEP:ResetRecoilRecovery()
+    self.RecoilTargetPitch = 0
+    self.RecoilTargetYaw = 0
+    self.RecoilAccumPitch = 0
+    self.RecoilAccumYaw = 0
+    self.LastRecoilTime = CurTime()
+    self.ShotsFired = 0
+    self.RecoilControl = 0
+    local owner = self:GetOwner()
+    if ( IsValid(owner) and owner:IsPlayer() ) then
+        self.LastEyeAngles = owner:EyeAngles()
     end
 end
 
