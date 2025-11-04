@@ -186,7 +186,14 @@ function PANEL:PopulateTabs()
 
             title = tab:Add("ax.text")
             title:SetFont("ax.huge.bold")
-            title:SetText(utf8.upper(category))
+
+            local displayText = category
+            local infoVar = ax.character.vars[category]
+            if ( infoVar and ( infoVar.localised or infoVar.localized ) ) then
+                displayText = ax.localisation:GetPhrase("mainmenu.category." .. category)
+            end
+
+            title:SetText( utf8.upper( displayText ) )
             title:Dock(TOP)
             title:DockMargin(ax.util:ScreenScale(32), ax.util:ScreenScaleH(32), 0, 0)
 

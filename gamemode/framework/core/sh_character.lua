@@ -32,6 +32,7 @@ ax.character:RegisterVar("faction", {
     field = "faction",
     fieldType = ax.type.number,
     category = "faction",
+    localized = true,
     default = 0,
     validate = function(this, value, payload, client)
         if ( !isnumber(value) or value <= 0 ) then
@@ -122,9 +123,7 @@ ax.character:RegisterVar("faction", {
                 local imageHeight = height * 0.75
                 imageHeight = math.Round(imageHeight)
 
-                surface.SetDrawColor(color_white)
-                surface.SetMaterial(banner)
-                surface.DrawTexturedRect(0, 0, width, imageHeight)
+                ax.render.DrawMaterial(0, 0, 0, width, imageHeight, color_white, banner)
 
                 local inertia = factionButton:GetInertia()
                 local boxHeightStatic = (height * 0.15)
