@@ -29,7 +29,7 @@ ax.option:Add("thirdperson", ax.type.bool, false, {
     bNoNetworking = true
 })
 
-ax.option:Add("thirdpersonX", ax.type.number, 25, {
+ax.option:Add("thirdperson.x", ax.type.number, 25, {
     category = "camera",
     subCategory = "thirdperson",
     description = "X offset for third-person camera.",
@@ -39,7 +39,7 @@ ax.option:Add("thirdpersonX", ax.type.number, 25, {
     decimals = 0
 })
 
-ax.option:Add("thirdpersonY", ax.type.number, 0, {
+ax.option:Add("thirdperson.y", ax.type.number, 0, {
     category = "camera",
     subCategory = "thirdperson",
     description = "Y offset for third-person camera.",
@@ -49,7 +49,7 @@ ax.option:Add("thirdpersonY", ax.type.number, 0, {
     decimals = 0
 })
 
-ax.option:Add("thirdpersonZ", ax.type.number, -50, {
+ax.option:Add("thirdperson.z", ax.type.number, -50, {
     category = "camera",
     subCategory = "thirdperson",
     description = "Z offset for third-person camera.",
@@ -59,28 +59,28 @@ ax.option:Add("thirdpersonZ", ax.type.number, -50, {
     decimals = 0
 })
 
-ax.option:Add("thirdpersonFollowHead", ax.type.bool, true, {
+ax.option:Add("thirdperson.follow.head", ax.type.bool, true, {
     category = "camera",
     subCategory = "thirdperson",
     description = "Make the third-person camera follow the player's model head movements.",
     bNoNetworking = true
 })
 
-ax.option:Add("thirdpersonFollowTraceAngles", ax.type.bool, true, {
+ax.option:Add("thirdperson.follow.angles", ax.type.bool, true, {
     category = "camera",
     subCategory = "thirdperson",
     description = "Make the third-person camera follow the player's aim direction instead of view angles.",
     bNoNetworking = true
 })
 
-ax.option:Add("thirdpersonFollowTraceFieldOfView", ax.type.bool, true, {
+ax.option:Add("thirdperson.follow.fov", ax.type.bool, true, {
     category = "camera",
     subCategory = "thirdperson",
     description = "Make the third-person camera FOV calculated based on the distance from the trace end point to the player.",
     bNoNetworking = true
 })
 
-ax.option:Add("thirdpersonDesiredPositionInterpolation", ax.type.number, 5, {
+ax.option:Add("thirdperson.desired.lerp.pos", ax.type.number, 5, {
     category = "camera",
     subCategory = "thirdperson",
     description = "Interpolation speed for the third-person camera desired position. Lower values will be more smooth but also more slower to respond. Set to 0 to disable interpolation.",
@@ -90,7 +90,7 @@ ax.option:Add("thirdpersonDesiredPositionInterpolation", ax.type.number, 5, {
     decimals = 0
 })
 
-ax.option:Add("thirdpersonDesiredAngleInterpolation", ax.type.number, 5, {
+ax.option:Add("thirdperson.desired.lerp.angle", ax.type.number, 5, {
     category = "camera",
     subCategory = "thirdperson",
     description = "Interpolation speed for the third-person camera desired angle. Lower values will be more smooth but also more slower to respond. Set to 0 to disable interpolation.",
@@ -100,7 +100,7 @@ ax.option:Add("thirdpersonDesiredAngleInterpolation", ax.type.number, 5, {
     decimals = 0
 })
 
-ax.option:Add("thirdpersonDesiredFieldOfViewInterpolation", ax.type.number, 5, {
+ax.option:Add("thirdperson.desired.lerp.fov", ax.type.number, 5, {
     category = "camera",
     subCategory = "thirdperson",
     description = "Interpolation speed for the third-person camera desired FOV. Lower values will be more smooth but also more slower to respond. Set to 0 to disable interpolation.",
@@ -111,29 +111,57 @@ ax.option:Add("thirdpersonDesiredFieldOfViewInterpolation", ax.type.number, 5, {
 })
 
 ax.localization:Register("en", {
-    thirdperson = "Third Person",
-    thirdpersonX = "Third Person X Offset",
-    thirdpersonY = "Third Person Y Offset",
-    thirdpersonZ = "Third Person Z Offset",
-    thirdpersonFollowHead = "Third Person Follow Head",
-    thirdpersonFollowTraceAngles = "Third Person Follow Trace Angles",
-    thirdpersonFollowTraceFieldOfView = "Third Person Follow Trace Field Of View",
-    thirdpersonDesiredPositionInterpolation = "Third Person Desired Position Interpolation",
-    thirdpersonDesiredAngleInterpolation = "Third Person Desired Angle Interpolation",
-    thirdpersonDesiredFieldOfViewInterpolation = "Third Person Desired Field Of View Interpolation"
+    ["category.camera"] = "Camera",
+    ["subcategory.thirdperson"] = "Third Person",
+    ["config.thirdperson"] = "Enable Third Person",
+    ["config.thirdperson.help"] = "Wether or not the server allows third-person camera functionality.",
+    ["option.thirdperson"] = "Enable Third Person",
+    ["option.thirdperson.help"] = "Toggle third-person camera mode.",
+    ["option.thirdperson.x"] = "X Offset",
+    ["option.thirdperson.x.help"] = "X offset for third-person camera.",
+    ["option.thirdperson.y"] = "Y Offset",
+    ["option.thirdperson.y.help"] = "Y offset for third-person camera.",
+    ["option.thirdperson.z"] = "Z Offset",
+    ["option.thirdperson.z.help"] = "Z offset for third-person camera.",
+    ["option.thirdperson.follow.head"] = "Follow Head",
+    ["option.thirdperson.follow.head.help"] = "Make the third-person camera follow the player's model head movements.",
+    ["option.thirdperson.follow.angles"] = "Follow Angles",
+    ["option.thirdperson.follow.angles.help"] = "Make the third-person camera follow the player's aim direction instead of view angles.",
+    ["option.thirdperson.follow.fov"] = "Follow Field of View",
+    ["option.thirdperson.follow.fov.help"] = "Make the third-person camera FOV calculated based on the distance from the trace end point to the player.",
+    ["option.thirdperson.desired.lerp.pos"] = "Desired Position Interpolation Speed",
+    ["option.thirdperson.desired.lerp.pos.help"] = "Interpolation speed for the third-person camera desired position. Lower values will be more smooth but also more slower to respond. Set to 0 to disable interpolation.",
+    ["option.thirdperson.desired.lerp.angle"] = "Desired Angle Interpolation Speed",
+    ["option.thirdperson.desired.lerp.angle.help"] = "Interpolation speed for the third-person camera desired angle. Lower values will be more smooth but also more slower to respond. Set to 0 to disable interpolation.",
+    ["option.thirdperson.desired.lerp.fov"] = "Desired FOV Interpolation Speed",
+    ["option.thirdperson.desired.lerp.fov.help"] = "Interpolation speed for the third-person camera desired FOV. Lower values will be more smooth but also more slower to respond. Set to 0 to disable interpolation."
 })
 
-ax.localization:Register("bg", {
-    thirdperson = "Трето лице",
-    thirdpersonX = "X изместване на камерата от трето лице",
-    thirdpersonY = "Y изместване на камерата от трето лице",
-    thirdpersonZ = "Z изместване на камерата от трето лице",
-    thirdpersonFollowHead = "Камерата от трето лице следва главата",
-    thirdpersonFollowTraceAngles = "Камерата от трето лице следва ъглите на траса",
-    thirdpersonFollowTraceFieldOfView = "Полето на виждане на камерата от трето лице следва траса",
-    thirdpersonDesiredPositionInterpolation = "Интерполация на желаната позиция на камерата от трето лице",
-    thirdpersonDesiredAngleInterpolation = "Интерполация на желания ъгъл на камерата от трето лице",
-    thirdpersonDesiredFieldOfViewInterpolation = "Интерполация на желаното поле на виждане на камерата от трето лице"
+ax.localization:Register("de", {
+    ["category.camera"] = "Kamera",
+    ["subcategory.thirdperson"] = "Dritte Person",
+    ["config.thirdperson"] = "Dritte Person aktivieren",
+    ["config.thirdperson.help"] = "Ob der Server die Dritt-Person-Kamerafunktionalität erlaubt.",
+    ["option.thirdperson"] = "Dritte Person aktivieren",
+    ["option.thirdperson.help"] = "Dritte-Person-Kameramodus umschalten.",
+    ["option.thirdperson.x"] = "X-Versatz",
+    ["option.thirdperson.x.help"] = "X-Versatz für die Dritt-Person-Kamera.",
+    ["option.thirdperson.y"] = "Y-Versatz",
+    ["option.thirdperson.y.help"] = "Y-Versatz für die Dritt-Person-Kamera.",
+    ["option.thirdperson.z"] = "Z-Versatz",
+    ["option.thirdperson.z.help"] = "Z-Versatz für die Dritt-Person-Kamera.",
+    ["option.thirdperson.follow.head"] = "Kopf folgen",
+    ["option.thirdperson.follow.head.help"] = "Die Dritt-Person-Kamera soll den Kopfbewegungen des Spielermodells folgen.",
+    ["option.thirdperson.follow.angles"] = "Winkel folgen",
+    ["option.thirdperson.follow.angles.help"] = "Die Dritt-Person-Kamera soll der Zielrichtung des Spielers anstelle der Blickwinkel folgen.",
+    ["option.thirdperson.follow.fov"] = "Sichtfeld folgen",
+    ["option.thirdperson.follow.fov.help"] = "Das FOV der Dritt-Person-Kamera wird basierend auf dem Abstand vom Endpunkt der Spur zum Spieler berechnet.",
+    ["option.thirdperson.desired.lerp.pos"] = "Gewünschte Positions-Interpolation Geschwindigkeit",
+    ["option.thirdperson.desired.lerp.pos.help"] = "Interpolationsgeschwindigkeit für die gewünschte Position der Dritt-Person-Kamera. Niedrigere Werte sind glatter, reagieren aber auch langsamer. Auf 0 setzen, um die Interpolation zu deaktivieren.",
+    ["option.thirdperson.desired.lerp.angle"] = "Gewünschte Winkel-Interpolation Geschwindigkeit",
+    ["option.thirdperson.desired.lerp.angle.help"] = "Interpolationsgeschwindigkeit für den gewünschten Winkel der Dritt-Person-Kamera. Niedrigere Werte sind glatter, reagieren aber auch langsamer. Auf 0 setzen, um die Interpolation zu deaktivieren.",
+    ["option.thirdperson.desired.lerp.fov"] = "Gewünschte FOV-Interpolation Geschwindigkeit",
+    ["option.thirdperson.desired.lerp.fov.help"] = "Interpolationsgeschwindigkeit für das gewünschte FOV der Dritt-Person-Kamera. Niedrigere Werte sind glatter, reagieren aber auch langsamer. Auf 0 setzen, um die Interpolation zu deaktivieren."
 })
 
 if ( SERVER ) then return end
@@ -174,7 +202,7 @@ ax.viewstack:RegisterModifier("thirdperson", function(client, view)
     -- start from the player's eye position
     local startPos = client:EyePos()
     local head = client:LookupBone("ValveBiped.Bip01_Head1")
-    if ( ax.option:Get("thirdpersonFollowHead") and head ) then
+    if ( ax.option:Get("thirdperson.follow.head") and head ) then
         local headPos, _ = client:GetBonePosition(head)
         if ( headPos ) then
             startPos = headPos
@@ -184,7 +212,7 @@ ax.viewstack:RegisterModifier("thirdperson", function(client, view)
     local ang = view.angles
 
     -- desired camera offset relative to view angles
-    local desiredPos = startPos + ang:Forward() * ax.option:Get("thirdpersonZ") + ang:Right() * ax.option:Get("thirdpersonX") + ang:Up() * ax.option:Get("thirdpersonY")
+    local desiredPos = startPos + ang:Forward() * ax.option:Get("thirdperson.z") + ang:Right() * ax.option:Get("thirdperson.x") + ang:Up() * ax.option:Get("thirdperson.y")
 
     local traceCamera = util.TraceHull({
         start = startPos,
@@ -207,16 +235,16 @@ ax.viewstack:RegisterModifier("thirdperson", function(client, view)
     })
 
     local desiredAng = ang
-    if ( ax.option:Get("thirdpersonFollowTraceAngles") ) then
+    if ( ax.option:Get("thirdperson.follow.angles") ) then
         local traceAng = (trace.HitPos - desiredPos):Angle()
         desiredAng = traceAng
     end
 
     local desiredFOV = 0
 
-    local posInterpSpeed = ax.option:Get("thirdpersonDesiredPositionInterpolation")
-    local angInterpSpeed = ax.option:Get("thirdpersonDesiredAngleInterpolation")
-    local fovInterpSpeed = ax.option:Get("thirdpersonDesiredFieldOfViewInterpolation")
+    local posInterpSpeed = ax.option:Get("thirdperson.desired.lerp.pos")
+    local angInterpSpeed = ax.option:Get("thirdperson.desired.lerp.angle")
+    local fovInterpSpeed = ax.option:Get("thirdperson.desired.lerp.fov")
 
     local ft = math.Clamp(FrameTime(), 0, 0.1)
     if ( posInterpSpeed > 0 ) then
@@ -231,7 +259,7 @@ ax.viewstack:RegisterModifier("thirdperson", function(client, view)
         curAng = desiredAng
     end
 
-    if ( ax.option:Get("thirdpersonFollowTraceFieldOfView") ) then
+    if ( ax.option:Get("thirdperson.follow.fov") ) then
         local distance = trace.StartPos:Distance(trace.HitPos)
         desiredFOV = math.Remap(distance / 4, 0, 2048, 0, 75)
     end
