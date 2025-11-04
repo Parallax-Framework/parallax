@@ -197,8 +197,6 @@ function SWEP:CanPrimaryAttack()
     return true
 end
 
-local viewPunchAngle = Angle()
-
 function SWEP:PrimaryAttack()
     if ( CurTime() < self:GetNextPrimaryFire() ) then return end
 
