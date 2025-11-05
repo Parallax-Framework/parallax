@@ -1,8 +1,8 @@
 local MODULE = MODULE
 
-MODULE.Name = "Animations"
-MODULE.Description = "Handles player animations."
-MODULE.Author = "Riggs"
+MODULE.name = "Animations"
+MODULE.description = "Handles player animations."
+MODULE.author = "Riggs"
 
 ax.config:Add("animations.ik.enabled", ax.type.bool, true, {
     category = "animations",

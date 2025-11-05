@@ -11,9 +11,9 @@
 
 local MODULE = MODULE
 
-MODULE.Name = "Curvy"
-MODULE.Description = "Adds a curvy visual style to HUD elements."
-MODULE.Author = "Riggs"
+MODULE.name = "Curvy"
+MODULE.description = "Adds a curvy visual style to HUD elements."
+MODULE.author = "Riggs"
 
 ax.option:Add("curvyEnabled", ax.type.bool, true, { category = "visual", subCategory = "curvy", description = "Enable or disable the curvy visual effect entirely." })
 ax.option:Add("curvyCurveAmount", ax.type.number, 64, { category = "visual", subCategory = "curvy", min = 0, max = 256, decimals = 0, description = "Controls how curved the screen appears. Higher values = more curve." })

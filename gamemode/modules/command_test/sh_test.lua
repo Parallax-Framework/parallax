@@ -98,5 +98,5 @@ ax.command:Add("vip_command", {
     end
 })
 
-MODULE.Name = "Command System Test"
-MODULE.Description = "Testing module for the ax.command system"
+MODULE.name = "Command System Test"
+MODULE.description = "Testing module for the ax.command system"

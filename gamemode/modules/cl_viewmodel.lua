@@ -11,9 +11,9 @@
 
 local MODULE = MODULE
 
-MODULE.Name = "Viewmodel Motion"
-MODULE.Author = "kek, Revlis, Riggs"
-MODULE.Description = "Adds a small muzzle-driven camera sway effect to the player's viewmodel, along with viewmodel inertia."
+MODULE.name = "Viewmodel Motion"
+MODULE.author = "kek, Revlis, Riggs"
+MODULE.description = "Adds a small muzzle-driven camera sway effect to the player's viewmodel, along with viewmodel inertia."
 
 CreateClientConVar("muzzlecam_scale", "1", true, false)
 

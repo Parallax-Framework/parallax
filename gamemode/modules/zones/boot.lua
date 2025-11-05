@@ -11,6 +11,6 @@
 
 local MODULE = MODULE
 
-MODULE.Name = "Zones"
-MODULE.Description = "Adds support for defining zones in the world with custom properties."
-MODULE.Author = "Riggs"
+MODULE.name = "Zones"
+MODULE.description = "Adds support for defining zones in the world with custom properties."
+MODULE.author = "Riggs"

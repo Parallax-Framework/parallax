@@ -1,7 +1,7 @@
 local MODULE = MODULE
 
-MODULE.Name = "Discord"
-MODULE.Description = "Transmits events from the server to Discord."
-MODULE.Author = "Riggs"
+MODULE.name = "Discord"
+MODULE.description = "Transmits events from the server to Discord."
+MODULE.author = "Riggs"
 
 ax.discord = ax.discord or MODULE

@@ -11,9 +11,9 @@
 
 local MODULE = MODULE
 
-MODULE.Name = "Third Person"
-MODULE.Description = "Adds third-person camera functionality to the gamemode."
-MODULE.Author = "Riggs"
+MODULE.name = "Third Person"
+MODULE.description = "Adds third-person camera functionality to the gamemode."
+MODULE.author = "Riggs"
 
 ax.config:Add("thirdperson", ax.type.bool, true, {
     category = "camera",

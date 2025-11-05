@@ -11,6 +11,6 @@
 
 local MODULE = MODULE
 
-MODULE.Name = "GShaders Support"
-MODULE.Description = "Adds internal support for GShaders."
-MODULE.Author = "Riggs"
+MODULE.name = "GShaders Support"
+MODULE.description = "Adds internal support for GShaders."
+MODULE.author = "Riggs"

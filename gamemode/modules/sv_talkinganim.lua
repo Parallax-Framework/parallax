@@ -16,9 +16,9 @@ if ( !istable(WOS_DYNABASE) ) then
     return
 end
 
-MODULE.Name = "Talking Animation"
-MODULE.Description = "Adds talking animation functionality to the gamemode."
-MODULE.Author = "Riggs"
+MODULE.name = "Talking Animation"
+MODULE.description = "Adds talking animation functionality to the gamemode."
+MODULE.author = "Riggs"
 
 local gestures = {
     [WOS_DYNABASE.MALE] = {

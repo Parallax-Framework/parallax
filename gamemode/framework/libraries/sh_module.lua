@@ -49,7 +49,7 @@ function ax.module:Include(path, timeFilter)
 
             MODULE = { UniqueID = moduleName }
                 ax.util:Include(filePath)
-                ax.util:PrintSuccess("Module \"" .. tostring(MODULE.Name) .. "\" initialized successfully.")
+                ax.util:PrintSuccess("Module \"" .. tostring(MODULE.name) .. "\" initialized successfully.")
                 ax.module.stored[moduleName] = MODULE
             MODULE = nil
         end
@@ -101,7 +101,7 @@ function ax.module:Include(path, timeFilter)
                     ax.class:Include(path .. "/" .. dirName .. "/classes", timeFilter)
                     ax.item:Include(path .. "/" .. dirName .. "/items", timeFilter)
 
-                    ax.util:PrintSuccess("Module \"" .. tostring(MODULE.Name) .. "\" initialized successfully.")
+                    ax.util:PrintSuccess("Module \"" .. tostring(MODULE.name) .. "\" initialized successfully.")
                     ax.module.stored[MODULE.UniqueID] = MODULE
 
                     MODULE = nil
