@@ -563,3 +563,17 @@ function MODULE:TranslateEvent(client, event, data, desired)
         return "gesture_shoot_" .. string.sub(desired, 7)
     end
 end
+
+function MODULE:GetPlayerHoldType(client, weapon, holdType)
+    if ( !IsValid(client) ) then return end
+
+    -- Change our hold type based on the weapon raised state, and the current hold type
+    -- some weapons have SWEP.HoldTypeHolstered defined, like ARC9 primarily
+    if ( IsValid(weapon) and weapon.HoldTypeHolstered and weapon.HoldTypeHolstered != holdType ) then
+        if ( !client:IsWeaponRaised() ) then
+            return weapon.HoldTypeHolstered
+        else
+            return weapon.HoldType
+        end
+    end
+end

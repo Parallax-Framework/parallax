@@ -20,6 +20,12 @@ function ax.player.meta:GetHoldType()
     local holdType = weapon:GetHoldType()
     if ( !holdType ) then return "normal" end
 
+    -- Check for hooks that may modify the hold type
+    local hookedHoldType = hook.Run("GetPlayerHoldType", self, weapon, holdType)
+    if ( isstring(hookedHoldType) ) then
+        return hookedHoldType
+    end
+
     return HOLDTYPE_TRANSLATOR[holdType] or holdType
 end
 
