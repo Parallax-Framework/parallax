@@ -114,16 +114,21 @@ local hide = {
     ["CHudCrosshair"] = true,
 }
 
+local cameraShow = {
+    ["CHudWeapon"] = true,
+    ["CHudWeaponSelection"] = true,
+}
+
 function GM:HUDShouldDraw(name)
     if ( hide[name] ) then return false end
 
     local client = ax.client
     if ( !IsValid(client) ) then return false end
-    if ( client:GetViewEntity() != client ) then return false end
+    if ( client:GetViewEntity() != client and cameraShow[name] != true ) then return false end
     if ( gui.IsGameUIVisible() ) then return false end
 
     local weapon = client:GetActiveWeapon()
-    if ( IsValid(weapon) and weapon:GetClass() == "gmod_camera" ) then return false end
+    if ( IsValid(weapon) and weapon:GetClass() == "gmod_camera" and cameraShow[name] != true ) then return false end
 
     return true
 end
