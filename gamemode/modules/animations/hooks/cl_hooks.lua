@@ -27,3 +27,11 @@ function MODULE:OnConfigChanged(key, oldValue, newValue)
         ApplyIK(client, newValue)
     end
 end
+
+-- Support for blocking TPIK in ARC9 when weapon is not raised
+function MODULE:ARC9_Hook_BlockTPIK(weapon)
+    local owner = weapon:GetOwner()
+    if ( !owner:IsWeaponRaised() ) then
+        return true
+    end
+end
