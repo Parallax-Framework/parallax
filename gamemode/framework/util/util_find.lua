@@ -109,7 +109,29 @@ function ax.util:FindCharacter(identifier)
         return ax.character.instances[identifierNumber]
     end
 
+    -- If searching by name/string, prefer active characters (those players are
+    -- currently using). Only if no active character matches do we fall back to
+    -- searching the full set of instanced (offline) characters in
+    -- ax.character.instances.
     if ( isstring(identifier) ) then
+        -- First: search active characters bound to players
+        for _, client in player.Iterator() do
+            if ( IsValid(client) ) then
+                local char = client:GetCharacter()
+                if ( char ) then
+                    local name = char:GetName()
+                    if ( name == identifier ) then
+                        return char -- exact match
+                    elseif ( utf8.lower(name) == utf8.lower(identifier) ) then
+                        return char -- case-insensitive exact match
+                    elseif ( self:FindString(name, identifier) ) then
+                        return char -- partial match
+                    end
+                end
+            end
+        end
+
+        -- No active match found; fall back to all instanced characters
         for _, char in pairs(ax.character.instances) do
             local name = char:GetName()
             if ( name == identifier ) then
