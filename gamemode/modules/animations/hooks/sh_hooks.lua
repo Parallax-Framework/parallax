@@ -564,15 +564,16 @@ function MODULE:TranslateEvent(client, event, data, desired)
     end
 end
 
+-- Official ARC9 integration for hold type modification
 function MODULE:GetPlayerHoldType(client, weapon, holdType)
-    if ( !IsValid(client) ) then return end
+    if ( !tobool(ARC9) ) then return end
 
-    -- Change our hold type based on the weapon raised state, and the current hold type
-    -- some weapons have SWEP.HoldTypeHolstered defined, like ARC9 primarily
-    if ( IsValid(weapon) and weapon.HoldTypeHolstered and weapon.HoldTypeHolstered != holdType ) then
+    if ( IsValid(weapon) and weapon.HoldTypeHolstered and weapon.Class == ARC9:GetPhrase("eft_class_weapon_pist") ) then
         if ( !client:IsWeaponRaised() ) then
+            print("Using HoldTypeHolstered for weapon: " .. weapon:GetClass(), weapon.HoldTypeHolstered)
             return weapon.HoldTypeHolstered
         else
+            print("Using normal HoldType for weapon: " .. weapon:GetClass())
             return weapon.HoldType
         end
     end
