@@ -14,7 +14,7 @@ HOLDTYPE_TRANSLATOR[""] = "normal"
 HOLDTYPE_TRANSLATOR["physgun"] = "smg"
 HOLDTYPE_TRANSLATOR["ar2"] = "ar2"
 HOLDTYPE_TRANSLATOR["crossbow"] = "shotgun"
-HOLDTYPE_TRANSLATOR["rpg"] = "shotgun"
+HOLDTYPE_TRANSLATOR["rpg"] = "rpg"
 HOLDTYPE_TRANSLATOR["slam"] = "normal"
 HOLDTYPE_TRANSLATOR["grenade"] = "grenade"
 HOLDTYPE_TRANSLATOR["fist"] = "normal"
@@ -91,6 +91,16 @@ ax.animations.stored["citizen_male"] = {
         ["reload"] = "gesture_reload_ar2",
         ["land"] = "jump_holding_land"
     },
+    ["rpg"] = {
+        [ACT_MP_STAND_IDLE] = {ACT_IDLE_SMG1_RELAXED, ACT_IDLE_ANGRY_SMG1},
+        [ACT_MP_CROUCH_IDLE] = {ACT_COVER_LOW, ACT_RANGE_AIM_SMG1_LOW},
+        [ACT_MP_WALK] = {ACT_WALK_RIFLE_RELAXED, ACT_WALK_AIM_RIFLE_STIMULATED},
+        [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH_RIFLE, ACT_WALK_CROUCH_AIM_RIFLE},
+        [ACT_MP_RUN] = {ACT_RUN_RIFLE_RELAXED, ACT_RUN_AIM_RIFLE_STIMULATED},
+        ["shoot"] = "gesture_shoot_ar2",
+        ["reload"] = "gesture_reload_ar2",
+        ["land"] = "jump_holding_land"
+    },
     ["melee"] = {
         [ACT_MP_STAND_IDLE] = {ACT_IDLE, ACT_IDLE_ANGRY_MELEE},
         [ACT_MP_CROUCH_IDLE] = {ACT_COVER_LOW, ACT_COVER_LOW},
@@ -146,6 +156,15 @@ ax.animations.stored["citizen_female"] = {
         ["shoot"] = ACT_GESTURE_RANGE_ATTACK_SHOTGUN
     },
     ["ar2"] = {
+        [ACT_MP_STAND_IDLE] = {ACT_IDLE_SMG1_RELAXED, ACT_IDLE_ANGRY_SMG1},
+        [ACT_MP_CROUCH_IDLE] = {ACT_COVER_LOW, ACT_RANGE_AIM_SMG1_LOW},
+        [ACT_MP_WALK] = {ACT_WALK_RIFLE_RELAXED, ACT_WALK_AIM_RIFLE_STIMULATED},
+        [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH_RIFLE, ACT_WALK_CROUCH_AIM_RIFLE},
+        [ACT_MP_RUN] = {ACT_RUN_RIFLE_RELAXED, ACT_RUN_AIM_RIFLE_STIMULATED},
+        ["shoot"] = ACT_GESTURE_RANGE_ATTACK_SMG1,
+        ["reload"] = ACT_GESTURE_RELOAD_SMG1
+    },
+    ["rpg"] = {
         [ACT_MP_STAND_IDLE] = {ACT_IDLE_SMG1_RELAXED, ACT_IDLE_ANGRY_SMG1},
         [ACT_MP_CROUCH_IDLE] = {ACT_COVER_LOW, ACT_RANGE_AIM_SMG1_LOW},
         [ACT_MP_WALK] = {ACT_WALK_RIFLE_RELAXED, ACT_WALK_AIM_RIFLE_STIMULATED},
@@ -223,6 +242,16 @@ ax.animations.stored["overwatch"] = {
         ["reload"] = "gesture_reload_ar2",
         ["land"] = "jump_holding_land"
     },
+    ["rpg"] = {
+        [ACT_MP_STAND_IDLE] = {ACT_IDLE_SMG1, ACT_IDLE_ANGRY_SMG1},
+        [ACT_MP_CROUCH_IDLE] = {ACT_CROUCHIDLE, ACT_CROUCHIDLE},
+        [ACT_MP_WALK] = {ACT_WALK_RIFLE, ACT_WALK_AIM_RIFLE},
+        [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH_RIFLE, ACT_WALK_CROUCH_RIFLE},
+        [ACT_MP_RUN] = {ACT_RUN_RIFLE, ACT_RUN_AIM_RIFLE},
+        ["shoot"] = "gesture_shoot_ar2",
+        ["reload"] = "gesture_reload_ar2",
+        ["land"] = "jump_holding_land"
+    },
     ["melee"] = {
         [ACT_MP_STAND_IDLE] = {"idle_unarmed", ACT_IDLE_ANGRY},
         [ACT_MP_CROUCH_IDLE] = {ACT_CROUCHIDLE, ACT_CROUCHIDLE},
@@ -291,6 +320,15 @@ ax.animations.stored["metrocop"] = {
         ["shoot"] = "gesture_shoot_rpg",
         ["reload"] = "gesture_reload_smg1"
     },
+    ["rpg"] = {
+        [ACT_MP_STAND_IDLE] = {"ar2idle1", "ar2angryidle1"},
+        [ACT_MP_WALK] = {"walk_hold_ar2", "walk_aiming_ar2_all"},
+        [ACT_MP_RUN] = {"run_hold_ar2", "run_aiming_ar2_all"},
+        [ACT_MP_CROUCH_IDLE] = {ACT_COVER_SMG1_LOW, ACT_COVER_SMG1_LOW},
+        [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH, ACT_WALK_CROUCH},
+        ["shoot"] = "gesture_shoot_rpg",
+        ["reload"] = "gesture_reload_smg1"
+    },
     ["melee"] = {
         [ACT_MP_STAND_IDLE] = {{"batonidle1", "batonidle2"}, "batonangryidle1"},
         [ACT_MP_WALK] = {"walk_all", "walk_hold_baton_angry"},
@@ -341,6 +379,13 @@ ax.animations.stored["vortigaunt"] = {
         [ACT_MP_CROUCHWALK] = {ACT_WALK, ACT_WALK}
     },
     ["ar2"] = {
+        [ACT_MP_STAND_IDLE] = {ACT_IDLE, "TCidlecombat"},
+        [ACT_MP_WALK] = {ACT_WALK, "Walk_all_TC"},
+        [ACT_MP_RUN] = {ACT_RUN, "run_all_TC"},
+        [ACT_MP_CROUCH_IDLE] = {"crouchidle", "crouchidle"},
+        [ACT_MP_CROUCHWALK] = {ACT_WALK, ACT_WALK}
+    },
+    ["rpg"] = {
         [ACT_MP_STAND_IDLE] = {ACT_IDLE, "TCidlecombat"},
         [ACT_MP_WALK] = {ACT_WALK, "Walk_all_TC"},
         [ACT_MP_RUN] = {ACT_RUN, "run_all_TC"},
@@ -417,6 +462,17 @@ ax.animations.stored["player"] = {
         ["land"] = "jump_land",
         ["shoot"] = "range_ar2",
         ["reload"] = "gesture_reload_ar2"
+    },
+    ["rpg"] = {
+        [ACT_MP_STAND_IDLE] = {"idle_passive", "idle_rpg"},
+        [ACT_MP_WALK] = {"walk_passive", "walk_rpg"},
+        [ACT_MP_RUN] = {"run_passive", "run_rpg"},
+        [ACT_MP_CROUCH_IDLE] = {"cidle_passive", "cidle_rpg"},
+        [ACT_MP_CROUCHWALK] = {"cwalk_passive", "cwalk_rpg"},
+        [ACT_MP_JUMP] = {"jump_passive", "jump_rpg"},
+        ["land"] = "jump_land",
+        ["shoot"] = "range_rpg",
+        ["reload"] = "gesture_reload_rpg"
     },
     ["melee"] = {
         [ACT_MP_STAND_IDLE] = {"idle_all_01", "idle_melee"},
@@ -495,6 +551,17 @@ ax.animations.stored["player_citizen_male"] = {
         ["shoot"] = "range_ar2",
         ["reload"] = "gesture_reload_ar2"
     },
+    ["rpg"] = {
+        [ACT_MP_STAND_IDLE] = {"idle_passive", "idle_rpg"},
+        [ACT_MP_WALK] = {"walk_passive", "walk_rpg"},
+        [ACT_MP_RUN] = {"run_passive", "run_rpg"},
+        [ACT_MP_CROUCH_IDLE] = {"cidle_passive", "cidle_rpg"},
+        [ACT_MP_CROUCHWALK] = {"cwalk_passive", "cwalk_rpg"},
+        [ACT_MP_JUMP] = {"jump_passive", "jump_rpg"},
+        ["land"] = "jump_land",
+        ["shoot"] = "range_rpg",
+        ["reload"] = "gesture_reload_rpg"
+    },
     ["melee"] = {
         [ACT_MP_STAND_IDLE] = {{"idle_all_01", "idle_all_02"}, "idle_melee"},
         [ACT_MP_WALK] = {"walk_all", "walk_melee"},
@@ -571,6 +638,17 @@ ax.animations.stored["player_citizen_female"] = {
         ["land"] = "jump_land",
         ["shoot"] = "range_ar2",
         ["reload"] = "gesture_reload_ar2"
+    },
+    ["rpg"] = {
+        [ACT_MP_STAND_IDLE] = {"idle_passive", "idle_rpg"},
+        [ACT_MP_WALK] = {"walk_passive", "walk_rpg"},
+        [ACT_MP_RUN] = {"run_passive", "run_rpg"},
+        [ACT_MP_CROUCH_IDLE] = {"cidle_passive", "cidle_rpg"},
+        [ACT_MP_CROUCHWALK] = {"cwalk_passive", "cwalk_rpg"},
+        [ACT_MP_JUMP] = {"jump_passive", "jump_rpg"},
+        ["land"] = "jump_land",
+        ["shoot"] = "range_rpg",
+        ["reload"] = "gesture_reload_rpg"
     },
     ["melee"] = {
         [ACT_MP_STAND_IDLE] = {{"batonidle1", "batonidle2"}, "batonangryidle1"},
@@ -649,6 +727,17 @@ ax.animations.stored["player_overwatch"] = {
         ["shoot"] = "range_ar2",
         ["reload"] = "gesture_reload_ar2"
     },
+    ["rpg"] = {
+        [ACT_MP_STAND_IDLE] = {"idle1_rpg", "idle_rpg"},
+        [ACT_MP_WALK] = {"walk_all_rpg", "walk_rpg"},
+        [ACT_MP_RUN] = {"runall_rpg", "run_rpg"},
+        [ACT_MP_CROUCH_IDLE] = {"cidle_passive", "cidle_rpg"},
+        [ACT_MP_CROUCHWALK] = {"cwalk_passive", "cwalk_rpg"},
+        [ACT_MP_JUMP] = {"jump_passive", "jump_rpg"},
+        ["land"] = "jump_land",
+        ["shoot"] = "range_rpg",
+        ["reload"] = "gesture_reload_rpg"
+    },
     ["melee"] = {
         [ACT_MP_STAND_IDLE] = {"idle_unarmed", "idle_melee"},
         [ACT_MP_WALK] = {"walk_all", "walk_melee"},
@@ -716,6 +805,17 @@ ax.animations.stored["player_metrocop"] = {
         ["reload"] = "gesture_reload_shotgun"
     },
     ["ar2"] = {
+        [ACT_MP_STAND_IDLE] = {"ar2idle1", "ar2angryidle1"},
+        [ACT_MP_WALK] = {"walk_hold_ar2", "walk_aiming_ar2_all"},
+        [ACT_MP_RUN] = {"run_hold_ar2", "run_aiming_ar2_all"},
+        [ACT_MP_CROUCH_IDLE] = {ACT_COVER_SMG1_LOW, ACT_COVER_SMG1_LOW},
+        [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH, ACT_WALK_CROUCH},
+        [ACT_MP_JUMP] = {"jump_passive", "jump_ar2"},
+        ["land"] = "jump_land",
+        ["shoot"] = "range_ar2",
+        ["reload"] = "gesture_reload_ar2"
+    },
+    ["rpg"] = {
         [ACT_MP_STAND_IDLE] = {"ar2idle1", "ar2angryidle1"},
         [ACT_MP_WALK] = {"walk_hold_ar2", "walk_aiming_ar2_all"},
         [ACT_MP_RUN] = {"run_hold_ar2", "run_aiming_ar2_all"},
