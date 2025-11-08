@@ -19,6 +19,8 @@ function ax.player.meta:SetWeaponRaised(bRaised)
         weapon:SetWeaponRaised(bRaised)
     end
 
+    hook.Run("UpdateClientAnimations", self) -- Ensure animations are updated when weapon raise state changes
+
     hook.Run("PlayerWeaponRaised", self, bRaised)
 end
 
