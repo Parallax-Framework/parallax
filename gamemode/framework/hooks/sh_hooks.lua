@@ -43,6 +43,15 @@ local function OnHotReloadOnce()
     end
 end
 
+concommand.Add("ax_hotreload_now", function(client, command, arguments)
+    if ( IsValid(client) and !client:IsSuperAdmin() ) then
+        ax.util:PrintDebug("ax_hotreload_now: Permission denied for ", client)
+        return
+    end
+
+    OnHotReloadOnce()
+end)
+
 local DEBOUNCE = 0.15
 local NAME = "ax.reload.debounce." .. (SERVER and "sv" or CLIENT and "cl")
 hook.Add("OnReloaded", NAME, function()
