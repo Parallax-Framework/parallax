@@ -64,16 +64,16 @@ function MODULE:PlayerSay(client, text, teamChat)
         return ""
     end
 
-    text = hook.Run("PlayerMessageSend", client, "ic", text) or text
+    local processed = hook.Run("PlayerMessageSend", client, "ic", rawText) or rawText
 
     -- Format regular chat messages
-    if ( hook.Run("ShouldFormatMessage", client, text) != false ) then
-        text = ax.chat:Format(text)
+    if ( hook.Run("ShouldFormatMessage", client, processed) != false ) then
+        processed = ax.chat:Format(processed)
     end
 
-    ax.chat:Send(client, "ic", text)
+    ax.chat:Send(client, "ic", processed)
 
-    hook.Run("PlayerMessageSent", client, "ic", text)
+    hook.Run("PlayerMessageSent", client, "ic", processed)
 
     return ""
 end
