@@ -101,7 +101,17 @@ if ( SERVER ) then
 
         for i = 1, #clients do
             local v = clients[i]
-            v:ChatPrint(unpack(packaged))
+            local messageData = packaged
+
+            -- Allow per-listener message customization
+            if ( isfunction(def.OnFormatForListener) ) then
+                local customData = { def:OnFormatForListener(client, v, ...) }
+                if ( #customData > 0 ) then
+                    messageData = customData
+                end
+            end
+
+            v:ChatPrint(unpack(messageData))
         end
     end
 end
