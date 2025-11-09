@@ -52,7 +52,7 @@ function GM:PlayerStartVoice()
     end
 end
 
-local vignette = ax.util:GetMaterial("parallax/overlays/vignette.png", "noclamp smooth")
+local vignette = ax.util:GetMaterial("parallax/overlays/vignette.png", "smooth noclamp")
 local vignetteColor = Color(0, 0, 0, 255)
 function GM:HUDPaintBackground()
     if ( hook.Run("ShouldDrawVignette") != false ) then
@@ -68,15 +68,13 @@ function GM:HUDPaintBackground()
         })
 
         if ( trace.Hit and trace.HitPos:DistToSqr(client:GetShootPos()) < 96 ^ 2 ) then
-            vignetteColor.a = Lerp(FrameTime(), vignetteColor.a, 255)
+            vignetteColor.a = Lerp(FrameTime(), vignetteColor.a, 200)
         else
-            vignetteColor.a = Lerp(FrameTime(), vignetteColor.a, 100)
+            vignetteColor.a = Lerp(FrameTime(), vignetteColor.a, 255)
         end
 
         if ( hook.Run("ShouldDrawDefaultVignette") != false ) then
-            surface.SetDrawColor(vignetteColor)
-            surface.SetMaterial(vignette)
-            surface.DrawTexturedRect(0, 0, scrW, scrH)
+            ax.render.DrawMaterial(0, 0, 0, scrW, scrH, vignetteColor, vignette)
         end
 
         hook.Run("DrawVignette", 1 - (vignetteColor.a / 255))
