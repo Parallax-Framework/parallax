@@ -47,6 +47,19 @@ ax.command:Add("PM", {
     end
 })
 
+ax.command:Add("Roll", {
+    description = "Rolls a dice with specified sides.",
+    arguments = {
+        { name = "sides", type = ax.type.number, min = 2, max = 100, optional = true }
+    },
+    OnRun = function(client, sides)
+        sides = sides or 6
+        ax.chat:Send(client, "roll", math.random(1, sides), sides)
+
+        return ""
+    end
+})
+
 ax.command:Add("CharSetModel", {
     description = "Set the model of a character.",
     arguments = {

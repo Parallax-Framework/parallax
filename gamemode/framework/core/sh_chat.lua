@@ -152,6 +152,20 @@ ax.chat:Add("ic", {
     end
 })
 
+ax.chat:Add("roll", {
+    displayName = "Roll",
+    description = "Roll a dice",
+    noCommand = true,
+    OnRun = function(this, client, result, sides)
+        local rollColor = ax.config:Get("chat.roll.color", Color(150, 75, 75))
+        return rollColor, string.format("<font=ax.small>%s</font>", client:Nick() .. " rolls a " .. result .. " on a " .. sides .. "-sided dice.")
+    end,
+    CanHear = function(this, speaker, listener)
+        local distance = ax.config:Get("chat.me.distance", 400)
+        return speaker:GetPos():DistToSqr(listener:GetPos()) <= distance ^ 2
+    end
+})
+
 ax.chat:Add("yell", {
     displayName = "Yell",
     description = "Yell at someone",
