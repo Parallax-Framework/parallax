@@ -237,10 +237,22 @@ ax.chat:Add("me", {
         end
 
         local meColor = ax.config:Get("chat.me.color", Color(255, 255, 175))
-        return meColor, "* " .. client:Nick() .. " " .. txt
+        return meColor, "** " .. client:Nick() .. " " .. txt
     end,
     CanHear = function(this, speaker, listener)
         local distance = ax.config:Get("chat.me.distance", 600)
+        return speaker:GetPos():DistToSqr(listener:GetPos()) <= distance ^ 2
+    end
+})
+
+ax.chat:Add("it", {
+    description = "Describe something in third person",
+    OnRun = function(this, client, message)
+        local itColor = ax.config:Get("chat.it.color", Color(255, 255, 175))
+        return itColor, "** " .. ax.chat:Format(message)
+    end,
+    CanHear = function(this, speaker, listener)
+        local distance = ax.config:Get("chat.it.distance", 600)
         return speaker:GetPos():DistToSqr(listener:GetPos()) <= distance ^ 2
     end
 })
