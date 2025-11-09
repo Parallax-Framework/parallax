@@ -16,6 +16,7 @@ ax.localization:Register("en", {
 
 	-- Category Translations
 	["category.chat"] = "Chat",
+	["category.chatbox"] = "Chat",
 	["category.general"] = "General",
 	["category.gameplay"] = "Gameplay",
 	["category.interface"] = "Interface",
@@ -107,4 +108,7 @@ ax.localization:Register("en", {
 	---- Inventory
 	["option.inventory.categories.italic"] = "Italicize Category Names",
 	["option.inventory.columns"] = "Number of Inventory Columns",
+
+	-- Inventory Translations
+	["inventory.weight.abbreviation"] = "kg",
 })
