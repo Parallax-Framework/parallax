@@ -124,7 +124,7 @@ function PANEL:PopulateItems()
     -- Initialize grid items storage for responsive layout
     self.gridItems = {}
 
-    local weightText = ax.localization:GetPhrase("invWeight")
+    local weightText = ax.localization:GetPhrase("inventory.weight.abbreviation")
     self.weightProgress:SetFraction(inventory:GetWeight() / inventory:GetMaxWeight())
     self.weightCounter:SetText(math.Round(inventory:GetWeight(), 2) .. weightText .. " / " .. inventory:GetMaxWeight() .. weightText, true)
 
