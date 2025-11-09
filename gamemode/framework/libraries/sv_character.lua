@@ -141,6 +141,9 @@ function ax.character:Load(client, character)
         net.Send(client)
     end
 
+    character:SetLastPlayed(os.time())
+    character:Save()
+
     hook.Run("PlayerLoadedCharacter", client, character, clientData.axCharacterPrevious)
 end
 
