@@ -79,6 +79,8 @@ ax.localization:Register("en", {
 	---- Basic
 	["option.chat.sounds"] = "Enable Chat Sounds",
 	["option.chat.timestamps"] = "Show Timestamps in Chat",
+	["option.chat.randomized.verbs"] = "Use Randomized Chat Verbs",
+	["chat.randomized.verbs.help"] = "When enabled, chat messages will use varied verbs (exclaims, mutters, shouts). When disabled, uses default verbs (says, whispers, yells).",
 
 	---- Position
 	["option.chatbox.x"] = "Chatbox X Position",

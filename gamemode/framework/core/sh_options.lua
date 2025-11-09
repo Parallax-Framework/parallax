@@ -76,6 +76,12 @@ ax.option:Add("chat.sounds", ax.type.bool, true, {
     description = "chat.sounds.help"
 })
 
+ax.option:Add("chat.randomized.verbs", ax.type.bool, true, {
+    category = "chat",
+    subCategory = "basic",
+    description = "chat.randomized.verbs.help"
+})
+
 -- Notification customization
 ax.option:Add("notification.enabled", ax.type.bool, true, {
     category = "interface",

@@ -95,6 +95,27 @@ local expressions = {
     }
 }
 
+-- Helper function to get the appropriate verb based on listener's preference
+local function GetVerb(listener, chatType)
+    if ( SERVER ) then
+        -- On server, check the listener's option preference
+        local useRandomVerbs = ax.option:Get(listener, "chat.randomized.verbs", true)
+        if ( useRandomVerbs ) then
+            return expressions[chatType][math.random(#expressions[chatType])]
+        else
+            return expressions[chatType][1] -- Return default verb (first in array)
+        end
+    else
+        -- On client, check local player's option
+        local useRandomVerbs = ax.option:Get("chat.randomized.verbs", true)
+        if ( useRandomVerbs ) then
+            return expressions[chatType][math.random(#expressions[chatType])]
+        else
+            return expressions[chatType][1]
+        end
+    end
+end
+
 ax.chat:Add("ic", {
     displayName = "IC",
     description = "Speak in-character",
@@ -105,7 +126,7 @@ ax.chat:Add("ic", {
     end,
     OnFormatForListener = function(this, speaker, listener, message)
         local icColor = ax.config:Get("chat.ic.color")
-        local verb = expressions["ic"][math.random(#expressions["ic"])]
+        local verb = GetVerb(listener, "ic")
         local formattedMessage = ax.chat:Format(message)
         local target = GetLookTarget(speaker)
 
@@ -141,7 +162,7 @@ ax.chat:Add("yell", {
     end,
     OnFormatForListener = function(this, speaker, listener, message)
         local yellColor = ax.config:Get("chat.yell.color")
-        local verb = expressions["yell"][math.random(#expressions["yell"])]
+        local verb = GetVerb(listener, "yell")
         local formattedMessage = utf8.upper(ax.chat:Format(message))
         local target = GetLookTarget(speaker)
 
@@ -177,7 +198,7 @@ ax.chat:Add("whisper", {
     end,
     OnFormatForListener = function(this, speaker, listener, message)
         local whisperColor = ax.config:Get("chat.whisper.color")
-        local verb = expressions["whisper"][math.random(#expressions["whisper"])]
+        local verb = GetVerb(listener, "whisper")
         local formattedMessage = ax.chat:Format(message)
         local target = GetLookTarget(speaker)
 
