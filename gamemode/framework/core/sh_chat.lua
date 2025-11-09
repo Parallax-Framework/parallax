@@ -207,8 +207,8 @@ ax.chat:Add("looc", {
     displayName = "Local Out of Character",
     description = "Speak local out of character",
     OnRun = function(this, client, message)
-        local oocColor = ax.config:Get("chat.ooc.color", Color(110, 10, 10))
-        return oocColor, "(LOOC) ", color_white, client:SteamName() .. ": " .. message
+        local oocColor = ax.config:Get("chat.ooc.color", Color(225, 50, 50))
+        return oocColor, "<font=ax.small>" .. "[LOOC] ", color_white, client:SteamName() .. ": " .. message .. "</font>"
     end,
     CanHear = function(this, speaker, listener)
         local distance = ax.config:Get("chat.ooc.distance", 600)
@@ -220,8 +220,8 @@ ax.chat:Add("ooc", {
     displayName = "Out of Character",
     description = "Speak out of character",
     OnRun = function(this, client, message)
-        local oocColor = ax.config:Get("chat.ooc.color", Color(110, 10, 10))
-        return oocColor, "(OOC) ", color_white, client:SteamName() .. ": " .. message
+        local oocColor = ax.config:Get("chat.ooc.color", Color(225, 50, 50))
+        return oocColor, "<font=ax.small>" .. "[OOC] ", color_white, client:SteamName() .. ": " .. message .. "</font>"
     end,
     CanHear = function(this, speaker, listener)
         return true

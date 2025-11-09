@@ -86,7 +86,7 @@ ax.config:Add("chat.whisper.color", ax.type.color, Color(230, 230, 150), {
     subCategory = "colors"
 })
 
-ax.config:Add("chat.ooc.color", ax.type.color, Color(110, 10, 10), {
+ax.config:Add("chat.ooc.color", ax.type.color, Color(225, 50, 50), {
     description = "Color for OOC/LOOC chat",
     category = "chat",
     subCategory = "colors"
