@@ -15,14 +15,97 @@ MODULE.name = "Curvy"
 MODULE.description = "Adds a curvy visual style to HUD elements."
 MODULE.author = "Riggs"
 
-ax.option:Add("curvyEnabled", ax.type.bool, true, { category = "visual", subCategory = "curvy", description = "Enable or disable the curvy visual effect entirely." })
-ax.option:Add("curvyCurveAmount", ax.type.number, 64, { category = "visual", subCategory = "curvy", min = 0, max = 256, decimals = 0, description = "Controls how curved the screen appears. Higher values = more curve." })
-ax.option:Add("curvySegments", ax.type.number, 256, { category = "visual", subCategory = "curvy", min = 16, max = 512, decimals = 0, description = "Number of segments used to create the curve. Higher = smoother but slower." })
-ax.option:Add("curvyDynamicLOD", ax.type.bool, true, { category = "visual", subCategory = "curvy", description = "Automatically reduce curve segments when FPS is low." })
-ax.option:Add("curvyHUDOnly", ax.type.bool, false, { category = "visual", subCategory = "curvy", description = "Only apply curve effect to HUD elements, not post-render effects." })
-ax.option:Add("curvyIntensityScale", ax.type.number, 1.0, { category = "visual", subCategory = "curvy", min = 0.1, max = 2.0, decimals = 1, description = "Global intensity multiplier for all curve effects." })
-ax.option:Add("curvyFrameSkipThreshold", ax.type.number, 30, { category = "visual", subCategory = "curvy", min = 15, max = 60, decimals = 0, description = "FPS threshold below which frame skipping begins." })
-ax.option:Add("curvyMaxFrameSkip", ax.type.number, 2, { category = "visual", subCategory = "curvy", min = 1, max = 5, decimals = 0, description = "Maximum number of frames to skip in a row when FPS is low." })
+ax.option:Add("curvy", ax.type.bool, true, {
+    category = "visual",
+    subCategory = "curvy",
+    description = "curvy.help"
+})
+
+ax.option:Add("curvy.intensity", ax.type.number, 64, {
+    category = "visual",
+    subCategory = "curvy",
+    min = 0,
+    max = 256,
+    decimals = 0,
+    description = "curvy.intensity.help"
+})
+
+ax.option:Add("curvy.segments", ax.type.number, 256, {
+    category = "visual",
+    subCategory = "curvy",
+    min = 16,
+    max = 512,
+    decimals = 0,
+    description = "curvy.segments.help"
+})
+
+ax.option:Add("curvy.dynamic.lod", ax.type.bool, true, {
+    category = "visual",
+    subCategory = "curvy",
+    description = "curvy.dynamic.lod.help"
+})
+
+ax.option:Add("curvy.hud.only", ax.type.bool, false, {
+    category = "visual",
+    subCategory = "curvy",
+    description = "curvy.hud.only.help"
+})
+
+ax.option:Add("curvy.intensity.scale", ax.type.number, 1.0, {
+    category = "visual",
+    subCategory = "curvy",
+    min = 0.1,
+    max = 2.0,
+    decimals = 1,
+    description = "curvy.intensity.scale.help"
+})
+
+ax.option:Add("curvy.frame.skip.threshold", ax.type.number, 30, {
+    category = "visual",
+    subCategory = "curvy",
+    min = 15,
+    max = 60,
+    decimals = 0,
+    description = "curvy.frame.skip.threshold.help"
+})
+
+ax.option:Add("curvy.frame.skip.enabled", ax.type.bool, true, {
+    category = "visual",
+    subCategory = "curvy",
+    description = "curvy.frame.skip.enabled.help"
+})
+
+ax.option:Add("curvy.frame.skip.max", ax.type.number, 2, {
+    category = "visual",
+    subCategory = "curvy",
+    min = 1,
+    max = 5,
+    decimals = 0,
+    description = "curvy.frame.skip.max.help"
+})
+
+ax.localization:Register("en", {
+    ["category.visual"] = "Visual",
+    ["subcategory.curvy"] = "Curvy",
+    ["option.curvy"] = "Enable Curvy Effect",
+    ["option.curvy.help"] = "Enable or disable the curvy visual effect entirely.",
+    ["option.curvy.intensity"] = "Curvy Intensity",
+    ["option.curvy.intensity.help"] = "Controls how curved the screen appears. Higher values = more curve.",
+    ["option.curvy.segments"] = "Curvy Segments",
+    ["option.curvy.segments.help"] = "Number of segments used to create the curve. Higher = smoother but slower.",
+    ["option.curvy.dynamic.lod"] = "Dynamic LOD",
+    ["option.curvy.dynamic.lod.help"] = "Automatically reduce curve segments when FPS is low.",
+    ["option.curvy.hud.only"] = "HUD Only Mode",
+    ["option.curvy.hud.only.help"] = "Only apply curve effect to HUD elements, not post-render effects.",
+    ["option.curvy.intensity.scale"] = "Curvy Intensity Scale",
+    ["option.curvy.intensity.scale.help"] = "Global intensity multiplier for all curve effects.",
+    ["option.curvy.frame.skip.threshold"] = "Frame Skip FPS Threshold",
+    ["option.curvy.frame.skip.threshold.help"] = "FPS threshold below which frame skipping begins.",
+    ["option.curvy.frame.skip.enabled"] = "Enable Frame Skipping",
+    ["option.curvy.frame.skip.enabled.help"] = "Toggle whether the curvy module may skip frames to improve performance.",
+    ["option.curvy.frame.skip.max"] = "Max Frame Skips",
+    ["option.curvy.frame.skip.max.help"] = "Maximum number of frames to skip in a row when FPS is low.",
+})
 
 ax.curvy = ax.curvy or {}
 
@@ -49,7 +132,8 @@ local cachedOptions = {
 local perfStats = {
     fpsAvg = 60,
     lastFPSUpdate = 0,
-    frameSkip = 0
+    frameSkip = 0,
+    frameSkipEnabled = true
 }
 
 -- Micro-optimizations: localize frequently-used globals
@@ -69,14 +153,15 @@ function ax.curvy:UpdateOptions()
     local now = CurTime_local()
     if ( now - cachedOptions.lastUpdate < 0.1 ) then return end -- Update max 10x per second
 
-    cachedOptions.enabled = ax.option:Get("curvyEnabled")
-    cachedOptions.segments = ax.option:Get("curvySegments")
-    cachedOptions.curveAmount = ax.option:Get("curvyCurveAmount")
-    cachedOptions.dynamicLOD = ax.option:Get("curvyDynamicLOD")
-    cachedOptions.hudOnly = ax.option:Get("curvyHUDOnly")
-    cachedOptions.intensityScale = ax.option:Get("curvyIntensityScale")
-    cachedOptions.frameSkipThreshold = ax.option:Get("curvyFrameSkipThreshold")
-    cachedOptions.maxFrameSkip = ax.option:Get("curvyMaxFrameSkip")
+    cachedOptions.enabled = ax.option:Get("curvy")
+    cachedOptions.segments = ax.option:Get("curvy.segments")
+    cachedOptions.curveAmount = ax.option:Get("curvy.intensity")
+    cachedOptions.dynamicLOD = ax.option:Get("curvy.dynamic.lod")
+    cachedOptions.hudOnly = ax.option:Get("curvy.hud.only")
+    cachedOptions.intensityScale = ax.option:Get("curvy.intensity.scale")
+    cachedOptions.frameSkipThreshold = ax.option:Get("curvy.frame.skip.threshold")
+    cachedOptions.frameSkipEnabled = ax.option:Get("curvy.frame.skip.enabled")
+    cachedOptions.maxFrameSkip = ax.option:Get("curvy.frame.skip.max")
     cachedOptions.lastUpdate = now
 end
 
@@ -360,11 +445,13 @@ function ax.curvy:HUDPaint(drawFunc, rtName)
     local threshold = cachedOptions.frameSkipThreshold
     local maxSkip = cachedOptions.maxFrameSkip
 
-    if ( perfStats.fpsAvg < threshold ) then
-        perfStats.frameSkip = (perfStats.frameSkip or 0) + 1
-        if ( perfStats.frameSkip % maxSkip == 0 ) then return end -- Skip frames based on setting
-    else
-        perfStats.frameSkip = 0
+    if ( cachedOptions.frameSkipEnabled ) then
+        if ( perfStats.fpsAvg < threshold ) then
+            perfStats.frameSkip = (perfStats.frameSkip or 0) + 1
+            if ( perfStats.frameSkip % maxSkip == 0 ) then return end -- Skip frames based on setting
+        else
+            perfStats.frameSkip = 0
+        end
     end
 
     -- Render to target and draw with curve
@@ -399,7 +486,7 @@ function ax.curvy:PostRender()
     local threshold = cachedOptions.frameSkipThreshold
     local maxSkip = cachedOptions.maxFrameSkip
 
-    if ( perfStats.frameSkip and perfStats.frameSkip % maxSkip == 0 and perfStats.fpsAvg < threshold ) then
+    if ( cachedOptions.frameSkipEnabled and perfStats.frameSkip and perfStats.frameSkip % maxSkip == 0 and perfStats.fpsAvg < threshold ) then
         return
     end
 
