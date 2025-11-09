@@ -41,8 +41,15 @@ local gestures = {
             "bg_accentUp",
             "bg_up_l",
             "bg_up_r",
-            "g_Rifle_Lhand",
-            "g_Rifle_Lhand_low",
+            "g_rifle_lhand",
+            "g_rifle_lhand_low",
+            "g_rifle_raise",
+            "g_smg_low_lhand_01",
+            "g_smg_low_palm_down",
+            "g_smg_mid_fist",
+            "g_smg_mid_lhand_01",
+            "g_smg_mid_point",
+            "g_smg_sigh",
             "g_palm_out_high_l",
             "g_palm_up_high_l"
         }
@@ -109,11 +116,6 @@ function MODULE:PlayTalkingAnimation(client)
         client:PlayGesture(GESTURE_SLOT_VCD, animation)
     end
 end
-
-concommand.Add("wos_talkanim_test", function(client, command, arguments)
-    if ( !IsValid(client) ) then return end
-    MODULE:PlayTalkingAnimation(client)
-end)
 
 function MODULE:PlayerMessageSent(client, chatType, text)
     if ( !IsValid(client) or !client:Alive() ) then return end

@@ -50,7 +50,6 @@ ax.localization:Register("en", {
 	["config.hands.max.carry"] = "Hands Max Carry Weight",
 	["config.hands.range.max"] = "Hands Max Reach Distance",
 
-
 	---- Inventory
 	["config.inventory.weight.max"] = "Inventory Max Weight",
 
