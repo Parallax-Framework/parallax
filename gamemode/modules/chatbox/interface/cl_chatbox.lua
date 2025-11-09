@@ -14,11 +14,10 @@ local PANEL = {}
 DEFINE_BASECLASS("EditablePanel")
 
 function PANEL:Init()
+    -- Remove any existing chatbox instance before creating a new one
     if ( IsValid(ax.gui.chatbox) ) then
         ax.gui.chatbox:Remove()
     end
-
-    ax.gui.chatbox = self
 
     self.chatType = "ic"
     self.chatTypePrevious = "ic"
@@ -102,11 +101,12 @@ function PANEL:Init()
 
     local bottom = self:Add("EditablePanel")
     bottom:Dock(BOTTOM)
+    bottom:DockMargin(ScreenScale(2), ScreenScale(2), ScreenScale(2), ScreenScale(2))
 
     self.entry = bottom:Add("ax.text.entry")
     self.entry:Dock(FILL)
-    self.entry:DockMargin(ScreenScale(4), ScreenScaleH(2), ScreenScale(4), ScreenScaleH(2))
-    self.entry:SetFont("ax.chatbox.text")
+    self.entry:DockMargin(ScreenScale(1), ScreenScale(1), ScreenScale(1), ScreenScale(1))
+    self.entry:SetFont("ax.small")
     self.entry:SetPlaceholderText("Say something...")
     self.entry:SetDrawLanguageID(false)
     self.entry:SetTabbingDisabled(true)
@@ -117,7 +117,7 @@ function PANEL:Init()
     bottom:SizeToChildren(false, true)
     bottom:SetTall(self.entry:GetTall())
     bottom.Paint = function(this, width, height)
-        ax.render.Draw(0, 0, 0, width, height, Color(0, 0, 0, 150))
+        ax.render.Draw(0, 0, 0, width, height, Color(0, 0, 0, 100))
     end
 
     self.entry.OnEnter = function(this)
@@ -220,8 +220,8 @@ function PANEL:Init()
     self.recommendations.indexSelect = 0
     self.recommendations.maxSelection = 0
     self.recommendations.Paint = function(this, width, height)
-        ax.util:DrawBlur(0, 0, 0, width, height, Color(255, 255, 255, 150))
-        ax.render.Draw(0, 0, 0, width, height, Color(0, 0, 0, 150))
+        ax.util:DrawBlur(0, 0, 0, width, height, color_white)
+        ax.render.Draw(0, 0, 0, width, height, Color(0, 0, 0, 100))
     end
 
     -- Resizer handle (corner-based, position-adaptive)
@@ -232,19 +232,19 @@ function PANEL:Init()
     self.sizer:SetCursor("sizenesw")
     self.sizer.Paint = function(this, w, h)
         surface.SetDrawColor(255, 255, 255, 25)
-        for i = 0, math.floor(ScreenScaleH(1)) do
-            surface.DrawLine(w - 1 - i * ScreenScaleH(2), 0, w - 1, i * ScreenScaleH(2))
+        for i = 0, math.floor(ScreenScale(1)) do
+            surface.DrawLine(w - 1 - i * ScreenScale(1), 0, w - 1, i * ScreenScale(1))
         end
     end
     self.sizer.OnMousePressed = function(this, code)
         if ( code == MOUSE_LEFT ) then
             -- Determine which corner the sizer is in at press time
-            local sCx = this.x + this:GetWide() * 0.5
-            local sCy = this.y + this:GetTall() * 0.5
+            local sCx = this.x + this:GetWide() / 2
+            local sCy = this.y + this:GetTall() / 2
             local pw = self:GetWide()
             local ph = self:GetTall()
-            this.anchorX = (sCx > pw * 0.5) and "right" or "left"
-            this.anchorY = (sCy > ph * 0.5) and "bottom" or "top"
+            this.anchorX = (sCx > pw / 2) and "right" or "left"
+            this.anchorY = (sCy > ph / 2) and "bottom" or "top"
 
             -- Set cursor based on corner
             local diag = (this.anchorX == "right" and this.anchorY == "bottom") or (this.anchorX == "left" and this.anchorY == "top")
@@ -328,6 +328,9 @@ function PANEL:Init()
     end
 
     self:PerformLayout(self:GetWide(), self:GetTall())
+
+    -- Register this chatbox as the global instance
+    ax.gui.chatbox = self
 end
 
 function PANEL:GetChatType()
@@ -377,45 +380,49 @@ function PANEL:PopulateRecommendations(text)
 
         for i = 1, #self.recommendations.list do
             local command = self.recommendations.list[i]
-            local rec = self.recommendations:Add("EditablePanel")
+            local rec = self.recommendations:Add("DPanel")
             rec:Dock(TOP)
-            rec:DockMargin(4, 4, 4, 0)
+            rec:SetMouseInputEnabled(true)
+            rec:SetCursor("hand")
             rec.index = i
-            rec.Paint = function(_, width, height)
-                ax.render.Draw(0, 0, 0, width, height, Color(0, 0, 0, 150))
+            rec.OnMousePressed = function()
+                self.recommendations.indexSelect = rec.index
 
+                local data = self.recommendations.list[rec.index]
+                if ( !data ) then
+                    return
+                end
+
+                self.entry:SetText("/" .. data.name)
+                self.entry:RequestFocus()
+                self.entry:SetCaretPos(2 + #data.name)
+
+                surface.PlaySound("ui/buttonrollover.wav")
+            end
+            rec.Paint = function(_, width, height)
                 if ( self.recommendations.indexSelect == i ) then
                     ax.render.Draw(0, 0, 0, width, height, Color(200, 50, 50, 150))
                 end
             end
 
-            local height = 0
-
             local title = rec:Add("ax.text")
-            title:Dock(TOP)
+            title:Dock(LEFT)
             title:DockMargin(8, 0, 8, 0)
-            title:SetFont("ax.chatbox.text")
+            title:SetFont("ax.small")
             title:SetText(command.displayName, true)
-            height = height + title:GetTall()
 
-            local descriptionWrapped = command.description
-            if ( !descriptionWrapped or descriptionWrapped == "" ) then
-                descriptionWrapped = "No description provided."
+            local descriptionText = command.description
+            if ( !descriptionText or descriptionText == "" ) then
+                descriptionText = "No description provided."
             end
 
-            descriptionWrapped = ax.util:GetWrappedText(descriptionWrapped, "ax.tiny", self.recommendations:GetWide() - 16)
-            for k = 1, #descriptionWrapped do
-                local v = descriptionWrapped[k]
-                local descLine = rec:Add("ax.text")
-                descLine:Dock(TOP)
-                descLine:DockMargin(8, -2, 8, 0)
-                descLine:SetFont("ax.tiny")
-                descLine:SetText(v, true)
-                descLine:SetTextColor(Color(255, 255, 255))
-                height = height + descLine:GetTall()
-            end
+            local description = rec:Add("ax.text")
+            description:Dock(RIGHT)
+            description:DockMargin(8, 0, 8, 0)
+            description:SetFont("ax.tiny")
+            description:SetText(descriptionText, true)
 
-            rec:SetTall(height)
+            rec:SetTall(math.max(title:GetTall(), description:GetTall()) + ScreenScale(2))
 
             self.recommendations.panels[i] = rec
         end
@@ -463,7 +470,7 @@ function PANEL:CycleRecommendations()
     self.entry:RequestFocus()
     self.entry:SetCaretPos(2 + #data.name)
 
-    surface.PlaySound("ax.button.enter")
+    surface.PlaySound("ui/buttonrollover.wav")
 end
 
 function PANEL:SelectRecommendation(identifier)
@@ -529,20 +536,20 @@ function PANEL:OnKeyCodePressed(key)
 end
 
 function PANEL:Paint(width, height)
-    ax.util:DrawBlur(8, 0, 0, width, height, Color(255, 255, 255, 150))
-    ax.render.Draw(0, 0, 0, width, height, Color(0, 0, 0, 150))
+    ax.util:DrawBlur(0, 0, 0, width, height, color_white)
+    ax.render.Draw(0, 0, 0, width, height, Color(0, 0, 0, 50))
 end
 
 function PANEL:PerformLayout(width, height)
     -- Recompute dynamic layout on size changes
     if ( IsValid(self.categories) and IsValid(self.entry) and IsValid(self.history) ) then
-        self.history:SetSize(width, height - self.categories:GetTall() - self.entry:GetTall() - ScreenScaleH(6))
-        self.history:SetPos(ScreenScale(2), self.categories:GetTall() + ScreenScaleH(2))
+        self.history:SetSize(width, height - self.categories:GetTall() - self.entry:GetTall() - ScreenScale(8))
+        self.history:SetPos(ScreenScale(2), self.categories:GetTall() + ScreenScale(2))
     end
 
     if ( IsValid(self.recommendations) and IsValid(self.history) ) then
-        self.recommendations:SetSize(width, height - self.categories:GetTall() - self.entry:GetTall() - ScreenScaleH(2))
-        self.recommendations:SetPos(0, self.categories:GetTall())
+        self.recommendations:SetSize(width - ScreenScale(4), height - self.categories:GetTall() - self.entry:GetTall() - ScreenScale(8))
+        self.recommendations:SetPos(ScreenScale(2), self.categories:GetTall() + ScreenScale(2))
     end
 
     if ( IsValid(self.sizer) ) then
@@ -561,8 +568,10 @@ end
 
 vgui.Register("ax.chatbox", PANEL, "EditablePanel")
 
+-- If any existing chatbox instance exists, remove it and create a new one
 if ( IsValid(ax.gui.chatbox) ) then
     ax.gui.chatbox:Remove()
 
+    -- Create a new chatbox instance
     vgui.Create("ax.chatbox")
 end

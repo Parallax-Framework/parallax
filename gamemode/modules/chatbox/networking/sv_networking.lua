@@ -11,9 +11,15 @@
 
 util.AddNetworkString("ax.chatbox.send")
 net.Receive("ax.chatbox.send", function(len, client)
-    if ( !client:RateLimit("chatbox.send", 0.1) ) then return end
+    --if ( !client:RateLimit("chatbox.send", 0.1) ) then return end
 
-    hook.Run("PlayerSay", client, net.ReadString(), false)
+    -- Read and sanitize the chat message incase bad actors try to exploit this.
+    local output = net.ReadString()
+    output = string.gsub(output, "[^%w%s%p]", "")
+    output = string.Trim(output)
+    output = string.gsub(output, "<.->", "")
+
+    hook.Run("PlayerSay", client, output, false)
 
     client:SetRelay("chatText", "")
     client:SetRelay("chatType", "")
@@ -21,10 +27,14 @@ end)
 
 util.AddNetworkString("ax.chatbox.text.changed")
 net.Receive("ax.chatbox.text.changed", function(len, client)
-    if ( !client:RateLimit("chatbox.text.changed", 0.01) ) then return end
+    --if ( !client:RateLimit("chatbox.text.changed", 0.01) ) then return end
 
     local text = net.ReadString()
     local chatType = net.ReadString()
+
+    text = string.gsub(text, "[^%w%s%p]", "")
+    text = string.Trim(text)
+    text = string.gsub(text, "<.->", "")
 
     client:SetRelay("chatText", text)
     client:SetRelay("chatType", chatType)

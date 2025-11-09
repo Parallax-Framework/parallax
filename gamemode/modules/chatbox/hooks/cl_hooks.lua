@@ -12,10 +12,11 @@
 local MODULE = MODULE
 
 function MODULE:InitPostEntity()
-    -- Create the chatbox immediately so messages can be received before the player opens chat
-    if ( !IsValid(ax.gui.chatbox) ) then
-        ax.gui.chatbox = vgui.Create("ax.chatbox")
-    end
+    -- Create a 1 minute timer, which overrides the chat.AddText function to use our chatbox
+    -- Because something else might override it after we do, we repeat this multiple times to ensure ours sticks
+    timer.Create("ax.chatbox.override.addtext", 1, 60, function()
+        ax.chat:OverrideChatAddText()
+    end)
 end
 
 function MODULE:GetChatboxSize()
@@ -27,7 +28,7 @@ function MODULE:GetChatboxPos()
 end
 
 function MODULE:PlayerBindPress(client, bind, pressed)
-    bind = bind:lower()
+    bind = utf8.lower(bind)
 
     if ( ax.util:FindString(bind, "messagemode") and pressed ) then
         if ( !IsValid(ax.gui.chatbox) ) then
@@ -35,6 +36,7 @@ function MODULE:PlayerBindPress(client, bind, pressed)
         end
 
         ax.gui.chatbox:SetVisible(true)
+
         return true
     end
 end
