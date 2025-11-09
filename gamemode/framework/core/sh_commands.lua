@@ -22,7 +22,7 @@ ax.command:Add("SetGravity", {
 })
 
 ax.command:Add("PM", {
-    alias = {"tell", "whisper"},
+    alias = {"tell"},
     description = "Send a private message to another player.",
     arguments = {
         { name = "target", type = ax.type.player },
@@ -33,8 +33,15 @@ ax.command:Add("PM", {
             return "Target player not found."
         end
 
-        target:ChatPrint("[PM from " .. client:Nick() .. "] " .. message)
-        client:ChatPrint("[PM to " .. target:Nick() .. "] " .. message)
+        if ( target == client ) then
+            return "You cannot PM yourself."
+        end
+
+        target:ChatPrint(Color(125, 150, 75), "[PM from " .. client:Nick() .. "] " .. message)
+        client:ChatPrint(Color(125, 150, 75), "[PM to " .. target:Nick() .. "] " .. message)
+
+        target:SendLua([[ax.client:EmitSound("hl1/fvox/bell.wav", 75, 100, 0.25)]])
+        client:SendLua([[ax.client:EmitSound("hl1/fvox/bell.wav", 75, 100, 0.25)]])
 
         return ""
     end

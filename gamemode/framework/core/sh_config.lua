@@ -40,6 +40,15 @@ ax.config:Add("chat.yell.distance", ax.type.number, 700, {
     subCategory = "distances"
 })
 
+ax.config:Add("chat.whisper.distance", ax.type.number, 200, {
+    description = "Maximum distance for Whisper chat",
+    min = 50,
+    max = 1000,
+    decimals = 0,
+    category = "chat",
+    subCategory = "distances"
+})
+
 ax.config:Add("chat.ooc.distance", ax.type.number, 600, {
     description = "Maximum distance for LOOC (local out-of-character) chat",
     min = 100,
@@ -59,20 +68,32 @@ ax.config:Add("chat.me.distance", ax.type.number, 600, {
 })
 
 -- Chat colors (networked for client consistency)
-ax.config:Add("chat.ic.color", ax.type.color, Color(230, 230, 110), {
+ax.config:Add("chat.ic.color", ax.type.color, Color(255, 255, 150), {
     description = "Color for IC chat",
     category = "chat",
     subCategory = "colors"
 })
 
-ax.config:Add("chat.yell.color", ax.type.color, Color(255, 0, 0), {
+ax.config:Add("chat.yell.color", ax.type.color, Color(255, 255, 150), {
     description = "Color for Yell chat",
+    category = "chat",
+    subCategory = "colors"
+})
+
+ax.config:Add("chat.whisper.color", ax.type.color, Color(230, 230, 150), {
+    description = "Color for Whisper chat",
     category = "chat",
     subCategory = "colors"
 })
 
 ax.config:Add("chat.ooc.color", ax.type.color, Color(110, 10, 10), {
     description = "Color for OOC/LOOC chat",
+    category = "chat",
+    subCategory = "colors"
+})
+
+ax.config:Add("chat.me.color", ax.type.color, Color(255, 255, 175), {
+    description = "Color for /me actions",
     category = "chat",
     subCategory = "colors"
 })
