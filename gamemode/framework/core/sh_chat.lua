@@ -9,6 +9,18 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
+-- Helper function to check if speaker is looking at a target player
+local function GetLookTarget(speaker)
+    if ( !IsValid(speaker) or !speaker:IsPlayer() ) then return nil end
+
+    local trace = speaker:GetEyeTrace()
+    if ( IsValid(trace.Entity) and trace.Entity:IsPlayer() ) then
+        return trace.Entity
+    end
+
+    return nil
+end
+
 --[[
 
 A list of things to improve the chat to a level of serious quality.
@@ -91,6 +103,28 @@ ax.chat:Add("ic", {
         local icColor = ax.config:Get("chat.ic.color")
         return icColor, client:Nick() .. " " .. expressions["ic"][math.random(#expressions["ic"])] .. ", \"" .. ax.chat:Format(message) .. "\""
     end,
+    OnFormatForListener = function(this, speaker, listener, message)
+        local icColor = ax.config:Get("chat.ic.color")
+        local verb = expressions["ic"][math.random(#expressions["ic"])]
+        local formattedMessage = ax.chat:Format(message)
+        local target = GetLookTarget(speaker)
+
+        if ( IsValid(target) ) then
+            if ( target == listener ) then
+                -- Speaker is looking at this listener
+                return icColor, speaker:Nick() .. " " .. verb .. " to you, \"" .. formattedMessage .. "\""
+            elseif ( listener == speaker ) then
+                -- This is the speaker seeing their own message
+                return icColor, speaker:Nick() .. " " .. verb .. " to " .. target:Nick() .. ", \"" .. formattedMessage .. "\""
+            else
+                -- Other listeners see who the speaker is talking to
+                return icColor, speaker:Nick() .. " " .. verb .. " to " .. target:Nick() .. ", \"" .. formattedMessage .. "\""
+            end
+        end
+
+        -- Default message (no target)
+        return icColor, speaker:Nick() .. " " .. verb .. ", \"" .. formattedMessage .. "\""
+    end,
     CanHear = function(this, speaker, listener)
         local distance = ax.config:Get("chat.ic.distance", 400)
         return speaker:GetPos():DistToSqr(listener:GetPos()) <= distance ^ 2
@@ -103,7 +137,29 @@ ax.chat:Add("yell", {
     alias = {"y", "shout"},
     OnRun = function(this, client, message)
         local yellColor = ax.config:Get("chat.yell.color")
-        return yellColor, string.format("<font=ax.large>%s</font>", client:Nick() .. " " .. expressions["yell"][math.random(#expressions["yell"])] .. ", \"" .. utf8.upper(ax.chat:Format(message)) .. "\"")
+        return yellColor, string.format("<font=ax.medium>%s</font>", client:Nick() .. " " .. expressions["yell"][math.random(#expressions["yell"])] .. ", \"" .. utf8.upper(ax.chat:Format(message)) .. "\"")
+    end,
+    OnFormatForListener = function(this, speaker, listener, message)
+        local yellColor = ax.config:Get("chat.yell.color")
+        local verb = expressions["yell"][math.random(#expressions["yell"])]
+        local formattedMessage = utf8.upper(ax.chat:Format(message))
+        local target = GetLookTarget(speaker)
+
+        if ( IsValid(target) ) then
+            if ( target == listener ) then
+                -- Speaker is looking at this listener
+                return yellColor, string.format("<font=ax.medium>%s</font>", speaker:Nick() .. " " .. verb .. " to you, \"" .. formattedMessage .. "\"")
+            elseif ( listener == speaker ) then
+                -- This is the speaker seeing their own message
+                return yellColor, string.format("<font=ax.medium>%s</font>", speaker:Nick() .. " " .. verb .. " to " .. target:Nick() .. ", \"" .. formattedMessage .. "\"")
+            else
+                -- Other listeners see who the speaker is talking to
+                return yellColor, string.format("<font=ax.medium>%s</font>", speaker:Nick() .. " " .. verb .. " to " .. target:Nick() .. ", \"" .. formattedMessage .. "\"")
+            end
+        end
+
+        -- Default message (no target)
+        return yellColor, string.format("<font=ax.medium>%s</font>", speaker:Nick() .. " " .. verb .. ", \"" .. formattedMessage .. "\"")
     end,
     CanHear = function(this, speaker, listener)
         local distance = ax.config:Get("chat.yell.distance", 700)
@@ -118,6 +174,28 @@ ax.chat:Add("whisper", {
     OnRun = function(this, client, message)
         local whisperColor = ax.config:Get("chat.whisper.color")
         return whisperColor, string.format("<font=ax.small>%s</font>", client:Nick() .. " " .. expressions["whisper"][math.random(#expressions["whisper"])] .. ", \"" .. ax.chat:Format(message) .. "\"")
+    end,
+    OnFormatForListener = function(this, speaker, listener, message)
+        local whisperColor = ax.config:Get("chat.whisper.color")
+        local verb = expressions["whisper"][math.random(#expressions["whisper"])]
+        local formattedMessage = ax.chat:Format(message)
+        local target = GetLookTarget(speaker)
+
+        if ( IsValid(target) ) then
+            if ( target == listener ) then
+                -- Speaker is looking at this listener
+                return whisperColor, string.format("<font=ax.small>%s</font>", speaker:Nick() .. " " .. verb .. " to you, \"" .. formattedMessage .. "\"")
+            elseif ( listener == speaker ) then
+                -- This is the speaker seeing their own message
+                return whisperColor, string.format("<font=ax.small>%s</font>", speaker:Nick() .. " " .. verb .. " to " .. target:Nick() .. ", \"" .. formattedMessage .. "\"")
+            else
+                -- Other listeners see who the speaker is talking to
+                return whisperColor, string.format("<font=ax.small>%s</font>", speaker:Nick() .. " " .. verb .. " to " .. target:Nick() .. ", \"" .. formattedMessage .. "\"")
+            end
+        end
+
+        -- Default message (no target)
+        return whisperColor, string.format("<font=ax.small>%s</font>", speaker:Nick() .. " " .. verb .. ", \"" .. formattedMessage .. "\"")
     end,
     CanHear = function(this, speaker, listener)
         local distance = ax.config:Get("chat.whisper.distance", 200)
