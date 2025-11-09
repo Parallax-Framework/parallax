@@ -12,39 +12,50 @@
 local MODULE = MODULE
 
 function MODULE:PlayerSay(client, text, teamChat)
-    if ( text == "" ) then return "" end
+    if ( !isstring(text) ) then return "" end
+
+    local rawText = string.Trim(text)
+    if ( rawText == "" ) then return "" end
 
     -- Special occasion for OOC and LOOC chat
-    if ( string.StartsWith(text, "//") ) then
-        text = string.sub(text, 3)
+    if ( string.StartsWith(rawText, "//") ) then
+        local msg = string.Trim(string.sub(rawText, 3))
 
-        ax.chat:Send(client, "ooc", string.Trim(text))
+        ax.chat:Send(client, "ooc", msg)
         return ""
-    elseif ( string.StartsWith(text, ".//") ) then
-        text = string.sub(text, 4)
+    elseif ( string.StartsWith(rawText, ".//") ) then
+        local msg = string.Trim(string.sub(rawText, 4))
 
-        ax.chat:Send(client, "looc", string.Trim(text))
+        ax.chat:Send(client, "looc", msg)
         return ""
     end
 
     -- Check if this is a command
     local isCommand = false
     for k, v in ipairs(ax.command.prefixes) do
-        if ( string.StartsWith(text, v) ) then
+        if ( string.StartsWith(rawText, v) ) then
             isCommand = true
             break
         end
     end
 
     if ( isCommand ) then
-        local name, rawArgs = ax.command:Parse(text)
+        local name, rawArgs = ax.command:Parse(rawText)
         if ( name and name != "" and ax.command.registry[name] ) then
-            local ok, result = ax.command:Run(client, name, rawArgs)
+            -- Run the command inside pcall to avoid a server-side error killing the hook
+            local ok, runOk, result = pcall(function()
+                return ax.command:Run(client, name, rawArgs)
+            end)
 
             if ( !ok ) then
-                client:Notify(result or "Unknown error", "error")
-            elseif ( result and result != "" ) then
-                client:Notify(tostring(result))
+                client:Notify("Command execution failed.", "error")
+            else
+                -- runOk/result come from ax.command:Run
+                if ( !runOk ) then
+                    client:Notify(result or "Unknown error", "error")
+                elseif ( result and result != "" ) then
+                    client:Notify(tostring(result))
+                end
             end
         else
             client:Notify(tostring(name) .. " is not a valid command.", "warning")

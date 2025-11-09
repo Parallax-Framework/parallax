@@ -413,7 +413,7 @@ if ( SERVER ) then
 
         local ok, result = ax.command:Run(caller, name, rawArgs)
         if ( !ok ) then
-            caller:Notify(result or "Unknown error", "error")
+            caller:Notify(result or "Unknown error")
         elseif ( result and result != "" ) then
             caller:Notify(tostring(result))
         end
@@ -492,7 +492,7 @@ if ( SERVER ) then
             if ( IsValid(caller) ) then
                 caller:Notify("Usage: ax_command <command> [arguments]", "info")
             else
-                print("Usage: ax_command <command> [arguments]")
+                ax.util:PrintWarning("Usage: ax_command <command> [arguments]")
             end
 
             return
@@ -502,9 +502,9 @@ if ( SERVER ) then
         if ( !name or name == "" ) then
             local msg = "Invalid command format"
             if ( IsValid(caller) ) then
-                caller:Notify(msg, "error")
+                caller:Notify(msg)
             else
-                print(msg)
+                ax.util:PrintWarning(msg)
             end
 
             return
@@ -515,16 +515,16 @@ if ( SERVER ) then
         if ( !ok ) then
             local msg = "" .. (result or "Unknown error")
             if ( IsValid(caller) ) then
-                caller:Notify(msg, "error")
+                caller:Notify(msg)
             else
-                print(msg)
+                ax.util:PrintWarning(msg)
             end
         elseif ( result and result != "" ) then
             local msg = tostring(result)
             if ( IsValid(caller) ) then
                 caller:Notify(msg)
             else
-                print(msg)
+                ax.util:PrintWarning(msg)
             end
         end
     end)

@@ -369,7 +369,7 @@ ax.command:Add("BotKick", {
     end
 })
 
-ax.command:Add("bot.support", {
+ax.command:Add("BotSupport", {
     description = "Enable or disable automatic bot character creation.",
     adminOnly = true,
     arguments = {
