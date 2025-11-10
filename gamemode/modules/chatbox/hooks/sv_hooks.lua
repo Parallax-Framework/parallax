@@ -66,10 +66,9 @@ function MODULE:PlayerSay(client, text, teamChat)
 
     local processed = hook.Run("PlayerMessageSend", client, "ic", rawText) or rawText
 
-    -- Format regular chat messages
-    if ( hook.Run("ShouldFormatMessage", client, processed) != false ) then
-        processed = ax.chat:Format(processed)
-    end
+    -- Formatting is handled by each chat type's OnRun/OnFormatForListener.
+    -- Keep the hook for opt-out, but do not pre-format here to avoid double-formatting.
+    hook.Run("ShouldFormatMessage", client, processed)
 
     ax.chat:Send(client, "ic", processed)
 
