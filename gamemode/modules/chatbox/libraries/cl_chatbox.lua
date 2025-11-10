@@ -12,106 +12,97 @@
 ax.chat = ax.chat or {}
 ax.chat.messages = ax.chat.messages or {}
 
-function ax.chat:BuildMarkup(revealedChars, segments)
-    -- Builds a markup-safe string from segments, revealing up to revealedChars characters
-    local out = ""
-    local remaining = revealedChars or 0
-    for _, seg in ipairs(segments) do
-        local t = seg.text or ""
-        local len = #t
-        if ( remaining >= len ) then
-            out = out .. string.format("<color=%d %d %d>%s</color>", seg.color.r, seg.color.g, seg.color.b, t)
-            remaining = remaining - len
-        elseif ( remaining > 0 ) then
-            out = out .. string.format("<color=%d %d %d>%s</color>", seg.color.r, seg.color.g, seg.color.b, string.sub(t, 1, remaining))
-            break
-        else
-            break
-        end
-    end
-
-    return out
+--- Count visible characters (excluding markup tags)
+local function CountVisibleChars(text)
+    return #string.gsub(text, "<[^>]+>", "")
 end
 
-function ax.chat:BuildSegments(arguments, defaultColor)
-    -- Converts chat AddText arguments into segments suitable for BuildMarkup
-    local segments = {}
-    local currentColor = defaultColor or Color(255, 255, 255)
+--- Reveal text up to character limit while preserving markup
+local function RevealText(text, maxChars)
+    if ( maxChars <= 0 ) then return "" end
 
-    for i = 1, #arguments do
-        local v = arguments[i]
-        if ( ax.type:Sanitise(ax.type.color, v) ) then
-            currentColor = v
-        elseif ( IsValid(v) and isfunction(v.IsPlayer) and v:IsPlayer() ) then
-            local c = team.GetColor(v:Team())
-            segments[#segments + 1] = { color = Color(c.r, c.g, c.b), text = v:Nick() }
-        else
-            segments[#segments + 1] = { color = Color(currentColor.r, currentColor.g, currentColor.b), text = tostring(v) }
+    local result, visible, inTag = "", 0, false
+
+    for i = 1, #text do
+        local char = string.sub(text, i, i)
+
+        if ( char == "<" ) then
+            inTag = true
+        elseif ( char == ">" ) then
+            inTag = false
+        elseif ( !inTag ) then
+            if ( visible >= maxChars ) then break end
+            visible = visible + 1
         end
+
+        result = result .. char
     end
 
-    local totalChars = 0
-    for _, seg in ipairs(segments) do totalChars = totalChars + #(seg.text or "") end
-
-    return segments, totalChars, currentColor
+    return result
 end
 
-function ax.chat:CreateMessagePanel(segments, totalChars, font, maxWidth, revealSpeed)
-    -- Create and return a configured message panel for the chat history.
-    local rich = markup.Parse("<font=" .. font .. ">" .. ax.chat:BuildMarkup(0, segments) .. "</font>", maxWidth)
+--- Inject color tags around text while preserving font tags
+function ax.chat:InjectColorTags(text, color)
+    local result, pos = "", 1
+    local colorTag = string.format("<color=%d,%d,%d>%%s</color>", color.r, color.g, color.b)
 
+    while pos <= #text do
+        local tagStart = string.find(text, "<", pos, true)
+
+        if ( !tagStart ) then
+            return result .. string.format(colorTag, string.sub(text, pos))
+        end
+
+        if ( tagStart > pos ) then
+            result = result .. string.format(colorTag, string.sub(text, pos, tagStart - 1))
+        end
+
+        local tagEnd = string.find(text, ">", tagStart, true)
+        result = result .. string.sub(text, tagStart, tagEnd or #text)
+        pos = (tagEnd or #text) + 1
+    end
+
+    return result
+end
+
+--- Create message panel with animated text reveal
+function ax.chat:CreateMessagePanel(markupText, maxWidth, revealSpeed)
     local panel = ax.gui.chatbox.history:Add("EditablePanel")
-    if ( rich ) then
-        panel:SetTall(rich:GetHeight())
-    else
-        panel:SetTall(16)
-    end
     panel:Dock(TOP)
 
-    panel.alpha = 1
-    panel.created = CurTime()
+    panel.markupText = markupText
+    panel.maxWidth = maxWidth
+    panel.totalChars = CountVisibleChars(markupText)
     panel.revealedChars = 0
-    panel.totalChars = totalChars or 0
-    panel.revealSpeed = revealSpeed or 100 -- characters per second, tweakable
+    panel.revealSpeed = revealSpeed or 100
+    panel.created = CurTime()
+    panel.alpha = 1
 
-    function panel:SizeToContents()
-        local shown = math.floor(self.revealedChars)
-        rich = markup.Parse("<font=" .. font .. ">" .. ax.chat:BuildMarkup(shown, segments) .. "</font>", maxWidth)
-        if ( rich ) then
-            self:SetTall(rich:GetHeight())
-        end
-    end
+    panel.markup = markup.Parse(RevealText(markupText, 0), maxWidth)
+    panel:SetTall(panel.markup and panel.markup:GetHeight() or 16)
 
     function panel:Paint(w, h)
         surface.SetAlphaMultiplier(self.alpha)
-
-        if ( rich ) then
-            rich:Draw(0, 0)
-        end
-
+        if ( self.markup ) then self.markup:Draw(0, 0) end
         surface.SetAlphaMultiplier(1)
     end
 
     function panel:Think()
         if ( self.revealedChars < self.totalChars ) then
             self.revealedChars = math.min(self.totalChars, self.revealedChars + FrameTime() * self.revealSpeed)
-            rich = markup.Parse("<font=" .. font .. ">" .. ax.chat:BuildMarkup(math.floor(self.revealedChars), segments) .. "</font>", maxWidth)
-            if ( rich ) then
-                self:SetTall(rich:GetHeight())
-            end
+            self.markup = markup.Parse(RevealText(self.markupText, math.floor(self.revealedChars)), self.maxWidth)
+            if ( self.markup ) then self:SetTall(self.markup:GetHeight()) end
         end
 
         if ( ax.gui.chatbox:GetAlpha() != 255 ) then
             local dt = CurTime() - self.created
-            if ( dt >= 8 ) then
-                self.alpha = math.max(0, 1 - (dt - 8) / 4)
-            end
+            self.alpha = dt >= 8 and math.max(0, 1 - (dt - 8) / 4) or 1
         else
             self.alpha = 1
         end
     end
 
-    return panel, rich
+    return panel
 end
 
 function ax.chat:PlayReceiveSound()
@@ -141,56 +132,48 @@ function ax.chat:OverrideChatAddText()
 
     function chat.AddText(...)
         local arguments = { ... }
-
-        -- Check if chatbox exists, if not create it first
         if ( !IsValid(ax.gui.chatbox) ) then
             ax.gui.chatbox = vgui.Create("ax.chatbox")
-
-            -- Queue the message to be added after the chatbox is ready
-            timer.Simple(0.1, function()
-                chat.AddText(unpack(arguments))
-            end)
-
+            timer.Simple(0.1, function() chat.AddText(unpack(arguments)) end)
             return
         end
 
-        local currentColor = Color(255, 255, 255)
-        local chatType = ax.chat.currentType or "ic"
-        local font = "ax.regular"
+        local color = Color(255, 255, 255)
+        local text = ""
 
-        -- Search the arguments for a custom font input using <font=FontName>message</font>
-        for i = 1, #arguments do
-            local v = arguments[i]
-            if ( isstring(v) ) then
-                local fontTag = string.match(v, "<font=([^>]+)>")
-                if ( fontTag ) then
-                    font = fontTag
-                    arguments[i] = string.gsub(v, "<font=[^>]+>", "")
-                    arguments[i] = string.gsub(arguments[i], "</font>", "")
-                    break
+        -- Add timestamp
+        if ( ax.option:Get("chat.timestamps", true) ) then
+            local ts = Color(150, 150, 150)
+            text = string.format("<font=ax.regular><color=%d,%d,%d>[%s] </color></font>", ts.r, ts.g, ts.b, os.date("%H:%M"))
+        end
+
+        -- Build markup from arguments
+        for _, v in ipairs(arguments) do
+            if ( ax.type:Sanitise(ax.type.color, v) ) then
+                color = v
+            elseif ( IsValid(v) and v:IsPlayer() ) then
+                local tc = team.GetColor(v:Team())
+                text = text .. string.format("<color=%d,%d,%d>%s</color>", tc.r, tc.g, tc.b, v:Nick())
+            elseif ( isstring(v) ) then
+                if ( string.find(v, "<font=") ) then
+                    text = text .. ax.chat:InjectColorTags(v, color)
+                else
+                    text = text .. string.format("<color=%d,%d,%d>%s</color>", color.r, color.g, color.b, v)
                 end
+            else
+                text = text .. string.format("<color=%d,%d,%d>%s</color>", color.r, color.g, color.b, tostring(v))
             end
         end
 
-        local overrideFont = hook.Run("GetChatFont", chatType)
-        if ( overrideFont ) then
-            font = overrideFont
+        -- Ensure there is a fallback font wrapper so markup.Parse always has a font
+        local defaultFont = hook.Run("GetChatFont", ax.chat.currentType or "ic") or "ax.regular"
+        if ( !string.find(text, "<font=") ) then
+            text = "<font=" .. defaultFont .. ">" .. text .. "</font>"
         end
 
-        local maxWidth = ax.gui.chatbox:GetWide() - 20
-
-        -- Add a timestamp if enabled
-        if ( ax.option:Get("chat.timestamps", true) ) then
-            local timeStr = os.date("%H:%M")
-            arguments = { Color(150, 150, 150), "[" .. timeStr .. "] ", unpack(arguments) }
-        end
-
-        local segments, totalChars = ax.chat:BuildSegments(arguments, currentColor)
-
-        local panel = ax.chat:CreateMessagePanel(segments, totalChars, font, maxWidth, 100)
-
+        local panel = ax.chat:CreateMessagePanel(text, ax.gui.chatbox:GetWide() - 20, 100)
         ax.chat.messages[#ax.chat.messages + 1] = panel
-        ax.chat.currentType = nil -- Reset the current chat type after adding the message
+        ax.chat.currentType = nil
 
         ax.chat:PlayReceiveSound()
         ax.chat:ScrollHistoryToBottom(panel)
