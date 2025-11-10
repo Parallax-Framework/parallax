@@ -10,7 +10,15 @@
 ]]
 
 --- Font management system for creating and storing fonts used throughout the Parallax Framework.
--- Supports font families with various styles and weights.
+-- Automatically generates all possible combinations of font styles for each font family.
+-- Supports: bold, italic, underline, strikeout, and all their combinations.
+--
+-- @usage
+-- -- Use any combination of styles:
+-- draw.SimpleText("Hello", "ax.regular.bold.italic", x, y)
+-- draw.SimpleText("World", "ax.large.underline.strikeout", x, y)
+-- draw.SimpleText("!", "ax.huge.bold.italic.underline.strikeout", x, y)
+--
 -- @module ax.font
 
 ax.font = ax.font or {}
@@ -31,90 +39,61 @@ function surface.CreateFont(name, data)
     surface.axCreateFont(name, data)
 end
 
-local families = {
-    ["bold"] = "GorDIN Black",
-    ["italic"] = "GorDIN Regular",
-    ["italic.bold"] = "GorDIN Black"
-}
+local styleModifiers = { "bold", "italic", "strikeout", "underline" }
 
---- Create a font family with various styles and weights.
--- Generates multiple font variations (bold, italic, etc.) from a base font definition.
+--- Generate all style combinations (cached)
+-- @realm client
+-- @return table Array of all style combinations
+function ax.font:GenerateStyleCombinations()
+    if ( self.styleCombinations ) then return self.styleCombinations end
+
+    self.styleCombinations = { "" }
+    for i = 1, 15 do -- 2^4 - 1
+        local combo = {}
+        for j = 1, 4 do
+            if ( bit.band(i, bit.lshift(1, j - 1)) != 0 ) then
+                table.insert(combo, styleModifiers[j])
+            end
+        end
+        table.sort(combo)
+        table.insert(self.styleCombinations, table.concat(combo, "."))
+    end
+
+    return self.styleCombinations
+end
+
+--- Create a font family with all style variations
 -- @realm client
 -- @param name string The base name for the font family
--- @param font string The font face name to use
--- @param size number The base font size
--- @param familiesOverride table Optional override for font family definitions
--- @param fontData table Optional additional font data to merge
--- @usage ax.font:CreateFamily("header", "Arial", 24)
-function ax.font:CreateFamily(name, font, size, familiesOverride, fontData)
-    if ( !font or font == "" ) then
-        ax.util:PrintError("Failed to create font family '" .. name .. "': Font is not defined.")
+-- @param font string The font face name
+-- @param size number The font size
+-- @param fontData table Optional additional font data
+function ax.font:CreateFamily(name, font, size, fontData)
+    if ( !font or !size or size <= 0 ) then
+        ax.util:PrintError("Invalid font family '" .. name .. "'")
         return
     end
 
-    if ( !size or size <= 0 ) then
-        ax.util:PrintError("Failed to create font family '" .. name .. "': Size is not defined or invalid.")
-        return
+    local combinations = self:GenerateStyleCombinations()
+
+    for _, combo in ipairs(combinations) do
+        local fontName = "ax." .. name .. (combo != "" and ("." .. combo) or "")
+        local data = {
+            font = string.find(combo, "bold", 1, true) and "GorDIN Black" or font,
+            size = size,
+            weight = string.find(combo, "bold", 1, true) and 900 or 700,
+            italic = string.find(combo, "italic", 1, true) and true or false,
+            underline = string.find(combo, "underline", 1, true) and true or false,
+            strikeout = string.find(combo, "strikeout", 1, true) and true or false,
+            antialias = true,
+            extended = true
+        }
+
+        table.Merge(data, fontData or {})
+        surface.CreateFont(fontName, data)
     end
 
-    -- Create the base font
-    local createFontData = {
-        font = font,
-        size = size,
-        weight = 700,
-        antialias = true
-    }
-
-    table.Merge(createFontData, fontData or {})
-
-    -- Multiply depending on size
-    if ( createFontData.blursize ) then
-        createFontData.blursize = math.floor(size / 4) + createFontData.blursize
-    end
-
-    surface.CreateFont("ax." .. name, createFontData)
-
-    if ( familiesOverride ) then
-        families = familiesOverride
-    end
-
-    for family, fontName in pairs(families) do
-        if ( isstring(family) and isstring(fontName) ) then
-            createFontData = {
-                font = fontName,
-                size = size,
-                weight = ax.util:FindString(family, "bold") and 900 or 700,
-                italic = ax.util:FindString(family, "italic"),
-                antialias = true
-            }
-
-            table.Merge(createFontData, fontData or {})
-
-            if ( createFontData.blursize ) then
-                createFontData.blursize = math.floor(size / 4) + createFontData.blursize
-            end
-
-            surface.CreateFont("ax." .. name .. "." .. family, createFontData)
-        else
-            createFontData = {
-                font = font,
-                size = size,
-                weight = ax.util:FindString(family, "bold") and 900 or 700,
-                italic = ax.util:FindString(family, "italic"),
-                antialias = true
-            }
-
-            table.Merge(createFontData, fontData or {})
-
-            if ( createFontData.blursize ) then
-                createFontData.blursize = math.floor(size / 4) + createFontData.blursize
-            end
-
-            surface.CreateFont("ax." .. name .. "." .. family, createFontData)
-        end
-    end
-
-    ax.util:Print("Font family '" .. name .. "' created successfully.")
+    ax.util:Print("Font family '" .. name .. "' created with " .. #combinations .. " variations.")
 end
 
 function ax.font:Load()
@@ -129,13 +108,37 @@ function ax.font:Load()
     hook.Run("LoadFonts")
 end
 
-concommand.Add("ax_font_list", function(client, cmd, args)
-    ax.util:Print("Available fonts:")
+--- Generate list of all available fonts
+-- @realm client
+-- @return table Array of all font names
+function ax.font:GenerateAvailableFonts()
+    local fonts = {}
+    local baseFonts = { "tiny", "small", "regular", "medium", "large", "massive", "huge" }
 
+    for _, baseName in ipairs(baseFonts) do
+        for _, combo in ipairs(self:GenerateStyleCombinations()) do
+            fonts[#fonts + 1] = "ax." .. baseName .. (combo != "" and ("." .. combo) or "")
+        end
+    end
+
+    return fonts
+end
+
+concommand.Add("ax_font_list", function(client, cmd, args)
+    if ( args[1] == "combinations" ) then
+        local combinations = ax.font:GenerateStyleCombinations()
+        ax.util:Print("Available style combinations (" .. #combinations .. " total):")
+        for _, combo in ipairs(combinations) do
+            ax.util:Print(" - " .. (combo == "" and "(base)" or combo))
+        end
+        return
+    end
+
+    ax.util:Print("Available fonts:")
     for name, data in args[1] and SortedPairsByMemberValue(ax.font.stored, "size", true) or SortedPairs(ax.font.stored) do
         ax.util:Print(" - " .. name)
     end
-end, nil, "List all available fonts in the Parallax Framework", FCVAR_HIDDEN)
+end, nil, "List all available fonts in the Parallax Framework. Use 'ax_font_list combinations' to see all style combinations.", FCVAR_HIDDEN)
 
 concommand.Add("ax_font_reload", function(client, cmd, args)
     ax.font:Load()
@@ -147,35 +150,9 @@ concommand.Add("ax_font_wipe", function(client, cmd, args)
             surface.CreateFont(name, data)
         end
     end
-
     ax.util:Print("Wiped and reloaded all Parallax Framework fonts.")
 end, nil, "Wipe and reload all Parallax Framework fonts", FCVAR_HIDDEN)
 
 --- Available fonts registered in the Parallax Framework
 -- @table AX_FONTS
-AX_FONTS = {
-    "ax.tiny",
-    "ax.tiny.bold",
-    "ax.tiny.italic",
-    "ax.tiny.italic.bold",
-    "ax.small",
-    "ax.small.bold",
-    "ax.small.italic",
-    "ax.small.italic.bold",
-    "ax.regular",
-    "ax.regular.bold",
-    "ax.regular.italic",
-    "ax.regular.italic.bold",
-    "ax.large",
-    "ax.large.bold",
-    "ax.large.italic",
-    "ax.large.italic.bold",
-    "ax.massive",
-    "ax.massive.bold",
-    "ax.massive.italic",
-    "ax.massive.italic.bold",
-    "ax.huge",
-    "ax.huge.bold",
-    "ax.huge.italic",
-    "ax.huge.italic.bold"
-}
+AX_FONTS = ax.font:GenerateAvailableFonts()
