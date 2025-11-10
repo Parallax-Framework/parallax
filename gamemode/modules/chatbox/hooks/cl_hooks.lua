@@ -15,7 +15,9 @@ function MODULE:InitPostEntity()
     -- Create a 1 minute timer, which overrides the chat.AddText function to use our chatbox
     -- Because something else might override it after we do, we repeat this multiple times to ensure ours sticks
     timer.Create("ax.chatbox.override.addtext", 1, 60, function()
-        ax.chat:OverrideChatAddText()
+        if ( ax.chat.OverrideChatAddText ) then
+            ax.chat:OverrideChatAddText()
+        end
     end)
 end
 
