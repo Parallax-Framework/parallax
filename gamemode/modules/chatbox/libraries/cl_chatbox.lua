@@ -165,9 +165,20 @@ function ax.chat:OverrideChatAddText()
             end
         end
 
-        -- Ensure there is a fallback font wrapper so markup.Parse always has a font
+        -- Ensure there is a fallback font wrapper so markup.Parse always has a font.
+        -- If the text is not already wrapped in a top-level <font=...>...</font>,
+        -- wrap the entire markup in the default chat font. This covers the case
+        -- where we add a timestamp (<font=...>...</font>) but the rest of the
+        -- message isn't wrapped, which would prevent markup.Parse from having
+        -- a stable top-level font context.
         local defaultFont = hook.Run("GetChatFont", ax.chat.currentType or "ic") or "ax.regular"
-        if ( !string.find(text, "<font=") ) then
+        local function IsFullyWrappedByFont(str)
+            if ( !isstring(str) ) then return false end
+            -- allow optional leading/trailing whitespace
+            return string.match(str, "^%s*<font=[^>]+>.-</font>%s*$") != nil
+        end
+
+        if ( !IsFullyWrappedByFont(text) ) then
             text = "<font=" .. defaultFont .. ">" .. text .. "</font>"
         end
 
