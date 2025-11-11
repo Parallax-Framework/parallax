@@ -190,7 +190,7 @@ function PANEL:Populate(tab, scroller, type, category)
         -- Add subcategory header (except for "general" when there's only one subcategory)
         if ( showSubCategoryHeaders and subCat != "general" ) then
             local subCategoryLabel = scroller:Add("ax.text")
-            subCategoryLabel:SetFont("ax.huge.italic.bold")
+            subCategoryLabel:SetFont("ax.huge.bold.italic")
             subCategoryLabel:SetText(utf8.upper(ax.localization:GetPhrase("subcategory." .. subCat)), true)
             subCategoryLabel:Dock(TOP)
         end

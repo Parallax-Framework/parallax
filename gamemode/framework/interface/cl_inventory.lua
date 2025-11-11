@@ -227,7 +227,7 @@ function PANEL:PopulateItems()
 
         -- Use user preference for italic styling
         local useItalic = ax.option:Get("inventory.categories.italic", false)
-        local categoryFont = useItalic and "ax.huge.italic.bold" or "ax.huge.bold"
+        local categoryFont = useItalic and "ax.huge.bold.italic" or "ax.huge.bold"
 
         categoryPanel:SetFont(categoryFont)
         categoryPanel:SetText(utf8.upper(categoryName), true)
@@ -479,7 +479,7 @@ function PANEL:PerformLayout(width, height)
 
             -- Update font based on user preference
             local useItalic = ax.option:Get("inventory.categories.italic", false)
-            local categoryFont = useItalic and "ax.huge.italic.bold" or "ax.huge.bold"
+            local categoryFont = useItalic and "ax.huge.bold.italic" or "ax.huge.bold"
             categoryPanel:SetFont(categoryFont)
         end
 
