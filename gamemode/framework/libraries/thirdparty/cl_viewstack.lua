@@ -297,10 +297,10 @@ hook.Add("CalcViewModelView", "ax.viewstack.CalcViewModelView", function(weapon,
     if ( ax.viewstack.inVM ) then return end
     ax.viewstack.inVM = true
 
-    local base = { pos = oldPos, ang = oldAng, fov = nil }
+    local base = { pos = newPos, ang = newAng, fov = nil }
     local out = ax.viewstack:RunViewModel(weapon, base)
     ax.viewstack.inVM = false
     if ( out ) then
-        return out.pos or oldPos, out.ang or oldAng, out.fov
+        return out.pos or newPos, out.ang or newAng, out.fov
     end
 end)
