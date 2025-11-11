@@ -311,7 +311,8 @@ function GM:HUDPaintCurvy(width, height, client, isCurved)
         -- Draw voice chat icon if player is talking
         local iconMaterial = talkingIcon
         if ( client:IsSpeaking() ) then
-            local iconSize = barHeight * 2
+            local iconSize = 64 * (1 + client:VoiceVolume())
+
             local iconX = width - ax.util:ScreenScale(8) - iconSize
             local iconY = height / 2 - iconSize / 2
 
@@ -319,15 +320,6 @@ function GM:HUDPaintCurvy(width, height, client, isCurved)
             iconMaterial = speakingIcon
 
             ax.render.DrawMaterial(0, iconX, iconY, iconSize, iconSize, iconColor, iconMaterial)
-        end
-
-        -- Draw talking icon if player is typing
-        if ( IsValid(ax.gui.chatbox) and ax.gui.chatbox:GetAlpha() >= 255 ) then
-            local iconSize = barHeight * 2
-            local iconX = width - ax.util:ScreenScale(8) - iconSize
-            local iconY = height / 2 - iconSize / 2 + (client:IsSpeaking() and iconSize + ax.util:ScreenScale(4) or 0)
-
-            ax.render.DrawMaterial(0, iconX, iconY, iconSize, iconSize, Color(255, 255, 255, 200), talkingIcon)
         end
     end
 
@@ -358,7 +350,7 @@ function GM:PostDrawTranslucentRenderables(depth, skybox)
 
         local eyeAngles = EyeAngles()
         local angle = Angle(0, eyeAngles.y - 90, 90)
-        local size = 96 * (1 + client:VoiceVolume())
+        local size = 64 * (1 + client:VoiceVolume() * 2)
 
         client.axVoiceIconSize = client.axVoiceIconSize or size
         client.axVoiceIconSize = Lerp(math.Clamp(ft * 10, 0, 1), client.axVoiceIconSize, size)
