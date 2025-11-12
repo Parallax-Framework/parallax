@@ -26,7 +26,7 @@ function ax.schema:Initialize(timeFilter)
 
     ax.hook:Register("SCHEMA")
 
-    local active = SCHEMA.folder
+    local active = SCHEMA.folder or engine.ActiveGamemode() -- Fallback to active gamemode if folder not set
     local boot = ax.util:Include(active .. "/gamemode/schema/boot.lua", "shared")
     if ( !boot ) then
         ax.util:PrintError("Failed to load schema boot file for \"" .. active .. "\". Please ensure your schema is set up correctly.")
