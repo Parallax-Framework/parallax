@@ -319,7 +319,7 @@ local function BuildUpdateQuery(queryObj)
                 for j = 1, #whereClause[2] do
                     parameters[#parameters + 1] = whereClause[2][j]
                 end
-            elseif (whereClause[2] ~= nil) then
+            elseif (whereClause[2] != nil) then
                 parameters[#parameters + 1] = whereClause[2]
             end
         end
@@ -592,6 +592,34 @@ end
 -- A function to query the MySQL database.
 function mysql:RawQuery(query, callback, flags, ...)
     if (self.module == "mysqloo") then
+        local parameters = {...}
+
+        -- If first parameter is a table, use it as the parameter list
+        if (istable(parameters[1])) then
+            parameters = parameters[1]
+        end
+
+        -- If we have parameters, substitute '?' placeholders with escaped values
+        if (istable(parameters) and parameters[1] != nil) then
+            for i = 1, #parameters do
+                local val = parameters[i]
+                local replacement = "NULL"
+
+                if (val == nil) then
+                    replacement = "NULL"
+                elseif (isnumber(val)) then
+                    replacement = tostring(val)
+                elseif (isbool(val)) then
+                    replacement = val and "1" or "0"
+                else
+                    replacement = "'" .. self:Escape(tostring(val)) .. "'"
+                end
+
+                -- Replace first occurrence of literal '?' with the replacement
+                query = string.gsub(query, "%?", replacement, 1)
+            end
+        end
+
         local queryObj = self.connection:query(query)
 
         queryObj:setOption(mysqloo.OPTION_NAMED_FIELDS)
@@ -610,6 +638,16 @@ function mysql:RawQuery(query, callback, flags, ...)
 
         queryObj.onError = function(q, errorText)
             ErrorNoHalt(string.format("[mysql] MySQL Query Error!\nQuery: %s\n%s\n", query, errorText))
+
+            if (callback) then
+                local bStatus, value = pcall(callback, errorText, false, nil)
+
+                if (!bStatus) then
+                    ErrorNoHalt(string.format("[mysql] MySQL Callback Error!\n%s\n", value))
+                end
+            end
+
+            ax.util:PrintDebug(color_error, string.format("[mysql] Query Failed: %s\n", query))
         end
 
         queryObj:start()
