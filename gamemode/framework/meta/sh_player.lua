@@ -179,6 +179,8 @@ if ( SERVER ) then
         local function finish(ok)
             if ( isfunction(callback) ) then
                 callback(ok)
+            else
+                ax.util:PrintDebug("No callback provided to Player:EnsurePlayer() for " .. steamID64)
             end
         end
 
@@ -213,6 +215,7 @@ if ( SERVER ) then
                     end)
                     insert:Execute()
                 else
+                    ax.util:PrintDebug("Player row found for " .. steamID64 .. ", ensuring data is valid.")
                     finish(true)
                 end
             end)
