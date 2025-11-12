@@ -39,6 +39,42 @@ function inventory:GetItems()
     return self.items or {}
 end
 
+function inventory:GetItemsByBase(baseName, includeInactive)
+    if ( !isstring(baseName) or baseName == "" ) then return {} end
+
+    local results = {}
+    for id, item in pairs(self.items or {}) do
+        if ( istable(item) ) then
+            local stored = ax.item.stored[item.class]
+
+            -- Match either an explicit base field or the stored class name for base items
+            if ( istable(stored) and ( stored.base == baseName or stored.class == baseName ) ) then
+                local include = true
+
+                if ( includeInactive == false ) then
+                    local inactive = false
+
+                    if ( isfunction(item.GetData) ) then
+                        inactive = ( item:GetData("inactive") == true )
+                    elseif ( istable(item.data) ) then
+                        inactive = ( item.data.inactive == true )
+                    end
+
+                    if ( inactive ) then
+                        include = false
+                    end
+                end
+
+                if ( include ) then
+                    results[#results + 1] = item
+                end
+            end
+        end
+    end
+
+    return results
+end
+
 function inventory:GetItemByID(itemID)
     for id, v in pairs(self.items) do
         if ( id == itemID ) then
