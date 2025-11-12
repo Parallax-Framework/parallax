@@ -47,7 +47,16 @@ function PANEL:Init()
 end
 
 function PANEL:OnSlideStart()
-    self:PopulateTabs()
+    -- Build only the first available category dynamically based on current payload.
+    local categories = self:GetOrderedCategories()
+    if ( #categories == 0 ) then return end
+
+    local firstCategory = categories[1]
+    local tab = self:CreateOrGetCategoryTab(firstCategory, 1)
+    if ( IsValid(tab) ) then
+        tab:SlideToFront(0)
+        self:PopulateVars(firstCategory)
+    end
 end
 
 function PANEL:GetVars()
@@ -63,51 +72,70 @@ function PANEL:GetVars()
 end
 
 function PANEL:NavigateToNextTab(currentTab)
-    if ( currentTab.index == table.Count(self.tabs) ) then
+    local categories = self:GetOrderedCategories()
+    if ( #categories == 0 ) then return end
+
+    local currentCategory = currentTab.category
+    local currentIndex
+    for i, name in ipairs(categories) do
+        if ( name == currentCategory ) then
+            currentIndex = i
+            break
+        end
+    end
+
+    if ( !currentIndex ) then return end
+
+    if ( currentIndex == #categories ) then
         net.Start("ax.character.create")
             net.WriteTable(self.payload)
         net.SendToServer()
-
         return
     end
 
-    for k2, v2 in pairs(self.tabs) do
-        if ( currentTab.index + 1 != v2.index ) then continue end
-        if ( !IsValid(v2) ) then continue end
+    local nextCategory = categories[currentIndex + 1]
+    local nextTab = self:CreateOrGetCategoryTab(nextCategory, currentIndex + 1)
+    if ( !IsValid(nextTab) ) then return end
 
-        currentTab:SlideLeft()
-        v2:SlideToFront()
-        self:ClearVars(k2)
-        self:PopulateVars(k2)
-        break
-    end
+    currentTab:SlideLeft()
+    nextTab:SlideToFront()
+    self:ClearVars(nextCategory)
+    self:PopulateVars(nextCategory)
 end
 
 function PANEL:NavigateToPreviousTab(currentTab)
-    if ( currentTab.index == 1 ) then
+    local categories = self:GetOrderedCategories()
+    if ( #categories == 0 ) then return end
+
+    local currentCategory = currentTab.category
+    local currentIndex
+    for i, name in ipairs(categories) do
+        if ( name == currentCategory ) then currentIndex = i break end
+    end
+
+    if ( !currentIndex ) then return end
+
+    if ( currentIndex == 1 ) then
         self:SlideDown(nil, function()
             self:ClearVars()
         end)
         self:GetParent().splash:SlideToFront()
-
         return
     end
 
-    for k2, v2 in pairs(self.tabs) do
-        if ( currentTab.index - 1 != v2.index ) then continue end
-        if ( !IsValid(v2) ) then continue end
+    local prevCategory = categories[currentIndex - 1]
+    local prevTab = self:CreateOrGetCategoryTab(prevCategory, currentIndex - 1)
+    if ( !IsValid(prevTab) ) then return end
 
-        currentTab:SlideRight()
-        v2:SlideToFront()
-        self:ClearVars(k2)
-        self:PopulateVars(k2)
-        break
-    end
+    currentTab:SlideRight()
+    prevTab:SlideToFront()
+    self:ClearVars(prevCategory)
+    self:PopulateVars(prevCategory)
 end
 
-function PANEL:PopulateTabs()
+-- Returns a sorted list of category names that are currently eligible for population
+function PANEL:GetOrderedCategories()
     local vars = self:GetVars()
-
     local categories = {}
     local categoryOrder = {}
 
@@ -117,96 +145,91 @@ function PANEL:PopulateTabs()
 
         local category = v.category or "misc"
 
-        local canPop = true
+        local canUse = true
         if ( isfunction(v.canPopulate) ) then
             local ok, res = pcall(function()
                 return v:canPopulate(self.payload, ax.client)
             end)
 
-            if ( !ok ) then
-                ax.util:PrintWarning(("Failed to check canPopulate for character var '%s': %s"):format(tostring(k), tostring(res)))
-                canPop = false
-            else
-                if ( !res ) then
-                    canPop = false
+            if ( !ok or !res ) then
+                if ( !ok ) then
+                    ax.util:PrintWarning(("Failed to check canPopulate for character var '%s': %s"):format(tostring(k), tostring(res)))
                 end
+                canUse = false
             end
         end
 
-        if ( canPop ) then
-            categories[category] = categories[category] or {}
-            table.insert(categories[category], { key = k, var = v })
-
+        if ( canUse ) then
+            categories[category] = true
             categoryOrder[category] = math.min(categoryOrder[category] or v.sortOrder, v.sortOrder)
         end
     end
 
     local catList = {}
-
     for name, _ in pairs(categories) do
         local baseOrder = categoryOrder[name] or 0
         local prefix = string.match(name, "^(%d+)[_%-]")
         local orderKey = baseOrder
-
         if ( prefix ) then
             orderKey = tonumber(prefix) * 100000 + baseOrder
         end
-
         table.insert(catList, { name = name, order = orderKey })
     end
 
     table.sort(catList, function(a, b)
-        if ( a.order == b.order ) then
-            return a.name < b.name
-        end
-
+        if ( a.order == b.order ) then return a.name < b.name end
         return a.order < b.order
     end)
 
-    local index = 1
-    for _, info in ipairs(catList) do
-        local category = info.name
-        local tab = self.tabs[category]
-        if ( !tab ) then
-            tab = self:CreatePage(category)
-            tab.index = index
-            tab:StartAtRight()
-            tab:CreateNavigation(tab, "back", function()
-                self:NavigateToPreviousTab(tab)
-            end, "next", function()
-                self:NavigateToNextTab(tab)
-            end)
+    local ordered = {}
+    for _, info in ipairs(catList) do table.insert(ordered, info.name) end
 
-            tab.container = tab:Add("EditablePanel")
-            tab.container:Dock(FILL)
-            tab.container:DockMargin(ax.util:ScreenScale(32), ax.util:ScreenScaleH(32), ax.util:ScreenScale(32), ax.util:ScreenScaleH(32))
-            tab.container:InvalidateParent(true)
-
-            self.tabs[category] = tab
-
-            title = tab:Add("ax.text")
-            title:SetFont("ax.huge.bold")
-
-            local displayText = category
-            local infoVar = ax.character.vars[category]
-            if ( infoVar and ( infoVar.localised or infoVar.localized ) ) then
-                displayText = ax.localisation:GetPhrase("mainmenu.category." .. category)
-            end
-
-            title:SetText(utf8.upper(displayText))
-            title:Dock(TOP)
-            title:DockMargin(ax.util:ScreenScale(32), ax.util:ScreenScaleH(32), 0, 0)
-
-            index = index + 1
-        end
+    -- Update indices on existing tabs for consistent navigation
+    for i, name in ipairs(ordered) do
+        local tab = self.tabs[name]
+        if ( IsValid(tab) ) then tab.index = i end
     end
 
-    for k, v in SortedPairs(self.tabs) do
-        if ( v.index != 1 ) then continue end
+    return ordered
+end
 
-        v:SlideToFront(0)
-        self:PopulateVars(k)
+-- Creates a tab for a category if it does not yet exist (or returns existing one)
+function PANEL:CreateOrGetCategoryTab(category, index)
+    local tab = self.tabs[category]
+    if ( IsValid(tab) ) then
+        tab.index = index or tab.index or 1
+        return tab
     end
+
+    tab = self:CreatePage(category)
+    tab.category = category
+    tab.index = index or tab.index or 1
+    tab:StartAtRight()
+    tab:CreateNavigation(tab, "back", function()
+        self:NavigateToPreviousTab(tab)
+    end, "next", function()
+        self:NavigateToNextTab(tab)
+    end)
+
+    tab.container = tab:Add("EditablePanel")
+    tab.container:Dock(FILL)
+    tab.container:DockMargin(ax.util:ScreenScale(32), ax.util:ScreenScaleH(32), ax.util:ScreenScale(32), ax.util:ScreenScaleH(32))
+    tab.container:InvalidateParent(true)
+
+    self.tabs[category] = tab
+
+    title = tab:Add("ax.text")
+    title:SetFont("ax.huge.bold")
+    local displayText = category
+    local infoVar = ax.character.vars[category]
+    if ( infoVar and ( infoVar.localised or infoVar.localized ) ) then
+        displayText = ax.localisation:GetPhrase("mainmenu.category." .. category)
+    end
+    title:SetText(utf8.upper(displayText))
+    title:Dock(TOP)
+    title:DockMargin(ax.util:ScreenScale(32), ax.util:ScreenScaleH(32), 0, 0)
+
+    return tab
 end
 
 function PANEL:GetContainer(category)
