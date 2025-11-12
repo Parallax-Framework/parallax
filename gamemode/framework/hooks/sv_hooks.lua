@@ -298,6 +298,8 @@ function GM:StartCommand(client, userCmd)
                 ax.util:PrintError("Proceeding despite player DB ensure failure for " .. steamID64)
             end
 
+            ax.util:PrintDebug("Ensured player " .. steamID64 .. " is valid.")
+
             local query = mysql:Select("ax_players")
                 query:Where("steamid64", steamID64)
                 query:Callback(function(result, status)
