@@ -763,4 +763,4 @@ function mysql:IsConnected()
     return self.module == "mysqloo" and (self.connection and self.connection:ping()) or self.module == "sqlite"
 end
 
-return mysql
+ax.mysql = mysql
