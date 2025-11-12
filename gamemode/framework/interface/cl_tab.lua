@@ -77,7 +77,7 @@ function PANEL:Init()
     })
 
     -- Create a top bar for buttons instead of a left column
-    self.buttons = self:Add("EditablePanel")
+    self.buttons = self:Add("ax.scroller.horizontal")
     self.buttons:SetSize(ScrW() - ax.util:ScreenScale(32), ax.util:ScreenScaleH(32))
     self.buttons:SetPos(ax.util:ScreenScale(16), -ax.util:ScreenScaleH(32))
 
@@ -154,6 +154,8 @@ function PANEL:Init()
         elseif ( isfunction(v) ) then
             v(tab)
         end
+
+        self.buttons:AddPanel(button)
     end
 
     if ( ax.gui.tabLast and buttons[ax.gui.tabLast] ) then
