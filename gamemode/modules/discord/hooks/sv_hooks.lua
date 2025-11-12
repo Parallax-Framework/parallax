@@ -29,7 +29,7 @@ function MODULE:PlayerReady(client)
     end
 
     if ( #issues > 0 ) then
-        ax.util:PrintError("Discord Relay Setup issue(s): " .. table.concat(issues, ", "))
+        ax.util:PrintWarning("Discord Relay Setup issue(s): " .. table.concat(issues, ", "))
     end
 end
 
