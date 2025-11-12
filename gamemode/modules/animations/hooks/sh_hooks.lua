@@ -570,10 +570,8 @@ function MODULE:GetPlayerHoldType(client, weapon, holdType)
 
     if ( IsValid(weapon) and weapon.HoldTypeHolstered and weapon.Class == ARC9:GetPhrase("eft_class_weapon_pist") ) then
         if ( !client:IsWeaponRaised() ) then
-            print("Using HoldTypeHolstered for weapon: " .. weapon:GetClass(), weapon.HoldTypeHolstered)
             return weapon.HoldTypeHolstered
         else
-            print("Using normal HoldType for weapon: " .. weapon:GetClass())
             return weapon.HoldType
         end
     end
