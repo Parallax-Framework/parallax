@@ -5,7 +5,8 @@ ax.localization:Register("en", {
 	["mainmenu.load"] = "Load Character",
 	["mainmenu.options"] = "Options",
 	["mainmenu.disconnect"] = "Disconnect",
-	["mainmenu.category.faction"] = "Factions",
+	["mainmenu.category.00_faction"] = "Factions",
+	["mainmenu.category.01_appearance"] = "Appearance",
 
 	-- Tab Menu Translations
 	["tab.help"] = "Help",
