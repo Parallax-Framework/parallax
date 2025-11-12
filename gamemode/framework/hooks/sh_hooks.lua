@@ -101,7 +101,8 @@ end
 
 function GM:InitPostEntity()
     if ( SERVER ) then
-        ax.database:Connect() -- TODO: Allow schemas to connect to their own databases
+        local yaml = ax.database.server or {}
+        ax.database:Connect(yaml.adapter, yaml.hostname, yaml.username, yaml.password, yaml.database, yaml.port)
 
         local groundItems = ax.data:Get("world_items", {}, { scope = "map", human = true })
         for itemID, v in pairs(groundItems) do
