@@ -673,7 +673,7 @@ function mysql:RawQuery(query, callback, flags, ...)
                     local ok, json = pcall(util.TableToJSON, v)
                     parameters[i] = ok and json or "{}"
                 elseif (isbool(v)) then
-                    parameters[i] = v and 1 or 0
+                    parameters[i] = v == true and 1 or 0
                 elseif (isfunction(v) or isentity(v) or isvector(v) or isangle(v)) then
                     -- Fallback: stringify complex types
                     parameters[i] = tostring(v)

@@ -43,7 +43,7 @@ function ax.character:Create(payload, callback)
         if ( istable(value) ) then
             value = util.TableToJSON(value)
         elseif ( isbool(value) ) then
-            value = value and 1 or 0
+            value = value == true and 1 or 0
         end
 
         query:Insert(v.field, value)
