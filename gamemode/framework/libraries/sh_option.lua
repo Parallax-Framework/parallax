@@ -28,13 +28,13 @@
         populate = function() return { english = "English", german = "German", french = "French" } end
     })
 
-    if CLIENT then
+    if ( CLIENT ) then
         print(ax.option:Get("headbob", true))
         ax.option:Set("headbob", false)  -- saves client-side; networks only if bNoNetworking=false
         ax.option:Sync()                 -- push all networked options now
     end
 
-    if SERVER then
+    if ( SERVER ) then
         -- Read a player's networked option
         local client = somePlayer
         print(ax.option:Get(client, "language", "english"))
