@@ -607,6 +607,11 @@ function mysql:RawQuery(query, callback, flags, ...)
 
                 if (val == nil) then
                     replacement = "NULL"
+                elseif (istable(val)) then
+                    -- Serialize tables to JSON for safe binding
+                    local ok, json = pcall(util.TableToJSON, val)
+                    json = ok and json or "{}"
+                    replacement = "'" .. self:Escape(json) .. "'"
                 elseif (isnumber(val)) then
                     replacement = tostring(val)
                 elseif (isbool(val)) then
@@ -661,6 +666,20 @@ function mysql:RawQuery(query, callback, flags, ...)
         end
 
         if (istable(parameters) and parameters[1] != nil ) then
+            -- Coerce unsupported types for SQLite bindings
+            for i = 1, #parameters do
+                local v = parameters[i]
+                if (istable(v)) then
+                    local ok, json = pcall(util.TableToJSON, v)
+                    parameters[i] = ok and json or "{}"
+                elseif (isbool(v)) then
+                    parameters[i] = v and 1 or 0
+                elseif (isfunction(v) or isentity(v) or isvector(v) or isangle(v)) then
+                    -- Fallback: stringify complex types
+                    parameters[i] = tostring(v)
+                end
+            end
+
             -- Use sql.QueryTyped with proper parameter expansion
             result = sql.QueryTyped(query, unpack(parameters))
         else

@@ -28,9 +28,25 @@ ax.character.vars = ax.character.vars or {}
 function ax.character:Create(payload, callback)
     local creationTime = math.floor(os.time())
 
+    -- Ensure required fields are present and properly typed before initial INSERT
+    payload = payload or {}
+    payload.schema = payload.schema or engine.ActiveGamemode()
+
     local query = mysql:Insert("ax_characters")
     for k, v in pairs(self.vars) do
-        query:Insert(v.field, payload[k] or v.default)
+        local value = payload[k]
+        if ( value == nil ) then
+            value = v.default
+        end
+
+        -- Serialize tables to JSON to avoid unsupported bind types (e.g., skills payload)
+        if ( istable(value) ) then
+            value = util.TableToJSON(value)
+        elseif ( isbool(value) ) then
+            value = value and 1 or 0
+        end
+
+        query:Insert(v.field, value)
     end
 
     query:Callback(function(result, status, lastID)
