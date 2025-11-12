@@ -172,6 +172,11 @@ function ax.character:Restore(client, callback)
         end
 
         for i = 1, #result do
+            if ( !result[i] or !istable(result[i]) ) then
+                ax.util:PrintDebug("Skipping character ID " .. tostring(result[i].id) .. " due to invalid data.")
+                continue
+            end
+
             local schema = result[i].schema
             if ( schema != engine.ActiveGamemode() ) then
                 ax.util:PrintDebug("Skipping character ID " .. result[i].id .. " due to schema mismatch (" .. schema .. " != " .. engine.ActiveGamemode() .. ")")
