@@ -76,8 +76,9 @@ end
 -- @param schemaType string The table name
 -- @param field string The field name
 -- @param fieldType number The ax.type constant for the field type
+-- @param callback function Optional callback to run when schema insert completes
 -- @usage ax.database:InsertSchema("ax_characters", "description", ax.type.text)
-function ax.database:InsertSchema(schemaType, field, fieldType)
+function ax.database:InsertSchema(schemaType, field, fieldType, callback)
     local schema = self.schema[schemaType]
     if ( !schema ) then
         error(string.format("attempted to insert into schema with invalid schema type '%s'", schemaType))
@@ -94,7 +95,17 @@ function ax.database:InsertSchema(schemaType, field, fieldType)
 
         query = mysql:Alter(schemaType)
             query:Add(field, self.type[fieldType])
+            query:Callback(function()
+                if ( isfunction(callback) ) then
+                    callback()
+                end
+            end)
         query:Execute()
+    else
+        -- Field already exists, call callback immediately
+        if ( isfunction(callback) ) then
+            callback()
+        end
     end
 end
 
@@ -157,14 +168,27 @@ function ax.database:CreateTables()
             end
 
             -- update schema if needed
-            for i = 1, #self.schemaQueue do
+            local queueCount = #self.schemaQueue
+            if ( queueCount == 0 ) then
+                -- No schema updates needed, fire hook immediately
+                hook.Run("OnDatabaseTablesCreated")
+                return
+            end
+
+            local completedCount = 0
+            for i = 1, queueCount do
                 local entry = self.schemaQueue[i]
-                self:InsertSchema(entry[1], entry[2], entry[3])
+                self:InsertSchema(entry[1], entry[2], entry[3], function()
+                    completedCount = completedCount + 1
+
+                    -- Only run the hook after all schema insertions are complete
+                    if ( completedCount >= queueCount ) then
+                        hook.Run("OnDatabaseTablesCreated")
+                    end
+                end)
             end
         end)
     query:Execute()
-
-    hook.Run("OnDatabaseTablesCreated")
 end
 
 concommand.Add("ax_database_create", function(client, command, args, argStr)
