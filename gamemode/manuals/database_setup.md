@@ -312,7 +312,7 @@ If you're still having issues:
 1. Check the server console for detailed error messages
 2. Enable developer mode: `developer 1` in console
 3. Look for `[PARALLAX] [DEBUG]` messages
-4. Join the Parallax community Discord for support
+4. Join the [Parallax community Discord](https://discord.gg/yekEvSszW3) for [support](https://discord.com/channels/1361111176632860913/1361112764424388609)
 5. Include your full error message and console logs when asking for help
 
 ---
