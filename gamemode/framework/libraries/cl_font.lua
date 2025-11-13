@@ -48,6 +48,7 @@ function ax.font:GenerateStyleCombinations()
     if ( self.styleCombinations ) then return self.styleCombinations end
 
     self.styleCombinations = { "" }
+
     for i = 1, 15 do -- 2^4 - 1
         local combo = {}
         for j = 1, 4 do
@@ -55,6 +56,7 @@ function ax.font:GenerateStyleCombinations()
                 table.insert(combo, styleModifiers[j])
             end
         end
+
         table.sort(combo)
         table.insert(self.styleCombinations, table.concat(combo, "."))
     end
