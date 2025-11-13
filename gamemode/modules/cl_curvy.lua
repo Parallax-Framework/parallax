@@ -149,16 +149,18 @@ local perfStats = {
 }
 
 -- Micro-optimizations: localize frequently-used globals
-local math_sin = math.sin
-local math_pi = math.pi
+local CurTime_local = CurTime
+local FrameTime_local = FrameTime
+local ScrH_local = ScrH
+local ScrW_local = ScrW
+local Vector_local = Vector
+local math_abs = math.abs
+local math_floor = math.floor
 local math_max = math.max
 local math_min = math.min
-local math_floor = math.floor
-local Vector_local = Vector
-local FrameTime_local = FrameTime
-local CurTime_local = CurTime
-local ScrW_local = ScrW
-local ScrH_local = ScrH
+local math_pi = math.pi
+local math_pow = math.pow
+local math_sin = math.sin
 
 -- Update cached options only when necessary
 function ax.curvy:UpdateOptions()
@@ -299,8 +301,49 @@ function ax.curvy:CreateRenderTargetMaterial( name, texture )
     return mat
 end
 
-function ax.curvy:GetCurveMesh(segments, curveAmount, width, height)
-    local cacheKey = ("%d_%d_%d_%d"):format(segments, curveAmount, width, height)
+--- Calculate curve offset based on mode
+-- @param normalizedPos number Position from 0-1 across screen width
+-- @param curveAmount number Base curve intensity
+-- @param mode string Curve mode: "center", "edges", "inverted", "flat", "fisheye", "wave", "vignette"
+-- @param deadzone number For edges mode, percentage of center that's flat
+-- @return number Vertical offset for this position
+local function CalculateCurveOffset(normalizedPos, curveAmount, mode, deadzone)
+    if mode == "flat" then
+        return 0
+    elseif mode == "center" then
+        -- Classic: bow outward in center (CRT bulge)
+        return math_sin(normalizedPos * math_pi) * curveAmount
+    elseif mode == "edges" then
+        -- Old TV: flat center, curve at edges (barrel distortion)
+        local edgeDist = math_abs(normalizedPos - 0.5) * 2 -- 0 at center, 1 at edges
+        local dz = deadzone or 0.3
+        local edgeFactor = math_max(0, (edgeDist - dz) / (1 - dz))
+        -- Use quadratic for smoother falloff
+        return math_pow(edgeFactor, 2) * curveAmount
+    elseif mode == "inverted" then
+        -- Inverted: bow inward in center (pincushion)
+        return (1 - math_sin(normalizedPos * math_pi)) * curveAmount
+    elseif mode == "fisheye" then
+        -- Extreme barrel distortion (wide-angle lens effect)
+        local centerDist = math_abs(normalizedPos - 0.5) * 2
+        return math_pow(1 - centerDist, 2) * curveAmount * 2
+    elseif mode == "wave" then
+        -- Sinusoidal wave pattern (alternating bulge and pinch)
+        return math_sin(normalizedPos * math_pi * 4) * curveAmount * 0.5
+    elseif mode == "vignette" then
+        -- Rounded corners effect (curves increase near edges)
+        local edgeDist = math_abs(normalizedPos - 0.5) * 2
+        return math_pow(edgeDist, 3) * curveAmount * 1.5
+    end
+
+    return 0
+end
+
+function ax.curvy:GetCurveMesh(segments, curveAmount, width, height, mode)
+    mode = mode or "center"
+    local deadzone = cachedOptions.edgesDeadzone or 0.3
+
+    local cacheKey = ("%d_%d_%d_%d_%s_%.2f"):format(segments, curveAmount, width, height, mode, deadzone)
 
     -- Return pre-built mesh object if available
     if ( meshObjects[cacheKey] ) then
@@ -333,7 +376,6 @@ function ax.curvy:GetCurveMesh(segments, curveAmount, width, height)
     -- Pre-calculate values outside the loop
     local segFloat = segments
     local widthStep = width / segFloat
-    local piDivSeg = math_pi / segFloat
 
     for i = 0, segments - 1 do
         local u1 = i / segFloat
@@ -341,9 +383,9 @@ function ax.curvy:GetCurveMesh(segments, curveAmount, width, height)
         local x1 = i * widthStep
         local x2 = (i + 1) * widthStep
 
-        -- Use optimized sine calculation
-        local off1 = math_sin(i * piDivSeg) * curveAmount
-        local off2 = math_sin((i + 1) * piDivSeg) * curveAmount
+        -- Calculate curve offset based on selected mode
+        local off1 = CalculateCurveOffset(u1, curveAmount, mode, deadzone)
+        local off2 = CalculateCurveOffset(u2, curveAmount, mode, deadzone)
 
         local yT1, yT2 = off1, off2
         local yB1, yB2 = height - off1, height - off2
@@ -387,14 +429,15 @@ function ax.curvy:GetCurveMesh(segments, curveAmount, width, height)
     return meshObj
 end
 
-function ax.curvy:RenderCurvedMesh(mat, width, height)
+function ax.curvy:RenderCurvedMesh(mat, width, height, mode)
     if ( !mat or mat:IsError() ) then return end
 
     self:UpdateOptions()
+    mode = mode or "center"
     local segments = self:GetOptimalSegments(width, height)
     local curveAmount = cachedOptions.curveAmount * cachedOptions.intensityScale
 
-    local meshObj = self:GetCurveMesh(segments, curveAmount, width, height)
+    local meshObj = self:GetCurveMesh(segments, curveAmount, width, height, mode)
     if ( !meshObj ) then return end
 
     cam.IgnoreZ(true)
@@ -432,26 +475,54 @@ function ax.curvy:RenderToTarget(rtName, width, height, drawFunc, ...)
     return texture
 end
 
+-- Render mode configuration
+local RENDER_MODES = {
+    { mode = "center",   hookName = "HUDPaintCenter",   rtName = "center" },
+    { mode = "edges",    hookName = "HUDPaintEdges",    rtName = "edges" },
+    { mode = "inverted", hookName = "HUDPaintInverted", rtName = "inverted" },
+    { mode = "fisheye",  hookName = "HUDPaintFisheye",  rtName = "fisheye" },
+    { mode = "wave",     hookName = "HUDPaintWave",     rtName = "wave" },
+    { mode = "vignette", hookName = "HUDPaintVignette", rtName = "vignette" },
+}
+
+local POST_RENDER_MODES = {
+    { mode = "center",   hookName = "PostRenderCenter",   rtName = "post_center" },
+    { mode = "edges",    hookName = "PostRenderEdges",    rtName = "post_edges" },
+    { mode = "inverted", hookName = "PostRenderInverted", rtName = "post_inverted" },
+    { mode = "fisheye",  hookName = "PostRenderFisheye",  rtName = "post_fisheye" },
+    { mode = "wave",     hookName = "PostRenderWave",     rtName = "post_wave" },
+    { mode = "vignette", hookName = "PostRenderVignette", rtName = "post_vignette" },
+}
+
+-- Internal render function for a specific mode
+function ax.curvy:RenderMode(hookName, rtName, mode, width, height, client)
+    -- Render to target
+    local texture = self:RenderToTarget(rtName, width, height, function()
+        hook.Run(hookName, width, height, client)
+    end)
+
+    -- Apply curve and draw
+    local material = self:CreateRenderTargetMaterial(rtName, texture)
+    self:RenderCurvedMesh(material, width, height, mode)
+end
+
 -- Optimized HUD rendering with smart frame skipping
-function ax.curvy:HUDPaint(drawFunc, rtName)
+function ax.curvy:HUDPaint()
     local client = LocalPlayer()
     if ( hook.Run("HUDShouldDraw") == false ) then return end
 
     self:UpdateOptions()
 
+    local width, height = ScrW_local(), ScrH_local()
+
     -- Early exit if curvy is disabled
     if ( !cachedOptions.enabled ) then
-        if ( drawFunc ) then
-            drawFunc(ScrW_local(), ScrH_local(), client)
+        for _, modeData in ipairs(RENDER_MODES) do
+            hook.Run(modeData.hookName, width, height, client)
         end
-
-        hook.Run("HUDPaintCurvy", ScrW_local(), ScrH_local(), client, false)
 
         return
     end
-
-    local width, height = ScrW_local(), ScrH_local()
-    rtName = rtName or "main"
 
     -- Performance-based frame skipping with configurable threshold
     self:UpdatePerformanceStats()
@@ -467,17 +538,10 @@ function ax.curvy:HUDPaint(drawFunc, rtName)
         end
     end
 
-    -- Render to target and draw with curve
-    local texture = self:RenderToTarget(rtName, width, height, function()
-        if ( drawFunc ) then
-            drawFunc(width, height, client)
-        end
-
-        hook.Run("HUDPaintCurvy", width, height, client, true)
-    end)
-
-    local material = self:CreateRenderTargetMaterial(rtName, texture)
-    self:RenderCurvedMesh(material, width, height)
+    -- Render all modes
+    for _, modeData in ipairs(RENDER_MODES) do
+        self:RenderMode(modeData.hookName, modeData.rtName, modeData.mode, width, height, client)
+    end
 end
 
 function ax.curvy:PostRender()
@@ -486,14 +550,16 @@ function ax.curvy:PostRender()
 
     self:UpdateOptions()
 
+    local width, height = ScrW_local(), ScrH_local()
+
     -- Early exit if curvy is disabled or HUD-only mode is enabled
     if ( !cachedOptions.enabled or cachedOptions.hudOnly ) then
-        hook.Run("PostRenderCurvy", ScrW_local(), ScrH_local(), client, false)
+        for _, modeData in ipairs(POST_RENDER_MODES) do
+            hook.Run(modeData.hookName, width, height, client)
+        end
+
         return
     end
-
-    local width, height = ScrW_local(), ScrH_local()
-    local rt = "post"
 
     -- Performance-based frame skipping with configurable settings
     local threshold = cachedOptions.frameSkipThreshold
@@ -503,13 +569,10 @@ function ax.curvy:PostRender()
         return
     end
 
-    -- Render to target and draw with curve
-    local texture = self:RenderToTarget(rt, width, height, function()
-        hook.Run("PostRenderCurvy", width, height, client, true)
-    end)
-
-    local material = self:CreateRenderTargetMaterial(rt, texture)
-    self:RenderCurvedMesh(material, width, height)
+    -- Render all post-render modes
+    for _, modeData in ipairs(POST_RENDER_MODES) do
+        self:RenderMode(modeData.hookName, modeData.rtName, modeData.mode, width, height, client)
+    end
 end
 
 -- Clean up old render cache entries
