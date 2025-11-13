@@ -302,11 +302,7 @@ function ax.curvy:CreateRenderTargetMaterial( name, texture )
 end
 
 --- Calculate curve offset based on mode
--- @param normalizedPos number Position from 0-1 across screen width
--- @param curveAmount number Base curve intensity
--- @param mode string Curve mode: "center", "edges", "inverted", "flat", "fisheye", "wave", "vignette"
--- @param deadzone number For edges mode, percentage of center that's flat
--- @return number Vertical offset for this position
+-- @param mode string Curve mode: "center", "edges", "inverted", "flat", "fisheye", "wave", "vignette", "astigmatism", "scanline", "thermal", "perspective"
 local function CalculateCurveOffset(normalizedPos, curveAmount, mode, deadzone)
     if mode == "flat" then
         return 0
@@ -334,6 +330,25 @@ local function CalculateCurveOffset(normalizedPos, curveAmount, mode, deadzone)
         -- Rounded corners effect (curves increase near edges)
         local edgeDist = math_abs(normalizedPos - 0.5) * 2
         return math_pow(edgeDist, 3) * curveAmount * 1.5
+    elseif mode == "astigmatism" then
+        -- Optical defect: asymmetric distortion (horizontal compression)
+        local centerDist = math_abs(normalizedPos - 0.5)
+        return math_sin(normalizedPos * math_pi) * curveAmount * (0.3 + centerDist * 0.7)
+    elseif mode == "scanline" then
+        -- CRT scanline warping: subtle horizontal bands with phase shift
+        local phase = normalizedPos * math_pi * 2
+        local scanlineEffect = math_sin(phase * 8) * 0.15
+        return (math_sin(phase) + scanlineEffect) * curveAmount * 0.6
+    elseif mode == "thermal" then
+        -- Heat shimmer: subtle time-based wobble (uses CurTime for animation)
+        local time = CurTime_local() * 0.5
+        local wobble = math_sin(normalizedPos * math_pi * 3 + time) * 0.3
+        wobble = wobble + math_sin(normalizedPos * math_pi * 7 - time * 1.3) * 0.15
+        return wobble * curveAmount
+    elseif mode == "perspective" then
+        -- Trapezoidal distortion: viewing screen at an angle
+        local trapezoid = math_pow(normalizedPos, 1.5) - math_pow(1 - normalizedPos, 1.5)
+        return trapezoid * curveAmount * 0.8
     end
 
     return 0
@@ -483,6 +498,10 @@ local RENDER_MODES = {
     { mode = "fisheye",  hookName = "HUDPaintFisheye",  rtName = "fisheye" },
     { mode = "wave",     hookName = "HUDPaintWave",     rtName = "wave" },
     { mode = "vignette", hookName = "HUDPaintVignette", rtName = "vignette" },
+    { mode = "astigmatism",  hookName = "HUDPaintAstigmatism",  rtName = "astigmatism" },
+    { mode = "scanline",     hookName = "HUDPaintScanline",     rtName = "scanline" },
+    { mode = "thermal",      hookName = "HUDPaintThermal",      rtName = "thermal" },
+    { mode = "perspective",  hookName = "HUDPaintPerspective",  rtName = "perspective" },
 }
 
 local POST_RENDER_MODES = {
@@ -492,6 +511,10 @@ local POST_RENDER_MODES = {
     { mode = "fisheye",  hookName = "PostRenderFisheye",  rtName = "post_fisheye" },
     { mode = "wave",     hookName = "PostRenderWave",     rtName = "post_wave" },
     { mode = "vignette", hookName = "PostRenderVignette", rtName = "post_vignette" },
+    { mode = "astigmatism",  hookName = "PostRenderAstigmatism",  rtName = "post_astigmatism" },
+    { mode = "scanline",     hookName = "PostRenderScanline",     rtName = "post_scanline" },
+    { mode = "thermal",      hookName = "PostRenderThermal",      rtName = "post_thermal" },
+    { mode = "perspective",  hookName = "PostRenderPerspective",  rtName = "post_perspective" },
 }
 
 -- Internal render function for a specific mode
