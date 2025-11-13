@@ -84,6 +84,15 @@ ax.option:Add("curvy.frame.skip.max", ax.type.number, 2, {
     description = "curvy.frame.skip.max.help"
 })
 
+ax.option:Add("curvy.edges.deadzone", ax.type.number, 0.3, {
+    category = "visual",
+    subCategory = "curvy",
+    min = 0.0,
+    max = 0.5,
+    decimals = 2,
+    description = "curvy.edges.deadzone.help"
+})
+
 ax.localization:Register("en", {
     ["category.visual"] = "Visual",
     ["subcategory.curvy"] = "Curvy",
@@ -105,6 +114,8 @@ ax.localization:Register("en", {
     ["option.curvy.frame.skip.enabled.help"] = "Toggle whether the curvy module may skip frames to improve performance.",
     ["option.curvy.frame.skip.max"] = "Max Frame Skips",
     ["option.curvy.frame.skip.max.help"] = "Maximum number of frames to skip in a row when FPS is low.",
+    ["option.curvy.edges.deadzone"] = "Edges Mode Deadzone",
+    ["option.curvy.edges.deadzone.help"] = "Percentage of screen center that remains flat in 'edges' mode (0.0 = no flat area, 0.5 = half the screen is flat).",
 })
 
 ax.curvy = ax.curvy or {}
@@ -125,6 +136,7 @@ local cachedOptions = {
     intensityScale = 1.0,
     frameSkipThreshold = 30,
     maxFrameSkip = 2,
+    edgesDeadzone = 0.3,
     lastUpdate = 0
 }
 
@@ -162,6 +174,7 @@ function ax.curvy:UpdateOptions()
     cachedOptions.frameSkipThreshold = ax.option:Get("curvy.frame.skip.threshold")
     cachedOptions.frameSkipEnabled = ax.option:Get("curvy.frame.skip.enabled")
     cachedOptions.maxFrameSkip = ax.option:Get("curvy.frame.skip.max")
+    cachedOptions.edgesDeadzone = ax.option:Get("curvy.edges.deadzone")
     cachedOptions.lastUpdate = now
 end
 
@@ -590,6 +603,7 @@ function MODULE:OnReloaded()
     cachedOptions.intensityScale = 1.0
     cachedOptions.frameSkipThreshold = 30
     cachedOptions.maxFrameSkip = 2
+    cachedOptions.edgesDeadzone = 0.3
     cachedOptions.lastUpdate = 0
     perfStats.fpsAvg = 60
     perfStats.lastFPSUpdate = 0
