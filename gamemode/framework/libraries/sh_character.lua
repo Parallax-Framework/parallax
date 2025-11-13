@@ -68,7 +68,7 @@ end
 -- @param bNoNetworking boolean Optional flag to disable networking (server only)
 -- @param recipients table Optional specific recipients for networking (server only)
 -- @usage ax.character:SetVar(character, "description", "A mysterious figure")
-function ax.character:SetVar(char, name, value, bNoNetworking, recipients)
+function ax.character:SetVar(char, name, value, bNoNetworking, recipients, bNoDBUpdate)
     local varTable = ax.character.vars[name]
     if ( !istable(varTable) ) then
         ax.util:PrintError("Invalid character variable name provided to ax.character:SetVar()")
@@ -102,6 +102,30 @@ function ax.character:SetVar(char, name, value, bNoNetworking, recipients)
             net.WriteType(value)
         net.Send(recipients or player.GetAll())
     end
+
+    -- Functional, commented out for performance reasons
+    /*
+    if ( SERVER and !bNoDBUpdate ) then
+        local query = mysql:Update("ax_characters")
+            query:Where("id", char:GetID())
+
+            if ( istable(value) ) then
+                value = ax.util:SafeParseTable(value)
+            elseif ( isbool(value) ) then
+                value = value == true and 1 or 0
+            end
+
+            query:Update(varTable.field, value)
+            query:Callback(function(result, status, lastID)
+                if ( result == false ) then
+                    ax.util:PrintError("Failed to update character variable '" .. name .. "' in database for character ID " .. char:GetID())
+                end
+
+                print("Character variable '" .. name .. "' updated in database for character ID " .. char:GetID() .. ".")
+            end)
+        query:Execute()
+    end
+    */
 end
 
 --- Sync a bot character to all clients for variable updates.
