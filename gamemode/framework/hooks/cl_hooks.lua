@@ -84,7 +84,7 @@ end
 function GM:DrawVignette(fraction)
 end
 
-function GM:PostRenderCurvy(width, height, client, isCurved)
+function GM:PostRenderCenter(width, height, client)
     ax.notification:Render()
 
     -- Draw version watermark
@@ -261,7 +261,7 @@ local armorIcon = ax.util:GetMaterial("parallax/icons/hud/armor.png", "smooth mi
 local armorColor = Color(100, 150, 255, 200)
 local talkingIcon = ax.util:GetMaterial("parallax/icons/hud/talking.png", "smooth mips")
 local speakingIcon = ax.util:GetMaterial("parallax/icons/hud/speaking.png", "smooth mips")
-function GM:HUDPaintCurvy(width, height, client, isCurved)
+function GM:HUDPaintCenter(width, height, client)
     if ( !IsValid(client) or !client:Alive() ) then return end
 
     local shouldDraw = hook.Run("ShouldDrawHealthHUD")
