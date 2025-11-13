@@ -65,7 +65,7 @@ end
 
 --- Gets a random model from a faction's model list
 -- @param faction table The faction to get a model from
--- @return string|nil Random model path or nil if no models available
+-- @return string|table|nil Random model (string or table {model, skin}) or nil if no models available
 -- @usage local model = ax.util:GetRandomFactionModel(faction)
 function ax.util:GetRandomFactionModel(faction)
     if ( !faction or !faction.GetModels ) then
@@ -77,7 +77,10 @@ function ax.util:GetRandomFactionModel(faction)
         return nil
     end
 
-    return models[math.random(#models)]
+    local selected = models[math.random(#models)]
+
+    -- Return as-is (can be string or table {model, skin})
+    return selected
 end
 
 --- Creates a temporary character for a bot with random faction and appearance
@@ -141,7 +144,9 @@ function ax.util:CreateBotCharacter(client)
     -- Add to character instances (but not to database)
     ax.character.instances[character.id] = character
 
-    ax.util:PrintDebug("Creating temporary bot character: " .. botName .. " (Faction: " .. faction.name .. ", Model: " .. model .. ")")
+    -- Format model for debug output
+    local modelStr = istable(model) and model[1] or tostring(model)
+    ax.util:PrintDebug("Creating temporary bot character: " .. botName .. " (Faction: " .. faction.name .. ", Model: " .. modelStr .. ")")
 
     -- Load the character directly
     ax.character:Load(client, character)
