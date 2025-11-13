@@ -104,7 +104,7 @@ function ax.character:SetVar(char, name, value, bNoNetworking, recipients, bNoDB
     end
 
     -- Functional, commented out for performance reasons
-    /*
+    --[[
     if ( SERVER and !bNoDBUpdate ) then
         local query = mysql:Update("ax_characters")
             query:Where("id", char:GetID())
@@ -125,7 +125,7 @@ function ax.character:SetVar(char, name, value, bNoNetworking, recipients, bNoDB
             end)
         query:Execute()
     end
-    */
+    ]]
 end
 
 --- Sync a bot character to all clients for variable updates.
