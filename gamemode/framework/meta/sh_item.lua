@@ -56,10 +56,10 @@ function item:GetInventoryID()
     return inventoryID
 end
 
-function item:GetData(key)
+function item:GetData(key, default)
     if ( !istable(self.data) ) then self.data = {} end
 
-    return self.data[key]
+    return self.data[key] or default
 end
 
 function item:SetData(key, value)
