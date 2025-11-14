@@ -256,3 +256,147 @@ function ax.util:EnsureDataDir(path)
         end
     end
 end
+
+-- Adapted and borrowed from Nutscript, tool inclusion has been borrowed from Helix.
+-- https://github.com/NutScript/NutScript/blob/1.2-stable/gamemode/core/libs/sh_plugin.lua#L112
+-- https://github.com/NebulousCloud/helix/blob/master/gamemode/core/libs/sh_plugin.lua#L192
+
+function ax.util:LoadEntities(path) -- TODO: Implement timeFilter and skipping unchanged files
+    local bLoadedTools
+    local files, folders
+
+    local function IncludeFiles(path2, bClientOnly)
+        if ( SERVER and !bClientOnly ) then
+            if ( file.Exists(path2 .. "init.lua", "LUA") ) then
+                ax.util:Include(path2 .. "init.lua", "server")
+            elseif ( file.Exists(path2 .. "shared.lua", "LUA") ) then
+                ax.util:Include(path2 .. "shared.lua")
+            end
+
+            if ( file.Exists(path2 .. "cl_init.lua", "LUA") ) then
+                ax.util:Include(path2 .. "cl_init.lua", "client")
+            end
+        elseif ( file.Exists(path2 .. "cl_init.lua", "LUA") ) then
+            ax.util:Include(path2 .. "cl_init.lua", "client")
+        elseif ( file.Exists(path2 .. "shared.lua", "LUA") ) then
+            ax.util:Include(path2 .. "shared.lua")
+        end
+    end
+
+    local function HandleEntityInclusion(folder, variable, register, default, clientOnly, create, complete)
+        files, folders = file.Find(path .. "/" .. folder .. "/*", "LUA")
+        default = default or {}
+
+        for _, v in ipairs(folders) do
+            local path2 = path .. "/" .. folder .. "/" .. v .. "/"
+            v = string.lower(v)
+            if ( string.StartWith(v, "sh_") or string.StartWith(v, "cl_") or string.StartWith(v, "sv_") ) then
+                v = string.sub(v, 4)
+            end
+
+            _G[variable] = table.Copy(default)
+
+            if ( !isfunction(create) ) then
+                _G[variable].ClassName = v
+            else
+                create(v)
+            end
+
+            IncludeFiles(path2, clientOnly)
+
+            if ( clientOnly ) then
+                if ( CLIENT ) then
+                    register(_G[variable], v)
+                end
+            else
+                register(_G[variable], v)
+            end
+
+            if ( isfunction(complete) ) then
+                complete(_G[variable])
+            end
+
+            _G[variable] = nil
+        end
+
+        for _, v in ipairs(files) do
+            local niceName = string.StripExtension(v)
+            if ( string.StartWith(niceName, "sh_") or string.StartWith(niceName, "cl_") or string.StartWith(niceName, "sv_") ) then
+                niceName = string.sub(niceName, 4)
+            end
+
+            _G[variable] = table.Copy(default)
+
+            if ( !isfunction(create) ) then
+                _G[variable].ClassName = niceName
+            else
+                create(niceName)
+            end
+
+            ax.util:Include(path .. "/" .. folder .. "/" .. v, clientOnly and "client" or "shared")
+
+            if ( clientOnly ) then
+                if ( CLIENT ) then
+                    register(_G[variable], niceName)
+                end
+            else
+                register(_G[variable], niceName)
+            end
+
+            if ( isfunction(complete) ) then
+                complete(_G[variable])
+            end
+
+            _G[variable] = nil
+        end
+    end
+
+    local function RegisterTool(tool, className)
+        local gmodTool = weapons.GetStored("gmod_tool")
+
+        if ( className:sub(1, 3) == "sh_" ) then
+            className = className:sub(4)
+        end
+
+        if ( gmodTool ) then
+            gmodTool.Tool[className] = tool
+        else
+            -- this should never happen
+            ErrorNoHalt(string.format("attempted to register tool '%s' with invalid gmod_tool weapon", className))
+        end
+
+        bLoadedTools = true
+    end
+
+    -- Include entities.
+    HandleEntityInclusion("entities", "ENT", scripted_ents.Register, {
+        Type = "anim",
+        Base = "base_gmodentity",
+        Spawnable = true
+    })
+
+    -- Include weapons.
+    HandleEntityInclusion("weapons", "SWEP", weapons.Register, {
+        Primary = {},
+        Secondary = {},
+        Base = "weapon_base"
+    })
+
+    HandleEntityInclusion("tools", "TOOL", RegisterTool, {}, false, function(className)
+        if ( className:sub(1, 3) == "sh_" ) then
+            className = className:sub(4)
+        end
+
+        TOOL = ax.tool.meta:Create()
+        TOOL.Mode = className
+        TOOL:CreateConVars()
+    end)
+
+    -- Include effects.
+    HandleEntityInclusion("effects", "EFFECT", effects and effects.Register, nil, true)
+
+    -- only reload spawn menu if any new tools were registered
+    if ( CLIENT and bLoadedTools ) then
+        RunConsoleCommand("spawnmenu_reload")
+    end
+end
