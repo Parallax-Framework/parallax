@@ -19,6 +19,7 @@ ax.hook.stored = ax.hook.stored or {}
 -- @realm shared
 -- @string name The name of the hook type.
 function ax.hook:Register(name)
+    _G[name] = _G[name] or {}
     self.stored[name] = true
     hook.Run("OnHookRegistered", name)
 end
