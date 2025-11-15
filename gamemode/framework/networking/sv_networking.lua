@@ -33,12 +33,13 @@ util.AddNetworkString("ax.item.transfer")
 util.AddNetworkString("ax.item.spawn")
 
 net.Receive("ax.item.transfer", function(length, client)
+    local character = client:GetCharacter()
+    if ( !character ) then return end
+
     if ( !client:RateLimit("item.transfer", 0.1) ) then return end
 
     local itemID = net.ReadUInt(32)
-    local targetInventoryID = net.ReadUInt(32)
-
-    if ( !isnumber(itemID) or itemID < 1 or !isnumber(targetInventoryID) or targetInventoryID < 1 ) then
+    if ( !isnumber(itemID) or itemID < 1 ) then
         ax.util:Error("Invalid payload received for item transfer.")
         return
     end
@@ -46,6 +47,18 @@ net.Receive("ax.item.transfer", function(length, client)
     local item = ax.item.instances[itemID]
     if ( !istable(item) ) then
         ax.util:PrintError("Item with ID " .. itemID .. " does not exist.")
+        return
+    end
+
+    local itemInventory = ax.inventory.instances[item:GetInventoryID()]
+    if ( !istable(itemInventory) or !itemInventory:IsReceiver( client ) ) then
+        ax.util:PrintError("Player " .. client:SteamID() .. " attempted to transfer item ID " .. itemID .. " which they do not possess.")
+        return
+    end
+
+    local targetInventoryID = net.ReadUInt(32)
+    if ( !isnumber(targetInventoryID) or targetInventoryID < 1 ) then
+        ax.util:Error("Invalid payload received for item transfer.")
         return
     end
 
