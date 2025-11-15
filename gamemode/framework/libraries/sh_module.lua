@@ -47,7 +47,12 @@ function ax.module:Include(path, timeFilter)
                 moduleName = string.sub(moduleName, 4)
             end
 
-            MODULE = { UniqueID = moduleName }
+            local scope = "schema"
+            if ( string.StartWith(path, "parallax/gamemode/modules/") ) then
+                scope = "framework"
+            end
+
+            MODULE = { uniqueID = moduleName, scope = scope }
                 ax.util:Include(filePath)
                 ax.util:PrintSuccess("Module \"" .. tostring(MODULE.name) .. "\" initialized successfully.")
                 ax.module.stored[moduleName] = MODULE
@@ -72,8 +77,13 @@ function ax.module:Include(path, timeFilter)
                     end
                 end
 
+                local scope = "schema"
+                if ( string.StartWith(path, "parallax/gamemode/modules") ) then
+                    scope = "framework"
+                end
+
                 if ( !shouldSkip ) then
-                    MODULE = { UniqueID = dirName }
+                    MODULE = { uniqueID = dirName, scope = scope }
 
                     ax.util:Include(bootFile, "shared")
 
@@ -104,7 +114,7 @@ function ax.module:Include(path, timeFilter)
                     ax.util:LoadEntities(path .. "/" .. dirName .. "/entities", timeFilter)
 
                     ax.util:PrintSuccess("Module \"" .. tostring(MODULE.name) .. "\" initialized successfully.")
-                    ax.module.stored[MODULE.UniqueID] = MODULE
+                    ax.module.stored[MODULE.uniqueID] = MODULE
 
                     MODULE = nil
                 end
