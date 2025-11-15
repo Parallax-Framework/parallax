@@ -119,7 +119,8 @@ hook.Add("PopulateHelpCategories", "ax.tab.help", function(categories)
                 label:SetFont("ax.large.bold.italic")
                 label:SetText(module.name or module.uniqueID)
 
-                local descriptionWrapped = ax.util:GetWrappedText(module.description, "ax.regular", panel:GetWide() - ax.util:ScreenScale(64))
+                local description = module.description or "No description available."
+                local descriptionWrapped = ax.util:GetWrappedText(description, "ax.regular", panel:GetWide() - ax.util:ScreenScale(64))
                 for _, line in ipairs(descriptionWrapped) do
                     local desc = scroller:Add("ax.text")
                     desc:Dock(TOP)
