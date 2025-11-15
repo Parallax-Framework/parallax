@@ -88,7 +88,8 @@ function GM:PostRenderCenter(width, height, client)
     ax.notification:Render()
 
     -- Draw version watermark
-    if ( ax.version and ax.version.version ) then
+    local shouldDraw = hook.Run("ShouldDrawVersionWatermark")
+    if ( shouldDraw != false and ax.version and ax.version.version ) then
         local versionText = string.format("Parallax v%s", ax.version.version)
         if ( ax.version.commitHash ) then
             versionText = versionText .. " (" .. ax.version.commitHash .. ")"
