@@ -1,6 +1,19 @@
--- Helper function to apply IK settings
+--[[
+    Parallax Framework
+    Copyright (c) 2025 Parallax Framework Contributors
+
+    This file is part of the Parallax Framework and is licensed under the MIT License.
+    You may use, copy, modify, merge, publish, distribute, and sublicense this file
+    under the terms of the LICENSE file included with this project.
+
+    Attribution is required. If you use or modify this file, you must retain this notice.
+]]
+
 local function ApplyIK(client)
-    if ( !ax.config:Get("animationsIKEnabled") or !IsValid(client) ) then return end
+    if ( !ax.config:Get("animations.ik") or !IsValid(client) ) then
+        client:SetIK(false)
+        return
+    end
 
     client:SetIK(false)
     timer.Simple(0.1, function()
