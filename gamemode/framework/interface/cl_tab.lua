@@ -101,9 +101,8 @@ function PANEL:Init()
     hook.Run("PopulateTabButtons", buttons)
     for k, v in SortedPairs(buttons) do
         local button = self.buttons:Add("ax.button.flat")
-        -- Dock left to make a horizontal row across the top
         button:Dock(LEFT)
-        button:SetText( ax.localization:GetPhrase( "tab." .. k ) )
+        button:SetText(ax.localization:GetPhrase("tab." .. k))
 
         button:SetUpdateSizeOnHover(true)
         button:SetSizeToContentsMotion(true)
@@ -117,17 +116,17 @@ function PANEL:Init()
             self:TransitionToPage(button.tab.index, ax.option:Get("tabFadeTime", 0.25))
         end
 
-        button.Paint = function( this, width, height )
+        -- TODO: add a toggle option for ax.button
+        button.Paint = function(this, width, height)
             if ( ax.gui.tabLast == k ) then
-                surface.SetDrawColor( color_white )
-                surface.DrawRect(0, 0, width, height )
+                ax.render.Draw(0, 0, 0, width, height, color_white)
 
                 if ( this:GetTextColor() != color_black ) then
-                    this:SetTextColor( color_black )
+                    this:SetTextColor(color_black)
                 end
             else
                 if ( this:GetTextColor() != color_white ) then
-                    this:SetTextColor( color_white )
+                    this:SetTextColor(color_white)
                 end
             end
         end
