@@ -1,16 +1,16 @@
 ax.localization:Register("en", {
 	-- Main Menu Translations
-	["mainmenu.play"] = "Play",
-	["mainmenu.create"] = "Create Character",
-	["mainmenu.load"] = "Load Character",
-	["mainmenu.options"] = "Options",
-	["mainmenu.disconnect"] = "Disconnect",
 	["mainmenu.category.00_faction"] = "Factions",
 	["mainmenu.category.01_appearance"] = "Appearance",
+	["mainmenu.create"] = "Create Character",
+	["mainmenu.disconnect"] = "Disconnect",
+	["mainmenu.load"] = "Load Character",
+	["mainmenu.options"] = "Options",
+	["mainmenu.play"] = "Play",
 
 	-- Tab Menu Translations
-	["tab.help"] = "Help",
 	["tab.config"] = "Config",
+	["tab.help"] = "Help",
 	["tab.inventory"] = "Inventory",
 	["tab.scoreboard"] = "Scoreboard",
 	["tab.settings"] = "Settings",
@@ -18,23 +18,24 @@ ax.localization:Register("en", {
 	-- Category Translations
 	["category.chat"] = "Chat",
 	["category.chatbox"] = "Chat",
-	["category.general"] = "General",
 	["category.gameplay"] = "Gameplay",
+	["category.general"] = "General",
 	["category.interface"] = "Interface",
+	["category.modules"] = "Modules",
 
 	-- Subcategory Translations
+	["subcategory.basic"] = "Basic",
+	["subcategory.buttons"] = "Buttons",
+	["subcategory.characters"] = "Characters",
 	["subcategory.colors"] = "Colors",
+	["subcategory.display"] = "Display",
 	["subcategory.distances"] = "Distances",
+	["subcategory.hud"] = "HUD",
 	["subcategory.interaction"] = "Interaction",
 	["subcategory.inventory"] = "Inventory",
 	["subcategory.movement"] = "Movement",
-	["subcategory.basic"] = "Basic",
-	["subcategory.characters"] = "Characters",
 	["subcategory.position"] = "Position",
 	["subcategory.size"] = "Size",
-	["subcategory.buttons"] = "Buttons",
-	["subcategory.display"] = "Display",
-	["subcategory.hud"] = "HUD",
 
 	-- Config Translations
 	--- Chat
