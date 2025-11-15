@@ -10,9 +10,9 @@
 ]]
 
 GM.Name = "Parallax"
-GM.Author = "Parallax Framework Contributors"
-GM.Website = "https://project-ordinance.com/parallax/"
-GM.Email = "<email@example.com>"
+GM.Author = "riggs9162 & bloodycop6385"
+GM.Website = "https://discord.gg/yekEvSszW3"
+GM.Email = "riggs9162@gmx.de"
 
 ax.util:IncludeDirectory("libraries")
 ax.util:IncludeDirectory("meta")
