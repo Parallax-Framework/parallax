@@ -53,7 +53,7 @@ function PANEL:SetText(text, bNoTranslate, bNoSizeToContents)
     if ( !text ) then return end
 
     if ( !bNoTranslate and text != "" ) then
-        text = ax.localization:GetPhrase( text )
+        text = ax.localization:GetPhrase(text)
     end
 
     self:SetTextInternal(text)
