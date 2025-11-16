@@ -291,7 +291,10 @@ function GM:HUDPaintCenter(width, height, client)
 
             barX = barX + barWidth + ax.util:ScreenScale(8)
         end
+    end
 
+    shouldDraw = hook.Run("ShouldDrawArmorHUD")
+    if ( shouldDraw != false ) then
         -- Draw armor icon and bar if player has armor and armor bars are enabled
         if ( client:Armor() > 0 and ax.option:Get("hud.bar.armor.show", true) ) then
             ax.render.DrawMaterial(0, barX, barY - barHeight / 2, barHeight * 2, barHeight * 2, armorColor, armorIcon)
@@ -307,13 +310,18 @@ function GM:HUDPaintCenter(width, height, client)
             local armorFillWidth = math.max(0, barWidth * armorFraction - ax.util:ScreenScale(2))
 
             ax.render.Draw(barHeight, barX + ax.util:ScreenScale(1), barY + ax.util:ScreenScaleH(1), armorFillWidth, barHeight - ax.util:ScreenScaleH(2), armorColor)
+        else
+            -- No armor, do nothing
+            client.axArmor = 0
         end
+    end
 
+    shouldDraw = hook.Run("ShouldDrawVoiceChatIcon")
+    if ( shouldDraw != false ) then
         -- Draw voice chat icon if player is talking
         local iconMaterial = talkingIcon
         if ( client:IsSpeaking() ) then
             local iconSize = 64 * (1 + client:VoiceVolume())
-
             local iconX = width - ax.util:ScreenScale(8) - iconSize
             local iconY = height / 2 - iconSize / 2
 
