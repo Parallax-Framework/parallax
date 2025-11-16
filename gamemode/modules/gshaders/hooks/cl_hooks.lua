@@ -35,7 +35,7 @@ local r_fxaa = GetSafeConVar("r_fxaa")
 local r_pbb = GetSafeConVar("pp_pbb")
 local r_smaa = GetSafeConVar("r_smaa")
 local r_ssao = GetSafeConVar("pp_ssao_plus")
-local r_sslr = GetSafeConVar("r_sslr")
+local r_ssr = GetSafeConVar("r_ssr")
 
 -- Helper function to safely set convar value
 local function SafeSetConVar(cvar, value)
@@ -50,14 +50,14 @@ local function VerifyShaderLib()
     local fxaa = ax.option:Get("shaderFXAA")
     local smaa = ax.option:Get("shaderSMAA")
     local ssao = ax.option:Get("shaderSSAO")
-    local sslr = ax.option:Get("shaderSSLR")
+    local ssr = ax.option:Get("shaderSSR")
 
     local bloomAvailable = bloom != nil
     local csmAvailable = csm != nil
     local fxaaAvailable = fxaa != nil
     local smaaAvailable = smaa != nil
     local ssaoAvailable = ssao != nil
-    local sslrAvailable = sslr != nil
+    local ssrAvailable = ssr != nil
 
     local shaders = {
         { enabled = bloom, available = bloomAvailable },
@@ -65,7 +65,7 @@ local function VerifyShaderLib()
         { enabled = fxaa, available = fxaaAvailable },
         { enabled = smaa, available = smaaAvailable },
         { enabled = ssao, available = ssaoAvailable },
-        { enabled = sslr, available = sslrAvailable }
+        { enabled = ssr, available = ssrAvailable }
     }
 
     local shouldEnable = false
@@ -86,7 +86,7 @@ function MODULE:OnOptionChanged(key, oldValue, newValue)
     local fxaa = ax.option:Get("shaderFXAA")
     local smaa = ax.option:Get("shaderSMAA")
     local ssao = ax.option:Get("shaderSSAO")
-    local sslr = ax.option:Get("shaderSSLR")
+    local ssr = ax.option:Get("shaderSSR")
 
     -- Re-verify if shader library should be enabled
     local shouldEnable = VerifyShaderLib()
@@ -107,8 +107,8 @@ function MODULE:OnOptionChanged(key, oldValue, newValue)
         SafeSetConVar(r_pbb, bloom and 1 or 0)
     elseif ( key == "shaderCSM" ) then
         SafeSetConVar(r_csm, csm and 1 or 0)
-    elseif ( key == "shaderSSLR" ) then
-        SafeSetConVar(r_sslr, sslr and 1 or 0)
+    elseif ( key == "shaderSSR" ) then
+        SafeSetConVar(r_ssr, ssr and 1 or 0)
     end
 end
 
@@ -119,7 +119,7 @@ function MODULE:OnOptionsLoaded()
     local fxaa = ax.option:Get("shaderFXAA")
     local smaa = ax.option:Get("shaderSMAA")
     local ssao = ax.option:Get("shaderSSAO")
-    local sslr = ax.option:Get("shaderSSLR")
+    local ssr = ax.option:Get("shaderSSR")
 
     -- Re-verify if shader library should be enabled
     local shouldEnable = VerifyShaderLib()
@@ -135,5 +135,5 @@ function MODULE:OnOptionsLoaded()
     SafeSetConVar(r_pbb, bloom and 1 or 0)
     SafeSetConVar(r_smaa, smaa and 1 or 0)
     SafeSetConVar(r_ssao, ssao and 1 or 0)
-    SafeSetConVar(r_sslr, sslr and 1 or 0)
+    SafeSetConVar(r_ssr, ssr and 1 or 0)
 end

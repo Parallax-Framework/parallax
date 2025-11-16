@@ -23,7 +23,7 @@ local shaderConVars = {
     { name = "pp_pbb", option = "shaderPhysicallyBasedBloom", desc = "Enable or disable physically based bloom." },
     { name = "r_smaa", option = "shaderSMAA", desc = "Enable or disable subpixel morphological anti-aliasing." },
     { name = "pp_ssao_plus", option = "shaderSSAO", desc = "Enable or disable screen space ambient occlusion." },
-    { name = "r_sslr", option = "shaderSSLR", desc = "Enable or disable screen space local reflections." }
+    { name = "r_ssr", option = "shaderSSR", desc = "Enable or disable screen space local reflections." }
 }
 
 -- Only create options for convars that actually exist
