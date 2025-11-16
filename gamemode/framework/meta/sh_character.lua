@@ -167,7 +167,7 @@ if ( SERVER ) then
 
         -- Network character data changes to all clients
         if ( !bNoNetworking ) then
-            net.Start("ax.character.var")
+            net.Start("ax.character.data")
                 net.WriteUInt(self:GetID(), 32)
                 net.WriteString(key)
                 net.WriteType(value)

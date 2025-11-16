@@ -246,6 +246,23 @@ net.Receive("ax.character.var", function()
     character.vars[name] = value
 end)
 
+net.Receive("ax.character.data", function()
+    local characterID, key, value = net.ReadUInt(32), net.ReadString(), net.ReadType()
+
+    local character = ax.character:Get(characterID)
+    if ( !character ) then return end -- TODO: make characterVarQueue for data? idk
+
+    if ( !istable(character.vars) ) then
+        character.vars = {}
+    end
+
+    if ( !istable(character.vars.data) ) then
+        character.vars.data = {}
+    end
+
+    character.vars.data[key] = value
+end)
+
 net.Receive("ax.character.bot.sync", function()
     local characterID = net.ReadUInt(32)
     local botCharacter = net.ReadTable()
