@@ -52,6 +52,13 @@ function ax.util:FindText(txt, find)
         end
     end
 
+    words = string.Explode("\n", txt)
+    for i = 1, #words do
+        if ( self:FindString(words[i], find) ) then
+            return true
+        end
+    end
+
     return false
 end
 
