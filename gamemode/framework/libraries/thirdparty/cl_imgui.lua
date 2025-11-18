@@ -107,7 +107,7 @@ function imgui.Start3D2D(pos, angles, scale, distanceHide, distanceFadeStart)
 
     _devMode = imgui.IsDeveloperMode()
 
-    local eyePos = ax.client:EyePos()
+    local eyePos = ax.client and ax.client:EyePos() or LocalPlayer() and LocalPlayer():EyePos() or Vector(0,0,0)
     local eyePosToPos = pos - eyePos
 
     -- OPTIMIZATION: Test that we are in front of the UI
