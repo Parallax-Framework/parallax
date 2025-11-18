@@ -173,13 +173,9 @@ local curFOV
 
 -- LVS is gay and already used the ShouldDrawThirdPerson hook, so we have to use a different name
 function MODULE:ShouldUseThirdPerson(client)
-    if ( !client:Alive() or client:InVehicle() or client:GetObserverMode() != OBS_MODE_NONE or !client:Alive() or client:GetMoveType() == MOVETYPE_NOCLIP ) then
-        return false
-    end
+    if ( !client:Alive() or client:InVehicle() or client:GetObserverMode() != OBS_MODE_NONE or !client:Alive() or client:GetMoveType() == MOVETYPE_NOCLIP ) then return false end
 
-    if ( !ax.config:Get("thirdperson") ) then
-        return false
-    end
+    if ( !ax.config:Get("thirdperson") ) then return false end
 
     return ax.option:Get("thirdperson")
 end

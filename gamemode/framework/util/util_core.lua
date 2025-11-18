@@ -31,9 +31,7 @@ end
 -- @return any ... Results returned by fn when ok is true
 -- @usage local ok, result = ax.util:SafeCall(function() return 1+1 end)
 function ax.util:SafeCall(fn, ...)
-    if ( !isfunction(fn) ) then
-        return false
-    end
+    if ( !isfunction(fn) ) then return false end
 
     local results = { pcall(fn, ...) }
     local ok = results[1]

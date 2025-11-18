@@ -153,9 +153,7 @@ function MODULE:HandlePlayerDriving(client, clientTable)
         clientTable = client:GetTable()
     end
 
-    if ( !client:InVehicle() or !IsValid(client:GetParent()) ) then
-        return false
-    end
+    if ( !client:InVehicle() or !IsValid(client:GetParent()) ) then return false end
 
     local vehicle = client:GetVehicle()
     if ( !vehicle.HandleAnimation and vehicle.GetVehicleClass ) then

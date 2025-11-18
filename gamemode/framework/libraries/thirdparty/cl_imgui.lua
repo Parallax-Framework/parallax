@@ -29,14 +29,10 @@ local gState = {}
 
 local function shouldAcceptInput()
     -- don't process input during non-main renderpass
-    if render.GetRenderTarget() != nil then
-        return false
-    end
+    if render.GetRenderTarget() != nil then return false end
 
     -- don't process input if we're doing VGUI stuff (and not in context menu)
-    if vgui.CursorVisible() and vgui.GetHoveredPanel() != g_ContextMenu then
-        return false
-    end
+    if vgui.CursorVisible() and vgui.GetHoveredPanel() != g_ContextMenu then return false end
 
     return true
 end

@@ -1,9 +1,7 @@
 local MODULE = MODULE or {}
 
 function MODULE:PlayerNoClip(client, desiredState)
-    if ( !CAMI.PlayerHasAccess(client, "Parallax - Observer", nil) ) then
-        return false
-    end
+    if ( !CAMI.PlayerHasAccess(client, "Parallax - Observer", nil) ) then return false end
 
     if ( desiredState ) then
         client:SetNoDraw(true)

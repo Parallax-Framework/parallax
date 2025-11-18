@@ -11,9 +11,7 @@
 
 function ax.player.meta:IsFemale()
     local modelClass = ax.animations:GetModelClass(self:GetModel())
-    if ( !isstring(modelClass) or modelClass == "" ) then
-        return false
-    end
+    if ( !isstring(modelClass) or modelClass == "" ) then return false end
 
     if ( ax.util:FindString(modelClass, "female") ) then
         return true

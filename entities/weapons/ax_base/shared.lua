@@ -165,9 +165,7 @@ function SWEP:GetIronSights()
     local owner = self:GetOwner()
     if ( !IsValid(owner) ) then return false end
 
-    if ( self:GetReloading() ) then
-        return false
-    end
+    if ( self:GetReloading() ) then return false end
 
     if ( owner:KeyDown(IN_ATTACK2) ) then
         return true
@@ -190,9 +188,7 @@ function SWEP:CanPrimaryAttack()
         return false
     end
 
-    if ( self:GetReloading() ) then
-        return false
-    end
+    if ( self:GetReloading() ) then return false end
 
     return true
 end
