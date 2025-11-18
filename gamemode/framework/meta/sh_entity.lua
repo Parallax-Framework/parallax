@@ -98,11 +98,9 @@ if ( SERVER ) then
     function ENTITY:IsLocked()
         if ( self:IsVehicle() ) then
             return self:GetInternalVariable( "VehicleLocked" )
-        else
-            return self:GetInternalVariable( "m_bLocked" )
         end
 
-        return false
+        return self:GetInternalVariable( "m_bLocked" )
     end
 
     function ENTITY:GetDoorPartner()
