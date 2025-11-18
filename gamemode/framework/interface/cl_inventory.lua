@@ -9,6 +9,8 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
+-- TODO: Make this look nicer?
+
 local PANEL = {}
 
 function PANEL:Init()
@@ -27,6 +29,14 @@ function PANEL:Init()
     if ( !inventory ) then return end
 
     self.inventory = inventory
+
+    self.characterInfo = self:Add("EditablePanel")
+    self.characterInfo:Dock(LEFT)
+    self.characterInfo:DockMargin(0, 0, ax.util:ScreenScale(16), 0)
+    self.characterInfo:SetWide(ax.util:ScreenScale(128))
+    self.characterInfo.Paint = function(this, width, height)
+        ax.render.Draw(0, 0, 0, width, height, Color(0, 0, 0, 150))
+    end
 
     self.container = self:Add("ax.scroller.vertical")
     self.container:Dock(FILL)
@@ -65,7 +75,68 @@ function PANEL:Init()
     self.weightCounter:SetContentAlignment(5)
     self.weightCounter:Dock(FILL)
 
+    self:PopulateCharacterInfo()
     self:PopulateItems()
+end
+
+function PANEL:PopulateCharacterInfo()
+    local character = self.character
+    if ( !character ) then return end
+
+    local factionData = character:GetFactionData()
+    if ( !factionData ) then return end
+
+    self.characterInfo:Clear()
+
+    local model = self.characterInfo:Add("DModelPanel")
+    model:Dock(BOTTOM)
+    model:DockMargin(0, ax.util:ScreenScaleH(16), 0, 0)
+    model:SetTall(self:GetTall() / 1.25)
+    model:SetModel(character:GetModel() or "models/props_junk/wood_crate001a.mdl")
+    model:SetMouseInputEnabled(false)
+
+    model.PerformLayout = function(this, width, height)
+        local entity = this:GetEntity()
+        if ( !IsValid(entity) ) then return end
+
+        local center = entity:OBBCenter()
+        local size = entity:OBBMaxs() - entity:OBBMins()
+        local camPos = center + Vector(size.x, size.y, size.z / 4) * 8
+        this:SetCamPos(camPos)
+        this:SetLookAt(center)
+        this:SetFOV(8)
+    end
+
+    local name = self.characterInfo:Add("ax.text")
+    name:Dock(TOP)
+    name:DockMargin(0, 0, 0, -ax.util:ScreenScaleH(4))
+    name:SetFont("ax.large.bold")
+    name:SetText(character:GetName() or "Unknown", true)
+    name:SetTextColor(factionData.color or color_white)
+    name:SetContentAlignment(5)
+
+    local descWrapped = ax.util:GetWrappedText(character:GetDescription() or "No description available.", "ax.regular", ax.util:ScreenScale(128) - ax.util:ScreenScale(16))
+    for _ = 1, #descWrapped do
+        local line = descWrapped[_]
+        local descLine = self.characterInfo:Add("ax.text")
+        descLine:Dock(TOP)
+        descLine:DockMargin(0, 0, 0, -ax.util:ScreenScaleH(4))
+        descLine:SetText(line, true)
+        descLine:SetContentAlignment(5)
+    end
+
+    if ( ax.currencies ) then
+        local currencies = ax.currencies:GetAll()
+        for currencyID, currencyData in pairs(currencies) do
+            local balance = character:GetCurrency(currencyID) or 0
+
+            local currencyLine = self.characterInfo:Add("ax.text")
+            currencyLine:Dock(TOP)
+            currencyLine:SetFont("ax.regular.bold")
+            currencyLine:SetText((currencyData.symbol or "") .. balance .. " " .. (currencyData.plural or "Funds"), true)
+            currencyLine:SetContentAlignment(5)
+        end
+    end
 end
 
 function PANEL:InfoOpen()
