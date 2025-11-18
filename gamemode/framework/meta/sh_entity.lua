@@ -106,6 +106,24 @@ if ( SERVER ) then
     function ENTITY:GetDoorPartner()
         if ( self:GetClass() != "prop_door_rotating" ) then return NULL end
 
-        return self:GetInternalVariable( "m_hMaster" )
+        local selfTable = self:GetTable()
+        if ( IsValid( selfTable.m_hPartner ) ) then
+            return selfTable.m_hPartner
+        end
+
+        local doors = ents.FindByClass( self:GetClass() )
+        if ( doors[1] == nil ) then return NULL end
+
+        for i = 1, #doors do
+            local door = doors[i]
+            if ( door == self ) then continue end
+
+            if ( door:GetInternalVariable( "m_hMaster" ) == self ) then
+                selfTable.m_hPartner = door
+                return door
+            end
+        end
+
+        return NULL
     end
 end
