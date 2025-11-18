@@ -1,5 +1,17 @@
 local ENTITY = FindMetaTable("Entity")
 
+local MODEL_CHAIRS = {}
+for _, v in pairs( list.Get( "Vehicles" ) ) do
+    if ( v.Category == "Chairs" and v.Model ) then
+        MODEL_CHAIRS[string.lower(v.Model)] = true
+    end
+end
+
+function ENTITY:IsChair()
+    local model = string.lower( self:GetModel() or "" )
+    return MODEL_CHAIRS[model]
+end
+
 function ENTITY:RateLimit(name, delay)
     local data = self:GetTable()
 
@@ -80,4 +92,16 @@ function ENTITY:EmitQueuedSound(soundNames, soundLevel, pitchPercent, volume, ch
     end
 
     return totalDuration
+end
+
+if ( SERVER ) then
+    function ENTITY:IsLocked()
+        if ( self:IsVehicle() ) then
+            return self:GetInternalVariable( "VehicleLocked" )
+        else
+            return self:GetInternalVariable( "m_bLocked" )
+        end
+
+        return false
+    end
 end
