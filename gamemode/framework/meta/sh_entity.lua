@@ -104,4 +104,10 @@ if ( SERVER ) then
 
         return false
     end
+
+    function ENTITY:GetDoorPartner()
+        if ( self:GetClass() != "prop_door_rotating" ) then return NULL end
+
+        return self:GetInternalVariable( "m_hMaster" )
+    end
 end
