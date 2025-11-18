@@ -48,7 +48,7 @@ function ax.module:Include(path, timeFilter)
             end
 
             local scope = "schema"
-            if ( string.StartWith(path, "parallax/gamemode/modules/") ) then
+            if ( string.StartWith(path, "parallax/") ) then
                 scope = "framework"
             end
 
@@ -78,7 +78,7 @@ function ax.module:Include(path, timeFilter)
                 end
 
                 local scope = "schema"
-                if ( string.StartWith(path, "parallax/gamemode/modules") ) then
+                if ( string.StartWith(path, "parallax/") ) then
                     scope = "framework"
                 end
 
