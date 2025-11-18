@@ -27,8 +27,6 @@ AccessorFunc(PANEL, "m_iMinHeight",       "MinHeight",     FORCE_NUMBER)
 AccessorFunc(PANEL, "m_bBackgroundBlur",  "BackgroundBlur",FORCE_BOOL)
 
 function PANEL:Init()
-    ax.gui.frame = self
-
     self:SetFocusTopLevel(true)
     self:SetPaintShadow(true)
 
@@ -197,7 +195,3 @@ function PANEL:Paint(width, height)
 end
 
 vgui.Register("ax.frame", PANEL, "EditablePanel")
-
-if ( IsValid(ax.gui.frame) ) then
-    ax.gui.frame:Remove()
-end
