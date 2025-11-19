@@ -406,15 +406,15 @@ ax.command:Add("BotList", {
     OnRun = function(client)
         if ( SERVER ) then
             local bots = {}
-            for _, ply in player.Iterator() do
-                if ( ply:IsBot() ) then
-                    local character = ply:GetCharacter()
+            for _, target in player.Iterator() do
+                if ( target:IsBot() ) then
+                    local character = target:GetCharacter()
                     local charName = character and character:GetName() or "No Character"
                     local faction = character and ax.faction:Get(character:GetFaction())
                     local factionName = faction and faction.name or "No Faction"
 
                     table.insert(bots, {
-                        name = ply:SteamName(),
+                        name = target:SteamName(),
                         character = charName,
                         faction = factionName
                     })
