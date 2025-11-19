@@ -87,7 +87,7 @@ function PANEL:PopulateCharacterList()
 
         local faction = v:GetFactionData()
         local banner = hook.Run("GetCharacterBanner", v.id) or faction.image or "gamepadui/hl2/chapter14"
-        if ( isstring( banner ) ) then
+        if ( isstring(banner) ) then
             banner = ax.util:GetMaterial(banner)
         end
 
@@ -95,6 +95,7 @@ function PANEL:PopulateCharacterList()
         image:Dock(LEFT)
         image:DockMargin(0, 0, ax.util:ScreenScale(8), 0)
         image:SetSize(button:GetTall() * 1.75, button:GetTall())
+        image:SetMouseInputEnabled(false)
         image.Paint = function(this, width, height)
             surface.SetDrawColor(color_white)
             surface.SetMaterial(banner)

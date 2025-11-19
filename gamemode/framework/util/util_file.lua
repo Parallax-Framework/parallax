@@ -21,7 +21,7 @@
 -- @usage local realm = ax.util:DetectFileRealm("cl_init.lua") -- returns "client"
 function ax.util:DetectFileRealm(file)
     local fileName = string.GetFileFromFilename(file)
-    if ( !fileName or !isstring( fileName ) ) then
+    if ( !fileName or !isstring(fileName) ) then
         return "shared"
     end
 
