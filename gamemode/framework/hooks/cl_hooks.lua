@@ -9,7 +9,6 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
-
 function GM:Think()
     if ( !vgui.CursorVisible() ) then
         if ( !IsValid(ax.gui.main) and input.IsKeyDown(KEY_F1) ) then
@@ -87,7 +86,6 @@ end
 function GM:PostRenderCenter(width, height, client)
     ax.notification:Render()
 
-    -- Draw version watermark
     local shouldDraw = hook.Run("ShouldDrawVersionWatermark")
     if ( shouldDraw != false and ax.version and ax.version.version ) then
         local versionText = string.format("Parallax v%s", ax.version.version)
@@ -132,25 +130,20 @@ function GM:HUDShouldDraw(name)
     return true
 end
 
--- Not sure if I like this
 local targetIDTarget = nil
 local targetIDAlpha = 0
 local targetIDTargetAlpha = 0
 local function DrawTargetID(client)
-
-    -- Perform a trace to see what we're looking at
     local trace = util.TraceLine({
         start = client:EyePos(),
-        endpos = client:EyePos() + client:EyeAngles():Forward() * 400,
+        endpos = client:EyePos() + client:EyeAngles():Forward() * 384,
         filter = client
     })
 
     local target = trace.Entity
     local shouldShow = false
 
-    -- Check if we're looking at a valid player
     if ( IsValid(target) and target:IsPlayer() and target != client ) then
-        -- Check distance and angle for smooth interaction
         local distance = client:GetPos():Distance(target:GetPos())
         if ( distance <= 128 ) then
             shouldShow = true
@@ -158,29 +151,22 @@ local function DrawTargetID(client)
         end
     end
 
-    -- Update target alpha with smooth transitions
     targetIDTargetAlpha = shouldShow and 255 or 0
     targetIDAlpha = Lerp(math.Clamp(FrameTime() * 8, 0, 1), targetIDAlpha, targetIDTargetAlpha)
 
-    -- Only draw if we have some alpha
     if ( targetIDAlpha > 5 and IsValid(targetIDTarget) ) then
-        -- Get character information
         local character = targetIDTarget:GetCharacter()
         local displayName = character and character.vars.name or targetIDTarget:Name()
         local description = character and character.vars.description or ""
 
-        -- Wrap and cap description text
-        local maxWidth = ax.util:ScreenScale(128) -- Maximum width for description
+        local maxWidth = ax.util:ScreenScale(128)
         local descriptionLines = {}
 
         if ( description and description != "" ) then
-            -- First cap the description to a reasonable length
             description = ax.util:CapTextWord(description, ax.util:ScreenScale(32))
-            -- Then wrap it to fit within our max width
             descriptionLines = ax.util:GetWrappedText(description, "ax.small.italic", maxWidth)
         end
 
-        -- Calculate text dimensions with fallback fonts
         local nameFont = "ax.large.bold"
         local descFont = "ax.small.italic"
 
@@ -189,7 +175,6 @@ local function DrawTargetID(client)
         nameW = nameW or 100
         nameH = nameH or 16
 
-        -- Calculate description dimensions
         local descW, descH = 0, 0
         local totalDescH = 0
         if ( #descriptionLines > 0 ) then
@@ -199,46 +184,34 @@ local function DrawTargetID(client)
                 descW = math.max(descW, lineW or 0)
                 totalDescH = totalDescH + (lineH or 14)
             end
-            descH = totalDescH + ax.util:ScreenScale(1) * (#descriptionLines - 1) -- Add spacing between lines
+            descH = totalDescH + ax.util:ScreenScale(1) * (#descriptionLines - 1)
         end
 
-        -- Calculate panel dimensions with padding
         local padding = ax.util:ScreenScale(4)
         local panelW = math.max(nameW or 100, descW or 0) + padding * 2
         local panelH = (nameH or 16) + (#descriptionLines > 0 and descH + ax.util:ScreenScale(2) or 0) + padding * 2
 
-        -- Position above the target player in 2D space
         local targetPos = targetIDTarget:GetPos() + targetIDTarget:OBBCenter() * 1.5
         local screenPos = targetPos:ToScreen()
 
-        -- Ensure the panel stays on screen
         local panelX = math.Clamp(screenPos.x - panelW / 2, padding, ScrW() - panelW - padding)
         local panelY = math.Clamp(screenPos.y - panelH / 2, padding, ScrH() - panelH - padding)
 
-        -- Apply alpha for smooth fade
         local alpha = math.Round(targetIDAlpha)
-        local bgColor = Color(0, 0, 0, math.min(alpha * 0.8, 200))
         local nameColor = ColorAlpha(team.GetColor(targetIDTarget:Team()), alpha)
         local descColor = Color(200, 200, 200, alpha * 0.9)
 
-        -- Draw background with rounded corners
-        -- ax.util:DrawBlur(24, panelX, panelY, panelW, panelH, bgColor) -- Man do I wish RNDX's blur worked here
-        ax.render.Draw(24, panelX, panelY, panelW, panelH, bgColor)
-
-        -- Draw subtle border
         local borderColor = Color(255, 255, 255, alpha * 0.1)
         ax.render.DrawOutlined(24, panelX, panelY, panelW, panelH, borderColor, 1)
 
-        -- Draw character name
         local textY = panelY + padding
         surface.SetFont(nameFont)
         surface.SetTextColor(nameColor)
-        surface.SetTextPos(panelX + panelW * 0.5 - nameW * 0.5, textY)
+        surface.SetTextPos(panelX + panelW / 2 - nameW / 2, textY)
         surface.DrawText(displayName or "")
 
-        -- Draw description lines if available
         if ( #descriptionLines > 0 ) then
-            textY = textY + (nameH or 16) + ax.util:ScreenScale(2)
+            textY = textY + (nameH or 16)
             surface.SetFont(descFont)
             surface.SetTextColor(descColor)
 
@@ -248,20 +221,19 @@ local function DrawTargetID(client)
                 lineW = lineW or 0
                 lineH = lineH or 14
 
-                surface.SetTextPos(panelX + panelW * 0.5 - lineW * 0.5, textY)
+                surface.SetTextPos(panelX + panelW / 2 - lineW / 2, textY)
                 surface.DrawText(line)
-                textY = textY + lineH + ax.util:ScreenScale(1)
+                textY = textY + lineH - ax.util:ScreenScaleH(2)
             end
         end
     end
 end
 
-local healthIcon = ax.util:GetMaterial("parallax/icons/hud/health.png", "smooth mips")
+local healthIcon = ax.util:GetMaterial("parallax/icons/heart.png", "smooth mips")
 local healthColor = Color(255, 150, 150, 200)
-local armorIcon = ax.util:GetMaterial("parallax/icons/hud/armor.png", "smooth mips")
+local armorIcon = ax.util:GetMaterial("parallax/icons/shield.png", "smooth mips")
 local armorColor = Color(100, 150, 255, 200)
-local talkingIcon = ax.util:GetMaterial("parallax/icons/hud/talking.png", "smooth mips")
-local speakingIcon = ax.util:GetMaterial("parallax/icons/hud/speaking.png", "smooth mips")
+local speakingIcon = ax.util:GetMaterial("parallax/icons/volume-full.png", "smooth mips")
 function GM:HUDPaintCenter(width, height, client)
     if ( !IsValid(client) or !client:Alive() ) then return end
 
@@ -271,14 +243,11 @@ function GM:HUDPaintCenter(width, height, client)
     local shouldDraw = hook.Run("ShouldDrawHealthHUD")
     if ( shouldDraw != false ) then
         if ( client:Health() > 0 and ax.option:Get("hud.bar.health.show", true) ) then
-            -- Draw health icon and bar if enabled
             ax.render.DrawMaterial(0, barX, barY - barHeight / 2, barHeight * 2, barHeight * 2, healthColor, healthIcon)
             barX = barX + barHeight * 2 + ax.util:ScreenScale(4)
 
-            -- Draw health bar background
             ax.render.Draw(barHeight, barX, barY, barWidth, barHeight, Color(0, 0, 0, 150))
 
-            -- Interpolated health value for smooth transitions
             local targetHealth = math.Clamp(client:Health(), 0, 100)
             client.axHealth = client.axHealth or targetHealth
             client.axHealth = Lerp(math.Clamp(FrameTime() * 10, 0, 1), client.axHealth, targetHealth)
@@ -286,19 +255,16 @@ function GM:HUDPaintCenter(width, height, client)
             local healthFraction = client.axHealth / 100
             local fillWidth = math.max(0, barWidth * healthFraction - ax.util:ScreenScale(2))
 
-            -- Draw health bar fill using interpolated value
             ax.render.Draw(barHeight, barX + ax.util:ScreenScale(1), barY + ax.util:ScreenScaleH(1), fillWidth, barHeight - ax.util:ScreenScaleH(2), healthColor)
 
             barX = barX + barWidth + ax.util:ScreenScale(8)
         else
-            -- No health, do nothing
             client.axHealth = 0
         end
     end
 
     shouldDraw = hook.Run("ShouldDrawArmorHUD")
     if ( shouldDraw != false ) then
-        -- Draw armor icon and bar if player has armor and armor bars are enabled
         if ( client:Armor() > 0 and ax.option:Get("hud.bar.armor.show", true) ) then
             ax.render.DrawMaterial(0, barX, barY - barHeight / 2, barHeight * 2, barHeight * 2, armorColor, armorIcon)
             barX = barX + barHeight * 2 + ax.util:ScreenScale(4)
@@ -314,28 +280,21 @@ function GM:HUDPaintCenter(width, height, client)
 
             ax.render.Draw(barHeight, barX + ax.util:ScreenScale(1), barY + ax.util:ScreenScaleH(1), armorFillWidth, barHeight - ax.util:ScreenScaleH(2), armorColor)
         else
-            -- No armor, do nothing
             client.axArmor = 0
         end
     end
 
     shouldDraw = hook.Run("ShouldDrawVoiceChatIcon")
-    if ( shouldDraw != false ) then
-        -- Draw voice chat icon if player is talking
-        local iconMaterial = talkingIcon
-        if ( client:IsSpeaking() ) then
-            local iconSize = 64 * (1 + client:VoiceVolume())
-            local iconX = width - ax.util:ScreenScale(8) - iconSize
-            local iconY = height / 2 - iconSize / 2
+    if ( shouldDraw != false and client:IsSpeaking() ) then
+        local iconSize = 64 * (1 + client:VoiceVolume())
+        local iconX = width - ax.util:ScreenScale(8) - iconSize
+        local iconY = height / 2 - iconSize / 2
 
-            local iconColor = Color(255, 255, 255, 200)
-            iconMaterial = speakingIcon
+        local iconColor = Color(255, 255, 255, 200)
 
-            ax.render.DrawMaterial(0, iconX, iconY, iconSize, iconSize, iconColor, iconMaterial)
-        end
+        ax.render.DrawMaterial(0, iconX, iconY, iconSize, iconSize, iconColor, speakingIcon)
     end
 
-    -- Draw target ID system
     shouldDraw = hook.Run("ShouldDrawTargetID")
     if ( shouldDraw != false ) then
         DrawTargetID(client)
@@ -345,7 +304,6 @@ end
 function GM:PostDrawTranslucentRenderables(depth, skybox)
     if ( skybox ) then return end
 
-    -- Draw voice chat icons above players' heads
     local ft = FrameTime()
     local curTime = CurTime()
     for _, client in player.Iterator() do
@@ -371,12 +329,7 @@ function GM:PostDrawTranslucentRenderables(depth, skybox)
         pos.z = pos.z + math.sin(curTime) * size / 96
 
         cam.Start3D2D(pos, angle, 0.1)
-            local iconMaterial = talkingIcon
-            if ( client:IsSpeaking() ) then
-                iconMaterial = speakingIcon
-            end
-
-            ax.render.DrawMaterial(0, -size / 2, -size / 2, size, size, Color(255, 255, 255, 200), iconMaterial)
+            ax.render.DrawMaterial(0, -size / 2, -size / 2, size, size, Color(255, 255, 255, 200), speakingIcon)
         cam.End3D2D()
     end
 end
@@ -426,7 +379,6 @@ ax.viewstack:RegisterModifier("camera", function(client, view)
     end
 end, 99)
 
--- Due to viewstack, it breaks the SWEP:GetViewModelPosition hook, so we have to do it ourselves
 ax.viewstack:RegisterViewModelModifier("swep", function(weapon, patch)
     if ( !IsValid(weapon) or !weapon.GetViewModelPosition ) then return end
 
@@ -436,4 +388,4 @@ ax.viewstack:RegisterViewModelModifier("swep", function(weapon, patch)
         pos = pos,
         ang = ang
     }
-end, 99) -- Run last
+end, 99)
