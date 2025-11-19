@@ -214,4 +214,8 @@ function PANEL:PopulateDeletePanel(character)
     end)
 end
 
+function PANEL:Paint(width, height)
+    ax.util:DrawGradient("down", 0, 0, width, height, Color(0, 0, 0, 200))
+end
+
 vgui.Register("ax.main.load", PANEL, "ax.transition")
