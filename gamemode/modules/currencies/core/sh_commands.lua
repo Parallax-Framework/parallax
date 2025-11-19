@@ -127,7 +127,7 @@ ax.command:Add("AddCurrency", {
 
         local newTotal = character:AddCurrency(amount, okID)
         local delta = ax.currencies:Format(amount, okID)
-        local total = ax.currencies:Format(okID, newTotal)
+        local total = ax.currencies:Format(newTotal, okID)
         return string.format("Added %s to %s (%s total)", delta, target:Name(), total)
     end
 })
@@ -155,7 +155,7 @@ ax.command:Add("TakeCurrency", {
         end
 
         local delta = ax.currencies:Format(amount, okID)
-        local remaining = ax.currencies:Format(okID, character:GetCurrency(okID))
+        local remaining = ax.currencies:Format(character:GetCurrency(okID), okID)
         return string.format("Took %s from %s (%s remaining)", delta, target:Name(), remaining)
     end
 })
