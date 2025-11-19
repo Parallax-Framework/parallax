@@ -187,21 +187,21 @@ hook.Add("Tick", "ax.zones.tracking", function()
 end)
 ]]
 
-hook.Add("FinishMove", "ax.zones.tracking", function(ply, mv)
-    local state = ax.zones:GetTracking(ply)
+hook.Add("FinishMove", "ax.zones.tracking", function(client, mv)
+    local state = ax.zones:GetTracking(client)
     if ( !state ) then return end
 
-    UpdateTracking(ply)
+    UpdateTracking(client)
 end)
 
 --- Auto-track all players on join.
-hook.Add("PlayerInitialSpawn", "ax.zones.tracking", function(ply)
-    ax.zones:TrackEntity(ply)
+hook.Add("PlayerInitialSpawn", "ax.zones.tracking", function(client)
+    ax.zones:TrackEntity(client)
 end)
 
 --- Stop tracking players on disconnect.
-hook.Add("PlayerDisconnected", "ax.zones.tracking", function(ply)
-    ax.zones:UntrackEntity(ply)
+hook.Add("PlayerDisconnected", "ax.zones.tracking", function(client)
+    ax.zones:UntrackEntity(client)
 end)
 
 --- Re-track all players on reload.

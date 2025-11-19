@@ -60,9 +60,9 @@ end
 
 --- Synchronize zones to a specific player.
 -- @realm server
--- @tparam Player ply Player to sync to
-function ax.zones:SyncToPlayer(ply)
-    if ( !IsValid(ply) ) then return end
+-- @tparam Player client Player to sync to
+function ax.zones:SyncToPlayer(client)
+    if ( !IsValid(client) ) then return end
 
     net.Start("ax.zones.sync")
         -- Send nextId
@@ -99,16 +99,16 @@ function ax.zones:SyncToPlayer(ply)
             end
         end
 
-    net.Send(ply)
+    net.Send(client)
 
-    ax.util:PrintDebug("Zones synchronized to " .. ply:Nick() .. " (" .. count .. " zones)")
+    ax.util:PrintDebug("Zones synchronized to " .. client:Nick() .. " (" .. count .. " zones)")
 end
 
 --- Sync to players when they join.
-hook.Add("PlayerInitialSpawn", "ax.zones.sync", function(ply)
+hook.Add("PlayerInitialSpawn", "ax.zones.sync", function(client)
     timer.Simple(1, function()
-        if ( IsValid(ply) ) then
-            ax.zones:SyncToPlayer(ply)
+        if ( IsValid(client) ) then
+            ax.zones:SyncToPlayer(client)
         end
     end)
 end)

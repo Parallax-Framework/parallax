@@ -53,27 +53,27 @@ end
 
 --- Enable debug visualization for a player.
 -- @realm server
--- @tparam Player ply Player to enable debug drawing for
-function ax.zones:DrawDebug(ply)
-    if ( !IsValid(ply) ) then return end
+-- @tparam Player client Player to enable debug drawing for
+function ax.zones:DrawDebug(client)
+    if ( !IsValid(client) ) then return end
 
     -- Send zone data to client for drawing
     net.Start("ax.zones.drawdebug")
         net.WriteBool(true) -- Enable
-    net.Send(ply)
+    net.Send(client)
 
-    ax.util:PrintDebug("Zone debug drawing enabled for " .. ply:Nick())
+    ax.util:PrintDebug("Zone debug drawing enabled for " .. client:Nick())
 end
 
 --- Disable debug visualization for a player.
 -- @realm server
--- @tparam Player ply Player to disable debug drawing for
-function ax.zones:StopDrawDebug(ply)
-    if ( !IsValid(ply) ) then return end
+-- @tparam Player client Player to disable debug drawing for
+function ax.zones:StopDrawDebug(client)
+    if ( !IsValid(client) ) then return end
 
     net.Start("ax.zones.drawdebug")
         net.WriteBool(false) -- Disable
-    net.Send(ply)
+    net.Send(client)
 
-    ax.util:PrintDebug("Zone debug drawing disabled for " .. ply:Nick())
+    ax.util:PrintDebug("Zone debug drawing disabled for " .. client:Nick())
 end

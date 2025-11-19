@@ -74,8 +74,8 @@ local function validateCurrencyID(currencyID)
     return currencyID
 end
 
-local function requireCharacter(ply)
-    local character = IsValid(ply) and ply:GetCharacter() or nil
+local function requireCharacter(client)
+    local character = IsValid(client) and client:GetCharacter() or nil
     if ( !character ) then
         return nil, "Target has no active character"
     end

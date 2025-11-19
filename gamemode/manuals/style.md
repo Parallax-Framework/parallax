@@ -139,7 +139,7 @@ Each **global function** must include:
 -- @realm shared
 -- @param client Player The player receiving the message.
 -- @param ... any Message parts.
--- @usage ax.util:SendChatText(ply, "Hello", Color(255, 255, 255), " world!")
+-- @usage ax.util:SendChatText(client, "Hello", Color(255, 255, 255), " world!")
 function ax.util:SendChatText(client, ...)
     -- implementation
 end
