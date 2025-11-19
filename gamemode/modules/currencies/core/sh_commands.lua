@@ -102,7 +102,7 @@ ax.command:Add("SetCurrency", {
 
         character:SetCurrency(amount, okID)
 
-        local formatted = ax.currencies:Format(okID, amount)
+        local formatted = ax.currencies:Format(amount, okID)
         return string.format("Set %s's %s to %s", target:Name(), okID, formatted)
     end
 })
@@ -126,7 +126,7 @@ ax.command:Add("AddCurrency", {
         if ( !character ) then return errMsg end
 
         local newTotal = character:AddCurrency(amount, okID)
-        local delta = ax.currencies:Format(okID, amount)
+        local delta = ax.currencies:Format(amount, okID)
         local total = ax.currencies:Format(okID, newTotal)
         return string.format("Added %s to %s (%s total)", delta, target:Name(), total)
     end
@@ -154,7 +154,7 @@ ax.command:Add("TakeCurrency", {
             return string.format("%s does not have enough %s", target:Name(), okID)
         end
 
-        local delta = ax.currencies:Format(okID, amount)
+        local delta = ax.currencies:Format(amount, okID)
         local remaining = ax.currencies:Format(okID, character:GetCurrency(okID))
         return string.format("Took %s from %s (%s remaining)", delta, target:Name(), remaining)
     end
@@ -176,7 +176,7 @@ ax.command:Add("GetCurrency", {
         if ( !character ) then return errMsg end
 
         local amount = character:GetCurrency(okID)
-        local formatted = ax.currencies:Format(okID, amount)
+        local formatted = ax.currencies:Format(amount, okID)
         return string.format("%s has %s", target:Name(), formatted)
     end
 })
@@ -196,15 +196,15 @@ ax.command:Add("AddCurrencyAll", {
         amount = normalizeAmount(amount)
 
         local count = 0
-        for _, ply in ipairs(player.GetAll()) do
-            local char = ply:GetCharacter()
-            if ( char ) then
-                char:AddCurrency(amount, okID)
+        for _, target in player.Iterator() do
+            local character = target:GetCharacter()
+            if ( character ) then
+                character:AddCurrency(amount, okID)
                 count = count + 1
             end
         end
 
-        local delta = ax.currencies:Format(okID, amount)
+        local delta = ax.currencies:Format(amount, okID)
         return string.format("Added %s to %d player(s)", delta, count)
     end
 })
@@ -224,15 +224,15 @@ ax.command:Add("SetCurrencyAll", {
         amount = normalizeAmount(amount)
 
         local count = 0
-        for _, ply in ipairs(player.GetAll()) do
-            local char = ply:GetCharacter()
-            if ( char ) then
-                char:SetCurrency(amount, okID)
+        for _, target in player.Iterator() do
+            local character = target:GetCharacter()
+            if ( character ) then
+                character:SetCurrency(amount, okID)
                 count = count + 1
             end
         end
 
-        local formatted = ax.currencies:Format(okID, amount)
+        local formatted = ax.currencies:Format(amount, okID)
         return string.format("Set %s for %d player(s)", formatted, count)
     end
 })
