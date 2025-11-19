@@ -36,13 +36,12 @@ function PANEL:Init()
     self.options = self:Add("ax.main.options")
     self.options:StartAtBottom()
 
+    self.splash:StartAtLeft()
     self.splash:SlideToFront()
 end
 
 function PANEL:Paint(width, height)
     ax.render.Draw(0, 0, 0, width, height, Color(0, 0, 0, 100))
-    ax.util:DrawGradient("left", 0, 0, width / 2, height, Color(30, 30, 30, 200))
-    ax.util:DrawGradient("left", 0, 0, width / 3, height, Color(0, 0, 0, 200))
 end
 
 vgui.Register("ax.main", PANEL, "EditablePanel")
