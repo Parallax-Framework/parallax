@@ -63,7 +63,7 @@ function PANEL:GetVars()
     local vars = table.Copy(ax.character.vars)
     local sortOrder = 0
     for k, v in pairs(vars) do
-        v.category = v.category or "misc"
+        v.category = v.category or "01_appearance"
         v.sortOrder = v.sortOrder or sortOrder
         sortOrder = sortOrder + 2
     end
@@ -143,7 +143,7 @@ function PANEL:GetOrderedCategories()
         if ( !v.validate ) then continue end
         if ( v.hide ) then continue end
 
-        local category = v.category or "misc"
+        local category = v.category or "01_appearance"
 
         local canUse = true
         if ( isfunction(v.canPopulate) ) then
@@ -229,7 +229,7 @@ function PANEL:CreateOrGetCategoryTab(category, index)
 end
 
 function PANEL:GetContainer(category)
-    category = category or "misc"
+    category = category or "01_appearance"
 
     local container = self.tabs[category]
     if ( !IsValid(container) ) then return end
@@ -258,7 +258,7 @@ end
 function PANEL:PopulateVars(category)
     local vars = self:GetVars()
 
-    category = category or "misc"
+    category = category or "01_appearance"
 
     local container = self:GetContainer(category)
     if ( !IsValid(container) ) then return end
@@ -266,7 +266,7 @@ function PANEL:PopulateVars(category)
     for k, v in SortedPairsByMemberValue(vars, "sortOrder") do
         if ( !v.validate ) then continue end
         if ( v.hide ) then continue end
-        if ( (v.category or "misc") != category ) then continue end
+        if ( (v.category or "01_appearance") != category ) then continue end
 
         if ( isfunction(v.canPopulate) ) then
             local canPop, err = pcall(function()
@@ -361,10 +361,10 @@ function PANEL:PopulateVars(category)
 end
 
 function PANEL:OnPopulateVars(container, category, payload)
-    local targetCategory = category or "misc"
+    local targetCategory = category or "01_appearance"
     for k, v in pairs(self:GetVars()) do
         if ( v.field == "model" ) then
-            targetCategory = v.category or "misc"
+            targetCategory = v.category or "01_appearance"
             break
         end
     end
