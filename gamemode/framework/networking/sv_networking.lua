@@ -227,6 +227,11 @@ net.Receive("ax.character.create", function(length, client)
 
         client:Notify("You have successfully created a new character!", "success")
 
+        local faction = ax.faction:Get( character:GetFaction() )
+        if ( istable( faction ) and isfunction( faction.OnCharacterCreated ) ) then
+            faction:OnCharacterCreated( client, character )
+        end
+
         hook.Run("PlayerCreatedCharacter", client, character)
     end)
 end)
