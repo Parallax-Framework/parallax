@@ -119,4 +119,8 @@ function PANEL:PerformLayout()
     self.buttons:SetSize(ScrW() / 6, ScrH() / 3)
 end
 
+function PANEL:Paint(width, height)
+    ax.util:DrawGradient("left", 0, 0, width / 3, height, Color(0, 0, 0, 200))
+end
+
 vgui.Register("ax.main.splash", PANEL, "ax.transition")
