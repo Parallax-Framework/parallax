@@ -31,7 +31,7 @@ ax.character:RegisterVar("inventory", {
 ax.character:RegisterVar("faction", {
     field = "faction",
     fieldType = ax.type.number,
-    category = "faction",
+    category = "00_faction",
     localized = true,
     default = 0,
     validate = function(this, value, payload, client)
