@@ -5,7 +5,7 @@
 ---
 
 ----
----@module
+---@module masks
 ---@name masks
 ---@realm CLIENT
 ----
