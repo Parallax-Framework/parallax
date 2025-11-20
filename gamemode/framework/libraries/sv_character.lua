@@ -160,6 +160,11 @@ function ax.character:Load(client, character)
     character:SetLastPlayed(os.time())
     character:Save()
 
+    local faction = ax.faction:Get( character:GetFaction() )
+    if ( istable( faction ) and isfunction( faction.OnCharacterLoaded ) ) then
+        faction:OnCharacterLoaded( client, character )
+    end
+
     hook.Run("PlayerLoadedCharacter", client, character, clientData.axCharacterPrevious)
 end
 
