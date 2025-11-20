@@ -111,7 +111,7 @@ function ax.module:Include(path, timeFilter)
                     ax.faction:Include(path .. "/" .. dirName .. "/factions", timeFilter)
                     ax.class:Include(path .. "/" .. dirName .. "/classes", timeFilter)
                     ax.item:Include(path .. "/" .. dirName .. "/items", timeFilter)
-                    ax.util:LoadEntities(path .. "/" .. dirName .. "/entities")
+                    ax.util:LoadEntities(path .. "/" .. dirName .. "/entities", timeFilter)
                     ax.util:PrintSuccess("Module \"" .. tostring(MODULE.name) .. "\" initialized successfully.")
                     ax.module.stored[MODULE.uniqueID] = MODULE
 
