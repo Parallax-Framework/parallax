@@ -82,27 +82,35 @@ if ( SERVER ) then
     function character:GiveFlags(flags)
         if ( !isstring(flags) or #flags < 1 ) then return end
 
+        local bOutdated = false
         for i = 1, #flags do
             local letter = flags[i]
             local flagData = ax.flag:Get(letter)
             if ( !istable(flagData) ) then continue end
-
             if ( self:HasFlags(letter) ) then continue end
 
             self:SetData("flags", self:GetData("flags", "") .. letter)
-            self:Save()
 
             if ( isfunction(flagData.OnGiven) ) then
                 flagData:OnGiven(self)
             end
 
+            if ( !bOutdated ) then
+                bOutdated = true
+            end
+
             hook.Run("CharacterFlagGiven", self, letter)
+        end
+
+        if ( bOutdated ) then
+            self:Save()
         end
     end
 
     function character:TakeFlags(flags)
         if ( !isstring(flags) or #flags < 1 ) then return end
 
+        local bOutdated = false
         for i = 1, #flags do
             local letter = flags[i]
             local flagData = ax.flag:Get(letter)
@@ -114,13 +122,19 @@ if ( SERVER ) then
             newFlags = string.Replace(newFlags, letter, "")
 
             self:SetData("flags", newFlags)
-            self:Save()
+            if ( !bOutdated ) then
+                bOutdated = true
+            end
 
             if ( isfunction(flagData.OnTaken) ) then
                 flagData:OnTaken(self)
             end
 
             hook.Run("CharacterFlagTaken", self, letter)
+        end
+
+        if ( bOutdated ) then
+            self:Save()
         end
     end
 
