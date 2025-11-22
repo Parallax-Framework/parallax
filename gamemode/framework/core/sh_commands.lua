@@ -129,7 +129,6 @@ ax.command:Add("CharGiveFlags", {
         if ( !target ) then target = client:GetCharacter() end
 
         target:GiveFlags(flags)
-        target:Save()
 
         return "Flags given to " .. target:GetName() .. ": " .. flags
     end
