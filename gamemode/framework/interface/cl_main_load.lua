@@ -86,7 +86,7 @@ function PANEL:PopulateCharacterList()
         end
 
         local faction = v:GetFactionData()
-        local banner = hook.Run("GetCharacterBanner", v.id) or faction.image or "gamepadui/hl2/chapter14"
+        local banner = hook.Run("GetCharacterBanner", v.id) or (faction and faction.image) or "gamepadui/hl2/chapter14"
         if ( isstring(banner) ) then
             banner = ax.util:GetMaterial(banner)
         end
