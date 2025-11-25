@@ -511,7 +511,13 @@ ax.character:RegisterVar("model", {
         local client = character:GetOwner()
         if ( IsValid(client) and client:GetModel() != value ) then
             client:SetModel(value)
+
+            for i = 0, client:GetNumBodyGroups() - 1 do
+                client:SetBodygroup(i, 0)
+            end
         end
+
+        character:SetData("bodygroups", nil) -- Reset bodygroups on model change
 
         -- Reset or apply the correct skin when the model changes. If the faction
         -- disallows skin customization, use the skin defined on the faction's
