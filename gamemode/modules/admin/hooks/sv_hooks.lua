@@ -6,7 +6,7 @@ function MODULE:EntityTakeDamage(target, dmgInfo)
     end
 end
 
-function MODULE:PlayerSpawnEffect(client, model)CAM
+function MODULE:PlayerSpawnEffect(client, model)
     if (!CAMI.PlayerHasAccess(client, "Parallax - Spawn Effects", nil)) then
         return false
     end
