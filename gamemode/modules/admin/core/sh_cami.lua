@@ -4,31 +4,31 @@ CAMI.RegisterPrivilege({
 })
 
 CAMI.RegisterPrivilege({
-    name = "Parallax - Spawn Props",
-    minaccess = "admin",
+    Name = "Parallax - Spawn Props",
+    MinAccess = "admin",
 })
 
 CAMI.RegisterPrivilege({
-    name = "Parallax - Spawn NPCs",
-    minaccess = "admin",
+    Name = "Parallax - Spawn NPCs",
+    MinAccess = "admin",
 })
 
 CAMI.RegisterPrivilege({
-    name = "Parallax - Spawn Weapons",
-    minaccess = "admin",
+    Name = "Parallax - Spawn Weapons",
+    MinAccess = "admin",
 })
 
 CAMI.RegisterPrivilege({
-    name = "Parallax - Spawn Entities",
-    minaccess = "admin",
+    Name = "Parallax - Spawn Entities",
+    MinAccess = "admin",
 })
 
 CAMI.RegisterPrivilege({
-    name = "Parallax - Spawn Vehicles",
-    minaccess = "admin",
+    Name = "Parallax - Spawn Vehicles",
+    MinAccess = "admin",
 })
 
 CAMI.RegisterPrivilege({
-    name = "Parallax - Spawn Ragdolls",
-    minaccess = "admin",
+    Name = "Parallax - Spawn Ragdolls",
+    MinAccess = "admin",
 })
