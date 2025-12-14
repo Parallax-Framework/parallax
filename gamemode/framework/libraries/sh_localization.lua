@@ -38,6 +38,34 @@ function ax.localization:Register(name, translation)
     ax.util:PrintDebug("Localization \"" .. name .. "\" registered successfully.")
 end
 
+--- Adds or updates a single phrase translation for a language.
+-- @realm shared
+-- @param lang string The language code (e.g., "en", "es", "fr")
+-- @param phrase string The phrase key to add/update
+-- @param translation string The translated string
+-- @usage ax.localization:AddPhrase("en", "welcome", "Welcome")
+function ax.localization:AddPhrase(lang, phrase, translation)
+    if ( !isstring(lang) or lang == "" ) then
+        ax.util:PrintWarning("Invalid localization language provided")
+        return
+    end
+
+    if ( !isstring(phrase) or phrase == "" ) then
+        ax.util:PrintWarning("Invalid phrase key provided for localization \"" .. lang .. "\"")
+        return
+    end
+
+    if ( !isstring(translation) or translation == "" ) then
+        ax.util:PrintWarning("Invalid translation string provided for phrase \"" .. phrase .. "\" in localization \"" .. lang .. "\"")
+        return
+    end
+
+    self.langs[lang] = self.langs[lang] or {}
+    self.langs[lang][phrase] = translation
+
+    ax.util:PrintDebug("Phrase \"" .. phrase .. "\" added/updated for localization \"" .. lang .. "\".")
+end
+
 --- Get a localized phrase in the client's language.
 -- Looks up a phrase key and returns the translation for the current language.
 -- Falls back to the phrase key if no translation is found.
