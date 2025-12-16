@@ -67,7 +67,9 @@ if ( SERVER ) then
             return
         end
 
-        if ( IsValid( client ) and isfunction( def.OnCanRun ) and !def:OnCanRun( client ) ) then
+        local ClientValid = IsValid( client )
+
+        if ( ClientValid and isfunction( def.OnCanRun ) and !def:OnCanRun( client ) ) then
             ax.util:PrintWarning("ax.chat:Send - Client " .. client:SteamID() .. " is not allowed to run chat type \"" .. chatType .. "\"")
             return
         end
@@ -87,9 +89,9 @@ if ( SERVER ) then
         end
 
         local clients = {}
-        if ( IsValid( client ) ) then clients[#clients + 1] = client end
+        if ( ClientValid ) then clients[#clients + 1] = client end
         for _, v in player.Iterator() do
-            if ( v == client ) then continue end
+            if ( ClientValid and v == client ) then continue end
 
             if ( isfunction(def.CanHear) ) then
                 if ( def:CanHear(client, v) ) then
