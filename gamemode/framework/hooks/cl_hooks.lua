@@ -51,6 +51,10 @@ function GM:PlayerStartVoice()
     end
 end
 
+function GM:ShouldDrawVignette()
+    return ax.config:Get( "interface.vignette.enabled", true )
+end
+
 local vignette = ax.util:GetMaterial("parallax/overlays/vignette.png", "smooth noclamp")
 local vignetteColor = Color(0, 0, 0, 255)
 function GM:HUDPaintBackground()

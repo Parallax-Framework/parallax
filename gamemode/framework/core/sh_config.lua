@@ -257,3 +257,9 @@ ax.config:Add("hands.max.carry", ax.type.number, 160, {
     category = "gameplay",
     subCategory = "interaction"
 })
+
+ax.config:Add("interface.vignette.enabled", ax.type.bool, true, {
+    description = "interface.vignette.enabled.help",
+    category = "interface",
+    subCategory = "display"
+})

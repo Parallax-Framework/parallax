@@ -76,6 +76,9 @@ ax.localization:Register("en", {
     ["config.interface.font.antialias"] = "Font Antialiasing",
     ["config.interface.font.multiplier"] = "Font Scale",
 
+    ["config.interface.vignette.enabled"] = "Enable Vignette Effect",
+    ["config.interface.vignette.enabled.help"] = "Toggle the vignette effect around the edges of the screen.",
+
     -- Options Translations
     --- Chat
     ---- Basic
