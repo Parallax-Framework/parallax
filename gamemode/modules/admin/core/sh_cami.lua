@@ -32,3 +32,8 @@ CAMI.RegisterPrivilege({
     Name = "Parallax - Spawn Ragdolls",
     MinAccess = "admin",
 })
+
+CAMI.RegisterPrivilege({
+    Name = "Parallax - Spawn Effects",
+    MinAccess = "admin",
+})
