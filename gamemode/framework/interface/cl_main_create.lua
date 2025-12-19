@@ -14,6 +14,8 @@ local title
 local PANEL = {}
 
 function PANEL:Init()
+    hook.Run("PreMainMenuCreateCreated", self)
+
     self.payload = {}
     self.tabs = {}
 
@@ -44,6 +46,8 @@ function PANEL:Init()
 
     self:StartAtBottom()
     self:ClearVars()
+
+    hook.Run("PostMainMenuCreateCreated", self)
 end
 
 function PANEL:OnSlideStart()

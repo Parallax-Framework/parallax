@@ -12,6 +12,8 @@
 local PANEL = {}
 
 function PANEL:Init()
+    hook.Run("PreMainMenuOptionsCreated", self)
+
     local parent = self:GetParent()
 
     self:SetPos(0, 0)
@@ -29,6 +31,8 @@ function PANEL:Init()
     for _, tab in ipairs(settings:GetPages()) do
         tab:DockPadding(0, 0, ax.util:ScreenScale(64), 0)
     end
+
+    hook.Run("PostMainMenuOptionsCreated", self)
 end
 
 function PANEL:Paint(width, height)

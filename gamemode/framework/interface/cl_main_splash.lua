@@ -12,6 +12,8 @@
 local PANEL = {}
 
 function PANEL:Init()
+    hook.Run("PreMainMenuSplashCreated", self)
+
     local parent = self:GetParent()
 
     self:SetPos(0, 0)
@@ -109,6 +111,8 @@ function PANEL:Init()
             button:DockMargin(0, 0, 0, ax.util:ScreenScaleH(8))
         end
     end
+
+    hook.Run("PostMainMenuSplashCreated", self)
 end
 
 function PANEL:PerformLayout()

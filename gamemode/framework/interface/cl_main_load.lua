@@ -12,6 +12,8 @@
 local PANEL = {}
 
 function PANEL:Init()
+    hook.Run("PreMainMenuLoadCreated", self)
+
     local parent = self:GetParent()
 
     self:SetPos(0, 0)
@@ -38,6 +40,8 @@ function PANEL:Init()
     self.deleteContainer = self.deletePanel:Add("EditablePanel")
     self.deleteContainer:Dock(FILL)
     self.deleteContainer:InvalidateParent(true)
+
+    hook.Run("PostMainMenuLoadCreated", self)
 end
 
 function PANEL:OnSlideStart()

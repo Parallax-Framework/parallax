@@ -20,6 +20,8 @@ function PANEL:Init()
 
     self.startTime = SysTime()
 
+    hook.Run("PreMainMenuCreated", self)
+
     self:SetPos(0, 0)
     self:SetSize(ScrW(), ScrH())
     self:MakePopup()
@@ -38,6 +40,8 @@ function PANEL:Init()
 
     self.splash:StartAtLeft()
     self.splash:SlideToFront()
+
+    hook.Run("PostMainMenuCreated", self)
 end
 
 function PANEL:Paint(width, height)
