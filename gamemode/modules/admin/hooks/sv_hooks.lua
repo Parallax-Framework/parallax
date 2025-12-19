@@ -7,7 +7,7 @@ function MODULE:EntityTakeDamage(target, dmgInfo)
 end
 
 function MODULE:PlayerSpawnEffect(client, model)
-    if (!CAMI.PlayerHasAccess(client, "Parallax - Spawn Effects", nil)) then
+    if ( !CAMI.PlayerHasAccess(client, "Parallax - Spawn Effects", nil) ) then
         return false
     end
 
@@ -15,7 +15,7 @@ function MODULE:PlayerSpawnEffect(client, model)
 end
 
 function MODULE:PlayerSpawnNPC(client, model)
-    if (!CAMI.PlayerHasAccess(client, "Parallax - Spawn NPCs", nil)) then
+    if ( !CAMI.PlayerHasAccess(client, "Parallax - Spawn NPCs", nil) ) then
         return false
     end
 
@@ -23,7 +23,7 @@ function MODULE:PlayerSpawnNPC(client, model)
 end
 
 function MODULE:PlayerSpawnProp(client, model)
-    if (!CAMI.PlayerHasAccess(client, "Parallax - Spawn Props", nil)) then
+    if ( !CAMI.PlayerHasAccess(client, "Parallax - Spawn Props", nil) ) then
         return false
     end
 
@@ -31,7 +31,7 @@ function MODULE:PlayerSpawnProp(client, model)
 end
 
 function MODULE:PlayerSpawnRagdoll(client, model)
-    if (!CAMI.PlayerHasAccess(client, "Parallax - Spawn Ragdolls", nil)) then
+    if ( !CAMI.PlayerHasAccess(client, "Parallax - Spawn Ragdolls", nil) ) then
         return false
     end
 
@@ -39,7 +39,7 @@ function MODULE:PlayerSpawnRagdoll(client, model)
 end
 
 function MODULE:PlayerSpawnSENT(client, model)
-    if (!CAMI.PlayerHasAccess(client, "Parallax - Spawn SENTs", nil)) then
+    if ( !CAMI.PlayerHasAccess(client, "Parallax - Spawn SENTs", nil) ) then
         return false
     end
 
@@ -47,7 +47,7 @@ function MODULE:PlayerSpawnSENT(client, model)
 end
 
 function MODULE:PlayerSpawnSWEP(client, model)
-    if (!CAMI.PlayerHasAccess(client, "Parallax - Spawn Weapons", nil)) then
+    if ( !CAMI.PlayerHasAccess(client, "Parallax - Spawn Weapons", nil) ) then
         return false
     end
 
@@ -55,10 +55,9 @@ function MODULE:PlayerSpawnSWEP(client, model)
 end
 
 function MODULE:PlayerSpawnVehicle(client, model)
-    if (!CAMI.PlayerHasAccess(client, "Parallax - Spawn Vehicles", nil)) then
+    if ( !CAMI.PlayerHasAccess(client, "Parallax - Spawn Vehicles", nil) ) then
         return false
     end
-    
+
     return true
 end
-
