@@ -22,7 +22,6 @@ function SWEP:TranslateAnimation(anim)
     if ( !IsValid(vm) ) then return -1 end
 
     if ( isnumber(anim) ) then
-        -- Treat as ACT_ enum
         local seq = vm:SelectWeightedSequence(anim)
         if ( seq and seq >= 0 ) then
             return seq
@@ -50,18 +49,26 @@ function SWEP:PlayAnimation(anim, rate)
 
     local seq = self:TranslateAnimation(anim)
     if ( seq and seq >= 0 ) then
-        vm:SendViewModelMatchingSequence(seq)
         vm:SetPlaybackRate(rate or 1)
+        vm:SendViewModelMatchingSequence(seq)
         return
     end
 
-    -- Fallback: if a numeric ACT was provided, let the weapon system attempt to handle it.
     if ( isnumber(anim) ) then
         self:SendWeaponAnim(anim)
+
+        timer.Simple(0, function()
+            if ( IsValid(self) ) then
+                local vm2 = self:GetOwner():GetViewModel()
+                if ( IsValid(vm2) ) then
+                    vm2:SetPlaybackRate(rate or 1)
+                end
+            end
+        end)
+
         return
     end
 
-    -- Only print an error for genuinely invalid string sequences, to reduce spam when ACT fallbacks occur.
     if ( isstring(anim) ) then
         ax.util:PrintError("Invalid animation sequence: " .. tostring(anim))
     end

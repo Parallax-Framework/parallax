@@ -54,6 +54,12 @@ SWEP.RecoilIronSightMultiplier = 0.5 -- Recoil multiplier when aiming down sight
 SWEP.RecoilMaxPitch = 15.0 -- Maximum accumulated vertical recoil
 SWEP.RecoilMaxYaw = 10.0 -- Maximum accumulated horizontal recoil
 SWEP.RecoilPattern = nil -- Optional table of {pitch, yaw} vectors for pattern-based recoil
+SWEP.RecoilAngleSmoothing = 0.6 -- Blend factor for per-frame angle changes (0 = none, 1 = heavy smoothing)
+SWEP.RecoilRecoveryInterpMultiplier = 0.75 -- During recovery, interpolate slightly slower for softer ease-out
+SWEP.RecoilRecoveryControlWeight = 0.95 -- How strongly counter-input reduces recovery speed
+SWEP.RecoilRecoveryMinScale = 0.3 -- Minimum fraction of recovery speed even with heavy countering
+SWEP.RecoilReloadRecoveryBoost = 2.0 -- Multiplier to recovery speed while reloading (reduces intensity)
+SWEP.RecoilReloadMinScale = 0.5 -- Minimum recovery scale while reloading (ensures noticeable dampening)
 
 SWEP.Secondary = {
     ClipSize = -1,
@@ -107,10 +113,15 @@ SWEP.Reloading = {
 
 -- Shotgun reload configuration
 SWEP.ShotgunReload = false
-SWEP.ShotgunInsertAnim = ACT_VM_RELOAD
-SWEP.ShotgunPumpAnim = ACT_SHOTGUN_RELOAD_FINISH
+SWEP.ShotgunInsertAnim = ACT_SHOTGUN_RELOAD
+SWEP.ShotgunPumpAnim = ACT_SHOTGUN_RELOAD_FINISH -- legacy compatibility; prefer ShotgunFinishAnim
 SWEP.ShotgunInsertSound = Sound("Weapon_Shotgun.Reload")
 SWEP.ShotgunPumpSound = Sound("Weapon_Shotgun.Special1")
+-- Optional dedicated start/finish animations and sounds
+SWEP.ShotgunStartAnim = ACT_SHOTGUN_RELOAD_START
+SWEP.ShotgunStartSound = Sound("Weapon_Shotgun.Reload")
+SWEP.ShotgunFinishAnim = ACT_SHOTGUN_RELOAD_FINISH
+SWEP.ShotgunFinishSound = Sound("Weapon_Shotgun.Special1")
 
 -- Pump after shoot configuration
 SWEP.PumpAfterShoot = false
@@ -155,6 +166,8 @@ function SWEP:Initialize()
     self.ShotsFired = 0
     self.LastEyeAngles = Angle(0, 0, 0)
     self.RecoilControl = 0
+    self.RecoilSmoothPitch = 0
+    self.RecoilSmoothYaw = 0
 end
 
 function SWEP:SetupDataTables()
@@ -426,7 +439,7 @@ function SWEP:RecoilInterpolation()
     end
 
     local controlInstant = math.Clamp((opposePitch + math.abs(opposeYaw)) * 10, 0, 1)
-    self.RecoilControl = Lerp(8 * FrameTime(), self.RecoilControl or 0, controlInstant)
+    self.RecoilControl = Lerp(FrameTime() * 18, self.RecoilControl or 0, controlInstant)
 
     local delta = FrameTime()
     local interpSpeed = self.RecoilInterpSpeed
@@ -443,19 +456,30 @@ function SWEP:RecoilInterpolation()
     end
 
     -- Interpolate toward target
-    local pitchStep = pitchDiff * interpSpeed * delta
-    local yawStep = yawDiff * interpSpeed * delta
+    local recoveringPitch = math.abs(self.RecoilTargetPitch) < math.abs(self.RecoilAccumPitch)
+    local recoveringYaw = math.abs(self.RecoilTargetYaw) < math.abs(self.RecoilAccumYaw)
+
+    local effInterpP = interpSpeed * (recoveringPitch and (self.RecoilRecoveryInterpMultiplier or 1) or 1)
+    local effInterpY = interpSpeed * (recoveringYaw and (self.RecoilRecoveryInterpMultiplier or 1) or 1)
+
+    local pitchStepRaw = pitchDiff * effInterpP * delta
+    local yawStepRaw = yawDiff * effInterpY * delta
+
+    -- Smooth the per-frame angle changes to prevent abrupt motions, especially during recovery
+    local smoothFactor = math.Clamp(delta * (self.RecoilAngleSmoothing or 0), 0, 1)
+    self.RecoilSmoothPitch = Lerp(smoothFactor, self.RecoilSmoothPitch or 0, pitchStepRaw)
+    self.RecoilSmoothYaw = Lerp(smoothFactor, self.RecoilSmoothYaw or 0, yawStepRaw)
 
     -- Apply to view angles
-    if ( math.abs(pitchStep) > 0.001 or math.abs(yawStep) > 0.001 ) then
+    if ( math.abs(self.RecoilSmoothPitch) > 0.001 or math.abs(self.RecoilSmoothYaw) > 0.001 ) then
         local ang = owner:EyeAngles()
-        ang.p = ang.p - pitchStep
-        ang.y = ang.y + yawStep
+        ang.p = ang.p - self.RecoilSmoothPitch
+        ang.y = ang.y + self.RecoilSmoothYaw
         owner:SetEyeAngles(ang)
 
         -- Update accumulated recoil
-        self.RecoilAccumPitch = self.RecoilAccumPitch + pitchStep
-        self.RecoilAccumYaw = self.RecoilAccumYaw + yawStep
+        self.RecoilAccumPitch = self.RecoilAccumPitch + self.RecoilSmoothPitch
+        self.RecoilAccumYaw = self.RecoilAccumYaw + self.RecoilSmoothYaw
     end
 
     -- Update last eye angles for the next frame (capture player's input)
@@ -480,7 +504,8 @@ function SWEP:RecoilRecovery()
     self.ShotsFired = self.ShotsFired or 0
 
     -- Check if we should start recovering
-    if ( CurTime() - self.LastRecoilTime < self.RecoilRecoveryDelay ) then
+    -- While reloading, bypass the recovery delay so intensity decreases during reload.
+    if ( !self:GetReloading() and CurTime() - self.LastRecoilTime < self.RecoilRecoveryDelay ) then
         return
     end
 
@@ -498,8 +523,14 @@ function SWEP:RecoilRecovery()
     local delta = FrameTime()
     -- If the player is actively countering recoil, lower automatic recovery
     local controlFactor = math.Clamp(self.RecoilControl or 0, 0, 0.95)
-    local recoveryScale = math.Clamp(1 - controlFactor * 0.9, 0.05, 1)
-    local recoveryAmount = self.RecoilRecoverySpeed * delta * recoveryScale
+    local weight = self.RecoilRecoveryControlWeight or 0.5
+    local minScale = self.RecoilRecoveryMinScale or 0.3
+    if ( self:GetReloading() ) then
+        minScale = self.RecoilReloadMinScale or minScale
+    end
+    local recoveryScale = math.Clamp(1 - controlFactor * weight, minScale, 1)
+    local reloadBoost = ( self:GetReloading() and ( self.RecoilReloadRecoveryBoost or 1 ) ) or 1
+    local recoveryAmount = self.RecoilRecoverySpeed * delta * recoveryScale * reloadBoost
 
     -- Recover pitch target
     local pitchRecovery = math.min(recoveryAmount, self.RecoilTargetPitch)
@@ -531,6 +562,8 @@ function SWEP:ResetRecoilRecovery()
     self.LastRecoilTime = CurTime()
     self.ShotsFired = 0
     self.RecoilControl = 0
+    self.RecoilSmoothPitch = 0
+    self.RecoilSmoothYaw = 0
     local owner = self:GetOwner()
     if ( IsValid(owner) and owner:IsPlayer() ) then
         self.LastEyeAngles = owner:EyeAngles()
@@ -569,12 +602,6 @@ function SWEP:Reload()
     local owner = self:GetOwner()
     if ( !IsValid(owner) ) then return end
     if ( !self:CanReload() ) then return end
-
-    -- Interrupt/clear recoil recovery when reloading so recovery doesn't run
-    -- while reload animations are playing.
-    if ( self.ResetRecoilRecovery ) then
-        self:ResetRecoilRecovery()
-    end
 
     if ( self.ShotgunReload ) then
         self:StartShotgunReload()
@@ -619,11 +646,25 @@ function SWEP:StartShotgunReload()
     end
 
     self:SetReloading(true)
-    if ( self.ResetRecoilRecovery ) then
-        self:ResetRecoilRecovery()
+    -- Play dedicated start animation if available, then begin per-shell loop
+    local startAnim = self.ShotgunStartAnim or self.ShotgunInsertAnim
+    local startSound = self.ShotgunStartSound or self.ShotgunInsertSound
+    if ( startAnim ) then
+        self:PlayAnimation(startAnim, 1)
     end
-    self:InsertShell()
-    self:DefaultReload(ACT_VM_RELOAD)
+    if ( startSound ) then
+        self:EmitSound(startSound, nil, nil, nil, CHAN_STATIC)
+    end
+
+    local duration = self:GetActiveAnimationDuration()
+    if ( duration <= 0 ) then
+        duration = 0.3
+    end
+    timer.Simple(duration, function()
+        if ( IsValid(self) ) then
+            self:InsertShell()
+        end
+    end)
 end
 
 function SWEP:InsertShell()
@@ -639,10 +680,17 @@ function SWEP:InsertShell()
 
     self:SetClip1(self:Clip1() + 1)
 
-    self:PlayAnimation(self.ShotgunInsertAnim, 1)
+    if ( SERVER ) then
+        self:PlayAnimation(self.ShotgunInsertAnim, 1)
+    end
+
     self:EmitSound(self.ShotgunInsertSound, nil, nil, nil, CHAN_STATIC)
 
     local duration = self:GetActiveAnimationDuration()
+    if ( duration <= 0 ) then
+        duration = 0.5
+    end
+
     timer.Simple(duration, function()
         if ( IsValid(self) ) then
             self:InsertShell()
@@ -651,8 +699,16 @@ function SWEP:InsertShell()
 end
 
 function SWEP:FinishShotgunReload()
-    self:PlayAnimation(self.ShotgunPumpAnim, 1)
-    self:EmitSound(self.ShotgunPumpSound, nil, nil, nil, CHAN_STATIC)
+    -- Prefer explicit finish animation/sound; fall back to legacy pump fields
+    local finishAnim = self.ShotgunFinishAnim or self.ShotgunPumpAnim
+    local finishSound = self.ShotgunFinishSound or self.ShotgunPumpSound
+    if ( finishAnim ) then
+        self:PlayAnimation(finishAnim, 1)
+    end
+
+    if ( finishSound ) then
+        self:EmitSound(finishSound, nil, nil, nil, CHAN_STATIC)
+    end
 
     local duration = self:GetActiveAnimationDuration()
     timer.Simple(duration, function()
