@@ -15,6 +15,12 @@ MODULE.name = "Crash Analysis"
 MODULE.description = "Analyzes server responsiveness to detect crashes."
 MODULE.author = "Riggs"
 
+local nextCrashAnalysis = nil
+local nextCrashThink = 0
+local crashAnalysisAttempts = 0
+local lastServerData1 = 0
+local lastServerData2 = 0
+
 -- Constants for timing and limits
 local CRASH_ANALYSIS_INTERVAL = 0.05
 local CRASH_THINK_INTERVAL = 0.66
