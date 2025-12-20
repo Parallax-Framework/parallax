@@ -427,6 +427,10 @@ net.Receive("ax.relay.update", function()
 
     ax.relay.data[index] = ax.relay.data[index] or {}
     ax.relay.data[index][name] = value
+
+    if ( AX_WATCHER and AX_WATCHER:GetBool() and AX_WATCHER_LEVEL and AX_WATCHER_LEVEL:GetInt() > 0 ) then
+        ax.util:Print(Color(0, 255, 255), "Relay data updated: [" .. index .. "][" .. name .. "] = " .. tostring(value))
+    end
 end)
 
 net.Receive("ax.relay.sync", function()
