@@ -45,15 +45,15 @@ function PANEL:Init()
         elseif ( code == MOUSE_RIGHT ) then
             local menu = DermaMenu()
             menu:AddOption("Reset Position", function()
-                ax.option:SetToDefault("chatbox.x")
-                ax.option:SetToDefault("chatbox.y")
+                ax.option:SetToDefault("chat.x")
+                ax.option:SetToDefault("chat.y")
 
                 local rx, ry = hook.Run("GetChatboxPos")
                 self:SetPos(rx, ry)
             end)
             menu:AddOption("Reset Size", function()
-                ax.option:SetToDefault("chatbox.width")
-                ax.option:SetToDefault("chatbox.height")
+                ax.option:SetToDefault("chat.width")
+                ax.option:SetToDefault("chat.height")
 
                 local rw, rh = hook.Run("GetChatboxSize")
                 self:SetSize(rw, rh)
@@ -69,8 +69,8 @@ function PANEL:Init()
 
             -- Persist new position
             local x, y = self:GetPos()
-            ax.option:Set("chatbox.x", x)
-            ax.option:Set("chatbox.y", y)
+            ax.option:Set("chat.x", x)
+            ax.option:Set("chat.y", y)
         end
     end
     self.categories.Think = function(this)
@@ -123,7 +123,7 @@ function PANEL:Init()
     self.entry.OnEnter = function(this)
         local text = this:GetValue()
         if ( #text > 0 ) then
-            net.Start("ax.chatbox.send")
+            net.Start("ax.chat.send")
                 net.WriteString(text)
             net.SendToServer()
 
@@ -268,8 +268,8 @@ function PANEL:Init()
             this:MouseCapture(false)
 
             local w, h = self:GetSize()
-            ax.option:Set("chatbox.width", w)
-            ax.option:Set("chatbox.height", h)
+            ax.option:Set("chat.width", w)
+            ax.option:Set("chat.height", h)
         end
     end
     self.sizer.Think = function(this)
@@ -509,12 +509,18 @@ function PANEL:SetVisible(visible)
         self:SetAlpha(0)
         self:SetMouseInputEnabled(false)
         self:SetKeyboardInputEnabled(false)
+
+        -- Suppress OnChange callback while clearing text to prevent network spam
+        self.suppressOnChange = true
         self.entry:SetText("")
         self.entry:SetCaretPos(0)
-        self.entry:SetVisible(false)
-    end
+        self.suppressOnChange = false
 
-    hook.Run("ChatboxOnTextChanged", "", "IC")
+        self.entry:SetVisible(false)
+
+        -- Only send network update when closing the chatbox
+        hook.Run("ChatboxOnTextChanged", "", "IC")
+    end
 
     self:PopulateRecommendations()
 end

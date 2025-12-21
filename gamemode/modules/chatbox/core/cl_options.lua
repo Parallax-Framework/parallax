@@ -14,7 +14,7 @@ local x, y = 0, 0
 width, height = ax.util:ScreenScale(192), ax.util:ScreenScaleH(128)
 x, y = ax.util:ScreenScale(8), ScrH() - height - ax.util:ScreenScaleH(8)
 
-ax.option:Add("chatbox.width", ax.type.number, width, {
+ax.option:Add("chat.width", ax.type.number, width, {
     description = "The width of the chat box.",
     category = "chatBox",
     subCategory = "size",
@@ -24,7 +24,7 @@ ax.option:Add("chatbox.width", ax.type.number, width, {
     bNoNetworking = true
 })
 
-ax.option:Add("chatbox.height", ax.type.number, height, {
+ax.option:Add("chat.height", ax.type.number, height, {
     description = "The height of the chat box.",
     category = "chatBox",
     subCategory = "size",
@@ -34,7 +34,7 @@ ax.option:Add("chatbox.height", ax.type.number, height, {
     bNoNetworking = true
 })
 
-ax.option:Add("chatbox.x", ax.type.number, x, {
+ax.option:Add("chat.x", ax.type.number, x, {
     description = "The X position of the chat box.",
     category = "chatBox",
     subCategory = "position",
@@ -44,7 +44,7 @@ ax.option:Add("chatbox.x", ax.type.number, x, {
     bNoNetworking = true
 })
 
-ax.option:Add("chatbox.y", ax.type.number, y, {
+ax.option:Add("chat.y", ax.type.number, y, {
     description = "The Y position of the chat box.",
     category = "chatBox",
     subCategory = "position",

@@ -14,7 +14,7 @@ local MODULE = MODULE
 function MODULE:InitPostEntity()
     -- Create a 1 minute timer, which overrides the chat.AddText function to use our chatbox
     -- Because something else might override it after we do, we repeat this multiple times to ensure ours sticks
-    timer.Create("ax.chatbox.override.addtext", 1, 60, function()
+    timer.Create("ax.chat.override.addtext", 1, 60, function()
         if ( ax.chat.OverrideChatAddText ) then
             ax.chat:OverrideChatAddText()
         end
@@ -22,11 +22,11 @@ function MODULE:InitPostEntity()
 end
 
 function MODULE:GetChatboxSize()
-    return ax.option:Get("chatbox.width"), ax.option:Get("chatbox.height")
+    return ax.option:Get("chat.width"), ax.option:Get("chat.height")
 end
 
 function MODULE:GetChatboxPos()
-    return ax.option:Get("chatbox.x"), ax.option:Get("chatbox.y")
+    return ax.option:Get("chat.x"), ax.option:Get("chat.y")
 end
 
 function MODULE:PlayerBindPress(client, bind, pressed)
@@ -50,7 +50,7 @@ function MODULE:FinishChat()
 end
 
 function MODULE:ChatboxOnTextChanged(text, chatType)
-    net.Start("ax.chatbox.text.changed")
+    net.Start("ax.chat.text.changed")
         net.WriteString(text)
         net.WriteString(chatType)
     net.SendToServer()

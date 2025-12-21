@@ -85,15 +85,15 @@ ax.localization:Register("en", {
     ["option.chat.sounds"] = "Enable Chat Sounds",
     ["option.chat.timestamps"] = "Show Timestamps in Chat",
     ["option.chat.randomized.verbs"] = "Use Randomized Chat Verbs",
-    ["chat.randomized.verbs.help"] = "When enabled, chat messages will use varied verbs (exclaims, mutters, shouts). When disabled, uses default verbs (says, whispers, yells).",
+    ["option.chat.randomized.verbs.help"] = "When enabled, chat messages will use varied verbs (exclaims, mutters, shouts). When disabled, uses default verbs (says, whispers, yells).",
 
     ---- Position
-    ["option.chatbox.x"] = "Chatbox X Position",
-    ["option.chatbox.y"] = "Chatbox Y Position",
+    ["option.chat.x"] = "Chatbox X Position",
+    ["option.chat.y"] = "Chatbox Y Position",
 
     ---- Size
-    ["option.chatbox.width"] = "Chatbox Width",
-    ["option.chatbox.height"] = "Chatbox Height",
+    ["option.chat.width"] = "Chatbox Width",
+    ["option.chat.height"] = "Chatbox Height",
 
     --- Interface
     ---- Buttons

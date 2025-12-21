@@ -67,6 +67,10 @@ end
 
 --- Create message panel with animated text reveal
 function ax.chat:CreateMessagePanel(markupText, maxWidth, revealSpeed)
+    if ( !IsValid(ax.gui.chatbox) ) then
+        ax.gui.chatbox = vgui.Create("ax.chatbox")
+    end
+
     local panel = ax.gui.chatbox.history:Add("EditablePanel")
     panel:Dock(TOP)
 

@@ -9,9 +9,9 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
-util.AddNetworkString("ax.chatbox.send")
-net.Receive("ax.chatbox.send", function(len, client)
-    --if ( !client:RateLimit("chatbox.send", 0.1) ) then return end
+util.AddNetworkString("ax.chat.send")
+net.Receive("ax.chat.send", function(len, client)
+    if ( !client:RateLimit("chat.send", 0.01) ) then return end
 
     -- Read and sanitize the chat message incase bad actors try to exploit this.
     local output = net.ReadString()
@@ -25,9 +25,9 @@ net.Receive("ax.chatbox.send", function(len, client)
     client:SetRelay("chatType", "")
 end)
 
-util.AddNetworkString("ax.chatbox.text.changed")
-net.Receive("ax.chatbox.text.changed", function(len, client)
-    --if ( !client:RateLimit("chatbox.text.changed", 0.01) ) then return end
+util.AddNetworkString("ax.chat.text.changed")
+net.Receive("ax.chat.text.changed", function(len, client)
+    if ( !client:RateLimit("chat.text.changed", 0.01) ) then return end
 
     local text = net.ReadString()
     local chatType = net.ReadString()

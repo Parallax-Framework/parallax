@@ -80,16 +80,15 @@ ax.localization:Register("tr", {
     --- Chat
     ---- Basic
     ["option.chat.randomized.verbs"] = "Rastgele Sohbet Fiillerini Kullan",
-    ["chat.randomized.verbs.help"] = "Açık olduğunda, sohbet mesajları farklı fiiller kullanır (bağırır, homurdanır, haykırır). Kapalı olduğunda varsayılan fiilleri kullanır (der, fısıldar, bağırır).",
+    ["option.chat.randomized.verbs.help"] = "Açık olduğunda, sohbet mesajları farklı fiiller kullanır (bağırır, homurdanır, haykırır). Kapalı olduğunda varsayılan fiilleri kullanır (der, fısıldar, bağırır).",
 
     ---- Position
-    ["option.chatbox.x"] = "Sohbet Kutusu X Konumu",
-    ["option.chatbox.y"] = "Sohbet Kutusu Y Konumu",
+    ["option.chat.x"] = "Sohbet Kutusu X Konumu",
+    ["option.chat.y"] = "Sohbet Kutusu Y Konumu",
 
     ---- Size
-    ["option.chatbox.width"] = "Sohbet Kutusu Genişliği",
-    ["option.chatbox.height"] = "Sohbet Kutusu Yüksekliği",
-
+    ["option.chat.width"] = "Sohbet Kutusu Genişliği",
+    ["option.chat.height"] = "Sohbet Kutusu Yüksekliği",
 
     --- Interface
     ---- Buttons
