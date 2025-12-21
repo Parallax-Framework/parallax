@@ -118,7 +118,7 @@ function MODULE:HUDPaintCenter(width, height, client)
         local clip2Text = clip2 > -1 and tostring(clip2) or "∞"
         local ammo2Text = ammo2 > 0 and ("/" .. tostring(ammo2)) or ""
 
-        draw.SimpleText(clip2Text .. ammo2Text, "ax.regular.bold", baseX, baseY, Color(100, 100, 100, ammoAlpha * 0.6), TEXT_ALIGN_RIGHT, TEXT_ALIGN_BOTTOM)
+        draw.SimpleText(clip2Text .. ammo2Text, "ax.regular.bold", baseX + ScreenScale(2), baseY, Color(100, 100, 100, ammoAlpha * 0.6), TEXT_ALIGN_LEFT, TEXT_ALIGN_BOTTOM)
     end
 
     -- Subtle firing flash effect
