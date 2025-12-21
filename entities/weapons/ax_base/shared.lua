@@ -85,6 +85,14 @@ SWEP.LoweredOffsetAng = Angle(0, 0, 0)
 -- How fast (0-1 lerp fraction per frame) the view blends toward its desired offset
 SWEP.ViewOffsetLerpSpeed = 8
 
+-- Movement animations configuration
+SWEP.WalkAnim = nil -- Set to ACT_VM_IDLE_LOWERED or custom sequence for walking
+SWEP.SprintAnim = nil -- Set to ACT_VM_IDLE_DEPLOYED or custom sequence for sprinting
+SWEP.IdleAnim = ACT_VM_IDLE -- Default idle animation
+SWEP.WalkAnimPlaybackRate = 1
+SWEP.SprintAnimPlaybackRate = 1
+SWEP.IdleAnimPlaybackRate = 1
+
 SWEP.Reloading = {
     Sequence = ACT_VM_RELOAD,
     SequenceEmpty = ACT_VM_RELOAD_EMPTY,
@@ -142,6 +150,11 @@ end
 
 function SWEP:SetupDataTables()
     self:NetworkVar("Bool", 0, "Reloading")
+
+    -- Movement animation state
+    self.MovementState = "idle" -- idle, walk, sprint
+    self.LastMovementState = "idle"
+    self.MovementStateChangeTime = 0
 end
 
 function SWEP:GetIronSights()
@@ -382,6 +395,8 @@ function SWEP:Think()
     if ( self.RecoilShotIndex > 0 and CurTime() - self.LastShotTime > self.RecoilPatternResetDelay ) then
         self:ResetRecoil()
     end
+
+    self:UpdateMovementAnimation()
 end
 
 --[[
@@ -582,4 +597,61 @@ function SWEP:FinishShotgunReload()
             self:SetReloading(false)
         end
     end)
+end
+
+--- Determines the current movement state based on player velocity and input.
+-- @realm shared
+-- @treturn string "idle", "walk", or "sprint"
+function SWEP:GetMovementState()
+    local owner = self:GetOwner()
+    if ( !IsValid(owner) or !owner:IsPlayer() ) then return "idle" end
+
+    local vel = owner:GetVelocity()
+    local speed = vel:Length2D()
+
+    if ( speed < 5 ) then
+        return "idle"
+    end
+
+    -- Check if sprinting (either via sprint key or high speed)
+    local isSprinting = owner:IsSprinting() or ( owner:KeyDown(IN_SPEED) and speed > owner:GetWalkSpeed() )
+    if ( isSprinting and speed > owner:GetWalkSpeed() * 0.9 ) then
+        return "sprint"
+    end
+
+    return "walk"
+end
+
+--- Updates movement animation based on current player state.
+-- Called from Think, handles transitions between idle/walk/sprint.
+-- @realm shared
+function SWEP:UpdateMovementAnimation()
+    if ( self:GetReloading() ) then return end
+
+    local state = self:GetMovementState()
+
+    -- State changed, play appropriate animation
+    if ( state != self.MovementState ) then
+        self.LastMovementState = self.MovementState
+        self.MovementState = state
+        self.MovementStateChangeTime = CurTime()
+
+        local anim = nil
+        local rate = 1
+
+        if ( state == "sprint" and self.SprintAnim ) then
+            anim = self.SprintAnim
+            rate = self.SprintAnimPlaybackRate or 1
+        elseif ( state == "walk" and self.WalkAnim ) then
+            anim = self.WalkAnim
+            rate = self.WalkAnimPlaybackRate or 1
+        elseif ( state == "idle" and self.IdleAnim ) then
+            anim = self.IdleAnim
+            rate = self.IdleAnimPlaybackRate or 1
+        end
+
+        if ( anim ) then
+            self:PlayAnimation(anim, rate)
+        end
+    end
 end
