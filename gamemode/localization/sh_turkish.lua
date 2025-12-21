@@ -37,6 +37,10 @@ ax.localization:Register("tr", {
     ["subcategory.position"] = "Pozisyon",
     ["subcategory.size"] = "Boyut",
 
+    -- Store Translations
+    ["store.enabled"] = "Etkin",
+    ["store.disabled"] = "Devre Dışı",
+
     -- Config Translations
     --- Chat
     ---- Distances

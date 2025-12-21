@@ -17,7 +17,6 @@ ax.localization:Register("en", {
 
     -- Category Translations
     ["category.chat"] = "Chat",
-    ["category.chatbox"] = "Chat",
     ["category.gameplay"] = "Gameplay",
     ["category.general"] = "General",
     ["category.interface"] = "Interface",
@@ -36,6 +35,10 @@ ax.localization:Register("en", {
     ["subcategory.movement"] = "Movement",
     ["subcategory.position"] = "Position",
     ["subcategory.size"] = "Size",
+
+    -- Store Translations
+    ["store.enabled"] = "Enabled",
+    ["store.disabled"] = "Disabled",
 
     -- Config Translations
     --- Chat

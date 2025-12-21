@@ -322,7 +322,7 @@ function PANEL:SetKey(key)
     end
 
     self.key = key
-    self:SetText( ax.localization:GetPhrase( self.type .. "." .. key ) )
+    self:SetText(ax.localization:GetPhrase(self.type .. "." .. key))
 
     if ( self.UpdateDisplay ) then
         self:UpdateDisplay()
@@ -389,7 +389,8 @@ function PANEL:UpdateDisplay()
     end
 
     local value = store:Get(self.key)
-    self.value:SetText(string.format("<%s>", value == true and ax.localization:GetPhrase( "enabled" ) or ax.localization:GetPhrase( "disabled" )))
+    value = value == true and  ax.localization:GetPhrase("store.enabled") or ax.localization:GetPhrase("store.disabled")
+    self.value:SetText(string.format("<%s>", value))
 end
 
 function PANEL:DoClick()
