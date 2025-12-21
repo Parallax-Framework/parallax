@@ -488,6 +488,8 @@ function MODULE:TranslateActivity(client, act)
                         net.WriteTable(clientTable.axAnimations)
                         net.WriteString(holdType)
                     net.Broadcast()
+                else
+                    client:EmitSound("npc/zombie/foot_slide" .. math.random(3) .. ".wav", 60, math.random(90, 110), 0.1, CHAN_AUTO)
                 end
             end
         end
