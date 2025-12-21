@@ -9,17 +9,18 @@ function MODULE:LoadFonts()
 end
 
 function MODULE:HUDPaint()
-    -- item admin esp
     local client = ax.client
     if ( !IsValid(client) or !client:IsAdmin() ) then return end
 
-    if ( !ax.option:Get("adminESP") ) then return end
+    if ( !ax.option:Get("admin.esp") ) then return end
     if ( client:InVehicle() ) then return end
     if ( client:GetMoveType() != MOVETYPE_NOCLIP ) then return end
 
     self:DrawItems()
     self:DrawPlayers()
     self:DrawEntities()
+
+    hook.Run("HUDPaintAdminESP")
 end
 
 function MODULE:DrawItems()
