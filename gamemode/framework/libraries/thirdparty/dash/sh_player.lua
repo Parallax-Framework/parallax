@@ -5,7 +5,7 @@ local GetTable = ENTITY.GetTable
 
 function player.Find(info)
     info = tostring(info)
-    for k, v in ipairs(player.GetAll()) do
+    for k, v in player.Iterator() do
         if (info == v:SteamID()) or (info == v:SteamID64()) or (string.find(string.lower(v:Name()), string.lower(info), 1, true) ~= nil) then
             return v
         end
@@ -13,7 +13,7 @@ function player.Find(info)
 end
 
 function player.GetStaff()
-    return table.Filter(player.GetAll(), PLAYER.IsAdmin)
+    return table.Filter(player.Iterator(), PLAYER.IsAdmin)
 end
 
 function PLAYER:__index(key)
@@ -30,13 +30,13 @@ function PLAYER:Timer(name, time, reps, callback, failure)
                 failure()
             end
 
-            timer.Destroy(name)
+            timer.Remove(name)
         end
     end)
 end
 
-function PLAYER:DestroyTimer(name)
-    timer.Destroy(self:SteamID64() .. '-' .. name)
+function PLAYER:RemoveTimer(name)
+    timer.Remove(self:SteamID64() .. '-' .. name)
 end
 
 if ( CLIENT ) then return end
