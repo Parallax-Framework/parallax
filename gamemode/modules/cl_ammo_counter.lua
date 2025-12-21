@@ -33,6 +33,9 @@ local function UpdateShake()
 end
 
 function MODULE:HUDPaintCenter(width, height, client)
+    local shouldDraw = hook.Run("ShouldDrawWeaponAmmoCounter", client)
+    if ( shouldDraw == false ) then return end
+
     local weapon = client:GetActiveWeapon()
     if ( !IsValid(weapon) ) then
         ammoAlpha = Lerp(FrameTime() * 8, ammoAlpha, 0)
