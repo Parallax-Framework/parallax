@@ -79,6 +79,12 @@ function ax.util:GetRandomFactionModel(faction)
 
     local selected = models[math.random(#models)]
 
+    if ( isfunction(selected) ) then
+        selected = selected()
+    elseif ( istable(selected) and isstring(selected[1]) ) then
+        selected = selected[1]
+    end
+
     -- Return as-is (can be string or table {model, skin})
     return selected
 end
