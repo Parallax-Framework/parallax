@@ -106,7 +106,12 @@ function GM:InitPostEntity()
 
         local groundItems = ax.data:Get("world_items", {}, { scope = "map", human = true })
         for itemID, v in pairs(groundItems) do
-            ax.item:Instance(itemID, v.class)
+            local itemObject = ax.item:Instance(itemID, v.class)
+            if ( itemObject ) then
+                itemObject.inventoryID = 0
+                itemObject.data = v.data or {}
+                ax.item.instances[itemID] = itemObject
+            end
 
             local entity = ents.Create("ax_item")
             entity:SetItemID(itemID)

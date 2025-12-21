@@ -450,57 +450,32 @@ if ( SERVER ) then
 
                 ax.util:PrintDebug(string.format("Transferred item %s from inventory %s to inventory %s", item.id, tostring(fromInventoryID), tostring(toInventoryID)))
 
-                -- If picking up from world (fromInventoryID == 0), ensure clients have the item instance
-                -- before sending the transfer message (fixes missing item after server restart)
-                if ( fromInventoryID == 0 and toInventoryID != 0 ) then
-                    local recipients = toInventory:GetReceivers()
-                    
-                    -- First, sync the item spawn to clients who will receive it
-                    net.Start("ax.item.spawn")
-                        net.WriteUInt(item.id, 32)
-                        net.WriteString(item.class)
-                        net.WriteTable(item.data or {})
-                    net.Send(recipients)
-                    
-                    -- Small delay to ensure clients process the spawn before the transfer
-                    timer.Simple(0.05, function()
-                        net.Start("ax.item.transfer")
-                            net.WriteUInt(item.id, 32)
-                            net.WriteUInt(fromInventoryID, 32)
-                            net.WriteUInt(toInventoryID, 32)
-                        net.Send(recipients)
-                        
-                        ax.util:PrintDebug("Sent item spawn + transfer to inventory receivers")
-                    end)
+                net.Start("ax.item.transfer")
+                    net.WriteUInt(item.id, 32)
+                    net.WriteUInt(fromInventoryID, 32)
+                    net.WriteUInt(toInventoryID, 32)
+                if ( toInventoryID == 0 ) then
+                    net.Broadcast()
+
+                    local itemEntity = ents.Create("ax_item")
+                    if ( !IsValid(itemEntity) ) then
+                        ax.util:PrintError("Failed to create item entity during transfer to world inventory.")
+                        return false, "Failed to create item entity."
+                    end
+
+                    itemEntity:SetItemID(item.id)
+                    itemEntity:SetItemClass(item.class)
+                    itemEntity:SetPos(dropPos or vector_origin)
+                    itemEntity:Spawn()
+                    itemEntity:Activate()
+
+                    ax.util:PrintDebug("Broadcasting to all clients (world inventory)")
                 else
-                    -- Normal transfer - send immediately
-                    net.Start("ax.item.transfer")
-                        net.WriteUInt(item.id, 32)
-                        net.WriteUInt(fromInventoryID, 32)
-                        net.WriteUInt(toInventoryID, 32)
-                    if ( toInventoryID == 0 ) then
-                        net.Broadcast()
+                    net.Send(toInventory:GetReceivers())
 
-                        local itemEntity = ents.Create("ax_item")
-                        if ( !IsValid(itemEntity) ) then
-                            ax.util:PrintError("Failed to create item entity during transfer to world inventory.")
-                            return false, "Failed to create item entity."
-                        end
-
-                        itemEntity:SetItemID(item.id)
-                        itemEntity:SetItemClass(item.class)
-                        itemEntity:SetPos(dropPos or vector_origin)
-                        itemEntity:Spawn()
-                        itemEntity:Activate()
-
-                        ax.util:PrintDebug("Broadcasting to all clients (world inventory)")
-                    else
-                        net.Send(toInventory:GetReceivers())
-
-                        ax.util:PrintDebug("Sending to inventory receivers only")
-                        for k, v in pairs(toInventory:GetReceivers()) do
-                            ax.util:PrintDebug(" - Sent to: " .. tostring(v))
-                        end
+                    ax.util:PrintDebug("Sending to inventory receivers only")
+                    for k, v in pairs(toInventory:GetReceivers()) do
+                        ax.util:PrintDebug(" - Sent to: " .. tostring(v))
                     end
                 end
 

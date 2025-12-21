@@ -108,7 +108,18 @@ if ( SERVER ) then
 
         ax.util:PrintDebug(string.format("Found %d character IDs for %s", #characterIDs, client:SteamID64()))
 
-        -- TODO: sync world inventory or similar functionality
+        -- Sync all world items (inventory_id = 0) to the client
+        for itemID, item in pairs(ax.item.instances) do
+            if ( item.inventoryID == 0 or item:GetInventoryID() == 0 ) then
+                net.Start("ax.item.spawn")
+                    net.WriteUInt(itemID, 32)
+                    net.WriteString(item.class)
+                    net.WriteTable(item.data or {})
+                net.Send(client)
+            end
+        end
+        ax.util:PrintDebug(string.format("Synced world items to %s", client:SteamID64()))
+
         -- TODO: Find a way to optimize this to use fewer pyramids
         local inventoryIDs = {}
         if ( characterIDs[1] != nil ) then
