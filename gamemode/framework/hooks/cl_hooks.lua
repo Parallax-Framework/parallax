@@ -134,105 +134,6 @@ function GM:HUDShouldDraw(name)
     return true
 end
 
-local targetIDTarget = nil
-local targetIDAlpha = 0
-local targetIDTargetAlpha = 0
-local function DrawTargetID(client)
-    local trace = util.TraceLine({
-        start = client:EyePos(),
-        endpos = client:EyePos() + client:EyeAngles():Forward() * 384,
-        filter = client
-    })
-
-    local target = trace.Entity
-    local shouldShow = false
-
-    if ( IsValid(target) and target:IsPlayer() and target != client ) then
-        local distance = client:GetPos():Distance(target:GetPos())
-        if ( distance <= 128 ) then
-            shouldShow = true
-            targetIDTarget = target
-        end
-    end
-
-    targetIDTargetAlpha = shouldShow and 255 or 0
-    targetIDAlpha = Lerp(math.Clamp(FrameTime() * 8, 0, 1), targetIDAlpha, targetIDTargetAlpha)
-
-    if ( targetIDAlpha > 5 and IsValid(targetIDTarget) ) then
-        local character = targetIDTarget:GetCharacter()
-        local displayName = character and character.vars.name or targetIDTarget:Name()
-        local description = character and character.vars.description or ""
-
-        local maxWidth = ax.util:ScreenScale(128)
-        local descriptionLines = {}
-
-        if ( description and description != "" ) then
-            description = ax.util:CapTextWord(description, ax.util:ScreenScale(32))
-            descriptionLines = ax.util:GetWrappedText(description, "ax.small.italic", maxWidth)
-        end
-
-        local nameFont = "ax.large.bold"
-        local descFont = "ax.small.italic"
-
-        surface.SetFont(nameFont)
-        local nameW, nameH = surface.GetTextSize(displayName or "")
-        nameW = nameW or 100
-        nameH = nameH or 16
-
-        local descW, descH = 0, 0
-        local totalDescH = 0
-        if ( #descriptionLines > 0 ) then
-            surface.SetFont(descFont)
-            for i = 1, #descriptionLines do
-                local lineW, lineH = surface.GetTextSize(descriptionLines[i] or "")
-                descW = math.max(descW, lineW or 0)
-                totalDescH = totalDescH + (lineH or 14)
-            end
-            descH = totalDescH + ax.util:ScreenScale(1) * (#descriptionLines - 1)
-        end
-
-        local padding = ax.util:ScreenScale(4)
-        local panelW = math.max(nameW or 100, descW or 0) + padding * 2
-        local panelH = (nameH or 16) + (#descriptionLines > 0 and descH + ax.util:ScreenScale(2) or 0) + padding * 2
-
-        local targetPos = targetIDTarget:GetPos() + targetIDTarget:OBBCenter() * 1.5
-        local screenPos = targetPos:ToScreen()
-
-        local panelX = math.Clamp(screenPos.x - panelW / 2, padding, ScrW() - panelW - padding)
-        local panelY = math.Clamp(screenPos.y - panelH / 2, padding, ScrH() - panelH - padding)
-
-        local alpha = math.Round(targetIDAlpha)
-        local nameColor = ColorAlpha(team.GetColor(targetIDTarget:Team()), alpha)
-        local descColor = Color(200, 200, 200, alpha * 0.9)
-
-        local borderColor = Color(255, 255, 255, alpha * 0.1)
-        ax.render.DrawOutlined(24, panelX, panelY, panelW, panelH, borderColor, 1)
-
-        local textY = panelY + padding
-        surface.SetFont(nameFont)
-        surface.SetTextColor(nameColor)
-        surface.SetTextPos(panelX + panelW / 2 - nameW / 2, textY)
-        surface.DrawText(displayName or "")
-
-        if ( #descriptionLines > 0 ) then
-            textY = textY + (nameH or 16)
-            surface.SetFont(descFont)
-            surface.SetTextColor(descColor)
-
-            for i = 1, #descriptionLines do
-                local line = descriptionLines[i] or ""
-                local lineW, lineH = surface.GetTextSize(line)
-                lineW = lineW or 0
-                lineH = lineH or 14
-
-                surface.SetTextPos(panelX + panelW / 2 - lineW / 2, textY)
-                surface.DrawText(line)
-                textY = textY + lineH - ax.util:ScreenScaleH(2)
-            end
-        end
-    end
-end
-
 local healthIcon = ax.util:GetMaterial("parallax/icons/heart.png", "smooth mips")
 local healthColor = Color(255, 150, 150, 200)
 local armorIcon = ax.util:GetMaterial("parallax/icons/shield.png", "smooth mips")
@@ -298,10 +199,99 @@ function GM:HUDPaintCenter(width, height, client)
 
         ax.render.DrawMaterial(0, iconX, iconY, iconSize, iconSize, iconColor, speakingIcon)
     end
+end
 
-    shouldDraw = hook.Run("ShouldDrawTargetID")
-    if ( shouldDraw != false ) then
-        DrawTargetID(client)
+local targetData = {}
+function GM:HUDPaint()
+    local client = ax.client
+    if ( !IsValid(client) or !client:Alive() ) then return end
+
+    local trace = util.TraceHull({
+        start = client:GetShootPos(),
+        endpos = client:GetShootPos() + client:GetAimVector() * 96,
+        filter = client,
+        mins = Vector(-4, -4, -4),
+        maxs = Vector(4, 4, 4),
+        mask = MASK_SHOT
+    })
+
+    local target = trace.Entity
+    targetData[target:EntIndex()] = targetData[target:EntIndex()] or { lastSeen = 0, alpha = 0 }
+
+    if ( IsValid(target) and target != client ) then
+        targetData[target:EntIndex()].lastSeen = CurTime()
+    end
+
+    local ft = FrameTime()
+    for entIndex, data in pairs(targetData) do
+        local ent = Entity(entIndex)
+        if ( !IsValid(ent) ) then
+            targetData[entIndex] = nil
+            continue
+        end
+
+        local timeSinceSeen = CurTime() - data.lastSeen
+        if ( timeSinceSeen < 0.1 ) then
+            data.alpha = ax.ease:Lerp("InOutQuad", ft * 10, data.alpha, 255)
+        else
+            data.alpha = ax.ease:Lerp("OutQuad", ft * 10, data.alpha, 0)
+        end
+
+        if ( data.alpha > 1 ) then
+            local displayText, displayColor = hook.Run("GetEntityDisplayText", ent)
+            if ( isstring(displayText) ) then
+                local pos = ent:LocalToWorld(ent:OBBCenter())
+                if ( ent:IsPlayer() ) then
+                    pos = pos + Vector(0, 0, 16)
+                end
+
+                local screenPos = pos:ToScreen()
+                local x, y = screenPos.x, screenPos.y
+
+                data.x = ax.ease:Lerp("InOutQuad", ft * 20, data.x or x, x)
+                data.y = ax.ease:Lerp("InOutQuad", ft * 20, data.y or y, y)
+
+                if ( !IsColor(displayColor) ) then
+                    displayColor = Color(255, 255, 255)
+                end
+
+                draw.SimpleText(displayText, "ax.small.bold", data.x, data.y, ColorAlpha(displayColor, data.alpha), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+
+                hook.Run("HUDPaintTargetIDExtra", ent, data.x, data.y, data.alpha)
+            end
+        else
+            data.x = nil
+            data.y = nil
+        end
+    end
+end
+
+function GM:GetEntityDisplayText(entity)
+    if ( entity:IsPlayer() ) then
+        return entity:Nick(), team.GetColor(entity:Team())
+    elseif ( entity:GetClass() == "ax_item" ) then
+        local itemTable = entity:GetItemTable()
+        if ( itemTable ) then
+            return itemTable:GetName()
+        end
+    end
+end
+
+function GM:HUDPaintTargetIDExtra(entity, x, y, alpha)
+    -- Draw descriptions for items and characters
+    local desc
+    local itemTable = entity.GetItemTable and entity:GetItemTable() or nil
+    if ( itemTable and itemTable:GetDescription() ) then
+        desc = itemTable:GetDescription()
+    elseif ( entity.GetCharacter and entity:GetCharacter() ) then
+        desc = entity:GetCharacter():GetDescription()
+    end
+
+    if ( desc ) then
+        local wrapped = ax.util:GetWrappedText(desc, "ax.tiny", ax.util:ScreenScale(128))
+        for i, line in ipairs(wrapped) do
+            draw.SimpleText(line, "ax.tiny", x, y + ax.util:ScreenScaleH(6) * i, Color(255, 255, 255, alpha / 2), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+        end
     end
 end
 
