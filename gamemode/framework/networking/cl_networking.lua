@@ -379,9 +379,20 @@ net.Receive("ax.inventory.item.add", function()
     local itemClass = net.ReadString()
     local itemData = net.ReadTable()
 
+    -- If inventory 0 (world) isn't tracked clientside, still create the item instance so it exists clientside
     local inventory = ax.inventory.instances[inventoryID]
     if ( !istable(inventory) ) then
-        ax.util:PrintError("Invalid inventory ID received for item add.")
+        if ( inventoryID == 0 ) then
+            local itemObject = ax.item:Instance(itemID, itemClass)
+            itemObject.inventoryID = 0
+            itemObject.data = itemData or {}
+
+            ax.item.instances[itemID] = itemObject
+            ax.util:PrintDebug("Added world item instance clientside (inventory 0): " .. tostring(itemID))
+            return
+        end
+
+        ax.util:PrintError("Invalid inventory ID received for item add: " .. tostring(inventoryID))
         return
     end
 
