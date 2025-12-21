@@ -180,15 +180,15 @@ function MODULE:ShouldUseThirdPerson(client)
     return ax.option:Get("thirdperson")
 end
 
-ax.viewstack:RegisterModifier("thirdperson", function(client, view)
+ax.viewstack:RegisterModifier("thirdperson", function(client, patch)
     if ( hook.Run("ShouldUseThirdPerson", client) == false ) then return end
 
     if ( !curPos ) then
-        curPos = view.origin
+        curPos = patch.origin
     end
 
     if ( !curAng ) then
-        curAng = view.angles
+        curAng = patch.angles
     end
 
     if ( !curFOV ) then
@@ -205,7 +205,7 @@ ax.viewstack:RegisterModifier("thirdperson", function(client, view)
         end
     end
 
-    local ang = view.angles
+    local ang = patch.angles
 
     -- desired camera offset relative to view angles
     local desiredPos = startPos + ang:Forward() * ax.option:Get("thirdperson.z") + ang:Right() * ax.option:Get("thirdperson.x") + ang:Up() * ax.option:Get("thirdperson.y")
@@ -269,7 +269,7 @@ ax.viewstack:RegisterModifier("thirdperson", function(client, view)
     return {
         origin = curPos,
         angles = curAng,
-        fov = view.fov - curFOV,
+        fov = patch.fov - curFOV,
         drawviewer = true
     }
 end, 1)

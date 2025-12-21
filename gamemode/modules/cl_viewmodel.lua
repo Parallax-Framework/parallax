@@ -37,7 +37,7 @@ local lastMuzzleAng = Angle(0, 0, 0)
 local muzzleVel = Angle(0, 0, 0)
 local viewOffset = Angle(0, 0, 0)
 
-ax.viewstack:RegisterModifier("viewmodel", function(client, view)
+ax.viewstack:RegisterModifier("viewmodel", function(client, patch)
     if ( !IsValid(client) or !client:Alive() or client:InVehicle() or client:ShouldDrawLocalPlayer() ) then return end
 
     local wep = client:GetActiveWeapon()
@@ -95,8 +95,8 @@ ax.viewstack:RegisterModifier("viewmodel", function(client, view)
     lastMuzzleAng = muzzleAng
 
     return {
-        origin = view.origin,
-        angles = view.angles + viewOffset,
-        fov = view.fov
+        origin = patch.origin,
+        angles = patch.angles + viewOffset,
+        fov = patch.fov
     }
 end, 1)

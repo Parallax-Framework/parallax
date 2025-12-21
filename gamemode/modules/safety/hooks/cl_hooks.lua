@@ -46,4 +46,4 @@ ax.viewstack:RegisterViewModelModifier("safety", function(weapon, patch)
         pos = pos,
         ang = ang
     }
-end, 99)
+end, 1)

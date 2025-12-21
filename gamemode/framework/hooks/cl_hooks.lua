@@ -341,11 +341,12 @@ end
 function GM:DrawDeathNotice(_x, _y)
 end
 
-ax.viewstack:RegisterModifier("ragdoll", function(client, view)
+ax.viewstack:RegisterModifier("ragdoll", function(client, patch)
     if ( !IsValid(client) or client:InVehicle() ) then return end
 
     local ragdoll = client:GetRagdollEntity()
     if ( !IsValid(ragdoll) or client:Alive() ) then return end
+
     local boneId = ragdoll:LookupBone("ValveBiped.Bip01_Head1")
     if ( !isnumber( boneId ) ) then
         ax.util:PrintDebug("Player ragdoll has no \"ValveBiped.Bip01_Head1\" bone!")
@@ -359,15 +360,11 @@ ax.viewstack:RegisterModifier("ragdoll", function(client, view)
     ang:RotateAroundAxis(ang:Up(), 270)
     ang:RotateAroundAxis(ang:Forward(), 270)
 
-    return {
-        origin = pos + ang:Forward() * 10,
-        angles = ang,
-        fov = fov
-    }
-end, 10)
+    return { origin = pos + ang:Forward() * 10, angles = ang, fov = patch.fov }
+end, 1)
 
 local cameraFOV = CreateConVar("ax_camera_fov", "90", {FCVAR_ARCHIVE, FCVAR_REPLICATED}, "Set the camera FOV when using a view entity.")
-ax.viewstack:RegisterModifier("camera", function(client, view)
+ax.viewstack:RegisterModifier("camera", function(client, patch)
     if ( !IsValid(client) or client:InVehicle() ) then return end
 
     local viewEntity = client:GetViewEntity()
@@ -375,21 +372,23 @@ ax.viewstack:RegisterModifier("camera", function(client, view)
         local pos = viewEntity:GetPos()
         local ang = viewEntity:GetAngles()
 
-        return {
-            origin = pos,
-            angles = ang,
-            fov = cameraFOV:GetFloat()
-        }
+        return { origin = pos, angles = ang, fov = cameraFOV:GetFloat() }
     end
 end, 99)
+
+ax.viewstack:RegisterModifier("swep", function(client, patch)
+    local weapon = client:GetActiveWeapon()
+    if ( !IsValid(weapon) or !weapon.TranslateFOV ) then return end
+
+    local fov = weapon:TranslateFOV(patch.fov)
+
+    return { origin = patch.origin, angles = patch.angles, fov = fov }
+end, 1)
 
 ax.viewstack:RegisterViewModelModifier("swep", function(weapon, patch)
     if ( !IsValid(weapon) or !weapon.GetViewModelPosition ) then return end
 
     local pos, ang = weapon:GetViewModelPosition(patch.pos, patch.ang)
 
-    return {
-        pos = pos,
-        ang = ang
-    }
-end, 99)
+    return { pos = pos, ang = ang }
+end, 1)

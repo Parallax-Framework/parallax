@@ -25,7 +25,10 @@ end
 
 local function safe_call(fn, ...)
     local ok, a, b, c, d = pcall(fn, ...)
-    if ( !ok ) then return nil end
+    if ( !ok ) then
+        ax.util:PrintError("Error in ax.viewstack modifier: " .. tostring(a))
+        return
+    end
 
     return a, b, c, d
 end
@@ -218,24 +221,23 @@ end
 
 --- Run the viewmodel pipeline.
 -- @tparam Weapon weapon
--- @tparam table patch {pos, ang, fov}
+-- @tparam table patch {pos, ang}
 -- @treturn[opt] table final patch or nil to fall back
 function ax.viewstack:RunViewModel(weapon, patch)
     local changed = false
-    local cur = { pos = patch.pos, ang = patch.ang, fov = patch.fov }
+    local cur = { pos = patch.pos, ang = patch.ang }
 
     for _, m in ipairs(self:GetViewModelPipeline()) do
         local nextPatch = safe_call(m.fn, weapon, cur)
         if ( nextPatch ) then
             if ( nextPatch.pos ) then cur.pos = nextPatch.pos end
             if ( nextPatch.ang ) then cur.ang = nextPatch.ang end
-            if ( nextPatch.fov ) then cur.fov = nextPatch.fov end
             changed = true
         end
     end
 
     if ( changed ) then
-        return { pos = cur.pos, ang = cur.ang, fov = cur.fov }
+        return { pos = cur.pos, ang = cur.ang }
     end
 end
 
@@ -268,6 +270,9 @@ hook.Add("CalcView", "ax.viewstack.CalcView", function(client, origin, angles, f
     end
 
     local base = GAMEMODE.BaseClass:CalcView(client, origin, angles, fov, znear, zfar)
+    base.origin = base.origin or origin or client:EyePos()
+    base.angles = base.angles or angles or client:EyeAngles()
+    base.fov = base.fov or fov
     base.znear = znear
     base.zfar = zfar
 
@@ -297,10 +302,10 @@ hook.Add("CalcViewModelView", "ax.viewstack.CalcViewModelView", function(weapon,
     if ( ax.viewstack.inVM ) then return end
     ax.viewstack.inVM = true
 
-    local base = { pos = newPos, ang = newAng, fov = nil }
+    local base = { pos = newPos, ang = newAng }
     local out = ax.viewstack:RunViewModel(weapon, base)
     ax.viewstack.inVM = false
     if ( out ) then
-        return out.pos or newPos, out.ang or newAng, out.fov
+        return out.pos or newPos, out.ang or newAng
     end
 end)
