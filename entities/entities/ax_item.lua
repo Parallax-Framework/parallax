@@ -12,7 +12,7 @@ function ENT:SetupDataTables()
 end
 
 function ENT:GetItemTable()
-    return ax.item.instances[self:GetRelay("itemID")]
+    return ax.item.instances[self:GetItemID()]
 end
 
 if ( SERVER ) then
@@ -25,6 +25,18 @@ if ( SERVER ) then
         self:SetSolid(SOLID_VPHYSICS)
         self:SetUseType(SIMPLE_USE)
         self:PhysWake()
+
+        -- Sync item data to clients in case they missed the initial spawn message
+        -- (e.g., when entity is restored from map persistence after server restart)
+        timer.Simple(0.1, function()
+            if ( !IsValid(self) ) then return end
+
+            net.Start("ax.item.spawn")
+                net.WriteUInt(item.id, 32)
+                net.WriteString(item.class)
+                net.WriteTable(item.data or {})
+            net.Broadcast()
+        end)
     end
 
     function ENT:Use(activator, caller)

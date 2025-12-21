@@ -386,25 +386,21 @@ function GM:CanPlayerSuicide(client)
     return false
 end
 
-function GM:ShutDown() -- PlayerDisconnected isn't called on p2p/singleplayer
+function GM:ShutDown()
+    -- PlayerDisconnected isn't called on p2p/singleplayer
     if ( !game.IsDedicated() ) then
         for _, client in player.Iterator() do
-            local joinTime = client:GetLastJoin() or os.time()
-            local playtime = os.difftime(os.time(), joinTime)
-
-            client:SetLastLeave(os.time())
-            client:SetPlayTime(playtime)
-            client:Save()
+            hook.Run("PlayerDisconnected", client)
         end
     end
 
-    local items = ents.FindByClass( "ax_item" )
+    local items = ents.FindByClass("ax_item")
     local output = {}
     for i = #items, 1, -1 do
         local item = items[i]
 
-        output[item:GetRelay("itemID")] = {
-            class = item:GetRelay("itemClass"),
+        output[item:GetItemID()] = {
+            class = item:GetItemClass(),
             position = item:GetPos(),
             angles = item:GetAngles(),
             data = item:GetItemTable():GetData() or {}
