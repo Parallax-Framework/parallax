@@ -180,6 +180,12 @@ function MODULE:ShouldUseThirdPerson(client)
     return ax.option:Get("thirdperson")
 end
 
+function MODULE:ShouldDrawLocalPlayer(client)
+    if ( self:ShouldUseThirdPerson(client) ) then
+        return true
+    end
+end
+
 ax.viewstack:RegisterModifier("thirdperson", function(client, patch)
     if ( hook.Run("ShouldUseThirdPerson", client) == false ) then return end
 
@@ -269,8 +275,7 @@ ax.viewstack:RegisterModifier("thirdperson", function(client, patch)
     return {
         origin = curPos,
         angles = curAng,
-        fov = patch.fov - curFOV,
-        drawviewer = true
+        fov = patch.fov - curFOV
     }
 end, 1)
 
