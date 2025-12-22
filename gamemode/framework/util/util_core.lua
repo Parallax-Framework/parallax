@@ -52,9 +52,13 @@ end
 -- @param name string Human-readable name
 -- @return string A sanitized lowercase unique id
 -- @usage local id = ax.util:NameToUniqueID("My Module") -- "my_module"
+-- local id2 = ax.util:NameToUniqueID("MyModule") -- "my_module"
 function ax.util:NameToUniqueID(name)
     -- Replace spaces with underscores
     name = name:gsub("%s+", "_")
+
+    -- CamcelCase to underscores
+    name = name:gsub("([a-z])([A-Z])", "%1_%2")
 
     -- Remove everything not in A-Z, a-z, or underscore
     name = name:gsub("[^A-Za-z_]", "")
