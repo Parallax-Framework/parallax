@@ -239,7 +239,11 @@ function SWEP:PrimaryAttack()
 
     -- Apply recoil kick (client-side)
     if ( CLIENT and IsFirstTimePredicted() ) then
-        self:ApplyRecoilKick()
+        local pitchMult, yawMult = hook.Run("GetWeaponRecoilMultipliers", self)
+        pitchMult = pitchMult or 1.0
+        yawMult = yawMult or 1.0
+        print( "Recoil Multipliers - Pitch: ", pitchMult, " Yaw: ", yawMult )
+        self:ApplyRecoilKick(pitchMult, yawMult)
     end
 
     self:TakePrimaryAmmo(1)
