@@ -25,7 +25,7 @@ end
 
 A list of things to improve the chat to a level of serious quality.
 
-```Font & Colour```
+```Font & Color```
 Arial, Weighted at 600 should be the standard.
 ## Yelling (255, 255, 150) (Larger)
 Talking (255, 255, 150) (Normal)
