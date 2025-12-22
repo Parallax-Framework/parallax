@@ -256,7 +256,7 @@ function imgui.ExpandRenderBoundsFromRect(x, y, w, h)
 end
 
 local devOffset = Vector(0, 0, 30)
-local devColours = {
+local devColors = {
     background = Color(0, 0, 0, 200),
     title = Color(78, 205, 196),
     mouseHovered = Color(0, 255, 0),
@@ -284,11 +284,11 @@ local function drawDeveloperInfo()
     cam.IgnoreZ(true)
     cam.Start3D2D(gState.pos + devOffset, camAng, 0.15)
 
-    local bgCol = devColours["background"]
+    local bgCol = devColors["background"]
     surface.SetDrawColor(bgCol.r, bgCol.g, bgCol.b, bgCol.a)
     surface.DrawRect(-100, 0, 200, 140)
 
-    local titleCol = devColours["title"]
+    local titleCol = devColors["title"]
     developerText("imgui developer", 0, 5, titleCol)
 
     surface.SetDrawColor(titleCol.r, titleCol.g, titleCol.b)
@@ -298,29 +298,29 @@ local function drawDeveloperInfo()
     if mx and my then
         developerText(
             string.format("mouse: hovering %d x %d", mx, my),
-            0, 20, devColours["mouseHovered"]
+            0, 20, devColors["mouseHovered"]
         )
     else
         developerText(
             string.format("mouse: %s", gState._devInputBlocker or ""),
-            0, 20, devColours["mouseUnhovered"]
+            0, 20, devColors["mouseUnhovered"]
         )
     end
 
     local pos = gState.pos
     developerText(
         string.format("pos: %.2f %.2f %.2f", pos.x, pos.y, pos.z),
-        0, 40, devColours["pos"]
+        0, 40, devColors["pos"]
     )
 
     developerText(
         string.format("distance %.2f / %.2f", gState._devDist or 0, gState._devHideDist or 0),
-        0, 53, devColours["distance"]
+        0, 53, devColors["distance"]
     )
 
     local ang = gState.angles
-    developerText(string.format("ang: %.2f %.2f %.2f", ang.p, ang.y, ang.r), 0, 75, devColours["ang"])
-    developerText(string.format("dot %d", gState._devDot or 0), 0, 88, devColours["dot"])
+    developerText(string.format("ang: %.2f %.2f %.2f", ang.p, ang.y, ang.r), 0, 75, devColors["ang"])
+    developerText(string.format("dot %d", gState._devDot or 0), 0, 88, devColors["dot"])
 
     local angToEye = (pos - ax.client:EyePos()):Angle()
     angToEye:RotateAroundAxis(ang:Up(), -90)
@@ -328,12 +328,12 @@ local function drawDeveloperInfo()
 
     developerText(
         string.format("angle to eye (%d,%d,%d)", angToEye.p, angToEye.y, angToEye.r),
-        0, 100, devColours["angleToEye"]
+        0, 100, devColors["angleToEye"]
     )
 
     developerText(
         string.format("rendertime avg: %.2fms", (gState._devBenchAveraged or 0) * 1000),
-        0, 120, devColours["renderTime"]
+        0, 120, devColors["renderTime"]
     )
 
     cam.End3D2D()
@@ -343,7 +343,7 @@ local function drawDeveloperInfo()
     if IsValid(ent) and ent._imguiRBExpansion then
         local ex, ey, ew, eh = unpack(ent._imguiRBExpansion)
         local minrb, maxrb = calculateRenderBounds(ex, ey, ew, eh)
-        render.DrawWireframeBox(vector_origin, angle_zero, minrb, maxrb, devColours["renderBounds"])
+        render.DrawWireframeBox(vector_origin, angle_zero, minrb, maxrb, devColors["renderBounds"])
     end
 end
 
