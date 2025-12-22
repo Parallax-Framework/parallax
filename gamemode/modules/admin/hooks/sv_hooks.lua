@@ -1,5 +1,25 @@
 local MODULE = MODULE or {}
 
+function MODULE:PhysgunPickup(client, entity)
+    if ( !CAMI.PlayerHasAccess(client, "Parallax - Pickup Players", nil) ) then
+        return false
+    end
+
+    return true
+end
+
+function MODULE:OnPhysgunPickup(client, entity)
+    if ( CAMI.PlayerHasAccess(client, "Parallax - Pickup Players", nil) and entity:IsPlayer() ) then
+        entity:SetMoveType(MOVETYPE_NOCLIP)
+    end
+end
+
+function MODULE:PhysgunDrop(client, entity)
+    if ( CAMI.PlayerHasAccess(client, "Parallax - Pickup Players", nil) and entity:IsPlayer() ) then
+        entity:SetMoveType(MOVETYPE_WALK)
+    end
+end
+
 function MODULE:EntityTakeDamage(target, dmgInfo)
     if ( target:IsPlayer() and target:GetMoveType() == MOVETYPE_NOCLIP ) then
         return true

@@ -4,6 +4,11 @@ CAMI.RegisterPrivilege({
 })
 
 CAMI.RegisterPrivilege({
+    Name = "Parallax - Pickup Players",
+    MinAccess = "admin",
+})
+
+CAMI.RegisterPrivilege({
     Name = "Parallax - Spawn Props",
     MinAccess = "admin",
 })
