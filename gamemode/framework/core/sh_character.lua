@@ -12,20 +12,23 @@
 ax.character:RegisterVar("steamID64", {
     field = "steamid64",
     fieldType = ax.type.steamid64,
-    default = ""
+    default = "",
+    hide = true
 })
 
 ax.character:RegisterVar("schema", {
     field = "schema",
     fieldType = ax.type.string,
-    default = "parallax"
+    default = "parallax",
+    hide = true
 })
 
 ax.character:RegisterVar("inventory", {
     field = "inventory",
     fieldType = ax.type.number,
     default = 0,
-    bNoGetter = true
+    bNoGetter = true,
+    hide = true
 })
 
 ax.character:RegisterVar("faction", {
@@ -661,12 +664,14 @@ ax.character:RegisterVar("creationTime", {
     field = "creation_time",
     fieldType = ax.type.number,
     default = 0,
+    hide = true
 })
 
 ax.character:RegisterVar("lastPlayed", {
     field = "last_played",
     fieldType = ax.type.number,
     default = 0,
+    hide = true
 })
 
 ax.character:RegisterVar("data", {
@@ -674,5 +679,6 @@ ax.character:RegisterVar("data", {
     fieldType = ax.type.text,
     default = "[]",
     bNoGetter = true,
-    bNoSetter = true
+    bNoSetter = true,
+    hide = true
 })
