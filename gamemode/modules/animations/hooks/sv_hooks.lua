@@ -32,7 +32,7 @@ function MODULE:UpdateClientAnimations(client)
         net.WritePlayer(client)
         net.WriteTable(clientTable.axAnimations)
         net.WriteString(holdType)
-    net.Send(client)
+    net.Broadcast()
 end
 
 function MODULE:PostEntitySetModel(ent, model)
@@ -41,7 +41,7 @@ function MODULE:PostEntitySetModel(ent, model)
     self:UpdateClientAnimations(ent)
 end
 
-function MODULE:PlayerLoadout(client)
+function MODULE:PostPlayerLoadout(client)
     if ( !IsValid(client) ) then return end
 
     self:UpdateClientAnimations(client)
@@ -65,4 +65,10 @@ function MODULE:PlayerNoClip(client, toggle)
             self:UpdateClientAnimations(client)
         end
     end)
+end
+
+function MODULE:PlayerWeaponRaised(client, bRaised)
+    if ( !IsValid(client) ) then return end
+
+    self:UpdateClientAnimations(client)
 end
