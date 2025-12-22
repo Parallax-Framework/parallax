@@ -242,7 +242,6 @@ function SWEP:PrimaryAttack()
         local pitchMult, yawMult = hook.Run("GetWeaponRecoilMultipliers", self)
         pitchMult = pitchMult or 1.0
         yawMult = yawMult or 1.0
-        print( "Recoil Multipliers - Pitch: ", pitchMult, " Yaw: ", yawMult )
         self:ApplyRecoilKick(pitchMult, yawMult)
     end
 
@@ -325,7 +324,7 @@ end
 SWEP.RecoilPitch = 1.0 -- Vertical recoil amount per shot
 SWEP.RecoilYaw = 0.5 -- Horizontal recoil amount per shot
 SWEP.RecoilInterpolationSpeed = 10.0 -- Speed of recoil kick interpolation (degrees per second)
-SWEP.RecoilIronSightMultiplier = 0.5 -- Multiplier when aiming down sights
+SWEP.RecoilIronSightMultiplier = 0.75 -- Multiplier when aiming down sights
 SWEP.RecoilMaxPitch = 20.0 -- Maximum accumulated vertical recoil
 SWEP.RecoilMaxYaw = 12.0 -- Maximum accumulated horizontal recoil
 SWEP.RecoilPattern = nil -- Optional table of {pitch, yaw} vectors for pattern-based recoil
