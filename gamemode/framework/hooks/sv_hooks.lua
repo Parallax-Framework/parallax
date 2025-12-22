@@ -377,8 +377,58 @@ function GM:OnDatabaseTablesCreated()
     ax.util:PrintDebug("Database tables created successfully.")
 end
 
+local voiceDistance
+local function CalcPlayerCanHearPlayersVoice(listener)
+    if ( !IsValid(listener) ) then return end
+
+    voiceDistance = ax.config:Get("voice.distance", 512) ^ 2
+
+    listener.axVoiceHear = listener.axVoiceHear or {}
+    listener.axVoiceHearDynamic = listener.axVoiceHearDynamic or {}
+
+    for _, speaker in player.Iterator() do
+        if ( !IsValid(speaker) or speaker == listener ) then
+            continue
+        end
+
+        if ( !speaker:Alive() ) then
+            listener.axVoiceHear[speaker] = false
+            continue
+        end
+
+        local canHear, isDynamic = hook.Run("Parallax_PlayerCanHearPlayersVoice", listener, speaker)
+        listener.axVoiceHear[speaker] = canHear == true
+        listener.axVoiceHearDynamic[speaker] = isDynamic == true
+    end
+end
+
+function GM:Parallax_PlayerCanHearPlayersVoice(listener, speaker)
+    local distSqr = listener:GetPos():DistToSqr(speaker:GetPos())
+    if ( distSqr <= voiceDistance ) then
+        return true, true
+    end
+end
+
 function GM:PlayerCanHearPlayersVoice(listener, speaker)
-    return true, true
+    if ( listener.axVoiceHear and listener.axVoiceHear[speaker] != nil ) then
+        return listener.axVoiceHear[speaker], listener.axVoiceHearDynamic and listener.axVoiceHearDynamic[speaker] or false
+    end
+
+    return false
+end
+
+function GM:Think()
+    for k, v in player.Iterator() do
+        hook.Run("PlayerThink", v)
+    end
+end
+
+function GM:PlayerThink(client)
+    local clientTable = client:GetTable()
+    if ( !clientTable.axNextHear or clientTable.axNextHear < CurTime() ) then
+        CalcPlayerCanHearPlayersVoice(client)
+        clientTable.axNextHear = CurTime() + 0.33
+    end
 end
 
 function GM:CanPlayerSuicide(client)
