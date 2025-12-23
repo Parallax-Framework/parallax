@@ -19,6 +19,7 @@ net.Receive("ax.chat.send", function(len, client)
     output = string.Trim(output)
     output = string.gsub(output, "<.->", "")
 
+    print( "chatbox->ax.chat.send :: \t" .. output )
     hook.Run("PlayerSay", client, output, false)
 
     client:SetRelay("chatText", "")
