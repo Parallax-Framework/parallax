@@ -101,13 +101,13 @@ function ax.command:FindAll(partial)
 
     local results = {}
     for name, def in pairs(self.registry) do
-        if ( string.find(name, partial, 1, true) ) then
+        if ( ax.util:FindString(name, partial) ) then
             -- Use the original command name, not the alias
             results[def.name] = def
         elseif ( def.alias ) then
             local aliases = istable(def.alias) and def.alias or {def.alias}
             for _, alias in ipairs(aliases) do
-                if ( string.find(utf8.lower(alias), partial, 1, true) ) then
+                if ( ax.util:FindString(alias, partial) ) then
                     results[def.name] = def
                     break
                 end
