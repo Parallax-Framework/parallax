@@ -20,21 +20,23 @@
 -- @param find string The substring to search for
 -- @return boolean True if substring exists in string
 -- @usage if ax.util:FindString("Hello World", "world") then print("found") end
-function ax.util:FindString(str, find)
+function ax.util:FindString(str, find, caseSensitive, startPos, usePatterns)
     if ( str == nil or find == nil ) then
         ax.util:PrintError("Attempted to find a string with no value to find for! (" .. tostring(str) .. ", " .. tostring(find) .. ")")
         return false
     end
 
-    if ( utf8 and utf8.lower ) then
-        str = utf8.lower(str)
-        find = utf8.lower(find)
-    else
-        str = string.lower(str)
-        find = string.lower(find)
+    if ( !caseSensitive ) then
+        if ( utf8 and utf8.lower ) then
+            str = utf8.lower(str)
+            find = utf8.lower(find)
+        else
+            str = string.lower(str)
+            find = string.lower(find)
+        end
     end
 
-    return string.find(str, find) != nil
+    return string.find(str, find, startPos or 0, usePatterns == nil and true or usePatterns) != nil
 end
 
 --- Search each word in a text for a substring (case-insensitive).
