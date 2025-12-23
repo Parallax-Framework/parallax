@@ -115,7 +115,7 @@ ax.command:Add("AddCurrency", {
         { name = "amount", type = ax.type.number, min = 1 },
         { name = "currencyID", type = ax.type.string, optional = true }
     },
-    alias = {"currency_add", "GiveCurrency"},
+    alias = {"GiveCurrency"},
     OnRun = function(client, target, amount, currencyID)
         local okID, err = validateCurrencyID(currencyID)
         if ( !okID ) then return err end
@@ -140,7 +140,7 @@ ax.command:Add("TakeCurrency", {
         { name = "amount", type = ax.type.number, min = 1 },
         { name = "currencyID", type = ax.type.string, optional = true }
     },
-    alias = {"currency_take", "RemoveCurrency"},
+    alias = {"RemoveCurrency"},
     OnRun = function(client, target, amount, currencyID)
         local okID, err = validateCurrencyID(currencyID)
         if ( !okID ) then return err end
@@ -167,7 +167,7 @@ ax.command:Add("GetCurrency", {
         { name = "player", type = ax.type.player },
         { name = "currencyID", type = ax.type.string, optional = true }
     },
-    alias = {"currency_get", "Balance"},
+    alias = {"Balance"},
     OnRun = function(client, target, currencyID)
         local okID, err = validateCurrencyID(currencyID)
         if ( !okID ) then return err end
@@ -188,7 +188,6 @@ ax.command:Add("AddCurrencyAll", {
         { name = "amount", type = ax.type.number, min = 1 },
         { name = "currencyID", type = ax.type.string, optional = true }
     },
-    alias = {"currency_addall"},
     OnRun = function(client, amount, currencyID)
         local okID, err = validateCurrencyID(currencyID)
         if ( !okID ) then return err end
@@ -244,7 +243,6 @@ ax.command:Add("SetMoney", {
         { name = "player", type = ax.type.player },
         { name = "amount", type = ax.type.number, min = 0 }
     },
-    alias = {"money_set"},
     OnRun = function(client, target, amount)
         return ax.command.registry[ax.util:NameToUniqueID("SetCurrency")].OnRun(client, target, amount, "credits")
     end
@@ -257,7 +255,7 @@ ax.command:Add("AddMoney", {
         { name = "player", type = ax.type.player },
         { name = "amount", type = ax.type.number, min = 1 }
     },
-    alias = {"money_add", "GiveMoney"},
+    alias = {"MoneyAdd", "GiveMoney"},
     OnRun = function(client, target, amount)
         return ax.command.registry[ax.util:NameToUniqueID("AddCurrency")].OnRun(client, target, amount, "credits")
     end
@@ -282,7 +280,7 @@ ax.command:Add("GetMoney", {
     arguments = {
         { name = "player", type = ax.type.player }
     },
-    alias = {"money_get", "BalanceMoney"},
+    alias = {"MoneyGet", "BalanceMoney"},
     OnRun = function(client, target)
         return ax.command.registry[ax.util:NameToUniqueID("GetCurrency")].OnRun(client, target, "credits")
     end
