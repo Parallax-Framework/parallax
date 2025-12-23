@@ -466,6 +466,7 @@ function PANEL:CycleRecommendations()
         return
     end
 
+    print( data.name )
     self.entry:SetText("/" .. data.name)
     self.entry:RequestFocus()
     self.entry:SetCaretPos(2 + #data.name)
