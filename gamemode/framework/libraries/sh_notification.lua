@@ -229,7 +229,10 @@ if ( CLIENT ) then
         t.closing = true
         t.phase = "out-eat"
         t.phaseStart = CurTime()
-        ax.client:EmitSound("parallax.ui.notification.out")
+
+        if ( ax.option:Get("notification.sounds", true) ) then
+            ax.client:EmitSound("parallax.ui.notification.out")
+        end
     end
 
     function ax.notification:Render()
