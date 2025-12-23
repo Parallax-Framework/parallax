@@ -19,10 +19,10 @@ end
 
 --[[
     Zone Box Command
-    Usage: /zonebox <name> <priority> [size]
+    Usage: /ZoneBox <name> <priority> [size]
     Creates a box zone centered at the player's look position
 ]]
-ax.command:Add("zonebox", {
+ax.command:Add("ZoneBox", {
     description = "Create a box zone at your look position",
     arguments = {
         { name = "name", type = ax.type.string },
@@ -54,12 +54,12 @@ ax.command:Add("zonebox", {
 
 --[[
     Zone Box Custom Command
-    Usage: /zoneboxcustom <name> <priority>
+    Usage: /ZoneBoxCustom <name> <priority>
     Creates a box zone with custom bounds (uses two positions)
     First use sets min corner, second use sets max corner
 ]]
 local boxCorners = {}
-ax.command:Add("zoneboxcustom", {
+ax.command:Add("ZoneBoxCustom", {
     description = "Create a box zone with custom corners (use twice)",
     arguments = {
         { name = "name", type = ax.type.string, optional = true },
@@ -118,10 +118,10 @@ ax.command:Add("zoneboxcustom", {
 
 --[[
     Zone Sphere Command
-    Usage: /zonesphere <name> <priority> <radius>
+    Usage: /ZoneSphere <name> <priority> <radius>
     Creates a sphere zone at the player's look position
 ]]
-ax.command:Add("zonesphere", {
+ax.command:Add("ZoneSphere", {
     description = "Create a sphere zone at your look position",
     arguments = {
         { name = "name", type = ax.type.string },
@@ -157,10 +157,10 @@ ax.command:Add("zonesphere", {
 
 --[[
     Zone PVS Command
-    Usage: /zonepvs <name> <priority> [radius]
+    Usage: /ZonePVS <name> <priority> [radius]
     Creates a PVS (visibility) zone at the player's look position
 ]]
-ax.command:Add("zonepvs", {
+ax.command:Add("ZonePVS", {
     description = "Create a PVS zone at your look position",
     arguments = {
         { name = "name", type = ax.type.string },
@@ -196,10 +196,10 @@ ax.command:Add("zonepvs", {
 
 --[[
     Zone Trace Command
-    Usage: /zonetrace <name> <priority> [radius]
+    Usage: /ZoneTrace <name> <priority> [radius]
     Creates a trace (line-of-sight) zone at the player's look position
 ]]
-ax.command:Add("zonetrace", {
+ax.command:Add("ZoneTrace", {
     description = "Create a trace zone at your look position",
     arguments = {
         { name = "name", type = ax.type.string },
@@ -235,10 +235,10 @@ ax.command:Add("zonetrace", {
 
 --[[
     Zone Remove Command
-    Usage: /zoneremove <id or name>
+    Usage: /ZoneRemove <id or name>
     Removes a zone by ID or name
 ]]
-ax.command:Add("zoneremove", {
+ax.command:Add("ZoneRemove", {
     description = "Remove a zone by ID or name",
     arguments = {
         { name = "identifier", type = ax.type.string },
@@ -264,10 +264,10 @@ ax.command:Add("zoneremove", {
 
 --[[
     Zone List Command
-    Usage: /zonelist
+    Usage: /ZoneList
     Lists all zones to console
 ]]
-ax.command:Add("zonelist", {
+ax.command:Add("ZoneList", {
     description = "List all zones to console",
     OnRun = function(client)
         ax.zones:List()
@@ -277,10 +277,10 @@ ax.command:Add("zonelist", {
 
 --[[
     Zone Info Command
-    Usage: /zoneinfo <id or name>
+    Usage: /ZoneInfo <id or name>
     Shows detailed information about a zone
 ]]
-ax.command:Add("zoneinfo", {
+ax.command:Add("ZoneInfo", {
     description = "Show detailed information about a zone",
     arguments = {
         { name = "identifier", type = ax.type.string },
@@ -323,11 +323,11 @@ ax.command:Add("zoneinfo", {
 
 --[[
     Zone Debug Command
-    Usage: /zonedebug
+    Usage: /ZoneDebug
     Toggles zone debug visualization
 ]]
 local debugPlayers = {}
-ax.command:Add("zonedebug", {
+ax.command:Add("ZoneDebug", {
     description = "Toggle zone debug visualization",
     OnRun = function(client)
         local steamID = client:SteamID()
@@ -346,10 +346,10 @@ ax.command:Add("zonedebug", {
 
 --[[
     Zone Update Priority Command
-    Usage: /zonepriority <id or name> <priority>
+    Usage: /ZonePriority <id or name> <priority>
     Updates a zone's priority
 ]]
-ax.command:Add("zonepriority", {
+ax.command:Add("ZonePriority", {
     description = "Update a zone's priority",
     arguments = {
         { name = "identifier", type = ax.type.string },
@@ -373,10 +373,10 @@ ax.command:Add("zonepriority", {
 
 --[[
     Zone Teleport Command
-    Usage: /zonetp <id or name>
+    Usage: /ZoneTp <id or name>
     Teleports the player to a zone's center
 ]]
-ax.command:Add("zonetp", {
+ax.command:Add("ZoneTp", {
     description = "Teleport to a zone's center",
     arguments = {
         { name = "identifier", type = ax.type.string },
@@ -409,11 +409,11 @@ ax.command:Add("zonetp", {
 
 --[[
     Zone Clear Command
-    Usage: /zoneclear
+    Usage: /ZoneClear
     Clears all runtime zones (requires confirmation)
 ]]
 local clearConfirm = {}
-ax.command:Add("zoneclear", {
+ax.command:Add("ZoneClear", {
     description = "Clear all runtime zones (use twice to confirm)",
     OnRun = function(client)
         local steamID = client:SteamID()
