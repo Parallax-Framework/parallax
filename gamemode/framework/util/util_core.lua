@@ -67,6 +67,24 @@ function ax.util:NameToUniqueID(name)
     return name:lower()
 end
 
+--- Convert a unique id to camel case.
+-- @param id string Unique id to convert
+-- @return string Camel-cased string
+-- @usage local camel = ax.util:UniqueIDToCamel("my_module") -- "MyModule"
+function ax.util:UniqueIDToCamel(id)
+    if ( !isstring(id) ) then return "" end
+
+    local result = id:gsub("_([a-z])", function(letter)
+        return letter:upper()
+    end)
+
+    result = result:gsub("^([a-z])", function(letter)
+        return letter:upper()
+    end)
+
+    return result
+end
+
 --- Convert a unique id (underscored) back to a human-friendly name.
 -- @param id string Unique id to convert
 -- @return string Human-friendly name
@@ -168,24 +186,6 @@ if ( CLIENT ) then
 
         ax.render.DrawMaterial(0, x, y, w, h, color, mat)
     end
-end
-
---- Convert a key to UpperCamelCase.
--- @param key string Input key e.g. "hello_world"
--- @return string Camel-cased string e.g. "HelloWorld"
--- @usage local s = ax.util:UpperCamel("my_key") -- "MyKey"
-function ax.util:UpperCamel(key)
-    if ( !isstring(key) ) then return "" end
-
-    local result = key:gsub("_([a-z])", function(letter)
-        return letter:upper()
-    end)
-
-    result = result:gsub("^([a-z])", function(letter)
-        return letter:upper()
-    end)
-
-    return result
 end
 
 --- Safe function call wrapper (returns ok and result).

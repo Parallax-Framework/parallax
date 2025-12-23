@@ -1,5 +1,10 @@
 local MODULE = MODULE or {}
 
+function MODULE:PlayerReady(client)
+    local usergroup = client:GetUsergroup()
+    client:SetUserGroup(usergroup)
+end
+
 function MODULE:PhysgunPickup(client, entity)
     if ( !CAMI.PlayerHasAccess(client, "Parallax - Pickup Players", nil) ) then
         return false
