@@ -82,6 +82,8 @@ function ax.util:UniqueIDToCamel(id)
         return letter:upper()
     end)
 
+    result = result:gsub("[^A-Za-z]", "")
+
     return result
 end
 

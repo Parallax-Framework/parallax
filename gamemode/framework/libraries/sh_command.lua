@@ -42,7 +42,7 @@ function ax.command:Add(name, def)
 
     def.displayName = def.displayName or ax.util:UniqueIDToName(name)
 
-    name = ax.util:NameToUniqueID(name)
+    name = ax.util:UniqueIDToCamel(name)
 
     -- Set defaults
     def.name = name
