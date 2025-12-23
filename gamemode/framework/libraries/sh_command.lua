@@ -304,8 +304,6 @@ function ax.command:Run(caller, name, rawArgs)
         return false, "Invalid command name"
     end
 
-    name = utf8.lower(name)
-
     local def = self.registry[name]
     if ( !def ) then
         return false, "Unknown command: " .. name
