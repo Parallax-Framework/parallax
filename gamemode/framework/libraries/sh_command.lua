@@ -274,14 +274,19 @@ function ax.command:Parse(text)
 
     text = string.Trim(text)
 
+    print( text, ' after trim and prefix strip' )
+
     -- Split first word from rest
-    local spacePos = string.find(text, " ")
+    local spacePos = string.find(text, " ", 0, true)
     if ( spacePos ) then
-        local name = utf8.lower(string.sub(text, 1, spacePos - 1))
+        local name = string.sub(text, 1, spacePos - 1)
+        print( "::Parse: with spacePos: " .. name )
         local rawArgs = string.Trim(string.sub(text, spacePos + 1))
+        print( "::Parse: rawArgs: " .. rawArgs )
         return name, rawArgs
     else
-        return utf8.lower(text), ""
+        print( "::Parse: " .. text )
+        return text, ""
     end
 end
 
