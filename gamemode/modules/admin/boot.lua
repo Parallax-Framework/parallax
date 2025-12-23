@@ -4,12 +4,6 @@ MODULE.name = "Admin"
 MODULE.description = "Handles admin-related functionality."
 MODULE.author = "Riggs"
 
-ax.player:RegisterVar("usergroup", {
-    field = "usergroup",
-    fieldType = ax.type.string,
-    default = "user"
-})
-
 concommand.Add("ax_player_set_usergroup", function(client, command, arguments, argumentsString)
     if ( !client:IsSuperAdmin() ) then return end
     if ( #arguments < 2 ) then return end
