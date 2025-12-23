@@ -40,9 +40,7 @@ function MODULE:PlayerSay(client, text, teamChat)
     end
 
     if ( isCommand ) then
-        print( "chatbox -> sv_hooks [rawText]: " .. rawText )
         local name, rawArgs = ax.command:Parse(rawText)
-        print( "chatbox -> sv_hooks [name]: " .. tostring(name) )
         if ( name and name != "" and ax.command.registry[name] ) then
             -- Run the command inside pcall to avoid a server-side error killing the hook
             local ok, runOk, result = pcall(function()
