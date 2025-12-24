@@ -201,6 +201,7 @@ function ax.character:RegisterVar(name, data)
     end
 
     data.key = name
+    if ( !data.field ) then data.field = name end
 
     self.vars[name] = data
 
@@ -248,7 +249,10 @@ function ax.character:RegisterVar(name, data)
     if ( istable(data.alias) ) then
         for i = 1, #data.alias do
             local alias = data.alias[i]
-            if ( !isstring(alias) ) then continue end
+            if ( !isstring(alias) ) then
+                ax.util:PrintWarning("Invalid alias provided for character variable '" .. name .. "'")
+                continue
+            end
 
             self.vars[alias] = data
 
