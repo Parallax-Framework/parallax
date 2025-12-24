@@ -100,8 +100,16 @@ function ax.character:SetVar(char, name, value, bNoNetworking, recipients, bNoDB
             net.WriteUInt(char:GetID(), 32)
             net.WriteString(name)
             net.WriteType(value)
-        net.Send(recipients or player.GetAll())
+        if ( istable(recipients) or isentity(recipients) ) then
+            net.Send(recipients)
+        elseif ( isvector(recipients) ) then
+            net.SendPVS(recipients)
+        else
+            net.Broadcast()
+        end
     end
+
+    hook.Run("CharacterVarChanged", char, name, value)
 
     -- Functional, commented out for performance reasons
     --[[
