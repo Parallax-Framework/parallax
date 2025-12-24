@@ -263,6 +263,8 @@ net.Receive("ax.character.data", function()
     end
 
     character.vars.data[key] = value
+
+    hook.Run("CharacterDataChanged", character, key, value)
 end)
 
 net.Receive("ax.character.bot.sync", function()
