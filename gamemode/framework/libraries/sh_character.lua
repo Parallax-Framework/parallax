@@ -232,7 +232,6 @@ function ax.character:RegisterVar(name, data)
 
                 data:Set(char, value, bNoNetworking, recipients)
 
-                -- Call changed callback if present
                 if ( isfunction(data.changed) ) then
                     -- Protect the callback to avoid crashes
                     local success, err = pcall(data.changed, char, value, bNoNetworking, recipients)
