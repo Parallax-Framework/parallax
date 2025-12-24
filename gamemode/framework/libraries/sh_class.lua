@@ -180,7 +180,25 @@ end
 -- @realm shared
 -- @return table Array of all class instances
 -- @usage local allClasses = ax.class:GetAll()
-function ax.class:GetAll()
+function ax.class:GetAll(filter)
+    if ( filter and istable(filter) ) then
+        local filtered = {}
+        for _, classTable in pairs(self.instances) do
+            local match = false
+            if ( isnumber(filter.faction) and classTable.faction == filter.faction ) then
+                match = true
+            elseif ( isstring(filter.name) and ax.util:FindString(classTable.name or "", filter.name) ) then
+                match = true
+            end
+
+            if ( match ) then
+                table.insert(filtered, classTable)
+            end
+        end
+
+        return filtered
+    end
+
     return self.instances
 end
 
