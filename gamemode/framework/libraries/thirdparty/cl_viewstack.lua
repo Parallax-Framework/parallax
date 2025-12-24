@@ -276,7 +276,7 @@ hook.Add("CalcView", "ax.viewstack.CalcView", function(client, origin, angles, f
     end
 
     local viewEntity = client:GetViewEntity()
-    if ( IsValid(viewEntity) and viewEntity != client ) then
+    if ( viewEntity and viewEntity:GetClass():find("camera") ) then
         ax.viewstack.inCalc = false
         return
     end
