@@ -100,8 +100,16 @@ function ax.character:SetVar(char, name, value, previousValue, bNoNetworking, re
             net.WriteUInt(char:GetID(), 32)
             net.WriteString(name)
             net.WriteType(value)
-        net.Send(recipients or player.GetAll())
+        if ( istable(recipients) or isentity(recipients) ) then
+            net.Send(recipients)
+        elseif ( isvector(recipients) ) then
+            net.SendPVS(recipients)
+        else
+            net.Broadcast()
+        end
     end
+
+    hook.Run("CharacterVarChanged", char, name, value)
 
     -- Functional, commented out for performance reasons
     --[[
@@ -193,6 +201,7 @@ function ax.character:RegisterVar(name, data)
     end
 
     data.key = name
+    if ( !data.field ) then data.field = name end
 
     self.vars[name] = data
 
@@ -232,7 +241,6 @@ function ax.character:RegisterVar(name, data)
 
                 data:Set(char, value, previousValue, bNoNetworking, recipients)
 
-                -- Call changed callback if present
                 if ( isfunction(data.changed) ) then
                     -- Protect the callback to avoid crashes
                     local success, err = pcall(data.changed, char, value, previousValue, bNoNetworking, recipients)
@@ -249,7 +257,10 @@ function ax.character:RegisterVar(name, data)
     if ( istable(data.alias) ) then
         for i = 1, #data.alias do
             local alias = data.alias[i]
-            if ( !isstring(alias) ) then continue end
+            if ( !isstring(alias) ) then
+                ax.util:PrintWarning("Invalid alias provided for character variable '" .. name .. "'")
+                continue
+            end
 
             self.vars[alias] = data
 

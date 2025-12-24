@@ -230,6 +230,10 @@ ax.command:Add("CharSetClass", {
             return "You must specify a valid class for the character's faction, possible classes are: " .. " " .. table.concat(classNames, ", ")
         end
 
+        if ( classTable.faction and classTable.faction != target:GetFaction() ) then
+            return "This class does not belong to the character's faction."
+        end
+
         target:SetClass(classTable.index)
         target:Save()
 

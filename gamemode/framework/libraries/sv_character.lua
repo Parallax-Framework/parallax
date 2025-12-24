@@ -374,8 +374,10 @@ function ax.character:Sync(client, character, recipient)
     net.Start("ax.character.sync")
         net.WritePlayer(client)
         net.WriteTable(character)
-    if ( recipient ) then
+    if ( istable(recipient) or isentity(recipient) ) then
         net.Send(recipient)
+    elseif ( isvector(recipient) ) then
+        net.SendPVS(recipient)
     else
         net.Broadcast()
     end
