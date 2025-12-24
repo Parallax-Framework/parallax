@@ -186,23 +186,8 @@ ax.command:Add("CharSetFaction", {
             return "Invalid faction."
         end
 
-        -- Get the old faction before changing
-        local oldFaction = target:GetFaction()
-
-        -- Set the new faction
         target:SetFaction(factionTable.index)
         target:Save()
-
-        -- Call OnTransferred callback if it exists on the new faction
-        if ( isfunction(factionTable.OnTransferred) ) then
-            local player = target:GetOwner()
-            if ( IsValid(player) ) then
-                local success, err = pcall(factionTable.OnTransferred, factionTable, player, oldFaction)
-                if ( !success ) then
-                    ax.util:PrintError("Error in faction OnTransferred callback: " .. tostring(err))
-                end
-            end
-        end
 
         return "Faction set to " .. factionTable.name
     end
@@ -223,24 +208,30 @@ ax.command:Add("CharSetClass", {
             return "Invalid character."
         end
 
-        local classTable = ax.class:Get(class)
+        local classes = {}
+        for _, classTable in ipairs(ax.class:GetAll({faction = target:GetFaction()})) do
+            table.insert(classes, classTable)
+        end
+
+        local classTable = nil
+        for _, classIter in ipairs(classes) do
+            if ( ax.util:FindString(classIter.name, class) ) then
+                classTable = classIter
+                break
+            end
+        end
+
         if ( !classTable ) then
-            return "Invalid class."
+            local classNames = {}
+            for _, classIter in ipairs(classes) do
+                table.insert(classNames, classIter.name)
+            end
+
+            return "You must specify a valid class for the character's faction, possible classes are: " .. " " .. table.concat(classNames, ", ")
         end
 
         target:SetClass(classTable.index)
         target:Save()
-
-        -- Call OnTransferred callback if it exists on the new class
-        if ( isfunction(classTable.OnTransferred) ) then
-            local player = target:GetOwner()
-            if ( IsValid(player) ) then
-                local success, err = pcall(classTable.OnTransferred, classTable, player)
-                if ( !success ) then
-                    ax.util:PrintError("Error in class OnTransferred callback: " .. tostring(err))
-                end
-            end
-        end
 
         return "Class set to " .. classTable.name
     end
