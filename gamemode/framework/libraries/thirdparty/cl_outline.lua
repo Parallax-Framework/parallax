@@ -61,9 +61,9 @@ local MODE = 3
 
 local function SetRenderType(render_type)
     if
-        render_type ~= OUTLINE_RENDERTYPE_BEFORE_VM
-        and render_type ~= OUTLINE_RENDERTYPE_BEFORE_EF
-        and render_type ~= OUTLINE_RENDERTYPE_AFTER_EF
+        render_type != OUTLINE_RENDERTYPE_BEFORE_VM
+        and render_type != OUTLINE_RENDERTYPE_BEFORE_EF
+        and render_type != OUTLINE_RENDERTYPE_AFTER_EF
     then
         return
     end
@@ -222,7 +222,7 @@ local function Render()
     local scene = render.GetRenderTarget()
 
     -- Only draw inside of the actual main screen RT, prevents breaking addons and other rendering
-    if scene ~= nil then
+    if scene != nil then
         return
     end
 
@@ -382,7 +382,7 @@ local function Render()
     -- This is done in all cases to still differentiate between 1px and 2px outlines
     local outline_thickness = OutlineThickness
     -- Keep true 1px outlines even with AA; only bump thickness when >1 to maintain visual parity
-    if cvMaterialAntialias:GetInt() ~= 0 and outline_thickness > 1 then
+    if cvMaterialAntialias:GetInt() != 0 and outline_thickness > 1 then
         outline_thickness = outline_thickness + 1
     end
 

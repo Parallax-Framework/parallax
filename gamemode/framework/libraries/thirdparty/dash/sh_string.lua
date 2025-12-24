@@ -101,7 +101,7 @@ end
 
 function string.FormatTime(num, limit)
     local ret = {}
-    while (not limit) or (limit ~= 0) do
+    while (not limit) or (limit != 0) do
         local templimit = limit or 0
 
         if (num >= TIME_YEAR) or (templimit <= -7) then

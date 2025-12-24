@@ -191,7 +191,7 @@ local normalize_corner_radii; do
 	local HUGE = math.huge
 
 	local function nzr(x)
-		if x ~= x or x < 0 then return 0 end
+		if x != x or x < 0 then return 0 end
 		local lim = math_min(W, H)
 		if x == HUGE then return lim end
 		return x
@@ -254,7 +254,7 @@ local function draw_rounded(x, y, w, h, col, flags, tl, tr, bl, br, texture, thi
 		flags = DEFAULT_DRAW_FLAGS
 	end
 
-	local using_blur = bit_band(flags, BLUR) ~= 0
+	local using_blur = bit_band(flags, BLUR) != 0
 	if using_blur then
 		return RNDX.DrawBlur(x, y, w, h, flags, tl, tr, bl, br, thickness)
 	end
@@ -273,7 +273,7 @@ local function draw_rounded(x, y, w, h, col, flags, tl, tr, bl, br, texture, thi
 	SHAPE = SHAPES[bit_band(flags, SHAPE_CIRCLE + SHAPE_FIGMA + SHAPE_IOS)] or SHAPES[DEFAULT_SHAPE]
 	OUTLINE_THICKNESS = thickness
 
-	if bit_band(flags, MANUAL_COLOR) ~= 0 then
+	if bit_band(flags, MANUAL_COLOR) != 0 then
 		COL_R = nil
 	elseif col then
 		COL_R, COL_G, COL_B, COL_A = col.r, col.g, col.b, col.a
@@ -425,9 +425,9 @@ function RNDX.DrawShadowsEx(x, y, w, h, col, flags, tl, tr, bl, br, spread, inte
 
 	setup_shadows()
 
-	USING_BLUR = bit_band(flags, BLUR) ~= 0
+	USING_BLUR = bit_band(flags, BLUR) != 0
 
-	if bit_band(flags, MANUAL_COLOR) ~= 0 then
+	if bit_band(flags, MANUAL_COLOR) != 0 then
 		draw_shadows(false, nil, nil, nil)
 	elseif col then
 		draw_shadows(col.r, col.g, col.b, col.a)
@@ -514,32 +514,32 @@ local BASE_FUNCS; BASE_FUNCS = {
 		flags = flags or 0
 
 		-- Corner flags
-		if bit_band(flags, NO_TL) ~= 0 then
+		if bit_band(flags, NO_TL) != 0 then
 			TL = 0
 		end
-		if bit_band(flags, NO_TR) ~= 0 then
+		if bit_band(flags, NO_TR) != 0 then
 			TR = 0
 		end
-		if bit_band(flags, NO_BL) ~= 0 then
+		if bit_band(flags, NO_BL) != 0 then
 			BL = 0
 		end
-		if bit_band(flags, NO_BR) ~= 0 then
+		if bit_band(flags, NO_BR) != 0 then
 			BR = 0
 		end
 
 		-- Shape flags
 		local shape_flag = bit_band(flags, SHAPE_CIRCLE + SHAPE_FIGMA + SHAPE_IOS)
-		if shape_flag ~= 0 then
+		if shape_flag != 0 then
 			SHAPE = SHAPES[shape_flag] or SHAPES[DEFAULT_SHAPE]
 		end
 
 		-- Blur flag
-		if bit_band(flags, BLUR) ~= 0 then
+		if bit_band(flags, BLUR) != 0 then
 			BASE_FUNCS.Blur(self)
 		end
 
 		-- Manual color flag
-		if bit_band(flags, MANUAL_COLOR) ~= 0 then
+		if bit_band(flags, MANUAL_COLOR) != 0 then
 			COL_R = nil
 		end
 
