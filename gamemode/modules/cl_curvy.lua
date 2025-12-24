@@ -566,6 +566,8 @@ local POST_RENDER_MODES = {
 
 -- Internal render function for a specific mode
 function ax.curvy:RenderMode(hookName, rtName, mode, width, height, client)
+    if ( !HasHookListeners(hookName) ) then return end
+
     -- Render to target
     local texture = self:RenderToTarget(rtName, width, height, function()
         hook.Run(hookName, width, height, client)
@@ -580,6 +582,21 @@ end
 function ax.curvy:HUDPaint()
     local client = LocalPlayer()
     if ( hook.Run("HUDShouldDraw") == false ) then return end
+    self.lowPerformance = false
+
+    -- Ultra-light path when Curvy is off: skip option/perf work and just draw HUD
+    if ( ax.option:Get("curvy") == false ) then
+        cachedOptions.enabled = false
+
+        local width, height = ScrW_local(), ScrH_local()
+        for _, modeData in ipairs(RENDER_MODES) do
+            if ( HasHookListeners(modeData.hookName) ) then
+                hook.Run(modeData.hookName, width, height, client)
+            end
+        end
+
+        return
+    end
 
     self:UpdateOptions()
 
@@ -588,7 +605,9 @@ function ax.curvy:HUDPaint()
     -- Early exit if curvy is disabled
     if ( !cachedOptions.enabled ) then
         for _, modeData in ipairs(RENDER_MODES) do
-            hook.Run(modeData.hookName, width, height, client)
+            if ( HasHookListeners(modeData.hookName) ) then
+                hook.Run(modeData.hookName, width, height, client)
+            end
         end
 
         return
@@ -598,6 +617,19 @@ function ax.curvy:HUDPaint()
     self:UpdatePerformanceStats()
     local threshold = cachedOptions.frameSkipThreshold
     local maxSkip = cachedOptions.maxFrameSkip
+
+    -- Low-performance fallback: if FPS is far below threshold, bypass Curvy entirely this frame
+    local lowPerf = perfStats.fpsAvg < threshold * 0.6
+    self.lowPerformance = lowPerf
+    if ( lowPerf ) then
+        for _, modeData in ipairs(RENDER_MODES) do
+            if ( HasHookListeners(modeData.hookName) ) then
+                hook.Run(modeData.hookName, width, height, client)
+            end
+        end
+
+        return
+    end
 
     if ( cachedOptions.frameSkipEnabled ) then
         if ( perfStats.fpsAvg < threshold ) then
@@ -618,6 +650,20 @@ function ax.curvy:PostRender()
     local client = LocalPlayer()
     if ( hook.Run("HUDShouldDraw") == false ) then return end
 
+    -- Ultra-light path when Curvy is off: skip option/perf work and just draw hooks
+    if ( ax.option:Get("curvy") == false ) then
+        cachedOptions.enabled = false
+
+        local width, height = ScrW_local(), ScrH_local()
+        for _, modeData in ipairs(POST_RENDER_MODES) do
+            if ( HasHookListeners(modeData.hookName) ) then
+                hook.Run(modeData.hookName, width, height, client)
+            end
+        end
+
+        return
+    end
+
     self:UpdateOptions()
 
     local width, height = ScrW_local(), ScrH_local()
@@ -625,7 +671,9 @@ function ax.curvy:PostRender()
     -- Early exit if curvy is disabled or HUD-only mode is enabled
     if ( !cachedOptions.enabled or cachedOptions.hudOnly ) then
         for _, modeData in ipairs(POST_RENDER_MODES) do
-            hook.Run(modeData.hookName, width, height, client)
+            if ( HasHookListeners(modeData.hookName) ) then
+                hook.Run(modeData.hookName, width, height, client)
+            end
         end
 
         return
@@ -634,6 +682,9 @@ function ax.curvy:PostRender()
     -- Performance-based frame skipping with configurable settings
     local threshold = cachedOptions.frameSkipThreshold
     local maxSkip = cachedOptions.maxFrameSkip
+
+    -- Honor low-performance bypass set during HUDPaint
+    if ( self.lowPerformance ) then return end
 
     if ( cachedOptions.frameSkipEnabled and perfStats.frameSkip and perfStats.frameSkip % maxSkip == 0 and perfStats.fpsAvg < threshold ) then
         return
