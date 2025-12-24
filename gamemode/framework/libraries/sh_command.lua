@@ -517,7 +517,7 @@ if ( SERVER ) then
             else
                 ax.util:PrintWarning(msg)
             end
-        elseif ( result and result != "" ) then
+        elseif ( isstring(result) and result != "" ) then
             local msg = tostring(result)
             if ( IsValid(caller) ) then
                 caller:Notify(msg)
