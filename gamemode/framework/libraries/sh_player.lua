@@ -80,7 +80,13 @@ function ax.player:SetVar(client, key, value, bNoNetworking, recipients)
             net.WritePlayer(client)
             net.WriteString(key)
             net.WriteType(value)
-        net.Send(recipients or player.GetAll())
+        if ( istable(recipients) or isentity(recipients) ) then
+            net.Send(recipients)
+        elseif ( isvector(recipients) ) then
+            net.SendPVS(recipients)
+        else
+            net.Broadcast()
+        end
     end
 end
 
