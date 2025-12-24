@@ -42,12 +42,6 @@ function character:GetData(key)
     return self.vars.data[key]
 end
 
-function character:SetData(key, value)
-    if ( !istable(self.vars.data) ) then self.vars.data = {} end
-
-    self.vars.data[key] = value
-end
-
 function character:GetOwner()
     return self.player
 end
