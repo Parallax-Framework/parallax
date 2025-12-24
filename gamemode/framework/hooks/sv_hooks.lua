@@ -13,10 +13,6 @@ DEFINE_BASECLASS("gamemode_sandbox")
 
 AX_CLIENT_QUEUE = AX_CLIENT_QUEUE or {}
 
-function GM:PlayerSwitchFlashlight(client, state)
-    return true
-end
-
 function GM:PlayerDeathThink(client)
     if ( client:RateLimit("respawn", 5) and client:GetCharacter() ) then
         client:Spawn()
