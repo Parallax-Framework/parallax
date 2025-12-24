@@ -162,6 +162,41 @@ local math_pi = math.pi
 local math_pow = math.pow
 local math_sin = math.sin
 
+local function HasHookListeners(name)
+    local hookTable = hook.GetTable()
+    local listeners = hookTable and hookTable[name]
+
+    if ( listeners and next(listeners) != nil ) then
+        return true
+    end
+
+    local gm = GAMEMODE
+    if ( !gm and gmod and gmod.GetGamemode ) then
+        gm = gmod.GetGamemode()
+    end
+
+    if ( gm and gm[name] ) then
+        return true
+    end
+
+    return false
+end
+
+local function QuantizeSegments(segments, baseSegments)
+    -- Keep the mesh cache small by snapping segments to a fixed step
+    -- This prevents dynamic LOD from generating hundreds of unique meshes over time
+    local step = 16
+    local quantized = math_floor((segments + step / 2) / step) * step
+
+    quantized = math_max(16, quantized)
+
+    if ( baseSegments ) then
+        quantized = math_min(baseSegments, quantized)
+    end
+
+    return quantized
+end
+
 -- Update cached options only when necessary
 function ax.curvy:UpdateOptions()
     local now = CurTime_local()
