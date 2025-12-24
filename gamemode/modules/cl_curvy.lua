@@ -124,6 +124,9 @@ local renderTargets = {}
 local materials = {}
 local meshCache = {}
 local meshObjects = {} -- Pre-built mesh objects
+local meshLastUsed = {} -- Track mesh usage for cleanup
+local MESH_CACHE_LIMIT = 48 -- Max distinct mesh variants kept
+local MESH_CACHE_TTL = 1200 -- Frames before unused meshes are purged (approx ~20s at 60fps)
 local renderCache = {} -- Frame-based render caching
 
 -- Cached option values - updated only when changed
@@ -248,7 +251,10 @@ function ax.curvy:GetOptimalSegments(width, height)
     end
 
     local finalScale = math_min(viewportScale, fpsScale)
-    return math_max(16, math_floor(baseSegments * finalScale))
+    local scaledSegments = baseSegments * finalScale
+
+    -- Snap to a small set of segment counts to avoid unbounded mesh variants
+    return QuantizeSegments(scaledSegments, baseSegments)
 end
 
 function ax.curvy:LoadMaterial(path, filter)
@@ -394,9 +400,11 @@ function ax.curvy:GetCurveMesh(segments, curveAmount, width, height, mode)
     local deadzone = cachedOptions.edgesDeadzone or 0.3
 
     local cacheKey = ("%d_%d_%d_%d_%s_%.2f"):format(segments, curveAmount, width, height, mode, deadzone)
+    local frameCount = engine.TickCount()
 
     -- Return pre-built mesh object if available
     if ( meshObjects[cacheKey] ) then
+        meshLastUsed[cacheKey] = frameCount
         return meshObjects[cacheKey]
     end
 
@@ -415,7 +423,9 @@ function ax.curvy:GetCurveMesh(segments, curveAmount, width, height, mode)
         mesh.End()
 
         meshObjects[cacheKey] = meshObj
+        meshLastUsed[cacheKey] = frameCount
         meshCache[cacheKey] = nil -- Free the vertex data
+        self:CleanupMeshCache(frameCount)
         return meshObj
     end
 
@@ -476,6 +486,8 @@ function ax.curvy:GetCurveMesh(segments, curveAmount, width, height, mode)
     mesh.End()
 
     meshObjects[cacheKey] = meshObj
+    meshLastUsed[cacheKey] = frameCount
+    self:CleanupMeshCache(frameCount)
     return meshObj
 end
 
@@ -645,6 +657,32 @@ function ax.curvy:CleanupRenderCache()
     end
 end
 
+-- Trim mesh cache to prevent unbounded memory growth during long sessions
+function ax.curvy:CleanupMeshCache(frameCount)
+    frameCount = frameCount or engine.TickCount()
+
+    local cutoff = frameCount - MESH_CACHE_TTL
+    local total = 0
+
+    for _ in pairs(meshObjects) do
+        total = total + 1
+    end
+
+    for key, lastUsed in pairs(meshLastUsed) do
+        if ( lastUsed < cutoff or total > MESH_CACHE_LIMIT ) then
+            local meshObj = meshObjects[key]
+
+            if ( meshObj and meshObj.Destroy ) then
+                meshObj:Destroy()
+            end
+
+            meshObjects[key] = nil
+            meshLastUsed[key] = nil
+            total = total - 1
+        end
+    end
+end
+
 -- Optimize material creation with better caching
 function ax.curvy:CreateRenderTargetMaterial(name, texture)
     local matName = "ax_curvy_mat_" .. name
@@ -688,6 +726,7 @@ local lastCleanup = 0
 function MODULE:Think()
     if ( CurTime() - lastCleanup > 10 ) then -- Every 10 seconds
         ax.curvy:CleanupRenderCache()
+        ax.curvy:CleanupMeshCache()
         lastCleanup = CurTime()
     end
 end
@@ -696,6 +735,7 @@ function MODULE:OnScreenSizeChanged()
     renderTargets = {}
     meshCache = {}
     meshObjects = {}
+    meshLastUsed = {}
     renderCache = {}
     perfStats.fpsAvg = 60 -- Reset performance tracking
 end
@@ -713,6 +753,7 @@ function MODULE:OnReloaded()
     materials = {}
     meshCache = {}
     meshObjects = {}
+    meshLastUsed = {}
     renderCache = {}
 
     -- Reset cached values
