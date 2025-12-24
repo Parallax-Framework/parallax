@@ -160,10 +160,21 @@ ax.character:RegisterVar("faction", {
             factionList:AddPanel(factionButton)
         end
     end,
-    changed = function(character, value, isNetworked, recipients)
+    changed = function(character, value, previousValue, isNetworked, recipients)
         local client = character:GetOwner()
         if ( IsValid(client) ) then
             client:SetTeam(value)
+        end
+
+        -- call onset and onleave hooks
+        local previousFaction = character:GetFactionData()
+        local factionTable = ax.faction:Get(value)
+        if ( previousFaction and isfunction(previousFaction.OnLeave) ) then
+            previousFaction:OnLeave(character, value, previousValue, isNetworked, recipients)
+        end
+
+        if ( factionTable and isfunction(factionTable.OnSet) ) then
+            factionTable:OnSet(character, value, previousValue, isNetworked, recipients)
         end
     end
 })
@@ -183,6 +194,17 @@ ax.character:RegisterVar("class", {
         end
 
         return true
+    end,
+    changed = function(character, value, previousValue, isNetworked, recipients)
+        local previousClass = ax.class:Get(previousValue)
+        if ( previousClass and isfunction(previousClass.OnLeave) ) then
+            previousClass:OnLeave(character, value, previousValue, isNetworked, recipients)
+        end
+
+        local classTable = ax.class:Get(value)
+        if ( classTable and isfunction(classTable.OnSet) ) then
+            classTable:OnSet(character, value, previousValue, isNetworked, recipients)
+        end
     end
 })
 
@@ -510,7 +532,7 @@ ax.character:RegisterVar("model", {
 
         layout:SizeToChildren(layout:GetStretchWidth(), layout:GetStretchHeight())
     end,
-    changed = function(character, value, isNetworked, recipients)
+    changed = function(character, value, previousValue, isNetworked, recipients)
         local client = character:GetOwner()
         if ( IsValid(client) and client:GetModel() != value ) then
             client:SetModel(value)
@@ -652,7 +674,7 @@ ax.character:RegisterVar("skin", {
 
         payload.skin = math.floor(slider:GetValue()) -- Ensure the skin is at least set to the default
     end,
-    changed = function(character, value, isNetworked, recipients)
+    changed = function(character, value, previousValue, isNetworked, recipients)
         local client = character:GetOwner()
         if ( IsValid(client) and client:GetModel() != value ) then
             client:SetSkin(value)
