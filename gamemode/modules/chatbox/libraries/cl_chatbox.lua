@@ -76,6 +76,7 @@ function ax.chat:CreateMessagePanel(markupText, maxWidth, revealSpeed)
 
     panel.markupText = markupText
     panel.maxWidth = maxWidth
+    panel.lastWidth = maxWidth
     panel.totalChars = CountVisibleChars(markupText)
     panel.revealedChars = 0
     panel.revealSpeed = revealSpeed or 100
@@ -92,6 +93,17 @@ function ax.chat:CreateMessagePanel(markupText, maxWidth, revealSpeed)
     end
 
     function panel:Think()
+        -- Check if chatbox width has changed and reparse markup
+        if ( IsValid(ax.gui.chatbox) ) then
+            local newWidth = ax.gui.chatbox:GetWide() - 20
+            if ( newWidth != self.lastWidth ) then
+                self.lastWidth = newWidth
+                self.maxWidth = newWidth
+                self.markup = markup.Parse(RevealText(self.markupText, math.floor(self.revealedChars)), self.maxWidth)
+                if ( self.markup ) then self:SetTall(self.markup:GetHeight()) end
+            end
+        end
+
         if ( self.revealedChars < self.totalChars ) then
             self.revealedChars = math.min(self.totalChars, self.revealedChars + FrameTime() * self.revealSpeed)
             self.markup = markup.Parse(RevealText(self.markupText, math.floor(self.revealedChars)), self.maxWidth)
