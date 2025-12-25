@@ -275,12 +275,6 @@ hook.Add("CalcView", "ax.viewstack.CalcView", function(client, origin, angles, f
         return
     end
 
-    local viewEntity = client:GetViewEntity()
-    if ( viewEntity and viewEntity:GetClass():find("camera") ) then
-        ax.viewstack.inCalc = false
-        return
-    end
-
     local base = GAMEMODE.BaseClass:CalcView(client, origin, angles, fov, znear, zfar)
     base.origin = base.origin or origin or client:EyePos()
     base.angles = base.angles or angles or client:EyeAngles()
