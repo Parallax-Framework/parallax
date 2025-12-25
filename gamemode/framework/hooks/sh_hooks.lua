@@ -150,3 +150,61 @@ end
 function GM:ShowSpare2(client)
     return false
 end
+
+local HITGROUP_NAMES = {
+    [HITGROUP_HEAD]     = "head",
+    [HITGROUP_CHEST]    = "chest",
+    [HITGROUP_STOMACH]  = "stomach",
+    [HITGROUP_GEAR]     = "gear",
+    [HITGROUP_LEFTARM]  = "leftarm",
+    [HITGROUP_RIGHTARM] = "rightarm",
+    [HITGROUP_LEFTLEG]  = "leftleg",
+    [HITGROUP_RIGHTLEG] = "rightleg"
+}
+
+local function resolveMultiplier(map, hitGroup)
+    if ( !istable(map) ) then return nil end
+
+    -- Numeric lookup first
+    local m = map[hitGroup]
+    if ( m != nil ) then return m end
+
+    -- String lookup by canonical name
+    local name = HITGROUP_NAMES[hitGroup]
+    if ( name ) then
+        m = map[name]
+        if ( m != nil ) then return m end
+    end
+
+    -- Fallbacks
+    return map["default"] or map["*"] or map["all"]
+end
+
+function GM:ScalePlayerDamage(client, hitGroup, damageInfo)
+    local character = IsValid(client) and client:GetCharacter() or nil
+    if ( !character ) then return end
+
+    local scale = 1.0
+
+    -- Faction-defined scaling
+    local factionData = character:GetFactionData()
+    if ( factionData and factionData.scaleHitGroups ) then
+        local m = resolveMultiplier(factionData.scaleHitGroups, hitGroup)
+        if ( m != nil ) then
+            scale = scale * math.Clamp(tonumber(m) or 1.0, 0.0, 5.0)
+        end
+    end
+
+    -- Class-defined scaling
+    local classData = character:GetClassData()
+    if ( classData and classData.scaleHitGroups ) then
+        local m = resolveMultiplier(classData.scaleHitGroups, hitGroup)
+        if ( m != nil ) then
+            scale = scale * math.Clamp(tonumber(m) or 1.0, 0.0, 5.0)
+        end
+    end
+
+    if ( scale != 1.0 ) then
+        damageInfo:ScaleDamage(scale)
+    end
+end
