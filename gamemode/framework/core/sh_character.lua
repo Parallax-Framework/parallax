@@ -166,7 +166,6 @@ ax.character:RegisterVar("faction", {
             client:SetTeam(value)
         end
 
-        -- call onset and onleave hooks
         local previousFaction = character:GetFactionData()
         local factionTable = ax.faction:Get(value)
         if ( previousFaction and isfunction(previousFaction.OnLeave) ) then
