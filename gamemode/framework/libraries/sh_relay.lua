@@ -52,13 +52,13 @@ function ENTITY:SetRelay(name, value, bNoNetworking, recipients)
     end
 
     ax.relay.data[index] = ax.relay.data[index] or {}
-    
+
     -- Only network if the value actually changed
     local oldValue = ax.relay.data[index][name]
     if ( oldValue == value ) then
         return  -- No change, skip networking
     end
-    
+
     ax.relay.data[index][name] = value
 
     if ( !bNoNetworking and SERVER ) then
