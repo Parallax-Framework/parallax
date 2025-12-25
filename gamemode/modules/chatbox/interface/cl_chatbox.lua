@@ -92,7 +92,7 @@ function PANEL:Init()
         cat:Dock(LEFT)
         cat:SetFont("ax.small")
         cat:SetFontDefault("ax.small")
-        cat:SetFontHovered("ax.regular.bold")
+        cat:SetFontHovered("ax.small.bold")
         cat:SetText(tostring(i))
         cat:SetTall(cat:GetTall() / 2)
 

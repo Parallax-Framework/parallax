@@ -122,13 +122,13 @@ ax.chat:Add("ic", {
     noCommand = true,
     OnRun = function(this, client, message)
         local icColor = ax.config:Get("chat.ic.color")
-        local baseFont = "ax.regular"
+        local baseFont = "ax.small"
         return icColor, "<font=" .. baseFont .. ">" .. client:Nick() .. " " .. expressions["ic"][math.random(#expressions["ic"])] .. ", \"" .. ax.chat:FormatWithMarkdown(message, baseFont) .. "\"</font>"
     end,
     OnFormatForListener = function(this, speaker, listener, message)
         local icColor = ax.config:Get("chat.ic.color")
         local verb = GetVerb(listener, "ic")
-        local baseFont = "ax.regular"
+        local baseFont = "ax.small"
         local formattedMessage = ax.chat:FormatWithMarkdown(message, baseFont)
         local target = GetLookTarget(speaker)
 
