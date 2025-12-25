@@ -346,7 +346,7 @@ end
 ax.viewstack:RegisterModifier("ragdoll", function(client, patch)
     if ( !IsValid(client) or client:InVehicle() ) then return end
 
-    local ragdollIndex = client:GetRelay("ax.ragdoll.index", -1)
+    local ragdollIndex = client:GetRelay("ragdoll.index", -1)
     local ragdoll = Entity(ragdollIndex)
     if ( !IsValid(ragdoll) or client:Alive() ) then return end
 
