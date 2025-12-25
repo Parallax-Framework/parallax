@@ -150,7 +150,7 @@ ax.chat:Add("ic", {
     end,
     CanHear = function(this, speaker, listener)
         local distance = ax.config:Get("chat.ic.distance", 400)
-        return speaker:GetPos():DistToSqr(listener:GetPos()) <= distance ^ 2
+        return speaker:GetPos():DistToSqr(listener:GetPos()) <= distance * distance
     end
 })
 
@@ -164,7 +164,7 @@ ax.chat:Add("roll", {
     end,
     CanHear = function(this, speaker, listener)
         local distance = ax.config:Get("chat.me.distance", 400)
-        return speaker:GetPos():DistToSqr(listener:GetPos()) <= distance ^ 2
+        return speaker:GetPos():DistToSqr(listener:GetPos()) <= distance * distance
     end
 })
 
@@ -202,7 +202,7 @@ ax.chat:Add("yell", {
     end,
     CanHear = function(this, speaker, listener)
         local distance = ax.config:Get("chat.yell.distance", 700)
-        return speaker:GetPos():DistToSqr(listener:GetPos()) <= distance ^ 2
+        return speaker:GetPos():DistToSqr(listener:GetPos()) <= distance * distance
     end
 })
 
@@ -240,7 +240,7 @@ ax.chat:Add("whisper", {
     end,
     CanHear = function(this, speaker, listener)
         local distance = ax.config:Get("chat.whisper.distance", 200)
-        return speaker:GetPos():DistToSqr(listener:GetPos()) <= distance ^ 2
+        return speaker:GetPos():DistToSqr(listener:GetPos()) <= distance * distance
     end
 })
 
@@ -253,7 +253,7 @@ ax.chat:Add("looc", {
     end,
     CanHear = function(this, speaker, listener)
         local distance = ax.config:Get("chat.ooc.distance", 600)
-        return listener:GetCharacter() == nil or speaker:GetPos():DistToSqr(listener:GetPos()) <= distance ^ 2
+        return listener:GetCharacter() == nil or speaker:GetPos():DistToSqr(listener:GetPos()) <= distance * distance
     end
 })
 
@@ -282,7 +282,7 @@ ax.chat:Add("me", {
     end,
     CanHear = function(this, speaker, listener)
         local distance = ax.config:Get("chat.me.distance", 600)
-        return speaker:GetPos():DistToSqr(listener:GetPos()) <= distance ^ 2
+        return speaker:GetPos():DistToSqr(listener:GetPos()) <= distance * distance
     end
 })
 
@@ -294,6 +294,6 @@ ax.chat:Add("it", {
     end,
     CanHear = function(this, speaker, listener)
         local distance = ax.config:Get("chat.it.distance", 600)
-        return speaker:GetPos():DistToSqr(listener:GetPos()) <= distance ^ 2
+        return speaker:GetPos():DistToSqr(listener:GetPos()) <= distance * distance
     end
 })
