@@ -333,6 +333,12 @@ end
 function GM:DrawDeathNotice(_x, _y)
 end
 
+function GM:OnPauseMenuShow()
+    if ( IsValid(ax.gui.main) ) then
+        ax.gui.main:Remove()
+    end
+end
+
 ax.viewstack:RegisterModifier("ragdoll", function(client, patch)
     if ( !IsValid(client) or client:InVehicle() ) then return end
 
