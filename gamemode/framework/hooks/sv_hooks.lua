@@ -25,23 +25,34 @@ function GM:DoPlayerDeath(client, attacker, damageInfo)
     client:ResetRateLimit("respawn")
     client:RateLimit("respawn", 5)
 
-    client:CreateRagdoll()
-    local ragdoll = client:GetRagdollEntity()
+    local ragdoll = ents.Create("prop_ragdoll")
+    ragdoll:SetModel(client:GetModel())
+    ragdoll:SetMaterial(client:GetMaterial())
+    ragdoll:SetSkin(client:GetSkin())
+
+    local materials = client:GetMaterials()
+    for i = 1, #materials do
+        ragdoll:SetSubMaterial(i - 1, materials[i])
+    end
+
+    local bodyGroups = {}
+    for i = 0, client:GetNumBodyGroups() - 1 do
+        bodyGroups[i] = client:GetBodygroup(i)
+    end
+
+    for i = 0, #bodyGroups do
+        ragdoll:SetBodygroup(i, bodyGroups[i])
+    end
+
+    ragdoll:SetPos(client:GetPos())
+    ragdoll:SetAngles(client:GetAngles())
+    ragdoll:Spawn()
+    ragdoll:SetSequence(client:GetSequence())
+    ragdoll:Activate()
+
+    client:SetRelay("ax.ragdoll.index", ragdoll:EntIndex())
+
     if ( IsValid(ragdoll) ) then
-        ragdoll:SetMaterial(client:GetMaterial())
-        ragdoll:SetSkin(client:GetSkin())
-
-        local materials = client:GetMaterials()
-        for i = 1, #materials do
-            ragdoll:SetSubMaterial(i - 1, materials[i])
-        end
-
-        ragdoll:SetPos(client:GetPos())
-        ragdoll:SetAngles(client:GetAngles())
-        ragdoll:Spawn()
-        ragdoll:SetSequence(client:GetSequence())
-        ragdoll:Activate()
-
         local physicsObject = ragdoll:GetPhysicsObject()
         if ( IsValid(physicsObject) ) then
             physicsObject:SetVelocity(client:GetVelocity())
@@ -62,6 +73,8 @@ function GM:DoPlayerDeath(client, attacker, damageInfo)
                 end
             end
         end
+
+        SafeRemoveEntityDelayed(ragdoll, 300)
     end
 end
 
