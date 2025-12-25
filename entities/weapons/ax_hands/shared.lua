@@ -462,37 +462,37 @@ function SWEP:DoPunch()
             local dmgInfo = DamageInfo()
             dmgInfo:SetAttacker(owner)
             dmgInfo:SetInflictor(self)
-            dmgInfo:SetDamage(5)
+            dmgInfo:SetDamage(math.Rand(self.Primary.Damage * 0.8, self.Primary.Damage * 1.2))
             dmgInfo:SetDamageType(DMG_CLUB)
             dmgInfo:SetDamagePosition(trace.HitPos)
             dmgInfo:SetDamageForce(owner:GetAimVector() * 1000)
+            dmgInfo:SetReportedPosition(owner:GetShootPos())
 
             owner:EmitSound(Sound("Flesh.ImpactHard"))
 
             if ( entity:IsPlayer() ) then
-                if ( owner.bFistDamage and !entity.bFistDamage or !owner.bFistDamage ) then
-                    owner:LagCompensation(false)
-                    return
-                end
+                --if ( entity:GetRelay("state") == STATE_KNOCKOUT ) then
+                --    owner:LagCompensation(false)
+                --    return
+                --end
 
-                if ( entity:GetRelay("state") == STATE_KNOCKOUT ) then
-                    owner:LagCompensation(false)
-                    return
-                end
-
-                if ( entity:Health() <= 50 ) then
-                    if ( math.random(1, 10) == 1 ) then
-                        entity:SetRelay("state", STATE_KNOCKOUT)
-                    else
-                        entity:DispatchTraceAttack(dmgInfo, trace, trace.HitNormal)
-                    end
-                else
+                --if ( entity:Health() <= 50 ) then
+                --    if ( math.random(10) == 1 ) then
+                --        entity:SetRelay("state", STATE_KNOCKOUT)
+                --    else
+                --        entity:DispatchTraceAttack(dmgInfo, trace, trace.HitNormal)
+                --    end
+                --else
                     entity:DispatchTraceAttack(dmgInfo, trace, trace.HitNormal)
-                end
+                    -- push the player back slightly
+                    local pushback = owner:GetAimVector() * 100
+                    pushback.z = 50
+                    entity:SetVelocity(entity:GetVelocity() + pushback)
+                --end
             else
                 entity:DispatchTraceAttack(dmgInfo, trace, trace.HitNormal)
 
-                if ( math.random(1, 2) == 1 ) then
+                if ( math.random(2) == 1 ) then
                     entity:EmitSound("physics/plastic/plastic_box_impact_hard" .. math.random(1, 4) .. ".wav", 80)
                 else
                     entity:EmitSound("physics/wood/wood_crate_impact_hard" .. math.random(2, 3) .. ".wav", 80)
