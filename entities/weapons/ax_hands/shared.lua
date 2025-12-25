@@ -433,12 +433,14 @@ function SWEP:DoPunch()
         end
     end
 
-    owner:LagCompensation(true)
+
 
     local data = {}
     data.start = owner:GetShootPos()
     data.endpos = data.start + owner:GetAimVector() * 96
     data.filter = owner
+
+    owner:LagCompensation(true)
 
     local trace = util.TraceLine(data)
     local canPunch = hook.Run("PrePlayerPunch", owner, trace)
@@ -446,6 +448,8 @@ function SWEP:DoPunch()
         owner:LagCompensation(false)
         return
     end
+
+    owner:LagCompensation(false)
 
     owner:SetAnimation(PLAYER_ATTACK1)
     self:EmitSound(Sound("WeaponFrag.Throw"))
@@ -520,8 +524,6 @@ function SWEP:DoPunch()
     end
 
     hook.Run("PostPlayerPunch", owner, trace)
-
-    owner:LagCompensation(false)
 end
 
 local down = Vector(0, 0, -1)
