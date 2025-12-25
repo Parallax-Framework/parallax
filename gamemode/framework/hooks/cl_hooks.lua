@@ -342,7 +342,8 @@ end
 ax.viewstack:RegisterModifier("ragdoll", function(client, patch)
     if ( !IsValid(client) or client:InVehicle() ) then return end
 
-    local ragdoll = client:GetRagdollEntity()
+    local ragdollIndex = client:GetRelay("ax.ragdoll.index", -1)
+    local ragdoll = Entity(ragdollIndex)
     if ( !IsValid(ragdoll) or client:Alive() ) then return end
 
     local boneId = ragdoll:LookupBone("ValveBiped.Bip01_Head1")
