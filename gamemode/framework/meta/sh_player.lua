@@ -252,8 +252,11 @@ else
 
     net.Receive("ax.player.playGesture", function(len)
         local sender = net.ReadPlayer()
+        if ( !IsValid(sender) ) then return end
+
         local slot = net.ReadUInt(8)
         local sequence = net.ReadUInt(16)
+
         sender:PlayGesture(slot, sequence)
     end)
 end
