@@ -47,13 +47,12 @@ function MODULE:PlayerSay(client, text, teamChat)
             for _, commandName in ipairs(registryKeys) do
                 if ( string.lower(commandName) == string.lower(name) ) then
                     name = commandName
-                    commandFound = true
                     break
                 end
             end
         end
 
-        if ( name and name != "" and commandFound ) then
+        if ( name and name != "" and ax.command.registry[name] ) then
             -- Run the command inside pcall to avoid a server-side error killing the hook
             local ok, runOk, result = pcall(function()
                 return ax.command:Run(client, name, rawArgs)
