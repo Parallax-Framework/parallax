@@ -296,7 +296,9 @@ function SWEP:SecondaryAttack()
     data.endpos = data.start + owner:GetAimVector() * ax.config:Get("handsRange", 96)
     data.mask = MASK_SHOT
     data.filter = {self, owner}
-    local traceData = util.TraceLine(data)
+    data.mins = Vector(-16, -16, -16)
+    data.maxs = Vector(16, 16, 16)
+    local traceData = util.TraceHull(data)
 
     local entity = traceData.Entity
     if ( SERVER and IsValid(entity) ) then
@@ -319,7 +321,7 @@ function SWEP:SecondaryAttack()
             hook.Run("PlayerKnock", owner, entity)
         elseif ( !entity:IsPlayer() and !entity:IsNPC() ) then
             self:DoPickup()
-        elseif entity:IsPlayer() and entity:Alive() then
+        elseif ( entity:IsPlayer() and entity:Alive() ) then
             if ( !self:RateLimit("push", 0.5) ) then return end
             if ( entity:GetPos():DistToSqr(owner:GetPos()) > 2000 ) then return end
             if ( hook.Run("PlayerCanPush", owner, entity) == false ) then
