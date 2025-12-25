@@ -115,6 +115,11 @@ function ax.module:Include(path, timeFilter)
                     ax.util:PrintSuccess("Module \"" .. tostring(MODULE.name) .. "\" initialized successfully.")
                     ax.module.stored[MODULE.uniqueID] = MODULE
 
+                    if ( isfunction( MODULE.OnLoaded ) ) then
+                        MODULE:OnLoaded()
+                    end
+
+                    hook.Run("OnModuleLoaded", MODULE)
                     MODULE = nil
                 end
             end
