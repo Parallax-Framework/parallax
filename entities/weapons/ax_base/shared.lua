@@ -42,6 +42,7 @@ SWEP.Primary.Sequence = SWEP.Primary.Sequence or ACT_VM_PRIMARYATTACK
 SWEP.Primary.PlaybackRate = SWEP.Primary.PlaybackRate or 1
 SWEP.Primary.IronSequence = SWEP.Primary.IronSequence or nil
 SWEP.Primary.IronPlaybackRate = SWEP.Primary.IronPlaybackRate or 1
+SWEP.Primary.IronSequences = SWEP.Primary.IronSequences or nil -- Optional: array of ironsight fire sequences to cycle through
 
 SWEP.Secondary = {
     ClipSize = -1,
@@ -92,6 +93,14 @@ SWEP.IdleAnim = ACT_VM_IDLE -- Default idle animation
 SWEP.WalkAnimPlaybackRate = 1
 SWEP.SprintAnimPlaybackRate = 1
 SWEP.IdleAnimPlaybackRate = 1
+
+-- Ironsight animation variants (override base animations when aiming)
+SWEP.IdleAnimIron = nil -- Idle animation while in ironsights; if nil, uses IdleAnim
+SWEP.WalkAnimIron = nil -- Walk animation while in ironsights; if nil, uses WalkAnim
+SWEP.SprintAnimIron = nil -- Sprint animation while in ironsights; if nil, uses SprintAnim
+SWEP.IdleAnimIronPlaybackRate = 1 -- Playback rate for ironsight idle
+SWEP.WalkAnimIronPlaybackRate = 1 -- Playback rate for ironsight walk
+SWEP.SprintAnimIronPlaybackRate = 1 -- Playback rate for ironsight sprint
 
 SWEP.Reloading = {
     Sequence = ACT_VM_RELOAD,
@@ -155,6 +164,10 @@ function SWEP:SetupDataTables()
     self.MovementState = "idle" -- idle, walk, sprint
     self.LastMovementState = "idle"
     self.MovementStateChangeTime = 0
+
+    -- Ironsight fire animation cycling
+    self.IronFireIndex = 0
+    self.LastIronShotTime = 0
 end
 
 function SWEP:GetIronSights()
@@ -251,9 +264,16 @@ function SWEP:PrimaryAttack()
     local anim = self.Primary.Sequence
     local rate = self.Primary.PlaybackRate or 1
 
-    if ( self:GetIronSights() and self.Primary.IronSequence ) then
-        anim = self.Primary.IronSequence
-        rate = self.Primary.IronPlaybackRate or rate
+    if ( self:GetIronSights() ) then
+        -- Cycle through ironsight fire sequences if available
+        if ( self.Primary.IronSequences and #self.Primary.IronSequences > 0 ) then
+            self.IronFireIndex = (self.IronFireIndex % #self.Primary.IronSequences) + 1
+            anim = self.Primary.IronSequences[self.IronFireIndex]
+            rate = self.Primary.IronPlaybackRate or rate
+        elseif ( self.Primary.IronSequence ) then
+            anim = self.Primary.IronSequence
+            rate = self.Primary.IronPlaybackRate or rate
+        end
     end
 
     self:PlayAnimation(anim, rate)
@@ -627,30 +647,51 @@ end
 
 --- Updates movement animation based on current player state.
 -- Called from Think, handles transitions between idle/walk/sprint.
+-- Checks for ironsight variants when aiming down sights.
 -- @realm shared
 function SWEP:UpdateMovementAnimation()
     if ( self:GetReloading() ) then return end
 
     local state = self:GetMovementState()
+    local isIronsight = self:GetIronSights()
 
-    -- State changed, play appropriate animation
-    if ( state != self.MovementState ) then
+    -- State changed or ironsight state changed, play appropriate animation
+    if ( state != self.MovementState or isIronsight != self.LastIronSightState ) then
         self.LastMovementState = self.MovementState
         self.MovementState = state
+        self.LastIronSightState = isIronsight
         self.MovementStateChangeTime = CurTime()
 
         local anim = nil
         local rate = 1
 
-        if ( state == "sprint" and self.SprintAnim ) then
-            anim = self.SprintAnim
-            rate = self.SprintAnimPlaybackRate or 1
-        elseif ( state == "walk" and self.WalkAnim ) then
-            anim = self.WalkAnim
-            rate = self.WalkAnimPlaybackRate or 1
-        elseif ( state == "idle" and self.IdleAnim ) then
-            anim = self.IdleAnim
-            rate = self.IdleAnimPlaybackRate or 1
+        if ( state == "sprint" ) then
+            -- Prefer ironsight sprint if aiming and available
+            if ( isIronsight and self.SprintAnimIron ) then
+                anim = self.SprintAnimIron
+                rate = self.SprintAnimIronPlaybackRate or 1
+            elseif ( self.SprintAnim ) then
+                anim = self.SprintAnim
+                rate = self.SprintAnimPlaybackRate or 1
+            end
+        elseif ( state == "walk" ) then
+            -- Prefer ironsight walk if aiming and available
+            if ( isIronsight and self.WalkAnimIron ) then
+                anim = self.WalkAnimIron
+                rate = self.WalkAnimIronPlaybackRate or 1
+            elseif ( self.WalkAnim ) then
+                anim = self.WalkAnim
+                rate = self.WalkAnimPlaybackRate or 1
+            end
+        elseif ( state == "idle" ) then
+            -- Prefer ironsight idle if aiming and available
+            if ( isIronsight and self.IdleAnimIron ) then
+                anim = self.IdleAnimIron
+                rate = self.IdleAnimIronPlaybackRate or 1
+            elseif ( self.IdleAnim ) then
+                anim = self.IdleAnim
+                rate = self.IdleAnimPlaybackRate or 1
+            end
         end
 
         if ( anim ) then
