@@ -334,7 +334,7 @@ function GM:DrawDeathNotice(_x, _y)
 end
 
 function GM:OnPauseMenuShow()
-    if ( IsValid(ax.gui.main) and IsValid(ax.client:GetCharacter()) ) then
+    if ( IsValid(ax.gui.main) and ax.client:GetCharacter() ) then
         ax.gui.main:Remove()
     end
 end
