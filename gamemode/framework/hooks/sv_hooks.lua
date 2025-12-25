@@ -410,7 +410,8 @@ local voiceDistance
 local function CalcPlayerCanHearPlayersVoice(listener)
     if ( !IsValid(listener) ) then return end
 
-    voiceDistance = ax.config:Get("voice.distance", 512) ^ 2
+    local dist = ax.config:Get("voice.distance", 512)
+    voiceDistance = dist * dist
 
     listener.axVoiceHear = listener.axVoiceHear or {}
     listener.axVoiceHearDynamic = listener.axVoiceHearDynamic or {}

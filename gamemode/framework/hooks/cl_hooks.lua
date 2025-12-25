@@ -70,7 +70,7 @@ function GM:HUDPaintBackground()
             mask = MASK_SHOT
         })
 
-        if ( trace.Hit and trace.HitPos:DistToSqr(client:GetShootPos()) < 96 ^ 2 ) then
+        if ( trace.Hit and trace.HitPos:DistToSqr(client:GetShootPos()) < 96 * 96 ) then
             vignetteColor.a = Lerp(FrameTime(), vignetteColor.a, 200)
         else
             vignetteColor.a = Lerp(FrameTime(), vignetteColor.a, 255)

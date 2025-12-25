@@ -75,7 +75,7 @@ function MODULE:PostDrawTranslucentRenderables()
         if ( !IsValid(client) or !client:Alive() ) then continue end
 
         local distToSqr = client:EyePos():DistToSqr(EyePos())
-        if ( distToSqr > 256 ^ 2 ) then continue end
+        if ( distToSqr > 256 * 256 ) then continue end
 
         local text = client:GetRelay("chatText", "")
         if ( text == "" ) then continue end
