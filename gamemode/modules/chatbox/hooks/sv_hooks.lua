@@ -44,7 +44,8 @@ function MODULE:PlayerSay(client, text, teamChat)
         local commandFound = tobool(ax.command.registry[name])
         if ( !commandFound ) then
             local registryKeys = table.GetKeys(ax.command.registry)
-            for _, commandName in ipairs(registryKeys) do
+            for _ = 1, #registryKeys do
+                local commandName = registryKeys[_]
                 if ( string.lower(commandName) == string.lower(name) ) then
                     name = commandName
                     break
