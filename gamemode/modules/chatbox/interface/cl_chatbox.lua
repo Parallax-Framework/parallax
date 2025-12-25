@@ -150,6 +150,7 @@ function PANEL:Init()
     self.history = self:Add("ax.scroller.vertical")
     self.history:GetVBar():SetWide(0)
     self.history:SetInverted(true)
+    self.history:SetMouseInputEnabled(false)
 
     self.recommendations = self:Add("ax.scroller.vertical")
     self.recommendations:SetVisible(false)
@@ -223,7 +224,7 @@ function PANEL:PopulateRecommendations(text)
         self.recommendations.panels = {}
         self.recommendations.maxSelection = #self.recommendations.list
         if ( self.recommendations.indexSelect > self.recommendations.maxSelection ) then
-            self.recommendations.indexSelect = 1
+            self.recommendations.indexSelect = 0
         end
 
         for i = 1, #self.recommendations.list do
@@ -256,7 +257,7 @@ function PANEL:PopulateRecommendations(text)
             local title = rec:Add("ax.text")
             title:Dock(LEFT)
             title:DockMargin(8, 0, 8, 0)
-            title:SetFont("ax.small")
+            title:SetFont("ax.tiny")
             title:SetText(command.displayName, true)
 
             local descriptionText = command.description
@@ -269,8 +270,9 @@ function PANEL:PopulateRecommendations(text)
             description:DockMargin(8, 0, 8, 0)
             description:SetFont("ax.tiny")
             description:SetText(descriptionText, true)
+            description:SetTextColor(Color(255, 255, 255, 150))
 
-            rec:SetTall(math.max(title:GetTall(), description:GetTall()) + ScreenScale(2))
+            rec:SetTall(math.max(title:GetTall(), description:GetTall()) + ScreenScale(1))
 
             self.recommendations.panels[i] = rec
         end
@@ -288,9 +290,7 @@ function PANEL:CycleRecommendations()
     end
 
     local recommendations = self.recommendations.list
-    if ( #recommendations < 1 ) then
-        return
-    end
+    if ( #recommendations < 1 ) then return end
 
     local index = self.recommendations.indexSelect
     index = index + 1
@@ -314,7 +314,6 @@ function PANEL:CycleRecommendations()
         return
     end
 
-    print( data.name )
     self.entry:SetText("/" .. data.name)
     self.entry:RequestFocus()
     self.entry:SetCaretPos(2 + #data.name)
