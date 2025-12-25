@@ -13,6 +13,13 @@ local PANEL = {}
 
 DEFINE_BASECLASS("EditablePanel")
 
+AccessorFunc(PANEL, "m_bIsMenuComponent", "IsMenu", FORCE_BOOL)
+AccessorFunc(PANEL, "m_bDraggable", "Draggable", FORCE_BOOL)
+AccessorFunc(PANEL, "m_bSizable", "Sizable", FORCE_BOOL)
+AccessorFunc(PANEL, "m_bScreenLock", "ScreenLock", FORCE_BOOL)
+AccessorFunc(PANEL, "m_iMinWidth", "MinWidth", FORCE_NUMBER)
+AccessorFunc(PANEL, "m_iMinHeight", "MinHeight", FORCE_NUMBER)
+
 function PANEL:Init()
     -- Remove any existing chatbox instance before creating a new one
     if ( IsValid(ax.gui.chatbox) ) then
@@ -22,91 +29,28 @@ function PANEL:Init()
     self.chatType = "ic"
     self.chatTypePrevious = "ic"
 
+    self:SetFocusTopLevel(true)
+
     self:SetSize(hook.Run("GetChatboxSize"))
     self:SetPos(hook.Run("GetChatboxPos"))
 
-    self.categories = self:Add("ax.scroller.horizontal")
-    self.categories:Dock(TOP)
-    self.categories:InvalidateParent(true)
-    self.categories.Paint = function(this, width, height)
-        ax.render.Draw(0, 0, 0, width, height, Color(0, 0, 0, 150))
+    self:SetDraggable(true)
+    self:SetSizable(true)
+    self:SetScreenLock(true)
+
+    self:SetMinWidth(ax.util:ScreenScale(225) / 3)
+    self:SetMinHeight(ax.util:ScreenScaleH(150) / 3)
+
+    self.bottom = self:Add("DPanel")
+    self.bottom:Dock(BOTTOM)
+    self.bottom:DockMargin(ScreenScale(2), ScreenScale(2), ScreenScale(2), ScreenScale(2))
+    self.bottom.Paint = function(this, width, height)
+        ax.render.Draw(0, 0, 0, width, height, Color(0, 0, 0, 100))
     end
 
-    -- Enable dragging the chatbox by grabbing the top bar
-    self.categories:SetMouseInputEnabled(true)
-    self.categories:SetCursor("sizeall")
-    self.categories.OnMousePressed = function(this, code)
-        if ( code == MOUSE_LEFT ) then
-            local px, py = self:GetPos()
-            this.dragOffsetX = gui.MouseX() - px
-            this.dragOffsetY = gui.MouseY() - py
-            this.dragging = true
-            this:MouseCapture(true)
-        elseif ( code == MOUSE_RIGHT ) then
-            local menu = DermaMenu()
-            menu:AddOption("Reset Position", function()
-                ax.option:SetToDefault("chat.x")
-                ax.option:SetToDefault("chat.y")
-
-                local rx, ry = hook.Run("GetChatboxPos")
-                self:SetPos(rx, ry)
-            end)
-            menu:AddOption("Reset Size", function()
-                ax.option:SetToDefault("chat.width")
-                ax.option:SetToDefault("chat.height")
-
-                local rw, rh = hook.Run("GetChatboxSize")
-                self:SetSize(rw, rh)
-                self:InvalidateLayout(true)
-            end)
-            menu:Open()
-        end
-    end
-    self.categories.OnMouseReleased = function(this, code)
-        if ( this.dragging ) then
-            this.dragging = false
-            this:MouseCapture(false)
-
-            -- Persist new position
-            local x, y = self:GetPos()
-            ax.option:Set("chat.x", x)
-            ax.option:Set("chat.y", y)
-        end
-    end
-    self.categories.Think = function(this)
-        if ( this.dragging ) then
-            local mx, my = gui.MouseX(), gui.MouseY()
-            local nx = mx - (this.dragOffsetX or 0)
-            local ny = my - (this.dragOffsetY or 0)
-
-            local maxX = math.max(0, ScrW() - self:GetWide())
-            local maxY = math.max(0, ScrH() - self:GetTall())
-            self:SetPos(math.Clamp(nx, 0, maxX), math.Clamp(ny, 0, maxY))
-        end
-    end
-
-    -- Add some temporary filler categories
-    -- TODO: Implement a category system where you can select chat types to show and hide.
-    for i = 1, 3 do
-        local cat = self.categories:Add("ax.button.flat")
-        cat:Dock(LEFT)
-        cat:SetFont("ax.small")
-        cat:SetFontDefault("ax.small")
-        cat:SetFontHovered("ax.small.bold")
-        cat:SetText(tostring(i))
-        cat:SetTall(cat:GetTall() / 2)
-
-        self.categories:SetTall(math.max(self.categories:GetTall(), cat:GetTall()))
-    end
-
-    local bottom = self:Add("EditablePanel")
-    bottom:Dock(BOTTOM)
-    bottom:DockMargin(ScreenScale(2), ScreenScale(2), ScreenScale(2), ScreenScale(2))
-
-    self.entry = bottom:Add("ax.text.entry")
+    self.entry = self.bottom:Add("ax.text.entry")
     self.entry:Dock(FILL)
-    self.entry:DockMargin(ScreenScale(1), ScreenScale(1), ScreenScale(1), ScreenScale(1))
-    self.entry:SetFont("ax.small")
+    self.entry:SetFont("ax.tiny")
     self.entry:SetPlaceholderText("Say something...")
     self.entry:SetDrawLanguageID(false)
     self.entry:SetTabbingDisabled(true)
@@ -114,11 +58,7 @@ function PANEL:Init()
         this:PaintInternal(width, height)
     end
 
-    bottom:SizeToChildren(false, true)
-    bottom:SetTall(self.entry:GetTall())
-    bottom.Paint = function(this, width, height)
-        ax.render.Draw(0, 0, 0, width, height, Color(0, 0, 0, 100))
-    end
+    self.bottom:SetTall(ScreenScale(8))
 
     self.entry.OnEnter = function(this)
         local text = this:GetValue()
@@ -222,98 +162,6 @@ function PANEL:Init()
     self.recommendations.Paint = function(this, width, height)
         ax.util:DrawBlur(0, 0, 0, width, height, color_white)
         ax.render.Draw(0, 0, 0, width, height, Color(0, 0, 0, 100))
-    end
-
-    -- Resizer handle (corner-based, position-adaptive)
-    self.sizer = self:Add("EditablePanel")
-    self.sizer:SetSize(self.categories:GetTall(), self.categories:GetTall())
-    self.sizer.anchorX = "right"
-    self.sizer.anchorY = "top"
-    self.sizer:SetCursor("sizenesw")
-    self.sizer.Paint = function(this, w, h)
-        surface.SetDrawColor(255, 255, 255, 25)
-        for i = 0, math.floor(ScreenScale(1)) do
-            surface.DrawLine(w - 1 - i * ScreenScale(1), 0, w - 1, i * ScreenScale(1))
-        end
-    end
-    self.sizer.OnMousePressed = function(this, code)
-        if ( code == MOUSE_LEFT ) then
-            -- Determine which corner the sizer is in at press time
-            local sCx = this.x + this:GetWide() / 2
-            local sCy = this.y + this:GetTall() / 2
-            local pw = self:GetWide()
-            local ph = self:GetTall()
-            this.anchorX = (sCx > pw / 2) and "right" or "left"
-            this.anchorY = (sCy > ph / 2) and "bottom" or "top"
-
-            -- Set cursor based on corner
-            local diag = (this.anchorX == "right" and this.anchorY == "bottom") or (this.anchorX == "left" and this.anchorY == "top")
-            this:SetCursor(diag and "sizenwse" or "sizenesw")
-
-            -- Cache starting rect in screen space
-            local px, py = self:GetPos()
-            this.start = {
-                left = px,
-                top = py,
-                right = px + self:GetWide(),
-                bottom = py + self:GetTall()
-            }
-            this.dragging = true
-            this:MouseCapture(true)
-        end
-    end
-    self.sizer.OnMouseReleased = function(this)
-        if ( this.dragging ) then
-            this.dragging = false
-            this:MouseCapture(false)
-
-            local w, h = self:GetSize()
-            ax.option:Set("chat.width", w)
-            ax.option:Set("chat.height", h)
-        end
-    end
-    self.sizer.Think = function(this)
-        if ( this.dragging ) then
-            local minW, minH = 260, 180
-            local mx, my = gui.MouseX(), gui.MouseY()
-
-            local left = this.start.left
-            local topY = this.start.top
-            local right = this.start.right
-            local sBottom = this.start.bottom
-
-            local newX, newY, newW, newH
-
-            -- Horizontal (left/right anchored)
-            if ( this.anchorX == "right" ) then
-                -- left edge fixed, right follows mouse
-                newX = left
-                newW = math.Clamp(mx - left, minW, ScrW() - left)
-            else
-                -- right edge fixed, left follows mouse
-                local candidateW = math.Clamp(right - mx, minW, right)
-                newX = right - candidateW
-                newX = math.Clamp(newX, 0, right - minW)
-                newW = right - newX
-            end
-
-            -- Vertical (top/bottom anchored)
-            if ( this.anchorY == "bottom" ) then
-                -- top fixed, bottom follows mouse
-                newY = topY
-                newH = math.Clamp(my - topY, minH, ScrH() - topY)
-            else
-                -- bottom fixed, top follows mouse
-                local candidateH = math.Clamp(sBottom - my, minH, sBottom)
-                newY = sBottom - candidateH
-                newY = math.Clamp(newY, 0, sBottom - minH)
-                newH = sBottom - newY
-            end
-
-            self:SetPos(newX, newY)
-            self:SetSize(newW, newH)
-            self:InvalidateLayout(true)
-        end
     end
 
     self:SetVisible(false)
@@ -530,6 +378,58 @@ function PANEL:Think()
     if ( input.IsKeyDown(KEY_ESCAPE) and self:IsVisible() ) then
         self:SetVisible(false)
     end
+
+    local mousex = math.Clamp(gui.MouseX(), 1, ScrW() - 1)
+    local mousey = math.Clamp(gui.MouseY(), 1, ScrH() - 1)
+
+    if ( self.Dragging ) then
+        local x = mousex - self.Dragging[1]
+        local y = mousey - self.Dragging[2]
+
+        -- Lock to screen bounds if screenlock is enabled
+        if ( self:GetScreenLock() ) then
+            x = math.Clamp(x, 0, ScrW() - self:GetWide())
+            y = math.Clamp(y, 0, ScrH() - self:GetTall())
+        end
+
+        self:SetPos(x, y)
+
+        ax.option:Set("chat.x", x, false, true)
+        ax.option:Set("chat.y", y, false, true)
+    end
+
+    if ( self.Sizing ) then
+        local x = mousex - self.Sizing[1]
+        local y = mousey - self.Sizing[2]
+        local px, py = self:GetPos()
+
+        if ( x < self.m_iMinWidth ) then x = self.m_iMinWidth elseif ( x > ScrW() - px and self:GetScreenLock() ) then x = ScrW() - px end
+        if ( y < self.m_iMinHeight ) then y = self.m_iMinHeight elseif ( y > ScrH() - py and self:GetScreenLock() ) then y = ScrH() - py end
+
+        self:SetSize(x, y)
+        ax.option:Set("chat.width", x, false, true)
+        ax.option:Set("chat.height", y, false, true)
+        self:SetCursor("sizenwse")
+        return
+    end
+
+    local screenX, screenY = self:LocalToScreen( 0, 0 )
+    if ( self.Hovered and self.m_bSizable and mousex > ( screenX + self:GetWide() - 20 ) and mousey > ( screenY + self:GetTall() - 20 ) ) then
+        self:SetCursor("sizenwse")
+        return
+    end
+
+    if ( self.Hovered and self:GetDraggable() and mousey < ( screenY + 24 ) ) then
+        self:SetCursor("sizeall")
+        return
+    end
+
+    self:SetCursor("arrow")
+
+    -- Don't allow the frame to go higher than 0
+    if ( self.y < 0 ) then
+        self:SetPos(self.x, 0)
+    end
 end
 
 function PANEL:OnKeyCodePressed(key)
@@ -542,34 +442,79 @@ function PANEL:OnKeyCodePressed(key)
     self:CycleRecommendations()
 end
 
+function PANEL:OnMousePressed(mouseCode)
+    if ( mouseCode == MOUSE_RIGHT ) then
+        local menu = DermaMenu(false, self)
+        menu:AddOption("Close Chat", function()
+            self:SetVisible(false)
+        end)
+
+        menu:AddOption("Clear Chat History", function()
+            self.history:Clear()
+        end)
+
+        menu:AddSpacer()
+
+        menu:AddOption("Reset Position", function()
+            local x, y = ax.option:GetDefault("chat.x"), ax.option:GetDefault("chat.y")
+
+            self:SetPos(x, y)
+
+            ax.option:SetToDefault("chat.x")
+            ax.option:SetToDefault("chat.y")
+        end)
+
+        menu:AddOption("Reset Size", function()
+            local width, height = ax.option:GetDefault("chat.width"), ax.option:GetDefault("chat.height")
+
+            self:SetSize(width, height)
+
+            ax.option:SetToDefault("chat.width")
+            ax.option:SetToDefault("chat.height")
+        end)
+
+        menu:Open()
+        return
+    end
+
+    local screenX, screenY = self:LocalToScreen(0, 0)
+    if ( self.m_bSizable and gui.MouseX() > ( screenX + self:GetWide() - 20 ) and gui.MouseY() > ( screenY + self:GetTall() - 20 ) ) then
+        self.Sizing = {gui.MouseX() - self:GetWide(), gui.MouseY() - self:GetTall()}
+        self:MouseCapture(true)
+        return
+    end
+
+    if ( self:GetDraggable() and gui.MouseY() < ( screenY + 24 ) ) then
+        self.Dragging = {gui.MouseX() - self.x, gui.MouseY() - self.y}
+        self:MouseCapture(true)
+        return
+    end
+
+    self.entry:RequestFocus()
+end
+
+function PANEL:OnMouseReleased()
+    self.Dragging = nil
+    self.Sizing = nil
+    self:MouseCapture(false)
+end
+
 function PANEL:Paint(width, height)
     ax.util:DrawBlur(0, 0, 0, width, height, color_white)
-    ax.render.Draw(0, 0, 0, width, height, Color(0, 0, 0, 50))
+
+    ax.render.Draw(0, 0, 0, width, height, Color(50, 50, 50, 100))
+    ax.render.DrawMaterial(0, 0, 0, width, height, Color(0, 0, 0, 200), ax.util:GetMaterial("parallax/overlays/vignette.png"))
 end
 
 function PANEL:PerformLayout(width, height)
-    -- Recompute dynamic layout on size changes
-    if ( IsValid(self.categories) and IsValid(self.entry) and IsValid(self.history) ) then
-        self.history:SetSize(width, height - self.categories:GetTall() - self.entry:GetTall() - ScreenScale(8))
-        self.history:SetPos(ScreenScale(2), self.categories:GetTall() + ScreenScale(2))
+    if ( IsValid(self.bottom) and IsValid(self.history) ) then
+        self.history:SetSize(width - ScreenScale(4), height - self.bottom:GetTall() - ScreenScale(4) - ScreenScale(2))
+        self.history:SetPos(ScreenScale(2), ScreenScale(2))
     end
 
     if ( IsValid(self.recommendations) and IsValid(self.history) ) then
-        self.recommendations:SetSize(width - ScreenScale(4), height - self.categories:GetTall() - self.entry:GetTall() - ScreenScale(8))
-        self.recommendations:SetPos(ScreenScale(2), self.categories:GetTall() + ScreenScale(2))
-    end
-
-    if ( IsValid(self.sizer) ) then
-        -- Keep sizer sized like the top bar for a clean look
-        local sz = IsValid(self.categories) and self.categories:GetTall() or self.sizer:GetTall()
-        self.sizer:SetSize(sz, sz)
-
-        local x = (self.sizer.anchorX == "right") and (self:GetWide() - self.sizer:GetWide()) or 0
-        local y = (self.sizer.anchorY == "bottom") and (self:GetTall() - self.sizer:GetTall()) or 0
-        self.sizer:SetPos(x, y)
-
-        local diag = (self.sizer.anchorX == "right" and self.sizer.anchorY == "bottom") or (self.sizer.anchorX == "left" and self.sizer.anchorY == "top")
-        self.sizer:SetCursor(diag and "sizenwse" or "sizenesw")
+        self.recommendations:SetSize(width - ScreenScale(4), height / 2 - self.bottom:GetTall() - ScreenScale(8))
+        self.recommendations:SetPos(ScreenScale(2), ScreenScale(2))
     end
 end
 
