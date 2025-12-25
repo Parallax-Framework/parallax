@@ -50,7 +50,7 @@ function GM:DoPlayerDeath(client, attacker, damageInfo)
     ragdoll:SetSequence(client:GetSequence())
     ragdoll:Activate()
 
-    client:SetRelay("ax.ragdoll.index", ragdoll:EntIndex())
+    client:SetRelay("ragdoll.index", ragdoll:EntIndex())
 
     if ( IsValid(ragdoll) ) then
         local physicsObject = ragdoll:GetPhysicsObject()
@@ -75,6 +75,16 @@ function GM:DoPlayerDeath(client, attacker, damageInfo)
         end
 
         SafeRemoveEntityDelayed(ragdoll, 300)
+    end
+
+    local factionData = client:GetFactionData()
+    if ( factionData and factionData.OnDeath ) then
+        factionData:OnDeath(client, attacker, damageInfo)
+    end
+
+    local classData = client:GetClassData()
+    if ( classData and classData.OnDeath ) then
+        classData:OnDeath(client, attacker, damageInfo)
     end
 end
 
@@ -151,7 +161,7 @@ end
 function GM:PlayerSpawn(client)
     client:RemoveAllItems()
 
-    client:SetRelay("ax.ragdoll.index", -1)
+    client:SetRelay("ragdoll.index", -1)
     client:SetSlowWalkSpeed(ax.config:Get("speed.walk.slow"))
     client:SetWalkSpeed(ax.config:Get("speed.walk"))
     client:SetCrouchedWalkSpeed(ax.config:Get("speed.walk.crouched"))
