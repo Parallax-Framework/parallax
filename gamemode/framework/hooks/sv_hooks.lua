@@ -145,6 +145,16 @@ function GM:PlayerSpawn(client)
     client:SetJumpPower(ax.config:Get("jump.power"))
     client:SetRunSpeed(ax.config:Get("speed.run"))
 
+    local factionData = client:GetFactionData()
+    if ( factionData and factionData.OnSpawn ) then
+        factionData:OnSpawn(client)
+    end
+
+    local classData = client:GetClassData()
+    if ( classData and classData.OnSpawn ) then
+        classData:OnSpawn(client)
+    end
+
     hook.Run("PlayerLoadout", client)
 end
 
@@ -184,6 +194,16 @@ function GM:PlayerLoadout(client)
 
     client:SelectWeapon("ax_hands")
     client:SetDSP(1)
+
+    local factionData = client:GetFactionData()
+    if ( factionData and factionData.OnLoadout ) then
+        factionData:OnLoadout(client)
+    end
+
+    local classData = client:GetClassData()
+    if ( classData and classData.OnLoadout ) then
+        classData:OnLoadout(client)
+    end
 
     hook.Run("PostPlayerLoadout", client)
 
