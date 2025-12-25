@@ -267,13 +267,13 @@ end
 -- Supports: *italic*, **bold**, ***bold+italic***, __underline__, ~~strikeout~~
 -- @realm shared
 -- @param text string The text to parse
--- @param baseFont string The base font name (default: "ax.regular")
+-- @param baseFont string The base font name (default: "ax.small")
 -- @param styles table Active styles being applied
 -- @return string The formatted text with font tags
 function ax.chat:ParseMarkdown(text, baseFont, styles)
     if ( !isstring(text) or text == "" ) then return text end
 
-    baseFont = baseFont or "ax.regular"
+    baseFont = baseFont or "ax.small"
     styles = styles or {}
 
     local result = ""
@@ -409,7 +409,7 @@ function ax.chat:Format(message, options)
     message = string.Trim(message)
     options = options or {}
 
-    local baseFont = options.baseFont or "ax.regular"
+    local baseFont = options.baseFont or "ax.small"
     local enableMarkdown = options.markdown != false
     local capStyle = self:DetectCapitalization(message)
 

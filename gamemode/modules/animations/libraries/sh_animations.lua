@@ -773,8 +773,8 @@ ax.animations.stored["player_metrocop"] = {
     },
     ["pistol"] = {
         [ACT_MP_STAND_IDLE] = {{"pistolidle1", "pistolidle2", "pistolidle3"}, "pistolangryidle2"},
-        [ACT_MP_WALK] = {"walk_hold_pistol", "walk_aiming_pistol_all"},
-        [ACT_MP_RUN] = {"run_hold_pistol", "run_aiming_pistol_all"},
+        [ACT_MP_WALK] = {"walk_hold_pistol", "walk_aiming_pistol_alert_all"},
+        [ACT_MP_RUN] = {"run_hold_pistol", "run_aiming_pistol_alert_all"},
         [ACT_MP_CROUCH_IDLE] = {ACT_COVER_PISTOL_LOW, ACT_COVER_PISTOL_LOW},
         [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH, ACT_WALK_CROUCH},
         [ACT_MP_JUMP] = {"jump_slam", "jump_revolver"},
