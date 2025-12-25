@@ -11,8 +11,8 @@
 
 local width, height = 0, 0
 local x, y = 0, 0
-width, height = ax.util:ScreenScale(192), ax.util:ScreenScaleH(128)
-x, y = ax.util:ScreenScale(8), ScrH() - height - ax.util:ScreenScaleH(8)
+width, height = ax.util:ScreenScale(225), ax.util:ScreenScaleH(150)
+x, y = ax.util:ScreenScale(8), ScrH() / 1.25 - height - ax.util:ScreenScaleH(16)
 
 ax.option:Add("chat.width", ax.type.number, width, {
     description = "The width of the chat box.",

@@ -29,6 +29,19 @@ function MODULE:GetChatboxPos()
     return ax.option:Get("chat.x"), ax.option:Get("chat.y")
 end
 
+function MODULE:OnOptionChanged(optionName, oldValue, newValue)
+    if ( optionName == "chat.width" or optionName == "chat.height" ) then
+        if ( IsValid(ax.gui.chatbox) ) then
+            ax.gui.chatbox:SetSize(hook.Run("GetChatboxSize"))
+            ax.gui.chatbox:InvalidateLayout(true)
+        end
+    elseif ( optionName == "chat.x" or optionName == "chat.y" ) then
+        if ( IsValid(ax.gui.chatbox) ) then
+            ax.gui.chatbox:SetPos(hook.Run("GetChatboxPos"))
+        end
+    end
+end
+
 function MODULE:PlayerBindPress(client, bind, pressed)
     bind = utf8.lower(bind)
 
