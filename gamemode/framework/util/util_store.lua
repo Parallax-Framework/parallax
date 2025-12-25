@@ -187,8 +187,9 @@ function ax.util:CreateStore(spec, oldStore)
     -- @param key string Setting key
     -- @param value any New value
     -- @param bNoSave boolean Optional; when true, skip persistence
+    -- @param bNoCallback boolean Optional; when true, skip OnChanged and hooks
     -- @return boolean True if the value changed, false otherwise along with a reason
-    function store:Set(key, value, bNoSave)
+    function store:Set(key, value, bNoSave, bNoCallback)
         if ( !isstring(key) ) then
             ax.util:PrintDebug(spec.name, " Set: Invalid key")
             return false
@@ -239,18 +240,20 @@ function ax.util:CreateStore(spec, oldStore)
             CONFIG_CACHE[key] = coerced
         end
 
-        if ( isfunction(regEntry.data.OnChanged) ) then
-            ax.util:SafeCall(regEntry.data.OnChanged, oldValue, coerced, key)
-        end
+        if ( !bNoCallback ) then
+            if ( isfunction(regEntry.data.OnChanged) ) then
+                ax.util:SafeCall(regEntry.data.OnChanged, oldValue, coerced, key)
+            end
 
-        if ( spec.name == "config" ) then
-            hook.Run("OnConfigChanged", key, oldValue, coerced)
-        elseif ( spec.name == "option" ) then
-            hook.Run("OnOptionChanged", key, oldValue, coerced)
-        end
+            if ( spec.name == "config" ) then
+                hook.Run("OnConfigChanged", key, oldValue, coerced)
+            elseif ( spec.name == "option" ) then
+                hook.Run("OnOptionChanged", key, oldValue, coerced)
+            end
 
-        if ( !bNoSave ) then
-            self:Save()
+            if ( !bNoSave ) then
+                self:Save()
+            end
         end
 
         if ( store.networkedKeys[key] ) then
