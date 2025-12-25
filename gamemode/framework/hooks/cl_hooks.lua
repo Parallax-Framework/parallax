@@ -87,7 +87,8 @@ end
 function GM:DrawVignette(fraction)
 end
 
-function GM:PostRenderCenter(width, height, client)
+function GM:PostRenderCurvy()
+    local width, height = ScrW(), ScrH()
     ax.notification:Render()
 
     local shouldDraw = hook.Run("ShouldDrawVersionWatermark")
@@ -141,8 +142,11 @@ local healthColor = Color(255, 150, 150, 200)
 local armorIcon = ax.util:GetMaterial("parallax/icons/shield.png", "smooth mips")
 local armorColor = Color(100, 150, 255, 200)
 local speakingIcon = ax.util:GetMaterial("parallax/icons/volume-full.png", "smooth mips")
-function GM:HUDPaintCenter(width, height, client)
+function GM:HUDPaintCurvy()
+    local client = ax.client
     if ( !IsValid(client) or !client:Alive() ) then return end
+
+    local width, height = ScrW(), ScrH()
 
     local barWidth, barHeight = ax.util:ScreenScale(64), ax.util:ScreenScaleH(8)
     local barX, barY = ax.util:ScreenScale(8), ax.util:ScreenScaleH(8) + barHeight / 2

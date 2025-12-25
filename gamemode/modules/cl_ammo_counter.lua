@@ -32,7 +32,10 @@ local function UpdateShake()
     end
 end
 
-function MODULE:HUDPaintCenter(width, height, client)
+function MODULE:HUDPaintCurvy()
+    local client = ax.client
+    if ( !IsValid(client) or !client:Alive() ) then return end
+
     local shouldDraw = hook.Run("ShouldDrawWeaponAmmoCounter", client)
     if ( shouldDraw == false ) then return end
 
