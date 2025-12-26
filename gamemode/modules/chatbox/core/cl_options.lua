@@ -16,7 +16,7 @@ x, y = ax.util:ScreenScale(8), ScrH() / 1.25 - height - ax.util:ScreenScaleH(16)
 
 ax.option:Add("chat.width", ax.type.number, width, {
     description = "The width of the chat box.",
-    category = "chatBox",
+    category = "chat",
     subCategory = "size",
     min = 0,
     max = ScrW(),
@@ -26,7 +26,7 @@ ax.option:Add("chat.width", ax.type.number, width, {
 
 ax.option:Add("chat.height", ax.type.number, height, {
     description = "The height of the chat box.",
-    category = "chatBox",
+    category = "chat",
     subCategory = "size",
     min = 0,
     max = ScrH(),
@@ -36,7 +36,7 @@ ax.option:Add("chat.height", ax.type.number, height, {
 
 ax.option:Add("chat.x", ax.type.number, x, {
     description = "The X position of the chat box.",
-    category = "chatBox",
+    category = "chat",
     subCategory = "position",
     min = 0,
     max = ScrW(),
@@ -46,7 +46,7 @@ ax.option:Add("chat.x", ax.type.number, x, {
 
 ax.option:Add("chat.y", ax.type.number, y, {
     description = "The Y position of the chat box.",
-    category = "chatBox",
+    category = "chat",
     subCategory = "position",
     min = 0,
     max = ScrH(),
