@@ -88,7 +88,7 @@ function GM:DrawVignette(fraction)
 end
 
 function GM:PostRenderCurvy()
-    local width, height = ScrW(), ScrH()
+    local _, height = ScrW(), ScrH()
     ax.notification:Render()
 
     local shouldDraw = hook.Run("ShouldDrawVersionWatermark")
