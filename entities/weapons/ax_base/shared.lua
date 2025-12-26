@@ -168,6 +168,10 @@ function SWEP:SetupDataTables()
     -- Ironsight fire animation cycling
     self.IronFireIndex = 0
     self.LastIronShotTime = 0
+
+    if ( self.PostSetupDataTables ) then
+        self:PostSetupDataTables()
+    end
 end
 
 function SWEP:GetIronSights()
@@ -697,5 +701,29 @@ function SWEP:UpdateMovementAnimation()
         if ( anim ) then
             self:PlayAnimation(anim, rate)
         end
+    end
+end
+
+function SWEP:AddSound(name, path, volume, pitch, channel, level)
+    volume = volume or 1.0
+    pitch = pitch or 100
+    channel = channel or CHAN_WEAPON
+    level = level or 75
+
+    sound.Add({
+        name = name,
+        channel = channel,
+        volume = volume,
+        level = level,
+        pitch = pitch,
+        sound = path
+    })
+
+    if ( istable(path) ) then
+        for _, p in ipairs(path) do
+            util.PrecacheSound(p)
+        end
+    else
+        util.PrecacheSound(path)
     end
 end
