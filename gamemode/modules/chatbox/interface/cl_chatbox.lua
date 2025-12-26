@@ -188,7 +188,7 @@ end
 
 function PANEL:PopulateRecommendations(text)
     if ( !text ) then
-        if ( self.recommendations:GetAlpha() > 0 ) then
+        if ( IsValid(self.recommendations) and self.recommendations:GetAlpha() > 0 ) then
             self.recommendations:AlphaTo(0, 0.2, 0, function()
                 self.recommendations:Clear()
             end)
