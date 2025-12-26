@@ -35,6 +35,7 @@ ax.localization:Register("en", {
     ["subcategory.movement"] = "Movement",
     ["subcategory.position"] = "Position",
     ["subcategory.size"] = "Size",
+    ["subcategory.general"] = "General",
 
     -- Store Translations
     ["store.enabled"] = "Enabled",

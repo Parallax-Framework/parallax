@@ -36,6 +36,7 @@ ax.localization:Register("tr", {
     ["subcategory.movement"] = "Hareket",
     ["subcategory.position"] = "Pozisyon",
     ["subcategory.size"] = "Boyut",
+    ["subcategory.general"] = "Genel",
 
     -- Store Translations
     ["store.enabled"] = "Etkin",
