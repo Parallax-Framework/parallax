@@ -1,7 +1,7 @@
 local ENTITY = FindMetaTable("Entity")
 
 local MODEL_CHAIRS = {}
-for _, v in pairs( list.Get( "Vehicles" ) ) do
+for _, v in pairs(list.Get("Vehicles") ) do
     if ( v.Category == "Chairs" and v.Model ) then
         MODEL_CHAIRS[string.lower(v.Model)] = true
     end
@@ -107,23 +107,131 @@ if ( SERVER ) then
         if ( self:GetClass() != "prop_door_rotating" ) then return NULL end
 
         local selfTable = self:GetTable()
-        if ( IsValid( selfTable.m_hPartner ) ) then
+        if ( IsValid(selfTable.m_hPartner) ) then
             return selfTable.m_hPartner
         end
 
-        local doors = ents.FindByClass( self:GetClass() )
+        local doors = ents.FindByClass(self:GetClass())
         if ( doors[1] == nil ) then return NULL end
 
         for i = 1, #doors do
             local door = doors[i]
             if ( door == self ) then continue end
 
-            if ( door:GetInternalVariable( "m_hMaster" ) == self ) then
+            if ( door:GetInternalVariable("m_hMaster") == self ) then
                 selfTable.m_hPartner = door
                 return door
             end
         end
 
         return NULL
+    end
+
+    function meta:BlastDoor(velocity, lifeTime, bIgnorePartner)
+        if ( !self:IsDoor() ) then return end
+
+        if ( IsValid(self.axDoorDummy) ) then
+            self.axDoorDummy:Remove()
+        end
+
+        velocity = velocity or VectorRand()*100
+        lifeTime = lifeTime or 120
+
+        local partner = self:GetDoorPartner()
+        if ( IsValid(partner) and !bIgnorePartner ) then
+            partner:BlastDoor(velocity, lifeTime, true)
+        end
+
+        local color = self:GetColor()
+
+        local dummy = ents.Create("prop_physics")
+        dummy:SetModel(self:GetModel())
+        dummy:SetPos(self:GetPos())
+        dummy:SetAngles(self:GetAngles())
+        dummy:Spawn()
+        dummy:SetColor(color)
+        dummy:SetMaterial(self:GetMaterial())
+        dummy:SetSkin(self:GetSkin() or 0)
+        dummy:SetRenderMode(RENDERMODE_TRANSALPHA)
+        dummy:CallOnRemove("restoreDoor", function()
+            if ( IsValid(self) ) then
+                self:SetNotSolid(false)
+                self:SetNoDraw(false)
+                self:DrawShadow(true)
+                self.ignoreUse = false
+                self.ixIsMuted = false
+
+                for _, v in ents.Iterator() do
+                    if ( v:GetParent() == self ) then
+                        v:SetNotSolid(false)
+                        v:SetNoDraw(false)
+
+                        if ( v.OnDoorRestored ) then
+                            v:OnDoorRestored(self)
+                        end
+                    end
+                end
+            end
+        end)
+        dummy:SetOwner(self)
+        dummy:SetCollisionGroup(COLLISION_GROUP_WEAPON)
+
+        self:Fire("unlock")
+        self:Fire("open")
+        self:SetNotSolid(true)
+        self:SetNoDraw(true)
+        self:DrawShadow(false)
+        self.ignoreUse = true
+        self.axDoorDummy = dummy
+        self.ixIsMuted = true
+        self:DeleteOnRemove(dummy)
+
+        dummy:InheritBodygroups(self)
+
+        for _, v in ents.Iterator() do
+            if ( v:GetParent() == self ) then
+                v:SetNotSolid(true)
+                v:SetNoDraw(true)
+
+                if ( v.OnDoorBlasted ) then
+                    v:OnDoorBlasted(self)
+                end
+            end
+        end
+
+        dummy:GetPhysicsObject():SetVelocity(velocity)
+
+        local uniqueID = "doorRestore" .. self:EntIndex()
+        local uniqueID2 = "doorOpener" .. self:EntIndex()
+
+        timer.Create(uniqueID2, 1, 0, function()
+            if ( IsValid(self) and IsValid(self.axDoorDummy) ) then
+                self:Fire("open")
+            else
+                timer.Remove(uniqueID2)
+            end
+        end)
+
+        timer.Create(uniqueID, lifeTime, 1, function()
+            if ( IsValid(self) and IsValid(dummy) ) then
+                uniqueID = "dummyFade" .. dummy:EntIndex()
+                local alpha = 255
+
+                timer.Create(uniqueID, 0.1, 255, function()
+                    if ( IsValid(dummy) ) then
+                        alpha = alpha - 1
+                        dummy:SetColor(ColorAlpha(color, alpha))
+
+                        if ( alpha <= 0 ) then
+                            dummy:Remove()
+                        end
+                    else
+                        timer.Remove(uniqueID)
+                    end
+                end)
+            end
+        end)
+
+        return dummy
     end
 end
