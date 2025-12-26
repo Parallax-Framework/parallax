@@ -424,3 +424,76 @@ function PANEL:Paint(width, height)
 end
 
 vgui.Register("ax.button.flat", PANEL, "ax.button.core")
+
+-- Flat button variant with icon support
+DEFINE_BASECLASS("ax.button.flat")
+
+PANEL = {}
+
+AccessorFunc(PANEL, "icon", "Icon")
+AccessorFunc(PANEL, "iconSize", "IconSize", FORCE_NUMBER)
+AccessorFunc(PANEL, "iconColor", "IconColor")
+AccessorFunc(PANEL, "iconSpacing", "IconSpacing", FORCE_NUMBER)
+AccessorFunc(PANEL, "iconAlign", "IconAlign", FORCE_STRING)
+
+function PANEL:Init()
+    BaseClass.Init(self)
+
+    self:SetText("")
+
+    self.icon = nil
+    self.iconSize = ax.util:ScreenScale(16)
+    self.iconColor = Color(255, 255, 255)
+    self.iconSpacing = ax.util:ScreenScale(4)
+    self.iconAlign = "left" -- left, right, or center
+
+    self:SetContentAlignment(5)
+end
+
+function PANEL:SetIcon(iconPath)
+    if ( !isstring(iconPath) ) then return end
+
+    self.icon = ax.util:GetMaterial(iconPath)
+end
+
+function PANEL:Paint(width, height)
+    ax.render.Draw(0, 0, 0, width, height, ColorAlpha(self.backgroundColor, self.backgroundAlphaHovered * self.inertia))
+
+    if ( self.icon ) then
+        local iconY = (height - self.iconSize) / 2
+        local iconInertia = 1 - self.inertia
+        local iconColor = Color(self.iconColor.r * iconInertia, self.iconColor.g * iconInertia, self.iconColor.b * iconInertia, 255)
+
+        surface.SetDrawColor(iconColor)
+        if ( self.iconAlign == "left" ) then
+            surface.SetMaterial(self.icon)
+            surface.DrawTexturedRect(self.iconSpacing, iconY, self.iconSize, self.iconSize)
+        elseif ( self.iconAlign == "right" ) then
+            surface.SetMaterial(self.icon)
+            surface.DrawTexturedRect(width - self.iconSpacing - self.iconSize, iconY, self.iconSize, self.iconSize)
+        elseif ( self.iconAlign == "center" ) then
+            surface.SetMaterial(self.icon)
+            surface.DrawTexturedRect((width - self.iconSize) / 2, iconY, self.iconSize, self.iconSize)
+        end
+    end
+
+    if ( self.PaintAdditional ) then
+        self:PaintAdditional(width, height)
+    end
+end
+
+function PANEL:GetTextInset()
+    if ( !self.icon ) then return BaseClass.GetTextInset(self) end
+
+    local insetLeft, insetTop = BaseClass.GetTextInset(self)
+
+    if ( self.iconAlign == "left" ) then
+        return insetLeft + self.iconSize + self.iconSpacing, insetTop
+    elseif ( self.iconAlign == "right" ) then
+        return insetLeft, insetTop
+    end
+
+    return insetLeft, insetTop
+end
+
+vgui.Register("ax.button.flat.icon", PANEL, "ax.button.flat")

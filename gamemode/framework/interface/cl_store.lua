@@ -259,8 +259,9 @@ function PANEL:Init()
     self:SetText("unknown")
     self:SetTextInset(ax.util:ScreenScale(8), 0)
 
-    self.reset = self:Add("ax.button.flat")
-    self.reset:SetText("R")
+    self.reset = self:Add("ax.button.flat.icon")
+    self.reset:SetIcon("parallax/icons/eraser.png")
+    self.reset:SetIconAlign("center")
     self.reset.DoClick = function()
         local store = self:GetStore()
         if ( !store ) then
