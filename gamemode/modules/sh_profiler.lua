@@ -46,9 +46,9 @@ local function isEnabled()
 end
 
 -- Threshold in milliseconds
-local function thresholdMs()
+local function threshold()
     if ( ax and ax.config and ax.config.Get ) then
-        return ax.config:Get("debug.profiler.thresholdMs", 8) -- default 8ms
+        return ax.config:Get("debug.profiler.threshold", 8) -- default 8ms
     end
 
     return 8
@@ -77,7 +77,7 @@ ax.config:Add("debug.profiler.enabled", ax.type.bool, false, {
     bNetworked = false
 })
 
-ax.config:Add("debug.profiler.thresholdMs", ax.type.number, 8, {
+ax.config:Add("debug.profiler.threshold", ax.type.number, 8, {
     description = "Profiler callback threshold in milliseconds",
     min = 1,
     max = 50,
@@ -85,6 +85,13 @@ ax.config:Add("debug.profiler.thresholdMs", ax.type.number, 8, {
     category = "debug",
     subCategory = "profiler",
     bNetworked = false
+})
+
+ax.localisation:Register("en", {
+    ["category.debug"] = "Debug",
+    ["subCategory.profiler"] = "Profiler",
+    ["config.debug.profiler.enabled"] = "Enable Profiler",
+    ["config.debug.profiler.threshold"] = "Profiler Threshold (ms)"
 })
 
 -- Wrap timer.Create
@@ -103,7 +110,7 @@ if ( !ax.profiler._origTimerCreate ) then
             local t0 = SysTime()
             local ok, res = pcall(func, ...)
             local dt = SysTime() - t0
-            if ( ok and dt * 1000 >= thresholdMs() ) then
+            if ( ok and dt * 1000 >= threshold() ) then
                 ax.profiler:Record("timer", name, dt)
             end
             if ( !ok ) then
@@ -132,7 +139,7 @@ if ( !ax.profiler._origHookAdd ) then
             local t0 = SysTime()
             local ok, a, b, c, d, e, f = pcall(func, ...)
             local dt = SysTime() - t0
-            if ( ok and dt * 1000 >= thresholdMs() ) then
+            if ( ok and dt * 1000 >= threshold() ) then
                 ax.profiler:Record("hook:" .. tostring(event), id or "(nil)", dt)
             end
             if ( !ok ) then
@@ -161,7 +168,7 @@ if ( !ax.profiler._origNetReceive ) then
             local t0 = SysTime()
             local ok, res = pcall(func, len, ply)
             local dt = SysTime() - t0
-            if ( ok and dt * 1000 >= thresholdMs() ) then
+            if ( ok and dt * 1000 >= threshold() ) then
                 local who = (SERVER and IsValid(ply)) and ply:Nick() or "client"
                 ax.profiler:Record("net:" .. tostring(channel), who, dt)
             end
@@ -209,7 +216,7 @@ function ax.profiler:WrapExistingHooks(events)
                 local t0 = SysTime()
                 local ok, a, b, c, d, e, f = pcall(fn, ...)
                 local dt = SysTime() - t0
-                if ( ok and dt * 1000 >= thresholdMs() ) then
+                if ( ok and dt * 1000 >= threshold() ) then
                     ax.profiler:Record("hook:" .. tostring(ev), label, dt)
                 end
                 if ( !ok ) then
