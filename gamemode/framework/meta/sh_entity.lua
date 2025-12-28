@@ -127,14 +127,14 @@ if ( SERVER ) then
         return NULL
     end
 
-    function meta:BlastDoor(velocity, lifeTime, bIgnorePartner)
+    function ENTITY:BlastDoor(velocity, lifeTime, bIgnorePartner)
         if ( !self:IsDoor() ) then return end
 
         if ( IsValid(self.axDoorDummy) ) then
             self.axDoorDummy:Remove()
         end
 
-        velocity = velocity or VectorRand()*100
+        velocity = velocity or VectorRand() * 100
         lifeTime = lifeTime or 120
 
         local partner = self:GetDoorPartner()
@@ -162,13 +162,13 @@ if ( SERVER ) then
                 self.ixIsMuted = false
 
                 for _, v in ents.Iterator() do
-                    if ( v:GetParent() == self ) then
-                        v:SetNotSolid(false)
-                        v:SetNoDraw(false)
+                    if ( v:GetParent() != self ) then continue end
 
-                        if ( v.OnDoorRestored ) then
-                            v:OnDoorRestored(self)
-                        end
+                    v:SetNotSolid(false)
+                    v:SetNoDraw(false)
+
+                    if ( v.OnDoorRestored ) then
+                        v:OnDoorRestored(self)
                     end
                 end
             end
@@ -213,23 +213,23 @@ if ( SERVER ) then
         end)
 
         timer.Create(uniqueID, lifeTime, 1, function()
-            if ( IsValid(self) and IsValid(dummy) ) then
-                uniqueID = "dummyFade" .. dummy:EntIndex()
-                local alpha = 255
+            if ( !IsValid(self) or !IsValid(dummy) ) then return end
 
-                timer.Create(uniqueID, 0.1, 255, function()
-                    if ( IsValid(dummy) ) then
-                        alpha = alpha - 1
-                        dummy:SetColor(ColorAlpha(color, alpha))
+            uniqueID = "dummyFade" .. dummy:EntIndex()
+            local alpha = 255
 
-                        if ( alpha <= 0 ) then
-                            dummy:Remove()
-                        end
-                    else
-                        timer.Remove(uniqueID)
+            timer.Create(uniqueID, 0.1, 255, function()
+                if ( IsValid(dummy) ) then
+                    alpha = alpha - 1
+                    dummy:SetColor(ColorAlpha(color, alpha))
+
+                    if ( alpha <= 0 ) then
+                        dummy:Remove()
                     end
-                end)
-            end
+                else
+                    timer.Remove(uniqueID)
+                end
+            end)
         end)
 
         return dummy
