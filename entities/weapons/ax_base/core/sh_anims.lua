@@ -31,6 +31,9 @@ function SWEP:TranslateAnimation(anim)
         if ( seq and seq >= 0 ) then
             return seq
         end
+    elseif ( istable(anim) ) then
+        local choice = anim[math.random(#anim)]
+        return self:TranslateAnimation(choice)
     end
 
     return -1
