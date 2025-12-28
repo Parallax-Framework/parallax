@@ -36,7 +36,7 @@ SWEP.Primary = {
 }
 
 -- Sprint inaccuracy multiplier (applied to cone/spread when player is sprinting)
-SWEP.SprintConeMultiplier = 4
+SWEP.SprintConeMultiplier = 2
 
 SWEP.Primary.Sequence = SWEP.Primary.Sequence or ACT_VM_PRIMARYATTACK
 SWEP.Primary.PlaybackRate = SWEP.Primary.PlaybackRate or 1
