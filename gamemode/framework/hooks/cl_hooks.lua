@@ -261,6 +261,7 @@ function GM:HUDPaint()
                     displayColor = Color(255, 255, 255)
                 end
 
+                draw.SimpleText(displayText, "ax.small.bold", data.x + 2, data.y + 2, Color(0, 0, 0, data.alpha / 2), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
                 draw.SimpleText(displayText, "ax.small.bold", data.x, data.y, ColorAlpha(displayColor, data.alpha), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 
                 hook.Run("HUDPaintTargetIDExtra", ent, data.x, data.y, data.alpha)
@@ -296,6 +297,7 @@ function GM:HUDPaintTargetIDExtra(entity, x, y, alpha)
     if ( desc ) then
         local wrapped = ax.util:GetWrappedText(desc, "ax.tiny", ax.util:ScreenScale(128))
         for i, line in ipairs(wrapped) do
+            draw.SimpleText(line, "ax.tiny", x + 1, y + ax.util:ScreenScaleH(6) * i + 1, Color(0, 0, 0, alpha / 4), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
             draw.SimpleText(line, "ax.tiny", x, y + ax.util:ScreenScaleH(6) * i, Color(255, 255, 255, alpha / 2), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
         end
     end
