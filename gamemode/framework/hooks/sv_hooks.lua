@@ -74,6 +74,8 @@ function GM:DoPlayerDeath(client, attacker, damageInfo)
             end
         end
 
+        hook.Run("OnRagdollCreated", client, ragdoll, attacker, damageInfo)
+
         SafeRemoveEntityDelayed(ragdoll, 300)
     end
 
