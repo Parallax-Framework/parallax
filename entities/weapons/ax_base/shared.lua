@@ -348,16 +348,16 @@ function SWEP:ShootBullet(damage, num, cone)
         mask = MASK_SHOT
     })
 
-    if ( self.OnShootBullet ) then
-        self:OnShootBullet(bullet, trace)
-    end
-
     if ( self.Primary.TracerName ) then
         bullet.TracerName = self.Primary.TracerName
     end
 
     owner:FireBullets(bullet)
     owner:LagCompensation(false)
+
+    if ( self.OnShootBullet ) then
+        self:OnShootBullet(bullet, trace)
+    end
 end
 
 --[[
@@ -573,6 +573,7 @@ function SWEP:StartShotgunReload()
     end
 
     self:SetReloading(true)
+
     -- Play dedicated start animation if available, then begin per-shell loop
     local startAnim = self.ShotgunStartAnim or self.ShotgunInsertAnim
     local startSound = self.ShotgunStartSound or self.ShotgunInsertSound
