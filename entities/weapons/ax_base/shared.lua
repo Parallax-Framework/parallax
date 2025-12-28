@@ -195,6 +195,7 @@ function SWEP:CanPrimaryAttack()
     local owner = self:GetOwner()
     if ( !IsValid(owner) ) then return false end
 
+    if ( CLIENT and owner != ax.client ) then return true end
     if ( self:IsEmpty() ) then
         self:EmitSound(self.Primary.SoundEmpty or "Weapon_Pistol.Empty", nil, nil, nil, CHAN_STATIC)
         self:SetNextPrimaryFire(CurTime() + 1)
@@ -206,13 +207,25 @@ function SWEP:CanPrimaryAttack()
     return true
 end
 
+if ( SERVER ) then
+    util.AddNetworkString("ax.weapon.primary")
+else
+    net.Receive("ax.weapon.primary", function()
+        local weapon = net.ReadEntity()
+        if ( !IsValid(weapon) ) then return end
+
+        local client = weapon:GetOwner()
+        if ( !IsValid(client) or client == ax.client ) then return end
+
+        weapon:PrimaryAttack()
+    end)
+end
+
 function SWEP:PrimaryAttack()
-    if ( CurTime() < self:GetNextPrimaryFire() ) then return end
-
     local owner = self:GetOwner()
-    if ( !IsValid(owner) ) then return end
+    if ( !IsValid(owner) ) then print("Invalid owner") return end
 
-    if ( !self:CanPrimaryAttack() ) then return end
+    if ( !self:CanPrimaryAttack() ) then print("Cannot primary attack") return end
 
     -- Interrupt shotgun reload if shooting
     if ( self:GetReloading() and self.ShotgunReload ) then
@@ -225,6 +238,12 @@ function SWEP:PrimaryAttack()
     end
 
     self:SetNextPrimaryFire(CurTime() + delay)
+
+    if ( SERVER ) then
+        net.Start("ax.weapon.primary")
+            net.WriteEntity(self)
+        net.SendPAS(owner:GetPos())
+    end
 
     -- Client-side: visuals and effects
     if ( CLIENT and IsFirstTimePredicted() ) then
