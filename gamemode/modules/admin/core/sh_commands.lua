@@ -147,3 +147,114 @@ ax.command:Add("PlyReturn", {
         return "Returned " .. target:Name() .. " to their previous position"
     end
 })
+
+ax.command:Add("PlySetHealth", {
+    description = "Set a player's health",
+    adminOnly = true,
+    arguments = {
+        { name = "player", type = ax.type.player },
+        { name = "amount", type = ax.type.number }
+    },
+    OnRun = function(client, target, amount)
+        amount = math.Clamp(amount, 0, 2147483647)
+        target:SetHealth(amount)
+
+        if ( target == client ) then
+            return "Set your health to " .. amount
+        else
+            return "Set " .. target:Name() .. "'s health to " .. amount
+        end
+    end
+})
+
+ax.command:Add("PlySetArmor", {
+    description = "Set a player's armor",
+    adminOnly = true,
+    arguments = {
+        { name = "player", type = ax.type.player },
+        { name = "amount", type = ax.type.number }
+    },
+    OnRun = function(client, target, amount)
+        amount = math.Clamp(amount, 0, 2147483647)
+        target:SetArmor(amount)
+
+        if ( target == client ) then
+            return "Set your armor to " .. amount
+        else
+            return "Set " .. target:Name() .. "'s armor to " .. amount
+        end
+    end
+})
+
+ax.command:Add("PlyGiveAmmo", {
+    description = "Give ammo to a player",
+    adminOnly = true,
+    arguments = {
+        { name = "player", type = ax.type.player },
+        { name = "amount", type = ax.type.number },
+        { name = "ammo type", type = ax.type.string, optional = true }
+    },
+    OnRun = function(client, target, amount, ammoType)
+        local weapon = target:GetActiveWeapon()
+
+        if ( !IsValid(weapon) ) then
+            return target:Name() .. " has no active weapon"
+        end
+
+        ammoType = ammoType or weapon:GetPrimaryAmmoType()
+
+        if ( ammoType == -1 ) then
+            return "Invalid ammo type"
+        end
+
+        target:GiveAmmo(amount, ammoType, true)
+
+        if ( target == client ) then
+            return "Gave yourself " .. amount .. " ammo"
+        else
+            return "Gave " .. target:Name() .. " " .. amount .. " ammo"
+        end
+    end
+})
+
+ax.command:Add("PlyFreeze", {
+    description = "Freeze or unfreeze a player",
+    adminOnly = true,
+    arguments = {
+        { name = "player", type = ax.type.player }
+    },
+    OnRun = function(client, target)
+        if ( target == client ) then
+            return "You cannot freeze yourself"
+        end
+
+        target:Freeze(!target:IsFrozen())
+
+        local state = target:IsFrozen() and "frozen" or "unfrozen"
+        return target:Name() .. " has been " .. state
+    end
+})
+
+ax.command:Add("PlyRespawn", {
+    description = "Respawn a player",
+    adminOnly = true,
+    arguments = {
+        { name = "player", type = ax.type.player }
+    },
+    OnRun = function(client, target)
+        target:Spawn()
+        return "Respawned " .. target:Name()
+    end
+})
+
+ax.command:Add("PlySlay", {
+    description = "Kill a player",
+    adminOnly = true,
+    arguments = {
+        { name = "player", type = ax.type.player }
+    },
+    OnRun = function(client, target)
+        target:Kill()
+        return "Killed " .. target:Name()
+    end
+})
