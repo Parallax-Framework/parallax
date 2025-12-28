@@ -724,7 +724,7 @@ function SWEP:UpdateMovementAnimation()
     end
 end
 
-function SWEP:AddSound(name, path, volume, pitch, channel, level)
+function ax.util:AddSound(name, path, volume, pitch, channel, level)
     volume = volume or 1.0
     pitch = pitch or 100
     channel = channel or CHAN_WEAPON
