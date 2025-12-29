@@ -203,11 +203,20 @@ ax.viewstack:RegisterModifier("thirdperson", function(client, patch)
 
     -- start from the player's eye position
     local startPos = client:EyePos()
-    local head = client:LookupBone("ValveBiped.Bip01_Head1")
-    if ( ax.option:Get("thirdperson.follow.head") and head ) then
-        local headPos, _ = client:GetBonePosition(head)
-        if ( headPos ) then
-            startPos = headPos
+    local headBone = client:LookupBone("ValveBiped.Bip01_Head1")
+    local eyeAttachment = client:LookupAttachment("eyes")
+    if ( ax.option:Get("thirdperson.follow.head") ) then
+        if ( headBone ) then
+            local headPos, _ = client:GetBonePosition(headBone)
+            if ( headPos ) then
+                startPos = headPos
+            end
+
+        elseif ( eyeAttachment ) then
+            local eyeData = client:GetAttachment(eyeAttachment)
+            if ( eyeData and eyeData.Pos ) then
+                startPos = eyeData.Pos
+            end
         end
     end
 
@@ -277,7 +286,7 @@ ax.viewstack:RegisterModifier("thirdperson", function(client, patch)
         angles = curAng,
         fov = patch.fov - curFOV
     }
-end, 1)
+end, 99)
 
 concommand.Add("ax_thirdperson_toggle", function(client, cmd, args)
     ax.option:Set("thirdperson", !ax.option:Get("thirdperson"))
