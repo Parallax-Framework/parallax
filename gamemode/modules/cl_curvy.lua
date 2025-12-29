@@ -30,7 +30,7 @@ ax.option:Add("curvy.intensity", ax.type.number, 0.05, {
     max = 1.0
 })
 
-ax.option:Add("curvy.edge_fade", ax.type.number, 0.6, {
+ax.option:Add("curvy.edge_fade", ax.type.number, 0, {
     description = "Controls the edge fading effect",
     category = "visual",
     subcategory = "curvy",
