@@ -17,7 +17,19 @@ function player.GetStaff()
 end
 
 function PLAYER:__index(key)
-    return PLAYER[key] or ENTITY[key] or GetTable(self)[key]
+    -- ENTITY.GetTable may be nil in some environments (clientside in modern GMod)
+    -- so guard against it to avoid 'attempt to index a nil value'.
+    local val = PLAYER[key] or ENTITY[key]
+    if val != nil then return val end
+
+    if ( isfunction(GetTable) ) then
+        local tbl = GetTable(self)
+        if ( istable(tbl) ) then
+            return tbl[key]
+        end
+    end
+
+    return nil
 end
 
 function PLAYER:Timer(name, time, reps, callback, failure)
