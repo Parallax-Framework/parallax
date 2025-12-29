@@ -98,6 +98,31 @@ ax.config:Add("chat.me.color", ax.type.color, Color(255, 255, 175), {
     subCategory = "colors"
 })
 
+-- OOC / moderation configurations
+ax.config:Add("chat.ooc.enabled", ax.type.bool, true, {
+    description = "Enable or disable global OOC chat",
+    category = "chat",
+    subCategory = "ooc"
+})
+
+ax.config:Add("chat.ooc.delay", ax.type.number, 5, {
+    description = "Minimum seconds required between consecutive OOC messages from the same player",
+    min = 0,
+    max = 600,
+    decimals = 0,
+    category = "chat",
+    subCategory = "ooc"
+})
+
+ax.config:Add("chat.ooc.rate_limit", ax.type.number, 10, {
+    description = "Maximum number of OOC messages a player may send per 10 minutes (0 = unlimited)",
+    min = 0,
+    max = 1000,
+    decimals = 0,
+    category = "chat",
+    subCategory = "ooc"
+})
+
 -- Movement configurations
 ax.config:Add("movement.bunnyhop.reduction", ax.type.number, 0.5, {
     description = "Velocity reduction on landing (0 = no reduction, 1 = full stop)",

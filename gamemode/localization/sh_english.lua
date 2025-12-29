@@ -36,6 +36,7 @@ ax.localization:Register("en", {
     ["subcategory.position"] = "Position",
     ["subcategory.size"] = "Size",
     ["subcategory.general"] = "General",
+    ["subcategory.ooc"] = "OOC",
 
     -- Store Translations
     ["store.enabled"] = "Enabled",
@@ -48,6 +49,9 @@ ax.localization:Register("en", {
     ["config.chat.me.distance"] = "ME Chat Distance",
     ["config.chat.ooc.distance"] = "OOC Chat Distance",
     ["config.chat.yell.distance"] = "YELL Chat Distance",
+    ["config.chat.ooc.enabled"] = "Enable OOC Chat",
+    ["config.chat.ooc.delay"] = "OOC Message Delay (seconds)",
+    ["config.chat.ooc.rate_limit"] = "OOC Messages per 10 minutes",
 
     --- Gameplay
     ---- Interaction
@@ -121,4 +125,9 @@ ax.localization:Register("en", {
 
     -- Inventory Translations
     ["inventory.weight.abbreviation"] = "kg",
+
+    -- OOC / Notification Translations
+    ["notify.chat.ooc.disabled"] = "OOC chat is currently disabled on this server.",
+    ["notify.chat.ooc.wait"] = "Please wait %d second(s) before sending another OOC message.",
+    ["notify.chat.ooc.rate_limited"] = "You have reached the OOC message limit (%d) for the last %d minutes.",
 })

@@ -116,6 +116,59 @@ local function GetVerb(listener, chatType)
     end
 end
 
+-- Server-side tracking for OOC/LOOC usage to enforce delay and rate limits
+AX_OOC_TRACK = AX_OOC_TRACK or {}
+
+local function CheckOOCAllowed(client)
+    if ( CLIENT ) then return true end
+
+    local steam64 = client:SteamID64() or tostring(client:SteamID())
+    local now = os.time()
+
+    -- Respect global enable toggle
+    if ( !ax.config:Get("chat.ooc.enabled", true) ) then
+        client:ChatPrint(ax.localization:GetPhrase("notify.chat.ooc.disabled"))
+        return false
+    end
+
+    local delay = math.max(0, ax.config:Get("chat.ooc.delay", 5) or 0)
+    local rateLimit = math.max(0, ax.config:Get("chat.ooc.rate_limit", 10) or 0)
+
+    local info = AX_OOC_TRACK[steam64] or { last = 0, times = {} }
+
+    -- Enforce simple per-message delay (seconds)
+    if ( delay > 0 ) then
+        local since = now - (info.last or 0)
+        if ( since < delay ) then
+            local wait = math.ceil(delay - since)
+            client:ChatPrint(string.format(ax.localization:GetPhrase("notify.chat.ooc.wait"), wait))
+            return false
+        end
+    end
+
+    -- Enforce rate limit per 10 minutes (600 seconds)
+    if ( rateLimit > 0 ) then
+        local window = 600
+        local newtimes = {}
+        for _, t in ipairs(info.times or {}) do
+            if ( now - t <= window ) then table.insert(newtimes, t) end
+        end
+
+        if ( #newtimes >= rateLimit ) then
+            client:ChatPrint(string.format(ax.localization:GetPhrase("notify.chat.ooc.rate_limited"), rateLimit, window / 60))
+            AX_OOC_TRACK[steam64] = { last = info.last or 0, times = newtimes }
+            return false
+        end
+
+        table.insert(newtimes, now)
+        info.times = newtimes
+    end
+
+    info.last = now
+    AX_OOC_TRACK[steam64] = info
+    return true
+end
+
 ax.chat:Add("ic", {
     displayName = "IC",
     description = "Speak in-character",
@@ -248,6 +301,8 @@ ax.chat:Add("looc", {
     displayName = "Local Out of Character",
     description = "Speak local out of character",
     OnRun = function(this, client, message)
+        if ( SERVER and !CheckOOCAllowed(client) ) then return end
+
         local oocColor = ax.config:Get("chat.ooc.color", Color(225, 50, 50))
         return oocColor, "<font=ax.small>" .. "[LOOC] ", color_white, client:SteamName() .. ": " .. message .. "</font>"
     end,
@@ -261,6 +316,8 @@ ax.chat:Add("ooc", {
     displayName = "Out of Character",
     description = "Speak out of character",
     OnRun = function(this, client, message)
+        if ( SERVER and !CheckOOCAllowed(client) ) then return end
+
         local oocColor = ax.config:Get("chat.ooc.color", Color(225, 50, 50))
         return oocColor, "<font=ax.small>" .. "[OOC] ", color_white, client:SteamName() .. ": " .. message .. "</font>"
     end,

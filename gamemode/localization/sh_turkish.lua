@@ -37,6 +37,7 @@ ax.localization:Register("tr", {
     ["subcategory.position"] = "Pozisyon",
     ["subcategory.size"] = "Boyut",
     ["subcategory.general"] = "Genel",
+    ["subcategory.ooc"] = "OOC",
 
     -- Store Translations
     ["store.enabled"] = "Etkin",
@@ -49,6 +50,9 @@ ax.localization:Register("tr", {
     ["config.chat.me.distance"] = "ME Sohbet Mesafesi",
     ["config.chat.ooc.distance"] = "OOC Sohbet Mesafesi",
     ["config.chat.yell.distance"] = "YELL Sohbet Mesafesi",
+    ["config.chat.ooc.enabled"] = "OOC Sohbetini Etkinleştir",
+    ["config.chat.ooc.delay"] = "OOC Mesaj Gecikmesi (saniye)",
+    ["config.chat.ooc.rate_limit"] = "10 dakikada OOC Mesaj Sayısı",
 
     --- Gameplay
     ---- Interaction
@@ -117,4 +121,9 @@ ax.localization:Register("tr", {
 
     -- Inventory Translations
     ["inventory.weight.abbreviation"] = "kg",
+
+    -- OOC / Notification Translations
+    ["notify.chat.ooc.disabled"] = "Bu sunucuda OOC sohbet şu anda devre dışı.",
+    ["notify.chat.ooc.wait"] = "Başka bir OOC mesajı göndermeden önce lütfen %d saniye bekleyin.",
+    ["notify.chat.ooc.rate_limited"] = "Son %d dakika içinde OOC mesaj limiti (%d) aşıldı.",
 })
