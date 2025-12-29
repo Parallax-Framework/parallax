@@ -73,6 +73,33 @@ function character:HasFlags(flags)
 end
 
 if ( SERVER ) then
+    function character:SetBodygroup(index, value)
+        local owner = self:GetOwner()
+        if ( IsValid(owner) ) then
+            owner:SetBodygroup(index, value)
+        end
+
+        local bodygroups = self:GetData("bodygroups", {})
+        bodygroups[tostring(index)] = value
+
+        self:SetData("bodygroups", bodygroups)
+    end
+
+    function character:SetBodygroupName(name, value)
+        local owner = self:GetOwner()
+        if ( IsValid(owner) ) then
+            local id = owner:FindBodygroupByName(name)
+            if ( id and id >= 0 ) then
+                owner:SetBodygroup(id, value)
+            end
+        end
+
+        local bodygroups = self:GetData("bodygroups", {})
+        bodygroups[name] = value
+
+        self:SetData("bodygroups", bodygroups)
+    end
+
     function character:GiveFlags(flags)
         if ( !isstring(flags) or #flags < 1 ) then return end
 
