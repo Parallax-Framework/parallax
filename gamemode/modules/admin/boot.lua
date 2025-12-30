@@ -10,7 +10,15 @@ concommand.Add("ax_player_set_usergroup", function(client, command, arguments, a
         return
     end
 
-    if ( #arguments < 2 ) then return end
+    if ( #arguments < 2 ) then
+        if ( IsValid(client) ) then
+            client:Notify("Usage: ax_player_set_usergroup <player> <usergroup>")
+        else
+            ax.util:Print("Usage: ax_player_set_usergroup <player> <usergroup>")
+        end
+
+        return
+    end
 
     local target = ax.util:FindPlayer(arguments[1])
     if ( !IsValid(target) ) then
