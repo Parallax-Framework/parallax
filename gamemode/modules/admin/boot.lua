@@ -5,7 +5,10 @@ MODULE.description = "Handles admin-related functionality."
 MODULE.author = "Riggs"
 
 concommand.Add("ax_player_set_usergroup", function(client, command, arguments, argumentsString)
-    if ( IsValid(client) and !client:IsAdmin() ) then return end
+    if ( IsValid(client) and !client:IsAdmin() ) then
+        client:Notify("You do not have permission to use this command.")
+        return
+    end
 
     if ( #arguments < 2 ) then return end
 
@@ -25,7 +28,13 @@ concommand.Add("ax_player_set_usergroup", function(client, command, arguments, a
     target:SetUsergroup(usergroup) -- Update the player var as well
     target:Save()
 
-    for _, v in player.Iterator() do
-        v:Notify(Format("%s has set %s's usergroup to %s.", IsValid(client) and client:SteamName() or "Console", target:SteamName(), usergroup))
+    if ( IsValid(target) ) then
+        target:Notify(Format("Your usergroup has been set to %s by %s.", usergroup, IsValid(client) and client:SteamName() or "Console"))
+    end
+
+    if ( IsValid(client) ) then
+        client:Notify(Format("You have set %s's usergroup to %s.", target:SteamName(), usergroup))
+    else
+        ax.util:Print(Format("You have set %s's usergroup to %s.", target:SteamName(), usergroup))
     end
 end)
