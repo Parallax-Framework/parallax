@@ -61,7 +61,7 @@ ax.viewstack:RegisterModifier("viewmodel", function(client, patch)
 
     local attID
     for k, v in pairs(vm:GetAttachments()) do
-        if ( v.Name:lower():find("muzzle") ) then
+        if ( v.name:lower():find("muzzle") ) then
             attID = v.ID
             break
         end
