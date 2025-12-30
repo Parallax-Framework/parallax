@@ -20,6 +20,8 @@ MODULE.name = "Talking Animation"
 MODULE.description = "Adds talking animation functionality to the gamemode."
 MODULE.author = "Riggs"
 
+if ( CLIENT ) then return end
+
 local gestures = {
     [WOS_DYNABASE.MALE] = {
         idle = {
