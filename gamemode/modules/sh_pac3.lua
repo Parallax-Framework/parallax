@@ -17,7 +17,7 @@ MODULE.author = "Riggs"
 
 function MODULE:PrePACConfigApply(client)
     if ( client:GetCharacter() ) then
-        return client:GetCharacter():HasFlags("p")
+        return client:GetCharacter():HasFlags("P")
     end
 
     return false
@@ -25,7 +25,7 @@ end
 
 function MODULE:PrePACEditorOpen(client)
     if ( client:GetCharacter() ) then
-        return client:GetCharacter():HasFlags("p")
+        return client:GetCharacter():HasFlags("P")
     end
 
     return false
@@ -33,13 +33,13 @@ end
 
 function MODULE:pac_CanWearParts(client)
     if ( client:GetCharacter() ) then
-        return client:GetCharacter():HasFlags("p")
+        return client:GetCharacter():HasFlags("P")
     end
 
     return false
 end
 
-ax.flag:Create("p", {
+ax.flag:Create("P", {
     name = "PAC3 Permission",
     description = "Allows the use of PAC3.",
 })
