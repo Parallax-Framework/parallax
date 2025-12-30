@@ -112,7 +112,7 @@ local function create_shader_mat(name, opts)
 	end
 
 	local mat = CreateMaterial(
-		"rndx_shaders1" .. name .. SysTime(),
+		"rndx_shaders1" .. name .. util.CRC(util.TableToJSON(opts or {})),
 		"screenspace_general",
 		key_values
 	)
