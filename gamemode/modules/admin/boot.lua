@@ -5,12 +5,18 @@ MODULE.description = "Handles admin-related functionality."
 MODULE.author = "Riggs"
 
 concommand.Add("ax_player_set_usergroup", function(client, command, arguments, argumentsString)
-    if ( !client:IsSuperAdmin() ) then return end
+    if ( IsValid(client) and !client:IsAdmin() ) then return end
+
     if ( #arguments < 2 ) then return end
 
     local target = ax.util:FindPlayer(arguments[1])
     if ( !IsValid(target) ) then
-        ax.util.NotifyError(client, "Player not found!")
+        if ( IsValid(client) ) then
+            client:Notify("You must specify a valid player to set the usergroup for.")
+        else
+            ax.util:PrintWarning("You must specify a valid player to set the usergroup for.")
+        end
+
         return
     end
 
@@ -20,6 +26,6 @@ concommand.Add("ax_player_set_usergroup", function(client, command, arguments, a
     target:Save()
 
     for _, v in player.Iterator() do
-        v:Notify(client:Nick() .. " has set " .. target:Nick() .. "'s usergroup to " .. usergroup .. ".")
+        v:Notify(Format("%s has set %s's usergroup to %s.", IsValid(client) and client:SteamName() or "Console", target:SteamName(), usergroup))
     end
 end)
