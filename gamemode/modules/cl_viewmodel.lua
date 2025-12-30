@@ -59,7 +59,14 @@ ax.viewstack:RegisterModifier("viewmodel", function(client, patch)
     local act = vm:GetSequenceActivity(seq)
     if ( excluded_acts[act] ) then return end
 
-    local attID = vm:LookupAttachment("muzzle")
+    local attID
+    for k, v in pairs(vm:GetAttachments()) do
+        if ( v.Name:lower():find("muzzle") ) then
+            attID = v.ID
+            break
+        end
+    end
+
     if ( attID <= 0 ) then return end
 
     local att = vm:GetAttachment(attID)
