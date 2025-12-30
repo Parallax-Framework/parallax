@@ -67,7 +67,7 @@ ax.viewstack:RegisterModifier("viewmodel", function(client, patch)
         end
     end
 
-    if ( attID <= 0 ) then return end
+    if ( !attID or attID <= 0 ) then return end
 
     local att = vm:GetAttachment(attID)
     if ( !att or !att.Ang ) then return end
