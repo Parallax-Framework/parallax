@@ -89,18 +89,6 @@ function MODULE:Think()
 end
 
 function MODULE:OnServerCrashDetected()
-    -- Derma_Message(
-    --     "The server appears to be unresponsive. This may indicate a crash or freeze.\n\n" ..
-    --     "You can attempt to reconnect or wait for the server to recover.",
-    --     "Server Unresponsive",
-    --     "Reconnect", function()
-    --         RunConsoleCommand("retry")
-    --     end,
-    --     "Wait", function()
-    --         -- Do nothing, just wait
-    --     end
-    -- )
-
     Derma_Query(
         "The server appears to be unresponsive. This may indicate a crash or freeze.\n\n" ..
         "Would you like to attempt to reconnect now?",
