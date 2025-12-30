@@ -95,6 +95,14 @@ function PANEL:Init()
                 self.chatTypePrevious = self.chatType or "ic"
                 self.chatType = utf8.lower(data.name)
             end
+
+            -- Populate voice recommendations for the text after the .// prefix
+            local voiceText = string.sub(text, 4)
+            if ( voiceText and #voiceText > 0 ) then
+                self:PopulateRecommendations(voiceText, "voices")
+            else
+                self:PopulateRecommendations()
+            end
         elseif ( string.sub(text, 1, 1) == "/" ) then
             -- This is a command, so we need to parse it
             local arguments = string.Explode(" ", string.sub(text, 2))
@@ -115,7 +123,21 @@ function PANEL:Init()
                 end
             end
         else
-            self:PopulateRecommendations(text, "voices")
+            -- Check if text ends with a space followed by optional text (i.e. a voice line was selected and space was added)
+            local lastSpacePos = string.find(text, " ", 1, true)
+            if ( lastSpacePos ) then
+                -- Get text after the last space for voice recommendations
+                local voiceText = string.sub(text, lastSpacePos + 1)
+                if ( voiceText and #voiceText > 0 ) then
+                    self:PopulateRecommendations(voiceText, "voices")
+                else
+                    -- Just a space, show all available voice lines
+                    self:PopulateRecommendations("", "voices")
+                end
+            else
+                -- No space yet, populate based on full text
+                self:PopulateRecommendations(text, "voices")
+            end
         end
 
         hook.Run("ChatboxOnTextChanged", text, self.chatType)
@@ -226,8 +248,7 @@ function PANEL:PopulateRecommendations(text, recommendationType)
     elseif ( recommendationType == "voices" ) then
         -- Get available voice classes for the current player
         if ( ax.voices and ax.voices.GetClass ) then
-            local voiceClasses = ax.voices:GetClass(LocalPlayer(), self.chatType)
-
+            local voiceClasses = ax.voices:GetClass(ax.client, self.chatType)
             for _, voiceClass in ipairs(voiceClasses) do
                 if ( !ax.voices.stored[voiceClass] ) then
                     ax.util:PrintDebug("Voice class \"" .. tostring(voiceClass) .. "\" has no stored voice lines!\n")
@@ -235,8 +256,8 @@ function PANEL:PopulateRecommendations(text, recommendationType)
                 end
 
                 for voiceKey, voiceData in pairs(ax.voices.stored[voiceClass]) do
-                    if ( !string.match(utf8.lower(voiceKey), utf8.lower(text), 1, true) ) then
-                        ax.util:PrintDebug("Voice line \"" .. tostring(voiceKey) .. "\" does not match filter \"" .. tostring(text) .. "\"!\n")
+                    if ( ax.util:FindText(utf8.lower(voiceKey), utf8.lower(text)) == false and
+                         ax.util:FindText(utf8.lower(voiceData.text or ""), utf8.lower(text)) == false ) then
                         continue
                     end
 
@@ -246,6 +267,10 @@ function PANEL:PopulateRecommendations(text, recommendationType)
                         description = voiceData.text,
                         isVoice = true
                     }
+
+                    if ( #self.recommendations.list >= 20 ) then
+                        break
+                    end
                 end
             end
         else
