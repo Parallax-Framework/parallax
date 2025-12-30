@@ -526,6 +526,15 @@ function GM:PlayerDisconnected(client)
     AX_CLIENT_QUEUE[steamID64] = nil
 end
 
+function GM:GetGameDescription()
+    local schema = SCHEMA or {}
+    if ( schema.name ) then
+        return schema.name
+    end
+
+    return "Parallax Framework"
+end
+
 function GM:GetFallDamage(client, speed)
     -- https://github.com/Facepunch/garrysmod/blob/master/garrysmod/gamemodes/base/gamemode/player.lua#L756
     return ( speed - 526.5 ) * ( 100 / 396 ) -- the Source SDK value
