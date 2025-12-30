@@ -99,7 +99,7 @@ function PANEL:Init()
             -- This is a command, so we need to parse it
             local arguments = string.Explode(" ", string.sub(text, 2))
             local command = arguments[1]
-            self:PopulateRecommendations(command)
+            self:PopulateRecommendations(command, "commands")
 
             local data = ax.command:FindClosest(command)
             if ( data ) then
@@ -107,9 +107,15 @@ function PANEL:Init()
                 self.chatTypePrevious = self.chatType or "ic"
                 self.chatType = utf8.lower(data.name)
                 self:SelectRecommendation(data.displayName)
+
+                -- Populate voice recommendations for arguments after the command
+                if ( #arguments > 1 ) then
+                    local argumentText = table.concat(arguments, " ", 2)
+                    self:PopulateRecommendations(argumentText, "voices")
+                end
             end
         else
-            self:PopulateRecommendations()
+            self:PopulateRecommendations(text, "voices")
         end
 
         hook.Run("ChatboxOnTextChanged", text, self.chatType)
@@ -186,7 +192,7 @@ function PANEL:GetChatType()
     return "ic"
 end
 
-function PANEL:PopulateRecommendations(text)
+function PANEL:PopulateRecommendations(text, recommendationType)
     if ( !text ) then
         if ( IsValid(self.recommendations) and self.recommendations:GetAlpha() > 0 ) then
             self.recommendations:AlphaTo(0, 0.2, 0, function()
@@ -206,14 +212,45 @@ function PANEL:PopulateRecommendations(text)
     self.recommendations.panels = {}
 
     local matches = {}
-    if ( text == "" ) then
-        matches = ax.command:GetAll()
-    else
-        matches = ax.command:FindAll(text)
-    end
 
-    for key, command in SortedPairs(matches) do
-        self.recommendations.list[#self.recommendations.list + 1] = command
+    if ( recommendationType == "commands" ) then
+        if ( text == "" ) then
+            matches = ax.command:GetAll()
+        else
+            matches = ax.command:FindAll(text)
+        end
+
+        for key, command in SortedPairs(matches) do
+            self.recommendations.list[#self.recommendations.list + 1] = command
+        end
+    elseif ( recommendationType == "voices" ) then
+        -- Get available voice classes for the current player
+        if ( ax.voices and ax.voices.GetClass ) then
+            local voiceClasses = ax.voices:GetClass(LocalPlayer(), self.chatType)
+
+            for _, voiceClass in ipairs(voiceClasses) do
+                if ( !ax.voices.stored[voiceClass] ) then
+                    ax.util:PrintDebug("Voice class \"" .. tostring(voiceClass) .. "\" has no stored voice lines!\n")
+                    continue
+                end
+
+                for voiceKey, voiceData in pairs(ax.voices.stored[voiceClass]) do
+                    if ( !string.match(utf8.lower(voiceKey), utf8.lower(text), 1, true) ) then
+                        ax.util:PrintDebug("Voice line \"" .. tostring(voiceKey) .. "\" does not match filter \"" .. tostring(text) .. "\"!\n")
+                        continue
+                    end
+
+                    self.recommendations.list[#self.recommendations.list + 1] = {
+                        name = voiceKey,
+                        displayName = voiceKey,
+                        description = voiceData.text,
+                        isVoice = true
+                    }
+                end
+            end
+        else
+            ax.util:PrintWarning("Attempted to populate voice line recommendations, but voice module is not loaded!")
+        end
     end
 
     if ( self.recommendations.list[1] != nil ) then
@@ -228,12 +265,13 @@ function PANEL:PopulateRecommendations(text)
         end
 
         for i = 1, #self.recommendations.list do
-            local command = self.recommendations.list[i]
+            local item = self.recommendations.list[i]
             local rec = self.recommendations:Add("DPanel")
             rec:Dock(TOP)
             rec:SetMouseInputEnabled(true)
             rec:SetCursor("hand")
             rec.index = i
+            rec.isVoice = item.isVoice or false
             rec.OnMousePressed = function()
                 self.recommendations.indexSelect = rec.index
 
@@ -242,9 +280,14 @@ function PANEL:PopulateRecommendations(text)
                     return
                 end
 
-                self.entry:SetText("/" .. data.name)
+                if ( rec.isVoice ) then
+                    self.entry:SetText(data.name)
+                else
+                    self.entry:SetText("/" .. data.name)
+                end
+
                 self.entry:RequestFocus()
-                self.entry:SetCaretPos(2 + #data.name)
+                self.entry:SetCaretPos(#self.entry:GetText())
 
                 surface.PlaySound("ui/buttonrollover.wav")
             end
@@ -258,9 +301,9 @@ function PANEL:PopulateRecommendations(text)
             title:Dock(LEFT)
             title:DockMargin(8, 0, 8, 0)
             title:SetFont("ax.tiny")
-            title:SetText(command.displayName, true)
+            title:SetText(item.displayName, true)
 
-            local descriptionText = command.description
+            local descriptionText = item.description
             if ( !descriptionText or descriptionText == "" ) then
                 descriptionText = "No description provided."
             end
@@ -314,9 +357,14 @@ function PANEL:CycleRecommendations()
         return
     end
 
-    self.entry:SetText("/" .. data.name)
+    if ( data.isVoice ) then
+        self.entry:SetText(data.name)
+    else
+        self.entry:SetText("/" .. data.name)
+    end
+
     self.entry:RequestFocus()
-    self.entry:SetCaretPos(2 + #data.name)
+    self.entry:SetCaretPos(#self.entry:GetText())
 
     surface.PlaySound("ui/buttonrollover.wav")
 end
