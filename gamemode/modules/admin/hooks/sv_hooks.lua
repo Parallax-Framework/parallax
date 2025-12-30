@@ -6,7 +6,7 @@ function MODULE:PlayerReady(client)
 end
 
 function MODULE:PhysgunPickup(client, entity)
-    if ( !CAMI.PlayerHasAccess(client, "Parallax - Pickup Players", nil) ) then
+    if ( CAMI.PlayerHasAccess(client, "Parallax - Pickup Players", nil) != true ) then
         return false
     end
 
@@ -32,15 +32,15 @@ function MODULE:EntityTakeDamage(target, dmgInfo)
 end
 
 function MODULE:PlayerSpawnEffect(client, model)
-    if ( !CAMI.PlayerHasAccess(client, "Parallax - Spawn Effects", nil) ) then
+    if ( CAMI.PlayerHasAccess(client, "Parallax - Spawn Effects", nil) != true ) then
         return false
     end
 
     return true
 end
 
-function MODULE:PlayerSpawnNPC(client, model)
-    if ( !CAMI.PlayerHasAccess(client, "Parallax - Spawn NPCs", nil) ) then
+function MODULE:PlayerSpawnNPC(client, npc, weapon)
+    if ( CAMI.PlayerHasAccess(client, "Parallax - Spawn NPCs", nil) != true ) then
         return false
     end
 
@@ -48,7 +48,7 @@ function MODULE:PlayerSpawnNPC(client, model)
 end
 
 function MODULE:PlayerSpawnProp(client, model)
-    if ( !CAMI.PlayerHasAccess(client, "Parallax - Spawn Props", nil) ) then
+    if ( CAMI.PlayerHasAccess(client, "Parallax - Spawn Props", nil) != true ) then
         return false
     end
 
@@ -56,7 +56,7 @@ function MODULE:PlayerSpawnProp(client, model)
 end
 
 function MODULE:PlayerSpawnRagdoll(client, model)
-    if ( !CAMI.PlayerHasAccess(client, "Parallax - Spawn Ragdolls", nil) ) then
+    if ( CAMI.PlayerHasAccess(client, "Parallax - Spawn Ragdolls", nil) != true ) then
         return false
     end
 
@@ -64,23 +64,31 @@ function MODULE:PlayerSpawnRagdoll(client, model)
 end
 
 function MODULE:PlayerSpawnSENT(client, model)
-    if ( !CAMI.PlayerHasAccess(client, "Parallax - Spawn SENTs", nil) ) then
+    if ( CAMI.PlayerHasAccess(client, "Parallax - Spawn SENTs", nil) != true ) then
         return false
     end
 
     return true
 end
 
-function MODULE:PlayerSpawnSWEP(client, model)
-    if ( !CAMI.PlayerHasAccess(client, "Parallax - Spawn Weapons", nil) ) then
+function MODULE:PlayerSpawnSWEP(client, weapon, swep)
+    if ( CAMI.PlayerHasAccess(client, "Parallax - Spawn Weapons", nil) != true ) then
         return false
     end
 
     return true
 end
 
-function MODULE:PlayerSpawnVehicle(client, model)
-    if ( !CAMI.PlayerHasAccess(client, "Parallax - Spawn Vehicles", nil) ) then
+function MODULE:PlayerGiveSWEP(client, weapon, spawnInfo)
+    if ( CAMI.PlayerHasAccess(client, "Parallax - Spawn Weapons", nil) != true ) then
+        return false
+    end
+
+    return true
+end
+
+function MODULE:PlayerSpawnVehicle(client, model, name, vehicleTable)
+    if ( CAMI.PlayerHasAccess(client, "Parallax - Spawn Vehicles", nil) != true ) then
         return false
     end
 
