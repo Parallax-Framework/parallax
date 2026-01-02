@@ -39,19 +39,21 @@ function surface.CreateFont(name, data)
     surface.axCreateFont(name, data)
 end
 
-local styleModifiers = { "bold", "italic", "strikeout", "underline" }
+local styleModifiers = { "bold", "italic", "strikeout", "underline", "shadow" }
 
 --- Generate all style combinations (cached)
 -- @realm client
 -- @return table Array of all style combinations
 function ax.font:GenerateStyleCombinations()
-    if ( self.styleCombinations ) then return self.styleCombinations end
+    if ( self.styleCombinations ) then
+        return self.styleCombinations
+    end
 
     self.styleCombinations = { "" }
 
-    for i = 1, 15 do -- 2^4 - 1
+    for i = 1, 31 do -- 2^5 - 1
         local combo = {}
-        for j = 1, 4 do
+        for j = 1, 5 do
             if ( bit.band(i, bit.lshift(1, j - 1)) != 0 ) then
                 table.insert(combo, styleModifiers[j])
             end
@@ -77,7 +79,6 @@ function ax.font:CreateFamily(name, font, size, fontData)
     end
 
     local combinations = self:GenerateStyleCombinations()
-
     for _, combo in ipairs(combinations) do
         local fontName = "ax." .. name .. (combo != "" and ("." .. combo) or "")
         local data = {
@@ -87,6 +88,7 @@ function ax.font:CreateFamily(name, font, size, fontData)
             italic = string.find(combo, "italic", 1, true) and true or false,
             underline = string.find(combo, "underline", 1, true) and true or false,
             strikeout = string.find(combo, "strikeout", 1, true) and true or false,
+            shadow = string.find(combo, "shadow", 1, true) and true or false,
             antialias = true,
             extended = true
         }
