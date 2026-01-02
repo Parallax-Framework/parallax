@@ -4,6 +4,8 @@ MODULE.name = "Admin"
 MODULE.description = "Handles admin-related functionality."
 MODULE.author = "Riggs"
 
+ax.admin = MODULE
+
 concommand.Add("ax_player_set_usergroup", function(client, command, arguments, argumentsString)
     if ( IsValid(client) and !client:IsAdmin() ) then
         client:Notify("You do not have permission to use this command.")

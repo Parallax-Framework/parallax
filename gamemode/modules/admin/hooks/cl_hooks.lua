@@ -1,5 +1,8 @@
 local MODULE = MODULE or {}
 
+function MODULE:GetChatNameColor(client)
+end
+
 function MODULE:LoadFonts()
     ax.font:CreateFamily("small.admin", "Courier New", ax.util:ScreenScaleH(5))
     ax.font:CreateFamily("regular.admin", "Courier New", ax.util:ScreenScaleH(6))
