@@ -60,23 +60,8 @@ end
 
 -- Client-side implementation
 if ( CLIENT ) then
-    sound.Add({
-        name = "parallax.ui.notification.in",
-        channel = CHAN_AUTO,
-        volume = 0.4,
-        level = 60,
-        pitch = {95, 105},
-        sound = "parallax/ui/notification_in.wav"
-    })
-
-    sound.Add({
-        name = "parallax.ui.notification.out",
-        channel = CHAN_AUTO,
-        volume = 0.4,
-        level = 60,
-        pitch = {95, 105},
-        sound = "parallax/ui/notification_out.wav"
-    })
+    ax.util:AddSound("ax.interface.notification.in", "parallax/ui/notification_in.wav", 0.4, {95, 105}, CHAN_AUTO, 60)
+    ax.util:AddSound("ax.interface.notification.out", "parallax/ui/notification_out.wav", 0.4, {95, 105}, CHAN_AUTO, 60)
 
     ax.notification.queue = {}
     ax.notification.active = {}
@@ -193,7 +178,7 @@ if ( CLIENT ) then
         }
 
         if ( ax.option:Get("notification.sounds", true) ) then
-            ax.client:EmitSound("parallax.ui.notification.in")
+            ax.client:EmitSound("ax.interface.notification.in")
         end
 
         p:Motion(0.25, {
@@ -231,7 +216,7 @@ if ( CLIENT ) then
         t.phaseStart = CurTime()
 
         if ( ax.option:Get("notification.sounds", true) ) then
-            ax.client:EmitSound("parallax.ui.notification.out")
+            ax.client:EmitSound("ax.interface.notification.out")
         end
     end
 

@@ -17,6 +17,7 @@ if ( SERVER ) then
     AddCSLuaFile(basePath .. "util_file.lua")
     AddCSLuaFile(basePath .. "util_find.lua")
     AddCSLuaFile(basePath .. "util_print.lua")
+    AddCSLuaFile(basePath .. "util_sound.lua")
     AddCSLuaFile(basePath .. "util_store.lua")
     AddCSLuaFile(basePath .. "util_text.lua")
 end
@@ -26,6 +27,7 @@ include(basePath .. "util_core.lua")
 include(basePath .. "util_file.lua")
 include(basePath .. "util_find.lua")
 include(basePath .. "util_print.lua")
+include(basePath .. "util_sound.lua")
 include(basePath .. "util_store.lua")
 include(basePath .. "util_text.lua")
 
