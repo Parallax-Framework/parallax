@@ -52,7 +52,7 @@ function GM:PlayerStartVoice()
 end
 
 function GM:ShouldDrawVignette()
-    return ax.config:Get( "interface.vignette.enabled", true )
+    return ax.config:Get("interface.vignette.enabled", true)
 end
 
 local vignette = ax.util:GetMaterial("parallax/overlays/vignette.png", "smooth noclamp")
