@@ -131,6 +131,10 @@ function SWEP:Precache()
     util.PrecacheSound(self.Primary.Sound)
     util.PrecacheModel(self.ViewModel)
     util.PrecacheModel(self.WorldModel)
+
+    if ( self.OnPrecache ) then
+        self:OnPrecache()
+    end
 end
 
 local function IncludeFile(path)
@@ -155,6 +159,8 @@ IncludeFile("core/sh_anims.lua")
 
 function SWEP:Initialize()
     BaseClass.Initialize(self)
+
+    self:Precache()
 end
 
 function SWEP:SetupDataTables()
@@ -721,29 +727,5 @@ function SWEP:UpdateMovementAnimation()
         if ( anim ) then
             self:PlayAnimation(anim, rate)
         end
-    end
-end
-
-function ax.util:AddSound(name, path, volume, pitch, channel, level)
-    volume = volume or 1.0
-    pitch = pitch or 100
-    channel = channel or CHAN_WEAPON
-    level = level or 75
-
-    sound.Add({
-        name = name,
-        channel = channel,
-        volume = volume,
-        level = level,
-        pitch = pitch,
-        sound = path
-    })
-
-    if ( istable(path) ) then
-        for _, p in ipairs(path) do
-            util.PrecacheSound(p)
-        end
-    else
-        util.PrecacheSound(path)
     end
 end
