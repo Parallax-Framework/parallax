@@ -160,6 +160,22 @@ SKIN.Colours.Button.Disabled = Color(40, 32, 55, 255)
 SKIN.Colours.Button.Down = Color(130, 90, 200, 255)
 SKIN.Colours.Button.Hover = Color(100, 75, 140, 255)
 SKIN.Colours.Button.Normal = Color(70, 55, 100, 255)
+
+-- NOTE:
+-- Derma uses SKIN.Colours.Button for button label text colors.
+-- Keep a separate set for button backgrounds so we can brighten labels
+-- without washing out fills.
+SKIN.Colours.ButtonBG = {}
+SKIN.Colours.ButtonBG.Disabled = SKIN.Colours.Button.Disabled
+SKIN.Colours.ButtonBG.Down = SKIN.Colours.Button.Down
+SKIN.Colours.ButtonBG.Hover = SKIN.Colours.Button.Hover
+SKIN.Colours.ButtonBG.Normal = SKIN.Colours.Button.Normal
+
+-- Brightened button label text colors.
+SKIN.Colours.Button.Disabled = Color(130, 120, 150, 255)
+SKIN.Colours.Button.Down = Color(180, 120, 255, 255)
+SKIN.Colours.Button.Hover = Color(250, 245, 255, 255)
+SKIN.Colours.Button.Normal = Color(220, 210, 240, 255)
 SKIN.Colours.Category = {}
 SKIN.Colours.Category.Header = Color(250, 245, 255, 255)
 SKIN.Colours.Category.Header_Closed = Color(240, 235, 250, 255)
@@ -265,13 +281,13 @@ function SKIN:PaintButton(panel, w, h)
     if not panel.m_bBackground then return end
     local col
     if panel.Depressed or panel:IsSelected() or panel:GetToggle() then
-        col = self.Colours.Button.Down
+        col = self.Colours.ButtonBG.Down
     elseif not panel:IsEnabled() then
-        col = self.Colours.Button.Disabled
+        col = self.Colours.ButtonBG.Disabled
     elseif panel.Hovered then
-        col = self.Colours.Button.Hover
+        col = self.Colours.ButtonBG.Hover
     else
-        col = self.Colours.Button.Normal
+        col = self.Colours.ButtonBG.Normal
     end
 
     DrawBorderedBox(0, 0, w, h, col, self.colButtonBorder, 1)
@@ -471,13 +487,13 @@ function SKIN:PaintWindowMinimizeButton(panel, w, h)
     if not panel.m_bBackground then return end
     local col
     if not panel:IsEnabled() then
-        col = self.Colours.Button.Disabled
+        col = self.Colours.ButtonBG.Disabled
     elseif panel.Depressed or panel:IsSelected() then
-        col = self.Colours.Button.Down
+        col = self.Colours.ButtonBG.Down
     elseif panel.Hovered then
-        col = self.Colours.Button.Hover
+        col = self.Colours.ButtonBG.Hover
     else
-        col = self.Colours.Button.Normal
+        col = self.Colours.ButtonBG.Normal
     end
 
     DrawRoundedBox(0, 0, w, h, col, 2)
@@ -489,13 +505,13 @@ function SKIN:PaintWindowMaximizeButton(panel, w, h)
     if not panel.m_bBackground then return end
     local col
     if not panel:IsEnabled() then
-        col = self.Colours.Button.Disabled
+        col = self.Colours.ButtonBG.Disabled
     elseif panel.Depressed or panel:IsSelected() then
-        col = self.Colours.Button.Down
+        col = self.Colours.ButtonBG.Down
     elseif panel.Hovered then
-        col = self.Colours.Button.Hover
+        col = self.Colours.ButtonBG.Hover
     else
-        col = self.Colours.Button.Normal
+        col = self.Colours.ButtonBG.Normal
     end
 
     DrawRoundedBox(0, 0, w, h, col, 2)
@@ -523,13 +539,13 @@ end
 function SKIN:PaintScrollBarGrip(panel, w, h)
     local col
     if not panel:IsEnabled() then
-        col = Color(40, 32, 55, 255)
+        col = self.Colours.ButtonBG.Disabled
     elseif panel.Depressed then
-        col = Color(130, 90, 200, 255)
+        col = self.Colours.ButtonBG.Down
     elseif panel.Hovered then
-        col = Color(100, 75, 140, 255)
+        col = self.Colours.ButtonBG.Hover
     else
-        col = Color(70, 55, 100, 255)
+        col = self.Colours.ButtonBG.Normal
     end
 
     DrawRoundedBox(0, 0, w, h, col, 2)
@@ -542,13 +558,13 @@ function SKIN:PaintButtonDown(panel, w, h)
     if not panel.m_bBackground then return end
     local col
     if panel.Depressed or panel:IsSelected() then
-        col = self.Colours.Button.Down
+        col = self.Colours.ButtonBG.Down
     elseif not panel:IsEnabled() then
-        col = self.Colours.Button.Disabled
+        col = self.Colours.ButtonBG.Disabled
     elseif panel.Hovered then
-        col = self.Colours.Button.Hover
+        col = self.Colours.ButtonBG.Hover
     else
-        col = self.Colours.Button.Normal
+        col = self.Colours.ButtonBG.Normal
     end
 
     DrawRoundedBox(0, 0, w, h, col, 2)
@@ -562,13 +578,13 @@ function SKIN:PaintButtonUp(panel, w, h)
     if not panel.m_bBackground then return end
     local col
     if panel.Depressed or panel:IsSelected() then
-        col = self.Colours.Button.Down
+        col = self.Colours.ButtonBG.Down
     elseif not panel:IsEnabled() then
-        col = self.Colours.Button.Disabled
+        col = self.Colours.ButtonBG.Disabled
     elseif panel.Hovered then
-        col = self.Colours.Button.Hover
+        col = self.Colours.ButtonBG.Hover
     else
-        col = self.Colours.Button.Normal
+        col = self.Colours.ButtonBG.Normal
     end
 
     DrawRoundedBox(0, 0, w, h, col, 2)
@@ -582,13 +598,13 @@ function SKIN:PaintButtonLeft(panel, w, h)
     if not panel.m_bBackground then return end
     local col
     if panel.Depressed or panel:IsSelected() then
-        col = self.Colours.Button.Down
+        col = self.Colours.ButtonBG.Down
     elseif not panel:IsEnabled() then
-        col = self.Colours.Button.Disabled
+        col = self.Colours.ButtonBG.Disabled
     elseif panel.Hovered then
-        col = self.Colours.Button.Hover
+        col = self.Colours.ButtonBG.Hover
     else
-        col = self.Colours.Button.Normal
+        col = self.Colours.ButtonBG.Normal
     end
 
     DrawRoundedBox(0, 0, w, h, col, 2)
@@ -602,13 +618,13 @@ function SKIN:PaintButtonRight(panel, w, h)
     if not panel.m_bBackground then return end
     local col
     if panel.Depressed or panel:IsSelected() then
-        col = self.Colours.Button.Down
+        col = self.Colours.ButtonBG.Down
     elseif not panel:IsEnabled() then
-        col = self.Colours.Button.Disabled
+        col = self.Colours.ButtonBG.Disabled
     elseif panel.Hovered then
-        col = self.Colours.Button.Hover
+        col = self.Colours.ButtonBG.Hover
     else
-        col = self.Colours.Button.Normal
+        col = self.Colours.ButtonBG.Normal
     end
 
     DrawRoundedBox(0, 0, w, h, col, 2)
@@ -621,13 +637,13 @@ end
 function SKIN:PaintComboDownArrow(panel, w, h)
     local col
     if not panel.ComboBox:IsEnabled() then
-        col = self.Colours.Button.Disabled
+        col = self.Colours.ButtonBG.Disabled
     elseif panel.ComboBox.Depressed or panel.ComboBox:IsMenuOpen() then
-        col = self.Colours.Button.Down
+        col = self.Colours.ButtonBG.Down
     elseif panel.ComboBox.Hovered then
-        col = self.Colours.Button.Hover
+        col = self.Colours.ButtonBG.Hover
     else
-        col = self.Colours.Button.Normal
+        col = self.Colours.ButtonBG.Normal
     end
 
     DrawRoundedBox(0, 0, w, h, col, 0)
@@ -669,13 +685,13 @@ end
 function SKIN:PaintNumberUp(panel, w, h)
     local col
     if not panel:IsEnabled() then
-        col = self.Colours.Button.Disabled
+        col = self.Colours.ButtonBG.Disabled
     elseif panel.Depressed then
-        col = self.Colours.Button.Down
+        col = self.Colours.ButtonBG.Down
     elseif panel.Hovered then
-        col = self.Colours.Button.Hover
+        col = self.Colours.ButtonBG.Hover
     else
-        col = self.Colours.Button.Normal
+        col = self.Colours.ButtonBG.Normal
     end
 
     DrawRoundedBox(0, 0, w, h, col, 2)
@@ -688,13 +704,13 @@ end
 function SKIN:PaintNumberDown(panel, w, h)
     local col
     if not panel:IsEnabled() then
-        col = self.Colours.Button.Disabled
+        col = self.Colours.ButtonBG.Disabled
     elseif panel.Depressed then
-        col = self.Colours.Button.Down
+        col = self.Colours.ButtonBG.Down
     elseif panel.Hovered then
-        col = self.Colours.Button.Hover
+        col = self.Colours.ButtonBG.Hover
     else
-        col = self.Colours.Button.Normal
+        col = self.Colours.ButtonBG.Normal
     end
 
     DrawRoundedBox(0, 0, w, h, col, 2)
@@ -729,13 +745,13 @@ end
 function SKIN:PaintSliderKnob(panel, w, h)
     local col
     if not panel:IsEnabled() then
-        col = self.Colours.Button.Disabled
+        col = self.Colours.ButtonBG.Disabled
     elseif panel.Depressed then
-        col = self.Colours.Button.Down
+        col = self.Colours.ButtonBG.Down
     elseif panel.Hovered then
-        col = self.Colours.Button.Hover
+        col = self.Colours.ButtonBG.Hover
     else
-        col = self.Colours.Button.Normal
+        col = self.Colours.ButtonBG.Normal
     end
 
     DrawRoundedBox(0, 0, w, h, col, 3)
