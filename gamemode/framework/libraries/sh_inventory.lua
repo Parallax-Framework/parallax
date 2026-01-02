@@ -29,7 +29,6 @@ if ( SERVER ) then
         data.maxWeight = maxWeight
 
         local query = mysql:Insert("ax_inventories")
-            query:Insert("items", "[]")
             query:Insert("max_weight", maxWeight)
             query:Insert("data", "[]")
             query:Callback(function(result, status, lastInvId)
