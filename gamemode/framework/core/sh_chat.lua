@@ -304,7 +304,8 @@ ax.chat:Add("looc", {
         if ( SERVER and !CheckOOCAllowed(client) ) then return end
 
         local oocColor = ax.config:Get("chat.ooc.color", Color(225, 50, 50))
-        return oocColor, "<font=ax.small>" .. "[LOOC] ", color_white, client:SteamName() .. ": " .. message .. "</font>"
+        local nameColor = hook.Run("GetChatNameColor", client) or nameColor
+        return oocColor, "<font=ax.small>" .. "[LOOC] ", nameColor, client:SteamName() .. ": " .. message .. "</font>"
     end,
     CanHear = function(this, speaker, listener)
         local distance = ax.config:Get("chat.ooc.distance", 600)
@@ -319,7 +320,8 @@ ax.chat:Add("ooc", {
         if ( SERVER and !CheckOOCAllowed(client) ) then return end
 
         local oocColor = ax.config:Get("chat.ooc.color", Color(225, 50, 50))
-        return oocColor, "<font=ax.small>" .. "[OOC] ", color_white, client:SteamName() .. ": " .. message .. "</font>"
+        local nameColor = hook.Run("GetChatNameColor", client) or nameColor
+        return oocColor, "<font=ax.small>" .. "[OOC] ", nameColor, client:SteamName() .. ": " .. message .. "</font>"
     end,
     CanHear = function(this, speaker, listener)
         return true
@@ -352,5 +354,18 @@ ax.chat:Add("it", {
     CanHear = function(this, speaker, listener)
         local distance = ax.config:Get("chat.it.distance", 600)
         return speaker:GetPos():DistToSqr(listener:GetPos()) <= distance * distance
+    end
+})
+
+ax.chat:Add("event", {
+    description = "Announce a global event",
+    alias = {"globalevent"},
+    adminOnly = true,
+    OnRun = function(this, client, message)
+        local eventColor = ax.config:Get("chat.event.color", Color(200, 100, 50))
+        return eventColor, "<font=ax.small.italic>" .. ax.chat:Format(message) .. "</font>"
+    end,
+    CanHear = function(this, speaker, listener)
+        return true
     end
 })

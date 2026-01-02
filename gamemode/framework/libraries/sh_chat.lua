@@ -31,6 +31,8 @@ function ax.chat:Add(name, def)
         ax.command:Add(name, {
             displayName = def.displayName or ax.util:UniqueIDToName(name),
             description = def.description or "No description available.",
+            adminOnly = def.adminOnly or false,
+            superAdminOnly = def.superAdminOnly or false,
             chatCommand = true,
             alias = def.alias,
             arguments = {
