@@ -290,6 +290,10 @@ function ax.character:Delete(id, callback)
                     inventoryQuery:Where("id", invID)
                     inventoryQuery:Execute()
 
+                    local result = mysql:Delete("ax_items")
+                    result:Where("inventory_id", invID)
+                    result:Execute()
+
                     if ( ax.inventory and ax.inventory.instances and ax.inventory.instances[invID] ) then
                         ax.inventory.instances[invID] = nil
                     end
@@ -347,6 +351,11 @@ function ax.character:Delete(id, callback)
                 local inventoryQuery = mysql:Delete("ax_inventories")
                 inventoryQuery:Where("id", tonumber(row.inventory))
                 inventoryQuery:Execute()
+
+                local result = mysql:Delete("ax_items")
+                result:Where("inventory_id", tonumber(row.inventory))
+                result:Execute()
+
                 -- Also remove runtime inventory instance if loaded
                 if ( ax.inventory and ax.inventory.instances and ax.inventory.instances[tonumber(row.inventory)] ) then
                     ax.inventory.instances[tonumber(row.inventory)] = nil
