@@ -172,7 +172,10 @@ ax.character:RegisterVar("faction", {
             previousFaction:OnLeave(character, value, previousValue, isNetworked, recipients)
         end
 
-        hook.Run("PlayerLoadout", client)
+        if ( IsValid(client) ) then
+            hook.Run("PlayerLoadout", client)
+        end
+
         hook.Run("OnCharacterFactionChanged", character, value, previousValue, isNetworked, recipients)
 
         if ( factionTable and isfunction(factionTable.OnSet) ) then
@@ -203,7 +206,11 @@ ax.character:RegisterVar("class", {
             previousClass:OnLeave(character, value, previousValue, isNetworked, recipients)
         end
 
-        hook.Run("PlayerLoadout", client)
+        local client = character:GetOwner()
+        if ( IsValid(client) ) then
+            hook.Run("PlayerLoadout", client)
+        end
+
         hook.Run("OnCharacterClassChanged", character, value, previousValue, isNetworked, recipients)
 
         local classTable = ax.class:Get(value)
