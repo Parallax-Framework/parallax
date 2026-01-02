@@ -175,31 +175,29 @@ ax.chat:Add("ic", {
     noCommand = true,
     OnRun = function(this, client, message)
         local icColor = ax.config:Get("chat.ic.color")
-        local baseFont = "ax.small"
-        return icColor, "<font=" .. baseFont .. ">" .. client:Nick() .. " " .. expressions["ic"][math.random(#expressions["ic"])] .. ", \"" .. ax.chat:FormatWithMarkdown(message, baseFont) .. "\"</font>"
+        return icColor, client:Nick() .. " " .. expressions["ic"][math.random(#expressions["ic"])] .. ", \"" .. ax.chat:FormatWithMarkdown(message) .. "\""
     end,
     OnFormatForListener = function(this, speaker, listener, message)
         local icColor = ax.config:Get("chat.ic.color")
         local verb = GetVerb(listener, "ic")
-        local baseFont = "ax.small"
-        local formattedMessage = ax.chat:FormatWithMarkdown(message, baseFont)
+        local formattedMessage = ax.chat:FormatWithMarkdown(message)
         local target = GetLookTarget(speaker)
 
         if ( IsValid(target) ) then
             if ( target == listener ) then
                 -- Speaker is looking at this listener
-                return icColor, "<font=" .. baseFont .. ">" .. speaker:Nick() .. " " .. verb .. " to you, \"" .. formattedMessage .. "\"</font>"
+                return icColor, speaker:Nick() .. " " .. verb .. " to you, \"" .. formattedMessage .. "\""
             elseif ( listener == speaker ) then
                 -- This is the speaker seeing their own message
-                return icColor, "<font=" .. baseFont .. ">" .. speaker:Nick() .. " " .. verb .. " to " .. target:Nick() .. ", \"" .. formattedMessage .. "\"</font>"
+                return icColor, speaker:Nick() .. " " .. verb .. " to " .. target:Nick() .. ", \"" .. formattedMessage .. "\""
             else
                 -- Other listeners see who the speaker is talking to
-                return icColor, "<font=" .. baseFont .. ">" .. speaker:Nick() .. " " .. verb .. " to " .. target:Nick() .. ", \"" .. formattedMessage .. "\"</font>"
+                return icColor, speaker:Nick() .. " " .. verb .. " to " .. target:Nick() .. ", \"" .. formattedMessage .. "\""
             end
         end
 
         -- Default message (no target)
-        return icColor, "<font=" .. baseFont .. ">" .. speaker:Nick() .. " " .. verb .. ", \"" .. formattedMessage .. "\"</font>"
+        return icColor, speaker:Nick() .. " " .. verb .. ", \"" .. formattedMessage .. "\""
     end,
     CanHear = function(this, speaker, listener)
         local distance = ax.config:Get("chat.ic.distance", 400)
@@ -213,7 +211,7 @@ ax.chat:Add("roll", {
     noCommand = true,
     OnRun = function(this, client, result, sides)
         local rollColor = ax.config:Get("chat.roll.color", Color(150, 75, 75))
-        return rollColor, string.format("<font=ax.small>%s</font>", client:Nick() .. " rolls a " .. result .. " on a " .. sides .. "-sided dice.")
+        return rollColor, client:Nick() .. " rolls a " .. result .. " on a " .. sides .. "-sided dice."
     end,
     CanHear = function(this, speaker, listener)
         local distance = ax.config:Get("chat.me.distance", 400)
@@ -227,13 +225,13 @@ ax.chat:Add("yell", {
     alias = {"y", "shout"},
     OnRun = function(this, client, message)
         local yellColor = ax.config:Get("chat.yell.color")
-        local baseFont = "ax.medium"
+        local baseFont = "ax.medium.shadow"
         return yellColor, "<font=" .. baseFont .. ">" .. client:Nick() .. " " .. expressions["yell"][math.random(#expressions["yell"])] .. ", \"" .. utf8.upper(ax.chat:FormatWithMarkdown(message, baseFont)) .. "\"</font>"
     end,
     OnFormatForListener = function(this, speaker, listener, message)
         local yellColor = ax.config:Get("chat.yell.color")
         local verb = GetVerb(listener, "yell")
-        local baseFont = "ax.medium"
+        local baseFont = "ax.medium.shadow"
         local formattedMessage = utf8.upper(ax.chat:FormatWithMarkdown(message, baseFont))
         local target = GetLookTarget(speaker)
 
@@ -265,13 +263,13 @@ ax.chat:Add("whisper", {
     alias = {"w"},
     OnRun = function(this, client, message)
         local whisperColor = ax.config:Get("chat.whisper.color")
-        local baseFont = "ax.small"
+        local baseFont = "ax.tiny.shadow"
         return whisperColor, "<font=" .. baseFont .. ">" .. client:Nick() .. " " .. expressions["whisper"][math.random(#expressions["whisper"])] .. ", \"" .. ax.chat:FormatWithMarkdown(message, baseFont) .. "\"</font>"
     end,
     OnFormatForListener = function(this, speaker, listener, message)
         local whisperColor = ax.config:Get("chat.whisper.color")
         local verb = GetVerb(listener, "whisper")
-        local baseFont = "ax.small"
+        local baseFont = "ax.tiny.shadow"
         local formattedMessage = ax.chat:FormatWithMarkdown(message, baseFont)
         local target = GetLookTarget(speaker)
 
@@ -305,7 +303,7 @@ ax.chat:Add("looc", {
 
         local oocColor = ax.config:Get("chat.ooc.color", Color(225, 50, 50))
         local nameColor = hook.Run("GetChatNameColor", client) or nameColor
-        return oocColor, "<font=ax.small>" .. "[LOOC] ", nameColor, client:SteamName() .. ": " .. message .. "</font>"
+        return oocColor, "[LOOC] ", nameColor, client:SteamName() .. ": " .. message
     end,
     CanHear = function(this, speaker, listener)
         local distance = ax.config:Get("chat.ooc.distance", 600)
@@ -321,7 +319,7 @@ ax.chat:Add("ooc", {
 
         local oocColor = ax.config:Get("chat.ooc.color", Color(225, 50, 50))
         local nameColor = hook.Run("GetChatNameColor", client) or nameColor
-        return oocColor, "<font=ax.small>" .. "[OOC] ", nameColor, client:SteamName() .. ": " .. message .. "</font>"
+        return oocColor, "[OOC] ", nameColor, client:SteamName() .. ": " .. message
     end,
     CanHear = function(this, speaker, listener)
         return true

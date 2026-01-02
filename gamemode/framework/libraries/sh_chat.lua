@@ -411,7 +411,7 @@ function ax.chat:Format(message, options)
     message = string.Trim(message)
     options = options or {}
 
-    local baseFont = options.baseFont or "ax.small"
+    local baseFont = options.baseFont or "ax.small.shadow"
     local enableMarkdown = options.markdown != false
     local capStyle = self:DetectCapitalization(message)
 

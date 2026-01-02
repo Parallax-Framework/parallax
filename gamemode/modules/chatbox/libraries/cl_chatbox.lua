@@ -160,7 +160,7 @@ function ax.chat:OverrideChatAddText()
         -- Add timestamp
         if ( ax.option:Get("chat.timestamps", true) ) then
             local ts = Color(150, 150, 150)
-            text = string.format("<font=ax.small><color=%d,%d,%d>[%s] </color></font>", ts.r, ts.g, ts.b, os.date("%H:%M"))
+            text = string.format("<font=ax.small.shadow><color=%d,%d,%d>[%s] </color></font>", ts.r, ts.g, ts.b, os.date("%H:%M"))
         end
 
         -- Build markup from arguments
@@ -187,7 +187,7 @@ function ax.chat:OverrideChatAddText()
         -- where we add a timestamp (<font=...>...</font>) but the rest of the
         -- message isn't wrapped, which would prevent markup.Parse from having
         -- a stable top-level font context.
-        local defaultFont = hook.Run("GetChatFont", ax.chat.currentType or "ic") or "ax.small"
+        local defaultFont = hook.Run("GetChatFont", ax.chat.currentType or "ic") or "ax.small.shadow"
         local function IsFullyWrappedByFont(str)
             if ( !isstring(str) ) then return false end
             -- allow optional leading/trailing whitespace
