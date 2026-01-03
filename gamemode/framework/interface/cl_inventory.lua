@@ -501,6 +501,7 @@ function PANEL:PopulateInfo(stack)
                         quantity = math.Clamp(quantity, 1, stack.stackCount)
 
                         for i = 1, quantity do
+                            print(" Dropping item " .. i .. " of " .. quantity )
                             timer.Simple(i * 0.1, function()
                                 if ( !IsValid(self) ) then return end
                                 if ( !istable(stack) or #stack.stackedItems < i ) then return end
