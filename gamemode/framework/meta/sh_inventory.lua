@@ -192,6 +192,23 @@ function inventory:RemoveReceiver(receiver)
     return false
 end
 
+function inventory:RemoveReceivers()
+    if ( !istable(self.receivers) ) then self.receivers = {} return end
+    if ( self.receivers[1] == nil ) then return false end
+
+    if ( SERVER ) then
+        for i = 1, #self.receivers do
+            net.Start("ax.inventory.receiver.remove")
+                net.WriteUInt(self.id, 32)
+                net.WritePlayer(self.receivers[i])
+            net.Send(self:GetReceivers())
+        end
+    end
+
+    self.receivers = {}
+    return true
+end
+
 if ( SERVER ) then
     function inventory:AddItem(class, data)
         if ( !istable(self.items) ) then self.items = {} end
