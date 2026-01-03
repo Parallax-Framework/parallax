@@ -211,7 +211,7 @@ if ( SERVER ) then
 
                 local itemObject = ax.item:Instance(lastID, class)
                 itemObject.data = data or {}
-                itemObject.inventoryID = self.id
+                itemObject.invID = self.id
 
                 ax.item.instances[lastID] = itemObject
 

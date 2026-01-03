@@ -108,7 +108,7 @@ function GM:InitPostEntity()
         for itemID, v in pairs(groundItems) do
             local itemObject = ax.item:Instance(itemID, v.class)
             if ( itemObject ) then
-                itemObject.inventoryID = 0
+                itemObject.invID = 0
                 itemObject.data = v.data or {}
                 ax.item.instances[itemID] = itemObject
             end

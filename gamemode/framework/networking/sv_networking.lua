@@ -116,7 +116,7 @@ net.Receive("ax.inventory.item.action", function(length, client)
 
     local bRemoveAfter = actionTable:OnRun(item, client)
     if ( bRemoveAfter == true ) then
-        local inventory = ax.inventory.instances[item.inventoryID]
+        local inventory = ax.inventory.instances[item.invID]
         if ( istable(inventory) ) then
             inventory:RemoveItem(item.id)
         else
