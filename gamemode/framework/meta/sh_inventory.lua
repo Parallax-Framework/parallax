@@ -114,8 +114,6 @@ function inventory:HasItem(identifier)
 end
 
 function inventory:IsReceiver(client)
-    if ( !istable(self.receivers) ) then self.receivers = {} return false end
-
     for i = 1, #self.receivers do
         if ( self.receivers[i] == client ) then
             return true
@@ -128,11 +126,9 @@ end
 function inventory:AddReceiver(receiver)
     if ( !istable(self.receivers) ) then self.receivers = {} end
 
-    if ( self.receivers[1] != nil ) then
-        for i = 1, #self.receivers do
-            if ( self.receivers[i] == receiver ) then
-                return false -- Already exists.
-            end
+    for i = #self.receivers, 1, -1 do
+        if ( self.receivers[i] == receiver ) then
+            return false -- Already exists.
         end
     end
 
@@ -172,18 +168,17 @@ end
 
 function inventory:RemoveReceiver(receiver)
     if ( !istable(self.receivers) ) then self.receivers = {} return end
-    if ( self.receivers[1] == nil ) then return false end
 
-    for i = 1, #self.receivers do
+    for i = #self.receivers, 1, -1 do
         if ( self.receivers[i] == receiver ) then
+            table.remove(self.receivers, i)
+
             if ( SERVER ) then
                 net.Start("ax.inventory.receiver.remove")
                     net.WriteUInt(self.id, 32)
                     net.WritePlayer(receiver)
                 net.Send(self:GetReceivers())
             end
-
-            table.remove(self.receivers, i)
 
             return true
         end
