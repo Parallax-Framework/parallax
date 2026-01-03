@@ -50,6 +50,7 @@ if ( SERVER ) then
 
                 hook.Run("OnPlayerItemPickup", activator, self, item)
 
+                self:GetTable().axBeingPickedUp = true
                 SafeRemoveEntity(self)
             else
                 ax.util:PrintWarning(string.format(
@@ -65,5 +66,17 @@ if ( SERVER ) then
         if ( success == false ) then
             activator:Notify(reason or "You cannot pick up this item.")
         end
+    end
+
+    function ENT:OnRemove()
+        if ( self:GetTable().axBeingPickedUp ) then return end
+
+        local id = self:GetItemID()
+        local item = ax.item.instances[id]
+        if ( !istable(item) ) then return end
+
+        local query = mysql:Delete("ax_items")
+            query:Where("id", id)
+        query:Execute()
     end
 end
