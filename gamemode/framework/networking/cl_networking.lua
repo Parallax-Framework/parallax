@@ -361,7 +361,7 @@ net.Receive("ax.inventory.sync", function()
 end)
 
 net.Receive("ax.inventory.receiver.add", function()
-    local inventory = net.ReadTable()
+    local inventory = setmetatable(net.ReadTable(), ax.inventory.meta)
     local receiver = net.ReadPlayer()
 
     if ( !istable(inventory) ) then
@@ -384,6 +384,7 @@ net.Receive("ax.inventory.receiver.remove", function()
     end
 
     inventory:RemoveReceiver(receiver)
+    ax.inventory.instances[inventoryID] = nil
 end)
 
 net.Receive("ax.inventory.item.add", function()
@@ -494,7 +495,7 @@ net.Receive("ax.item.transfer", function()
     end
 
     -- Remove from the old inventory, if applicable
-    if ( fromInventoryID != 0 and fromInventory and fromInventory:HasReceiver(ax.client) ) then
+    if ( fromInventoryID != 0 and fromInventory and fromInventory:IsReceiver(ax.client) ) then
         fromInventory.items[item.id] = nil
     end
 
