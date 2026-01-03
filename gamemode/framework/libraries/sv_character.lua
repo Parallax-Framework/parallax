@@ -134,6 +134,13 @@ function ax.character:Load(client, character)
     character.player = client
 
     clientData.axCharacterPrevious = clientData.axCharacter
+    if ( clientData.axCharacter ) then
+        local inventory = clientData.axCharacter:GetInventory()
+        if ( istable(inventory) ) then
+            inventory:RemoveReceivers()
+        end
+    end
+
     clientData.axCharacter = character
     ax.character:Sync(client, character)
 
@@ -295,6 +302,7 @@ function ax.character:Delete(id, callback)
                     result:Execute()
 
                     if ( ax.inventory and ax.inventory.instances and ax.inventory.instances[invID] ) then
+                        ax.inventory.instances[invID]:RemoveReceivers()
                         ax.inventory.instances[invID] = nil
                     end
                 end
