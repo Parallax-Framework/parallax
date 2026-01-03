@@ -361,18 +361,27 @@ net.Receive("ax.inventory.sync", function()
 end)
 
 net.Receive("ax.inventory.receiver.add", function()
-    local inventoryID = net.ReadUInt(32)
+    local inventory = net.ReadTable()
     local receiver = net.ReadPlayer()
 
-    local inventory = ax.inventory.instances[inventoryID]
-    if ( !istable(inventory) ) then return end
+    if ( !istable(inventory) ) then
+        ax.util:PrintError("Invalid inventory data received for receiver addition.")
+        return
+    end
 
+    ax.inventory.instances[inventory.id] = inventory
     inventory:AddReceiver(receiver)
 end)
 
 net.Receive("ax.inventory.receiver.remove", function()
-    local inventory = net.ReadUInt(32)
+    local inventoryID = net.ReadUInt(32)
     local receiver = net.ReadPlayer()
+
+    local inventory = ax.inventory.instances[inventoryID]
+    if ( !istable(inventory) ) then
+        ax.util:PrintError("Invalid inventory ID received for receiver removal: " .. tostring(inventoryID))
+        return
+    end
 
     inventory:RemoveReceiver(receiver)
 end)
@@ -470,7 +479,7 @@ net.Receive("ax.item.transfer", function()
     if ( fromInventoryID != 0 ) then
         fromInventory = ax.inventory.instances[fromInventoryID]
         if ( !istable(fromInventory) ) then
-            ax.util:PrintError("From inventory with ID " .. fromInventoryID .. " does not exist.")
+            ax.util:PrintWarning("From inventory with ID " .. fromInventoryID .. " does not exist.")
             return
         end
     end
@@ -479,13 +488,13 @@ net.Receive("ax.item.transfer", function()
     if ( toInventoryID != 0 ) then
         toInventory = ax.inventory.instances[toInventoryID]
         if ( !istable(toInventory) ) then
-            ax.util:PrintError("To inventory with ID " .. toInventoryID .. " does not exist.")
+            ax.util:PrintWarning("To inventory with ID " .. toInventoryID .. " does not exist.")
             return
         end
     end
 
     -- Remove from the old inventory, if applicable
-    if ( fromInventoryID != 0 ) then
+    if ( fromInventoryID != 0 and fromInventory and fromInventory:HasReceiver(ax.client) ) then
         fromInventory.items[item.id] = nil
     end
 
