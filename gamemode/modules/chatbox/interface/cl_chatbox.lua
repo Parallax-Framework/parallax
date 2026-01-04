@@ -83,65 +83,73 @@ function PANEL:Init()
     end
 
     self.entry.OnChange = function(this)
-        self.chatTypePrevious = self.chatType or "ic"
-        self.chatType = "ic"
-
-        local text = this:GetValue()
-        if ( string.sub(text, 1, 3) == ".//" ) then
-            -- Check if it's a way of using local out of character chat using .// prefix
-            local data = ax.command:FindClosest("looc")
-            if ( data ) then
-                ax.chat.currentType = data.displayName
-                self.chatTypePrevious = self.chatType or "ic"
-                self.chatType = utf8.lower(data.name)
-            end
-
-            -- Populate voice recommendations for the text after the .// prefix
-            local voiceText = string.sub(text, 4)
-            if ( voiceText and #voiceText > 0 ) then
-                self:PopulateRecommendations(voiceText, "voices")
-            else
-                self:PopulateRecommendations()
-            end
-        elseif ( string.sub(text, 1, 1) == "/" ) then
-            -- This is a command, so we need to parse it
-            local arguments = string.Explode(" ", string.sub(text, 2))
-            local command = arguments[1]
-            self:PopulateRecommendations(command, "commands")
-
-            local data = ax.command:FindClosest(command)
-            if ( data ) then
-                ax.chat.currentType = data.displayName
-                self.chatTypePrevious = self.chatType or "ic"
-                self.chatType = utf8.lower(data.name)
-                self:SelectRecommendation(data.displayName)
-
-                -- Populate voice recommendations for arguments after the command
-                if ( #arguments > 1 ) then
-                    local argumentText = table.concat(arguments, " ", 2)
-                    self:PopulateRecommendations(argumentText, "voices")
-                end
-            end
-        else
-            -- Check if text ends with a space followed by optional text (i.e. a voice line was selected and space was added)
-            local lastSpacePos = string.find(text, " ", 1, true)
-            if ( lastSpacePos ) then
-                -- Get text after the last space for voice recommendations
-                local voiceText = string.sub(text, lastSpacePos + 1)
-                if ( voiceText and #voiceText > 0 ) then
-                    self:PopulateRecommendations(voiceText, "voices")
-                else
-                    -- Just a space, show all available voice lines
-                    self:PopulateRecommendations("", "voices")
-                end
-            else
-                -- No space yet, populate based on full text
-                self:PopulateRecommendations(text, "voices")
-            end
+        -- Debounce all heavy operations to avoid lag on every keystroke
+        if ( self.recommendationDebounce ) then
+            timer.Remove(self.recommendationDebounce)
         end
 
-        hook.Run("ChatboxOnTextChanged", text, self.chatType)
-        hook.Run("ChatboxOnChatTypeChanged", self.chatType, self.chatTypePrevious)
+        self.recommendationDebounce = "ax.chatbox.recommendations." .. ax.client:EntIndex()
+        timer.Create(self.recommendationDebounce, 0.15, 1, function()
+            if ( !IsValid(self) or !IsValid(this) ) then return end
+
+            self.chatTypePrevious = self.chatType or "ic"
+            self.chatType = "ic"
+
+            local text = this:GetValue()
+            local firstChar = string.sub(text, 1, 1)
+            local firstThree = string.sub(text, 1, 3)
+
+            if ( firstThree == ".//" ) then
+                -- Check if it's a way of using local out of character chat using .// prefix
+                local data = ax.command:FindClosest("looc")
+                if ( data ) then
+                    ax.chat.currentType = data.displayName
+                    self.chatTypePrevious = self.chatType or "ic"
+                    self.chatType = utf8.lower(data.name)
+                end
+
+                -- No voices needed for looc, just clear recommendations
+                self:PopulateRecommendations()
+            elseif ( firstChar == "/" ) then
+                -- This is a command, so we need to parse it
+                local arguments = string.Explode(" ", string.sub(text, 2))
+                local command = arguments[1]
+                self:PopulateRecommendations(command, "commands")
+
+                local data = ax.command:FindClosest(command)
+                if ( data ) then
+                    ax.chat.currentType = data.displayName
+                    self.chatTypePrevious = self.chatType or "ic"
+                    self.chatType = utf8.lower(data.name)
+                    self:SelectRecommendation(data.displayName)
+
+                    -- Populate voice recommendations for arguments after the command, and only if we are a chat command that supports voices
+                    if ( #arguments > 1 and data.chatCommand ) then
+                        local argumentText = table.concat(arguments, " ", 2)
+                        self:PopulateRecommendations(argumentText, "voices")
+                    end
+                end
+            else
+                -- Check if text ends with a space followed by optional text (i.e. a voice line was selected and space was added)
+                local lastSpacePos = string.find(text, " ", 1, true)
+                if ( lastSpacePos ) then
+                    -- Get text after the last space for voice recommendations
+                    local voiceText = string.sub(text, lastSpacePos + 1)
+                    if ( voiceText and #voiceText > 0 ) then
+                        self:PopulateRecommendations(voiceText, "voices")
+                    else
+                        -- Just a space, show all available voice lines
+                        self:PopulateRecommendations("", "voices")
+                    end
+                else
+                    -- No space yet, populate based on full text
+                    self:PopulateRecommendations(text, "voices")
+                end
+            end
+
+            hook.Run("ChatboxOnTextChanged", text, self.chatType)
+            hook.Run("ChatboxOnChatTypeChanged", self.chatType, self.chatTypePrevious)
+        end)
     end
 
     self.entry.OnKeyCode = function(this, key)
@@ -249,6 +257,9 @@ function PANEL:PopulateRecommendations(text, recommendationType)
         -- Get available voice classes for the current player
         if ( ax.voices and ax.voices.GetClass ) then
             local voiceClasses = ax.voices:GetClass(ax.client, self.chatType)
+            local searchLower = utf8.lower(text)
+            local maxResults = 20
+
             for _, voiceClass in ipairs(voiceClasses) do
                 if ( !ax.voices.stored[voiceClass] ) then
                     ax.util:PrintDebug("Voice class \"" .. tostring(voiceClass) .. "\" has no stored voice lines!\n")
@@ -256,8 +267,17 @@ function PANEL:PopulateRecommendations(text, recommendationType)
                 end
 
                 for voiceKey, voiceData in pairs(ax.voices.stored[voiceClass]) do
-                    if ( ax.util:FindText(utf8.lower(voiceKey), utf8.lower(text)) == false and
-                         ax.util:FindText(utf8.lower(voiceData.text or ""), utf8.lower(text)) == false ) then
+                    -- Early exit if we have enough results
+                    if ( #self.recommendations.list >= maxResults ) then
+                        break
+                    end
+
+                    -- Cache lowercased strings to avoid repeated utf8.lower calls
+                    local keyLower = utf8.lower(voiceKey)
+                    local descLower = utf8.lower(voiceData.text or "")
+
+                    if ( ax.util:FindText(keyLower, searchLower) == false and
+                         ax.util:FindText(descLower, searchLower) == false ) then
                         continue
                     end
 
@@ -267,10 +287,11 @@ function PANEL:PopulateRecommendations(text, recommendationType)
                         description = voiceData.text,
                         isVoice = true
                     }
+                end
 
-                    if ( #self.recommendations.list >= 20 ) then
-                        break
-                    end
+                -- Early exit if we have enough results across all voice classes
+                if ( #self.recommendations.list >= maxResults ) then
+                    break
                 end
             end
         else
