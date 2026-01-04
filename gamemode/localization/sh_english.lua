@@ -29,6 +29,7 @@ ax.localization:Register("en", {
     ["subcategory.colors"] = "Colors",
     ["subcategory.display"] = "Display",
     ["subcategory.distances"] = "Distances",
+    ["subcategory.fonts"] = "Fonts",
     ["subcategory.hud"] = "HUD",
     ["subcategory.interaction"] = "Interaction",
     ["subcategory.inventory"] = "Inventory",
@@ -110,6 +111,14 @@ ax.localization:Register("en", {
     ---- Display
     ["option.interface.scale"] = "Interface Scale",
     ["option.performance.animations"] = "Enable Interface Animations",
+
+    ---- Fonts
+    ["option.fontScaleGeneral"] = "General Font Scale",
+    ["option.fontScaleGeneral.help"] = "General font scale multiplier.",
+    ["option.fontScaleSmall"] = "Small Font Scale",
+    ["option.fontScaleSmall.help"] = "Small font scale modifier. Lower values make small fonts bigger.",
+    ["option.fontScaleBig"] = "Big Font Scale",
+    ["option.fontScaleBig.help"] = "Big font scale modifier. Higher values make big fonts smaller.",
 
     ---- HUD
     ["option.hud.bar.armor.show"] = "Show Armor Bar",

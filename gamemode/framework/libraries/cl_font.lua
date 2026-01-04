@@ -140,13 +140,33 @@ function ax.font:CreateFamily(name, font, size, fontData)
 end
 
 function ax.font:Load()
-    ax.font:CreateFamily("tiny", "GorDIN Regular", ax.util:ScreenScaleH(6))
-    ax.font:CreateFamily("small", "GorDIN Regular", ax.util:ScreenScaleH(8))
-    ax.font:CreateFamily("regular", "GorDIN Regular", ax.util:ScreenScaleH(10))
-    ax.font:CreateFamily("medium", "GorDIN Regular", ax.util:ScreenScaleH(12))
-    ax.font:CreateFamily("large", "GorDIN Regular", ax.util:ScreenScaleH(16))
-    ax.font:CreateFamily("massive", "GorDIN Regular", ax.util:ScreenScaleH(24))
-    ax.font:CreateFamily("huge", "GorDIN Regular", ax.util:ScreenScaleH(32))
+    local generalScale = ax.option:Get("fontScaleGeneral", 1)
+    local smallScale = ax.option:Get("fontScaleSmall", 1)
+    local bigScale = ax.option:Get("fontScaleBig", 1)
+
+    local baseSizes = {
+        tiny = 6,
+        small = 8,
+        regular = 10,
+        medium = 12,
+        large = 16,
+        massive = 24,
+        huge = 32
+    }
+
+    local smallFamilies = { "tiny", "small", "regular" }
+    local bigFamilies = { "medium", "large", "massive", "huge" }
+
+    for name, base in pairs(baseSizes) do
+        local scale = generalScale
+        if ( table.HasValue(smallFamilies, name) ) then
+            scale = scale / smallScale
+        elseif ( table.HasValue(bigFamilies, name) ) then
+            scale = scale / bigScale
+        end
+        local size = ax.util:ScreenScaleH(base) * scale
+        ax.font:CreateFamily(name, "GorDIN Regular", size)
+    end
 
     hook.Run("LoadFonts")
 end

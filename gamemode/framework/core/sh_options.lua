@@ -122,3 +122,30 @@ ax.option:Add("notification.scale", ax.type.number, 1.0, {
     subCategory = "hud",
     description = "notification.scale.help"
 })
+
+ax.option:Add("fontScaleGeneral", ax.type.number, 1, {
+    category = "interface",
+    subCategory = "fonts",
+    description = "fontScaleGeneral.help",
+    min = 0.5,
+    max = 2,
+    decimals = 2
+})
+
+ax.option:Add("fontScaleSmall", ax.type.number, 1, {
+    category = "interface",
+    subCategory = "fonts",
+    description = "fontScaleSmall.help",
+    min = 0.5,
+    max = 2,
+    decimals = 2
+})
+
+ax.option:Add("fontScaleBig", ax.type.number, 1, {
+    category = "interface",
+    subCategory = "fonts",
+    description = "fontScaleBig.help",
+    min = 0.5,
+    max = 2,
+    decimals = 2
+})

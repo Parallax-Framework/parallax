@@ -30,6 +30,7 @@ ax.localization:Register("tr", {
     ["subcategory.colors"] = "Renkler",
     ["subcategory.display"] = "Görüntü",
     ["subcategory.distances"] = "Mesafeler",
+    ["subcategory.fonts"] = "Yazı Tipleri",
     ["subcategory.hud"] = "HUD",
     ["subcategory.interaction"] = "Etkileşim",
     ["subcategory.inventory"] = "Envanter",
@@ -106,6 +107,14 @@ ax.localization:Register("tr", {
     ---- Display
     ["option.interface.scale"] = "Arayüz Ölçeği",
     ["option.performance.animations"] = "Arayüz Animasyonlarını Etkinleştir",
+
+    ---- Fonts
+    ["option.fontScaleGeneral"] = "Genel Yazı Tipi Ölçeği",
+    ["option.fontScaleGeneral.help"] = "Genel yazı tipi ölçeği çarpanı.",
+    ["option.fontScaleSmall"] = "Küçük Yazı Tipi Ölçeği",
+    ["option.fontScaleSmall.help"] = "Küçük yazı tipi ölçeği değiştirici. Daha düşük değerler küçük yazı tiplerini büyütür.",
+    ["option.fontScaleBig"] = "Büyük Yazı Tipi Ölçeği",
+    ["option.fontScaleBig.help"] = "Büyük yazı tipi ölçeği değiştirici. Daha yüksek değerler büyük yazı tiplerini küçültür.",
 
     ---- HUD
     ["option.hud.bar.armor.show"] = "Zırh Barını Göster",
