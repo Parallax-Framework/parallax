@@ -11,13 +11,12 @@
 
 --- Font management system for creating and storing fonts used throughout the Parallax Framework.
 -- Automatically generates all possible combinations of font styles for each font family.
--- Supports: bold, italic, underline, strikeout, and all their combinations.
+-- Supports: bold, italic, shadow, and all their combinations.
 --
 -- @usage
 -- -- Use any combination of styles:
 -- draw.SimpleText("Hello", "ax.regular.bold.italic", x, y)
--- draw.SimpleText("World", "ax.large.underline.strikeout", x, y)
--- draw.SimpleText("!", "ax.huge.bold.italic.underline.strikeout", x, y)
+-- draw.SimpleText("World", "ax.large.shadow", x, y + 20)
 --
 -- @module ax.font
 
@@ -39,7 +38,7 @@ function surface.CreateFont(name, data)
     surface.axCreateFont(name, data)
 end
 
-local styleModifiers = { "bold", "italic", "strikeout", "underline", "shadow" }
+local styleModifiers = { "bold", "italic", "shadow" }
 
 --- Generate all permutations of a table
 -- @realm client
@@ -83,9 +82,9 @@ function ax.font:GenerateStyleCombinations()
     self.styleCombinations = { "" }
 
     local seen = { [""] = true }
-    for i = 1, 31 do -- 2^5 - 1
+    for i = 1, bit.lshift(1, #styleModifiers) - 1 do
         local combo = {}
-        for j = 1, 5 do
+        for j = 1, #styleModifiers do
             if ( bit.band(i, bit.lshift(1, j - 1)) != 0 ) then
                 table.insert(combo, styleModifiers[j])
             end
@@ -125,8 +124,6 @@ function ax.font:CreateFamily(name, font, size, fontData)
             size = size,
             weight = string.find(combo, "bold", 1, true) and 900 or 700,
             italic = string.find(combo, "italic", 1, true) and true or false,
-            underline = string.find(combo, "underline", 1, true) and true or false,
-            strikeout = string.find(combo, "strikeout", 1, true) and true or false,
             shadow = string.find(combo, "shadow", 1, true) and true or false,
             antialias = true,
             extended = true
