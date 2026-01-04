@@ -118,6 +118,16 @@ if ( SERVER ) then
 
             v:ChatPrint(unpack(messageData))
         end
+
+        -- remove any html tags for server logging
+        for i = 1, #packaged do
+            if isstring(packaged[i]) then
+                packaged[i] = string.gsub(packaged[i], "<[^>]->", "")
+            end
+        end
+
+        -- Log to server console
+        ax.util:Print("[CHAT] [" .. utf8.upper(chatType) .. "] ", unpack(packaged))
     end
 end
 
