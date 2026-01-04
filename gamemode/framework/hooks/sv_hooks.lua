@@ -562,3 +562,94 @@ function GM:SendDeathNotice(attacker, inflictor, victim, flags)
 
     return self:SendDeathNoticeUnaltered(attacker, inflictor, victim, flags)
 end
+
+local whitelistProp = {
+    ["bodygroups"] = true,
+    ["collision"] = true,
+    ["remover"] = true,
+    ["skin"] = true
+}
+
+local adminProp = {
+    ["extinguish"] = true,
+    ["ignite"] = true,
+}
+
+function GM:CanProperty(client, prop)
+    if ( whitelistProp[prop] ) then return true end
+    if ( client:IsAdmin() and adminProp[prop] ) then return true end
+
+    return client:IsSuperAdmin()
+end
+
+local bannedTools = {
+    ["balloon"] = true,
+    ["duplicator"] = true,
+    ["dynamite"] = true,
+    ["emitter"] = true,
+    ["eyeposer"] = true,
+    ["faceposer"] = true,
+    ["fingerposer"] = true,
+    ["inflator"] = true,
+    ["paint"] = true,
+    ["physprop"] = true,
+    ["thruster"] = true,
+    ["wheel"] = true,
+    ["trails"] = true
+}
+
+local dupeBannedTools = {
+    ["adv_duplicator"] = true,
+    ["duplicator"] = true,
+    ["spawner"] = true,
+    ["weld"] = true,
+    ["weld_ez"] = true
+}
+
+local adminWorldRemoveWhitelist = {
+    ["ax_item"] = true,
+    ["prop_physics"] = true,
+    ["prop_ragdoll"] = true
+}
+
+function GM:CanTool(client, tr, tool)
+    if ( !client:IsAdmin() and tool == "spawner" ) then return false end
+
+    if ( bannedTools[tool] ) then
+        ax.util:Print(client, " attempted to use banned tool ", tool)
+        return false
+    end
+
+    local ent = tr.Entity
+    if ( IsValid(ent) ) then
+        if ( ent.axOnlyRemover ) then
+            if ( tool == "remover" ) then
+                return client:IsAdmin() or client:IsSuperAdmin()
+            else
+                ax.util:Print(client, " attempted to use tool ", tool, " on an entity that only allows remover.")
+                return false
+            end
+        end
+
+        if ( ent.axNoDupe and dupeBannedTools[tool] ) then
+            ax.util:Print(client, " attempted to use tool ", tool, " on a no-dupe entity.")
+            return false
+        end
+
+        if ( tool == "remover" and client:IsAdmin() and !client:IsSuperAdmin() ) then
+            local owner = ent.CPPIGetOwner and ent:CPPIGetOwner() or nil
+            if ( !owner and !adminWorldRemoveWhitelist[ent:GetClass()] ) then
+                client:Notify("You can not remove this entity.")
+                return false
+            end
+        end
+
+        if ( string.StartsWith(ent:GetClass(), "ax_") and tool != "remover" and !client:IsSuperAdmin() ) then
+            return false
+        end
+    end
+
+    ax.util:Print(client, " used tool ", tool)
+
+    return true
+end
