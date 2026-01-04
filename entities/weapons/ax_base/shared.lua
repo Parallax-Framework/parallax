@@ -185,6 +185,7 @@ function SWEP:GetIronSights()
     if ( !IsValid(owner) ) then return false end
 
     if ( self:GetReloading() ) then return false end
+    if ( self.bNoIronSights == true ) then return false end
 
     if ( owner:KeyDown(IN_ATTACK2) ) then
         return true
@@ -295,7 +296,7 @@ function SWEP:PrimaryAttack()
 
     if ( self:GetIronSights() ) then
         -- Cycle through ironsight fire sequences if available
-        if ( self.Primary.IronSequences and #self.Primary.IronSequences > 0 ) then
+        if ( self.Primary.IronSequences and self.Primary.IronSequences[1] != nil ) then
             self.IronFireIndex = (self.IronFireIndex % #self.Primary.IronSequences) + 1
             anim = self.Primary.IronSequences[self.IronFireIndex]
             rate = self.Primary.IronPlaybackRate or rate
@@ -326,7 +327,6 @@ local spreadVector = Vector()
 
 function SWEP:ShootBullet(damage, num, cone)
     local owner = self:GetOwner()
-    owner:LagCompensation(true)
 
     -- Increase inaccuracy when sprinting
     if ( owner:IsSprinting() ) then
@@ -347,19 +347,21 @@ function SWEP:ShootBullet(damage, num, cone)
         AmmoType = self.Primary.Ammo
     }
 
+    owner:LagCompensation(true)
     local trace = util.TraceLine({
         start = bullet.Src,
         endpos = bullet.Src + bullet.Dir * 32768,
         filter = owner,
         mask = MASK_SHOT
     })
+    owner:LagCompensation(false)
 
     if ( self.Primary.TracerName ) then
         bullet.TracerName = self.Primary.TracerName
     end
 
     owner:FireBullets(bullet)
-    owner:LagCompensation(false)
+
 
     if ( self.OnShootBullet ) then
         self:OnShootBullet(bullet, trace)

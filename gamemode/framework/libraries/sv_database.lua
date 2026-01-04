@@ -134,7 +134,6 @@ function ax.database:CreateTables()
 
     query = mysql:Create("ax_inventories")
         query:Create("id", "INT(11) UNSIGNED NOT NULL AUTO_INCREMENT")
-        query:Create("items", "LONGTEXT NOT NULL")
         query:Create("max_weight", "FLOAT NOT NULL DEFAULT 30.0")
         query:Create("data", "LONGTEXT NOT NULL")
         query:PrimaryKey("id")

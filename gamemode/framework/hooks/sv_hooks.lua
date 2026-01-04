@@ -385,9 +385,9 @@ function GM:StartCommand(client, userCmd)
                     ax.character:Sync(otherClient, otherCharacter, client)
                 end
 
-                -- Sync all world items (inventoryID = 0) to the newly joined player
+                -- Sync all world items (invID = 0) to the newly joined player
                 for itemID, item in pairs(ax.item.instances) do
-                    if ( !istable(item) or item.inventoryID != 0 ) then continue end
+                    if ( !istable(item) or item.invID != 0 ) then continue end
 
                     net.Start("ax.inventory.item.add")
                         net.WriteUInt(0, 32) -- World inventory ID

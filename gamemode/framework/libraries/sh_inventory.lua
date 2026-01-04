@@ -29,7 +29,6 @@ if ( SERVER ) then
         data.maxWeight = maxWeight
 
         local query = mysql:Insert("ax_inventories")
-            query:Insert("items", "[]")
             query:Insert("max_weight", maxWeight)
             query:Insert("data", "[]")
             query:Callback(function(result, status, lastInvId)
@@ -81,7 +80,7 @@ if ( SERVER ) then
                     id = v.id,
                     class = v.class,
                     data = v.data or {},
-                    inventoryID = v.inventoryID
+                    inventoryID = v.invID
                 }
             end
         end
@@ -110,7 +109,7 @@ if ( SERVER ) then
 
         -- Sync all world items (inventory_id = 0) to the client
         for itemID, item in pairs(ax.item.instances) do
-            if ( item.inventoryID == 0 or item:GetInventoryID() == 0 ) then
+            if ( item.invID == 0 or item:GetInventoryID() == 0 ) then
                 net.Start("ax.item.spawn")
                     net.WriteUInt(itemID, 32)
                     net.WriteString(item.class)
@@ -170,7 +169,7 @@ if ( SERVER ) then
                                         if ( !item ) then continue end
 
                                         local itemObject = ax.item:Instance(itemData.id, itemData.class)
-                                        itemObject.inventoryID = itemData.inventory_id
+                                        itemObject.invID = itemData.inventory_id
                                         itemObject.data = util.JSONToTable(itemData.data) or {}
 
                                         ax.item.instances[itemObject.id] = itemObject

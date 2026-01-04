@@ -59,13 +59,15 @@ end
 function item:GetData(key, default)
     if ( !istable(self.data) ) then self.data = {} end
 
-    return self.data[key] or default
+    return self.data[key] == nil and default or self.data[key]
 end
 
 function item:SetData(key, value)
     if ( !istable(self.data) ) then self.data = {} end
 
     self.data[key] = value
+
+    -- TODO: Sync changes to Receivers
 end
 
 function item:GetActions()
