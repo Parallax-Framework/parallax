@@ -12,13 +12,15 @@
 ax.option:Add("performance.animations", ax.type.bool, true, {
     category = "interface",
     subCategory = "display",
-    description = "performance.animations.help"
+    description = "performance.animations.help",
+    bNoNetworking = true
 })
 
 ax.option:Add("inventory.categories.italic", ax.type.bool, true, {
     category = "interface",
     subCategory = "inventory",
-    description = "inventory.categories.italic.help"
+    description = "inventory.categories.italic.help",
+    bNoNetworking = true
 })
 
 -- UI scaling and layout options
@@ -28,7 +30,8 @@ ax.option:Add("interface.scale", ax.type.number, 1.0, {
     decimals = 1,
     category = "interface",
     subCategory = "display",
-    description = "UI element scaling factor (affects notifications, panels, etc.)"
+    description = "UI element scaling factor (affects notifications, panels, etc.)",
+    bNoNetworking = true
 })
 
 ax.option:Add("inventory.columns", ax.type.number, 4, {
@@ -37,7 +40,8 @@ ax.option:Add("inventory.columns", ax.type.number, 4, {
     description = "inventories.columns.help",
     min = 2,
     max = 8,
-    decimals = 0
+    decimals = 0,
+    bNoNetworking = true
 })
 
 ax.option:Add("button.delay.click", ax.type.number, 0.1, {
@@ -46,7 +50,8 @@ ax.option:Add("button.delay.click", ax.type.number, 0.1, {
     description = "button.delay.click.help",
     min = 0,
     max = 1,
-    decimals = 2
+    decimals = 2,
+    bNoNetworking = true
 })
 
 -- Visual preference options
@@ -54,39 +59,45 @@ ax.option:Add("button.delay.click", ax.type.number, 0.1, {
 ax.option:Add("hud.bar.health.show", ax.type.bool, true, {
     category = "interface",
     subCategory = "hud",
-    description = "hud.bar.health.show.help"
+    description = "hud.bar.health.show.help",
+    bNoNetworking = true
 })
 
 ax.option:Add("hud.bar.armor.show", ax.type.bool, true, {
     category = "interface",
     subCategory = "hud",
-    description = "hud.bar.armor.show.help"
+    description = "hud.bar.armor.show.help",
+    bNoNetworking = true
 })
 
 -- Chat preferences
 ax.option:Add("chat.timestamps", ax.type.bool, false, {
     category = "chat",
     subCategory = "basic",
-    description = "chat.timestamps.help"
+    description = "chat.timestamps.help",
+    bNoNetworking = true
 })
 
 ax.option:Add("chat.sounds", ax.type.bool, true, {
     category = "chat",
     subCategory = "basic",
-    description = "chat.sounds.help"
+    description = "chat.sounds.help",
+    bNoNetworking = true
 })
 
 ax.option:Add("chat.randomized.verbs", ax.type.bool, true, {
     category = "chat",
     subCategory = "basic",
-    description = "chat.randomized.verbs.help"
+    description = "chat.randomized.verbs.help",
+    bNoNetworking = true
 })
 
 -- Notification customization
 ax.option:Add("notification.enabled", ax.type.bool, true, {
     category = "interface",
     subCategory = "hud",
-    description = "notification.enabled.help"
+    description = "notification.enabled.help",
+    bNoNetworking = true
 })
 
 ax.option:Add("notification.length.default", ax.type.number, 5, {
@@ -95,13 +106,15 @@ ax.option:Add("notification.length.default", ax.type.number, 5, {
     decimals = 0,
     category = "interface",
     subCategory = "hud",
-    description = "notification.length.default.help"
+    description = "notification.length.default.help",
+    bNoNetworking = true
 })
 
 ax.option:Add("notification.sounds", ax.type.bool, true, {
     category = "interface",
     subCategory = "hud",
-    description = "notification.sounds.help"
+    description = "notification.sounds.help",
+    bNoNetworking = true
 })
 
 ax.option:Add("notification.position", ax.type.array, "bottomcenter", {
@@ -111,7 +124,8 @@ ax.option:Add("notification.position", ax.type.array, "bottomcenter", {
     choices = {
         ["topright"] = "Top Right", ["topleft"] = "Top Left", ["topcenter"] = "Top Center",
         ["bottomright"] = "Bottom Right", ["bottomleft"] = "Bottom Left", ["bottomcenter"] = "Bottom Center"
-    }
+    },
+    bNoNetworking = true
 })
 
 ax.option:Add("notification.scale", ax.type.number, 1.0, {
@@ -120,7 +134,8 @@ ax.option:Add("notification.scale", ax.type.number, 1.0, {
     decimals = 1,
     category = "interface",
     subCategory = "hud",
-    description = "notification.scale.help"
+    description = "notification.scale.help",
+    bNoNetworking = true
 })
 
 ax.option:Add("fontScaleGeneral", ax.type.number, 1, {
@@ -129,7 +144,12 @@ ax.option:Add("fontScaleGeneral", ax.type.number, 1, {
     description = "fontScaleGeneral.help",
     min = 0.5,
     max = 2,
-    decimals = 2
+    decimals = 2,
+    deferredUpdate = true,
+    bNoNetworking = true,
+    OnChanged = function(self, oldValue, value)
+        ax.font:Load()
+    end
 })
 
 ax.option:Add("fontScaleSmall", ax.type.number, 1, {
@@ -138,7 +158,12 @@ ax.option:Add("fontScaleSmall", ax.type.number, 1, {
     description = "fontScaleSmall.help",
     min = 0.5,
     max = 2,
-    decimals = 2
+    decimals = 2,
+    deferredUpdate = true,
+    bNoNetworking = true,
+    OnChanged = function(self, oldValue, value)
+        ax.font:Load()
+    end
 })
 
 ax.option:Add("fontScaleBig", ax.type.number, 1, {
@@ -147,5 +172,10 @@ ax.option:Add("fontScaleBig", ax.type.number, 1, {
     description = "fontScaleBig.help",
     min = 0.5,
     max = 2,
-    decimals = 2
+    decimals = 2,
+    deferredUpdate = true,
+    bNoNetworking = true,
+    OnChanged = function(self, oldValue, value)
+        ax.font:Load()
+    end
 })
