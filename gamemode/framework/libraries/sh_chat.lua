@@ -260,7 +260,7 @@ end
 --- Build font name from active styles
 -- @realm shared
 -- @param baseFont string The base font name
--- @param styles table Table of active styles (bold, italic, underline, strikeout)
+-- @param styles table Table of active styles (bold, italic)
 -- @return string The complete font name
 function ax.chat:BuildFontName(baseFont, styles)
     if ( !next(styles) ) then return baseFont end
@@ -268,15 +268,13 @@ function ax.chat:BuildFontName(baseFont, styles)
     local styleNames = {}
     if ( styles.bold ) then table.insert(styleNames, "bold") end
     if ( styles.italic ) then table.insert(styleNames, "italic") end
-    if ( styles.strikeout ) then table.insert(styleNames, "strikeout") end
-    if ( styles.underline ) then table.insert(styleNames, "underline") end
     table.sort(styleNames)
 
     return baseFont .. "." .. table.concat(styleNames, ".")
 end
 
 --- Parse Discord-style markdown into font tags
--- Supports: *italic*, **bold**, ***bold+italic***, __underline__, ~~strikeout~~
+-- Supports: *italic*, **bold**, ***bold+italic***
 -- @realm shared
 -- @param text string The text to parse
 -- @param baseFont string The base font name (default: "ax.small")
@@ -325,42 +323,6 @@ function ax.chat:ParseMarkdown(text, baseFont, styles)
             else
                 -- Unmatched marker: append literal and advance
                 result = result .. "**"
-                i = i + 2
-                matched = true
-            end
-        end
-
-        -- Check for __text__ (underline)
-        if ( !matched and string.sub(text, i, i + 1) == "__" ) then
-            local endPos = string.find(text, "__", i + 2, true)
-            if ( endPos ) then
-                local newStyles = table.Copy(styles)
-                newStyles.underline = true
-                local content = self:ParseMarkdown(string.sub(text, i + 2, endPos - 1), baseFont, newStyles)
-                result = result .. content
-                i = endPos + 2
-                matched = true
-            else
-                -- Unmatched marker: append literal and advance
-                result = result .. "__"
-                i = i + 2
-                matched = true
-            end
-        end
-
-        -- Check for ~~text~~ (strikeout)
-        if ( !matched and string.sub(text, i, i + 1) == "~~" ) then
-            local endPos = string.find(text, "~~", i + 2, true)
-            if ( endPos ) then
-                local newStyles = table.Copy(styles)
-                newStyles.strikeout = true
-                local content = self:ParseMarkdown(string.sub(text, i + 2, endPos - 1), baseFont, newStyles)
-                result = result .. content
-                i = endPos + 2
-                matched = true
-            else
-                -- Unmatched marker: append literal and advance
-                result = result .. "~~"
                 i = i + 2
                 matched = true
             end

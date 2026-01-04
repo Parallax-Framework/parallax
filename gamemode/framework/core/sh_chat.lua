@@ -21,48 +21,6 @@ local function GetLookTarget(speaker)
     return nil
 end
 
---[[
-
-A list of things to improve the chat to a level of serious quality.
-
-```Font & Color```
-Arial, Weighted at 600 should be the standard.
-## Yelling (255, 255, 150) (Larger)
-Talking (255, 255, 150) (Normal)
--# Whispering (230, 230, 150) (Smaller)
-/me (255, 255, 175)
-
-Looking At (150, 175, 175)
-Looking At Whispering (130, 155, 230)
-Looking At /me (175, 175, 255)
-
-/localevent, /event (200, 100, 50)
-/broadcast (150, 125, 175)
-/dispatch (150, 100, 100)
-/request (175, 125, 100)
-/radio (75, 150, 50)
-/tac (50, 75, 150)
-
-[LOOC] (225, 50, 50)
-/roll (150, 75, 75)
-/pm (125, 150, 75)
-Notify (175, 200, 255)
-Time Stamps (150, 150, 150)
-
-```Logic```
--All new messages should appear at the bottom of the chatbox and move up. Instead of first initial messages appearing at the top.
--There should be support added for **Bolding**, *Italics*, ~~Strikethrough~~ and __Underline__. (---) gets replaced into (—).
--The chatbox should be able to be scaled and reset to its original position with a button (🔄).
--Chat command display need a cleaner, fresh display that doesn't detract from the chat all that much and is more readable on what that command does.
-
-```Additional```
--***says*** alone is boring. Add: more words like **exclaims**, **proclaims**, **expresses**, **asserts**, **speaks**, **discloses**, **utters**, **conveys**, **states**, **comments**, **remarks** and **declares**. `(John Smith exclaims "Hey.")`
--***whispers*** is also boring alone. Add: **mutters**, **undertones**, **murmurs** and **mumbles**. `(John Smith mutters "Hey...")`
--***yells***. Add: **shouts**, **howls**, **screams** and **roars**. `(John Smith shouts "Hey!")`
--***radios***. Add: **transmits**, **emits**, **relays**, **delivers**, **communicates** and **wires** `(John Smith emits on 100.0 "Hey!")`
-
-]]
-
 local expressions = {
     ["ic"] = {
         "says",
