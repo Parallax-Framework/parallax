@@ -72,9 +72,9 @@ function SWEP:PlayAnimation(anim, rate)
         return
     end
 
-    if ( isstring(anim) ) then
-        ax.util:PrintError("Invalid animation sequence: " .. tostring(anim))
-    end
+    -- Failed to play animation
+    ax.util:PrintWarning("Failed to play animation: " .. tostring(anim))
+    return
 end
 
 function SWEP:GetActiveAnimation()
