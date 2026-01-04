@@ -282,7 +282,7 @@ function ax.util:CreateStore(spec, oldStore)
                 ax.util:PrintWarning(spec.name, " Unknown network state for option update: ", key, " = ", coerced)
             end
         else
-            ax.util:PrintWarning(spec.name, " Set: ", key, " = ", coerced, " (not networked)")
+            ax.util:PrintDebug(spec.name, " Set: ", key, " = ", coerced, " (not networked)")
         end
 
         ax.util:PrintDebug(spec.name, " Set: ", key, " = ", coerced)
