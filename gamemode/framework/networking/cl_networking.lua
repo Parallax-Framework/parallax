@@ -462,7 +462,13 @@ net.Receive("ax.item.transfer", function()
 
     local item = ax.item.instances[itemID]
     if ( !istable(item) ) then
-        ax.util:PrintError("Item with ID " .. itemID .. " does not exist.")
+        ax.util:PrintError("Item with ID " .. itemID .. " does not exist.\n" ..
+            "  Transfer Details:\n" ..
+            "    Item ID: " .. itemID .. "\n" ..
+            "    From Inventory ID: " .. fromInventoryID .. "\n" ..
+            "    To Inventory ID: " .. toInventoryID .. "\n" ..
+            "  Known Item Instances: " .. table.Count(ax.item.instances) .. "\n" ..
+            "  Available Item IDs: " .. table.concat(table.GetKeys(ax.item.instances), ", "))
         return
     end
 
