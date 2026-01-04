@@ -41,7 +41,38 @@ end
 
 local styleModifiers = { "bold", "italic", "strikeout", "underline", "shadow" }
 
---- Generate all style combinations (cached)
+--- Generate all permutations of a table
+-- @realm client
+-- @param arr table The array to permute
+-- @return table Array of all permutations
+local function GeneratePermutations(arr)
+    if ( #arr == 0 ) then return { {} } end
+    if ( #arr == 1 ) then return { arr } end
+
+    local result = {}
+    for i = 1, #arr do
+        local elem = arr[i]
+        local remaining = {}
+        for j = 1, #arr do
+            if ( j != i ) then
+                table.insert(remaining, arr[j])
+            end
+        end
+
+        local perms = GeneratePermutations(remaining)
+        for _, perm in ipairs(perms) do
+            local new = { elem }
+            for _, v in ipairs(perm) do
+                table.insert(new, v)
+            end
+            table.insert(result, new)
+        end
+    end
+
+    return result
+end
+
+--- Generate all style combinations with all orderings (cached)
 -- @realm client
 -- @return table Array of all style combinations
 function ax.font:GenerateStyleCombinations()
@@ -51,6 +82,7 @@ function ax.font:GenerateStyleCombinations()
 
     self.styleCombinations = { "" }
 
+    local seen = { [""] = true }
     for i = 1, 31 do -- 2^5 - 1
         local combo = {}
         for j = 1, 5 do
@@ -59,8 +91,15 @@ function ax.font:GenerateStyleCombinations()
             end
         end
 
-        table.sort(combo)
-        table.insert(self.styleCombinations, table.concat(combo, "."))
+        -- Generate all permutations of this combination
+        local perms = GeneratePermutations(combo)
+        for _, perm in ipairs(perms) do
+            local str = table.concat(perm, ".")
+            if ( !seen[str] ) then
+                seen[str] = true
+                table.insert(self.styleCombinations, str)
+            end
+        end
     end
 
     return self.styleCombinations
