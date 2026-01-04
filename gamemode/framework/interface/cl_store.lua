@@ -440,6 +440,12 @@ function PANEL:Init()
     self.slider:SetValue(0)
     self.slider.OnValueChanged = function(this, value)
         if ( self.bInitializing ) then return end
+
+        if ( self.deferredUpdate ) then
+            self.slider.ValueChangedDeferred = value
+            return
+        end
+
         local store = self:GetStore()
         if ( store ) then
             store:Set(self.key, value)
@@ -449,6 +455,16 @@ function PANEL:Init()
         this.Label:SetTextColor(self:GetTextColor())
         this.TextArea:SetFont(self:GetFont())
         this.TextArea:SetTextColor(self:GetTextColor())
+
+        if ( self.deferredUpdate and !this:IsEditing() and this.ValueChangedDeferred ) then
+            local store = self:GetStore()
+            if ( store ) then
+                store:Set(self.key, this.ValueChangedDeferred)
+                this.ValueChangedDeferred = nil
+            end
+
+            return
+        end
     end
 end
 
@@ -462,6 +478,11 @@ function PANEL:SetKey(key)
     self.slider:SetMinMax(data.min or 0, data.max or 100)
     self.slider:SetDecimals(data.decimals or 0)
     self.slider:SetValue(store:Get(key))
+
+    self.deferredUpdate = data.deferredUpdate
+    if ( self.deferredUpdate == nil ) then
+        self.deferredUpdate = false
+    end
 
     self.bInitializing = false
 end
