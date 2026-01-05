@@ -541,7 +541,13 @@ function GM:GetFallDamage(client, speed)
 end
 
 function GM:OnPlayerItemPickup(client, entity, item)
-    entity:EmitSound("items/itempickup.wav")
+    -- Item transfers are async (DB-backed). Under heavy spam, the entity may be
+    -- removed before the callback fires, so defensively handle invalid ents.
+    if ( IsValid(entity) ) then
+        entity:EmitSound("items/itempickup.wav")
+    elseif ( IsValid(client) ) then
+        client:EmitSound("items/itempickup.wav")
+    end
 end
 
 function GM:OnPlayerItemAction(client, item, action)

@@ -30,6 +30,10 @@ if ( SERVER ) then
     function ENT:Use(activator, caller)
         if ( !IsValid(activator) or !activator:IsPlayer() ) then return end
 
+        -- Prevent multiple rapid Use calls on the same entity from creating
+        -- concurrent async transfers.
+        if ( self:GetTable().axPickupInProgress ) then return end
+
         local item = self:GetItemTable()
         if ( !istable(item) ) then return end
 
@@ -39,8 +43,10 @@ if ( SERVER ) then
         local inventory = character:GetInventory()
         if ( !istable(inventory) ) then return end
 
-        local success, reason = ax.item:Transfer(item, 0, inventory, function(success)
-            if ( success ) then
+        self:GetTable().axPickupInProgress = true
+
+        local transferOk, transferReason = ax.item:Transfer(item, 0, inventory, function(didTransfer)
+            if ( didTransfer ) then
                 ax.util:PrintDebug(color_success, string.format(
                     "Player %s picked up item %s from world inventory to inventory %s.",
                     tostring(activator),
@@ -48,10 +54,19 @@ if ( SERVER ) then
                     tostring(inventory.id)
                 ))
 
-                hook.Run("OnPlayerItemPickup", activator, self, item)
+                -- Mark before running hooks so OnRemove doesn't delete records
+                -- if the entity is removed during any hook logic.
+                if ( IsValid(self) ) then
+                    self:GetTable().axBeingPickedUp = true
+                end
 
-                self:GetTable().axBeingPickedUp = true
-                SafeRemoveEntity(self)
+                -- Entity may have been removed while waiting on DB callback.
+                if ( IsValid(self) ) then
+                    hook.Run("OnPlayerItemPickup", activator, self, item)
+                    SafeRemoveEntity(self)
+                else
+                    hook.Run("OnPlayerItemPickup", activator, nil, item)
+                end
             else
                 ax.util:PrintWarning(string.format(
                     "Player %s failed to pick up item %s from world inventory to inventory %s, due to %s.",
@@ -60,16 +75,21 @@ if ( SERVER ) then
                     tostring(inventory.id),
                     tostring(reason or "Unknown Reason")
                 ))
+
+                if ( IsValid(self) ) then
+                    self:GetTable().axPickupInProgress = nil
+                end
             end
         end)
 
-        if ( success == false ) then
-            activator:Notify(reason or "You cannot pick up this item.")
+        if ( transferOk == false ) then
+            self:GetTable().axPickupInProgress = nil
+            activator:Notify(transferReason or "You cannot pick up this item.")
         end
     end
 
     function ENT:OnRemove()
-        if ( self:GetTable().axBeingPickedUp ) then return end
+        if ( self:GetTable().axBeingPickedUp or self:GetTable().axPickupInProgress ) then return end
 
         local id = self:GetItemID()
         local item = ax.item.instances[id]
