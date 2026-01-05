@@ -42,7 +42,6 @@ SWEP.Primary.Sequence = SWEP.Primary.Sequence or ACT_VM_PRIMARYATTACK
 SWEP.Primary.PlaybackRate = SWEP.Primary.PlaybackRate or 1
 SWEP.Primary.IronSequence = SWEP.Primary.IronSequence or nil
 SWEP.Primary.IronPlaybackRate = SWEP.Primary.IronPlaybackRate or 1
-SWEP.Primary.IronSequences = SWEP.Primary.IronSequences or nil -- Optional: array of ironsight fire sequences to cycle through
 
 SWEP.Secondary = {
     ClipSize = -1,
@@ -294,16 +293,9 @@ function SWEP:PrimaryAttack()
     local anim = self.Primary.Sequence
     local rate = self.Primary.PlaybackRate or 1
 
-    if ( self:GetIronSights() ) then
-        -- Cycle through ironsight fire sequences if available
-        if ( self.Primary.IronSequences and self.Primary.IronSequences[1] != nil ) then
-            self.IronFireIndex = (self.IronFireIndex % #self.Primary.IronSequences) + 1
-            anim = self.Primary.IronSequences[self.IronFireIndex]
-            rate = self.Primary.IronPlaybackRate or rate
-        elseif ( self.Primary.IronSequence ) then
-            anim = self.Primary.IronSequence
-            rate = self.Primary.IronPlaybackRate or rate
-        end
+    if ( self:GetIronSights() and self.Primary.IronSequence ) then
+        anim = self.Primary.IronSequence
+        rate = self.Primary.IronPlaybackRate or rate
     end
 
     self:PlayAnimation(anim, rate)
