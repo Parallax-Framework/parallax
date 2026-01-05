@@ -84,16 +84,7 @@ function item:SetData(key, value)
         -- Sync changes to relevant receivers
         local inventoryID = self:GetInventoryID()
         if ( inventoryID and inventoryID > 0 ) then
-            local inventory = ax.inventory.instances[inventoryID]
-            if ( istable(inventory) and isfunction(inventory.Sync) ) then
-                inventory:Sync()
-            end
-        else
-            -- World item: notify all clients about updated data for this item
-            net.Start("ax.inventory.item.update")
-                net.WriteUInt(self.id, 32)
-                net.WriteTable(self.data or {})
-            net.Broadcast()
+            ax.inventory:Sync(inventoryID)
         end
     end
 end
@@ -113,10 +104,10 @@ function item:AddAction(name, actionData)
     self.actions[name] = actionData
 end
 
-function item:CanInteract(client, action)
+function item:CanInteract(client, action, silent)
     local try, catch = hook.Run("CanPlayerInteractItem", client, self, action)
     if ( try == false ) then
-        if ( isstring(catch) and #catch > 0 ) then
+        if ( isstring(catch) and #catch > 0 and !silent ) then
             client:Notify(catch, "error")
         end
 
@@ -127,7 +118,7 @@ function item:CanInteract(client, action)
     if ( istable(actionTable) and isfunction(actionTable.CanUse) ) then
         local canRun, reason = actionTable:CanUse(self, client)
         if ( canRun == false ) then
-            if ( isstring(reason) and #reason > 0 ) then
+            if ( isstring(reason) and #reason > 0 and !silent ) then
                 client:Notify(reason, "error")
             end
 
