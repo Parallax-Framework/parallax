@@ -149,6 +149,8 @@ ax.option:Add("fontScaleGeneral", ax.type.number, 1, {
     bNoNetworking = true,
     OnChanged = function(self, oldValue, value)
         ax.font:Load()
+
+        Derma_Message("Font scale changed. You may need to rejoin the server for all changes to take effect.", "Font Scale Changed", "OK")
     end
 })
 
@@ -163,6 +165,8 @@ ax.option:Add("fontScaleSmall", ax.type.number, 1, {
     bNoNetworking = true,
     OnChanged = function(self, oldValue, value)
         ax.font:Load()
+
+        Derma_Message("Font scale changed. You may need to rejoin the server for all changes to take effect.", "Font Scale Changed", "OK")
     end
 })
 
@@ -177,5 +181,7 @@ ax.option:Add("fontScaleBig", ax.type.number, 1, {
     bNoNetworking = true,
     OnChanged = function(self, oldValue, value)
         ax.font:Load()
+
+        Derma_Message("Font scale changed. You may need to rejoin the server for all changes to take effect.", "Font Scale Changed", "OK")
     end
 })
