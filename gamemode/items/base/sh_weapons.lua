@@ -11,6 +11,8 @@ ITEM.maxStack = 1 -- Maximum number of items that can be stacked, incase shouldS
 ITEM.isWeapon = true -- Flag to identify this item as a weapon
 ITEM.weaponClass = "weapon_pistol" -- Default weapon class, should be overridden by specific weapon items
 ITEM.weaponType = "Pistol" -- Default weapon type, should be overridden by specific weapon items
+ITEM.equipSound = "items/ammo_pickup.wav" -- Default equip sound
+ITEM.unequipSound = "items/ammo_pickup.wav" -- Default unequip sound
 
 ITEM:AddAction("equip", {
     name = "Equip",
@@ -18,11 +20,19 @@ ITEM:AddAction("equip", {
     icon = "icon16/accept.png",
     OnRun = function(action, item, client)
         client:Give(item.weaponClass)
-        client:Notify("You have equipped the item: " .. item:GetName(), "info")
-        return false -- Returning false prevents the item from being removed after use
+        client:SelectWeapon(item.weaponClass)
+        client:EmitSound(item.equipSound or "items/ammo_pickup.wav")
+
+        item:SetData("equipped", true)
+
+        return false
     end,
     CanUse = function(action, item, client)
-        return true -- TODO: Add checks to see if the player can equip the weapon (e.g., not already holding a weapon of the same type)
+        if ( item:GetData("equipped") ) then
+            return false, "Item is already equipped."
+        end
+
+        return true
     end
 })
 
@@ -32,10 +42,17 @@ ITEM:AddAction("unequip", {
     icon = "icon16/cross.png",
     OnRun = function(action, item, client)
         client:StripWeapon(item.weaponClass)
-        client:Notify("You have unequipped the item: " .. item:GetName(), "info")
-        return false -- Returning false prevents the item from being removed after use
+        client:EmitSound(item.unequipSound or "items/ammo_pickup.wav")
+
+        item:SetData("equipped", nil)
+
+        return false
     end,
     CanUse = function(action, item, client)
-        return true -- TODO: Add checks to see if the player can unequip the weapon (e.g., is currently holding this weapon)
+        if ( !item:GetData("equipped") ) then
+            return false, "Item is not equipped."
+        end
+
+        return true
     end
 })
