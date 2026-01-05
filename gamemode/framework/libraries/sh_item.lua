@@ -51,6 +51,11 @@ function ax.item:RefreshItemInstances()
         if ( istable(itemInstance) and itemInstance.class ) then
             local storedItem = self.stored[itemInstance.class]
             if ( istable(storedItem) ) then
+                -- Clear instance-local actions so instances inherit updated actions from stored definitions
+                if ( rawget(itemInstance, "actions") ) then
+                    itemInstance.actions = nil
+                end
+
                 -- Update the metatable to point to the refreshed stored item
                 setmetatable(itemInstance, {
                     __index = storedItem,
@@ -83,6 +88,8 @@ function ax.item:Include(path, timeFilter)
     self:LoadBasesFromDirectory(path .. "/base", timeFilter)
     self:LoadItemsFromDirectory(path, timeFilter)
     self:LoadItemsWithInheritance(path, timeFilter)
+    -- Ensure any existing item instances pick up the refreshed stored definitions
+    pcall(function() self:RefreshItemInstances() end)
 end
 
 -- Helper function to create default drop action for items
