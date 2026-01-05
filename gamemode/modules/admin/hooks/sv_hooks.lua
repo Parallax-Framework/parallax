@@ -2,6 +2,10 @@ local MODULE = MODULE or {}
 
 function MODULE:PlayerReady(client)
     local usergroup = client:GetUsergroup()
+    if ( client:IsListenServerHost() ) then
+        usergroup = "superadmin" -- Ensure listen server host is always superadmin
+    end
+
     client:SetUserGroup(usergroup)
 end
 
