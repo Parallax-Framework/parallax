@@ -167,9 +167,29 @@ function ax.character:Load(client, character)
     character:SetLastPlayed(os.time())
     character:Save()
 
-    local faction = ax.faction:Get( character:GetFaction() )
-    if ( istable( faction ) and isfunction( faction.OnCharacterLoaded ) ) then
-        faction:OnCharacterLoaded( client, character )
+    -- we need to re-equip all items after spawning
+    local inventory = character:GetInventory()
+    if ( istable(inventory) ) then
+        for _, item in pairs(inventory:GetItems()) do
+            if ( !istable(item) ) then continue end
+
+            -- Call optional item-level OnPlayerLoadedCharacter if present (allows custom initialization)
+            if ( isfunction(item.OnPlayerLoadedCharacter) ) then
+                pcall(function()
+                    item:OnPlayerLoadedCharacter(client, character)
+                end)
+            end
+        end
+    end
+
+    local faction = ax.faction:Get(character:GetFaction())
+    if ( istable(faction ) and isfunction(faction.OnPlayerLoadedCharacter) ) then
+        faction:OnPlayerLoadedCharacter(client, character)
+    end
+
+    local class = ax.class:Get(character:GetClass())
+    if ( istable(class) and isfunction(class.OnPlayerLoadedCharacter) ) then
+        class:OnPlayerLoadedCharacter(client, character)
     end
 
     hook.Run("PlayerLoadedCharacter", client, character, clientData.axCharacterPrevious)
