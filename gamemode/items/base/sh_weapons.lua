@@ -78,3 +78,10 @@ function ITEM:OnPlayerLoadedCharacter(client, character) -- Called when a charac
         end
     end
 end
+
+hook.Add("OnPlayerItemAction", "ax.weapon_unequip_cleanup", function(client, item, action)
+    if ( item.isWeapon and action == "drop" and item:GetData("equipped") ) then
+        client:StripWeapon(item.weaponClass)
+        item:SetData("equipped", nil)
+    end
+end)
