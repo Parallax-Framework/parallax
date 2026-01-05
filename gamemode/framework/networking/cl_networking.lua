@@ -336,6 +336,7 @@ net.Receive("ax.inventory.sync", function()
     local inventoryID = net.ReadUInt(32)
     local inventoryItems = net.ReadTable()
     local inventoryMaxWeight = net.ReadFloat()
+    local inventoryReceivers = net.ReadTable()
 
     -- Convert the items into objects
     local items = {}
@@ -356,7 +357,8 @@ net.Receive("ax.inventory.sync", function()
     ax.inventory.instances[inventoryID] = setmetatable({
         id = inventoryID,
         items = items,
-        maxWeight = inventoryMaxWeight
+        maxWeight = inventoryMaxWeight,
+        receivers = inventoryReceivers
     }, ax.inventory.meta)
 end)
 

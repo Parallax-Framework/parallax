@@ -262,14 +262,16 @@ net.Receive("ax.character.load", function(length, client)
             return
         end
 
-        for i = #ax.inventory.instances, 1, -1 do
-            local inventory = ax.inventory.instances[ i ]
-            if ( istable(inventory) and inventory:IsReceiver( client ) ) then
-                inventory:RemoveReceiver( client )
+        if ( ax.inventory.instances[1] != nil ) then
+            for i = 1, #ax.inventory.instances do
+                local inventory = ax.inventory.instances[ i ]
+                if ( istable(inventory) and inventory:IsReceiver( client ) ) then
+                    inventory:RemoveReceiver( client )
+                end
             end
         end
 
-        prevChar.player = NULL
+        prevChar.player = nil
         ax.character:Sync(client, prevChar)
         hook.Run("PlayerUnloadedCharacter", client, prevChar)
     end

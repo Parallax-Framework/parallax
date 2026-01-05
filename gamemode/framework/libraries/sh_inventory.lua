@@ -89,6 +89,7 @@ if ( SERVER ) then
             net.WriteUInt(inventory.id, 32)
             net.WriteTable(items)
             net.WriteFloat(inventory.maxWeight)
+            net.WriteTable(inventory.receivers or {})
         net.Send(inventory:GetReceivers())
 
         ax.util:PrintDebug(string.format("Synchronized inventory %d with %d receivers.", inventory.id, #inventory:GetReceivers()))

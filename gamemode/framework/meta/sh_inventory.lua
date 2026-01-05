@@ -90,15 +90,13 @@ function inventory:GetReceivers()
 end
 
 function inventory:GetOwner()
-    local owner
     for k, v in pairs(ax.character.instances) do
         if ( v:GetInventoryID() == self.id ) then
-            owner = v
-            break
+            return v
         end
     end
 
-    return owner
+    return nil
 end
 
 function inventory:HasItem(identifier)
@@ -114,7 +112,17 @@ function inventory:HasItem(identifier)
 end
 
 function inventory:IsReceiver(client)
-    if ( !istable(self.receivers) ) then self.receivers = {} return false end
+    if ( !istable(self.receivers) ) then
+        self.receivers = {}
+
+        local owner = self:GetOwner()
+        if ( owner ) then
+            local ownerPlayer = owner:GetOwner()
+            if ( IsValid(ownerPlayer) ) then
+                self:AddReceiver(ownerPlayer)
+            end
+        end
+    end
 
     for i = 1, #self.receivers do
         if ( self.receivers[i] == client ) then

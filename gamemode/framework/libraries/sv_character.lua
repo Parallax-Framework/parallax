@@ -145,8 +145,8 @@ function ax.character:Load(client, character)
     ax.character:Sync(client, character)
 
     -- Only handle inventory for non-bot characters
-    if ( !character.isBot and character.vars.inventory and character.vars.inventory > 0 ) then
-        local inventory = ax.inventory.instances[character.vars.inventory]
+    if ( !character.isBot ) then
+        local inventory = character:GetInventory()
         if ( istable(inventory) ) then
             inventory:AddReceiver(client)
             ax.inventory:Sync(inventory)
