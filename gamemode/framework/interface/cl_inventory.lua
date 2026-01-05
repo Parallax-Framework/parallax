@@ -9,7 +9,7 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
--- TODO: Make this look nicer?
+-- TODO: Rewrite entire inventory interface, this is complete chaos
 
 local PANEL = {}
 
@@ -89,22 +89,52 @@ function PANEL:PopulateCharacterInfo()
     self.characterInfo:Clear()
 
     local model = self.characterInfo:Add("DModelPanel")
-    model:Dock(BOTTOM)
+    model:Dock(FILL)
     model:DockMargin(0, ax.util:ScreenScaleH(16), 0, 0)
-    model:SetTall(self:GetTall() / 1.25)
     model:SetModel(character:GetModel() or "models/props_junk/wood_crate001a.mdl")
     model:SetMouseInputEnabled(false)
 
+    model.LayoutEntity = function(this, width, height)
+    end
     model.PerformLayout = function(this, width, height)
         local entity = this:GetEntity()
         if ( !IsValid(entity) ) then return end
 
-        local center = entity:OBBCenter()
-        local size = entity:OBBMaxs() - entity:OBBMins()
-        local camPos = center + Vector(size.x, size.y, size.z / 4) * 8
-        this:SetCamPos(camPos)
-        this:SetLookAt(center)
-        this:SetFOV(8)
+        local head = entity:LookupBone("ValveBiped.Bip01_Head1")
+        local headPos = head and entity:GetBonePosition(head) or entity:GetPos() + Vector(0, 0, 70)
+
+        local offset = Vector(0, 0, -4)
+
+        this:SetCamPos(entity:GetPos() + Vector(64, 0, headPos.z) + offset)
+        this:SetLookAt(headPos + offset)
+        this:SetFOV(15)
+
+        entity:SetAngles(Angle(0, 10, 0))
+        entity:SetEyeTarget(this:GetCamPos())
+
+        local sequence = entity:LookupSequence("idle_all_01")
+        local class = ax.animations:GetModelClass(entity:GetModel())
+        local anims = ax.animations.stored[class]
+        if ( anims and anims["normal"] and anims["normal"][ACT_MP_STAND_IDLE] ) then
+            local preferred = anims["normal"][ACT_MP_STAND_IDLE]
+            if ( preferred and istable(preferred) ) then
+                sequence = preferred[1]
+            elseif ( preferred and isnumber(preferred) ) then
+                sequence = preferred
+            end
+        end
+
+        if ( istable(sequence) ) then
+            sequence = sequence[1]
+        end
+
+        if ( isstring(sequence) ) then
+            sequence = entity:LookupSequence(sequence)
+        end
+
+        if ( sequence and sequence > 0 and entity:GetSequence() != sequence ) then
+            entity:ResetSequence(sequence)
+        end
     end
 
     local name = self.characterInfo:Add("ax.text")
@@ -389,11 +419,20 @@ function PANEL:PopulateInfo(stack)
         if ( !IsValid(entity) ) then return end
 
         local center = entity:OBBCenter()
-        local size = entity:OBBMaxs() - entity:OBBMins()
-        local camPos = center + Vector(size.x, size.y, size.z / 4) * 8
-        this:SetCamPos(camPos)
+
+        -- Use PositionSpawnIcon to compute camera parameters for the icon
+        local tab = PositionSpawnIcon(entity, center, true)
+        if ( istable(tab) ) then
+            if ( tab.origin ) then this:SetCamPos(tab.origin) end
+            if ( tab.fov ) then this:SetFOV(tab.fov) end
+        else
+            local size = entity:OBBMaxs() - entity:OBBMins()
+            local camPos = center + Vector(size.x, size.y, size.z / 4) * 8
+            this:SetCamPos(camPos)
+            this:SetFOV(15)
+        end
+
         this:SetLookAt(center)
-        this:SetFOV(15)
     end
 
     local title = self.info:Add("ax.text")
@@ -443,6 +482,10 @@ function PANEL:PopulateInfo(stack)
     end
 
     for k, v in pairs(actions) do
+        if ( representativeItem:CanInteract(ax.client, k, true) == false ) then
+            continue
+        end
+
         local actionButton = self.info:Add("ax.button.flat")
         actionButton:Dock(BOTTOM)
         actionButton:SetFont("ax.small")
