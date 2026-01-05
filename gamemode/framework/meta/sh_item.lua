@@ -39,7 +39,7 @@ function item:GetWeight()
 end
 
 function item:GetModel()
-    return self.model or Model( "models/props_junk/wood_crate001a.mdl" )
+    return self.model or Model("models/props_junk/wood_crate001a.mdl")
 end
 
 function item:GetInventoryID()
@@ -66,8 +66,36 @@ function item:SetData(key, value)
     if ( !istable(self.data) ) then self.data = {} end
 
     self.data[key] = value
+    if ( SERVER ) then
+        -- Persist changes to database
+        local query = mysql:Update("ax_items")
+            query:Update("data", util.TableToJSON(self.data))
+            query:Where("id", self.id)
+            query:Callback(function(result, status)
+                if ( result == false ) then
+                    ax.util:PrintError("Failed to update item data in database for item ID " .. tostring(self.id))
+                    return
+                end
 
-    -- TODO: Sync changes to Receivers
+                ax.util:PrintDebug("Updated item data for item ID " .. tostring(self.id))
+            end)
+        query:Execute()
+
+        -- Sync changes to relevant receivers
+        local inventoryID = self:GetInventoryID()
+        if ( inventoryID and inventoryID > 0 ) then
+            local inventory = ax.inventory.instances[inventoryID]
+            if ( istable(inventory) and isfunction(inventory.Sync) ) then
+                inventory:Sync()
+            end
+        else
+            -- World item: notify all clients about updated data for this item
+            net.Start("ax.inventory.item.update")
+                net.WriteUInt(self.id, 32)
+                net.WriteTable(self.data or {})
+            net.Broadcast()
+        end
+    end
 end
 
 function item:GetActions()
