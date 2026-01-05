@@ -21,7 +21,7 @@ ax.option:Add("curvy", ax.type.bool, true, {
     subcategory = "curvy"
 })
 
-ax.option:Add("curvy.intensity", ax.type.number, 0.05, {
+ax.option:Add("curvy.intensity", ax.type.number, 0.25, {
     description = "Controls the curvature strength",
     category = "visual",
     subcategory = "curvy",
@@ -30,7 +30,7 @@ ax.option:Add("curvy.intensity", ax.type.number, 0.05, {
     max = 1.0
 })
 
-ax.option:Add("curvy.edge_fade", ax.type.number, 0, {
+ax.option:Add("curvy.edge_fade", ax.type.number, 0.25, {
     description = "Controls the edge fading effect",
     category = "visual",
     subcategory = "curvy",
@@ -85,8 +85,8 @@ local function RenderCurvy(hookName)
 
     local w, h = ScrW(), ScrH()
     local aspect = w / h
-    local intensity = ax.option:Get("curvy.intensity")
-    local edgeFade = ax.option:Get("curvy.edge_fade")
+    local intensity = ax.option:Get("curvy.intensity") / 10
+    local edgeFade = ax.option:Get("curvy.edge_fade") / 10
 
     curvyMaterial:SetFloat("$c0_x", intensity)
     curvyMaterial:SetFloat("$c0_y", aspect)
