@@ -217,19 +217,14 @@ function GM:SetupMove(client, moveData)
     if ( !inventory ) then return end
 
     local currentWeight = inventory:GetWeight()
-    local maxWeight = inventory:GetMaxWeight()
+    if ( currentWeight <= 0 ) then return end
 
+    local maxWeight = inventory:GetMaxWeight()
     if ( maxWeight <= 0 ) then return end
 
     local weightRatio = currentWeight / maxWeight
+    if ( weightRatio <= 0 ) then return end
 
-    -- Start reducing speed when carrying more than 50% of max weight
-    if ( weightRatio > 0.5 ) then
-        -- At 100% weight, speed is reduced to 50%
-        -- Linear interpolation between 0.5 ratio (normal speed) and 1.0 ratio (50% speed)
-        local speedMultiplier = 1.0 - ((weightRatio - 0.5) / 0.5) * 0.5
-        speedMultiplier = math.Clamp(speedMultiplier, 0.5, 1.0)
-
-        moveData:SetMaxClientSpeed(moveData:GetMaxClientSpeed() * speedMultiplier)
-    end
+    local speedMultiplier = 1.0 - math.min(weightRatio, 1.0) / 10
+    moveData:SetMaxClientSpeed(moveData:GetMaxClientSpeed() * speedMultiplier)
 end
