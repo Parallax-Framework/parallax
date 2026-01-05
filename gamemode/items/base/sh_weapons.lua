@@ -32,6 +32,13 @@ ITEM:AddAction("equip", {
             return false, "Item is already equipped."
         end
 
+        -- check if we have the same weapon type equipped
+        for _, invItem in pairs(client:GetCharacter():GetInventory():GetItems()) do
+            if ( invItem.isWeapon and invItem.weaponType == item.weaponType and invItem:GetData("equipped") ) then
+                return false, "You already have a " .. item.weaponType .. " equipped."
+            end
+        end
+
         return true
     end
 })
