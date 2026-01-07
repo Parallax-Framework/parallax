@@ -108,6 +108,7 @@ end
 
 function ax.player.meta:GetData(key, fallback)
     local clientTable = self:GetTable()
+    if ( !istable(clientTable.axVars) ) then clientTable.axVars = {} end
     if ( !istable(clientTable.axVars.data) ) then clientTable.axVars.data = {} end
 
     return clientTable.axVars.data[key] == nil and fallback or clientTable.axVars.data[key]
