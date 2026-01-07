@@ -137,6 +137,7 @@ if ( SERVER ) then
 
     function ax.player.meta:Save()
         local clientTable = self:GetTable()
+        if ( !istable(clientTable.axVars) ) then clientTable.axVars = {} end
         if ( !istable(clientTable.axVars.data) ) then clientTable.axVars.data = {} end
 
         -- Build an update query for the players table using the registered schema
