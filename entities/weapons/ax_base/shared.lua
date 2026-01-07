@@ -352,8 +352,11 @@ function SWEP:ShootBullet(damage, num, cone)
         bullet.TracerName = self.Primary.TracerName
     end
 
-    owner:FireBullets(bullet)
+    if ( isfunction(self.PreShootBullet) ) then
+        self:PreShootBullet(bullet, trace)
+    end
 
+    owner:FireBullets(bullet)
 
     if ( self.OnShootBullet ) then
         self:OnShootBullet(bullet, trace)
