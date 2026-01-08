@@ -225,6 +225,11 @@ ax.character:RegisterVar("name", {
     fieldType = ax.type.string,
     default = "Unnamed Character",
     sortOrder = 10,
+    category = "01_identity",
+    hints = {
+        "Your name should be fitting to the theme of the server and roleplay setting.",
+        "Use proper capitalization and provide both a first and last name."
+    },
     validate = function(this, value, payload, client)
         if ( !isstring(value) or value == "" ) then
             return false, "Character name is required and cannot be left empty. Please enter a valid name for your character."
@@ -337,6 +342,26 @@ ax.character:RegisterVar("name", {
             payload.name = name
             entry:SetText(name)
         end
+
+        if ( this.hints ) then
+            -- Clear docking to insert hints before re-docking
+            entry:Dock(NODOCK)
+
+            local hintZPos = this.sortOrder + 0.5
+            for i, hintText in ipairs(this.hints) do
+                local hint = container:Add("ax.text")
+                hint:SetFont("ax.small.italic")
+                hint:SetText("• " .. hintText)
+                hint:SetTextColor(Color(200, 200, 200))
+                hint:SetZPos(hintZPos + i * 0.1)
+                hint:Dock(TOP)
+            end
+
+            -- Re-dock the entry after hints
+            entry:SetZPos(this.sortOrder + 5)
+            entry:Dock(TOP)
+            entry:DockMargin(0, ax.util:ScreenScaleH(8), 0, ax.util:ScreenScaleH(16))
+        end
     end
 })
 
@@ -345,6 +370,11 @@ ax.character:RegisterVar("description", {
     fieldType = ax.type.string,
     default = "This is a character description.",
     sortOrder = 20,
+    category = "01_identity",
+    hints = {
+        "Describe your character's appearance, personality, background, or other distinctive features.",
+        "Write in detail to help other players understand who your character is."
+    },
     validate = function(this, value, payload, client)
         if ( !isstring(value) or value == "" ) then
             return false, "Character description is required and cannot be left empty. Please provide a description that tells other players about your character's appearance, personality, or background."
@@ -407,8 +437,33 @@ ax.character:RegisterVar("description", {
         return true
     end,
     populatePost = function(this, container, payload, option, entry)
-        entry:SetTall(entry:GetTall() * 2)
+        entry:SetTall(entry:GetTall() * 3)
         entry:SetMultiline(true)
+        entry.AllowInput = function(_, character)
+            if ( character == "\n" or character == "\r" ) then
+                return true
+            end
+        end
+
+        if ( this.hints ) then
+            -- Clear docking to insert hints before re-docking
+            entry:Dock(NODOCK)
+
+            local hintZPos = this.sortOrder + 0.5
+            for i, hintText in ipairs(this.hints) do
+                local hint = container:Add("ax.text")
+                hint:SetFont("ax.small.italic")
+                hint:SetText("• " .. hintText)
+                hint:SetTextColor(Color(200, 200, 200))
+                hint:SetZPos(hintZPos + i * 0.1)
+                hint:Dock(TOP)
+            end
+
+            -- Re-dock the entry after hints
+            entry:SetZPos(this.sortOrder + 5)
+            entry:Dock(TOP)
+            entry:DockMargin(0, ax.util:ScreenScaleH(8), 0, ax.util:ScreenScaleH(16))
+        end
     end
 })
 
@@ -417,6 +472,7 @@ ax.character:RegisterVar("model", {
     fieldType = ax.type.string,
     default = "models/player.mdl",
     sortOrder = 30,
+    category = "02_appearance",
     validate = function(this, value, payload, client)
         if ( !isstring(value) or value == "" ) then
             return false, "You must select a character model before creating your character. Please choose one of the available models from the selection below."
@@ -588,6 +644,7 @@ ax.character:RegisterVar("skin", {
     fieldType = ax.type.number,
     default = 0,
     sortOrder = 40,
+    category = "02_appearance",
     validate = function(this, value, payload, client)
         if ( !tonumber(value) ) then
             return false, "You must select a valid skin number for your character model. Please use the slider to choose a skin variant (usually 0-16) that you prefer for your character's appearance."
