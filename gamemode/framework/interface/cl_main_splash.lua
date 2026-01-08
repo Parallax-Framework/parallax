@@ -116,7 +116,7 @@ function PANEL:Init()
 end
 
 hook.Add("ShouldCreateLoadButton", "ax.main.splash", function()
-    return ax.client.axCharacters and #ax.client.axCharacters > 0
+    return ax.client.axCharacters and ax.client.axCharacters[1] != nil
 end)
 
 function PANEL:PerformLayout()

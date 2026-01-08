@@ -54,6 +54,7 @@ end
 
 function PANEL:PopulateCharacterList()
     self.characters:Clear()
+    if ( ax.client.axCharacters[1] == nil ) then return end -- literally no reason to continue
 
     for k, v in pairs(ax.client.axCharacters or {}) do
         local button = self.characters:Add("ax.button.flat")
