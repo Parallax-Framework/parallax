@@ -1,7 +1,9 @@
 ax.localization:Register("tr", {
     -- Main Menu Translations
     ["mainmenu.category.00_faction"] = "Fraksiyonlar",
-    ["mainmenu.category.01_appearance"] = "Görünüm",
+    ["mainmenu.category.01_identity"] = "Kimlik",
+    ["mainmenu.category.02_appearance"] = "Görünüm",
+    ["mainmenu.category.03_other"] = "Diğer",
     ["mainmenu.create"] = "Karakter Oluştur",
     ["mainmenu.disconnect"] = "Bağlantıyı Kes",
     ["mainmenu.load"] = "Karakter Yükle",
@@ -17,7 +19,6 @@ ax.localization:Register("tr", {
 
     -- Category Translations
     ["category.chat"] = "Sohbet",
-    ["category.chatbox"] = "Sohbet",
     ["category.gameplay"] = "Oynanış",
     ["category.general"] = "Genel",
     ["category.interface"] = "Arayüz",
