@@ -67,12 +67,47 @@ function PANEL:GetVars()
     local vars = table.Copy(ax.character.vars)
     local sortOrder = 0
     for k, v in pairs(vars) do
-        v.category = v.category or "01_appearance"
+        v.category = v.category or "03_other"
         v.sortOrder = v.sortOrder or sortOrder
         sortOrder = sortOrder + 2
     end
 
     return vars
+end
+
+function PANEL:ValidateCategory(category)
+    local vars = self:GetVars()
+
+    for k, v in SortedPairsByMemberValue(vars, "sortOrder") do
+        if ( !v.validate ) then continue end
+        if ( v.hide ) then continue end
+        if ( (v.category or "03_other") != category ) then continue end
+
+        if ( isfunction(v.canPopulate) ) then
+            local ok, res = pcall(function()
+                return v:canPopulate(self.payload, ax.client)
+            end)
+
+            if ( !ok or !res ) then continue end
+        end
+
+        local value = self.payload[k]
+        if ( isfunction(v.validate) ) then
+            local ok, isValid, reason = pcall(function()
+                return v:validate(value, self.payload, ax.client)
+            end)
+
+            if ( !ok ) then
+                return false, "An error occurred while validating this field"
+            end
+
+            if ( !isValid ) then
+                return false, reason or "This field is invalid"
+            end
+        end
+    end
+
+    return true
 end
 
 function PANEL:NavigateToNextTab(currentTab)
@@ -89,6 +124,12 @@ function PANEL:NavigateToNextTab(currentTab)
     end
 
     if ( !currentIndex ) then return end
+
+    local isValid, reason = self:ValidateCategory(currentCategory)
+    if ( !isValid ) then
+        ax.client:Notify(reason)
+        return
+    end
 
     if ( currentIndex == #categories ) then
         net.Start("ax.character.create")
@@ -147,7 +188,7 @@ function PANEL:GetOrderedCategories()
         if ( !v.validate ) then continue end
         if ( v.hide ) then continue end
 
-        local category = v.category or "01_appearance"
+        local category = v.category or "03_other"
 
         local canUse = true
         if ( isfunction(v.canPopulate) ) then
@@ -233,7 +274,7 @@ function PANEL:CreateOrGetCategoryTab(category, index)
 end
 
 function PANEL:GetContainer(category)
-    category = category or "01_appearance"
+    category = category or "03_other"
 
     local container = self.tabs[category]
     if ( !IsValid(container) ) then return end
@@ -262,7 +303,7 @@ end
 function PANEL:PopulateVars(category)
     local vars = self:GetVars()
 
-    category = category or "01_appearance"
+    category = category or "03_other"
 
     local container = self:GetContainer(category)
     if ( !IsValid(container) ) then return end
@@ -270,7 +311,7 @@ function PANEL:PopulateVars(category)
     for k, v in SortedPairsByMemberValue(vars, "sortOrder") do
         if ( !v.validate ) then continue end
         if ( v.hide ) then continue end
-        if ( (v.category or "01_appearance") != category ) then continue end
+        if ( (v.category or "03_other") != category ) then continue end
 
         if ( isfunction(v.canPopulate) ) then
             local canPop, err = pcall(function()
@@ -301,7 +342,7 @@ function PANEL:PopulateVars(category)
 
         if ( v.fieldType == ax.type.string ) then
             local option = container:Add("ax.text")
-            option:SetFont("ax.regular.bold")
+            option:SetFont("ax.large.bold")
             option:SetText(utf8.upper(ax.util:UniqueIDToName(k)))
             option:SetZPos(v.sortOrder - 1)
             option:Dock(TOP)
@@ -327,7 +368,7 @@ function PANEL:PopulateVars(category)
             end
         elseif ( v.fieldType == ax.type.number ) then
             local option = container:Add("ax.text")
-            option:SetFont("ax.regular.bold")
+            option:SetFont("ax.large.bold")
             option:SetText(utf8.upper(ax.util:UniqueIDToName(k)))
             option:SetZPos(v.sortOrder - 1)
             option:Dock(TOP)
@@ -365,10 +406,10 @@ function PANEL:PopulateVars(category)
 end
 
 function PANEL:OnPopulateVars(container, category, payload)
-    local targetCategory = category or "01_appearance"
+    local targetCategory = category or "03_other"
     for k, v in pairs(self:GetVars()) do
         if ( v.field == "model" ) then
-            targetCategory = v.category or "01_appearance"
+            targetCategory = v.category or "03_other"
             break
         end
     end
