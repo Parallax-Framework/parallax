@@ -13,8 +13,6 @@ function ENTITY:IsChair()
 end
 
 function ENTITY:RateLimit(name, delay)
-    local data = self:GetTable()
-
     if ( !isstring(name) or name == "" ) then
         ax.util:PrintError("Invalid rate limit name provided to ENTITY:RateLimit()")
         return false
@@ -25,6 +23,7 @@ function ENTITY:RateLimit(name, delay)
         return false
     end
 
+    local data = self:GetTable()
     if ( !data.axRateLimits ) then data.axRateLimits = {} end
 
     local curTime = CurTime()
