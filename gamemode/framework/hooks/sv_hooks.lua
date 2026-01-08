@@ -14,6 +14,8 @@ DEFINE_BASECLASS("gamemode_sandbox")
 AX_CLIENT_QUEUE = AX_CLIENT_QUEUE or {}
 
 function GM:PlayerDeathThink(client)
+    if ( !IsValid(client) ) then return end
+
     if ( client:RateLimit("respawn", 5) and client:GetCharacter() ) then
         client:Spawn()
     end
