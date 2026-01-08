@@ -55,28 +55,7 @@ end
 function PANEL:PopulateCharacterList()
     self.characters:Clear()
 
-    local clientTable = ax.client:GetTable()
-    local characters = clientTable.axCharacters or {}
-
-    if ( characters[1] == nil ) then
-        local label = self.characters:Add("ax.text")
-        label:Dock(TOP)
-        label:SetFont("ax.huge.bold")
-        label:SetText("No characters found.")
-        label:SetContentAlignment(5)
-
-        local createButton = self.characters:Add("ax.button.flat")
-        createButton:Dock(TOP)
-        createButton:SetText("create")
-        createButton.DoClick = function()
-            self:SlideDown()
-            self:GetParent().create:SlideToFront()
-        end
-
-        return
-    end
-
-    for k, v in pairs(characters) do
+    for k, v in pairs(ax.client.axCharacters or {}) do
         local button = self.characters:Add("ax.button.flat")
         button:Dock(TOP)
         button:DockMargin(0, 0, 0, ax.util:ScreenScaleH(4))
