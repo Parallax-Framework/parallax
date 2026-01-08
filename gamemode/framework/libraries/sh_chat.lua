@@ -43,22 +43,7 @@ function ax.chat:Add(key, def)
             OnRun = nil -- handle with networking
         })
 
-        if ( isstring(def.alias) and def.alias != "" ) then
-            if ( def.alias[1] == "/" ) then def.alias = string.sub(def.alias, 2) end
-
-            ax.command:Add(def.alias, {
-                displayName = def.name or def.alias,
-                description = def.description or "Sends a " .. (def.name or def.alias) .. " message.",
-                arguments = def.arguments or {
-                    {
-                        type = ax.type.text,
-                        name = "message",
-                        optional = false,
-                    }
-                },
-                OnRun = nil -- handle with networking
-            })
-        elseif ( istable(def.aliases) and def.aliases[1] != nil ) then
+        if ( istable(def.aliases) and def.aliases[1] != nil ) then
             for i = 1, #def.aliases do
                 local alias = def.aliases[i]
                 if ( isstring(alias) and alias != "" ) then
@@ -81,16 +66,80 @@ function ax.chat:Add(key, def)
         end
     end
 
+    if ( !isfunction(def.CanHear) ) then
+        def.CanHear = function(this, speaker, listener, data)
+            if ( isnumber(this.hearDistance) ) then
+                local dist = speaker:EyePos():DistToSqr(listener:EyePos())
+                if ( dist > (this.hearDistance * this.hearDistance) ) then
+                    return false
+                end
+            end
+
+            return true
+        end
+    end
+
+    if ( !isfunction(def.CanSay) ) then
+        def.CanSay = function(this, speaker, text, data)
+            if ( !this.deadCanChat and speaker:Alive() == false ) then
+                return false
+            end
+
+            return true
+        end
+    end
+
     self.registry[key] = def
 end
 
 if ( SERVER ) then
-    function ax.chat:Send(speaker, text, chatType, data, receivers, ...)
-        local chatType = self.registry[chatType]
-        if ( !istable(chatType) ) then
+    function ax.chat:Send(speaker, text, chatType, data, receivers)
+        local chatClass = self.registry[chatType]
+        if ( !istable(chatClass) ) then
             ax.util:PrintError("ax.chat:Send - Invalid chat type \"" .. tostring(chatType) .. "\"")
             return
         end
+
+        if ( !chatClass:CanSay(speaker, text, data) ) then return end
+
+        if ( !istable(receivers) ) then
+            receivers = {}
+
+            for _, v in player.Iterator() do
+                if ( chatClass:CanHear(speaker, v, data) ) then
+                    receivers[#receivers + 1] = v
+                end
+            end
+
+            if ( receivers[1] == nil ) then
+                return
+            end
+        end
+
+        text = string.Trim(text)
+
+        if ( hook.Run("ShouldFormatMessage", speaker, chatType, text, receivers, data) != false ) then
+            text = self:Format(text)
+        end
+
+        text = hook.Run("PlayerMessageSend", speaker, chatType, text, receivers, data) or text
+
+        net.Start("ax.chat.message")
+            net.WritePlayer(speaker)
+            net.WriteString(chatType)
+            net.WriteString(text)
+            net.WriteTable(data or {})
+        if ( isvector(receivers) ) then
+            if ( data.receiversPAS ) then
+                net.SendPAS(data.receiversPAS)
+            elseif ( data.receiversPVS ) then
+                net.SendPVS(data.receiversPVS)
+            end
+        else
+            net.Send(receivers)
+        end
+
+        return text
     end
 end
 
@@ -107,6 +156,8 @@ function ax.chat:Format(text)
     if ( lastChar != "" and !LAST_SYMBOLS[lastChar] ) then
         text = text .. "."
     end
+
+    -- TODO: Add option for ::ApplyShortcuts
 
     text = string.upper(string.sub(text, 1, 1)) .. string.sub(text, 2)
     return text
