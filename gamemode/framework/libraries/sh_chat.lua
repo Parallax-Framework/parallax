@@ -130,10 +130,8 @@ if ( SERVER ) then
             net.WriteString(text)
             net.WriteTable(data or {})
         if ( isvector(receivers) ) then
-            if ( data.receiversPAS ) then
-                net.SendPAS(data.receiversPAS)
-            elseif ( data.receiversPVS ) then
-                net.SendPVS(data.receiversPVS)
+            if ( data.receiversPAS ) then net.SendPAS(data.receiversPAS)
+            elseif ( data.receiversPVS ) then net.SendPVS(data.receiversPVS)
             end
         else
             net.Send(receivers)
