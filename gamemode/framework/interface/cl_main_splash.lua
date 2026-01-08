@@ -115,6 +115,10 @@ function PANEL:Init()
     hook.Run("PostMainMenuSplashCreated", self)
 end
 
+hook.Add("ShouldCreateLoadButton", "ax.main.splash", function()
+    return ax.client.axCharacters and #ax.client.axCharacters > 0
+end)
+
 function PANEL:PerformLayout()
     self.title:SetPos(ax.util:ScreenScale(32), ScrH() / 3)
     self.subtitle:SetPos(ax.util:ScreenScale(32), ScrH() / 3 + self.title:GetTall())
