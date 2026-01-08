@@ -92,8 +92,40 @@ function ax.chat:Add(key, def)
     self.registry[key] = def
 end
 
+function ax.chat:Parse(client, text)
+    local chatType = "ic"
+
+    local args = string.Explode(" ", string.sub(text, 2))
+    local commandName = string.lower(args[1] or "")
+
+    for k, v in pairs(self.registry) do
+        if ( v.key == commandName ) then
+            chatType = v.key
+            table.remove(args, 1)
+            text = table.concat(args, " ")
+
+            break
+        end
+
+        if ( istable(v.aliases) ) then
+            for i = 1, #v.aliases do
+                local alias = v.aliases[i]
+                if ( isstring(alias) and string.lower(alias) == commandName ) then
+                    chatType = v.key
+                    table.remove(args, 1)
+                    text = table.concat(args, " ")
+
+                    break
+                end
+            end
+        end
+    end
+
+    return chatType, text
+end
+
 if ( SERVER ) then
-    function ax.chat:Send(speaker, text, chatType, data, receivers)
+    function ax.chat:Send(speaker, chatType, text, data, receivers)
         local chatClass = self.registry[chatType]
         if ( !istable(chatClass) ) then
             ax.util:PrintError("ax.chat:Send - Invalid chat type \"" .. tostring(chatType) .. "\"")

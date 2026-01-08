@@ -37,15 +37,11 @@ util.AddNetworkString("ax.chat.message")
 util.AddNetworkString("ax.chat.text.changed")
 
 net.Receive("ax.chat.message", function(len, client)
-    if ( !client:RateLimit("chat.send", 0.01) ) then return end
+    if ( !client:RateLimit("chat.send", 0.5) ) then return end
 
-    -- Read and sanitize the chat message incase bad actors try to exploit this.
     local output = net.ReadString()
-    output = string.gsub(output, "[^%w%s%p]", "")
-    output = string.Trim(output)
-    output = string.gsub(output, "<.->", "")
 
-    hook.Run("PlayerSay", client, output, false)
+    hook.Run("PlayerSay", client, output)
 
     client:SetRelay("chatText", "")
     client:SetRelay("chatType", "")
