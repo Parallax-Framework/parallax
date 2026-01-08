@@ -92,7 +92,7 @@ function ax.chat:Add(key, def)
     self.registry[key] = def
 end
 
-function ax.chat:Parse(client, text)
+function ax.chat:Parse(text)
     local chatType = "ic"
 
     local args = string.Explode(" ", string.sub(text, 2))

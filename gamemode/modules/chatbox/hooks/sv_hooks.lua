@@ -14,9 +14,20 @@ local MODULE = MODULE
 function MODULE:PlayerSay(client, text, teamChat)
     if ( !isstring(text) ) then return "" end
 
-    local rawText = string.Trim(text)
-    if ( rawText == "" ) then return "" end
+    text = string.Trim(text)
+    if ( text == "" ) then return "" end
 
+    print("Chat Preprocess: " .. text)
 
-    return ""
+    local chatType, text = ax.chat:Parse(text)
+    if ( chatType == "ic" ) then
+        /*
+        if ( ax.command:Parse(text) ) then
+            print("Chat Preprocess: Command detected, suppressing chat message.")
+            return ""
+        end
+        */
+    end
+
+    return text
 end
