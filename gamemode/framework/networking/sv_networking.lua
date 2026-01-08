@@ -33,6 +33,8 @@ util.AddNetworkString("ax.inventory.item.update")
 util.AddNetworkString("ax.item.transfer")
 util.AddNetworkString("ax.item.spawn")
 
+util.AddNetworkString("ax.chat.message")
+
 net.Receive("ax.item.transfer", function(length, client)
     local character = client:GetCharacter()
     if ( !character ) then return end
