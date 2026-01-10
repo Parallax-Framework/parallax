@@ -92,33 +92,44 @@ function ax.chat:Add(key, def)
     self.registry[key] = def
 end
 
+-- credits to helix for the parsing code
 function ax.chat:Parse(text)
     local chatType = "ic"
 
-    local args = string.Explode(" ", string.sub(text, 2))
-    local commandName = string.lower(args[1] or "")
-
     for k, v in pairs(self.registry) do
-        if ( v.key == commandName ) then
-            chatType = v.key
-            table.remove(args, 1)
-            text = table.concat(args, " ")
+        local isChosen = false
+        local chosenPrefix = ""
+        local noSpaceAfter = v.noSpaceAfter
 
-            break
-        end
-
-        if ( istable(v.aliases) ) then
+        if (istable(v.aliases)) then
             for i = 1, #v.aliases do
                 local alias = v.aliases[i]
-                if ( isstring(alias) and string.lower(alias) == commandName ) then
-                    chatType = v.key
-                    table.remove(args, 1)
-                    text = table.concat(args, " ")
+                alias = utf8.lower(alias)
+                local fullPrefix = alias .. (noSpaceAfter and "" or " ")
+
+                if ( string.lower(string.sub(text, 1, string.len(alias) + (noSpaceAfter and 0 or 1)) == string.lower(fullPrefix)) ) then
+                    isChosen = true
+                    chosenPrefix = fullPrefix
 
                     break
                 end
             end
         end
+
+        if (isChosen) then
+            chatType = k
+            text = string.sub(text, string.len(chosenPrefix) + 1)
+
+            if (self.registry[k].noSpaceAfter and string.match(string.sub(text, 1, 1), "%s")) then
+                text = string.sub(text, 2)
+            end
+
+            break
+        end
+    end
+
+    if ( !string.find(text, "%S") ) then
+        return
     end
 
     return chatType, text

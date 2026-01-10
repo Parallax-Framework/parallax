@@ -257,7 +257,9 @@ ax.chat:Add("looc", {
     CanHear = function(this, speaker, listener)
         local distance = ax.config:Get("chat.ooc.distance", 600)
         return listener:GetCharacter() == nil or speaker:GetPos():DistToSqr(listener:GetPos()) <= distance * distance
-    end
+    end,
+    noSpaceAfter = true,
+    aliases = {".//", "[["}
 })
 
 ax.chat:Add("ooc", {
@@ -272,7 +274,9 @@ ax.chat:Add("ooc", {
     end,
     CanHear = function(this, speaker, listener)
         return true
-    end
+    end,
+    aliases = {"//"},
+    noSpaceAfter = true
 })
 
 ax.chat:Add("me", {
