@@ -550,12 +550,17 @@ net.Receive("ax.chat.message", function()
         return
     end
 
+    if ( hook.Run("ShouldFormatMessage", speaker, chatType, text, data) != false ) then
+        text = ax.chat:Format(text)
+    end
+
     if ( isfunction(chatClass.OnRun) ) then
+        local packaged = { chatClass:OnRun(speaker, text, data) }
         if ( ax.client != speaker and isfunction(chatClass.OnFormatForListener) ) then
-            ax.client:ChatPrint( chatClass:OnFormatForListener(speaker, ax.client, data) )
-            return
+            packaged = { chatClass:OnFormatForListener(speaker, ax.client, text, data) }
+            print("Using OnFormatForListener for chat message.")
         end
 
-        ax.client:ChatPrint(chatClass:OnRun(speaker, text, data))
+        ax.client:ChatPrint(unpack(packaged))
     end
 end)
