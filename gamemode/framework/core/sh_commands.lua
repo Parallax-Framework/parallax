@@ -205,6 +205,7 @@ ax.command:Add("CharSetClass", {
         end
 
         if ( !target ) then
+            print("No target character found for CharSetClass command.")
             return "Invalid character."
         end
 
@@ -231,6 +232,7 @@ ax.command:Add("CharSetClass", {
         end
 
         if ( classTable.faction and classTable.faction != target:GetFaction() ) then
+            print("Class faction mismatch: " .. classTable.faction .. " vs " .. target:GetFaction())
             return "This class does not belong to the character's faction."
         end
 

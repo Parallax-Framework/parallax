@@ -164,12 +164,8 @@ function ax.chat:OverrideChatAddText()
             local ts = Color(150, 150, 150)
             text = string.format("<font=ax.small.shadow><color=%d,%d,%d>[%s] </color></font>", ts.r, ts.g, ts.b, os.date("%H:%M"))
         end
-
-        print("chat.AddText called with arguments:", unpack(arguments))
-
         -- Build markup from arguments
         for _, v in ipairs(arguments) do
-            print(v)
             if ( ax.type:Sanitise(ax.type.color, v) ) then
                 color = v
             elseif ( IsValid(v) and v:IsPlayer() ) then
@@ -209,8 +205,6 @@ function ax.chat:OverrideChatAddText()
 
         ax.chat:PlayReceiveSound()
         ax.chat:ScrollHistoryToBottom(panel)
-
-        print("Chat Message Added: " .. text)
     end
 end
 
