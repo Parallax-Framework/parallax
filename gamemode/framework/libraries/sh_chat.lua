@@ -156,7 +156,7 @@ if ( SERVER ) then
             text = self:Format(text)
         end
 
-        text = hook.Run("PlayerMessageSend", speaker, chatType, rawText, receivers, data) or text
+        text = hook.Run("PlayerMessageSend", speaker, chatType, rawText, text, receivers, data) or text
 
         net.Start("ax.chat.message")
             net.WritePlayer(speaker)

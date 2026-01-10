@@ -181,7 +181,7 @@ else
         ["yell"] = true,
     }
 
-    function MODULE:PlayerMessageSend(speaker, chatType, text)
+    function MODULE:PlayerMessageSend(speaker, chatType, text, formattedText)
         local allowed = {}
         for k, v in pairs(allowedChatTypes) do
             allowed[k] = v
