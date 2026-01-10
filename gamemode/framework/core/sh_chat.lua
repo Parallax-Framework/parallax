@@ -125,9 +125,10 @@ ax.chat:Add("ic", {
         local icColor = ax.config:Get("chat.ic.color")
         return icColor, client:Nick() .. " " .. expressions["ic"][math.random(#expressions["ic"])] .. ", \"" .. ax.chat:FormatWithMarkdown(message) .. "\""
     end,
-    OnFormatForListener = function(this, speaker, listener, message)
+    OnFormatForListener = function(this, speaker, listener, message, data)
         local icColor = ax.config:Get("chat.ic.color")
         local verb = GetVerb(listener, "ic")
+        print(verb)
         local formattedMessage = ax.chat:FormatWithMarkdown(message)
         local target = GetLookTarget(speaker)
 
@@ -176,7 +177,7 @@ ax.chat:Add("yell", {
         local baseFont = "ax.medium.shadow"
         return yellColor, "<font=" .. baseFont .. ">" .. client:Nick() .. " " .. expressions["yell"][math.random(#expressions["yell"])] .. ", \"" .. utf8.upper(ax.chat:FormatWithMarkdown(message, baseFont)) .. "\"</font>"
     end,
-    OnFormatForListener = function(this, speaker, listener, message)
+    OnFormatForListener = function(this, speaker, listener, message, data)
         local yellColor = ax.config:Get("chat.yell.color")
         local verb = GetVerb(listener, "yell")
         local baseFont = "ax.medium.shadow"
@@ -214,7 +215,7 @@ ax.chat:Add("whisper", {
         local baseFont = "ax.tiny.shadow"
         return whisperColor, "<font=" .. baseFont .. ">" .. client:Nick() .. " " .. expressions["whisper"][math.random(#expressions["whisper"])] .. ", \"" .. ax.chat:FormatWithMarkdown(message, baseFont) .. "\"</font>"
     end,
-    OnFormatForListener = function(this, speaker, listener, message)
+    OnFormatForListener = function(this, speaker, listener, message, data)
         local whisperColor = ax.config:Get("chat.whisper.color")
         local verb = GetVerb(listener, "whisper")
         local baseFont = "ax.tiny.shadow"
