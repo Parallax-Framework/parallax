@@ -55,22 +55,12 @@ local expressions = {
 
 -- Helper function to get the appropriate verb based on listener's preference
 local function GetVerb(listener, chatType)
-    if ( SERVER ) then
-        -- On server, check the listener's option preference
-        local useRandomVerbs = ax.option:Get(listener, "chat.randomized.verbs", true)
-        if ( useRandomVerbs ) then
-            return expressions[chatType][math.random(#expressions[chatType])]
-        else
-            return expressions[chatType][1] -- Return default verb (first in array)
-        end
+    local useRandomVerbs = SERVER and ax.option:Get(listener, "chat.randomized.verbs", true) or ax.option:Get("chat.randomized.verbs", true)
+    print(useRandomVerbs)
+    if ( useRandomVerbs ) then
+        return expressions[chatType][math.random(#expressions[chatType])]
     else
-        -- On client, check local player's option
-        local useRandomVerbs = ax.option:Get("chat.randomized.verbs", true)
-        if ( useRandomVerbs ) then
-            return expressions[chatType][math.random(#expressions[chatType])]
-        else
-            return expressions[chatType][1]
-        end
+        return expressions[chatType][1] -- Return default verb (first in array)
     end
 end
 
