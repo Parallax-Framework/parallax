@@ -42,7 +42,7 @@ function MODULE:PlayerSay(client, text, teamChat)
             end
 
             local ok, runOk, result = pcall(function()
-                return ax.command:Run(client, name, rawArgs)
+                return ax.command:Run(client, commandName, rawArgs)
             end)
 
             if ( !ok ) then
