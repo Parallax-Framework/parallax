@@ -208,7 +208,7 @@ net.Receive("ax.character.delete", function()
     end
 
     if ( istable( clientData.axCharacters ) ) then
-        for i = #clientData.axCharacters, 1, -1 do
+        for i = 1, #clientData.axCharacters do
             if ( clientData.axCharacters[i].id == id ) then
                 table.remove( clientData.axCharacters, i )
                 break
