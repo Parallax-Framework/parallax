@@ -59,8 +59,6 @@ function MODULE:PlayerSay(client, text, teamChat)
         end
     end
 
-    print("Chat Processed: [" .. chatType .. "] " .. text)
-
     text = ax.chat:Send(client, chatType, text)
 
     hook.Run("PostPlayerSay", client, chatType, text)

@@ -118,8 +118,6 @@ function ax.chat:CreateMessagePanel(markupText, maxWidth, revealSpeed)
         end
     end
 
-    print("Chat Message Panel Created: " .. markupText)
-
     return panel
 end
 
