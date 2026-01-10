@@ -62,5 +62,5 @@ function ax.schema:Initialize(timeFilter)
     -- Initialize the schema
     ax.util:PrintSuccess("Schema \"" .. active .. "\" initialized successfully.")
 
-    hook.Run("PostInitializeSchema")
+    hook.Run("OnSchemaLoaded")
 end
