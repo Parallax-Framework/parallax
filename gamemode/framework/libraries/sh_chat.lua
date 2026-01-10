@@ -151,11 +151,6 @@ if ( SERVER ) then
         local rawText = text
 
         text = string.Trim(text)
-
-        if ( hook.Run("ShouldFormatMessage", speaker, chatType, text, receivers, data) != false ) then
-            text = self:Format(text)
-        end
-
         text = hook.Run("PlayerMessageSend", speaker, chatType, rawText, text, receivers, data) or text
 
         net.Start("ax.chat.message")
@@ -180,20 +175,6 @@ local LAST_SYMBOLS = {
     ["!"] = true,
     ["?"] = true,
 }
-
-function ax.chat:Format(text)
-    text = string.Trim(text)
-
-    local lastChar = string.sub(text, -1)
-    if ( lastChar != "" and !LAST_SYMBOLS[lastChar] ) then
-        text = text .. "."
-    end
-
-    -- TODO: Add option for ::ApplyShortcuts
-
-    text = string.upper(string.sub(text, 1, 1)) .. string.sub(text, 2)
-    return text
-end
 
 local SHORTCUTS = {
     -- Greetings & casual
