@@ -299,6 +299,7 @@ function ax.command:Parse(text)
     end
 
     for k, v in pairs(self.registry) do
+        print(utf8.lower(k), commandName)
         if ( utf8.lower(k) == commandName ) then
             commandName = k
             break

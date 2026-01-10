@@ -29,9 +29,31 @@ function ax.chat:Add(key, def)
 
     def.key = key
 
-    if ( CLIENT ) then
-        ax.command:Add(def.key, {
-            displayName = def.name or def.key,
+    if ( CLIENT and istable(def.aliases) ) then
+        for i = 1, #def.aliases do
+            local alias = def.aliases[i]
+            if ( !isstring(alias) or alias == "" ) then
+                ax.util:PrintError("ax.chat:Add - Invalid alias provided for chat type \"" .. key .. "\"")
+                def.aliases[i] = nil
+            end
+
+            if ( string.sub(1, 1) == "/" ) then
+                ax.command:Add(string.sub(v, 2), {
+                    description = def.description or "Sends a " .. (def.name or def.key) .. " message.",
+                    arguments = def.arguments or {
+                        {
+                            type = ax.type.text,
+                            name = "message",
+                            optional = false,
+                        }
+                    },
+                    chatClass = def,
+                    OnRun = nil -- handle with networking
+                })
+            end
+        end
+    else
+        ax.command:Add(key, {
             description = def.description or "Sends a " .. (def.name or def.key) .. " message.",
             arguments = def.arguments or {
                 {
@@ -40,30 +62,9 @@ function ax.chat:Add(key, def)
                     optional = false,
                 }
             },
+            chatClass = def,
             OnRun = nil -- handle with networking
         })
-
-        if ( istable(def.aliases) and def.aliases[1] != nil ) then
-            for i = 1, #def.aliases do
-                local alias = def.aliases[i]
-                if ( isstring(alias) and alias != "" ) then
-                    if ( alias[1] == "/" ) then alias = string.sub(alias, 2) end
-
-                    ax.command:Add(alias, {
-                        displayName = def.name or alias,
-                        description = def.description or "Sends a " .. (def.name or alias) .. " message.",
-                        arguments = def.arguments or {
-                            {
-                                type = ax.type.text,
-                                name = "message",
-                                optional = false,
-                            }
-                        },
-                        OnRun = nil -- handle with networking
-                    })
-                end
-            end
-        end
     end
 
     if ( !isfunction(def.CanHear) ) then
@@ -107,7 +108,7 @@ function ax.chat:Parse(text)
                 alias = utf8.lower(alias)
                 local fullPrefix = alias .. (noSpaceAfter and "" or " ")
 
-                if ( string.lower(string.sub(text, 1, string.len(alias) + (noSpaceAfter and 0 or 1)) == string.lower(fullPrefix)) ) then
+                if ( string.lower(string.sub(text, 1, string.len(alias) + (noSpaceAfter and 0 or 1))) == string.lower(fullPrefix) ) then
                     isChosen = true
                     chosenPrefix = fullPrefix
 
