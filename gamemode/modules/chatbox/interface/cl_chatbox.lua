@@ -63,7 +63,7 @@ function PANEL:Init()
     self.entry.OnEnter = function(this)
         local text = this:GetValue()
         if ( #text > 0 ) then
-            net.Start("ax.chat.send")
+            net.Start("ax.chat.message")
                 net.WriteString(text)
             net.SendToServer()
 
