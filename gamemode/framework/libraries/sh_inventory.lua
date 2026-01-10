@@ -102,7 +102,8 @@ if ( SERVER ) then
     -- @internal
     function ax.inventory:Restore(client)
         local characterIDs = {}
-        for k, v in pairs(client.axCharacters) do
+        local clientTable = client:GetTable()
+        for k, v in pairs(clientTable.axCharacters) do
             characterIDs[#characterIDs + 1] = v.id
         end
 
