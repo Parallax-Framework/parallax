@@ -94,8 +94,10 @@ function PANEL:PopulateCharacterInfo()
     model:SetModel(character:GetModel() or "models/props_junk/wood_crate001a.mdl")
     model:SetMouseInputEnabled(false)
 
-    model.LayoutEntity = function(this, width, height)
+    model.LayoutEntity = function(this, entity)
+        entity:SetSkin(character:GetSkin() or 0)
     end
+
     model.PerformLayout = function(this, width, height)
         local entity = this:GetEntity()
         if ( !IsValid(entity) ) then return end
