@@ -58,10 +58,15 @@ end
 local vignette = ax.util:GetMaterial("parallax/overlays/vignette.png", "smooth noclamp")
 local vignetteColor = Color(0, 0, 0, 255)
 function GM:HUDPaintBackground()
-    if ( hook.Run("ShouldDrawVignette") != false ) then
-        local client = ax.client
-        if ( !IsValid(client) ) then return end
+    local client = ax.client
+    if ( !IsValid(client) ) then return end
 
+    if ( !client:Alive() ) then
+        ax.render.Draw(0, 0, 0, ScrW(), ScrH(), Color(0, 0, 0, 255))
+        return
+    end
+
+    if ( hook.Run("ShouldDrawVignette") != false ) then
         local scrW, scrH = ScrW(), ScrH()
         local trace = util.TraceLine({
             start = client:GetShootPos(),

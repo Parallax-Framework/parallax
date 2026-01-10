@@ -16,16 +16,17 @@ AX_CLIENT_QUEUE = AX_CLIENT_QUEUE or {}
 function GM:PlayerDeathThink(client)
     if ( !IsValid(client) ) then return end
 
-    if ( client:RateLimit("respawn", 5) and client:GetCharacter() ) then
+    if ( client:RateLimit("respawn", 30) and client:GetCharacter() ) then
         client:Spawn()
     end
 end
 
 function GM:DoPlayerDeath(client, attacker, damageInfo)
     client:SetDSP(31)
+    client:SetDSP(35)
 
     client:ResetRateLimit("respawn")
-    client:RateLimit("respawn", 5)
+    client:RateLimit("respawn", 30)
 
     local ragdoll = ents.Create("prop_ragdoll")
     ragdoll:SetModel(client:GetModel())
