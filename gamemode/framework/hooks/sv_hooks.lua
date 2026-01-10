@@ -325,6 +325,22 @@ hook.Add("player_disconnect", "Parallax.PlayerDisconnected", function(data)
     local name = data.name
     local reason = data.reason
 
+    local client = Player(data.userid)
+    local clientTable = client:GetTable()
+
+    if ( !istable( clientTable.axCharacters ) ) then clientTable.axCharacters = {} end
+    local characters = clientTable.axCharacters or {}
+    if ( characters[1] != nil ) then
+        for i = 1, #characters do
+            local character = characters[i]
+            ax.character.instances[character.id] = nil
+
+            net.Start("ax.character.invalidate")
+                net.WriteUInt(character.id, 32)
+            net.Broadcast()
+        end
+    end
+
     for k, v in player.Iterator() do
         v:ChatPrint(Color(220, 60, 60), "Player " .. name .. " has disconnected. (" .. reason .. ")")
     end
