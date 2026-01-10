@@ -84,6 +84,25 @@ function ax.command:GetAll()
     return self.registry
 end
 
+function ax.command:Find(look, bCaseSensitive)
+    for name, def in pairs(self.registry) do
+        if ( ax.util:FindString(name, look, bCaseSensitive) ) then
+            return def
+        end
+
+        if ( def.alias ) then
+            local aliases = istable(def.alias) and def.alias or {def.alias}
+            for _, alias in ipairs(aliases) do
+                if ( ax.util:FindString(alias, look, bCaseSensitive) ) then
+                    return def
+                end
+            end
+        end
+    end
+
+    return nil
+end
+
 --- Find all commands matching a partial name or alias.
 -- Performs case-insensitive search for commands starting with the partial string.
 -- @realm shared
