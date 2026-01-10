@@ -169,6 +169,7 @@ function ax.chat:OverrideChatAddText()
 
         -- Build markup from arguments
         for _, v in ipairs(arguments) do
+            print(v)
             if ( ax.type:Sanitise(ax.type.color, v) ) then
                 color = v
             elseif ( IsValid(v) and v:IsPlayer() ) then

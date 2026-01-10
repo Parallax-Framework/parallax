@@ -551,15 +551,13 @@ net.Receive("ax.chat.message", function()
     end
 
     if ( isfunction(chatClass.OnRun) ) then
-        local result = { chatClass:OnRun(speaker, text, data) }
+        local result = chatClass:OnRun(speaker, text, data)
         if ( result == false ) then return end
-
-        PrintTable(result)
 
         if ( isfunction(chatClass.OnFormatForListener) ) then
             result = chatClass:OnFormatForListener(speaker, ax.client, data)
         end
 
-        ax.client:ChatPrint( unpack(result) )
+        ax.client:ChatPrint( chatClass:OnRun(speaker, text, data) )
     end
 end)
