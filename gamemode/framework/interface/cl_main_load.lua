@@ -54,9 +54,11 @@ end
 
 function PANEL:PopulateCharacterList()
     self.characters:Clear()
-    if ( ax.client.axCharacters[1] == nil ) then return end -- literally no reason to continue
+    local clientTable = ax.client:GetTable()
+    if ( !istable( clientTable.axCharacters ) ) then clientTable.axCharacters = {} end
+    if ( clientTable.axCharacters[1] == nil ) then return end -- literally no reason to continue
 
-    for k, v in pairs(ax.client.axCharacters or {}) do
+    for k, v in pairs(clientTable.axCharacters or {}) do
         local button = self.characters:Add("ax.button.flat")
         button:Dock(TOP)
         button:DockMargin(0, 0, 0, ax.util:ScreenScaleH(4))
