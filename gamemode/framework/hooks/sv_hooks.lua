@@ -182,6 +182,7 @@ function GM:PlayerSpawn(client)
         classData:OnSpawn(client)
     end
 
+    hook.Run("PostPlayerSpawn", client)
     hook.Run("PlayerLoadout", client)
 end
 
