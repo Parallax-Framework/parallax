@@ -21,9 +21,32 @@ function MODULE:PlayerSay(client, text, teamChat)
 
     local chatType, text = ax.chat:Parse(text)
     if ( chatType == "ic" ) then
-        if ( ax.command:Parse(text) ) then
-            print("Chat Preprocess: Command detected, suppressing chat message.")
+        local bHasPrefix = false
+        for i = 1, #ax.command.prefixes do
+            local prefix = ax.command.prefixes[i]
+            if ( string.StartWith(text, prefix) ) then
+                bHasPrefix = true
+                break
+            end
+        end
+
+        if ( !bHasPrefix ) then return text end
+
+        local commandName, rawArgs = ax.command:Parse(text)
+        if ( !isstring(commandName) or commandName == "" ) then
+            client:Notify( ax.localization:GetPhrase("command.notvalid") )
             return ""
+        end
+
+        local command = ax.command.registry[commandName]
+        if ( !istable(command) ) then
+            client:Notify( ax.localization:GetPhrase("command.notfound") )
+            return ""
+        end
+
+        local result, message = ax.command:Run(client, commandName, rawArgs)
+        if ( result == false and isstring(message) and message != "" ) then
+            client:Notify( message )
         end
     end
 
