@@ -564,3 +564,17 @@ net.Receive("ax.chat.message", function()
         ax.client:ChatPrint(unpack(packaged))
     end
 end)
+
+net.Receive("ax.character.invalidate", function()
+    local id = net.ReadUInt(32)
+    if ( !isnumber( id ) or id < 1 ) then return end
+
+    local character = ax.character.instances[ id ]
+    if ( !istable( character ) ) then
+        ax.util:PrintError( "Character with ID " .. id .. " does not exist." )
+        return
+    end
+
+    ax.inventory.instances[ ax.character.instances[id]:GetInventoryID() ] = nil
+    ax.character.instances[ id ] = nil
+end)
