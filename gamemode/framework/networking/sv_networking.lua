@@ -36,6 +36,8 @@ util.AddNetworkString("ax.item.spawn")
 util.AddNetworkString("ax.chat.message")
 util.AddNetworkString("ax.chat.text.changed")
 
+util.AddNetworkString("ax.character.invalidate")
+
 net.Receive("ax.chat.message", function(len, client)
     if ( !client:RateLimit("chat.send", 0.5) ) then return end
 
