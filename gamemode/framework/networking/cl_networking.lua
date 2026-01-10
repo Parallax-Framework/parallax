@@ -537,3 +537,27 @@ net.Receive("ax.item.spawn", function()
 
     ax.item.instances[itemID] = itemObject
 end)
+
+net.Receive("ax.chat.message", function()
+    local speaker = net.ReadPlayer()
+    local chatType = net.ReadString()
+    local text = net.ReadString()
+    local data = net.ReadTable()
+
+    local chatClass = ax.chat.registry[chatType]
+    if ( !istable(chatClass) ) then
+        ax.util:PrintError("ax.chat.message - Invalid chat type \"" .. tostring(chatType) .. "\"")
+        return
+    end
+
+    if ( isfunction(chatClass.OnRun) ) then
+        local result = chatClass:OnRun(speaker, text, data)
+        if ( result == false ) then return end
+
+        if ( isfunction(chatClass.OnFormatForListener) ) then
+            result = chatClass:OnFormatForListener(speaker, ax.client, data)
+        end
+
+        ax.client:ChatPrint( chatClass:OnRun(speaker, text, data) )
+    end
+end)

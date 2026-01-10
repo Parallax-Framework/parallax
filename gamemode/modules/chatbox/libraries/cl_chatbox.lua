@@ -118,6 +118,8 @@ function ax.chat:CreateMessagePanel(markupText, maxWidth, revealSpeed)
         end
     end
 
+    print("Chat Message Panel Created: " .. markupText)
+
     return panel
 end
 
@@ -162,7 +164,6 @@ function ax.chat:OverrideChatAddText()
             local ts = Color(150, 150, 150)
             text = string.format("<font=ax.small.shadow><color=%d,%d,%d>[%s] </color></font>", ts.r, ts.g, ts.b, os.date("%H:%M"))
         end
-
         -- Build markup from arguments
         for _, v in ipairs(arguments) do
             if ( ax.type:Sanitise(ax.type.color, v) ) then

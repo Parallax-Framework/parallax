@@ -42,11 +42,11 @@ function MODULE:PlayerSay(client, text, teamChat)
             end
 
             local result, message = ax.command:Run(client, commandName, rawArgs)
-            if ( result == false and isstring(message) and message != "" ) then
-                client:Notify( message )
+            if ( isstring(message) and message != "" ) then
+                client:Notify(message)
             end
 
-            print("Chat Command: " .. commandName .. " Args: " .. rawArgs)
+            return ""
         end
     end
 
