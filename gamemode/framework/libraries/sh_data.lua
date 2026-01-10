@@ -28,9 +28,8 @@ ax.data.cache = ax.data.cache or {}
 -- @usage ax.data:Set("settings_player", { volume = 0.8 }, { scope = "project", human = true })
 function ax.data:Set(key, value, options)
     options = options or {}
-    local path = ax.util:BuildDataPath(key, options)
 
-    -- Ensure directory exists
+    local path = ax.util:BuildDataPath(key, options)
     ax.util:EnsureDataDir(path)
 
     local payload
@@ -70,8 +69,8 @@ end
 -- @usage local cfg = ax.data:Get("settings_player", {}, { force = false })
 function ax.data:Get(key, default, options)
     options = options or {}
-    local path = ax.util:BuildDataPath(key, options)
 
+    local path = ax.util:BuildDataPath(key, options)
     if ( !options.force ) then
         local cached = self.cache[path]
         if ( cached != nil ) then

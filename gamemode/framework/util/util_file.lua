@@ -224,10 +224,10 @@ end
 -- @usage local path = ax.util:BuildDataPath("settings_player", { scope = "project" })
 function ax.util:BuildDataPath(key, options)
     options = options or {}
+
     local scope = options.scope or "project" -- "global", "project", "map"
     local name = self:SanitizeKey(key)
-    local ext = options.human and ".json" or ".dat"
-
+    local ext = ".json"
     if ( scope == "global" ) then
         return "global/" .. name .. ext
     elseif ( scope == "map" ) then
