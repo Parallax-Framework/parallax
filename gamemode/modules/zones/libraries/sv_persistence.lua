@@ -66,7 +66,9 @@ function ax.zones:Save()
         items = items,
     }
 
-    ax.data:Set(dataKey, data)
+    ax.data:Set(dataKey, data, {
+        scope = "map"
+    })
     ax.util:PrintDebug("Saved " .. #items .. " runtime zones for map " .. mapName)
 end
 
