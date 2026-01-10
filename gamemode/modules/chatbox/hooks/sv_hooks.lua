@@ -41,9 +41,18 @@ function MODULE:PlayerSay(client, text, teamChat)
                 return ""
             end
 
-            local result, message = ax.command:Run(client, commandName, rawArgs)
-            if ( isstring(message) and message != "" ) then
-                client:Notify(message)
+            local ok, runOk, result = pcall(function()
+                return ax.command:Run(client, name, rawArgs)
+            end)
+
+            if ( !ok ) then
+                client:Notify(ax.localization:GetPhrase("command.executionfailed"), "error")
+            else
+                if ( !runOk ) then
+                    client:Notify(result or ax.localization:GetPhrase("command.unknownerror"), "error")
+                elseif ( result and result != "" ) then
+                    client:Notify(tostring(result))
+                end
             end
 
             return ""

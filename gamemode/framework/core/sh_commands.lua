@@ -232,7 +232,6 @@ ax.command:Add("CharSetClass", {
         end
 
         if ( classTable.faction and classTable.faction != target:GetFaction() ) then
-            print("Class faction mismatch: " .. classTable.faction .. " vs " .. target:GetFaction())
             return "This class does not belong to the character's faction."
         end
 
