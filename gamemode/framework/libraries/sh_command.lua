@@ -42,8 +42,6 @@ function ax.command:Add(name, def)
 
     def.displayName = def.displayName or ax.util:UniqueIDToName(name)
 
-    name = ax.util:UniqueIDToCamel(name)
-
     -- Set defaults
     def.name = name
     def.description = def.description or "No description available."
@@ -264,25 +262,48 @@ function ax.command:Parse(text)
 
     text = string.Trim(text)
 
-    -- Strip common prefixes
-    for _, prefix in ipairs(self.prefixes) do
-        if ( string.StartWith(text, prefix) ) then
-            text = string.sub(text, #prefix + 1)
+    local prefix = nil
+    for i = 1, #self.prefixes do
+        local sub = string.sub(text, 1, 1)
+        if ( sub != self.prefixes[i] ) then
+            prefix = self.prefixes[i]
             break
         end
     end
 
-    text = string.Trim(text)
+    if ( !prefix ) then return nil, "" end
 
-    -- Split first word from rest
-    local spacePos = string.find(text, " ", 0, true)
-    if ( spacePos ) then
-        local name = string.sub(text, 1, spacePos - 1)
-        local rawArgs = string.Trim(string.sub(text, spacePos + 1))
-        return name, rawArgs
-    else
-        return text, ""
+    local args = string.Explode(" ", string.sub(text, 2))
+    local commandName = string.lower(args[1] or "")
+    if ( !isstring(commandName) or commandName == "" ) then
+        return nil, ""
     end
+
+    for k, v in pairs(self.registry) do
+        if ( utf8.lower(k) == commandName ) then
+            commandName = k
+            break
+        end
+
+        if ( istable(v.aliases) ) then
+            for i = 1, #v.aliases do
+                local alias = v.aliases[i]
+                if ( isstring(alias) and utf8.lower(alias) == commandName ) then
+                    commandName = k
+                    break
+                end
+            end
+        end
+    end
+
+    if ( !self.registry[commandName] ) then
+        return nil, ""
+    end
+
+    table.remove(args, 1)
+
+    local rawArgs = table.concat(args, " ")
+    return commandName, rawArgs
 end
 
 --[[

@@ -21,12 +21,10 @@ function MODULE:PlayerSay(client, text, teamChat)
 
     local chatType, text = ax.chat:Parse(text)
     if ( chatType == "ic" ) then
-        /*
         if ( ax.command:Parse(text) ) then
             print("Chat Preprocess: Command detected, suppressing chat message.")
             return ""
         end
-        */
     end
 
     return text
