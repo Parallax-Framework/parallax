@@ -37,8 +37,8 @@ function ax.chat:Add(key, def)
                 def.aliases[i] = nil
             end
 
-            if ( string.sub(1, 1) == "/" ) then
-                ax.command:Add(string.sub(v, 2), {
+            if ( string.sub(alias, 1, 1) == "/" ) then
+                ax.command:Add(string.sub(alias, 2), {
                     description = def.description or "Sends a " .. (def.name or def.key) .. " message.",
                     arguments = def.arguments or {
                         {
@@ -93,44 +93,36 @@ function ax.chat:Add(key, def)
     self.registry[key] = def
 end
 
--- credits to helix for the parsing code
+-- Identifies which chat mode should be used based on text input
+--- @realm shared
+-- @param text string The input text
+-- @return string chatType The identified chat type
+-- @return string text The processed after the chat type prefix is removed
 function ax.chat:Parse(text)
     local chatType = "ic"
 
+    local firstWord = string.Explode(" ", text)[1] or ""
     for k, v in pairs(self.registry) do
-        local isChosen = false
-        local chosenPrefix = ""
-        local noSpaceAfter = v.noSpaceAfter
-
-        if (istable(v.aliases)) then
+        if ( istable(v.aliases) and v.aliases[1] != nil) then
             for i = 1, #v.aliases do
                 local alias = v.aliases[i]
-                alias = utf8.lower(alias)
-                local fullPrefix = alias .. (noSpaceAfter and "" or " ")
-
-                if ( string.lower(string.sub(text, 1, string.len(alias) + (noSpaceAfter and 0 or 1))) == string.lower(fullPrefix) ) then
-                    isChosen = true
-                    chosenPrefix = fullPrefix
+                if ( string.sub(firstWord, 1, #alias) == alias ) then
+                    chatType = k
+                    text = string.sub(text, #alias + (v.noSpaceAfter and 1 or 2))
 
                     break
                 end
             end
         end
 
-        if (isChosen) then
-            chatType = k
-            text = string.sub(text, string.len(chosenPrefix) + 1)
+        if ( chatType != "ic" ) then break end
 
-            if (self.registry[k].noSpaceAfter and string.match(string.sub(text, 1, 1), "%s")) then
-                text = string.sub(text, 2)
-            end
+        if ( string.lower(string.sub(firstWord, 2, #k + 1)) == string.lower(k) ) then
+            chatType = k
+            text = string.sub(text, #k + (v.noSpaceAfter and 1 or 2))
 
             break
         end
-    end
-
-    if ( !string.find(text, "%S") ) then
-        return
     end
 
     return chatType, text

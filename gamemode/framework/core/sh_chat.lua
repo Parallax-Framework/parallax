@@ -276,7 +276,6 @@ ax.chat:Add("ooc", {
         return true
     end,
     aliases = {"//"},
-    noSpaceAfter = true
 })
 
 ax.chat:Add("me", {
