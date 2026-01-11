@@ -8,12 +8,12 @@ local MODULE = MODULE
 --[[
     Test command with string validation
 ]]
-ax.command:Add("echo", {
+ax.command:Add("Echo", {
     description = "Echo back a message",
     arguments = {
         { name = "message", type = ax.type.text }
     },
-    OnRun = function(client, message)
+    OnRun = function(def, client, message)
         return "Echo: " .. message
     end
 })
@@ -21,13 +21,13 @@ ax.command:Add("echo", {
 --[[
     Test command with number validation and ranges
 ]]
-ax.command:Add("random", {
+ax.command:Add("Random", {
     description = "Generate a random number between min and max",
     arguments = {
         { name = "min", type = ax.type.number },
         { name = "max", type = ax.type.number }
     },
-    OnRun = function(client, min, max)
+    OnRun = function(def, client, min, max)
         if ( min > max ) then
             return "Minimum value cannot be greater than maximum"
         end
@@ -40,12 +40,12 @@ ax.command:Add("random", {
 --[[
     Test command with boolean validation
 ]]
-ax.command:Add("toggle", {
+ax.command:Add("Toggle", {
     description = "Toggle a boolean setting",
     arguments = {
         { name = "enabled", type = ax.type.bool }
     },
-    OnRun = function(client, enabled)
+    OnRun = function(def, client, enabled)
         return "Setting is now: " .. (enabled and "enabled" or "disabled")
     end
 })
@@ -53,7 +53,7 @@ ax.command:Add("toggle", {
 --[[
     Test command with choices validation
 ]]
-ax.command:Add("color", {
+ax.command:Add("Color", {
     description = "Set your favorite color",
     arguments = {
         { name = "color", type = ax.type.string, choices = {
@@ -63,7 +63,7 @@ ax.command:Add("color", {
             ["yellow"] = true
         }}
     },
-    OnRun = function(client, color)
+    OnRun = function(def, client, color)
         return "Your favorite color is now: " .. color
     end
 })
@@ -71,10 +71,10 @@ ax.command:Add("color", {
 --[[
     Test admin-only command
 ]]
-ax.command:Add("admin_test", {
+ax.command:Add("AdminTest", {
     description = "Test admin-only command",
     adminOnly = true,
-    OnRun = function(client)
+    OnRun = function(def, client)
         return "You are an admin!"
     end
 })
@@ -82,7 +82,7 @@ ax.command:Add("admin_test", {
 --[[
     Test command with custom access control
 ]]
-ax.command:Add("vip_command", {
+ax.command:Add("VipCommand", {
     description = "VIP only command with custom access control",
     CanRun = function(self, caller)
         if ( !IsValid(caller) ) then
@@ -93,7 +93,7 @@ ax.command:Add("vip_command", {
         -- For now, just allow everyone for testing
         return true
     end,
-    OnRun = function(client)
+    OnRun = function(def, client)
         return "Welcome, VIP member!"
     end
 })
