@@ -63,13 +63,11 @@ function ax.command:Add(name, def)
     ax.util:PrintDebug("ax.command:Add - Command \"" .. name .. "\" registered successfully")
 
     -- Handle aliases
-    if ( def.alias ) then
-        local aliases = istable(def.alias) and def.alias or {def.alias}
-        for _, alias in ipairs(aliases) do
-            if ( isstring(alias) and alias != "" ) then
-                local normalizedAlias = utf8.lower(alias)
-                self.registry[normalizedAlias] = def
-                ax.util:PrintDebug("ax.command:Add - Alias \"" .. normalizedAlias .. "\" registered for \"" .. name .. "\"")
+    if ( istable(def.alias) and def.alias[1] != nil ) then
+        for i = 1, #def.alias do
+            local aliasName = def.alias[i]
+            if ( isstring(aliasName) and aliasName != "" ) then
+                self.registry[aliasName] = def
             end
         end
     end
@@ -299,7 +297,6 @@ function ax.command:Parse(text)
     end
 
     for k, v in pairs(self.registry) do
-        print(utf8.lower(k), commandName)
         if ( utf8.lower(k) == commandName ) then
             commandName = k
             break
@@ -323,6 +320,7 @@ function ax.command:Parse(text)
     table.remove(args, 1)
 
     local rawArgs = table.concat(args, " ")
+    print(commandName, rawArgs)
     return commandName, rawArgs
 end
 
@@ -368,7 +366,7 @@ function ax.command:Run(caller, name, rawArgs)
     end
 
     -- Execute the command
-    local success, result = pcall(handler, caller, unpack(values or {}))
+    local success, result = pcall(handler, def, caller, unpack(values or {}))
     if ( !success ) then
         ax.util:PrintError("ax.command:Run - Error executing command \"" .. name .. "\": " .. tostring(result))
         return false, "Command execution failed"
