@@ -56,7 +56,6 @@ local expressions = {
 -- Helper function to get the appropriate verb based on listener's preference
 local function GetVerb(listener, chatType)
     local useRandomVerbs = SERVER and ax.option:Get(listener, "chat.randomized.verbs", true) or ax.option:Get("chat.randomized.verbs", true)
-    print(useRandomVerbs)
     if ( useRandomVerbs ) then
         return expressions[chatType][math.random(#expressions[chatType])]
     else
@@ -120,7 +119,6 @@ end
 ax.chat:Add("ic", {
     displayName = "IC",
     description = "Speak in-character",
-    noCommand = true,
     OnRun = function(this, client, message)
         local icColor = ax.config:Get("chat.ic.color")
         return icColor, client:Nick() .. " " .. expressions["ic"][math.random(#expressions["ic"])] .. ", \"" .. ax.chat:FormatWithMarkdown(message) .. "\""
@@ -128,7 +126,6 @@ ax.chat:Add("ic", {
     OnFormatForListener = function(this, speaker, listener, message, data)
         local icColor = ax.config:Get("chat.ic.color")
         local verb = GetVerb(listener, "ic")
-        print(verb)
         local formattedMessage = ax.chat:FormatWithMarkdown(message)
         local target = GetLookTarget(speaker)
 
@@ -150,28 +147,27 @@ ax.chat:Add("ic", {
     end,
     CanHear = function(this, speaker, listener)
         local distance = ax.config:Get("chat.ic.distance", 400)
-        return speaker:GetPos():DistToSqr(listener:GetPos()) <= distance * distance
+        return speaker:EyePos():DistToSqr(listener:EyePos()) <= distance * distance
     end
 })
 
 ax.chat:Add("roll", {
     displayName = "Roll",
     description = "Roll a dice",
-    noCommand = true,
-    OnRun = function(this, client, result, sides)
+    OnRun = function(this, client, text, data)
         local rollColor = ax.config:Get("chat.roll.color", Color(150, 75, 75))
-        return rollColor, client:Nick() .. " rolls a " .. result .. " on a " .. sides .. "-sided dice."
+        return rollColor, client:Nick() .. " rolls a " .. data.result .. " on a " .. data.sides .. "-sided dice."
     end,
     CanHear = function(this, speaker, listener)
         local distance = ax.config:Get("chat.me.distance", 400)
-        return speaker:GetPos():DistToSqr(listener:GetPos()) <= distance * distance
+        return speaker:EyePos():DistToSqr(listener:EyePos()) <= distance * distance
     end
 })
 
 ax.chat:Add("yell", {
     displayName = "Yell",
     description = "Yell at someone",
-    alias = {"y", "shout"},
+    prefix = {"/y", "/shout"},
     OnRun = function(this, client, message)
         local yellColor = ax.config:Get("chat.yell.color")
         local baseFont = "ax.medium.shadow"
@@ -209,7 +205,7 @@ ax.chat:Add("yell", {
 ax.chat:Add("whisper", {
     displayName = "Whisper",
     description = "Whisper to someone nearby",
-    alias = {"/w"},
+    prefix = {"/w", "/whisper"},
     OnRun = function(this, client, message)
         local whisperColor = ax.config:Get("chat.whisper.color")
         local baseFont = "ax.tiny.shadow"
@@ -259,7 +255,7 @@ ax.chat:Add("looc", {
         return listener:GetCharacter() == nil or speaker:GetPos():DistToSqr(listener:GetPos()) <= distance * distance
     end,
     noSpaceAfter = true,
-    alias = {".//", "[["}
+    prefix = {".//", "[[", "/LOOC"}
 })
 
 ax.chat:Add("ooc", {
@@ -275,11 +271,13 @@ ax.chat:Add("ooc", {
     CanHear = function(this, speaker, listener)
         return true
     end,
-    alias = {"//"},
+    prefix = {"//", "/OOC"},
+    noSpaceAfter = true
 })
 
 ax.chat:Add("me", {
     description = "Perform an action in third person",
+    prefix = {"/me"},
     OnRun = function(this, client, message)
         local txt = ax.chat:Format(message)
         if ( #txt > 0 ) then
@@ -297,6 +295,7 @@ ax.chat:Add("me", {
 
 ax.chat:Add("it", {
     description = "Describe something in third person",
+    prefix = {"/it"},
     OnRun = function(this, client, message)
         local itColor = ax.config:Get("chat.it.color", Color(255, 255, 175))
         return itColor, "** " .. ax.chat:Format(message)
@@ -309,7 +308,7 @@ ax.chat:Add("it", {
 
 ax.chat:Add("event", {
     description = "Announce a global event",
-    alias = {"globalevent"},
+    prefix = {"/globalevent"},
     adminOnly = true,
     OnRun = function(this, client, message)
         local eventColor = ax.config:Get("chat.event.color", Color(200, 100, 50))
