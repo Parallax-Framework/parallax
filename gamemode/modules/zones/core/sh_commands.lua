@@ -29,7 +29,7 @@ ax.command:Add("ZoneBox", {
         { name = "priority", type = ax.type.number },
         { name = "size", type = ax.type.number, optional = true },
     },
-    OnRun = function(client, name, priority, size)
+    OnRun = function(def, client, name, priority, size)
         size = size or 128
         local pos = GetTargetPosition(client)
         local halfSize = size / 2
@@ -65,7 +65,7 @@ ax.command:Add("ZoneBoxCustom", {
         { name = "name", type = ax.type.string, optional = true },
         { name = "priority", type = ax.type.number, optional = true },
     },
-    OnRun = function(client, name, priority)
+    OnRun = function(def, client, name, priority)
         local steamID = client:SteamID()
         local pos = GetTargetPosition(client)
 
@@ -128,7 +128,7 @@ ax.command:Add("ZoneSphere", {
         { name = "priority", type = ax.type.number },
         { name = "radius", type = ax.type.number, optional = true },
     },
-    OnRun = function(client, name, priority, radius)
+    OnRun = function(def, client, name, priority, radius)
         radius = radius or 128
 
         if ( radius <= 0 ) then
@@ -167,7 +167,7 @@ ax.command:Add("ZonePVS", {
         { name = "priority", type = ax.type.number },
         { name = "radius", type = ax.type.number, optional = true },
     },
-    OnRun = function(client, name, priority, radius)
+    OnRun = function(def, client, name, priority, radius)
         local pos = GetTargetPosition(client)
 
         local spec = {
@@ -206,7 +206,7 @@ ax.command:Add("ZoneTrace", {
         { name = "priority", type = ax.type.number },
         { name = "radius", type = ax.type.number, optional = true },
     },
-    OnRun = function(client, name, priority, radius)
+    OnRun = function(def, client, name, priority, radius)
         local pos = GetTargetPosition(client)
 
         local spec = {
@@ -243,7 +243,7 @@ ax.command:Add("ZoneRemove", {
     arguments = {
         { name = "identifier", type = ax.type.string },
     },
-    OnRun = function(client, identifier)
+    OnRun = function(def, client, identifier)
         local id = tonumber(identifier) or identifier
         local zone = ax.zones:Get(id)
 
@@ -269,7 +269,7 @@ ax.command:Add("ZoneRemove", {
 ]]
 ax.command:Add("ZoneList", {
     description = "List all zones to console",
-    OnRun = function(client)
+    OnRun = function(def, client)
         ax.zones:List()
         return "Zone list printed to console."
     end,
@@ -285,7 +285,7 @@ ax.command:Add("ZoneInfo", {
     arguments = {
         { name = "identifier", type = ax.type.string },
     },
-    OnRun = function(client, identifier)
+    OnRun = function(def, client, identifier)
         local id = tonumber(identifier) or identifier
         local zone = ax.zones:Get(id)
 
@@ -329,7 +329,7 @@ ax.command:Add("ZoneInfo", {
 local debugPlayers = {}
 ax.command:Add("ZoneDebug", {
     description = "Toggle zone debug visualization",
-    OnRun = function(client)
+    OnRun = function(def, client)
         local steamID = client:SteamID()
 
         if ( debugPlayers[steamID] ) then
@@ -355,7 +355,7 @@ ax.command:Add("ZonePriority", {
         { name = "identifier", type = ax.type.string },
         { name = "priority", type = ax.type.number },
     },
-    OnRun = function(client, identifier, priority)
+    OnRun = function(def, client, identifier, priority)
         local id = tonumber(identifier) or identifier
         local zone = ax.zones:Get(id)
 
@@ -381,7 +381,7 @@ ax.command:Add("ZoneTp", {
     arguments = {
         { name = "identifier", type = ax.type.string },
     },
-    OnRun = function(client, identifier)
+    OnRun = function(def, client, identifier)
         local id = tonumber(identifier) or identifier
         local zone = ax.zones:Get(id)
 
@@ -415,7 +415,7 @@ ax.command:Add("ZoneTp", {
 local clearConfirm = {}
 ax.command:Add("ZoneClear", {
     description = "Clear all runtime zones (use twice to confirm)",
-    OnRun = function(client)
+    OnRun = function(def, client)
         local steamID = client:SteamID()
 
         if ( !clearConfirm[steamID] ) then
