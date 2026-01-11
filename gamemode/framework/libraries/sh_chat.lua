@@ -29,42 +29,44 @@ function ax.chat:Add(key, def)
 
     def.key = key
 
-    if ( CLIENT and istable(def.aliases) ) then
-        for i = 1, #def.aliases do
-            local alias = def.aliases[i]
-            if ( !isstring(alias) or alias == "" ) then
-                ax.util:PrintError("ax.chat:Add - Invalid alias provided for chat type \"" .. key .. "\"")
-                def.aliases[i] = nil
-            end
+    if ( CLIENT ) then
+        if ( istable(def.prefix) ) then
+            for i = 1, #def.prefix do
+                local prefix = def.prefix[i]
+                if ( !isstring(prefix) or prefix == "" ) then
+                    ax.util:PrintError("ax.chat:Add - Invalid prefix provided for chat type \"" .. key .. "\"")
+                    def.prefix[i] = nil
+                end
 
-            if ( string.sub(alias, 1, 1) == "/" ) then
-                ax.command:Add(string.sub(alias, 2), {
-                    description = def.description or "Sends a " .. (def.name or def.key) .. " message.",
-                    arguments = def.arguments or {
-                        {
-                            type = ax.type.text,
-                            name = "message",
-                            optional = false,
-                        }
-                    },
-                    chatClass = def,
-                    OnRun = nil -- handle with networking
-                })
+                if ( string.sub(prefix, 1, 1) == "/" ) then
+                    ax.command:Add(string.sub(prefix, 2), {
+                        description = def.description or "Sends a " .. (def.name or def.key) .. " message.",
+                        arguments = def.arguments or {
+                            {
+                                type = ax.type.text,
+                                name = "message",
+                                optional = false,
+                            }
+                        },
+                        chatClass = def,
+                        OnRun = nil -- handle with networking
+                    })
+                end
             end
+        else
+            ax.command:Add(key, {
+                description = def.description or "Sends a " .. (def.name or def.key) .. " message.",
+                arguments = def.arguments or {
+                    {
+                        type = ax.type.text,
+                        name = "message",
+                        optional = false,
+                    }
+                },
+                chatClass = def,
+                OnRun = nil -- handle with networking
+            })
         end
-    else
-        ax.command:Add(key, {
-            description = def.description or "Sends a " .. (def.name or def.key) .. " message.",
-            arguments = def.arguments or {
-                {
-                    type = ax.type.text,
-                    name = "message",
-                    optional = false,
-                }
-            },
-            chatClass = def,
-            OnRun = nil -- handle with networking
-        })
     end
 
     if ( !isfunction(def.CanHear) ) then
@@ -93,39 +95,48 @@ function ax.chat:Add(key, def)
     self.registry[key] = def
 end
 
+-- Credits to helix for the logic
 -- Identifies which chat mode should be used based on text input
 --- @realm shared
--- @param text string The input text
+-- @param message string The input message
 -- @return string chatType The identified chat type
--- @return string text The processed after the chat type prefix is removed
-function ax.chat:Parse(text)
+-- @return string message The processed after the chat type prefix is removed
+function ax.chat:Parse(message)
     local chatType = "ic"
 
-    local firstWord = string.Explode(" ", text)[1] or ""
     for k, v in pairs(self.registry) do
-        if ( istable(v.aliases) and v.aliases[1] != nil) then
-            for i = 1, #v.aliases do
-                local alias = v.aliases[i]
-                if ( string.sub(firstWord, 1, #alias) == alias ) then
-                    chatType = k
-                    text = string.sub(text, #alias + (v.noSpaceAfter and 1 or 2))
+        local isChosen = false
+        local chosenPrefix = ""
+        local noSpaceAfter = v.noSpaceAfter
+
+        if (istable(v.prefix) and v.prefix[1] != nil) then
+            for _ = 1, #v.prefix do
+                local prefix = v.prefix[_]
+                prefix = string.lower(prefix)
+                local fullPrefix = prefix .. (noSpaceAfter and "" or " ")
+
+                if ( string.lower(string.sub(message, 1, string.len(prefix) + (noSpaceAfter and 0 or 1))) == fullPrefix:lower()) then
+                    isChosen = true
+                    chosenPrefix = fullPrefix
 
                     break
                 end
             end
         end
 
-        if ( chatType != "ic" ) then break end
-
-        if ( string.lower(string.sub(firstWord, 2, #k + 1)) == string.lower(k) ) then
+        if (isChosen) then
             chatType = k
-            text = string.sub(text, #k + (v.noSpaceAfter and 1 or 2))
+            message = string.sub(message, string.len(chosenPrefix) + 1)
+
+            if (self.registry[k].noSpaceAfter and string.match(string.sub(message, 1, 1), "%s")) then
+                message = string.sub(message, 2)
+            end
 
             break
         end
     end
 
-    return chatType, text
+    return chatType, message
 end
 
 if ( SERVER ) then
