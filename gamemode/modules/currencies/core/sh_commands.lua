@@ -51,7 +51,7 @@ ax.command:Add("DropCurrency", {
         { name = "amount", type = ax.type.number },
         { name = "currencyID", type = ax.type.string, optional = true }
     },
-    OnRun = function(client, amount, currencyID)
+    OnRun = function(def, client, amount, currencyID)
         return validateAndDrop(client, amount, currencyID)
     end
 })
@@ -61,7 +61,7 @@ ax.command:Add("DropMoney", {
     arguments = {
         { name = "amount", type = ax.type.number }
     },
-    OnRun = function(client, amount)
+    OnRun = function(def, client, amount)
         return validateAndDrop(client, amount, "credits")
     end
 })
@@ -90,7 +90,7 @@ ax.command:Add("SetCurrency", {
         { name = "amount", type = ax.type.number, min = 0 },
         { name = "currencyID", type = ax.type.string, optional = true }
     },
-    OnRun = function(client, target, amount, currencyID)
+    OnRun = function(def, client, target, amount, currencyID)
         local okID, err = validateCurrencyID(currencyID)
         if ( !okID ) then return err end
 
@@ -114,13 +114,12 @@ ax.command:Add("AddCurrency", {
         { name = "amount", type = ax.type.number, min = 1 },
         { name = "currencyID", type = ax.type.string, optional = true }
     },
-    alias = {"GiveCurrency"},
-    OnRun = function(client, target, amount, currencyID)
+    prefix = {"GiveCurrency"},
+    OnRun = function(def, client, target, amount, currencyID)
         local okID, err = validateCurrencyID(currencyID)
         if ( !okID ) then return err end
 
         amount = normalizeAmount(amount)
-
         local character, errMsg = requireCharacter(target)
         if ( !character ) then return errMsg end
 
@@ -139,8 +138,8 @@ ax.command:Add("TakeCurrency", {
         { name = "amount", type = ax.type.number, min = 1 },
         { name = "currencyID", type = ax.type.string, optional = true }
     },
-    alias = {"RemoveCurrency"},
-    OnRun = function(client, target, amount, currencyID)
+    prefix = {"RemoveCurrency"},
+    OnRun = function(def, client, target, amount, currencyID)
         local okID, err = validateCurrencyID(currencyID)
         if ( !okID ) then return err end
 
@@ -166,7 +165,7 @@ ax.command:Add("GetCurrency", {
         { name = "player", type = ax.type.player },
         { name = "currencyID", type = ax.type.string, optional = true }
     },
-    OnRun = function(client, target, currencyID)
+    OnRun = function(def, client, target, currencyID)
         local okID, err = validateCurrencyID(currencyID)
         if ( !okID ) then return err end
 
@@ -186,7 +185,7 @@ ax.command:Add("AddCurrencyAll", {
         { name = "amount", type = ax.type.number, min = 1 },
         { name = "currencyID", type = ax.type.string, optional = true }
     },
-    OnRun = function(client, amount, currencyID)
+    OnRun = function(def, client, amount, currencyID)
         local okID, err = validateCurrencyID(currencyID)
         if ( !okID ) then return err end
 
@@ -213,7 +212,7 @@ ax.command:Add("SetCurrencyAll", {
         { name = "amount", type = ax.type.number, min = 0 },
         { name = "currencyID", type = ax.type.string, optional = true }
     },
-    OnRun = function(client, amount, currencyID)
+    OnRun = function(def, client, amount, currencyID)
         local okID, err = validateCurrencyID(currencyID)
         if ( !okID ) then return err end
 
@@ -240,8 +239,8 @@ ax.command:Add("SetMoney", {
         { name = "player", type = ax.type.player },
         { name = "amount", type = ax.type.number, min = 0 }
     },
-    OnRun = function(client, target, amount)
-        return ax.command.registry[ax.util:NameToUniqueID("SetCurrency")].OnRun(client, target, amount, "credits")
+    OnRun = function(def, client, target, amount)
+        return ax.command.registry["SetCurrency"]:OnRun(client, target, amount, "credits")
     end
 })
 
@@ -252,9 +251,9 @@ ax.command:Add("AddMoney", {
         { name = "player", type = ax.type.player },
         { name = "amount", type = ax.type.number, min = 1 }
     },
-    alias = {"MoneyAdd", "GiveMoney"},
-    OnRun = function(client, target, amount)
-        return ax.command.registry[ax.util:NameToUniqueID("AddCurrency")].OnRun(client, target, amount, "credits")
+    prefix = {"MoneyAdd", "GiveMoney"},
+    OnRun = function(def, client, target, amount)
+        return ax.command.registry["AddCurrency"]:OnRun(client, target, amount, "credits")
     end
 })
 
@@ -266,8 +265,8 @@ ax.command:Add("TakeMoney", {
         { name = "amount", type = ax.type.number, min = 1 }
     },
     alias = {"RemoveMoney"},
-    OnRun = function(client, target, amount)
-        return ax.command.registry[ax.util:NameToUniqueID("TakeCurrency")].OnRun(client, target, amount, "credits")
+    OnRun = function(def, client, target, amount)
+        return ax.command.registry["TakeCurrency"]:OnRun(client, target, amount, "credits")
     end
 })
 
@@ -278,7 +277,7 @@ ax.command:Add("GetMoney", {
         { name = "player", type = ax.type.player }
     },
     alias = {"MoneyGet", "BalanceMoney"},
-    OnRun = function(client, target)
-        return ax.command.registry[ax.util:NameToUniqueID("GetCurrency")].OnRun(client, target, "credits")
+    OnRun = function(def, client, target)
+        return ax.command.registry["GetCurrency"]:OnRun(client, target, "credits")
     end
 })
