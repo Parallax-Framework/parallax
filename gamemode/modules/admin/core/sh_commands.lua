@@ -83,7 +83,7 @@ ax.command:Add("PlyGoto", {
     arguments = {
         { name = "player", type = ax.type.player }
     },
-    OnRun = function(client, target)
+    OnRun = function(def, client, target)
         if ( client == target ) then
             return "You cannot teleport to yourself"
         end
@@ -101,7 +101,7 @@ ax.command:Add("PlyBring", {
     arguments = {
         { name = "player", type = ax.type.player }
     },
-    OnRun = function(client, target)
+    OnRun = function(def, client, target)
         if ( client == target ) then
             return "You cannot bring yourself"
         end
@@ -116,7 +116,7 @@ ax.command:Add("PlyBring", {
 ax.command:Add("PlyTeleport", {
     description = "Teleport to where you're looking",
     adminOnly = true,
-    OnRun = function(client)
+    OnRun = function(def, client)
         local destination = traceDestination(client)
 
         if ( !destination ) then
@@ -136,7 +136,7 @@ ax.command:Add("PlyReturn", {
     arguments = {
         { name = "player", type = ax.type.player, optional = true }
     },
-    OnRun = function(client, target)
+    OnRun = function(def, client, target)
         target = target or client
 
         local ok, err = restorePosition(target)
@@ -155,7 +155,7 @@ ax.command:Add("PlySetHealth", {
         { name = "player", type = ax.type.player },
         { name = "amount", type = ax.type.number }
     },
-    OnRun = function(client, target, amount)
+    OnRun = function(def, client, target, amount)
         amount = math.Clamp(amount, 0, 2147483647)
         target:SetHealth(amount)
 
@@ -174,7 +174,7 @@ ax.command:Add("PlySetArmor", {
         { name = "player", type = ax.type.player },
         { name = "amount", type = ax.type.number }
     },
-    OnRun = function(client, target, amount)
+    OnRun = function(def, client, target, amount)
         amount = math.Clamp(amount, 0, 2147483647)
         target:SetArmor(amount)
 
@@ -194,7 +194,7 @@ ax.command:Add("PlyGiveAmmo", {
         { name = "amount", type = ax.type.number },
         { name = "ammo type", type = ax.type.string, optional = true }
     },
-    OnRun = function(client, target, amount, ammoType)
+    OnRun = function(def, client, target, amount, ammoType)
         local weapon = target:GetActiveWeapon()
 
         if ( !IsValid(weapon) ) then
@@ -223,7 +223,7 @@ ax.command:Add("PlyFreeze", {
     arguments = {
         { name = "player", type = ax.type.player }
     },
-    OnRun = function(client, target)
+    OnRun = function(def, client, target)
         if ( target == client ) then
             return "You cannot freeze yourself"
         end
@@ -241,7 +241,7 @@ ax.command:Add("PlyRespawn", {
     arguments = {
         { name = "player", type = ax.type.player }
     },
-    OnRun = function(client, target)
+    OnRun = function(def, client, target)
         target:Spawn()
         return "Respawned " .. target:Name()
     end
@@ -253,7 +253,7 @@ ax.command:Add("PlySlay", {
     arguments = {
         { name = "player", type = ax.type.player }
     },
-    OnRun = function(client, target)
+    OnRun = function(def, client, target)
         target:Kill()
         return "Killed " .. target:Name()
     end
