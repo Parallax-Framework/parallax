@@ -51,7 +51,7 @@ Register a new command.
 ```lua
 {
     description = "Command description",
-    alias = {"alt1", "alt2"}, -- Optional aliases
+    prefix = {"alt1", "alt2"}, -- Optional aliases
     adminOnly = false, -- Require admin status
     superAdminOnly = false, -- Require super admin status
     bAllowConsole = true, -- Allow console execution
@@ -169,7 +169,7 @@ ax_command pm player1 hello
 ### Custom Access Control
 
 ```lua
-ax.command:Add("vip_only", {
+ax.command:Add("VipOnly", {
     description = "VIP members only",
     CanRun = function(self, caller)
         if !IsValid(caller) then return false, "Console not allowed" end
@@ -205,7 +205,7 @@ The system provides detailed error messages:
 ### Complex Argument Validation
 
 ```lua
-ax.command:Add("spawn_money", {
+ax.command:Add("SpawnMoney", {
     description = "Spawn money with validation",
     adminOnly = true,
     arguments = {
@@ -213,7 +213,7 @@ ax.command:Add("spawn_money", {
         { name = "target", type = "player", optional = true },
         { name = "reason", type = ax.type.text, optional = true }
     },
-    OnRun = function(caller, amount, target, reason)
+    OnRun = function(def, caller, amount, target, reason)
         target = target or caller
         reason = reason or "Admin spawn"
 
@@ -226,7 +226,7 @@ ax.command:Add("spawn_money", {
 ### Multi-Choice Arguments
 
 ```lua
-ax.command:Add("weather", {
+ax.command:Add("SetWeather", {
     description = "Change weather",
     adminOnly = true,
     arguments = {
