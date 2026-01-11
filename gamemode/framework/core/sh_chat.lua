@@ -209,7 +209,7 @@ ax.chat:Add("yell", {
 ax.chat:Add("whisper", {
     displayName = "Whisper",
     description = "Whisper to someone nearby",
-    alias = {"w"},
+    alias = {"/w"},
     OnRun = function(this, client, message)
         local whisperColor = ax.config:Get("chat.whisper.color")
         local baseFont = "ax.tiny.shadow"
@@ -259,7 +259,7 @@ ax.chat:Add("looc", {
         return listener:GetCharacter() == nil or speaker:GetPos():DistToSqr(listener:GetPos()) <= distance * distance
     end,
     noSpaceAfter = true,
-    aliases = {".//", "[["}
+    alias = {".//", "[["}
 })
 
 ax.chat:Add("ooc", {
@@ -275,7 +275,7 @@ ax.chat:Add("ooc", {
     CanHear = function(this, speaker, listener)
         return true
     end,
-    aliases = {"//"},
+    alias = {"//"},
 })
 
 ax.chat:Add("me", {
