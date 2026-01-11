@@ -5,7 +5,7 @@ ax.command:Add("SpawnAdd", {
         { name = "faction", type = ax.type.string, optional = true },
         { name = "class", type = ax.type.string, optional = true }
     },
-    OnRun = function(client, factionIdentifier, classIdentifier)
+    OnRun = function(def, client, factionIdentifier, classIdentifier)
         local spawnPos = client:GetPos()
         local spawnAng = client:EyeAngles()
 
@@ -26,7 +26,7 @@ ax.command:Add("SpawnRemove", {
     arguments = {
         { name = "radius", type = ax.type.number }
     },
-    OnRun = function(client, radius)
+    OnRun = function(def, client, radius)
         local success, count = ax.spawns:Remove(client:GetPos(), radius)
         if ( success ) then
             return string.format("Removed %d spawn point(s) within %.0f units.", count, radius)
@@ -39,7 +39,7 @@ ax.command:Add("SpawnRemove", {
 ax.command:Add("SpawnClear", {
     description = "Clears all spawn points from the system.",
     superAdminOnly = true,
-    OnRun = function(client)
+    OnRun = function(def, client)
         ax.spawns:Clear()
 
         return "All spawn points have been cleared."
