@@ -141,4 +141,11 @@ ax.localization:Register("en", {
     ["notify.chat.ooc.disabled"] = "OOC chat is currently disabled on this server.",
     ["notify.chat.ooc.wait"] = "Please wait %d second(s) before sending another OOC message.",
     ["notify.chat.ooc.rate_limited"] = "You have reached the OOC message limit (%d) for the last %d minutes.",
+
+    ---- Flags
+    ["flag.p.name"] = "Physgun Permission",
+    ["flag.p.description"] = "Allows the use of the physgun.",
+
+    ["flag.t.name"] = "Toolgun Permission",
+    ["flag.t.description"] = "Allows the use of the toolgun.",
 })
