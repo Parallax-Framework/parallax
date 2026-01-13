@@ -14,14 +14,27 @@
 
 --- Safely parse a JSON string into a table, or return table input unchanged.
 -- @param tInput string|table JSON string or already-parsed table
+-- @param bToJson boolean|nil Unused parameter for future use
 -- @return table|nil The parsed table or nil on failure
 -- @usage local tbl = ax.util:SafeParseTable(jsonString)
-function ax.util:SafeParseTable(tInput)
-    if ( isstring(tInput) ) then
-        return util.JSONToTable(tInput)
+function ax.util:SafeParseTable(tInput, bToJson)
+    if ( bToJson == true and istable(tInput) ) then
+        return util.TableToJSON(tInput)
     end
 
-    return tInput
+    if ( isstring(tInput) ) then
+        local success, result = pcall(util.JSONToTable, tInput)
+        if ( success ) then
+            return result
+        else
+            self:PrintError("SafeParseTable: failed to parse JSON string:", result)
+            return nil
+        end
+    elseif ( istable(tInput) ) then
+        return tInput
+    end
+
+    return nil
 end
 
 --- Safely call a function and capture errors, returning success and results.
