@@ -112,14 +112,12 @@ function ax.character:SetVar(char, name, value, bNoNetworking, recipients, bNoDB
 
     hook.Run("CharacterVarChanged", char, name, value)
 
-    -- Functional, commented out for performance reasons
-    --[[
-    if ( SERVER and !bNoDBUpdate ) then
+    if ( SERVER and !bNoDBUpdate and isstring(varTable.field) ) then
         local query = mysql:Update("ax_characters")
             query:Where("id", char:GetID())
 
             if ( istable(value) ) then
-                value = ax.util:SafeParseTable(value)
+                value = ax.util:SafeParseTable(value, true)
             elseif ( isbool(value) ) then
                 value = value == true and 1 or 0
             end
@@ -134,7 +132,6 @@ function ax.character:SetVar(char, name, value, bNoNetworking, recipients, bNoDB
             end)
         query:Execute()
     end
-    ]]
 end
 
 --- Sync a bot character to all clients for variable updates.
