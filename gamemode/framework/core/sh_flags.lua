@@ -10,8 +10,8 @@
 ]]
 
 ax.flag:Create("p", {
-    name = "Physgun Permission",
-    description = "Allows the use of the physgun.",
+    name = "flag.p.name",
+    description = "flag.p.description",
     OnTaken = function(this, character)
         local client = character:GetOwner()
         if ( IsValid(client) and client:HasWeapon("weapon_physgun") ) then
@@ -29,8 +29,8 @@ ax.flag:Create("p", {
 })
 
 ax.flag:Create("t", {
-    name = "Toolgun Permission",
-    description = "Allows the use of the toolgun.",
+    name = "flag.t.name",
+    description = "flag.t.description",
     OnTaken = function(this, character)
         local client = character:GetOwner()
         if ( IsValid(client) and client:HasWeapon("gmod_tool") ) then
