@@ -67,24 +67,25 @@ end
 -- @param value any The new value to set
 -- @param bNoNetworking boolean Optional flag to disable networking (server only)
 -- @param recipients table Optional specific recipients for networking (server only)
+-- @param bNoDBUpdate boolean Optional flag to disable database update (server only)
 -- @usage ax.character:SetVar(character, "description", "A mysterious figure")
-function ax.character:SetVar(char, name, value, previousValue, bNoNetworking, recipients, bNoDBUpdate)
+function ax.character:SetVar(char, name, value, bNoNetworking, recipients, bNoDBUpdate)
     local varTable = ax.character.vars[name]
     if ( !istable(varTable) ) then
         ax.util:PrintError("Invalid character variable name provided to ax.character:SetVar()")
         return
     end
 
+    if ( !istable(char.vars) ) then
+        char.vars = {}
+    end
+
     if ( isfunction(varTable.changed) ) then
-        local success, err = pcall(varTable.changed, char, value, previousValue, bNoNetworking, recipients)
+        local success, err = pcall(varTable.changed, char, value, char.vars[name], bNoNetworking, recipients)
         if ( !success ) then
             ax.util:PrintError("Error occurred in character variable changed callback:", err)
             return
         end
-    end
-
-    if ( !istable(char.vars) ) then
-        char.vars = {}
     end
 
     char.vars[name] = value
