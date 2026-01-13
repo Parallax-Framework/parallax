@@ -170,14 +170,7 @@ if ( SERVER ) then
             local letter = current[i]
             if ( ax.util:FindString(concatenated, letter) ) then continue end
 
-            local flagData = ax.flag:Get(letter)
-            if ( !istable(flagData) ) then continue end
-
-            if ( isfunction(flagData.OnTaken) ) then
-                flagData:OnTaken(self)
-            end
-
-            hook.Run("CharacterFlagTaken", self, letter)
+            self:TakeFlags(letter)
         end
 
         self:SetData("flags", concatenated)
@@ -185,14 +178,7 @@ if ( SERVER ) then
 
         for i = 1, #concatenated do
             local letter = concatenated[i]
-            local flagData = ax.flag:Get(letter)
-            if ( !istable(flagData) ) then continue end
-
-            if ( isfunction(flagData.OnGiven) ) then
-                flagData:OnGiven(self)
-            end
-
-            hook.Run("CharacterFlagGiven", self, letter)
+            self:GiveFlags(letter)
         end
     end
 
