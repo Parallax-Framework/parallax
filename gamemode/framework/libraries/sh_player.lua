@@ -61,17 +61,18 @@ function ax.player:SetVar(client, key, value, bNoNetworking, recipients)
         return
     end
 
+    local clientTable = client:GetTable()
+    if ( !istable(clientTable.axVars) ) then
+        clientTable.axVars = {}
+    end
+
     if ( isfunction(varTable.changed) ) then
-        local success, err = pcall(varTable.changed, client, value, bNoNetworking, recipients)
+        local success, err = pcall(varTable.changed, client, value, clientTable.axVars[key], bNoNetworking, recipients)
         if ( !success ) then
             ax.util:PrintError("Error occurred in player variable changed callback:", err)
         end
     end
 
-    local clientTable = client:GetTable()
-    if ( !istable(clientTable.axVars) ) then
-        clientTable.axVars = {}
-    end
 
     clientTable.axVars[key] = value
 
