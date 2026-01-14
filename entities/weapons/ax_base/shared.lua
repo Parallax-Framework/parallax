@@ -564,6 +564,8 @@ function SWEP:Reload()
     end
 
     self:ResetRecoil()
+
+    hook.Run("OnPlayerWeaponReload", owner, self)
 end
 
 function SWEP:CanReload()
