@@ -595,3 +595,16 @@ net.Receive("ax.character.invalidate", function()
     ax.inventory.instances[invID] = nil
     ax.character.instances[id] = nil
 end)
+
+net.Receive("ax.player.actionbar.start", function()
+    local label = net.ReadString()
+    local duration = net.ReadFloat()
+
+    ax.actionBar:Start(label, duration)
+end)
+
+net.Receive("ax.player.actionbar.stop", function()
+    local cancelled = net.ReadBool()
+
+    ax.actionBar:Stop(cancelled)
+end)

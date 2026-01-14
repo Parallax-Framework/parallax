@@ -12,6 +12,8 @@
 util.AddNetworkString("ax.player.ready")
 util.AddNetworkString("ax.player.var")
 util.AddNetworkString("ax.player.data")
+util.AddNetworkString("ax.player.actionbar.start")
+util.AddNetworkString("ax.player.actionbar.stop")
 
 util.AddNetworkString("ax.character.sync")
 util.AddNetworkString("ax.character.restore")
@@ -39,6 +41,27 @@ util.AddNetworkString("ax.chat.text.changed")
 
 util.AddNetworkString("ax.voice.start")
 util.AddNetworkString("ax.voice.end")
+
+net.Receive("ax.player.actionbar.stop", function(len, client)
+    local clientTable = client:GetTable()
+    if ( !istable(clientTable.axActionBar) ) then return end
+
+    local bCancelled = net.ReadBool()
+
+    net.Start("ax.player.actionbar.stop")
+        net.WriteBool(bCancelled)
+    net.Send(client)
+
+    if ( bCancelled and isfunction(clientTable.axActionBar.onCancel) ) then
+        clientTable.axActionBar.onCancel()
+        clientTable.axActionBar.onCancel = nil
+    elseif ( !bCancelled and isfunction(clientTable.axActionBar.onComplete) ) then
+        clientTable.axActionBar.onComplete()
+        clientTable.axActionBar.onComplete = nil
+    end
+
+    clientTable.axActionBar = nil
+end)
 
 net.Receive("ax.voice.start", function(len, client)
     local speaker = net.ReadPlayer()
