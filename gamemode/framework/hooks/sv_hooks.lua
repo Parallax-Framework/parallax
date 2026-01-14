@@ -438,7 +438,7 @@ function GM:OnDatabaseTablesCreated()
     ax.util:PrintDebug("Database tables created successfully.")
 end
 
-local voiceDistance = 0
+local voiceDistance
 local function CalcPlayerCanHearPlayersVoice(listener)
     if ( !IsValid(listener) ) then return end
     if ( !listener:GetCharacter() ) then return end
@@ -471,6 +471,13 @@ function GM:PlayerCanHearPlayersVoice(listener, speaker)
     local listenerTable = listener:GetTable()
     if ( listenerTable.axVoiceHear and listenerTable.axVoiceHear[speaker] != nil ) then
         return listenerTable.axVoiceHear[speaker], listenerTable.axVoiceHearDynamic and listenerTable.axVoiceHearDynamic[speaker] or false
+    end
+
+    local config = ax.config:Get("voice.distance", 512)
+    if ( voiceDistance == nil ) then
+        voiceDistance = config * config
+    elseif ( voiceDistance != config * config ) then
+        voiceDistance = config * config
     end
 
     local distSqr = listener:GetPos():DistToSqr(speaker:GetPos())
