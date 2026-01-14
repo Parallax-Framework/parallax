@@ -441,39 +441,40 @@ end
 local voiceDistance
 local function CalcPlayerCanHearPlayersVoice(listener)
     if ( !IsValid(listener) ) then return end
+    if ( !listener:GetCharacter() ) then return end
 
     local dist = ax.config:Get("voice.distance", 512)
     voiceDistance = dist * dist
 
-    listener.axVoiceHear = listener.axVoiceHear or {}
-    listener.axVoiceHearDynamic = listener.axVoiceHearDynamic or {}
+    local listenerTable = listener:GetTable()
+
+    listenerTable.axVoiceHear = listenerTable.axVoiceHear or {}
+    listenerTable.axVoiceHearDynamic = listenerTable.axVoiceHearDynamic or {}
 
     for _, speaker in player.Iterator() do
-        if ( !IsValid(speaker) or speaker == listener ) then
+        if ( !IsValid(speaker) or !speaker:GetCharacter() or speaker == listener ) then
             continue
         end
 
         if ( !speaker:Alive() ) then
-            listener.axVoiceHear[speaker] = false
+            listenerTable.axVoiceHear[speaker] = false
             continue
         end
 
-        local canHear, isDynamic = hook.Run("Parallax_PlayerCanHearPlayersVoice", listener, speaker)
-        listener.axVoiceHear[speaker] = canHear == true
-        listener.axVoiceHearDynamic[speaker] = isDynamic == true
-    end
-end
-
-function GM:Parallax_PlayerCanHearPlayersVoice(listener, speaker)
-    local distSqr = listener:GetPos():DistToSqr(speaker:GetPos())
-    if ( distSqr <= voiceDistance ) then
-        return true, true
+        local canHear, isDynamic = hook.Run("PlayerCanHearPlayersVoice", listener, speaker)
+        listenerTable.axVoiceHear[speaker] = canHear == true
+        listenerTable.axVoiceHearDynamic[speaker] = isDynamic == true
     end
 end
 
 function GM:PlayerCanHearPlayersVoice(listener, speaker)
     if ( listener.axVoiceHear and listener.axVoiceHear[speaker] != nil ) then
         return listener.axVoiceHear[speaker], listener.axVoiceHearDynamic and listener.axVoiceHearDynamic[speaker] or false
+    end
+
+    local distSqr = listener:GetPos():DistToSqr(speaker:GetPos())
+    if ( distSqr <= voiceDistance ) then
+        return true, true
     end
 
     return false
