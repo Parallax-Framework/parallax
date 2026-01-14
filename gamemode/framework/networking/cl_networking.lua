@@ -216,6 +216,16 @@ net.Receive("ax.character.delete", function()
         end
     end
 
+    local invID = character:GetInventoryID()
+    local inventory = ax.inventory.instances[ invID ]
+    if ( istable( inventory ) ) then
+        for itemID in pairs( inventory.items ) do
+            ax.item.instances[ itemID ] = nil
+        end
+    end
+
+    ax.inventory.instances[ invID ] = nil
+
     hook.Run( "PlayerDeletedCharacter", id )
 
     ax.character.instances[ id ] = nil
@@ -566,14 +576,22 @@ end)
 
 net.Receive("ax.character.invalidate", function()
     local id = net.ReadUInt(32)
-    if ( !isnumber( id ) or id < 1 ) then return end
+    if ( !isnumber(id) or id < 1 ) then return end
 
-    local character = ax.character.instances[ id ]
-    if ( !istable( character ) ) then
-        ax.util:PrintError( "Character with ID " .. id .. " does not exist." )
+    local character = ax.character.instances[id]
+    if ( !istable(character) ) then
+        ax.util:PrintError("Character with ID " .. id .. " does not exist.")
         return
     end
 
-    ax.inventory.instances[ ax.character.instances[id]:GetInventoryID() ] = nil
-    ax.character.instances[ id ] = nil
+    local invID = character:GetInventoryID()
+    local inventory = ax.inventory.instances[ invID ]
+    if ( istable(inventory) ) then
+        for itemID in pairs(inventory.items) do
+            ax.item.instances[itemID] = nil
+        end
+    end
+
+    ax.inventory.instances[invID] = nil
+    ax.character.instances[id] = nil
 end)
