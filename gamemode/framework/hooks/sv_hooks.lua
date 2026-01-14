@@ -468,8 +468,9 @@ local function CalcPlayerCanHearPlayersVoice(listener)
 end
 
 function GM:PlayerCanHearPlayersVoice(listener, speaker)
-    if ( listener.axVoiceHear and listener.axVoiceHear[speaker] != nil ) then
-        return listener.axVoiceHear[speaker], listener.axVoiceHearDynamic and listener.axVoiceHearDynamic[speaker] or false
+    local listenerTable = listener:GetTable()
+    if ( listenerTable.axVoiceHear and listenerTable.axVoiceHear[speaker] != nil ) then
+        return listenerTable.axVoiceHear[speaker], listenerTable.axVoiceHearDynamic and listenerTable.axVoiceHearDynamic[speaker] or false
     end
 
     local distSqr = listener:GetPos():DistToSqr(speaker:GetPos())
