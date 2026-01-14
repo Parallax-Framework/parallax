@@ -438,7 +438,7 @@ function GM:OnDatabaseTablesCreated()
     ax.util:PrintDebug("Database tables created successfully.")
 end
 
-local voiceDistance
+local voiceDistance = 0
 local function CalcPlayerCanHearPlayersVoice(listener)
     if ( !IsValid(listener) ) then return end
     if ( !listener:GetCharacter() ) then return end
