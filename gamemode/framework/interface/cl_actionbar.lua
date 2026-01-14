@@ -28,7 +28,7 @@ local function FormatTime(seconds)
     local secs = math.floor(seconds % 60)
     local miliseconds = math.floor((seconds - math.floor(seconds)) * 100)
 
-    return string.format("%02d:%02d.%02d", minutes, secs, miliseconds)
+    return string.format("%02d:%02d:%02d", minutes, secs, miliseconds)
 end
 
 --- Start displaying an action bar
