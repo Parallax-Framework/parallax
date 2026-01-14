@@ -328,3 +328,25 @@ function ax.player.meta:PerformAction(label, duration, onComplete, onCancel)
         ax.actionBar:Start(label, duration, onComplete, onCancel)
     end
 end
+
+function ax.player.meta:PerformEntityAction(entity, label, duration, onComplete, onCancel)
+    local timerName = "ax.player." .. self:SteamID64() .. ".entityAction"
+    timer.Create(timerName, 0.1, 0, function()
+        if ( !IsValid(entity) or !IsValid(self) ) then
+            timer.Remove(timerName)
+            self:PerformAction()
+
+            return
+        end
+
+        local entityTrace = self:GetUseEntity()
+        if ( !IsValid( entityTrace ) or entityTrace != entity ) then
+            timer.Remove(timerName)
+            self:PerformAction()
+
+            return
+        end
+    end)
+
+    self:PerformAction(label, duration, onComplete, onCancel)
+end

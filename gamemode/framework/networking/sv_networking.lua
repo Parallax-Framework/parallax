@@ -60,6 +60,7 @@ net.Receive("ax.player.actionbar.stop", function(len, client)
         clientTable.axActionBar.onComplete = nil
     end
 
+    timer.Remove("ax.player." .. client:SteamID64() .. ".entityAction")
     clientTable.axActionBar = nil
 end)
 
