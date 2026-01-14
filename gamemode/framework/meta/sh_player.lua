@@ -340,7 +340,7 @@ function ax.player.meta:PerformEntityAction(entity, label, duration, onComplete,
         end
 
         local entityTrace = self:GetUseEntity()
-        if ( !IsValid( entityTrace ) or entityTrace != entity ) then
+        if ( !IsValid(entityTrace) or entityTrace != entity ) then
             timer.Remove(timerName)
             self:PerformAction()
 
