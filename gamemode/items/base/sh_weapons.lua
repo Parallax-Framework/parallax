@@ -87,7 +87,13 @@ hook.Add("OnPlayerItemAction", "ax.weapon_unequip_cleanup", function(client, ite
 end)
 
 hook.Add("PlayerDeath", "ax.weapon_unequip_on_death", function(client)
-    for _, item in pairs(client:GetCharacter():GetInventory():GetItems()) do
+    local character = client:GetCharacter()
+    if ( !character ) then return end
+
+    local inventory = character:GetInventory()
+    if ( !inventory ) then return end
+
+    for _, item in pairs(inventory:GetItems()) do
         if ( item.isWeapon and item:GetData("equipped") ) then
             item:SetData("equipped", nil)
         end
