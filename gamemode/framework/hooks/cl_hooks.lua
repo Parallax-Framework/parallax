@@ -45,10 +45,20 @@ function GM:OnEntityCreated(entity)
     end
 end
 
-function GM:PlayerStartVoice()
+function GM:PlayerStartVoice(speaker, speakerIndex) -- speakerIndex only appears non-locally when the speaker speaks for the first time
     if ( IsValid(g_VoicePanelList) ) then
         g_VoicePanelList:Remove()
     end
+
+    net.Start("ax.voice.start")
+        net.WritePlayer(speaker)
+    net.SendToServer()
+end
+
+function GM:PlayerEndVoice(speaker)
+    net.Start("ax.voice.end")
+        net.WritePlayer(speaker)
+    net.SendToServer()
 end
 
 function GM:ShouldDrawVignette()

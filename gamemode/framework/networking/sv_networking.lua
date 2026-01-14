@@ -19,6 +19,7 @@ util.AddNetworkString("ax.character.var")
 util.AddNetworkString("ax.character.data")
 util.AddNetworkString("ax.character.setnameprompt")
 util.AddNetworkString("ax.character.bot.sync")
+util.AddNetworkString("ax.character.invalidate")
 
 util.AddNetworkString("ax.relay.update")
 util.AddNetworkString("ax.relay.sync")
@@ -36,7 +37,26 @@ util.AddNetworkString("ax.item.spawn")
 util.AddNetworkString("ax.chat.message")
 util.AddNetworkString("ax.chat.text.changed")
 
-util.AddNetworkString("ax.character.invalidate")
+util.AddNetworkString("ax.voice.start")
+util.AddNetworkString("ax.voice.end")
+
+net.Receive("ax.voice.start", function(len, client)
+    local speaker = net.ReadPlayer()
+
+    if ( !IsValid(speaker) ) then return end
+    if ( !speaker:RateLimit("voice.start", 0.3) ) then return end
+
+    hook.Run("PlayerStartVoice", speaker)
+end)
+
+net.Receive("ax.voice.end", function(len, client)
+    local speaker = net.ReadPlayer()
+
+    if ( !IsValid(speaker) ) then return end
+    if ( !speaker:RateLimit("voice.start", 0.3) ) then return end
+
+    hook.Run("PlayerEndVoice", speaker)
+end)
 
 net.Receive("ax.chat.message", function(len, client)
     if ( !client:RateLimit("chat.send", 0.5) ) then return end
