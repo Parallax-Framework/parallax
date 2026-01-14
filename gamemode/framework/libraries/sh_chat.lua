@@ -147,13 +147,13 @@ if ( SERVER ) then
             return
         end
 
-        if ( !chatClass:CanSay(speaker, text, data) ) then return end
+        if ( !chatClass:CanSay(speaker, text, data) or hook.Run("CanPlayerSendMessage", speaker, chatType, text, data) == true ) then return end
 
         if ( !istable(receivers) ) then
             receivers = {}
 
             for _, v in player.Iterator() do
-                if ( chatClass:CanHear(speaker, v, data) ) then
+                if ( chatClass:CanHear(speaker, v, data) or hook.Run("CanPlayerReceiveMessage", v, speaker, chatType, text, data) == true ) then
                     receivers[#receivers + 1] = v
                 end
             end
