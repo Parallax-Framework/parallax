@@ -1,2 +1,26 @@
-# Auto detect text files and perform LF normalization
-* text=auto
+* text=auto eol=lf
+
+# Treat common binary assets as binary to avoid EOL mangling
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.bmp binary
+*.tga binary
+*.psd binary
+*.ico binary
+
+# Source/engine asset formats
+*.bsp binary
+*.vtf binary
+*.vmt text eol=lf
+*.mdl binary
+*.ani binary
+*.vvd binary
+*.vtx binary
+*.phy binary
+
+# Windows scripts keep CRLF
+*.bat text eol=crlf
+*.cmd text eol=crlf
