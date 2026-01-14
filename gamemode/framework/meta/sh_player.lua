@@ -300,3 +300,31 @@ function ax.player.meta:SyncRelay()
         end
     end
 end
+
+function ax.player.meta:PerformAction(label, duration, onComplete, onCancel)
+    if ( SERVER ) then
+        if ( label == nil ) then
+            net.Start("ax.player.actionbar.stop")
+                net.WriteBool(true)
+            net.Send(self)
+            return
+        end
+
+        net.Start("ax.player.actionbar.start")
+            net.WriteString(label or "Processing...")
+            net.WriteFloat(duration or 5)
+        net.Send(self)
+
+        local selfTable = self:GetTable()
+        selfTable.axActionBar = {}
+        selfTable.axActionBar.onComplete = onComplete
+        selfTable.axActionBar.onCancel = onCancel
+    else
+        if ( label == nil ) then
+            ax.actionBar:Stop(true)
+            return
+        end
+
+        ax.actionBar:Start(label, duration, onComplete, onCancel)
+    end
+end
