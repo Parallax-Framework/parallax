@@ -84,8 +84,8 @@ function ax.actionBar:GetRemainingTime()
     return math.max(0, self.endTime - CurTime())
 end
 
-ax.actionBar.bgColor = Color(100, 150, 255, 255)
-ax.actionBar.progressColor = Color(30, 30, 35, 255)
+ax.actionBar.bgColor = Color(145, 100, 255)
+ax.actionBar.progressColor = Color(30, 30, 35, 150)
 ax.actionBar.textColor = Color(255, 255, 255, 255)
 ax.actionBar.labelColor = Color(200, 200, 200, 255)
 
@@ -113,16 +113,16 @@ function ax.actionBar:Render()
     local centerY = scrH - ScreenScaleH(120)
     local circleRadius = ScreenScale(16)
 
-    ax.render.DrawCircle(centerX, centerY, circleRadius * 2 - 2, ax.actionBar.bgColor)
+    ax.render.DrawCircle(centerX, centerY, circleRadius * 2 - 2, ax.actionBar.progressColor)
 
     local progressAngle = 360 * (1 - progress)
-    ax.util:DrawSlice(centerX, centerY, circleRadius, 0, progressAngle, ax.actionBar.progressColor)
+    ax.util:DrawSlice(centerX, centerY, circleRadius, 0, progressAngle, ax.actionBar.bgColor)
 
     local timeText = FormatTime(remaining)
     draw.SimpleText(timeText, "ax.small.bold", centerX, centerY, ax.actionBar.textColor, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 
     local labelY = centerY + circleRadius + ScreenScaleH(8)
-    draw.SimpleText(activeBar.label, "ax.medium.italic", centerX, labelY, ax.actionBar.labelColor, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+    draw.SimpleText(self.label, "ax.medium.italic", centerX, labelY, ax.actionBar.labelColor, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 end
 
 -- Hook into HUD paint
