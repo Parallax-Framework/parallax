@@ -462,17 +462,16 @@ local function CalcPlayerCanHearPlayersVoice(listener)
         end
 
         local canHear, isDynamic = hook.Run("PlayerCanHearPlayersVoice", listener, speaker)
-        listenerTable.axVoiceHear[speaker] = canHear == true
-        listenerTable.axVoiceHearDynamic[speaker] = isDynamic == true
+        listenerTable.axVoiceHear[speaker] = canHear == true or nil
+        if ( canHear == true ) then
+            listenerTable.axVoiceHearDynamic[speaker] = isDynamic == true or false
+        else
+            listenerTable.axVoiceHearDynamic[speaker] = nil
+        end
     end
 end
 
 function GM:PlayerCanHearPlayersVoice(listener, speaker)
-    local listenerTable = listener:GetTable()
-    if ( listenerTable.axVoiceHear and listenerTable.axVoiceHear[speaker] != nil ) then
-        return listenerTable.axVoiceHear[speaker], listenerTable.axVoiceHearDynamic and listenerTable.axVoiceHearDynamic[speaker] or false
-    end
-
     local config = ax.config:Get("voice.distance", 512)
     if ( voiceDistance == nil ) then
         voiceDistance = config * config
@@ -480,7 +479,12 @@ function GM:PlayerCanHearPlayersVoice(listener, speaker)
         voiceDistance = config * config
     end
 
-    local distSqr = listener:GetPos():DistToSqr(speaker:GetPos())
+    local listenerTable = listener:GetTable()
+    if ( listenerTable.axVoiceHear and listenerTable.axVoiceHear[speaker] != nil ) then
+        return listenerTable.axVoiceHear[speaker], listenerTable.axVoiceHearDynamic and listenerTable.axVoiceHearDynamic[speaker] or false
+    end
+
+    local distSqr = listener:EyePos():DistToSqr(speaker:EyePos())
     if ( distSqr <= voiceDistance ) then
         return true, true
     end
