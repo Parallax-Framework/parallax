@@ -12,19 +12,14 @@
 --- Player meta functions
 -- @module ax.player.meta
 
-ax.player.meta.GetNameInternal = ax.player.meta.GetNameInternal or ax.player.meta.GetName
-function ax.player.meta:GetName()
+ax.player.meta.GetNickInternal = ax.player.meta.GetNickInternal or ax.player.meta.Nick
+function ax.player.meta:Nick()
     local character = self:GetCharacter()
-    return character and character:GetName() or self:GetNameInternal()
+    return character and character:GetName() or self:GetNickInternal()
 end
 
-ax.player.meta.Name = ax.player.meta.GetName
-ax.player.meta.NameInternal = ax.player.meta.GetNameInternal
-ax.player.meta.Nick = ax.player.meta.GetName
-ax.player.meta.NickInternal = ax.player.meta.GetNameInternal
-
 function ax.player.meta:SteamName()
-    return self:GetNameInternal()
+    return self:GetNickInternal()
 end
 
 function ax.player.meta:GetCharacter()

@@ -91,7 +91,7 @@ ax.command:Add("PlyGoto", {
         savePosition(client)
         placeNearPlayer(target, client)
 
-        return "Teleported to " .. target:Name()
+        return "Teleported to " .. target:Nick()
     end
 })
 
@@ -109,7 +109,7 @@ ax.command:Add("PlyBring", {
         savePosition(target)
         bringToPlayer(target, client)
 
-        return "Brought " .. target:Name() .. " to your position"
+        return "Brought " .. target:Nick() .. " to your position"
     end
 })
 
@@ -144,7 +144,7 @@ ax.command:Add("PlyReturn", {
             return err or "Unable to return that player"
         end
 
-        return "Returned " .. target:Name() .. " to their previous position"
+        return "Returned " .. target:Nick() .. " to their previous position"
     end
 })
 
@@ -162,7 +162,7 @@ ax.command:Add("PlySetHealth", {
         if ( target == client ) then
             return "Set your health to " .. amount
         else
-            return "Set " .. target:Name() .. "'s health to " .. amount
+            return "Set " .. target:Nick() .. "'s health to " .. amount
         end
     end
 })
@@ -181,7 +181,7 @@ ax.command:Add("PlySetArmor", {
         if ( target == client ) then
             return "Set your armor to " .. amount
         else
-            return "Set " .. target:Name() .. "'s armor to " .. amount
+            return "Set " .. target:Nick() .. "'s armor to " .. amount
         end
     end
 })
@@ -198,7 +198,7 @@ ax.command:Add("PlyGiveAmmo", {
         local weapon = target:GetActiveWeapon()
 
         if ( !IsValid(weapon) ) then
-            return target:Name() .. " has no active weapon"
+            return target:Nick() .. " has no active weapon"
         end
 
         ammoType = ammoType or weapon:GetPrimaryAmmoType()
@@ -212,7 +212,7 @@ ax.command:Add("PlyGiveAmmo", {
         if ( target == client ) then
             return "Gave yourself " .. amount .. " ammo"
         else
-            return "Gave " .. target:Name() .. " " .. amount .. " ammo"
+            return "Gave " .. target:Nick() .. " " .. amount .. " ammo"
         end
     end
 })
@@ -231,7 +231,7 @@ ax.command:Add("PlyFreeze", {
         target:Freeze(!target:IsFrozen())
 
         local state = target:IsFrozen() and "frozen" or "unfrozen"
-        return target:Name() .. " has been " .. state
+        return target:Nick() .. " has been " .. state
     end
 })
 
@@ -243,7 +243,7 @@ ax.command:Add("PlyRespawn", {
     },
     OnRun = function(def, client, target)
         target:Spawn()
-        return "Respawned " .. target:Name()
+        return "Respawned " .. target:Nick()
     end
 })
 
@@ -255,6 +255,6 @@ ax.command:Add("PlySlay", {
     },
     OnRun = function(def, client, target)
         target:Kill()
-        return "Killed " .. target:Name()
+        return "Killed " .. target:Nick()
     end
 })

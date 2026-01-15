@@ -87,7 +87,7 @@ function ax.util:FindPlayer(identifier)
         end
 
         for _, v in player.Iterator() do
-            if ( self:FindString(v:Name(), identifier) or self:FindString(v:SteamName(), identifier) or self:FindString(v:SteamID(), identifier) or self:FindString(v:SteamID64(), identifier) ) then
+            if ( self:FindString(v:Nick(), identifier) or self:FindString(v:SteamName(), identifier) or self:FindString(v:SteamID(), identifier) or self:FindString(v:SteamID64(), identifier) ) then
                 return v
             end
         end

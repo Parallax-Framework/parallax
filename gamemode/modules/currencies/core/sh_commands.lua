@@ -102,7 +102,7 @@ ax.command:Add("SetCurrency", {
         character:SetCurrency(amount, okID)
 
         local formatted = ax.currencies:Format(amount, okID)
-        return string.format("Set %s's %s to %s", target:Name(), okID, formatted)
+        return string.format("Set %s's %s to %s", target:Nick(), okID, formatted)
     end
 })
 
@@ -126,7 +126,7 @@ ax.command:Add("AddCurrency", {
         local newTotal = character:AddCurrency(amount, okID)
         local delta = ax.currencies:Format(amount, okID)
         local total = ax.currencies:Format(newTotal, okID)
-        return string.format("Added %s to %s (%s total)", delta, target:Name(), total)
+        return string.format("Added %s to %s (%s total)", delta, target:Nick(), total)
     end
 })
 
@@ -149,12 +149,12 @@ ax.command:Add("TakeCurrency", {
         if ( !character ) then return errMsg end
 
         if ( !character:TakeCurrency(amount, okID) ) then
-            return string.format("%s does not have enough %s", target:Name(), okID)
+            return string.format("%s does not have enough %s", target:Nick(), okID)
         end
 
         local delta = ax.currencies:Format(amount, okID)
         local remaining = ax.currencies:Format(character:GetCurrency(okID), okID)
-        return string.format("Took %s from %s (%s remaining)", delta, target:Name(), remaining)
+        return string.format("Took %s from %s (%s remaining)", delta, target:Nick(), remaining)
     end
 })
 
@@ -174,7 +174,7 @@ ax.command:Add("GetCurrency", {
 
         local amount = character:GetCurrency(okID)
         local formatted = ax.currencies:Format(amount, okID)
-        return string.format("%s has %s", target:Name(), formatted)
+        return string.format("%s has %s", target:Nick(), formatted)
     end
 })
 
