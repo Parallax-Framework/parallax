@@ -23,14 +23,6 @@ ax.actionBar.endTime = ax.actionBar.endTime or 0
 ax.actionBar.onComplete = ax.actionBar.onComplete or nil
 ax.actionBar.onCancel = ax.actionBar.onCancel or nil
 
-local function FormatTime(seconds)
-    local minutes = math.floor(seconds / 60)
-    local secs = math.floor(seconds % 60)
-    local miliseconds = math.floor((seconds - math.floor(seconds)) * 100)
-
-    return string.format("%02d:%02d:%02d", minutes, secs, miliseconds)
-end
-
 --- Start displaying an action bar
 -- @realm client
 -- @param label string Label text to display (default: "Processing...")
@@ -118,7 +110,7 @@ function ax.actionBar:Render()
     local progressAngle = 360 * (1 - progress)
     ax.util:DrawSlice(centerX, centerY, circleRadius, 0, progressAngle, ax.actionBar.bgColor)
 
-    local timeText = FormatTime(remaining)
+    local timeText = string.ToMinutesSecondsMilliseconds(remaining)
     draw.SimpleText(timeText, "ax.small.bold", centerX, centerY, ax.actionBar.textColor, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 
     local labelY = centerY + circleRadius + ScreenScaleH(8)

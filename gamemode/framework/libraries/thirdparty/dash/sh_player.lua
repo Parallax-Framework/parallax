@@ -3,15 +3,6 @@
 local PLAYER, ENTITY = FindMetaTable 'Player', FindMetaTable 'Entity'
 local GetTable = ENTITY.GetTable
 
-function player.Find(info)
-    info = tostring(info)
-    for k, v in player.Iterator() do
-        if (info == v:SteamID()) or (info == v:SteamID64()) or (string.find(string.lower(v:Name()), string.lower(info), 1, true) != nil) then
-            return v
-        end
-    end
-end
-
 function player.GetStaff()
     return table.Filter(player.Iterator(), PLAYER.IsAdmin)
 end

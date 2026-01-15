@@ -17,19 +17,19 @@ function MODULE:PlayerSay(client, text, teamChat)
     text = string.Trim(text)
     if ( text == "" ) then return "" end
 
-    local chatType, text = ax.chat:Parse(text)
+    local chatType, parsedText = ax.chat:Parse(text)
     if ( chatType == "ic" ) then
         local bHasPrefix = false
         for i = 1, #ax.command.prefixes do
             local prefix = ax.command.prefixes[i]
-            if ( string.sub(text, 1, 1) == prefix ) then
+            if ( string.sub(parsedText, 1, 1) == prefix ) then
                 bHasPrefix = true
                 break
             end
         end
 
         if ( bHasPrefix ) then
-            local commandName, rawArgs = ax.command:Parse(text)
+            local commandName, rawArgs = ax.command:Parse(parsedText)
             if ( !isstring(commandName) or commandName == "" ) then
                 client:Notify( ax.localization:GetPhrase("command.notvalid") )
                 return ""
@@ -59,8 +59,8 @@ function MODULE:PlayerSay(client, text, teamChat)
         end
     end
 
-    text = ax.chat:Send(client, chatType, text)
+    text = ax.chat:Send(client, chatType, parsedText)
 
-    hook.Run("PostPlayerSay", client, chatType, text)
+    hook.Run("PostPlayerSay", client, chatType, parsedText)
     return ""
 end

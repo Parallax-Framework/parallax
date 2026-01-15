@@ -63,6 +63,10 @@ function PANEL:Init()
     self.entry.OnEnter = function(this)
         local text = this:GetValue()
         if ( #text > 0 ) then
+            -- remove <font> tags to prevent exploits
+            text = string.gsub(text, "<font.->", "")
+            text = string.gsub(text, "</font>", "")
+
             net.Start("ax.chat.message")
                 net.WriteString(text)
             net.SendToServer()

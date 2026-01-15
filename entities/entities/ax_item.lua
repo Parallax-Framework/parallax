@@ -5,6 +5,8 @@ ENT.Base = "base_gmodentity"
 ENT.PrintName = "Parallax Item"
 ENT.Author = "Parallax Team"
 ENT.Category = "Parallax"
+ENT.Spawnable = false
+ENT.RenderGroup = RENDERGROUP_BOTH
 
 function ENT:SetupDataTables()
     self:NetworkVar("Int", 0, "ItemID")
@@ -99,4 +101,8 @@ if ( SERVER ) then
             query:Where("id", id)
         query:Execute()
     end
+end
+
+function ENT:UpdateTransmitState()
+    return TRANSMIT_PVS
 end
