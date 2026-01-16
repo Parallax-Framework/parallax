@@ -9,8 +9,6 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
-util.AddNetworkString("ax.version.init")
-
 local function ReadVersionFile()
     -- Attempt to read from the gamemode root (installed with gamemode files)
     local content = file.Read("gamemodes/parallax/parallax-version.json", "GAME")

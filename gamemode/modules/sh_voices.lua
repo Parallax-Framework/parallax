@@ -70,8 +70,6 @@ if ( CLIENT ) then
         entity:EmitQueuedSound(sounds, volume, pitch)
     end)
 else
-    util.AddNetworkString("ax.voices.play")
-
     local function PlayQueuedSound(entity, sounds, pitch, volume)
         ax.net:Start(nil, "ax.voices.play", entity, sounds, volume or 80, pitch or 100)
     end

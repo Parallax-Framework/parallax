@@ -18,8 +18,6 @@ ax.notification = ax.notification or {}
 
 -- Server-side networking and API
 if ( SERVER ) then
-    util.AddNetworkString("ax.notification.push")
-
     --- Send a notification to one or more players.
     -- @realm server
     -- @tparam Player|Player[]|nil target Player entity, list of players, or nil for broadcast

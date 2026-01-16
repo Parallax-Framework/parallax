@@ -18,11 +18,6 @@ ax.command = ax.command or {}
 ax.command.registry = ax.command.registry or {}
 ax.command.prefixes = ax.command.prefixes or {"/", "!"}
 
--- Server-side networking setup
-if ( SERVER ) then
-    util.AddNetworkString("ax.command.run")
-end
-
 --- Register a command with the system.
 -- Creates a new command with validation, permissions, and automatic CAMI integration.
 -- @realm shared

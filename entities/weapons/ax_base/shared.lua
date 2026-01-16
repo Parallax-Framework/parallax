@@ -213,9 +213,7 @@ function SWEP:CanPrimaryAttack()
     return true
 end
 
-if ( SERVER ) then
-    util.AddNetworkString("ax.weapon.primary")
-else
+if ( CLIENT ) then
     ax.net:Hook("ax.weapon.primary", function(weapon)
         if ( !IsValid(weapon) ) then return end
 

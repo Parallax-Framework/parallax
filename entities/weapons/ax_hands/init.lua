@@ -13,7 +13,6 @@ AddCSLuaFile("cl_init.lua")
 AddCSLuaFile("shared.lua")
 include("shared.lua")
 
-util.AddNetworkString("ax.hands.reset")
 ax.net:Hook("ax.hands.reset", function(client)
     if ( !IsValid(client) ) then return end
     if ( !client:RateLimit("hands", 0.5) ) then return end

@@ -17,10 +17,6 @@ ax.net = ax.net or {}
 ax.net.stored = ax.net.stored or {}
 ax.net.cooldown = ax.net.cooldown or {}
 
-if ( SERVER ) then
-    util.AddNetworkString("ax.net.msg")
-end
-
 --- Hooks a network message.
 -- @string name Unique identifier.
 -- @func callback Callback with player, unpacked arguments.

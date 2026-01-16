@@ -13,8 +13,6 @@
 
 ax.zones = ax.zones or {}
 
-util.AddNetworkString("ax.zones.drawdebug")
-
 --- Print a list of all zones to the console.
 -- @realm server
 function ax.zones:List()

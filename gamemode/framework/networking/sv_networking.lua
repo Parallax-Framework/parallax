@@ -9,39 +9,6 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
-util.AddNetworkString("ax.player.ready")
-util.AddNetworkString("ax.player.var")
-util.AddNetworkString("ax.player.data")
-util.AddNetworkString("ax.player.actionbar.start")
-util.AddNetworkString("ax.player.actionbar.stop")
-
-util.AddNetworkString("ax.character.sync")
-util.AddNetworkString("ax.character.restore")
-util.AddNetworkString("ax.character.var")
-util.AddNetworkString("ax.character.data")
-util.AddNetworkString("ax.character.setnameprompt")
-util.AddNetworkString("ax.character.bot.sync")
-util.AddNetworkString("ax.character.invalidate")
-
-util.AddNetworkString("ax.relay.update")
-util.AddNetworkString("ax.relay.sync")
-
-util.AddNetworkString("ax.inventory.sync")
-util.AddNetworkString("ax.inventory.receiver.add")
-util.AddNetworkString("ax.inventory.receiver.remove")
-util.AddNetworkString("ax.inventory.item.add")
-util.AddNetworkString("ax.inventory.item.remove")
-util.AddNetworkString("ax.inventory.item.update")
-
-util.AddNetworkString("ax.item.transfer")
-util.AddNetworkString("ax.item.spawn")
-
-util.AddNetworkString("ax.chat.message")
-util.AddNetworkString("ax.chat.text.changed")
-
-util.AddNetworkString("ax.voice.start")
-util.AddNetworkString("ax.voice.end")
-
 ax.net:Hook("ax.player.actionbar.stop", function(client, bCancelled)
     local clientTable = client:GetTable()
     if ( !istable(clientTable.axActionBar) ) then return end
@@ -61,7 +28,6 @@ ax.net:Hook("ax.player.actionbar.stop", function(client, bCancelled)
 end)
 
 ax.net:Hook("ax.voice.start", function(client, speaker)
-
     if ( !IsValid(speaker) ) then return end
     if ( !speaker:RateLimit("voice.start", 0.3) ) then return end
 
@@ -69,7 +35,6 @@ ax.net:Hook("ax.voice.start", function(client, speaker)
 end)
 
 ax.net:Hook("ax.voice.end", function(client, speaker)
-
     if ( !IsValid(speaker) ) then return end
     if ( !speaker:RateLimit("voice.start", 0.3) ) then return end
 
@@ -137,7 +102,6 @@ ax.net:Hook("ax.item.transfer", function(client, itemID, targetInventoryID)
     ax.item:Transfer(item, client:GetCharacter():GetInventory():GetID(), targetInventoryID, function() print("Item transferred") end)
 end)
 
-util.AddNetworkString("ax.inventory.item.action")
 ax.net:Hook("ax.inventory.item.action", function(client, itemID, action)
     if ( !client:RateLimit("inventory.action", 0.1) ) then return end
 
@@ -194,7 +158,6 @@ ax.net:Hook("ax.inventory.item.action", function(client, itemID, action)
     hook.Run("OnPlayerItemAction", client, item, action)
 end)
 
-util.AddNetworkString("ax.character.create")
 ax.net:Hook("ax.character.create", function(client, payload)
     if ( !istable(payload) ) then
         ax.util:Error("Invalid payload received for character creation.")
@@ -294,7 +257,6 @@ ax.net:Hook("ax.character.create", function(client, payload)
     end)
 end)
 
-util.AddNetworkString("ax.character.load")
 ax.net:Hook("ax.character.load", function(client, charID)
     if ( !isnumber(charID) or charID < 1 ) then
         ax.util:Error("Invalid character ID received for loading.")
@@ -345,7 +307,6 @@ ax.net:Hook("ax.character.load", function(client, charID)
     ax.character:Load(client, character)
 end)
 
-util.AddNetworkString("ax.character.delete")
 ax.net:Hook("ax.character.delete", function(client, id)
     if ( !isnumber(id) or id < 1 ) then return end
 
@@ -401,7 +362,6 @@ ax.net:Hook("ax.character.delete", function(client, id)
     end)
 end)
 
-util.AddNetworkString("ax.spawnmenu.spawn.item")
 ax.net:Hook("ax.spawnmenu.spawn.item", function(client, itemClass)
     -- TODO: Use CAMI to handle permissions
     if ( !IsValid(client) or !client:IsSuperAdmin() ) then

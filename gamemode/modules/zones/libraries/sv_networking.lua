@@ -13,8 +13,6 @@
 
 ax.zones = ax.zones or {}
 
-util.AddNetworkString("ax.zones.sync")
-
 local function BuildSyncPayload()
     local zones = {}
     for _, zone in pairs(ax.zones.stored) do
