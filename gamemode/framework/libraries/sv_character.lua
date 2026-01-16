@@ -381,8 +381,10 @@ function ax.character:Delete(id, callback)
                 result:Execute()
 
                 -- Also remove runtime inventory instance if loaded
-                if ( ax.inventory and ax.inventory.instances and ax.inventory.instances[tonumber(row.inventory)] ) then
-                    ax.inventory.instances[tonumber(row.inventory)] = nil
+                local invToNum = tonumber(row.inventory)
+                if ( ax.inventory and ax.inventory.instances and ax.inventory.instances[invToNum] ) then
+                    ax.inventory.instances[invToNum]:RemoveReceivers()
+                    ax.inventory.instances[invToNum] = nil
                 end
             end
 
