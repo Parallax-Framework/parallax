@@ -112,10 +112,10 @@ function ax.actionBar:Render()
     draw.SimpleText(timeText, "ax.small.bold", centerX, centerY, ax.actionBar.textColor, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 
     local labelY = centerY + circleRadius + ScreenScaleH(8)
-    draw.SimpleText(self.label, "ax.medium.italic", centerX, labelY, ax.actionBar.labelColor, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+    draw.SimpleText(self.label, "ax.regular.italic", centerX, labelY, ax.actionBar.labelColor, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 end
 
 -- Hook into HUD paint
-hook.Add("HUDPaint", "ax.actionBar.Render", function()
+hook.Add("PostRenderVGUI", "ax.actionBar.Render", function()
     ax.actionBar:Render()
 end)
