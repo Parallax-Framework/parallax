@@ -88,12 +88,12 @@ if ( SERVER ) then
             for i = 1, targetCount do
                 local v = target[i]
 
-                if ( IsValid(v) and v:IsPlayer() ) then
+                if ( type(v) == "Player" ) then
                     recipients[#recipients + 1] = v
                 end
             end
 
-            if ( #recipients > 0 ) then
+            if ( recipients[1] != nil ) then
                 net.Send(recipients)
                 ax.util:PrintDebug("[NET] Sent '" .. name .. "' to " .. #recipients .. " recipients")
             end
