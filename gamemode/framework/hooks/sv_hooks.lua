@@ -92,6 +92,8 @@ function GM:DoPlayerDeath(client, attacker, damageInfo)
     if ( classData and classData.OnDeath ) then
         classData:OnDeath(client, attacker, damageInfo)
     end
+
+    client.axDeathRespawnSound = true
 end
 
 function GM:PlayerDeathSound(client)
@@ -165,6 +167,11 @@ function GM:GetPlayerPainSound(client, attacker, healthRemaining, damageInfo)
 end
 
 function GM:PlayerSpawn(client)
+    if ( client.axDeathRespawnSound ) then
+        client:SendLua([[sound.PlayFile("ambient/levels/gman/gman_seg_00_21_05.wav", "", function() end)]])
+        client.axDeathRespawnSound = nil
+    end
+
     client:RemoveAllItems()
 
     client:SetRelay("ragdoll.index", -1)
