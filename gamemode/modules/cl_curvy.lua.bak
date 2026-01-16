@@ -115,7 +115,32 @@ ax.localization:Register("en", {
     ["option.curvy.frame.skip.max"] = "Max Frame Skips",
     ["option.curvy.frame.skip.max.help"] = "Maximum number of frames to skip in a row when FPS is low.",
     ["option.curvy.edges.deadzone"] = "Edges Mode Deadzone",
-    ["option.curvy.edges.deadzone.help"] = "Percentage of screen center that remains flat in 'edges' mode (0.0 = no flat area, 0.5 = half the screen is flat).",
+    ["option.curvy.edges.deadzone.help"] = "Percentage of screen center that remains flat in 'edges' mode (0.0 = no flat area, 0.5 = half the screen is flat)."
+})
+
+ax.localization:Register("ru", {
+    ["category.visual"] = "Визуал",
+    ["subcategory.curvy"] = "Изогнутость",
+    ["option.curvy"] = "Включить Изогнутый Эффект",
+    ["option.curvy.help"] = "Включить или отключить изогнутый визуальный эффект полностью.",
+    ["option.curvy.intensity"] = "Интенсивность Изогнутости",
+    ["option.curvy.intensity.help"] = "Контролирует, насколько изогнутым выглядит экран. Более высокие значения = больше изгиба.",
+    ["option.curvy.segments"] = "Сегменты Изогнутости",
+    ["option.curvy.segments.help"] = "Количество сегментов, используемых для создания изгиба. Больше = плавнее, но медленнее.",
+    ["option.curvy.dynamic.lod"] = "Динамическое LOD",
+    ["option.curvy.dynamic.lod.help"] = "Автоматически уменьшать количество сегментов изгиба при низком FPS.",
+    ["option.curvy.hud.only"] = "Только HUD",
+    ["option.curvy.hud.only.help"] = "Применять эффект изгиба только к элементам HUD, а не к пост-рендер эффектам.",
+    ["option.curvy.intensity.scale"] = "Масштаб интенсивности изгиба",
+    ["option.curvy.intensity.scale.help"] = "Глобальный множитель интенсивности для всех эффектов изгиба.",
+    ["option.curvy.frame.skip.threshold"] = "Порог FPS для пропуска кадров",
+    ["option.curvy.frame.skip.threshold.help"] = "Порог FPS, ниже которого начинается пропуск кадров.",
+    ["option.curvy.frame.skip.enabled"] = "Включить пропуск кадров",
+    ["option.curvy.frame.skip.enabled.help"] = "Переключить возможность модуля curvy пропускать кадры для улучшения производительности.",
+    ["option.curvy.frame.skip.max"] = "Максимальное количество пропущенных кадров",
+    ["option.curvy.frame.skip.max.help"] = "Максимальное количество кадров, которые можно пропустить подряд при низком FPS.",
+    ["option.curvy.edges.deadzone"] = "Погрешность режима краев",
+    ["option.curvy.edges.deadzone.help"] = "Процент центральной части экрана, которая остается плоской в режиме 'краев' (0.0 = нет плоской области, 0.5 = половина экрана плоская)."
 })
 
 ax.curvy = ax.curvy or {}

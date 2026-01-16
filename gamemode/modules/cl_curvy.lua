@@ -44,7 +44,15 @@ ax.localization:Register("en", {
     ["subcategory.curvy"] = "Curvy",
     ["option.curvy"] = "Curvy HUD",
     ["option.curvy.intensity"] = "Curvature",
-    ["option.curvy.edge_fade"] = "Edge Fade",
+    ["option.curvy.edge_fade"] = "Edge Fade"
+})
+
+ax.localization:Register("en", {
+    ["category.visual"] = "Визуал",
+    ["subcategory.curvy"] = "Изогнутость",
+    ["option.curvy"] = "Изогнутый HUD",
+    ["option.curvy.intensity"] = "Кривизна",
+    ["option.curvy.edge_fade"] = "Исчезновение Краев"
 })
 
 local rtName = "_rt_hudcurved"

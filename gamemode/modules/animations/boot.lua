@@ -25,4 +25,12 @@ local LANG = {}
 LANG["config.animations.ik"] = "Inverse Kinematics (IK)"
 LANG["config.animations.ik.help"] = "When enabled, the player's feet will adjust to uneven terrain for more realistic movement."
 LANG["category.animations"] = "Animations"
+
 ax.localization:Register("en", LANG)
+
+LANG = {}
+LANG["config.animations.ik"] = "Обратная Кинематика (ОК)"
+LANG["config.animations.ik.help"] = "Если включено, ноги игрока будут приспосабливаться к неровностям местности для более реалистичного передвижения."
+LANG["category.animations"] = "Анимации"
+
+ax.localization:Register("ru", LANG)

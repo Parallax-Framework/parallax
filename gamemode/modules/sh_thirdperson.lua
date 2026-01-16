@@ -164,6 +164,33 @@ ax.localization:Register("de", {
     ["option.thirdperson.desired.lerp.fov.help"] = "Interpolationsgeschwindigkeit für das gewünschte FOV der Dritt-Person-Kamera. Niedrigere Werte sind glatter, reagieren aber auch langsamer. Auf 0 setzen, um die Interpolation zu deaktivieren."
 })
 
+ax.localization:Register("ru", {
+    ["category.camera"] = "Камера",
+    ["subcategory.thirdperson"] = "Третье Лицо",
+    ["config.thirdperson"] = "Включить Третье лицо",
+    ["config.thirdperson.help"] = "Wether or not the server allows third-person camera functionality.",
+    ["option.thirdperson"] = "Включить Третье лицо",
+    ["option.thirdperson.help"] = "Toggle third-person camera mode.",
+    ["option.thirdperson.x"] = "X Смещение",
+    ["option.thirdperson.x.help"] = "X Смещение для камеры Третье лица.",
+    ["option.thirdperson.y"] = "Y Смещение",
+    ["option.thirdperson.y.help"] = "Y Смещение для камеры Третье лица.",
+    ["option.thirdperson.z"] = "Z Смещение",
+    ["option.thirdperson.z.help"] = "Z Смещение для камеры Третье лица.",
+    ["option.thirdperson.follow.head"] = "Следовать за головой",
+    ["option.thirdperson.follow.head.help"] = "Делает так, чтобы камера от третьего лица следовала за движениями головы модели игрока.",
+    ["option.thirdperson.follow.angles"] = "Следовать за углами",
+    ["option.thirdperson.follow.angles.help"] = "Делает так, чтобы камера от третьего лица следить за направлением прицеливания игрока, а не за углами обзора.",
+    ["option.thirdperson.follow.fov"] = "Следовать за полем зрения",
+    ["option.thirdperson.follow.fov.help"] = "Делает так, чтобы камера  от третьего лица следить за направлением на основе расстояния от конечной точки трассы до игрока.",
+    ["option.thirdperson.desired.lerp.pos"] = "Требуемая скорость интерполяции положения",
+    ["option.thirdperson.desired.lerp.pos.help"] = "Скорость интерполяции для желаемого положения камеры от третьего лица. При меньших значениях скорость интерполяции будет более плавной, но и реакция будет медленнее. Установите значение 0, чтобы отключить интерполяцию.",
+    ["option.thirdperson.desired.lerp.angle"] = "Требуемая скорость интерполяции угла",
+    ["option.thirdperson.desired.lerp.angle.help"] = "Скорость интерполяции для желаемого ракурса камеры от третьего лица. При меньших значениях скорость интерполяции будет более плавной, но и реакция будет медленнее. Установите значение 0, чтобы отключить интерполяцию.",
+    ["option.thirdperson.desired.lerp.fov"] = "Требуемая скорость интерполяции поля зрения",
+    ["option.thirdperson.desired.lerp.fov.help"] = "Скорость интерполяции для желаемого угла обзора камеры от третьего лица. При меньших значениях скорость интерполяции будет более плавной, но и реакция будет медленнее. Установите значение 0, чтобы отключить интерполяцию."
+})
+
 if ( SERVER ) then return end
 
 local FIXED_RADIUS = 6
