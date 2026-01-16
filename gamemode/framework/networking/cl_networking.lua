@@ -559,11 +559,9 @@ ax.net:Hook("character.invalidate", function(id)
 end)
 
 ax.net:Hook("player.actionbar.start", function(label, duration)
-
     ax.actionBar:Start(label, duration)
 end)
 
 ax.net:Hook("player.actionbar.stop", function(cancelled)
-
     ax.actionBar:Stop(cancelled)
 end)
