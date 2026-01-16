@@ -189,17 +189,6 @@ ax.character:RegisterVar("class", {
     fieldType = ax.type.number,
     default = 0,
     hide = true,
-    validate = function(this, value, payload, client)
-        if ( !isnumber(value) or value < 0 ) then
-            return false, "Invalid class selection. Please choose a valid character class from the available options for your selected faction."
-        end
-
-        if ( ax.class:Get(value) == nil ) then
-            return false, "The selected character class does not exist or is no longer available. Please choose a different class or contact an administrator if this issue persists."
-        end
-
-        return true
-    end,
     changed = function(character, value, previousValue, isNetworked, recipients)
         local previousClass = ax.class:Get(previousValue)
         if ( previousClass and isfunction(previousClass.OnLeave) ) then
