@@ -1,6 +1,6 @@
 --[[
     Parallax Framework
-    Copyright (c) 2025 Parallax Framework Contributors
+    Copyright (c) 2025-2026 Parallax Framework Contributors
 
     This file is part of the Parallax Framework and is licensed under the MIT License.
     You may use, copy, modify, merge, publish, distribute, and sublicense this file
