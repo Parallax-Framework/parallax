@@ -27,6 +27,7 @@ function GM:DoPlayerDeath(client, attacker, damageInfo)
 
     client:ResetRateLimit("respawn")
     client:RateLimit("respawn", 30)
+    client:PerformAction(ax.localization:GetPhrase("respawning"), 30)
 
     local ragdoll = ents.Create("prop_ragdoll")
     ragdoll:SetModel(client:GetModel())
