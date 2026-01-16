@@ -28,45 +28,58 @@ function ax.net:Hook(name, callback, bNoDelay)
     self.stored[name] = {callback, bNoDelay or false}
 end
 
---- Starts a stream.
--- @param target Player, table, vector or nil (nil = broadcast or to server).
--- @string name Hook name.
--- @vararg Arguments to send.
 if ( SERVER ) then
-    function ax.net:Start(target, name, ...)
-        local arguments = {...}
+    function ax.net:WritePayload(name, arguments)
         local encoded = sfs.encode(arguments)
 
         if ( !isstring(encoded) or #encoded < 1 ) then
-            return
+            return false
         end
 
         net.Start("ax.net.msg")
         net.WriteString(name)
         net.WriteData(encoded, #encoded)
 
+        return true
+    end
+
+    -- per request of eon.
+    function ax.net:StartPVS(position, name, ...)
+        if ( !isvector(position) or !self:WritePayload(name, {...}) ) then return end
+
+        net.SendPVS(position)
+
+        ax.util:PrintDebug("[NET] Sent '" .. name .. "' to PVS at " .. tostring(position))
+    end
+
+    function ax.net:StartPAS(position, name, ...)
+        if ( !isvector(position) or !self:WritePayload(name, {...}) ) then return end
+
+        net.SendPAS(position)
+
+        ax.util:PrintDebug("[NET] Sent '" .. name .. "' to PAS at " .. tostring(position))
+    end
+
+    --- Starts a stream.
+    -- @param target Player, table, vector or nil (nil = broadcast or to server).
+    -- @string name Hook name.
+    -- @vararg Arguments to send.
+    function ax.net:Start(target, name, ...)
+        local arguments = {...}
+        if ( !self:WritePayload(name, arguments) ) then
+            return
+        end
+
         -- Fast paths
         if ( target == nil ) then
             net.Broadcast()
+            ax.util:PrintDebug("[NET] Sent '" .. name .. "' to all clients")
             return
         end
 
-        if ( isvector(target) ) then
-            net.SendPVS(target)
-            return
-        end
-
-        if ( istable(target) and (isvector(target.pvs) or isvector(target.pas)) ) then
-            if ( isvector(target.pas) ) then
-                net.SendPAS(target.pas)
-            else
-                net.SendPVS(target.pvs)
-            end
-            return
-        end
-
-        if ( IsValid(target) and target:IsPlayer() ) then
+        if ( type(target) == "Player" ) then
             net.Send(target)
+            ax.util:PrintDebug("[NET] Sent '" .. name .. "' to " .. target:Nick())
             return
         end
 
@@ -84,6 +97,7 @@ if ( SERVER ) then
 
             if ( #recipients > 0 ) then
                 net.Send(recipients)
+                ax.util:PrintDebug("[NET] Sent '" .. name .. "' to " .. #recipients .. " recipients")
             end
 
             return
@@ -91,8 +105,14 @@ if ( SERVER ) then
 
         -- Fallback: broadcast if caller passed garbage
         net.Broadcast()
+
+        ax.util:PrintWarning("ax.net:Start called with invalid target, broadcasting to all clients instead")
     end
 else
+    --- Starts a stream.
+    -- @param target Player, table, vector or nil (nil = broadcast or to server).
+    -- @string name Hook name.
+    -- @vararg Arguments to send.
     function ax.net:Start(name, ...)
         local arguments = {...}
         local encoded = sfs.encode(arguments)
@@ -102,10 +122,11 @@ else
             net.WriteString(name)
             net.WriteData(encoded, #encoded)
         net.SendToServer()
+
+        ax.util:PrintDebug("[NET] Sent '" .. name .. "' to server")
     end
 end
 
-local developer = GetConVar("developer")
 net.Receive("ax.net.msg", function(len, client)
     local name = net.ReadString()
 
@@ -115,19 +136,19 @@ net.Receive("ax.net.msg", function(len, client)
     local raw = net.ReadData(bytesLeft)
     local ok, decoded = pcall(sfs.decode, raw)
     if ( !ok or !istable(decoded) ) then
-        ax.util:PrintError("[Networking] Decode failed for '" .. name .. "'")
+        ax.util:PrintError("[NET] Decode failed for '" .. name .. "'")
         return
     end
 
     local stored = ax.net.stored[name]
     if ( !istable(stored) or #stored < 1 ) then
-        ax.util:PrintError("[Networking] No handler for '" .. name .. "'")
+        ax.util:PrintError("[NET] No handler for '" .. name .. "'")
         return
     end
 
     local callback = stored[1]
     if ( !isfunction(callback) ) then
-        ax.util:PrintError("[Networking] No handler for '" .. name .. "'")
+        ax.util:PrintError("[NET] No handler for '" .. name .. "'")
         return
     end
 
@@ -140,7 +161,7 @@ net.Receive("ax.net.msg", function(len, client)
 
             local coolDown = ax.net.cooldown[steam64][name]
             if ( isnumber(coolDown) and coolDown > CurTime() ) then
-                ax.util:PrintWarning("[Networking] '" .. name .. "' is on cooldown for " .. math.ceil(coolDown - CurTime()) .. " seconds, ignoring request from " .. (tostring(client) or "unknown"))
+                ax.util:PrintWarning("[NET] '" .. name .. "' is on cooldown for " .. math.ceil(coolDown - CurTime()) .. " seconds, ignoring request from " .. (tostring(client) or "unknown"))
 
                 return
             end
@@ -153,9 +174,7 @@ net.Receive("ax.net.msg", function(len, client)
         callback(unpack(decoded))
     end
 
-    if ( developer:GetInt() != 0 ) then
-        ax.util:Print("[Networking] Received '" .. name .. "' from " .. (SERVER and client:Nick() or "server"))
-    end
+    ax.util:PrintDebug("[NET] Received '" .. name .. "' from " .. (SERVER and client:Nick() or "server"))
 end)
 
 --[[
