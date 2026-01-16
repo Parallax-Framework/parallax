@@ -288,7 +288,13 @@ function GM:PlayerInitialSpawn(client)
 
         client:Save()
 
-        ax.util:PrintDebug("Auto-saved player " .. client:SteamName() .. ".")
+        local character = client:GetCharacter()
+        if ( istable(character) ) then
+            character:Save()
+            ax.util:PrintDebug("Auto-saved character " .. character:GetName() .. " and player " .. client:SteamName() .. ".")
+        else
+            ax.util:PrintDebug("Auto-saved player " .. client:SteamName() .. ", no active character.")
+        end
     end)
 
     client:GetTable().axJoinTime = os.time()
