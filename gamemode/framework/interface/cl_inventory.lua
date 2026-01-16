@@ -526,7 +526,7 @@ function PANEL:PopulateInfo(stack)
                 return
             end
 
-            ax.net:Start("ax.inventory.item.action", itemToUse.id, k)
+            ax.net:Start("inventory.item.action", itemToUse.id, k)
 
             -- Don't update local stack here - wait for server to confirm the action
             -- and trigger inventory refresh through proper networking
@@ -550,7 +550,7 @@ function PANEL:PopulateInfo(stack)
                                 local item = stack.stackedItems[i]
                                 if ( !istable(item) ) then return end
 
-                                ax.net:Start("ax.inventory.item.action", item.id, "drop")
+                                ax.net:Start("inventory.item.action", item.id, "drop")
                             end)
                         end
 

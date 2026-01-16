@@ -472,6 +472,11 @@ function ax.util:CreateStore(spec, oldStore)
     -- Wires up init/set/sync/request handlers for config and option.
     -- @realm shared
     function store:_setupNetworking()
+        if ( !istable(spec) or !istable(spec.net) ) then
+            ax.util:PrintError("Store networking setup failed: missing spec.net")
+            return
+        end
+
         if ( spec.name == "config" ) then
             if ( SERVER ) then
                 util.AddNetworkString(spec.net.init)

@@ -53,7 +53,7 @@ function ax.actionBar:Stop(cancelled)
         self.onComplete()
     end
 
-    ax.net:Start("ax.player.actionbar.stop", cancelled == true)
+    ax.net:Start("player.actionbar.stop", cancelled == true)
 
     self.active = false
 end

@@ -25,6 +25,8 @@ function ax.net:Hook(name, callback, bNoDelay)
 end
 
 if ( SERVER ) then
+    util.AddNetworkString("ax.net.msg")
+
     function ax.net:WritePayload(name, arguments)
         local encoded = sfs.encode(arguments)
 

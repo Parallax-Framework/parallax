@@ -132,7 +132,7 @@ function PANEL:NavigateToNextTab(currentTab)
     end
 
     if ( currentIndex == #categories ) then
-        ax.net:Start("ax.character.create", self.payload)
+        ax.net:Start("character.create", self.payload)
         return
     end
 

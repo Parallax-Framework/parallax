@@ -86,7 +86,7 @@ ax.net:Hook("character.create", function(characterID, characters)
 
     local main = ax.gui.main
     if ( !clientTable.axCharacter ) then
-        ax.net:Start("ax.character.load", characterID)
+        ax.net:Start("character.load", characterID)
 
         if ( IsValid(main) ) then
             main:Remove()

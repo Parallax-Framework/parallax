@@ -47,8 +47,8 @@ local optionSpec = {
     path = "parallax/options.json",
     authority = "client",
     net = {
-        sync = "ax.option.sync",
-        set = "ax.option.set",
+        sync = "option.sync",
+        set = "option.set",
         request = "option.request"
     },
     perPlayer = true

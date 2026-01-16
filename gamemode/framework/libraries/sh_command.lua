@@ -396,7 +396,7 @@ function ax.command:Send(text)
     end
 
     -- Send to server
-    ax.net:Start("ax.command.run", name, rawArgs)
+    ax.net:Start("command.run", name, rawArgs)
 end
 
 --[[

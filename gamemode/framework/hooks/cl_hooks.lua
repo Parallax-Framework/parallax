@@ -50,11 +50,11 @@ function GM:PlayerStartVoice(speaker, speakerIndex) -- speakerIndex only appears
         g_VoicePanelList:Remove()
     end
 
-    ax.net:Start("ax.voice.start", speaker)
+    ax.net:Start("voice.start", speaker)
 end
 
 function GM:PlayerEndVoice(speaker)
-    ax.net:Start("ax.voice.end", speaker)
+    ax.net:Start("voice.end", speaker)
 end
 
 function GM:ShouldDrawVignette()

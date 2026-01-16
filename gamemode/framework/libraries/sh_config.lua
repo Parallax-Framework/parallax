@@ -34,8 +34,8 @@ local configSpec = {
     path = "parallax/config.json",
     authority = "server",
     net = {
-        init = "ax.config.init",
-        set = "ax.config.set"
+        init = "config.init",
+        set = "config.set"
     },
     perPlayer = false
 }

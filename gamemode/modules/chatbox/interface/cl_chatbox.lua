@@ -67,7 +67,7 @@ function PANEL:Init()
             text = string.gsub(text, "<font.->", "")
             text = string.gsub(text, "</font>", "")
 
-            ax.net:Start("ax.chat.message", text)
+            ax.net:Start("chat.message", text)
 
             self.historyCache = self.historyCache or {}
             table.insert(self.historyCache, 1, text)
