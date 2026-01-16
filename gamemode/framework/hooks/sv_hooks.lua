@@ -168,7 +168,7 @@ end
 
 function GM:PlayerSpawn(client)
     if ( client.axDeathRespawnSound ) then
-        client:SendLua([[sound.PlayFile("ambient/levels/gman/gman_seg_00_21_05.wav", "", function() end)]])
+        client:SendLua([[sound.PlayFile("sound/ambient/levels/gman/gman_seg_00_21_05.wav", "", function() end)]])
         client.axDeathRespawnSound = nil
     end
 
