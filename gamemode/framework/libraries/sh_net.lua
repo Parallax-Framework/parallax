@@ -9,82 +9,24 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
-ax.net = ax.net or {}
-ax.net.messages = ax.net.messages or {}
-
 -- ax.net
 -- Streaming data layer using sfs. NetStream-style API.
 -- @realm shared
 
-function ax.net:Hook(netMessage, callback)
-	if ( SERVER ) then
-		util.AddNetworkString(netMessage)
-	end
-
-	self.messages[util.NetworkStringToID(netMessage)] = callback
-end
+ax.net = ax.net or {}
+ax.net.stored = ax.net.stored or {}
+ax.net.cooldown = ax.net.cooldown or {}
 
 if ( SERVER ) then
-	util.AddNetworkString("ax.net.send")
-
-	function ax.net:Send(receivers, netMessage, ...)
-		local args = {...}
-		local encode = sfs.encode(args)
-		if ( #encode <= 0 ) then return end
-
-		net.Start(netMessage)
-			net.WriteUInt(util.NetworkStringToID(netMessage), 8)
-			net.WriteData(encode, #encode)
-		net.Send(receivers)
-	end
-
-	function ax.net:SendPVS(position, netMessage, ...)
-		local args = {...}
-		local encode = sfs.encode(args)
-		if ( #encode <= 0 ) then return end
-
-		net.Start(netMessage)
-			net.WriteUInt(util.NetworkStringToID(netMessage), 8)
-			net.WriteData(encode, #encode)
-		net.SendPVS(position)
-	end
-
-	function ax.net:SendPAS(position, netMessage, ...)
-		local args = {...}
-		local encode = sfs.encode(args)
-		if ( #encode <= 0 ) then return end
-
-		net.Start(netMessage)
-			net.WriteUInt(util.NetworkStringToID(netMessage), 8)
-			net.WriteData(encode, #encode)
-		net.SendPAS(position)
-	end
-
-	function ax.net:Broadcast(netMessage, ...)
-		local args = {...}
-		local encode = sfs.encode(args)
-		if ( #encode <= 0 ) then return end
-
-		net.Start(netMessage)
-			net.WriteUInt(util.NetworkStringToID(netMessage), 8)
-			net.WriteData(encode, #encode)
-		net.Broadcast()
-	end
-else
-	function ax.net:Send(netMessage, ...)
-		local args = {...}
-		local encode = sfs.encode(args)
-		if ( #encode <= 0 ) then return end
-
-		net.Start("ax.net.send")
-			net.WriteUInt(util.NetworkStringToID(netMessage), 8)
-			net.WriteData(encode, #encode)
-		net.SendToServer()
-	end
+    util.AddNetworkString("ax.net.msg")
 end
 
-net.Receive("ax.net.send", function(length, client)
-	local netMessage = util.NetworkIDToString(net.ReadUInt(8))
+--- Hooks a network message.
+-- @string name Unique identifier.
+-- @func callback Callback with player, unpacked arguments.
+function ax.net:Hook(name, callback, bNoDelay)
+    self.stored[name] = {callback, bNoDelay or false}
+end
 
 --- Starts a stream.
 -- @param target Player, table, vector or nil (nil = broadcast or to server).
