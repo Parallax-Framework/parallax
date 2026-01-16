@@ -472,19 +472,23 @@ function ax.util:CreateStore(spec, oldStore)
     -- Wires up init/set/sync/request handlers for config and option.
     -- @realm shared
     function store:_setupNetworking()
-        if ( !istable(spec) or !istable(spec.net) ) then
-            ax.util:PrintError("Store networking setup failed: missing spec.net")
+        if ( !istable(spec) ) then
+            ax.util:PrintError("Store networking setup failed: missing spec")
+            return
+        end
+
+        if ( !ax.net or !ax.net.Hook ) then
+            timer.Simple(0, function()
+                if ( istable(store) and isfunction(store._setupNetworking) ) then
+                    store:_setupNetworking()
+                end
+            end)
+
             return
         end
 
         if ( spec.name == "config" ) then
             if ( SERVER ) then
-                util.AddNetworkString(spec.net.init)
-                util.AddNetworkString(spec.net.set)
-
-                -- Clean up existing hook to prevent duplicates on reload
-                hook.Remove("PlayerReady", "ax.config.Init")
-
                 hook.Add("PlayerReady", "ax.config.Init", function(client)
                     store:Sync(client)
                 end)
@@ -525,10 +529,6 @@ function ax.util:CreateStore(spec, oldStore)
             end
         elseif ( spec.name == "option" ) then
             if ( SERVER ) then
-                util.AddNetworkString(spec.net.sync)
-                util.AddNetworkString(spec.net.set)
-                util.AddNetworkString(spec.net.request)
-
                 ax.net:Hook(spec.net.sync, function(client, data)
                     if ( !ax.util:IsValidPlayer(client) ) then return end
 
@@ -549,9 +549,6 @@ function ax.util:CreateStore(spec, oldStore)
                     ax.util:PrintDebug(spec.name, " Received option update from ", client:Nick(), ": ", key, " = ", value)
                 end)
 
-                -- Clean up existing hook to prevent duplicates on reload
-                hook.Remove("PlayerDisconnected", "ax.option.Cleanup")
-
                 hook.Add("PlayerDisconnected", "ax.option.Cleanup", function(client)
                     SERVER_CACHE[client] = nil
                 end)
@@ -565,9 +562,6 @@ function ax.util:CreateStore(spec, oldStore)
                 store.RequestPlayerSync = requestSync
             elseif ( CLIENT ) then
                 ax.net:Hook(spec.net.request, function() store:Sync() end)
-
-                -- Clean up existing hook to prevent duplicates on reload
-                hook.Remove("InitPostEntity", "ax.option.AutoSync")
 
                 hook.Add("InitPostEntity", "ax.option.AutoSync", function()
                     timer.Simple(2, function()
