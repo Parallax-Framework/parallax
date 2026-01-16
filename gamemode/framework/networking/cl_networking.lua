@@ -346,11 +346,19 @@ ax.net:Hook("inventory.sync", function(inventoryID, inventoryItems, inventoryMax
 end)
 
 ax.net:Hook("inventory.receiver.add", function(inventory, receiver)
-    inventory = setmetatable(inventory, ax.inventory.meta)
-
     if ( !istable(inventory) ) then
         ax.util:PrintError("Invalid inventory data received for receiver addition.")
         return
+    end
+
+    inventory = setmetatable(inventory, ax.inventory.meta)
+
+    if ( table.Count(inventory.items) != 0 ) then
+        for itemID, item in pairs(inventory.items) do
+            item = setmetatable(item, ax.item.meta)
+            ax.item.instances[itemID] = item
+            inventory.items[itemID] = item
+        end
     end
 
     ax.inventory.instances[inventory.id] = inventory
@@ -358,11 +366,16 @@ ax.net:Hook("inventory.receiver.add", function(inventory, receiver)
 end)
 
 ax.net:Hook("inventory.receiver.remove", function(inventoryID, receiver)
-
     local inventory = ax.inventory.instances[inventoryID]
     if ( !istable(inventory) ) then
         ax.util:PrintError("Invalid inventory ID received for receiver removal: " .. tostring(inventoryID))
         return
+    end
+
+    if ( table.Count(inventory.items) != 0 ) then
+        for itemID in pairs(inventory.items) do
+            ax.item.instances[itemID] = nil
+        end
     end
 
     inventory:RemoveReceiver(receiver)

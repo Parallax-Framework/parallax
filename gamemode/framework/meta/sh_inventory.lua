@@ -102,13 +102,13 @@ end
 function inventory:HasItem(identifier)
     for id, v in pairs(self.items) do
         if ( isnumber(identifier) and id == identifier ) then
-            return true
+            return true, v
         elseif ( isstring(identifier) and v.class == identifier ) then
-            return true
+            return true, v
         end
     end
 
-    return false
+    return false, nil
 end
 
 function inventory:IsReceiver(client)
