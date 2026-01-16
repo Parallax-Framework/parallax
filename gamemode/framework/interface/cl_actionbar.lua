@@ -84,7 +84,7 @@ function ax.actionBar:Render()
     if ( hook.Run("ShouldDrawActionBar", activeBar) == false ) then self:Stop(true) return end
 
     local client = ax.client
-    if ( !IsValid(client) or !client:Alive() ) then
+    if ( !IsValid(client) ) then
         self:Stop(true)
         return
     end
