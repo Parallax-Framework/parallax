@@ -134,11 +134,20 @@ function ax.character:Load(client, character)
     character.player = client
 
     clientData.axCharacterPrevious = clientData.axCharacter
-    if ( clientData.axCharacter ) then
+    if ( clientData.axCharacterPrevious ) then
         local inventory = clientData.axCharacter:GetInventory()
         if ( istable(inventory) ) then
             inventory:RemoveReceivers()
         end
+
+        clientData.axCharacterPrevious.player = nil
+
+        local receivers = select(2, player.Iterator())
+        for i = 1, #receivers do
+            if ( receivers[i] == client ) then table.remove(receivers, i) break end
+        end
+
+        ax.net:Start(receivers, "character.invalidate", client.axCharacterPrevious:GetID())
     end
 
     clientData.axCharacter = character
