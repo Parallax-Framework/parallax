@@ -217,7 +217,8 @@ function ax.character:RegisterVar(name, data)
 
     if ( !data.bNoSetter ) then
         local nameSet = "Set" .. prettyName
-        ax.character.meta[nameSet] = function(char, value, bNoNetworking, recipients)
+        ax.character.meta[nameSet] = function(char, value, bNoNetworking, recipients, bNoDBUpdate)
+            -- TODO: add previous value to SetVar call, fuck you eon.
             local previousValue = nil
             if ( isfunction(data.Get) ) then
                 if ( !istable(char.vars) ) then char.vars = {} end
@@ -230,17 +231,17 @@ function ax.character:RegisterVar(name, data)
             if ( isfunction(data.Set) ) then
                 if ( !istable(char.vars) ) then char.vars = {} end
 
-                data:Set(char, value, previousValue, bNoNetworking, recipients)
+                data:Set(char, value, bNoNetworking, recipients, bNoDBUpdate)
 
                 if ( isfunction(data.changed) ) then
                     -- Protect the callback to avoid crashes
-                    local success, err = pcall(data.changed, char, value, previousValue, bNoNetworking, recipients)
+                    local success, err = pcall(data.changed, char, value, previousValue, bNoNetworking, recipients, bNoDBUpdate)
                     if ( !success ) then
                         ax.util:PrintError("Error occurred in character variable changed callback:", err)
                     end
                 end
             else
-                ax.character:SetVar(char, name, value, previousValue, bNoNetworking, recipients)
+                ax.character:SetVar(char, name, value, bNoNetworking, recipients, bNoDBUpdate)
             end
         end
     end
