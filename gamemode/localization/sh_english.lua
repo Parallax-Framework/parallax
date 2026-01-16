@@ -74,6 +74,9 @@ ax.localization:Register("en", {
     ["config.speed.walk.crouched"] = "Crouched Walk Speed",
     ["config.speed.walk.slow"] = "Slow Walk Speed",
 
+    ---- Misc
+    ["respawning"] = "Respawning...",
+
     --- General
     ---- Basic
     ["config.bot.support"] = "Bot Support",

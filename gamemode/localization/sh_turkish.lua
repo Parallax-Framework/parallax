@@ -74,6 +74,9 @@ ax.localization:Register("tr", {
     ["config.speed.walk.crouched"] = "Çömelme Yürüme Hızı",
     ["config.speed.walk.slow"] = "Yavaş Yürüme Hızı",
 
+    ---- Misc
+    ["respawning"] = "Yeniden Doğuyor...",
+
     --- General
     ---- Basic
     ["config.bot.support"] = "Bot Desteği",
