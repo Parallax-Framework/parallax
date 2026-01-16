@@ -65,24 +65,15 @@ function ax.voices:GetClass(client, chatType)
 end
 
 if ( CLIENT ) then
-    net.Receive("ax.voices.play", function(len)
-        local entity = net.ReadEntity() or ax.client
-        local sounds = net.ReadTable()
-        local volume = net.ReadFloat()
-        local pitch = net.ReadFloat()
-
+    ax.net:Hook("ax.voices.play", function(entity, sounds, volume, pitch)
+        entity = entity or ax.client
         entity:EmitQueuedSound(sounds, volume, pitch)
     end)
 else
     util.AddNetworkString("ax.voices.play")
 
     local function PlayQueuedSound(entity, sounds, pitch, volume)
-        net.Start("ax.voices.play")
-            net.WriteEntity(entity)
-            net.WriteTable(sounds)
-            net.WriteFloat(volume or 80)
-            net.WriteFloat(pitch or 100)
-        net.Broadcast()
+        ax.net:Start(nil, "ax.voices.play", entity, sounds, volume or 80, pitch or 100)
     end
 
     local function GetVoiceCommands(text, class)

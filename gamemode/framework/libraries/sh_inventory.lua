@@ -85,12 +85,7 @@ if ( SERVER ) then
             end
         end
 
-        net.Start("ax.inventory.sync")
-            net.WriteUInt(inventory.id, 32)
-            net.WriteTable(items)
-            net.WriteFloat(inventory.maxWeight)
-            net.WriteTable(inventory.receivers or {})
-        net.Send(inventory:GetReceivers())
+        ax.net:Start(inventory:GetReceivers(), "ax.inventory.sync", inventory.id, items, inventory.maxWeight, inventory.receivers or {})
 
         ax.util:PrintDebug(string.format("Synchronized inventory %d with %d receivers.", inventory.id, #inventory:GetReceivers()))
     end
@@ -112,11 +107,7 @@ if ( SERVER ) then
         -- Sync all world items (inventory_id = 0) to the client
         for itemID, item in pairs(ax.item.instances) do
             if ( item.invID == 0 or item:GetInventoryID() == 0 ) then
-                net.Start("ax.item.spawn")
-                    net.WriteUInt(itemID, 32)
-                    net.WriteString(item.class)
-                    net.WriteTable(item.data or {})
-                net.Send(client)
+                ax.net:Start(client, "ax.item.spawn", itemID, item.class, item.data or {})
             end
         end
         ax.util:PrintDebug(string.format("Synced world items to %s", client:SteamID64()))

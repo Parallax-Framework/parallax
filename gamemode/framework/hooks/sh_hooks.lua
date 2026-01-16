@@ -121,11 +121,7 @@ function GM:InitPostEntity()
             entity:Spawn()
             entity:Activate()
 
-            net.Start("ax.item.spawn")
-                net.WriteUInt(itemID, 32)
-                net.WriteString(v.class)
-                net.WriteTable(v.data or {})
-            net.Broadcast()
+            ax.net:Start(nil, "ax.item.spawn", itemID, v.class, v.data or {})
         end
     else
         ax.joinTime = os.time()

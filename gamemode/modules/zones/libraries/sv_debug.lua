@@ -58,9 +58,7 @@ function ax.zones:DrawDebug(client)
     if ( !IsValid(client) ) then return end
 
     -- Send zone data to client for drawing
-    net.Start("ax.zones.drawdebug")
-        net.WriteBool(true) -- Enable
-    net.Send(client)
+    ax.net:Start(client, "ax.zones.drawdebug", true)
 
     ax.util:PrintDebug("Zone debug drawing enabled for " .. client:Nick())
 end
@@ -71,9 +69,7 @@ end
 function ax.zones:StopDrawDebug(client)
     if ( !IsValid(client) ) then return end
 
-    net.Start("ax.zones.drawdebug")
-        net.WriteBool(false) -- Disable
-    net.Send(client)
+    ax.net:Start(client, "ax.zones.drawdebug", false)
 
     ax.util:PrintDebug("Zone debug drawing disabled for " .. client:Nick())
 end

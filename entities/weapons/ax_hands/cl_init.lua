@@ -17,8 +17,7 @@ function SWEP:CheckYaw()
     if ( playerPitch < -20 ) then
         if ( !client:RateLimit("hands", 0.5) ) then return end
 
-        net.Start("ax.hands.reset")
-        net.SendToServer()
+        ax.net:Start("ax.hands.reset")
     end
 end
 

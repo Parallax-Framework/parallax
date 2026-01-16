@@ -19,12 +19,10 @@ ax.relay.data = ax.relay.data or {}
 
 if ( SERVER ) then
     function ax.relay:Sync(recipients)
-        net.Start("ax.relay.sync")
-            net.WriteTable(ax.relay.data)
         if ( recipients ) then
-            net.Send(recipients)
+            ax.net:Start(recipients, "ax.relay.sync", ax.relay.data)
         else
-            net.Broadcast()
+            ax.net:Start(nil, "ax.relay.sync", ax.relay.data)
         end
     end
 end
@@ -62,14 +60,10 @@ function ENTITY:SetRelay(name, value, bNoNetworking, recipients)
     ax.relay.data[index][name] = value
 
     if ( !bNoNetworking and SERVER ) then
-        net.Start("ax.relay.update")
-            net.WriteString(index)
-            net.WriteString(name)
-            net.WriteType(value)
         if ( recipients ) then
-            net.Send(recipients)
+            ax.net:Start(recipients, "ax.relay.update", index, name, value)
         else
-            net.Broadcast()
+            ax.net:Start(nil, "ax.relay.update", index, name, value)
         end
     end
 end
@@ -114,14 +108,10 @@ function SetRelay(name, value, bNoNetworking, recipients)
     ax.relay.data["global"][name] = value
 
     if ( !bNoNetworking and SERVER ) then
-        net.Start("ax.relay.update")
-            net.WriteString("global")
-            net.WriteString(name)
-            net.WriteType(value)
         if ( recipients ) then
-            net.Send(recipients)
+            ax.net:Start(recipients, "ax.relay.update", "global", name, value)
         else
-            net.Broadcast()
+            ax.net:Start(nil, "ax.relay.update", "global", name, value)
         end
     end
 end

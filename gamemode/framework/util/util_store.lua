@@ -258,24 +258,15 @@ function ax.util:CreateStore(spec, oldStore)
 
         if ( store.networkedKeys[key] ) then
             if ( spec.name == "config" and SERVER ) then
-                net.Start(spec.net.set)
-                    net.WriteString(key)
-                    net.WriteType(coerced)
-                net.Broadcast()
+                ax.net:Start(nil, spec.net.set, key, coerced)
 
                 ax.util:PrintDebug(spec.name, " Broadcasted config update: ", key, " = ", coerced)
             elseif ( spec.name == "config" and CLIENT ) then
-                net.Start(spec.net.set)
-                    net.WriteString(key)
-                    net.WriteType(coerced)
-                net.SendToServer()
+                ax.net:Start(spec.net.set, key, coerced)
 
                 ax.util:PrintDebug(spec.name, " Sending config update: ", key, " = ", coerced)
             elseif ( spec.name == "option" and CLIENT ) then
-                net.Start(spec.net.set)
-                    net.WriteString(key)
-                    net.WriteType(coerced)
-                net.SendToServer()
+                ax.net:Start(spec.net.set, key, coerced)
 
                 ax.util:PrintDebug(spec.name, " Sending option update: ", key, " = ", coerced)
             else
@@ -459,9 +450,7 @@ function ax.util:CreateStore(spec, oldStore)
             end
 
             if ( !table.IsEmpty(networked) ) then
-                net.Start(spec.net.init)
-                    net.WriteTable(networked)
-                net.Send(recipients)
+                ax.net:Start(recipients, spec.net.init, networked)
 
                 ax.util:PrintDebug(spec.name, " Synced ", table.Count(networked), "config keys to clients")
             end
@@ -472,9 +461,7 @@ function ax.util:CreateStore(spec, oldStore)
             end
 
             if ( !table.IsEmpty(networked) ) then
-                net.Start(spec.net.sync)
-                    net.WriteTable(networked)
-                net.SendToServer()
+                ax.net:Start(spec.net.sync, networked)
 
                 ax.util:PrintDebug(spec.name, " Synced ", table.Count(networked), "option keys to server")
             end
@@ -498,14 +485,11 @@ function ax.util:CreateStore(spec, oldStore)
                 end)
 
                 -- Handle config changes from clients (requires admin permission)
-                net.Receive(spec.net.set, function(len, client)
+                ax.net:Hook(spec.net.set, function(client, key, value)
                     if ( !ax.util:IsValidPlayer(client) or !client:IsAdmin() ) then
                         ax.util:PrintWarning(spec.name, "Unauthorized config change attempt from", IsValid(client) and client:Nick() or "invalid client")
                         return
                     end
-
-                    local key = net.ReadString()
-                    local value = net.ReadType()
 
                     local success = store:Set(key, value)
                     if ( success ) then
@@ -515,8 +499,7 @@ function ax.util:CreateStore(spec, oldStore)
                     end
                 end)
             elseif ( CLIENT ) then
-                net.Receive(spec.net.init, function()
-                    local data = net.ReadTable()
+                ax.net:Hook(spec.net.init, function(data)
                     for key, value in pairs(data) do
                         CONFIG_CACHE[key] = value
 
@@ -526,9 +509,7 @@ function ax.util:CreateStore(spec, oldStore)
                     ax.util:PrintDebug(spec.name, " Received initial config: ", table.Count(data), " keys")
                 end)
 
-                net.Receive(spec.net.set, function()
-                    local key = net.ReadString()
-                    local value = net.ReadType()
+                ax.net:Hook(spec.net.set, function(key, value)
                     local oldValue = CONFIG_CACHE[key]
                     CONFIG_CACHE[key] = value
 
@@ -543,12 +524,10 @@ function ax.util:CreateStore(spec, oldStore)
                 util.AddNetworkString(spec.net.set)
                 util.AddNetworkString(spec.net.request)
 
-                net.Receive(spec.net.sync, function(len, client)
+                ax.net:Hook(spec.net.sync, function(client, data)
                     if ( !ax.util:IsValidPlayer(client) ) then return end
 
                     SERVER_CACHE[client] = SERVER_CACHE[client] or {}
-
-                    local data = net.ReadTable()
                     for key, value in pairs(data) do
                         SERVER_CACHE[client][key] = value
                     end
@@ -556,11 +535,8 @@ function ax.util:CreateStore(spec, oldStore)
                     ax.util:PrintDebug(spec.name, " Received option sync from ", client:Nick(), ": ", table.Count(data), " keys")
                 end)
 
-                net.Receive(spec.net.set, function(len, client)
+                ax.net:Hook(spec.net.set, function(client, key, value)
                     if ( !ax.util:IsValidPlayer(client) ) then return end
-
-                    local key = net.ReadString()
-                    local value = net.ReadType()
 
                     SERVER_CACHE[client] = SERVER_CACHE[client] or {}
                     SERVER_CACHE[client][key] = value
@@ -577,14 +553,13 @@ function ax.util:CreateStore(spec, oldStore)
 
                 local function requestSync(client)
                     if ( ax.util:IsValidPlayer(client) ) then
-                        net.Start(spec.net.request)
-                        net.Send(client)
+                        ax.net:Start(client, spec.net.request)
                     end
                 end
 
                 store.RequestPlayerSync = requestSync
             elseif ( CLIENT ) then
-                net.Receive(spec.net.request, function() store:Sync() end)
+                ax.net:Hook(spec.net.request, function() store:Sync() end)
 
                 -- Clean up existing hook to prevent duplicates on reload
                 hook.Remove("InitPostEntity", "ax.option.AutoSync")

@@ -189,16 +189,12 @@ if ( SERVER ) then
 
         -- Network character data changes to all clients
         if ( !bNoNetworking ) then
-            net.Start("ax.character.data")
-                net.WriteUInt(self:GetID(), 32)
-                net.WriteString(key)
-                net.WriteType(value)
             if ( istable(recipients) or isentity(recipients) ) then
-                net.Send(recipients)
+                ax.net:Start(recipients, "ax.character.data", self:GetID(), key, value)
             elseif ( isvector(recipients) ) then
-                net.SendPVS(recipients)
+                ax.net:StartPVS(recipients, "ax.character.data", self:GetID(), key, value)
             else
-                net.Broadcast()
+                ax.net:Start(nil, "ax.character.data", self:GetID(), key, value)
             end
         end
 

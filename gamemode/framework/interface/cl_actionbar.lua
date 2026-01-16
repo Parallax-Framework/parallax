@@ -53,9 +53,7 @@ function ax.actionBar:Stop(cancelled)
         self.onComplete()
     end
 
-    net.Start("ax.player.actionbar.stop")
-        net.WriteBool(cancelled == true)
-    net.SendToServer()
+    ax.net:Start("ax.player.actionbar.stop", cancelled == true)
 
     self.active = false
 end

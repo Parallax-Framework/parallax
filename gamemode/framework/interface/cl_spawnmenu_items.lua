@@ -84,9 +84,7 @@ spawnmenu.AddContentType("axitem", function(container, obj)
     icon:SetColor(Color(255, 255, 255, 255))
 
     icon.DoClick = function(self)
-        net.Start("ax.spawnmenu.spawn.item")
-            net.WriteString(obj.spawnname)
-        net.SendToServer()
+        ax.net:Start("ax.spawnmenu.spawn.item", obj.spawnname)
 
         surface.PlaySound("ui/buttonclickrelease.wav")
     end

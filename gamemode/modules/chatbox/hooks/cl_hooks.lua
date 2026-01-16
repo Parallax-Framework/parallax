@@ -63,10 +63,7 @@ function MODULE:FinishChat()
 end
 
 function MODULE:ChatboxOnTextChanged(text, chatType)
-    net.Start("ax.chat.text.changed")
-        net.WriteString(text)
-        net.WriteString(chatType)
-    net.SendToServer()
+    ax.net:Start("ax.chat.text.changed", text, chatType)
 end
 
 function MODULE:PostDrawTranslucentRenderables()

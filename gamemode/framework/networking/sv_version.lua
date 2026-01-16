@@ -36,12 +36,10 @@ end
 local function BroadcastVersion(data, recipients)
     if ( !data ) then return end
 
-    net.Start("ax.version.init")
-        net.WriteTable(data)
     if ( recipients ) then
-        net.Send(recipients)
+        ax.net:Start(recipients, "ax.version.init", data)
     else
-        net.Broadcast()
+        ax.net:Start(nil, "ax.version.init", data)
     end
 end
 

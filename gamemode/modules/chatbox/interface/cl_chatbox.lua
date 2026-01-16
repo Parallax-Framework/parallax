@@ -67,9 +67,7 @@ function PANEL:Init()
             text = string.gsub(text, "<font.->", "")
             text = string.gsub(text, "</font>", "")
 
-            net.Start("ax.chat.message")
-                net.WriteString(text)
-            net.SendToServer()
+            ax.net:Start("ax.chat.message", text)
 
             self.historyCache = self.historyCache or {}
             table.insert(self.historyCache, 1, text)

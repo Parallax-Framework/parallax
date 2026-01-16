@@ -216,8 +216,7 @@ end
 if ( SERVER ) then
     util.AddNetworkString("ax.weapon.primary")
 else
-    net.Receive("ax.weapon.primary", function()
-        local weapon = net.ReadEntity()
+    ax.net:Hook("ax.weapon.primary", function(weapon)
         if ( !IsValid(weapon) ) then return end
 
         local client = weapon:GetOwner()
@@ -246,9 +245,7 @@ function SWEP:PrimaryAttack()
     self:SetNextPrimaryFire(CurTime() + delay)
 
     if ( SERVER ) then
-        net.Start("ax.weapon.primary")
-            net.WriteEntity(self)
-        net.SendPAS(owner:GetPos())
+        ax.net:StartPAS(owner:GetPos(), "ax.weapon.primary", self)
     end
 
     -- Client-side: visuals and effects

@@ -132,9 +132,7 @@ function PANEL:NavigateToNextTab(currentTab)
     end
 
     if ( currentIndex == #categories ) then
-        net.Start("ax.character.create")
-            net.WriteTable(self.payload)
-        net.SendToServer()
+        ax.net:Start("ax.character.create", self.payload)
         return
     end
 

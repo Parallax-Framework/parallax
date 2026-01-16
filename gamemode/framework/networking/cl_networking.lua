@@ -12,7 +12,7 @@
 -- Queue for character variable updates that arrive before character sync
 local characterVarQueue = {}
 
-net.Receive("ax.player.ready", function(len)
+ax.net:Hook("ax.player.ready", function()
     local clientTable = LocalPlayer():GetTable()
     if ( clientTable.axReady ) then return end
 
@@ -35,7 +35,7 @@ net.Receive("ax.player.ready", function(len)
     end
 end)
 
-net.Receive("ax.character.create", function(len)
+ax.net:Hook("ax.character.create", function(characterID, characters)
     local client = ax.client
     if ( !IsValid(client) ) then
         ax.util:PrintError("Invalid client received for character creation.")
@@ -48,7 +48,6 @@ net.Receive("ax.character.create", function(len)
         return
     end
 
-    local characterID = net.ReadUInt(32)
     if ( !isnumber(characterID) or characterID <= 0 ) then
         ax.util:PrintError("Invalid character ID received for creation.")
         return
@@ -58,7 +57,6 @@ net.Receive("ax.character.create", function(len)
     local clientData = ax.client:GetTable()
     clientData.axCharacters = {}
 
-    local characters = net.ReadTable()
     for i = 1, #characters do
         local charData = characters[i]
         local character = setmetatable(charData, ax.character.meta)
@@ -88,9 +86,7 @@ net.Receive("ax.character.create", function(len)
 
     local main = ax.gui.main
     if ( !clientTable.axCharacter ) then
-        net.Start("ax.character.load")
-            net.WriteUInt(characterID, 32)
-        net.SendToServer()
+        ax.net:Start("ax.character.load", characterID)
 
         if ( IsValid(main) ) then
             main:Remove()
@@ -107,8 +103,7 @@ net.Receive("ax.character.create", function(len)
     hook.Run("PlayerCreatedCharacter", client, character)
 end)
 
-net.Receive("ax.character.load", function()
-    local characterID = net.ReadUInt(32)
+ax.net:Hook("ax.character.load", function(characterID)
     local client = ax.client
     if ( !IsValid(client) ) then return end
 
@@ -131,11 +126,8 @@ net.Receive("ax.character.load", function()
     hook.Run("PlayerLoadedCharacter", client, character, clientData.axCharacterPrevious)
 end)
 
-net.Receive("ax.character.sync", function()
-    local client = net.ReadPlayer()
+ax.net:Hook("ax.character.sync", function(client, character)
     if ( !IsValid(client) ) then return end
-
-    local character = net.ReadTable()
     if ( !istable(character) ) then
         ax.util:PrintError("Invalid character data received from server")
         return
@@ -159,8 +151,7 @@ net.Receive("ax.character.sync", function()
     end
 end)
 
-net.Receive("ax.character.restore", function()
-    local characters = net.ReadTable()
+ax.net:Hook("ax.character.restore", function(characters)
     if ( !istable(characters) ) then
         ax.util:PrintError("Invalid characters table received from server")
         return
@@ -192,8 +183,7 @@ net.Receive("ax.character.restore", function()
     hook.Run("OnCharactersRestored", characters)
 end)
 
-net.Receive("ax.character.delete", function()
-    local id = net.ReadUInt(32)
+ax.net:Hook("ax.character.delete", function(id)
     if ( !isnumber( id ) or id < 1 ) then return end
 
     local character = ax.character.instances[ id ]
@@ -235,10 +225,7 @@ net.Receive("ax.character.delete", function()
     end
 end)
 
-net.Receive("ax.character.var", function()
-    local characterID = net.ReadUInt(32)
-    local name = net.ReadString()
-    local value = net.ReadType()
+ax.net:Hook("ax.character.var", function(characterID, name, value)
 
     local character = ax.character:Get(characterID)
     if ( !character ) then
@@ -258,8 +245,7 @@ net.Receive("ax.character.var", function()
     hook.Run("CharacterVarChanged", character, name, value)
 end)
 
-net.Receive("ax.character.data", function()
-    local characterID, key, value = net.ReadUInt(32), net.ReadString(), net.ReadType()
+ax.net:Hook("ax.character.data", function(characterID, key, value)
 
     local character = ax.character:Get(characterID)
     if ( !character ) then return end -- TODO: make characterVarQueue for data? idk
@@ -277,9 +263,7 @@ net.Receive("ax.character.data", function()
     hook.Run("CharacterDataChanged", character, key, value)
 end)
 
-net.Receive("ax.character.bot.sync", function()
-    local characterID = net.ReadUInt(32)
-    local botCharacter = net.ReadTable()
+ax.net:Hook("ax.character.bot.sync", function(characterID, botCharacter)
 
     -- Restore metatable for bot character
     botCharacter = setmetatable(botCharacter, ax.character.meta)
@@ -294,8 +278,8 @@ net.Receive("ax.character.bot.sync", function()
     end
 end)
 
-net.Receive("ax.character.setnameprompt", function()
-    local target = ax.character:Get(net.ReadUInt(32))
+ax.net:Hook("ax.character.setnameprompt", function(targetID)
+    local target = ax.character:Get(targetID)
     if ( !istable(target) ) then
         ax.util:PrintError("Character not found for name prompt.")
         return
@@ -309,12 +293,8 @@ net.Receive("ax.character.setnameprompt", function()
     end, nil, "Set Name")
 end)
 
-net.Receive("ax.player.var", function()
-    local client = net.ReadPlayer()
+ax.net:Hook("ax.player.var", function(client, key, value)
     if ( !IsValid(client) ) then return end
-
-    local key = net.ReadString()
-    local value = net.ReadType()
 
     local clientTable = client:GetTable()
     if ( !istable(clientTable.axVars) ) then
@@ -324,11 +304,8 @@ net.Receive("ax.player.var", function()
     clientTable.axVars[key] = value
 end)
 
-net.Receive("ax.player.data", function()
-    local client = net.ReadPlayer()
+ax.net:Hook("ax.player.data", function(client, key, value)
     if ( !IsValid(client) ) then return end
-
-    local key, value = net.ReadString(), net.ReadType()
 
     local clientTable = client:GetTable()
     if ( !istable(clientTable.axVars) ) then
@@ -342,11 +319,7 @@ net.Receive("ax.player.data", function()
     clientTable.axVars.data[key] = value
 end)
 
-net.Receive("ax.inventory.sync", function()
-    local inventoryID = net.ReadUInt(32)
-    local inventoryItems = net.ReadTable()
-    local inventoryMaxWeight = net.ReadFloat()
-    local inventoryReceivers = net.ReadTable()
+ax.net:Hook("ax.inventory.sync", function(inventoryID, inventoryItems, inventoryMaxWeight, inventoryReceivers)
 
     -- Convert the items into objects
     local items = {}
@@ -372,9 +345,8 @@ net.Receive("ax.inventory.sync", function()
     }, ax.inventory.meta)
 end)
 
-net.Receive("ax.inventory.receiver.add", function()
-    local inventory = setmetatable(net.ReadTable(), ax.inventory.meta)
-    local receiver = net.ReadPlayer()
+ax.net:Hook("ax.inventory.receiver.add", function(inventory, receiver)
+    inventory = setmetatable(inventory, ax.inventory.meta)
 
     if ( !istable(inventory) ) then
         ax.util:PrintError("Invalid inventory data received for receiver addition.")
@@ -385,9 +357,7 @@ net.Receive("ax.inventory.receiver.add", function()
     inventory:AddReceiver(receiver)
 end)
 
-net.Receive("ax.inventory.receiver.remove", function()
-    local inventoryID = net.ReadUInt(32)
-    local receiver = net.ReadPlayer()
+ax.net:Hook("ax.inventory.receiver.remove", function(inventoryID, receiver)
 
     local inventory = ax.inventory.instances[inventoryID]
     if ( !istable(inventory) ) then
@@ -399,11 +369,7 @@ net.Receive("ax.inventory.receiver.remove", function()
     ax.inventory.instances[inventoryID] = nil
 end)
 
-net.Receive("ax.inventory.item.add", function()
-    local inventoryID = net.ReadUInt(32)
-    local itemID = net.ReadUInt(32)
-    local itemClass = net.ReadString()
-    local itemData = net.ReadTable()
+ax.net:Hook("ax.inventory.item.add", function(inventoryID, itemID, itemClass, itemData)
 
     -- If inventory 0 (world) isn't tracked clientside, still create the item instance so it exists clientside
     local inventory = ax.inventory.instances[inventoryID]
@@ -434,9 +400,7 @@ net.Receive("ax.inventory.item.add", function()
     end
 end)
 
-net.Receive("ax.inventory.item.remove", function()
-    local inventoryID = net.ReadUInt(32)
-    local itemID = net.ReadUInt(32)
+ax.net:Hook("ax.inventory.item.remove", function(inventoryID, itemID)
 
     local inv = ax.inventory.instances[inventoryID]
     if ( !istable(inv) ) then
@@ -457,10 +421,7 @@ net.Receive("ax.inventory.item.remove", function()
     end
 end)
 
-net.Receive("ax.relay.update", function()
-    local index = net.ReadString()
-    local name = net.ReadString()
-    local value = net.ReadType()
+ax.net:Hook("ax.relay.update", function(index, name, value)
 
     ax.relay.data[index] = ax.relay.data[index] or {}
     ax.relay.data[index][name] = value
@@ -470,17 +431,13 @@ net.Receive("ax.relay.update", function()
     end
 end)
 
-net.Receive("ax.relay.sync", function()
-    local data = net.ReadTable()
+ax.net:Hook("ax.relay.sync", function(data)
     if ( !istable(data) ) then return end
 
     ax.relay.data = data
 end)
 
-net.Receive("ax.item.transfer", function()
-    local itemID = net.ReadUInt(32)
-    local fromInventoryID = net.ReadUInt(32)
-    local toInventoryID = net.ReadUInt(32)
+ax.net:Hook("ax.item.transfer", function(itemID, fromInventoryID, toInventoryID)
 
     local item = ax.item.instances[itemID]
     if ( !istable(item) ) then
@@ -529,10 +486,7 @@ net.Receive("ax.item.transfer", function()
     end
 end)
 
-net.Receive("ax.item.spawn", function()
-    local itemID = net.ReadUInt(32)
-    local itemClass = net.ReadString()
-    local itemData = net.ReadTable()
+ax.net:Hook("ax.item.spawn", function(itemID, itemClass, itemData)
 
     local item = ax.item.stored[itemClass]
     if ( !istable(item) ) then
@@ -548,11 +502,7 @@ net.Receive("ax.item.spawn", function()
     ax.item.instances[itemID] = itemObject
 end)
 
-net.Receive("ax.chat.message", function()
-    local speaker = net.ReadPlayer()
-    local chatType = net.ReadString()
-    local text = net.ReadString()
-    local data = net.ReadTable()
+ax.net:Hook("ax.chat.message", function(speaker, chatType, text, data)
 
     local chatClass = ax.chat.registry[chatType]
     if ( !istable(chatClass) ) then
@@ -574,8 +524,7 @@ net.Receive("ax.chat.message", function()
     end
 end)
 
-net.Receive("ax.character.invalidate", function()
-    local id = net.ReadUInt(32)
+ax.net:Hook("ax.character.invalidate", function(id)
     if ( !isnumber(id) or id < 1 ) then return end
 
     local character = ax.character.instances[id]
@@ -596,15 +545,12 @@ net.Receive("ax.character.invalidate", function()
     ax.character.instances[id] = nil
 end)
 
-net.Receive("ax.player.actionbar.start", function()
-    local label = net.ReadString()
-    local duration = net.ReadFloat()
+ax.net:Hook("ax.player.actionbar.start", function(label, duration)
 
     ax.actionBar:Start(label, duration)
 end)
 
-net.Receive("ax.player.actionbar.stop", function()
-    local cancelled = net.ReadBool()
+ax.net:Hook("ax.player.actionbar.stop", function(cancelled)
 
     ax.actionBar:Stop(cancelled)
 end)

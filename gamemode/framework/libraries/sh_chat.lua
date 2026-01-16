@@ -168,17 +168,15 @@ if ( SERVER ) then
         text = string.Trim(text)
         text = hook.Run("PlayerMessageSend", speaker, chatType, rawText, text, receivers, data) or text
 
-        net.Start("ax.chat.message")
-            net.WritePlayer(speaker)
-            net.WriteString(chatType)
-            net.WriteString(text)
-            net.WriteTable(data or {})
+        local payload = data or {}
         if ( isvector(receivers) ) then
-            if ( data.receiversPAS ) then net.SendPAS(speaker:EyePos())
-            elseif ( data.receiversPVS ) then net.SendPVS(speaker:EyePos())
+            if ( payload.receiversPAS ) then
+                ax.net:StartPAS(speaker:EyePos(), "ax.chat.message", speaker, chatType, text, payload)
+            elseif ( payload.receiversPVS ) then
+                ax.net:StartPVS(speaker:EyePos(), "ax.chat.message", speaker, chatType, text, payload)
             end
         else
-            net.Send(receivers)
+            ax.net:Start(receivers, "ax.chat.message", speaker, chatType, text, payload)
         end
 
         return text

@@ -457,12 +457,8 @@ if ( SERVER ) then
 
                 ax.util:PrintDebug(string.format("Transferred item %s from inventory %s to inventory %s", item.id, tostring(fromInventoryID), tostring(toInventoryID)))
 
-                net.Start("ax.item.transfer")
-                    net.WriteUInt(item.id, 32)
-                    net.WriteUInt(fromInventoryID, 32)
-                    net.WriteUInt(toInventoryID, 32)
                 if ( toInventoryID == 0 ) then
-                    net.Broadcast()
+                    ax.net:Start(nil, "ax.item.transfer", item.id, fromInventoryID, toInventoryID)
 
                     local itemEntity = ents.Create("ax_item")
                     if ( !IsValid(itemEntity) ) then
@@ -478,7 +474,7 @@ if ( SERVER ) then
 
                     ax.util:PrintDebug("Broadcasting to all clients (world inventory)")
                 else
-                    net.Send(toInventory:GetReceivers())
+                    ax.net:Start(toInventory:GetReceivers(), "ax.item.transfer", item.id, fromInventoryID, toInventoryID)
 
                     ax.util:PrintDebug("Sending to inventory receivers only")
                     for k, v in pairs(toInventory:GetReceivers()) do
@@ -526,11 +522,7 @@ if ( SERVER ) then
                 entity:Spawn()
                 entity:Activate()
 
-                net.Start("ax.item.spawn")
-                    net.WriteUInt(lastID, 32)
-                    net.WriteString(class)
-                    net.WriteTable(data or {})
-                net.Broadcast()
+                ax.net:Start(nil, "ax.item.spawn", lastID, class, data or {})
 
                 if ( isfunction(callback) ) then
                     callback(entity, itemObject)

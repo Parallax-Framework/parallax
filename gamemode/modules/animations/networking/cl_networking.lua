@@ -23,10 +23,7 @@ local function ApplyIK(client)
     end)
 end
 
-net.Receive("ax.animations.update", function()
-    local client = net.ReadPlayer()
-    local animations = net.ReadTable()
-    local holdType = net.ReadString()
+ax.net:Hook("ax.animations.update", function(client, animations, holdType)
 
     if ( !IsValid(client) ) then return end
 
@@ -39,15 +36,13 @@ net.Receive("ax.animations.update", function()
     ApplyIK(client)
 end)
 
-net.Receive("ax.sequence.reset", function()
-    local client = net.ReadPlayer()
+ax.net:Hook("ax.sequence.reset", function(client)
     if ( !IsValid(client) ) then return end
 
     hook.Run("PostPlayerLeaveSequence", client)
 end)
 
-net.Receive("ax.sequence.set", function()
-    local client = net.ReadPlayer()
+ax.net:Hook("ax.sequence.set", function(client)
     if ( !IsValid(client) ) then return end
 
     hook.Run("PostPlayerForceSequence", client)

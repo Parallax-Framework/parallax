@@ -77,16 +77,12 @@ function ax.player:SetVar(client, key, value, bNoNetworking, recipients)
     clientTable.axVars[key] = value
 
     if ( SERVER and !bNoNetworking ) then
-        net.Start("ax.player.var")
-            net.WritePlayer(client)
-            net.WriteString(key)
-            net.WriteType(value)
         if ( istable(recipients) or isentity(recipients) ) then
-            net.Send(recipients)
+            ax.net:Start(recipients, "ax.player.var", client, key, value)
         elseif ( isvector(recipients) ) then
-            net.SendPVS(recipients)
+            ax.net:StartPVS(recipients, "ax.player.var", client, key, value)
         else
-            net.Broadcast()
+            ax.net:Start(nil, "ax.player.var", client, key, value)
         end
     end
 end

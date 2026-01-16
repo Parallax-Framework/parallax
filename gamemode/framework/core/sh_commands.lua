@@ -104,10 +104,7 @@ ax.command:Add("CharSetName", {
         end
 
         if ( !name or name == "" ) then
-            net.Start("ax.character.setnameprompt")
-                net.WriteUInt(target.id, 32)
-                net.WriteString(target:GetName())
-            net.Send(client)
+            ax.net:Start(client, "ax.character.setnameprompt", target.id)
 
             return
         end

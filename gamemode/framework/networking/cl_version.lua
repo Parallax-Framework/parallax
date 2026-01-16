@@ -9,8 +9,7 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
-net.Receive("ax.version.init", function()
-    local data = net.ReadTable()
+ax.net:Hook("ax.version.init", function(data)
     if ( !istable(data) ) then
         ax.util:PrintWarning("Received invalid parallax version payload from server")
         ax.version = {}

@@ -12,15 +12,14 @@
 -- @module ax.zones
 
 ax.zones = ax.zones or {}
+ax.zones.debug = ax.zones.debug or false
 
-local debugEnabled = false
-
-net.Receive("ax.zones.drawdebug", function()
-    debugEnabled = net.ReadBool()
+ax.net:Hook("ax.zones.drawdebug", function(enabled)
+    ax.zones.debug = enabled == true
 end)
 
 hook.Add("PostDrawOpaqueRenderables", "ax.zones.debug", function()
-    if ( !debugEnabled ) then return end
+    if ( !ax.zones.debug ) then return end
 
     local client = ax.client
     if ( !IsValid(client) ) then return end

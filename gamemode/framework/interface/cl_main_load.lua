@@ -66,9 +66,7 @@ function PANEL:PopulateCharacterList()
         button:SetTall(self.characters:GetWide() / 8)
 
         button.DoClick = function()
-            net.Start("ax.character.load")
-                net.WriteUInt(v.id, 32)
-            net.SendToServer()
+            ax.net:Start("ax.character.load", v.id)
         end
 
         local faction = v:GetFactionData()
@@ -191,9 +189,7 @@ function PANEL:PopulateDeletePanel(character)
         self.characterList:SlideToFront()
         self.deletePanel:SlideRight()
     end, "confirm", function()
-        net.Start("ax.character.delete")
-            net.WriteUInt(character.id, 32)
-        net.SendToServer()
+        ax.net:Start("ax.character.delete", character.id)
 
         self:PopulateCharacterList()
         self.characterList:SlideToFront()

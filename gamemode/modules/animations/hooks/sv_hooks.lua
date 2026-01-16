@@ -28,11 +28,7 @@ function MODULE:UpdateClientAnimations(client)
         clientTable.axAnimations = {}
     end
 
-    net.Start("ax.animations.update")
-        net.WritePlayer(client)
-        net.WriteTable(clientTable.axAnimations)
-        net.WriteString(holdType)
-    net.Broadcast()
+    ax.net:Start(nil, "ax.animations.update", client, clientTable.axAnimations, holdType)
 end
 
 function MODULE:PostEntitySetModel(ent, model)

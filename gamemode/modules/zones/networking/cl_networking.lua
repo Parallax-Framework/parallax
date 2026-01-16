@@ -11,44 +11,20 @@
 
 --- Receive zone sync from server.
 -- @realm client
-net.Receive("ax.zones.sync", function()
-    -- Read nextId
-    ax.zones.nextId = net.ReadUInt(32)
+ax.net:Hook("ax.zones.sync", function(payload)
+    if ( !istable(payload) ) then return end
 
-    -- Read zone count
-    local count = net.ReadUInt(16)
+    ax.zones.nextId = payload.nextId or ax.zones.nextId or 1
 
-    -- Clear existing zones
+    local zones = payload.zones or {}
     ax.zones.stored = {}
 
-    -- Read each zone
-    for i = 1, count do
-        local zone = {}
-        zone.id = net.ReadUInt(32)
-        zone.name = net.ReadString()
-        zone.type = net.ReadString()
-        zone.priority = net.ReadInt(32)
-        zone.flags = net.ReadTable()
-        zone.data = net.ReadTable()
-        zone.map = net.ReadString()
-        zone.source = net.ReadString()
-
-        -- Read geometry based on type
-        if ( zone.type == "box" ) then
-            zone.mins = net.ReadVector()
-            zone.maxs = net.ReadVector()
-        elseif ( zone.type == "sphere" ) then
-            zone.center = net.ReadVector()
-            zone.radius = net.ReadFloat()
-        elseif ( zone.type == "pvs" or zone.type == "trace" ) then
-            zone.origin = net.ReadVector()
-            if ( net.ReadBool() ) then
-                zone.radius = net.ReadFloat()
-            end
+    for i = 1, #zones do
+        local zone = zones[i]
+        if ( istable(zone) and isnumber(zone.id) ) then
+            ax.zones.stored[zone.id] = zone
         end
-
-        ax.zones.stored[zone.id] = zone
     end
 
-    ax.util:PrintDebug("Received " .. count .. " zones from server")
+    ax.util:PrintDebug("Received " .. tostring(#zones) .. " zones from server")
 end)

@@ -45,9 +45,7 @@ if ( SERVER ) then
         local prevent = hook.Run("PrePlayerLeaveSequence", self)
         if ( prevent != nil and prevent == false ) then return end
 
-        net.Start("ax.sequence.reset")
-            net.WritePlayer(self)
-        net.Broadcast()
+        ax.net:Start(nil, "ax.sequence.reset", self)
 
         local callback = ax.animations.forcedSequenceCallbacks[self:SteamID64()]
         ax.animations.forcedSequenceCallbacks[self:SteamID64()] = nil
@@ -67,9 +65,7 @@ if ( SERVER ) then
         if ( prevent != nil and prevent == false ) then return end
 
         if ( sequence == nil ) then
-            net.Start("ax.sequence.reset")
-                net.WritePlayer(self)
-            net.Broadcast()
+            ax.net:Start(nil, "ax.sequence.reset", self)
 
             return
         end

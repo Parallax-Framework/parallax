@@ -50,15 +50,11 @@ function GM:PlayerStartVoice(speaker, speakerIndex) -- speakerIndex only appears
         g_VoicePanelList:Remove()
     end
 
-    net.Start("ax.voice.start")
-        net.WritePlayer(speaker)
-    net.SendToServer()
+    ax.net:Start("ax.voice.start", speaker)
 end
 
 function GM:PlayerEndVoice(speaker)
-    net.Start("ax.voice.end")
-        net.WritePlayer(speaker)
-    net.SendToServer()
+    ax.net:Start("ax.voice.end", speaker)
 end
 
 function GM:ShouldDrawVignette()

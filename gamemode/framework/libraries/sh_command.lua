@@ -401,10 +401,7 @@ function ax.command:Send(text)
     end
 
     -- Send to server
-    net.Start("ax.command.run")
-        net.WriteString(name)
-        net.WriteString(rawArgs)
-    net.SendToServer()
+    ax.net:Start("ax.command.run", name, rawArgs)
 end
 
 --[[
@@ -442,11 +439,8 @@ end
 
 -- Server-side network receiver
 if ( SERVER ) then
-    net.Receive("ax.command.run", function(len, caller)
+    ax.net:Hook("ax.command.run", function(caller, name, rawArgs)
         if ( !IsValid(caller) ) then return end
-
-        local name = net.ReadString()
-        local rawArgs = net.ReadString()
 
         local ok, result = ax.command:Run(caller, name, rawArgs)
         if ( !ok ) then

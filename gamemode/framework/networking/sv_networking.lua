@@ -42,15 +42,11 @@ util.AddNetworkString("ax.chat.text.changed")
 util.AddNetworkString("ax.voice.start")
 util.AddNetworkString("ax.voice.end")
 
-net.Receive("ax.player.actionbar.stop", function(len, client)
+ax.net:Hook("ax.player.actionbar.stop", function(client, bCancelled)
     local clientTable = client:GetTable()
     if ( !istable(clientTable.axActionBar) ) then return end
 
-    local bCancelled = net.ReadBool()
-
-    net.Start("ax.player.actionbar.stop")
-        net.WriteBool(bCancelled)
-    net.Send(client)
+    ax.net:Start(client, "ax.player.actionbar.stop", bCancelled)
 
     if ( bCancelled and isfunction(clientTable.axActionBar.onCancel) ) then
         clientTable.axActionBar.onCancel()
@@ -64,8 +60,7 @@ net.Receive("ax.player.actionbar.stop", function(len, client)
     clientTable.axActionBar = nil
 end)
 
-net.Receive("ax.voice.start", function(len, client)
-    local speaker = net.ReadPlayer()
+ax.net:Hook("ax.voice.start", function(client, speaker)
 
     if ( !IsValid(speaker) ) then return end
     if ( !speaker:RateLimit("voice.start", 0.3) ) then return end
@@ -73,8 +68,7 @@ net.Receive("ax.voice.start", function(len, client)
     hook.Run("PlayerStartVoice", speaker)
 end)
 
-net.Receive("ax.voice.end", function(len, client)
-    local speaker = net.ReadPlayer()
+ax.net:Hook("ax.voice.end", function(client, speaker)
 
     if ( !IsValid(speaker) ) then return end
     if ( !speaker:RateLimit("voice.start", 0.3) ) then return end
@@ -82,10 +76,8 @@ net.Receive("ax.voice.end", function(len, client)
     hook.Run("PlayerEndVoice", speaker)
 end)
 
-net.Receive("ax.chat.message", function(len, client)
+ax.net:Hook("ax.chat.message", function(client, output)
     if ( !client:RateLimit("chat.send", 0.5) ) then return end
-
-    local output = net.ReadString()
 
     hook.Run("PlayerSay", client, output)
 
@@ -94,11 +86,8 @@ net.Receive("ax.chat.message", function(len, client)
 end)
 
 
-net.Receive("ax.chat.text.changed", function(len, client)
+ax.net:Hook("ax.chat.text.changed", function(client, text, chatType)
     if ( !client:RateLimit("chat.text.changed", 0.01) ) then return end
-
-    local text = net.ReadString()
-    local chatType = net.ReadString()
 
     text = string.gsub(text, "[^%w%s%p]", "")
     text = string.Trim(text)
@@ -111,13 +100,12 @@ net.Receive("ax.chat.text.changed", function(len, client)
 end)
 
 
-net.Receive("ax.item.transfer", function(length, client)
+ax.net:Hook("ax.item.transfer", function(client, itemID, targetInventoryID)
     local character = client:GetCharacter()
     if ( !character ) then return end
 
     if ( !client:RateLimit("item.transfer", 0.1) ) then return end
 
-    local itemID = net.ReadUInt(32)
     if ( !isnumber(itemID) or itemID < 1 ) then
         ax.util:Error("Invalid payload received for item transfer.")
         return
@@ -135,7 +123,6 @@ net.Receive("ax.item.transfer", function(length, client)
         return
     end
 
-    local targetInventoryID = net.ReadUInt(32)
     if ( !isnumber(targetInventoryID) or targetInventoryID < 1 ) then
         ax.util:Error("Invalid payload received for item transfer.")
         return
@@ -151,11 +138,8 @@ net.Receive("ax.item.transfer", function(length, client)
 end)
 
 util.AddNetworkString("ax.inventory.item.action")
-net.Receive("ax.inventory.item.action", function(length, client)
+ax.net:Hook("ax.inventory.item.action", function(client, itemID, action)
     if ( !client:RateLimit("inventory.action", 0.1) ) then return end
-
-    local itemID = net.ReadUInt(32)
-    local action = net.ReadString()
 
     if ( !isnumber(itemID) or itemID < 1 or !isstring(action) or #action < 1 ) then
         ax.util:Error("Invalid payload received for item action.")
@@ -211,8 +195,7 @@ net.Receive("ax.inventory.item.action", function(length, client)
 end)
 
 util.AddNetworkString("ax.character.create")
-net.Receive("ax.character.create", function(length, client)
-    local payload = net.ReadTable()
+ax.net:Hook("ax.character.create", function(client, payload)
     if ( !istable(payload) ) then
         ax.util:Error("Invalid payload received for character creation.")
         return
@@ -296,10 +279,7 @@ net.Receive("ax.character.create", function(length, client)
         ax.inventory:Sync(inventory)
         ax.character:Sync(client, character)
 
-        net.Start("ax.character.create")
-            net.WriteUInt(character.id, 32)
-            net.WriteTable(clientData.axCharacters)
-        net.Send(client)
+        ax.net:Start(client, "ax.character.create", character.id, clientData.axCharacters)
 
         ax.util:PrintSuccess("Character created for " .. client:SteamID64() .. ": " .. character:GetName())
 
@@ -315,8 +295,7 @@ net.Receive("ax.character.create", function(length, client)
 end)
 
 util.AddNetworkString("ax.character.load")
-net.Receive("ax.character.load", function(length, client)
-    local charID = net.ReadUInt(32)
+ax.net:Hook("ax.character.load", function(client, charID)
     if ( !isnumber(charID) or charID < 1 ) then
         ax.util:Error("Invalid character ID received for loading.")
         return
@@ -367,8 +346,7 @@ net.Receive("ax.character.load", function(length, client)
 end)
 
 util.AddNetworkString("ax.character.delete")
-net.Receive("ax.character.delete", function(length, client)
-    local id = net.ReadUInt(32)
+ax.net:Hook("ax.character.delete", function(client, id)
     if ( !isnumber(id) or id < 1 ) then return end
 
     local character = ax.character.instances[id]
@@ -414,9 +392,7 @@ net.Receive("ax.character.delete", function(length, client)
                 client:SendLua([[vgui.Create("ax.main")]])
             end
 
-            net.Start("ax.character.delete")
-                net.WriteUInt(id, 32)
-            net.Send(client)
+            ax.net:Start(client, "ax.character.delete", id)
 
             hook.Run("PlayerDeletedCharacter", client, id)
 
@@ -426,14 +402,12 @@ net.Receive("ax.character.delete", function(length, client)
 end)
 
 util.AddNetworkString("ax.spawnmenu.spawn.item")
-net.Receive("ax.spawnmenu.spawn.item", function(len, client)
+ax.net:Hook("ax.spawnmenu.spawn.item", function(client, itemClass)
     -- TODO: Use CAMI to handle permissions
     if ( !IsValid(client) or !client:IsSuperAdmin() ) then
         ax.util:PrintWarning(string.format("Player %s attempted to spawn an item without permission", tostring(client)))
         return
     end
-
-    local itemClass = net.ReadString()
     if ( !ax.item.stored[itemClass] ) then
         client:Notify("Invalid item class: " .. tostring(itemClass))
         ax.util:PrintWarning(string.format("Player %s attempted to spawn invalid item class: %s", tostring(client), tostring(itemClass)))

@@ -93,11 +93,7 @@ function ax.player.meta:PlayGesture(slot, sequence)
     if ( CLIENT ) then
         self:AddVCDSequenceToGestureSlot(slot, sequence, 0, true)
     else
-        net.Start("ax.player.playGesture")
-            net.WritePlayer(self)
-            net.WriteUInt(slot, 8)
-            net.WriteUInt(sequence, 16)
-        net.SendPVS(self:GetPos())
+        ax.net:StartPVS(self:GetPos(), "ax.player.playGesture", self, slot, sequence)
     end
 end
 
@@ -118,14 +114,10 @@ if ( SERVER ) then
         clientTable.axVars.data[key] = value
 
         if ( !bNoNetworking ) then
-            net.Start("ax.player.data")
-                net.WritePlayer(self)
-                net.WriteString(key)
-                net.WriteType(value)
             if ( recipients ) then
-                net.Send(recipients)
+                ax.net:Start(recipients, "ax.player.data", self, key, value)
             else
-                net.Broadcast()
+                ax.net:Start(nil, "ax.player.data", self, key, value)
             end
         end
     end
@@ -242,17 +234,12 @@ if ( SERVER ) then
     util.AddNetworkString( "ax.player.chatPrint" )
     util.AddNetworkString( "ax.player.playGesture" )
 else
-    net.Receive("ax.player.chatPrint", function(len)
-        local messages = net.ReadTable()
+    ax.net:Hook("ax.player.chatPrint", function(messages)
         chat.AddText(unpack(messages))
     end)
 
-    net.Receive("ax.player.playGesture", function(len)
-        local sender = net.ReadPlayer()
+    ax.net:Hook("ax.player.playGesture", function(sender, slot, sequence)
         if ( !IsValid(sender) ) then return end
-
-        local slot = net.ReadUInt(8)
-        local sequence = net.ReadUInt(16)
 
         sender:PlayGesture(slot, sequence)
     end)
@@ -261,9 +248,7 @@ end
 ax.player.meta.ChatPrintInternal = ax.player.meta.ChatPrintInternal or ax.player.meta.ChatPrint
 function ax.player.meta:ChatPrint(...)
     if ( SERVER ) then
-        net.Start("ax.player.chatPrint")
-            net.WriteTable({...})
-        net.Send(self)
+        ax.net:Start(self, "ax.player.chatPrint", {...})
     else
         chat.AddText(...)
     end
@@ -299,16 +284,11 @@ end
 function ax.player.meta:PerformAction(label, duration, onComplete, onCancel)
     if ( SERVER ) then
         if ( label == nil ) then
-            net.Start("ax.player.actionbar.stop")
-                net.WriteBool(true)
-            net.Send(self)
+            ax.net:Start(self, "ax.player.actionbar.stop", true)
             return
         end
 
-        net.Start("ax.player.actionbar.start")
-            net.WriteString(label or "Processing...")
-            net.WriteFloat(duration or 5)
-        net.Send(self)
+        ax.net:Start(self, "ax.player.actionbar.start", label or "Processing...", duration or 5)
 
         local selfTable = self:GetTable()
         selfTable.axActionBar = {}

@@ -15,47 +15,47 @@ ax.zones = ax.zones or {}
 
 util.AddNetworkString("ax.zones.sync")
 
+local function BuildSyncPayload()
+    local zones = {}
+    for _, zone in pairs(ax.zones.stored) do
+        local entry = {
+            id = zone.id,
+            name = zone.name,
+            type = zone.type,
+            priority = zone.priority,
+            flags = zone.flags,
+            data = zone.data,
+            map = zone.map,
+            source = zone.source
+        }
+
+        if ( zone.type == "box" ) then
+            entry.mins = zone.mins
+            entry.maxs = zone.maxs
+        elseif ( zone.type == "sphere" ) then
+            entry.center = zone.center
+            entry.radius = zone.radius
+        elseif ( zone.type == "pvs" or zone.type == "trace" ) then
+            entry.origin = zone.origin
+            entry.radius = zone.radius
+        end
+
+        zones[#zones + 1] = entry
+    end
+
+    return {
+        nextId = ax.zones.nextId,
+        zones = zones
+    }
+end
+
 --- Synchronize zones to all clients.
 -- @realm server
 function ax.zones:Sync()
-    net.Start("ax.zones.sync")
-        -- Send nextId
-        net.WriteUInt(self.nextId, 32)
+    local payload = BuildSyncPayload()
+    ax.net:Start(nil, "ax.zones.sync", payload)
 
-        -- Send zone count
-        local count = table.Count(self.stored)
-        net.WriteUInt(count, 16)
-
-        -- Send each zone
-        for id, zone in pairs(self.stored) do
-            net.WriteUInt(zone.id, 32)
-            net.WriteString(zone.name)
-            net.WriteString(zone.type)
-            net.WriteInt(zone.priority, 32)
-            net.WriteTable(zone.flags)
-            net.WriteTable(zone.data)
-            net.WriteString(zone.map)
-            net.WriteString(zone.source)
-
-            -- Send geometry based on type
-            if ( zone.type == "box" ) then
-                net.WriteVector(zone.mins)
-                net.WriteVector(zone.maxs)
-            elseif ( zone.type == "sphere" ) then
-                net.WriteVector(zone.center)
-                net.WriteFloat(zone.radius)
-            elseif ( zone.type == "pvs" or zone.type == "trace" ) then
-                net.WriteVector(zone.origin)
-                net.WriteBool(zone.radius != nil)
-                if ( zone.radius ) then
-                    net.WriteFloat(zone.radius)
-                end
-            end
-        end
-
-    net.Broadcast()
-
-    ax.util:PrintDebug("Zones synchronized to all clients (" .. count .. " zones)")
+    ax.util:PrintDebug("Zones synchronized to all clients (" .. #payload.zones .. " zones)")
 end
 
 --- Synchronize zones to a specific player.
@@ -63,52 +63,12 @@ end
 -- @tparam Player client Player to sync to
 function ax.zones:SyncToPlayer(client)
     if ( !IsValid(client) ) then return end
+    local payload = BuildSyncPayload()
+    ax.net:Start(client, "ax.zones.sync", payload)
 
-    net.Start("ax.zones.sync")
-        -- Send nextId
-        net.WriteUInt(self.nextId, 32)
-
-        -- Send zone count
-        local count = table.Count(self.stored)
-        net.WriteUInt(count, 16)
-
-        -- Send each zone
-        for id, zone in pairs(self.stored) do
-            net.WriteUInt(zone.id, 32)
-            net.WriteString(zone.name)
-            net.WriteString(zone.type)
-            net.WriteInt(zone.priority, 32)
-            net.WriteTable(zone.flags)
-            net.WriteTable(zone.data)
-            net.WriteString(zone.map)
-            net.WriteString(zone.source)
-
-            -- Send geometry based on type
-            if ( zone.type == "box" ) then
-                net.WriteVector(zone.mins)
-                net.WriteVector(zone.maxs)
-            elseif ( zone.type == "sphere" ) then
-                net.WriteVector(zone.center)
-                net.WriteFloat(zone.radius)
-            elseif ( zone.type == "pvs" or zone.type == "trace" ) then
-                net.WriteVector(zone.origin)
-                net.WriteBool(zone.radius != nil)
-                if ( zone.radius ) then
-                    net.WriteFloat(zone.radius)
-                end
-            end
-        end
-
-    net.Send(client)
-
-    ax.util:PrintDebug("Zones synchronized to " .. client:Nick() .. " (" .. count .. " zones)")
+    ax.util:PrintDebug("Zones synchronized to " .. client:Nick() .. " (" .. #payload.zones .. " zones)")
 end
 
---- Sync to players when they join.
-hook.Add("PlayerInitialSpawn", "ax.zones.sync", function(client)
-    timer.Simple(1, function()
-        if ( IsValid(client) ) then
-            ax.zones:SyncToPlayer(client)
-        end
-    end)
+hook.Add("PlayerReady", "ax.zones.sync", function(client)
+    ax.zones:SyncToPlayer(client)
 end)
