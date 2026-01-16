@@ -388,8 +388,6 @@ function GM:StartCommand(client, userCmd)
             query:Execute()
 
             ax.character:Restore(client, function(characters)
-                hook.Run("PlayerReady", client)
-
                 ax.inventory:Restore(client)
                 ax.relay:Sync(client)
 
@@ -409,6 +407,8 @@ function GM:StartCommand(client, userCmd)
 
                     ax.net:Start(client, "inventory.item.add", 0, item.id, item.class, item.data or {})
                 end
+
+                hook.Run("PlayerReady", client)
             end)
         end)
 
