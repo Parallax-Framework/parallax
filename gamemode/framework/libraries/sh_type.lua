@@ -165,3 +165,35 @@ function ax.type:Format(typeID)
 
     return typeNames[typeID] or "Unknown"
 end
+
+function isangle(val)
+    return type(val) == "Angle"
+end
+
+function isbool(val)
+    return type(val) == "boolean"
+end
+
+function isentity(val)
+    return type(val) == "Entity"
+end
+
+function isnumber(val)
+    return type(val) == "number"
+end
+
+function isplayer(val)
+    return type(val) == "Player"
+end
+
+function isstring(val)
+    return type(val) == "string"
+end
+
+function iscolor(val)
+    return IsColor(val)
+end
+
+function istable(val)
+    return type(val) == "table"
+end
