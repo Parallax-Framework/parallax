@@ -74,6 +74,9 @@ ax.localization:Register("bg", {
     ["config.speed.walk.crouched"] = "Скорост на Ходене Прегърбен",
     ["config.speed.walk.slow"] = "Скорост на Бавно Ходене",
 
+    ---- Misc
+    ["respawning"] = "Прераждане...",
+
     --- General
     ---- Basic
     ["config.bot.support"] = "Поддръжка на Ботове",
