@@ -190,11 +190,11 @@ if ( SERVER ) then
         -- Network character data changes to all clients
         if ( !bNoNetworking ) then
             if ( istable(recipients) or isentity(recipients) ) then
-                ax.net:Start(recipients, "ax.character.data", self:GetID(), key, value)
+                ax.net:Start(recipients, "character.data", self:GetID(), key, value)
             elseif ( isvector(recipients) ) then
-                ax.net:StartPVS(recipients, "ax.character.data", self:GetID(), key, value)
+                ax.net:StartPVS(recipients, "character.data", self:GetID(), key, value)
             else
-                ax.net:Start(nil, "ax.character.data", self:GetID(), key, value)
+                ax.net:Start(nil, "character.data", self:GetID(), key, value)
             end
         end
 

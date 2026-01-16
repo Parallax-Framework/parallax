@@ -93,7 +93,7 @@ function ax.player.meta:PlayGesture(slot, sequence)
     if ( CLIENT ) then
         self:AddVCDSequenceToGestureSlot(slot, sequence, 0, true)
     else
-        ax.net:StartPVS(self:GetPos(), "ax.player.playGesture", self, slot, sequence)
+        ax.net:StartPVS(self:GetPos(), "player.playGesture", self, slot, sequence)
     end
 end
 
@@ -115,9 +115,9 @@ if ( SERVER ) then
 
         if ( !bNoNetworking ) then
             if ( recipients ) then
-                ax.net:Start(recipients, "ax.player.data", self, key, value)
+                ax.net:Start(recipients, "player.data", self, key, value)
             else
-                ax.net:Start(nil, "ax.player.data", self, key, value)
+                ax.net:Start(nil, "player.data", self, key, value)
             end
         end
     end
@@ -234,11 +234,11 @@ if ( SERVER ) then
     util.AddNetworkString( "ax.player.chatPrint" )
     util.AddNetworkString( "ax.player.playGesture" )
 else
-    ax.net:Hook("ax.player.chatPrint", function(messages)
+    ax.net:Hook("player.chatPrint", function(messages)
         chat.AddText(unpack(messages))
     end)
 
-    ax.net:Hook("ax.player.playGesture", function(sender, slot, sequence)
+    ax.net:Hook("player.playGesture", function(sender, slot, sequence)
         if ( !IsValid(sender) ) then return end
 
         sender:PlayGesture(slot, sequence)
@@ -248,7 +248,7 @@ end
 ax.player.meta.ChatPrintInternal = ax.player.meta.ChatPrintInternal or ax.player.meta.ChatPrint
 function ax.player.meta:ChatPrint(...)
     if ( SERVER ) then
-        ax.net:Start(self, "ax.player.chatPrint", {...})
+        ax.net:Start(self, "player.chatPrint", {...})
     else
         chat.AddText(...)
     end
@@ -284,11 +284,11 @@ end
 function ax.player.meta:PerformAction(label, duration, onComplete, onCancel)
     if ( SERVER ) then
         if ( label == nil ) then
-            ax.net:Start(self, "ax.player.actionbar.stop", true)
+            ax.net:Start(self, "player.actionbar.stop", true)
             return
         end
 
-        ax.net:Start(self, "ax.player.actionbar.start", label or "Processing...", duration or 5)
+        ax.net:Start(self, "player.actionbar.start", label or "Processing...", duration or 5)
 
         local selfTable = self:GetTable()
         selfTable.axActionBar = {}

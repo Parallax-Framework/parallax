@@ -14,7 +14,7 @@
 ax.zones = ax.zones or {}
 ax.zones.debug = ax.zones.debug or false
 
-ax.net:Hook("ax.zones.drawdebug", function(enabled)
+ax.net:Hook("zones.drawdebug", function(enabled)
     ax.zones.debug = enabled == true
 end)
 

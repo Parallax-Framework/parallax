@@ -23,7 +23,7 @@ local function ApplyIK(client)
     end)
 end
 
-ax.net:Hook("ax.animations.update", function(client, animations, holdType)
+ax.net:Hook("animations.update", function(client, animations, holdType)
 
     if ( !IsValid(client) ) then return end
 
@@ -36,13 +36,13 @@ ax.net:Hook("ax.animations.update", function(client, animations, holdType)
     ApplyIK(client)
 end)
 
-ax.net:Hook("ax.sequence.reset", function(client)
+ax.net:Hook("sequence.reset", function(client)
     if ( !IsValid(client) ) then return end
 
     hook.Run("PostPlayerLeaveSequence", client)
 end)
 
-ax.net:Hook("ax.sequence.set", function(client)
+ax.net:Hook("sequence.set", function(client)
     if ( !IsValid(client) ) then return end
 
     hook.Run("PostPlayerForceSequence", client)

@@ -434,7 +434,7 @@ end
 
 -- Server-side network receiver
 if ( SERVER ) then
-    ax.net:Hook("ax.command.run", function(caller, name, rawArgs)
+    ax.net:Hook("command.run", function(caller, name, rawArgs)
         if ( !IsValid(caller) ) then return end
 
         local ok, result = ax.command:Run(caller, name, rawArgs)

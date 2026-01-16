@@ -171,12 +171,12 @@ if ( SERVER ) then
         local payload = data or {}
         if ( isvector(receivers) ) then
             if ( payload.receiversPAS ) then
-                ax.net:StartPAS(speaker:EyePos(), "ax.chat.message", speaker, chatType, text, payload)
+                ax.net:StartPAS(speaker:EyePos(), "chat.message", speaker, chatType, text, payload)
             elseif ( payload.receiversPVS ) then
-                ax.net:StartPVS(speaker:EyePos(), "ax.chat.message", speaker, chatType, text, payload)
+                ax.net:StartPVS(speaker:EyePos(), "chat.message", speaker, chatType, text, payload)
             end
         else
-            ax.net:Start(receivers, "ax.chat.message", speaker, chatType, text, payload)
+            ax.net:Start(receivers, "chat.message", speaker, chatType, text, payload)
         end
 
         return text

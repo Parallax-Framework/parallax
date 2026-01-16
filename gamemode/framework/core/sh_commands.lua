@@ -104,7 +104,7 @@ ax.command:Add("CharSetName", {
         end
 
         if ( !name or name == "" ) then
-            ax.net:Start(client, "ax.character.setnameprompt", target.id)
+            ax.net:Start(client, "character.setnameprompt", target.id)
 
             return
         end

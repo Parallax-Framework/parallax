@@ -336,7 +336,7 @@ hook.Add("player_disconnect", "Parallax.PlayerDisconnected", function(data)
             local character = characters[i]
             ax.character.instances[character.id] = nil
 
-            ax.net:Start(nil, "ax.character.invalidate", character.id)
+            ax.net:Start(nil, "character.invalidate", character.id)
         end
     end
 
@@ -407,7 +407,7 @@ function GM:StartCommand(client, userCmd)
                 for itemID, item in pairs(ax.item.instances) do
                     if ( !istable(item) or item.invID != 0 ) then continue end
 
-                    ax.net:Start(client, "ax.inventory.item.add", 0, item.id, item.class, item.data or {})
+                    ax.net:Start(client, "inventory.item.add", 0, item.id, item.class, item.data or {})
                 end
             end)
         end)
@@ -417,7 +417,7 @@ function GM:StartCommand(client, userCmd)
         client:SetMoveType(MOVETYPE_NONE)
         client:KillSilent()
 
-        ax.net:Start(client, "ax.player.ready")
+        ax.net:Start(client, "player.ready")
     end
 end
 

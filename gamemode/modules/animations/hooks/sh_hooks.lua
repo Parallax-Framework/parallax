@@ -483,7 +483,7 @@ function MODULE:TranslateActivity(client, act)
                 client.axNextTurn = CurTime() + duration
 
                 if ( SERVER ) then
-                    ax.net:Start(nil, "ax.animations.update", client, clientTable.axAnimations, holdType)
+                    ax.net:Start(nil, "animations.update", client, clientTable.axAnimations, holdType)
                 else
                     client:EmitSound("npc/zombie/foot_slide" .. math.random(3) .. ".wav", 60, math.random(90, 110), 0.1, CHAN_AUTO)
                 end

@@ -159,7 +159,7 @@ function ax.character:Load(client, character)
 
     -- Only send character load message to real players, not bots
     if ( !client:IsBot() ) then
-        ax.net:Start(client, "ax.character.load", character.id)
+        ax.net:Start(client, "character.load", character.id)
     end
 
     character:SetLastPlayed(os.time())
@@ -246,7 +246,7 @@ function ax.character:Restore(client, callback)
             clientData.axCharacters[ #clientData.axCharacters + 1 ] = character
         end
 
-        ax.net:Start(client, "ax.character.restore", clientData.axCharacters)
+        ax.net:Start(client, "character.restore", clientData.axCharacters)
 
         if ( isfunction(callback) ) then
             callback(clientData.axCharacters)
@@ -405,10 +405,10 @@ end
 -- @usage ax.character:Sync(player, characterObject, newPlayer)
 function ax.character:Sync(client, character, recipient)
     if ( istable(recipient) or isentity(recipient) ) then
-        ax.net:Start(recipient, "ax.character.sync", client, character)
+        ax.net:Start(recipient, "character.sync", client, character)
     elseif ( isvector(recipient) ) then
-        ax.net:StartPVS(recipient, "ax.character.sync", client, character)
+        ax.net:StartPVS(recipient, "character.sync", client, character)
     else
-        ax.net:Start(nil, "ax.character.sync", client, character)
+        ax.net:Start(nil, "character.sync", client, character)
     end
 end

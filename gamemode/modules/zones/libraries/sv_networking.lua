@@ -51,7 +51,7 @@ end
 -- @realm server
 function ax.zones:Sync()
     local payload = BuildSyncPayload()
-    ax.net:Start(nil, "ax.zones.sync", payload)
+    ax.net:Start(nil, "zones.sync", payload)
 
     ax.util:PrintDebug("Zones synchronized to all clients (" .. #payload.zones .. " zones)")
 end
@@ -62,7 +62,7 @@ end
 function ax.zones:SyncToPlayer(client)
     if ( !IsValid(client) ) then return end
     local payload = BuildSyncPayload()
-    ax.net:Start(client, "ax.zones.sync", payload)
+    ax.net:Start(client, "zones.sync", payload)
 
     ax.util:PrintDebug("Zones synchronized to " .. client:Nick() .. " (" .. #payload.zones .. " zones)")
 end

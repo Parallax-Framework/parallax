@@ -214,7 +214,7 @@ function SWEP:CanPrimaryAttack()
 end
 
 if ( CLIENT ) then
-    ax.net:Hook("ax.weapon.primary", function(weapon)
+    ax.net:Hook("weapon.primary", function(weapon)
         if ( !IsValid(weapon) ) then return end
 
         local client = weapon:GetOwner()
@@ -243,7 +243,7 @@ function SWEP:PrimaryAttack()
     self:SetNextPrimaryFire(CurTime() + delay)
 
     if ( SERVER ) then
-        ax.net:StartPAS(owner:GetPos(), "ax.weapon.primary", self)
+        ax.net:StartPAS(owner:GetPos(), "weapon.primary", self)
     end
 
     -- Client-side: visuals and effects

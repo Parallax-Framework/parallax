@@ -11,7 +11,7 @@
 
 --- Receive zone sync from server.
 -- @realm client
-ax.net:Hook("ax.zones.sync", function(payload)
+ax.net:Hook("zones.sync", function(payload)
     if ( !istable(payload) ) then return end
 
     ax.zones.nextId = payload.nextId or ax.zones.nextId or 1

@@ -78,11 +78,11 @@ function ax.player:SetVar(client, key, value, bNoNetworking, recipients)
 
     if ( SERVER and !bNoNetworking ) then
         if ( istable(recipients) or isentity(recipients) ) then
-            ax.net:Start(recipients, "ax.player.var", client, key, value)
+            ax.net:Start(recipients, "player.var", client, key, value)
         elseif ( isvector(recipients) ) then
-            ax.net:StartPVS(recipients, "ax.player.var", client, key, value)
+            ax.net:StartPVS(recipients, "player.var", client, key, value)
         else
-            ax.net:Start(nil, "ax.player.var", client, key, value)
+            ax.net:Start(nil, "player.var", client, key, value)
         end
     end
 end

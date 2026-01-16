@@ -9,11 +9,11 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
-ax.net:Hook("ax.player.actionbar.stop", function(client, bCancelled)
+ax.net:Hook("player.actionbar.stop", function(client, bCancelled)
     local clientTable = client:GetTable()
     if ( !istable(clientTable.axActionBar) ) then return end
 
-    ax.net:Start(client, "ax.player.actionbar.stop", bCancelled)
+    ax.net:Start(client, "player.actionbar.stop", bCancelled)
 
     if ( bCancelled and isfunction(clientTable.axActionBar.onCancel) ) then
         clientTable.axActionBar.onCancel()
@@ -27,21 +27,21 @@ ax.net:Hook("ax.player.actionbar.stop", function(client, bCancelled)
     clientTable.axActionBar = nil
 end)
 
-ax.net:Hook("ax.voice.start", function(client, speaker)
+ax.net:Hook("voice.start", function(client, speaker)
     if ( !IsValid(speaker) ) then return end
     if ( !speaker:RateLimit("voice.start", 0.3) ) then return end
 
     hook.Run("PlayerStartVoice", speaker)
 end)
 
-ax.net:Hook("ax.voice.end", function(client, speaker)
+ax.net:Hook("voice.end", function(client, speaker)
     if ( !IsValid(speaker) ) then return end
     if ( !speaker:RateLimit("voice.start", 0.3) ) then return end
 
     hook.Run("PlayerEndVoice", speaker)
 end)
 
-ax.net:Hook("ax.chat.message", function(client, output)
+ax.net:Hook("chat.message", function(client, output)
     if ( !client:RateLimit("chat.send", 0.5) ) then return end
 
     hook.Run("PlayerSay", client, output)
@@ -51,7 +51,7 @@ ax.net:Hook("ax.chat.message", function(client, output)
 end)
 
 
-ax.net:Hook("ax.chat.text.changed", function(client, text, chatType)
+ax.net:Hook("chat.text.changed", function(client, text, chatType)
     if ( !client:RateLimit("chat.text.changed", 0.01) ) then return end
 
     text = string.gsub(text, "[^%w%s%p]", "")
@@ -65,7 +65,7 @@ ax.net:Hook("ax.chat.text.changed", function(client, text, chatType)
 end)
 
 
-ax.net:Hook("ax.item.transfer", function(client, itemID, targetInventoryID)
+ax.net:Hook("item.transfer", function(client, itemID, targetInventoryID)
     local character = client:GetCharacter()
     if ( !character ) then return end
 
@@ -102,7 +102,7 @@ ax.net:Hook("ax.item.transfer", function(client, itemID, targetInventoryID)
     ax.item:Transfer(item, client:GetCharacter():GetInventory():GetID(), targetInventoryID, function() print("Item transferred") end)
 end)
 
-ax.net:Hook("ax.inventory.item.action", function(client, itemID, action)
+ax.net:Hook("inventory.item.action", function(client, itemID, action)
     if ( !client:RateLimit("inventory.action", 0.1) ) then return end
 
     if ( !isnumber(itemID) or itemID < 1 or !isstring(action) or #action < 1 ) then
@@ -158,7 +158,7 @@ ax.net:Hook("ax.inventory.item.action", function(client, itemID, action)
     hook.Run("OnPlayerItemAction", client, item, action)
 end)
 
-ax.net:Hook("ax.character.create", function(client, payload)
+ax.net:Hook("character.create", function(client, payload)
     if ( !istable(payload) ) then
         ax.util:Error("Invalid payload received for character creation.")
         return
@@ -242,7 +242,7 @@ ax.net:Hook("ax.character.create", function(client, payload)
         ax.inventory:Sync(inventory)
         ax.character:Sync(client, character)
 
-        ax.net:Start(client, "ax.character.create", character.id, clientData.axCharacters)
+        ax.net:Start(client, "character.create", character.id, clientData.axCharacters)
 
         ax.util:PrintSuccess("Character created for " .. client:SteamID64() .. ": " .. character:GetName())
 
@@ -257,7 +257,7 @@ ax.net:Hook("ax.character.create", function(client, payload)
     end)
 end)
 
-ax.net:Hook("ax.character.load", function(client, charID)
+ax.net:Hook("character.load", function(client, charID)
     if ( !isnumber(charID) or charID < 1 ) then
         ax.util:Error("Invalid character ID received for loading.")
         return
@@ -307,7 +307,7 @@ ax.net:Hook("ax.character.load", function(client, charID)
     ax.character:Load(client, character)
 end)
 
-ax.net:Hook("ax.character.delete", function(client, id)
+ax.net:Hook("character.delete", function(client, id)
     if ( !isnumber(id) or id < 1 ) then return end
 
     local character = ax.character.instances[id]
@@ -353,7 +353,7 @@ ax.net:Hook("ax.character.delete", function(client, id)
                 client:SendLua([[vgui.Create("ax.main")]])
             end
 
-            ax.net:Start(client, "ax.character.delete", id)
+            ax.net:Start(client, "character.delete", id)
 
             hook.Run("PlayerDeletedCharacter", client, id)
 
@@ -362,12 +362,13 @@ ax.net:Hook("ax.character.delete", function(client, id)
     end)
 end)
 
-ax.net:Hook("ax.spawnmenu.spawn.item", function(client, itemClass)
+ax.net:Hook("spawnmenu.spawn.item", function(client, itemClass)
     -- TODO: Use CAMI to handle permissions
     if ( !IsValid(client) or !client:IsSuperAdmin() ) then
         ax.util:PrintWarning(string.format("Player %s attempted to spawn an item without permission", tostring(client)))
         return
     end
+
     if ( !ax.item.stored[itemClass] ) then
         client:Notify("Invalid item class: " .. tostring(itemClass))
         ax.util:PrintWarning(string.format("Player %s attempted to spawn invalid item class: %s", tostring(client), tostring(itemClass)))

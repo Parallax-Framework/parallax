@@ -28,7 +28,7 @@ function MODULE:UpdateClientAnimations(client)
         clientTable.axAnimations = {}
     end
 
-    ax.net:Start(nil, "ax.animations.update", client, clientTable.axAnimations, holdType)
+    ax.net:Start(nil, "animations.update", client, clientTable.axAnimations, holdType)
 end
 
 function MODULE:PostEntitySetModel(ent, model)

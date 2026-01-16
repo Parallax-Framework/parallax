@@ -46,7 +46,7 @@ if ( SERVER ) then
         local t = type or "generic"
         local dur = tonumber(length) or (ax.config:Get("notificationDefaultLength", 5) or 5)
 
-        ax.net:Start(plylist, "ax.notification.push", msg, t, dur)
+        ax.net:Start(plylist, "notification.push", msg, t, dur)
 
         ax.util:PrintDebug("Notification sent to", #plylist, "players:", msg)
     end
@@ -412,7 +412,7 @@ if ( CLIENT ) then
     end
 
     -- Receive server-sent toasts
-    ax.net:Hook("ax.notification.push", function(text, ntype, length)
+    ax.net:Hook("notification.push", function(text, ntype, length)
         ax.notification:Add(text, ntype, length)
     end)
 end

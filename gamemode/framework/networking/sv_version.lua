@@ -35,9 +35,9 @@ local function BroadcastVersion(data, recipients)
     if ( !data ) then return end
 
     if ( recipients ) then
-        ax.net:Start(recipients, "ax.version.init", data)
+        ax.net:Start(recipients, "version.init", data)
     else
-        ax.net:Start(nil, "ax.version.init", data)
+        ax.net:Start(nil, "version.init", data)
     end
 end
 

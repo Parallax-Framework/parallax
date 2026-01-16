@@ -65,13 +65,13 @@ function ax.voices:GetClass(client, chatType)
 end
 
 if ( CLIENT ) then
-    ax.net:Hook("ax.voices.play", function(entity, sounds, volume, pitch)
+    ax.net:Hook("voices.play", function(entity, sounds, volume, pitch)
         entity = entity or ax.client
         entity:EmitQueuedSound(sounds, volume, pitch)
     end)
 else
     local function PlayQueuedSound(entity, sounds, pitch, volume)
-        ax.net:Start(nil, "ax.voices.play", entity, sounds, volume or 80, pitch or 100)
+        ax.net:Start(nil, "voices.play", entity, sounds, volume or 80, pitch or 100)
     end
 
     local function GetVoiceCommands(text, class)

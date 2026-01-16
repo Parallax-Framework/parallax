@@ -154,7 +154,7 @@ function inventory:AddReceiver(receiver)
             self.receivers[#self.receivers + 1] = receiver[i]
 
             if ( SERVER ) then
-                ax.net:Start(self:GetReceivers(), "ax.inventory.receiver.add", self, receiver)
+                ax.net:Start(self:GetReceivers(), "inventory.receiver.add", self, receiver)
             end
 
             return true
@@ -163,7 +163,7 @@ function inventory:AddReceiver(receiver)
         self.receivers[#self.receivers + 1] = receiver
 
         if ( SERVER ) then
-            ax.net:Start(self:GetReceivers(), "ax.inventory.receiver.add", self, receiver)
+            ax.net:Start(self:GetReceivers(), "inventory.receiver.add", self, receiver)
         end
 
         return true
@@ -179,7 +179,7 @@ function inventory:RemoveReceiver(receiver)
     for i = 1, #self.receivers do
         if ( self.receivers[i] == receiver ) then
             if ( SERVER ) then
-                ax.net:Start(self:GetReceivers(), "ax.inventory.receiver.remove", self.id, receiver)
+                ax.net:Start(self:GetReceivers(), "inventory.receiver.remove", self.id, receiver)
             end
 
             table.remove(self.receivers, i)
@@ -197,7 +197,7 @@ function inventory:RemoveReceivers()
 
     if ( SERVER ) then
         for i = 1, #self.receivers do
-            ax.net:Start(self:GetReceivers(), "ax.inventory.receiver.remove", self.id, self.receivers[i])
+            ax.net:Start(self:GetReceivers(), "inventory.receiver.remove", self.id, self.receivers[i])
         end
     end
 
@@ -235,7 +235,7 @@ if ( SERVER ) then
 
                 self.items[lastID] = itemObject
 
-                ax.net:Start(self:GetReceivers(), "ax.inventory.item.add", self.id, itemObject.id, itemObject.class, itemObject.data)
+                ax.net:Start(self:GetReceivers(), "inventory.item.add", self.id, itemObject.id, itemObject.class, itemObject.data)
 
                 return true
             end)
@@ -273,7 +273,7 @@ if ( SERVER ) then
                         self.items[item_id] = nil
                         ax.item.instances[itemID] = nil
 
-                        ax.net:Start(self:GetReceivers(), "ax.inventory.item.remove", self.id, itemID)
+                        ax.net:Start(self:GetReceivers(), "inventory.item.remove", self.id, itemID)
 
                         ax.util:PrintDebug("Removed item ID " .. itemID .. " from inventory " .. self.id)
 

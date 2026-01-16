@@ -85,7 +85,7 @@ if ( SERVER ) then
             end
         end
 
-        ax.net:Start(inventory:GetReceivers(), "ax.inventory.sync", inventory.id, items, inventory.maxWeight, inventory.receivers or {})
+        ax.net:Start(inventory:GetReceivers(), "inventory.sync", inventory.id, items, inventory.maxWeight, inventory.receivers or {})
 
         ax.util:PrintDebug(string.format("Synchronized inventory %d with %d receivers.", inventory.id, #inventory:GetReceivers()))
     end
@@ -107,7 +107,7 @@ if ( SERVER ) then
         -- Sync all world items (inventory_id = 0) to the client
         for itemID, item in pairs(ax.item.instances) do
             if ( item.invID == 0 or item:GetInventoryID() == 0 ) then
-                ax.net:Start(client, "ax.item.spawn", itemID, item.class, item.data or {})
+                ax.net:Start(client, "item.spawn", itemID, item.class, item.data or {})
             end
         end
         ax.util:PrintDebug(string.format("Synced world items to %s", client:SteamID64()))

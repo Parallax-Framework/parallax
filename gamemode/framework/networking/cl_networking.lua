@@ -12,7 +12,7 @@
 -- Queue for character variable updates that arrive before character sync
 local characterVarQueue = {}
 
-ax.net:Hook("ax.player.ready", function()
+ax.net:Hook("player.ready", function()
     local clientTable = LocalPlayer():GetTable()
     if ( clientTable.axReady ) then return end
 
@@ -35,7 +35,7 @@ ax.net:Hook("ax.player.ready", function()
     end
 end)
 
-ax.net:Hook("ax.character.create", function(characterID, characters)
+ax.net:Hook("character.create", function(characterID, characters)
     local client = ax.client
     if ( !IsValid(client) ) then
         ax.util:PrintError("Invalid client received for character creation.")
@@ -103,7 +103,7 @@ ax.net:Hook("ax.character.create", function(characterID, characters)
     hook.Run("PlayerCreatedCharacter", client, character)
 end)
 
-ax.net:Hook("ax.character.load", function(characterID)
+ax.net:Hook("character.load", function(characterID)
     local client = ax.client
     if ( !IsValid(client) ) then return end
 
@@ -126,7 +126,7 @@ ax.net:Hook("ax.character.load", function(characterID)
     hook.Run("PlayerLoadedCharacter", client, character, clientData.axCharacterPrevious)
 end)
 
-ax.net:Hook("ax.character.sync", function(client, character)
+ax.net:Hook("character.sync", function(client, character)
     if ( !IsValid(client) ) then return end
     if ( !istable(character) ) then
         ax.util:PrintError("Invalid character data received from server")
@@ -151,7 +151,7 @@ ax.net:Hook("ax.character.sync", function(client, character)
     end
 end)
 
-ax.net:Hook("ax.character.restore", function(characters)
+ax.net:Hook("character.restore", function(characters)
     if ( !istable(characters) ) then
         ax.util:PrintError("Invalid characters table received from server")
         return
@@ -183,7 +183,7 @@ ax.net:Hook("ax.character.restore", function(characters)
     hook.Run("OnCharactersRestored", characters)
 end)
 
-ax.net:Hook("ax.character.delete", function(id)
+ax.net:Hook("character.delete", function(id)
     if ( !isnumber( id ) or id < 1 ) then return end
 
     local character = ax.character.instances[ id ]
@@ -225,7 +225,7 @@ ax.net:Hook("ax.character.delete", function(id)
     end
 end)
 
-ax.net:Hook("ax.character.var", function(characterID, name, value)
+ax.net:Hook("character.var", function(characterID, name, value)
 
     local character = ax.character:Get(characterID)
     if ( !character ) then
@@ -245,7 +245,7 @@ ax.net:Hook("ax.character.var", function(characterID, name, value)
     hook.Run("CharacterVarChanged", character, name, value)
 end)
 
-ax.net:Hook("ax.character.data", function(characterID, key, value)
+ax.net:Hook("character.data", function(characterID, key, value)
 
     local character = ax.character:Get(characterID)
     if ( !character ) then return end -- TODO: make characterVarQueue for data? idk
@@ -263,7 +263,7 @@ ax.net:Hook("ax.character.data", function(characterID, key, value)
     hook.Run("CharacterDataChanged", character, key, value)
 end)
 
-ax.net:Hook("ax.character.bot.sync", function(characterID, botCharacter)
+ax.net:Hook("character.bot.sync", function(characterID, botCharacter)
 
     -- Restore metatable for bot character
     botCharacter = setmetatable(botCharacter, ax.character.meta)
@@ -278,7 +278,7 @@ ax.net:Hook("ax.character.bot.sync", function(characterID, botCharacter)
     end
 end)
 
-ax.net:Hook("ax.character.setnameprompt", function(targetID)
+ax.net:Hook("character.setnameprompt", function(targetID)
     local target = ax.character:Get(targetID)
     if ( !istable(target) ) then
         ax.util:PrintError("Character not found for name prompt.")
@@ -293,7 +293,7 @@ ax.net:Hook("ax.character.setnameprompt", function(targetID)
     end, nil, "Set Name")
 end)
 
-ax.net:Hook("ax.player.var", function(client, key, value)
+ax.net:Hook("player.var", function(client, key, value)
     if ( !IsValid(client) ) then return end
 
     local clientTable = client:GetTable()
@@ -304,7 +304,7 @@ ax.net:Hook("ax.player.var", function(client, key, value)
     clientTable.axVars[key] = value
 end)
 
-ax.net:Hook("ax.player.data", function(client, key, value)
+ax.net:Hook("player.data", function(client, key, value)
     if ( !IsValid(client) ) then return end
 
     local clientTable = client:GetTable()
@@ -319,7 +319,7 @@ ax.net:Hook("ax.player.data", function(client, key, value)
     clientTable.axVars.data[key] = value
 end)
 
-ax.net:Hook("ax.inventory.sync", function(inventoryID, inventoryItems, inventoryMaxWeight, inventoryReceivers)
+ax.net:Hook("inventory.sync", function(inventoryID, inventoryItems, inventoryMaxWeight, inventoryReceivers)
 
     -- Convert the items into objects
     local items = {}
@@ -345,7 +345,7 @@ ax.net:Hook("ax.inventory.sync", function(inventoryID, inventoryItems, inventory
     }, ax.inventory.meta)
 end)
 
-ax.net:Hook("ax.inventory.receiver.add", function(inventory, receiver)
+ax.net:Hook("inventory.receiver.add", function(inventory, receiver)
     inventory = setmetatable(inventory, ax.inventory.meta)
 
     if ( !istable(inventory) ) then
@@ -357,7 +357,7 @@ ax.net:Hook("ax.inventory.receiver.add", function(inventory, receiver)
     inventory:AddReceiver(receiver)
 end)
 
-ax.net:Hook("ax.inventory.receiver.remove", function(inventoryID, receiver)
+ax.net:Hook("inventory.receiver.remove", function(inventoryID, receiver)
 
     local inventory = ax.inventory.instances[inventoryID]
     if ( !istable(inventory) ) then
@@ -369,7 +369,7 @@ ax.net:Hook("ax.inventory.receiver.remove", function(inventoryID, receiver)
     ax.inventory.instances[inventoryID] = nil
 end)
 
-ax.net:Hook("ax.inventory.item.add", function(inventoryID, itemID, itemClass, itemData)
+ax.net:Hook("inventory.item.add", function(inventoryID, itemID, itemClass, itemData)
 
     -- If inventory 0 (world) isn't tracked clientside, still create the item instance so it exists clientside
     local inventory = ax.inventory.instances[inventoryID]
@@ -400,7 +400,7 @@ ax.net:Hook("ax.inventory.item.add", function(inventoryID, itemID, itemClass, it
     end
 end)
 
-ax.net:Hook("ax.inventory.item.remove", function(inventoryID, itemID)
+ax.net:Hook("inventory.item.remove", function(inventoryID, itemID)
 
     local inv = ax.inventory.instances[inventoryID]
     if ( !istable(inv) ) then
@@ -421,7 +421,7 @@ ax.net:Hook("ax.inventory.item.remove", function(inventoryID, itemID)
     end
 end)
 
-ax.net:Hook("ax.relay.update", function(index, name, value)
+ax.net:Hook("relay.update", function(index, name, value)
 
     ax.relay.data[index] = ax.relay.data[index] or {}
     ax.relay.data[index][name] = value
@@ -431,13 +431,13 @@ ax.net:Hook("ax.relay.update", function(index, name, value)
     end
 end)
 
-ax.net:Hook("ax.relay.sync", function(data)
+ax.net:Hook("relay.sync", function(data)
     if ( !istable(data) ) then return end
 
     ax.relay.data = data
 end)
 
-ax.net:Hook("ax.item.transfer", function(itemID, fromInventoryID, toInventoryID)
+ax.net:Hook("item.transfer", function(itemID, fromInventoryID, toInventoryID)
 
     local item = ax.item.instances[itemID]
     if ( !istable(item) ) then
@@ -486,7 +486,7 @@ ax.net:Hook("ax.item.transfer", function(itemID, fromInventoryID, toInventoryID)
     end
 end)
 
-ax.net:Hook("ax.item.spawn", function(itemID, itemClass, itemData)
+ax.net:Hook("item.spawn", function(itemID, itemClass, itemData)
 
     local item = ax.item.stored[itemClass]
     if ( !istable(item) ) then
@@ -502,7 +502,7 @@ ax.net:Hook("ax.item.spawn", function(itemID, itemClass, itemData)
     ax.item.instances[itemID] = itemObject
 end)
 
-ax.net:Hook("ax.chat.message", function(speaker, chatType, text, data)
+ax.net:Hook("chat.message", function(speaker, chatType, text, data)
 
     local chatClass = ax.chat.registry[chatType]
     if ( !istable(chatClass) ) then
@@ -524,7 +524,7 @@ ax.net:Hook("ax.chat.message", function(speaker, chatType, text, data)
     end
 end)
 
-ax.net:Hook("ax.character.invalidate", function(id)
+ax.net:Hook("character.invalidate", function(id)
     if ( !isnumber(id) or id < 1 ) then return end
 
     local character = ax.character.instances[id]
@@ -545,12 +545,12 @@ ax.net:Hook("ax.character.invalidate", function(id)
     ax.character.instances[id] = nil
 end)
 
-ax.net:Hook("ax.player.actionbar.start", function(label, duration)
+ax.net:Hook("player.actionbar.start", function(label, duration)
 
     ax.actionBar:Start(label, duration)
 end)
 
-ax.net:Hook("ax.player.actionbar.stop", function(cancelled)
+ax.net:Hook("player.actionbar.stop", function(cancelled)
 
     ax.actionBar:Stop(cancelled)
 end)

@@ -20,9 +20,9 @@ ax.relay.data = ax.relay.data or {}
 if ( SERVER ) then
     function ax.relay:Sync(recipients)
         if ( recipients ) then
-            ax.net:Start(recipients, "ax.relay.sync", ax.relay.data)
+            ax.net:Start(recipients, "relay.sync", ax.relay.data)
         else
-            ax.net:Start(nil, "ax.relay.sync", ax.relay.data)
+            ax.net:Start(nil, "relay.sync", ax.relay.data)
         end
     end
 end
@@ -61,9 +61,9 @@ function ENTITY:SetRelay(name, value, bNoNetworking, recipients)
 
     if ( !bNoNetworking and SERVER ) then
         if ( recipients ) then
-            ax.net:Start(recipients, "ax.relay.update", index, name, value)
+            ax.net:Start(recipients, "relay.update", index, name, value)
         else
-            ax.net:Start(nil, "ax.relay.update", index, name, value)
+            ax.net:Start(nil, "relay.update", index, name, value)
         end
     end
 end
@@ -109,9 +109,9 @@ function SetRelay(name, value, bNoNetworking, recipients)
 
     if ( !bNoNetworking and SERVER ) then
         if ( recipients ) then
-            ax.net:Start(recipients, "ax.relay.update", "global", name, value)
+            ax.net:Start(recipients, "relay.update", "global", name, value)
         else
-            ax.net:Start(nil, "ax.relay.update", "global", name, value)
+            ax.net:Start(nil, "relay.update", "global", name, value)
         end
     end
 end

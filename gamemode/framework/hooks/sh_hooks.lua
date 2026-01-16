@@ -121,7 +121,7 @@ function GM:InitPostEntity()
             entity:Spawn()
             entity:Activate()
 
-            ax.net:Start(nil, "ax.item.spawn", itemID, v.class, v.data or {})
+            ax.net:Start(nil, "item.spawn", itemID, v.class, v.data or {})
         end
     else
         ax.joinTime = os.time()

@@ -98,11 +98,11 @@ function ax.character:SetVar(char, name, value, bNoNetworking, recipients, bNoDB
         end
 
         if ( istable(recipients) or isentity(recipients) ) then
-            ax.net:Start(recipients, "ax.character.var", char:GetID(), name, value)
+            ax.net:Start(recipients, "character.var", char:GetID(), name, value)
         elseif ( isvector(recipients) ) then
-            ax.net:StartPVS(recipients, "ax.character.var", char:GetID(), name, value)
+            ax.net:StartPVS(recipients, "character.var", char:GetID(), name, value)
         else
-            ax.net:Start(nil, "ax.character.var", char:GetID(), name, value)
+            ax.net:Start(nil, "character.var", char:GetID(), name, value)
         end
     end
 
@@ -145,7 +145,7 @@ function ax.character:SyncBotToClients(char, recipients)
     end
 
     -- Send bot character data to clients
-    ax.net:Start(recipients or player.GetAll(), "ax.character.bot.sync", char:GetID(), char)
+    ax.net:Start(recipients or player.GetAll(), "character.bot.sync", char:GetID(), char)
 end
 
 --- Check if a variable can be populated during character creation.
