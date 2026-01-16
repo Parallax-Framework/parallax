@@ -331,7 +331,9 @@ function SWEP:ShootBullet(damage, num, cone)
         Tracer = 1,
         TracerName = "none",
         Damage = damage,
-        AmmoType = self.Primary.Ammo
+        AmmoType = self.Primary.Ammo,
+        Inflictor = self,
+        Attacker = owner
     }
 
     owner:LagCompensation(true)
