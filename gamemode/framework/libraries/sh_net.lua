@@ -56,6 +56,15 @@ if ( SERVER ) then
             return
         end
 
+        if ( istable(target) and (isvector(target.pvs) or isvector(target.pas)) ) then
+            if ( isvector(target.pas) ) then
+                net.SendPAS(target.pas)
+            else
+                net.SendPVS(target.pvs)
+            end
+            return
+        end
+
         if ( IsValid(target) and target:IsPlayer() ) then
             net.Send(target)
             return
@@ -96,6 +105,7 @@ else
     end
 end
 
+local developer = GetConVar("developer")
 net.Receive("ax.net.msg", function(len, client)
     local name = net.ReadString()
 
@@ -143,7 +153,7 @@ net.Receive("ax.net.msg", function(len, client)
         callback(unpack(decoded))
     end
 
-    if ( ax.config:Get("debug.networking") ) then
+    if ( developer:GetInt() != 0 ) then
         ax.util:Print("[Networking] Received '" .. name .. "' from " .. (SERVER and client:Nick() or "server"))
     end
 end)
