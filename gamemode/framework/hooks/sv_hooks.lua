@@ -23,7 +23,7 @@ end
 
 function GM:DoPlayerDeath(client, attacker, damageInfo)
     client:SetDSP(31)
-    client:SetDSP(35)
+    client:SendLua([[sound.PlayFile("sound/ambient/levels/gman/gman_sgnature_shrt.wav", "", function() end)]])
 
     client:ResetRateLimit("respawn")
     client:RateLimit("respawn", 30)
