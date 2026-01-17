@@ -333,23 +333,21 @@ end
 
 gameevent.Listen("player_disconnect")
 
--- Clean up existing hook to prevent duplicates on reload
-hook.Remove("player_disconnect", "Parallax.PlayerDisconnected")
-
 hook.Add("player_disconnect", "Parallax.PlayerDisconnected", function(data)
     local name = data.name
     local reason = data.reason
 
     local client = Player(data.userid)
     local clientTable = client:GetTable()
+    if ( !istable(clientTable) ) then return end
 
-    if ( !istable( clientTable.axCharacters ) ) then clientTable.axCharacters = {} end
+    if ( !istable(clientTable.axCharacters) ) then clientTable.axCharacters = {} end
+
     local characters = clientTable.axCharacters or {}
     if ( characters[1] != nil ) then
         for i = 1, #characters do
             local character = characters[i]
             ax.character.instances[character.id] = nil
-
             ax.net:Start(nil, "character.invalidate", character.id)
         end
     end
