@@ -209,6 +209,31 @@ ax.character:RegisterVar("class", {
     end
 })
 
+ax.character:RegisterVar("rank", {
+    field = "rank",
+    fieldType = ax.type.number,
+    default = 0,
+    hide = true,
+    changed = function(character, value, previousValue, isNetworked, recipients)
+        local previousRank = ax.rank:Get(previousValue)
+        if ( previousRank and isfunction(previousRank.OnLeave) ) then
+            previousRank:OnLeave(character, value, previousValue, isNetworked, recipients)
+        end
+
+        local client = character:GetOwner()
+        if ( IsValid(client) ) then
+            hook.Run("PlayerLoadout", client)
+        end
+
+        hook.Run("OnCharacterRankChanged", character, value, previousValue, isNetworked, recipients)
+
+        local rankTable = ax.rank:Get(value)
+        if ( rankTable and isfunction(rankTable.OnSet) ) then
+            rankTable:OnSet(character, value, previousValue, isNetworked, recipients)
+        end
+    end
+})
+
 ax.character:RegisterVar("name", {
     field = "name",
     fieldType = ax.type.string,

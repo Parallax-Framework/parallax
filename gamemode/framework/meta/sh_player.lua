@@ -58,6 +58,18 @@ function ax.player.meta:GetClassData()
     return nil
 end
 
+function ax.player.meta:GetRankData()
+    local char = self:GetCharacter()
+    if ( !char ) then return nil end
+
+    local rankID = char:GetRank()
+    if ( rankID ) then
+        return ax.rank:Get(rankID)
+    end
+
+    return nil
+end
+
 -- Cache for gesture sequence lookups to avoid repeated LookupSequence calls
 ax.player.gestureCache = ax.player.gestureCache or {}
 

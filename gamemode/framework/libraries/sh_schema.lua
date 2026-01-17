@@ -49,12 +49,14 @@ function ax.schema:Initialize(timeFilter)
         ["interface"] = true,
         ["factions"] = true,
         ["classes"] = true,
+        ["ranks"] = true,
         ["items"] = true,
         ["boot.lua"] = true
     }, timeFilter)
 
     ax.faction:Include(active .. "/gamemode/schema/factions", timeFilter)
     ax.class:Include(active .. "/gamemode/schema/classes", timeFilter)
+    ax.rank:Include(active .. "/gamemode/schema/ranks", timeFilter)
     ax.item:Include(active .. "/gamemode/schema/items", timeFilter)
 
     ax.module:Include(active .. "/gamemode/modules", timeFilter)

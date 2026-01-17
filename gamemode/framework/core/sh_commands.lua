@@ -239,6 +239,41 @@ ax.command:Add("CharSetClass", {
     end
 })
 
+ax.command:Add("CharSetRank", {
+    description = "Set the rank of a character.",
+    arguments = {
+        { name = "target", type = ax.type.character, optional = true },
+        { name = "rank", type = ax.type.string }
+    },
+    OnRun = function(def, client, target, rank)
+        if ( !target ) then
+            target = client:GetCharacter()
+        end
+
+        if ( !target ) then
+            print("No target character found for CharSetRank command.")
+            return "Invalid character."
+        end
+
+        local rankTable = nil
+        for _, rankIter in ipairs(ax.rank:GetAll({faction = target:GetFaction()})) do
+            if ( ax.util:FindString(rankIter.name, rank) ) then
+                rankTable = rankIter
+                break
+            end
+        end
+
+        if ( !rankTable ) then
+            return "You must specify a valid rank for the character's faction."
+        end
+
+        target:SetRank(rankTable.index)
+        target:Save()
+
+        return "Rank set to " .. rankTable.name
+    end
+})
+
 ax.command:Add("PlyWhitelist", {
     description = "Whitelist a player for a faction.",
     arguments = {

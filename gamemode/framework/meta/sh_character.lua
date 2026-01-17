@@ -60,6 +60,10 @@ function character:GetClassData()
     return ax.class:Get(self.vars.class)
 end
 
+function character:GetRankData()
+    return ax.rank:Get(self.vars.rank)
+end
+
 function character:HasFlags(flags)
     local data = self:GetData("flags", "")
     for i = 1, #flags do

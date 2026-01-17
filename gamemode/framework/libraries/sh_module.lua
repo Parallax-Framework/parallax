@@ -103,6 +103,7 @@ function ax.module:Include(path, timeFilter)
                         ["interface"] = true,
                         ["factions"] = true,
                         ["classes"] = true,
+                        ["ranks"] = true,
                         ["items"] = true,
                         ["entities"] = true,
                         ["boot.lua"] = true
@@ -110,6 +111,7 @@ function ax.module:Include(path, timeFilter)
 
                     ax.faction:Include(path .. "/" .. dirName .. "/factions", timeFilter)
                     ax.class:Include(path .. "/" .. dirName .. "/classes", timeFilter)
+                    ax.rank:Include(path .. "/" .. dirName .. "/ranks", timeFilter)
                     ax.item:Include(path .. "/" .. dirName .. "/items", timeFilter)
                     ax.util:LoadEntities(path .. "/" .. dirName .. "/entities", timeFilter)
                     ax.util:PrintSuccess("Module \"" .. tostring(MODULE.name) .. "\" initialized successfully.")
