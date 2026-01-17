@@ -46,10 +46,11 @@ function MODULE:PlayerSay(client, text, teamChat)
             end)
 
             if ( !ok ) then
-                client:Notify(ax.localization:GetPhrase("command.executionfailed"), "error")
+                ax.util:PrintError("Failed to execute command '" .. commandName .. "' for player " .. client:SteamName() .. " (" .. client:SteamID() .. "): " .. tostring(runOk))
+                client:Notify(ax.localization:GetPhrase("command.executionfailed"))
             else
                 if ( !runOk ) then
-                    client:Notify(result or ax.localization:GetPhrase("command.unknownerror"), "error")
+                    client:Notify(result or ax.localization:GetPhrase("command.unknownerror"))
                 elseif ( result and result != "" ) then
                     client:Notify(tostring(result))
                 end
