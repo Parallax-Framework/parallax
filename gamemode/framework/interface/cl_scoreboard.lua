@@ -118,7 +118,23 @@ function PANEL:RebuildScoreboard()
             name:Dock(LEFT)
             name:DockMargin(8, 0, 0, 0)
             name:SetFont("ax.small")
-            name:SetText(client:SteamName() .. (ax.client:IsAdmin() and (client:Nick() != client:SteamName()) and " (" .. client:Nick() .. ")" or ""), true)
+
+            local toDisplay = client:SteamName()
+            if ( ax.client:IsAdmin() and client:Nick() != client:SteamName() ) then
+                local classData = client:GetClassData()
+                local rankData = client:GetRankData()
+                if ( classData and rankData ) then
+                    toDisplay = toDisplay .. " (" .. client:Nick() .. ", " .. classData.name .. ", " .. rankData.name .. ")"
+                elseif ( classData and !rankData ) then
+                    toDisplay = toDisplay .. " (" .. client:Nick() .. ", " .. classData.name .. ")"
+                elseif ( !classData and rankData ) then
+                    toDisplay = toDisplay .. " (" .. client:Nick() .. ", " .. rankData.name .. ")"
+                else
+                    toDisplay = toDisplay .. " (" .. client:Nick() .. ")"
+                end
+            end
+
+            name:SetText(toDisplay, true)
 
             -- Ping (right aligned)
             local ping = row:Add("ax.text")
