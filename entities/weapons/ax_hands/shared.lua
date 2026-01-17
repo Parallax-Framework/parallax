@@ -119,7 +119,7 @@ local function VelocityRemove(entity, normalize)
     else
         local physicsObject = entity:GetPhysicsObject()
         local vel = IsValid(physicsObject) and physicsObject:GetVelocity() or entity:GetVelocity()
-        local len = math.min(ax.config:Get("handsMaxThrowForce", 150), vel:Length2D())
+        local len = math.min(ax.config:Get("hands.force.max", 150), vel:Length2D())
 
         vel:Normalize()
         vel = vel * len
@@ -142,6 +142,7 @@ local function VelocityThrow(entity, owner, power)
     local physicsObject = entity:GetPhysicsObject()
     local vel = owner:GetAimVector()
     vel = vel * power
+    vel = math.min(vel, ax.config:Get("hands.force.max.throw", 1000))
 
     SetSubPhysMotionEnabled(entity, false)
     timer.Simple(0, function()
@@ -159,28 +160,24 @@ local function VelocityThrow(entity, owner, power)
 end
 
 function SWEP:Reset(throw)
-    if ( IsValid(self.axCarry) ) then
-        self.axCarry:Remove()
-    end
+    local selfTable = self:GetTable()
+    SafeRemoveEntity(selfTable.axCarry)
+    SafeRemoveEntity(selfTable.axConstraint)
 
-    if ( IsValid(self.axConstraint) ) then
-        self.axConstraint:Remove()
-    end
+    if ( IsValid(selfTable.axHoldingEntity) ) then
+        local desiredCollisionGroup = selfTable.axHoldingEntity.oldCollisionGroup or COLLISION_GROUP_NONE
+        selfTable.axHoldingEntity:SetCollisionGroup(desiredCollisionGroup)
+        selfTable.axHoldingEntity.oldCollisionGroup = nil
 
-    if ( IsValid(self.axHoldingEntity) ) then
-        local desiredCollisionGroup = self.axHoldingEntity.oldCollisionGroup or COLLISION_GROUP_NONE
-        self.axHoldingEntity:SetCollisionGroup(desiredCollisionGroup)
-        self.axHoldingEntity.oldCollisionGroup = nil
-
-        local children = self.axHoldingEntity:GetChildren()
+        local children = selfTable.axHoldingEntity:GetChildren()
         for i = 1, #children do
             children[i]:SetCollisionGroup(desiredCollisionGroup)
         end
 
-        local physicsObject = self.axHoldingEntity:GetPhysicsObject()
-        if ( self.holdingBone ) then
-            physicsObject = self.axHoldingEntity:GetPhysicsObjectNum(self.holdingBone)
-            self.holdingBone = nil
+        local physicsObject = selfTable.axHoldingEntity:GetPhysicsObject()
+        if ( selfTable.holdingBone ) then
+            physicsObject = selfTable.axHoldingEntity:GetPhysicsObjectNum(selfTable.holdingBone)
+            selfTable.holdingBone = nil
         end
 
         if ( IsValid(physicsObject) ) then
@@ -193,15 +190,15 @@ function SWEP:Reset(throw)
         end
 
         if ( !throw ) then
-            VelocityRemove(self.axHoldingEntity)
+            VelocityRemove(selfTable.axHoldingEntity)
         else
-            VelocityThrow(self.axHoldingEntity, self:GetOwner(), 300)
+            VelocityThrow(selfTable.axHoldingEntity, self:GetOwner(), 300)
         end
     end
 
-    self.axHoldingEntity = nil
-    self.axCarry = nil
-    self.axConstraint = nil
+    selfTable.axHoldingEntity = nil
+    selfTable.axCarry = nil
+    selfTable.axConstraint = nil
 end
 
 function SWEP:Drop(throw)
@@ -209,10 +206,11 @@ function SWEP:Drop(throw)
     if ( !self:AllowEntityDrop() ) then return end
 
     if ( SERVER ) then
-        SafeRemoveEntity(self.axConstraint)
-        SafeRemoveEntity(self.axCarry)
+        local selfTable = self:GetTable()
+        SafeRemoveEntity(selfTable.axConstraint)
+        SafeRemoveEntity(selfTable.axCarry)
 
-        local entity = self.axHoldingEntity
+        local entity = selfTable.axHoldingEntity
 
         local physicsObject = entity:GetPhysicsObject()
         if ( IsValid(physicsObject) ) then
@@ -237,8 +235,9 @@ function SWEP:Drop(throw)
 end
 
 function SWEP:CheckValidity()
-    if ( !IsValid(self.axHoldingEntity) or !IsValid(self.axCarry) or !IsValid(self.axConstraint) ) then
-        if ( self.axHoldingEntity or self.axCarry or self.axConstraint ) then
+    local selfTable = self:GetTable()
+    if ( !IsValid(selfTable.axHoldingEntity) or !IsValid(selfTable.axCarry) or !IsValid(selfTable.axConstraint) ) then
+        if ( selfTable.axHoldingEntity or selfTable.axCarry or selfTable.axConstraint ) then
             self:Reset()
         end
 
@@ -293,7 +292,7 @@ function SWEP:SecondaryAttack()
 
     local data = {}
     data.start = owner:GetShootPos()
-    data.endpos = data.start + owner:GetAimVector() * ax.config:Get("handsRange", 96)
+    data.endpos = data.start + owner:GetAimVector() * ax.config:Get("hands.range.max", 96)
     data.mask = MASK_SHOT
     data.filter = {self, owner}
     data.mins = Vector(-16, -16, -16)
@@ -301,6 +300,7 @@ function SWEP:SecondaryAttack()
     local traceData = util.TraceHull(data)
 
     local entity = traceData.Entity
+    local selfTable = self:GetTable()
     if ( SERVER and IsValid(entity) ) then
         if ( ax.util:FindString( entity:GetClass(), "door" ) ) then
             if ( entity:GetPos():DistToSqr(owner:GetPos()) > 6000 ) then
@@ -346,11 +346,11 @@ function SWEP:SecondaryAttack()
             owner:SetAnimation(PLAYER_ATTACK1)
 
             hook.Run("PlayerPush", owner, entity)
-        elseif ( IsValid(self.axHeldEntity) and !self.axHeldEntity:IsPlayerHolding() ) then
-            self.axHeldEntity = nil
+        elseif ( IsValid(selfTable.axHeldEntity) and !selfTable.axHeldEntity:IsPlayerHolding() ) then
+            selfTable.axHeldEntity = nil
         end
     else
-        if ( IsValid(self.axHoldingEntity))  then
+        if ( IsValid(selfTable.axHoldingEntity))  then
             self:DoPickup()
         end
     end
@@ -376,7 +376,7 @@ function SWEP:AllowPickup(target)
     return ( IsValid(physicsObject)
     and IsValid(owner)
     and !physicsObject:HasGameFlag(FVPHYSICS_NO_PLAYER_PICKUP)
-    and physicsObject:GetMass() < ax.config:Get("handsMaxCarry", 160)
+    and physicsObject:GetMass() < ax.config:Get("hands.max.carry", 160)
     and !self:IsEntityStoodOn(target)
     and target.CanPickup != false )
     and hook.Run("CanPlayerPickup", owner, target) != false
@@ -386,7 +386,7 @@ function SWEP:DoPickup(throw)
     self:SetNextPrimaryFire(CurTime() + 0.2)
     self:SetNextSecondaryFire(CurTime() + 0.2)
 
-    if ( IsValid(self.axHoldingEntity) ) then
+    if ( IsValid(self:GetTable().axHoldingEntity) ) then
         self:Drop(throw)
         self:SetNextSecondaryFire(CurTime() + 0.2)
         return
@@ -433,11 +433,9 @@ function SWEP:DoPunch()
         end
     end
 
-
-
     local data = {}
     data.start = owner:GetShootPos()
-    data.endpos = data.start + owner:GetAimVector() * 96
+    data.endpos = data.start + owner:GetAimVector() * ax.config:Get("hands.range.max", 96)
     data.filter = owner
 
     owner:LagCompensation(true)
@@ -529,7 +527,7 @@ end
 local down = Vector(0, 0, -1)
 function SWEP:AllowEntityDrop()
     local owner = self:GetOwner()
-    local ent = self.axCarry
+    local ent = self:GetTable().axCarry
     if ( !IsValid(owner) or !IsValid(ent) ) then return false end
 
     local ground = owner:GetGroundEntity()
