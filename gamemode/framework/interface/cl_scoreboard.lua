@@ -120,8 +120,10 @@ function PANEL:RebuildScoreboard()
             name:SetFont("ax.small")
 
             local steamName = client:SteamName()
-            local toDisplay = {steamName}
+            local toDisplay = ""
             if ( ax.client:IsAdmin() and client:Nick() != steamName ) then
+                toDisplay = {client:Nick()}
+
                 local classData = client:GetClassData()
                 local rankData = client:GetRankData()
                 if ( classData ) then
@@ -135,7 +137,7 @@ function PANEL:RebuildScoreboard()
                 toDisplay = table.concat(toDisplay, ", ")
             end
 
-            name:SetText(toDisplay, true)
+            name:SetText(steamName .. (toDisplay != "" and " (" .. toDisplay .. ")" or ""), true)
 
             -- Ping (right aligned)
             local ping = row:Add("ax.text")
