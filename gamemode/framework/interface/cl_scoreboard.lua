@@ -119,19 +119,20 @@ function PANEL:RebuildScoreboard()
             name:DockMargin(8, 0, 0, 0)
             name:SetFont("ax.small")
 
-            local toDisplay = client:SteamName()
-            if ( ax.client:IsAdmin() and client:Nick() != client:SteamName() ) then
+            local steamName = client:SteamName()
+            local toDisplay = {steamName}
+            if ( ax.client:IsAdmin() and client:Nick() != steamName ) then
                 local classData = client:GetClassData()
                 local rankData = client:GetRankData()
-                if ( classData and rankData ) then
-                    toDisplay = toDisplay .. " (" .. client:Nick() .. ", " .. classData.name .. ", " .. rankData.name .. ")"
-                elseif ( classData and !rankData ) then
-                    toDisplay = toDisplay .. " (" .. client:Nick() .. ", " .. classData.name .. ")"
-                elseif ( !classData and rankData ) then
-                    toDisplay = toDisplay .. " (" .. client:Nick() .. ", " .. rankData.name .. ")"
-                else
-                    toDisplay = toDisplay .. " (" .. client:Nick() .. ")"
+                if ( classData ) then
+                    toDisplay[#toDisplay + 1] = classData.name
                 end
+
+                if ( rankData ) then
+                    toDisplay[#toDisplay + 1] = rankData.name
+                end
+
+                toDisplay = table.concat(toDisplay, ", ")
             end
 
             name:SetText(toDisplay, true)
