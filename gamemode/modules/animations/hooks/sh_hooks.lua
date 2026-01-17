@@ -567,15 +567,40 @@ function MODULE:TranslateEvent(client, event, data, desired)
     end
 end
 
--- Official ARC9 integration for hold type modification
-function MODULE:GetPlayerHoldType(client, weapon, holdType)
-    if ( !tobool(ARC9) ) then return end
+--- ARC9 SUPPORT ---
 
-    if ( IsValid(weapon) and weapon.HoldTypeHolstered and weapon.Class == ARC9:GetPhrase("eft_class_weapon_pist") ) then
-        if ( !client:IsWeaponRaised() ) then
+if ( !tobool(ARC9) ) then return end
+
+-- attempt to get the correct holdtype for arc9 weapons with holster stances
+function MODULE:GetPlayerHoldType(client, weapon, holdType)
+    if ( IsValid(weapon) and weapon.ARC9 == true ) then
+        if ( client:IsWeaponRaised() == false or weapon:GetSafe() == true ) then
+            weapon:SetHoldType(weapon.HoldTypeHolstered)
             return weapon.HoldTypeHolstered
         else
+            weapon:SetHoldType(weapon.HoldType)
             return weapon.HoldType
         end
+    end
+end
+
+-- attempt to run a hook when a player toggles their safetymode on arc9 weapons
+function MODULE:PlayerPostThink(client)
+    local weapon = client:GetActiveWeapon()
+    if ( !IsValid(weapon) or weapon.ARC9 != true ) then print("invalid arc9 weapon") return end
+
+    client.axLastSafetyMode = client.axLastSafetyMode or false
+
+    local safe = weapon:GetSafe()
+    if ( client.axLastSafetyMode != safe ) then
+        hook.Run("OnPlayerToggleSafetyMode", client, weapon, safe)
+        client.axLastSafetyMode = safe
+    end
+end
+
+-- hook for when a player toggles safetymode on arc9 weapons
+function MODULE:OnPlayerToggleSafetyMode(client, weapon, isSafe)
+    if ( SERVER ) then
+        self:UpdateClientAnimations(client)
     end
 end
