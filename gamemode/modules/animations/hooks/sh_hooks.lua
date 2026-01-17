@@ -194,7 +194,7 @@ function MODULE:HandlePlayerDriving(client, clientTable)
 
     local useAnims = ( clientTable.CalcSeqOverride == SEQ_SIT_ROLLERCOASTER or clientTable.CalcSeqOverride == SEQ_SIT )
     if ( useAnims and client:GetAllowWeaponsInVehicle() and IsValid(client:GetActiveWeapon()) ) then
-        local holdType = client:GetActiveWeapon():GetHoldType()
+        local holdType = client:GetHoldType()
         if ( holdType == "smg" ) then
             holdType = "smg1"
         end
@@ -388,13 +388,9 @@ function MODULE:TranslateActivity(client, act)
         end
     end
 
-    -- Cache weapon and holdType for reuse
-    local activeWeapon = client:GetActiveWeapon()
-    local holdType = ( IsValid(activeWeapon) and activeWeapon:GetHoldType() ) or client:GetHoldType()
-
     local class = ax.animations:GetModelClass(client:GetModel())
     if ( !class ) then
-        -- Still allow external overrides even if we cannot resolve a model class.
+        local holdType = client:GetHoldType()
         local override = hook.Run("OverrideActivity", client, act, newAct, {
             modelClass = class,
             holdType = holdType,
@@ -432,7 +428,7 @@ function MODULE:TranslateActivity(client, act)
         end
     end
 
-    -- External override hook (post internal anim table resolution, pre sequence resolution)
+    local holdType = client:GetHoldType()
     local override = hook.Run("OverrideActivity", client, act, newAct, {
         modelClass = class,
         holdType = holdType,
