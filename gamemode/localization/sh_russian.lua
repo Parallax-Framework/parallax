@@ -77,7 +77,10 @@ ax.localization:Register("ru", {
 
     ---- Misc
     ["respawning"] = "Возрождение...",
-    ["command.notvalid"] = "Это неправильная команда.",
+    ["command.notvalid"] = "Похоже, это не команда.",
+    ["command.notfound"] = "Такой команды нет. Проверьте написание.",
+    ["command.executionfailed"] = "Команда не выполнилась. Попробуйте ещё раз.",
+    ["command.unknownerror"] = "Что-то пошло не так. Попробуйте ещё раз.",
 
     --- General
     ---- Basic

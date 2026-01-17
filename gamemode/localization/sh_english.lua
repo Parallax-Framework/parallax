@@ -76,7 +76,10 @@ ax.localization:Register("en", {
 
     ---- Misc
     ["respawning"] = "Respawning...",
-    ["command.notvalid"] = "That is not a valid command.",
+    ["command.notvalid"] = "That doesn't look like a real command.",
+    ["command.notfound"] = "No command by that name. Check the spelling.",
+    ["command.executionfailed"] = "That command tripped on the way out. Try again.",
+    ["command.unknownerror"] = "Something went sideways. Please try again.",
 
     --- General
     ---- Basic

@@ -76,7 +76,10 @@ ax.localization:Register("tr", {
 
     ---- Misc
     ["respawning"] = "Yeniden Doğuyor...",
-    ["command.notvalid"] = "Bu geçerli bir komut değil.",
+    ["command.notvalid"] = "Bu bir komut gibi görünmüyor.",
+    ["command.notfound"] = "Böyle bir komut yok. Yazımı kontrol et.",
+    ["command.executionfailed"] = "Komut çalıştırılamadı. Tekrar dene.",
+    ["command.unknownerror"] = "Bir şeyler ters gitti. Lütfen tekrar dene.",
 
     --- General
     ---- Basic

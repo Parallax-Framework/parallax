@@ -76,7 +76,10 @@ ax.localization:Register("bg", {
 
     ---- Misc
     ["respawning"] = "Прераждане...",
-    ["command.notvalid"] = "Това не е валидна команда.",
+    ["command.notvalid"] = "Това не изглежда като команда.",
+    ["command.notfound"] = "Няма такава команда. Провери изписването.",
+    ["command.executionfailed"] = "Командата не се изпълни. Опитай пак.",
+    ["command.unknownerror"] = "Нещо се обърка. Моля, опитай пак.",
 
     --- General
     ---- Basic
