@@ -587,7 +587,7 @@ end
 -- attempt to run a hook when a player toggles their safetymode on arc9 weapons
 function MODULE:PlayerPostThink(client)
     local weapon = client:GetActiveWeapon()
-    if ( !IsValid(weapon) or weapon.ARC9 != true ) then print("invalid arc9 weapon") return end
+    if ( !IsValid(weapon) or weapon.ARC9 != true ) then return end
 
     client.axLastSafetyMode = client.axLastSafetyMode or false
 
