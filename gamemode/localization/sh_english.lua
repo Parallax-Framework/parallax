@@ -76,6 +76,7 @@ ax.localization:Register("en", {
 
     ---- Misc
     ["respawning"] = "Respawning...",
+    ["command.notvalid"] = "That is not a valid command.",
 
     --- General
     ---- Basic

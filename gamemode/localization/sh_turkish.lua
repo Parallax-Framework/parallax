@@ -76,6 +76,7 @@ ax.localization:Register("tr", {
 
     ---- Misc
     ["respawning"] = "Yeniden Doğuyor...",
+    ["command.notvalid"] = "Bu geçerli bir komut değil.",
 
     --- General
     ---- Basic

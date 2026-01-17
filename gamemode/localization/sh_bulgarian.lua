@@ -76,6 +76,7 @@ ax.localization:Register("bg", {
 
     ---- Misc
     ["respawning"] = "Прераждане...",
+    ["command.notvalid"] = "Това не е валидна команда.",
 
     --- General
     ---- Basic
