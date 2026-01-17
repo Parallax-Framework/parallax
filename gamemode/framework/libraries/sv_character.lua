@@ -172,7 +172,6 @@ function ax.character:Load(client, character)
     end
 
     character:SetLastPlayed(os.time())
-    character:Save()
 
     -- we need to re-equip all items after spawning
     local inventory = character:GetInventory()
