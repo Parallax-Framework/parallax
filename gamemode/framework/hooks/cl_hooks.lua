@@ -67,7 +67,7 @@ function GM:HUDPaintBackground()
     local client = ax.client
     if ( !IsValid(client) ) then return end
 
-    if ( !client:Alive() ) then
+    if ( !client:Alive() and client:GetCharacter() ) then
         ax.render.Draw(0, 0, 0, ScrW(), ScrH(), Color(0, 0, 0, 255))
         return
     end
