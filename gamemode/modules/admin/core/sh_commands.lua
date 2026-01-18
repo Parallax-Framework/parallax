@@ -19,6 +19,10 @@ local function savePosition(player)
     local id = getIdentifier(player)
     if ( !id ) then return end
 
+    if ( !player:Alive() ) then
+        player:Spawn()
+    end
+
     savedPositions[id] = {
         pos = player:GetPos(),
         ang = player:EyeAngles()
