@@ -34,6 +34,8 @@ if ( SERVER ) then
             return false
         end
 
+        print("Starting net message:", name)
+
         net.Start("ax.net.msg")
         net.WriteString(name)
         net.WriteData(encoded, #encoded)
@@ -115,6 +117,8 @@ else
         local arguments = {...}
         local encoded = sfs.encode(arguments)
         if ( !isstring(encoded) or #encoded < 1 ) then return end
+
+        print("Starting net message:", name)
 
         net.Start("ax.net.msg")
             net.WriteString(name)

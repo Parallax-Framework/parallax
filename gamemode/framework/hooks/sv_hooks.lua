@@ -365,7 +365,7 @@ function GM:StartCommand(client, userCmd)
         ax.util:PrintDebug("Client " .. steamID64 .. " has sent full update request, initializing player...")
 
         client:EnsurePlayer(function(ok)
-            if ( !ok ) then
+            if ( ok == false ) then
                 ax.util:PrintError("Proceeding despite player DB ensure failure for " .. steamID64)
             end
 
