@@ -240,6 +240,75 @@ function ax.util:ClampRound(n, min, max, decimals)
     return num
 end
 
+--- Adjusts a fraction based on smoothness and linear toggle.
+-- @param fraction number Fraction between 0 and 1
+-- @param smooth number Smoothness (0-100)
+-- @param linear boolean|nil If true, prefers linear movement
+-- @return number Adjusted fraction
+function ax.util:ApproachFraction(fraction, smooth, linear)
+    local frac = tonumber(fraction) or 0
+    local smoothValue = tonumber(smooth) or 100
+
+    frac = math.Clamp(frac, 0, 1)
+    smoothValue = math.Clamp(smoothValue, 0, 100)
+
+    frac = frac * (smoothValue * 0.01)
+
+    return math.Clamp(frac, 0, 1)
+end
+
+--- Approaches a number from start to finish based on a fraction and options.
+-- @param fraction number Fraction between 0 and 1
+-- @param start number Start value
+-- @param finish number Finish value
+-- @param opts table|nil Options: smooth, linear, transition
+-- @return number Approached number
+function ax.util:ApproachNumber(fraction, start, finish, opts)
+    local smooth = opts and opts.smooth or 100
+    local bLinear = opts and opts.linear or false
+    local transition = opts and opts.transition or "lerp"
+
+    local t = self:ApproachFraction(fraction, smooth, bLinear)
+
+    if ( transition == "smoothstep" ) then
+        t = t * t * (3 - 2 * t)
+    end
+
+    if ( transition == "linear" or bLinear ) then
+        return math.Approach(start, finish, t * math.abs(finish - start))
+    end
+
+    return Lerp(t, start, finish)
+end
+
+--- Approaches a Vector from start to finish.
+-- @param fraction number Fraction between 0 and 1
+-- @param startVec Vector Start vector
+-- @param finishVec Vector Finish vector
+-- @param opts table|nil Options: smooth, linear, transition
+-- @return Vector Approached vector
+function ax.util:ApproachVector(fraction, startVec, finishVec, opts)
+    return Vector(
+        self:ApproachNumber(fraction, startVec.x, finishVec.x, opts),
+        self:ApproachNumber(fraction, startVec.y, finishVec.y, opts),
+        self:ApproachNumber(fraction, startVec.z, finishVec.z, opts)
+    )
+end
+
+--- Approaches an Angle from start to finish.
+-- @param fraction number Fraction between 0 and 1
+-- @param startAng Angle Start angle
+-- @param finishAng Angle Finish angle
+-- @param opts table|nil Options: smooth, linear, transition
+-- @return Angle Approached angle
+function ax.util:ApproachAngle(fraction, startAng, finishAng, opts)
+    return Angle(
+        self:ApproachNumber(fraction, startAng.p, finishAng.p, opts),
+        self:ApproachNumber(fraction, startAng.y, finishAng.y, opts),
+        self:ApproachNumber(fraction, startAng.r, finishAng.r, opts)
+    )
+end
+
 --- Returns true if the entity is a valid player.
 -- @param client Entity Candidate entity
 -- @return boolean True if entity is a valid player
