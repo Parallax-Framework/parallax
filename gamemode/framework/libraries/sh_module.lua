@@ -52,7 +52,7 @@ function ax.module:Include(path, timeFilter)
                 scope = "framework"
             end
 
-            MODULE = { uniqueID = moduleName, scope = scope }
+            MODULE = MODULE or { uniqueID = moduleName, scope = scope }
                 ax.util:Include(filePath)
                 ax.util:PrintSuccess("Module \"" .. tostring(MODULE.name) .. "\" initialized successfully.")
                 ax.module.stored[moduleName] = MODULE
@@ -83,7 +83,7 @@ function ax.module:Include(path, timeFilter)
                 end
 
                 if ( !shouldSkip ) then
-                    MODULE = { uniqueID = dirName, scope = scope }
+                    MODULE = MODULE or { uniqueID = dirName, scope = scope }
 
                     ax.util:Include(bootFile, "shared")
 
