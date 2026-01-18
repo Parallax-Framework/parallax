@@ -54,8 +54,8 @@ end
 
 -- Client-side implementation
 if ( CLIENT ) then
-    ax.util:AddSound("ax.interface.notification.in", "parallax/ui/notification_in.wav", 0.4, {95, 105}, CHAN_AUTO, 60)
-    ax.util:AddSound("ax.interface.notification.out", "parallax/ui/notification_out.wav", 0.4, {95, 105}, CHAN_AUTO, 60)
+    ax.util:AddSound("ax.interface.notification.in", "parallax/ui/notification_in.wav", 0.1, {95, 105}, CHAN_AUTO, 60)
+    ax.util:AddSound("ax.interface.notification.out", "parallax/ui/notification_out.wav", 0.1, {95, 105}, CHAN_AUTO, 60)
 
     ax.notification.queue = {}
     ax.notification.active = {}
