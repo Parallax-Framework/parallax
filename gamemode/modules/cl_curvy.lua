@@ -47,7 +47,7 @@ ax.localization:Register("en", {
     ["option.curvy.edge_fade"] = "Edge Fade"
 })
 
-ax.localization:Register("en", {
+ax.localization:Register("ru", {
     ["category.visual"] = "Визуал",
     ["subcategory.curvy"] = "Изогнутость",
     ["option.curvy"] = "Изогнутый HUD",
