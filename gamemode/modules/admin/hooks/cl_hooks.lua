@@ -151,7 +151,7 @@ function MODULE:DrawEntities()
     if ( !IsValid(client) or !client:IsAdmin() ) then return end
 
     for _, ent in ipairs(ents.FindByClass("ax_*")) do
-        if ( !IsValid(ent) or blacklist[ent:GetClass()] or ent:GetOwner() == client ) then continue end
+        if ( !IsValid(ent) or blacklist[ent:GetClass()] or ent:GetOwner() ) then continue end
 
         local scr = ent:GetPos():ToScreen()
         if ( !scr.visible ) then continue end
