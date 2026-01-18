@@ -206,6 +206,69 @@ function ax.command:HasAccess(caller, def)
     return true
 end
 
+--[[
+    Convert and validate a single argument value.
+    @realm shared
+    @param string value The raw string value
+    @param table argDef The argument definition
+    @return any|nil, string Converted value or nil with error
+]]
+function ax.command:ConvertArgument(value, argDef)
+    if ( argDef.type == ax.type.string or argDef.type == ax.type.text ) then
+        if ( argDef.choices and !argDef.choices[value] ) then
+            local validChoices = table.GetKeys(argDef.choices)
+            return nil, "must be one of: " .. table.concat(validChoices, ", ")
+        end
+
+        return value
+    elseif ( argDef.type == ax.type.number ) then
+        local num = tonumber(value)
+        if ( !num ) then
+            return nil, "must be a number"
+        end
+
+        if ( argDef.min and num < argDef.min ) then
+            return nil, "must be at least " .. argDef.min
+        end
+
+        if ( argDef.max and num > argDef.max ) then
+            return nil, "must be at most " .. argDef.max
+        end
+
+        if ( argDef.decimals ) then
+            num = math.Round(num, argDef.decimals)
+        end
+
+        return num
+    elseif ( argDef.type == ax.type.bool ) then
+        local lower = utf8.lower(value)
+        if ( lower == "true" or lower == "1" or lower == "yes" ) then
+            return true
+        elseif ( lower == "false" or lower == "0" or lower == "no" ) then
+            return false
+        else
+            return nil, "must be true/false, 1/0, or yes/no"
+        end
+
+    elseif ( argDef.type == ax.type.player ) then
+        local foundPlayer = ax.util:FindPlayer(value)
+        if ( !IsValid(foundPlayer) ) then
+            return nil, "player not found or ambiguous match"
+        end
+
+        return foundPlayer
+    elseif ( argDef.type == ax.type.character ) then
+        local foundChar = ax.util:FindCharacter(value)
+        if ( !foundChar ) then
+            return nil, "character not found or ambiguous match"
+        end
+
+        return foundChar
+    else
+        return nil, "unknown argument type: " .. argDef.type
+    end
+end
+
 --- Extract and validate arguments from raw input string.
 -- Parses command arguments according to type definitions and validates them.
 -- @realm shared
@@ -444,71 +507,6 @@ if ( SERVER ) then
             caller:Notify(tostring(result))
         end
     end)
-end
-
--- Internal helper functions
-
---[[
-    Convert and validate a single argument value.
-    @realm shared
-    @param string value The raw string value
-    @param table argDef The argument definition
-    @return any|nil, string Converted value or nil with error
-]]
-function ax.command:ConvertArgument(value, argDef)
-    if ( argDef.type == ax.type.string or argDef.type == ax.type.text ) then
-        if ( argDef.choices and !argDef.choices[value] ) then
-            local validChoices = table.GetKeys(argDef.choices)
-            return nil, "must be one of: " .. table.concat(validChoices, ", ")
-        end
-
-        return value
-    elseif ( argDef.type == ax.type.number ) then
-        local num = tonumber(value)
-        if ( !num ) then
-            return nil, "must be a number"
-        end
-
-        if ( argDef.min and num < argDef.min ) then
-            return nil, "must be at least " .. argDef.min
-        end
-
-        if ( argDef.max and num > argDef.max ) then
-            return nil, "must be at most " .. argDef.max
-        end
-
-        if ( argDef.decimals ) then
-            num = math.Round(num, argDef.decimals)
-        end
-
-        return num
-    elseif ( argDef.type == ax.type.bool ) then
-        local lower = utf8.lower(value)
-        if ( lower == "true" or lower == "1" or lower == "yes" ) then
-            return true
-        elseif ( lower == "false" or lower == "0" or lower == "no" ) then
-            return false
-        else
-            return nil, "must be true/false, 1/0, or yes/no"
-        end
-
-    elseif ( argDef.type == ax.type.player ) then
-        local foundPlayer = ax.util:FindPlayer(value)
-        if ( !IsValid(foundPlayer) ) then
-            return nil, "player not found or ambiguous match"
-        end
-
-        return foundPlayer
-    elseif ( argDef.type == ax.type.character ) then
-        local foundChar = ax.util:FindCharacter(value)
-        if ( !foundChar ) then
-            return nil, "character not found or ambiguous match"
-        end
-
-        return foundChar
-    else
-        return nil, "unknown argument type: " .. argDef.type
-    end
 end
 
 -- Console command integration for server
