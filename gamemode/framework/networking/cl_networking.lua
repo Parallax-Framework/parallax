@@ -128,8 +128,10 @@ end)
 
 ax.net:Hook("character.sync", function(client, character)
     if ( !IsValid(client) ) then return end
-    if ( !istable(character) ) then
-        ax.util:PrintError("Invalid character data received from server")
+
+    -- Assume we are trying to kick the player off of their character
+    if ( character == nil or !istable(character) ) then
+        client:GetTable().axCharacter = nil
         return
     end
 

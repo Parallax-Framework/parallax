@@ -201,6 +201,55 @@ function ax.character:Load(client, character)
     hook.Run("PlayerLoadedCharacter", client, character, clientData.axCharacterPrevious)
 end
 
+--- Kick a player out of their active character and return them to the menu.
+-- @realm server
+-- @param client Player The player to kick out of their character
+-- @param reason string|nil Optional reason to notify the player with
+-- @return boolean True if a character was unloaded
+-- @usage ax.character:Kick(client, "You have been kicked to the menu.")
+function ax.character:Kick(client, reason)
+    if ( !IsValid(client) ) then return false end
+
+    local character = client:GetCharacter()
+    if ( !character ) then return false end
+
+    if ( ax.inventory.instances[1] != nil ) then
+        for i = 1, #ax.inventory.instances do
+            local inventory = ax.inventory.instances[i]
+            if ( istable(inventory) and inventory:IsReceiver(client) ) then
+                inventory:RemoveReceiver(client)
+            end
+        end
+    end
+
+    character.player = nil
+
+    local clientData = client:GetTable()
+    clientData.axCharacterPrevious = character
+    clientData.axCharacter = nil
+
+    -- Quickly update anything for the character before we unload it in the client
+    ax.character:Sync(client, character)
+
+    -- Now kick us off the character in the client
+    ax.character:Sync(client, nil)
+
+    if ( isstring(reason) and reason != "" ) then
+        client:Notify(reason, "error")
+    end
+
+    client:SetNoDraw(true)
+    client:SetNotSolid(true)
+    client:SetMoveType(MOVETYPE_NONE)
+    client:KillSilent()
+
+    client:SendLua([[vgui.Create("ax.main")]])
+
+    hook.Run("PlayerUnloadedCharacter", client, character)
+
+    return true
+end
+
 --- Restore all characters for a player from the database.
 -- Loads all characters associated with the player's SteamID64 and sends them to the client.
 -- @realm server
