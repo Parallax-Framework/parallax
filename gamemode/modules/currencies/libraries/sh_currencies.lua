@@ -151,6 +151,39 @@ function ax.currencies:Format(amount, uniqueID)
     return string.Comma(math.floor(amount)) .. " " .. currencyData.plural
 end
 
+--- Format a currency amount with symbol prefix or suffix.
+-- @realm shared
+-- @param amount number The amount to format
+-- @param uniqueID string The unique identifier of the currency
+-- @param useSymbol boolean Whether to include the currency symbol (default: false)
+-- @param symbolPosition string "prefix" or "suffix" to position the symbol (default: "prefix")
+-- @return string Formatted currency string with symbol (e.g., "$1,000" or "1,000$")
+-- @usage local formatted = ax.currencies:FormatWithSymbol(1000, "credits", true, "prefix")
+-- -- Returns: "¢1,000"
+function ax.currencies:FormatWithSymbol(amount, uniqueID, useSymbol, symbolPosition)
+    amount = tonumber(amount) or 0
+    uniqueID = uniqueID or "credits"
+    useSymbol = useSymbol or false
+    symbolPosition = symbolPosition or "prefix"
+
+    local currencyData = self:Get(uniqueID)
+    if ( !currencyData ) then
+        ax.util:PrintWarning("Attempted to format invalid currency with symbol: " .. tostring(uniqueID))
+        return tostring(amount)
+    end
+
+    local formattedAmount = self:Format(amount, uniqueID)
+    if ( useSymbol ) then
+        if ( symbolPosition == "prefix" ) then
+            return currencyData.symbol .. formattedAmount
+        else
+            return formattedAmount .. currencyData.symbol
+        end
+    end
+
+    return formattedAmount
+end
+
 -- Register default currency immediately
 --- Spawn a currency entity in the world (server only).
 -- Creates a physical entity representing dropped currency that players can pick up.
