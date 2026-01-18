@@ -637,9 +637,6 @@ end
 
 vgui.Register("ax.tab.inventory", PANEL, "EditablePanel")
 
--- Clean up existing hook to prevent duplicates on reload
-hook.Remove("PopulateTabButtons", "ax.tab.inventory")
-
 hook.Add("PopulateTabButtons", "ax.tab.inventory", function(buttons)
     buttons["inventory"] = {
         Populate = function(this, panel)
