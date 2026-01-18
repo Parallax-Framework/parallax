@@ -69,6 +69,7 @@ end
 -- @return Player|NULL The found player entity or NULL
 -- @usage local client = ax.util:FindPlayer("7656119...")
 function ax.util:FindPlayer(identifier)
+    print("Finding player for identifier: " .. tostring(identifier), "type: " .. type(identifier))
     if ( identifier == nil ) then return NULL end
 
     if ( isentity(identifier) and IsValid(identifier) and identifier:IsPlayer() ) then
@@ -80,15 +81,20 @@ function ax.util:FindPlayer(identifier)
     end
 
     if ( isstring(identifier) ) then
+        print("Searching by string identifier: " .. identifier)
         if ( ax.type:Sanitise(ax.type.steamid, identifier) ) then
+            print("Searching by SteamID: " .. identifier)
             return player.GetBySteamID(identifier)
         elseif ( ax.type:Sanitise(ax.type.steamid64, identifier) ) then
+            print("Searching by SteamID64: " .. identifier)
             return player.GetBySteamID64(identifier)
-        end
-
-        for _, v in player.Iterator() do
-            if ( self:FindString(v:Nick(), identifier) or self:FindString(v:SteamName(), identifier) or self:FindString(v:SteamID(), identifier) or self:FindString(v:SteamID64(), identifier) ) then
-                return v
+        else
+            print("Searching by name: " .. identifier)
+            for _, v in player.Iterator() do
+                print("Checking player: " .. v:Nick())
+                if ( self:FindString(v:Nick(), identifier) or self:FindString(v:SteamName(), identifier) or self:FindString(v:SteamID(), identifier) or self:FindString(v:SteamID64(), identifier) ) then
+                    return v
+                end
             end
         end
     end
