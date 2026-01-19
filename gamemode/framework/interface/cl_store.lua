@@ -440,15 +440,23 @@ function PANEL:Init()
     self.slider:SetValue(0)
     self.slider.OnValueChanged = function(this, value)
         if ( self.bInitializing ) then return end
+        self.pendingValue = value
+        self.pendingTime = CurTime()
 
-        if ( self.deferredUpdate ) then
+        if ( self.deferredUpdate or this:IsEditing() ) then
             self.slider.ValueChangedDeferred = value
+            return
+        end
+
+        if ( self.debounceTime and self.debounceTime > 0 ) then
             return
         end
 
         local store = self:GetStore()
         if ( store ) then
             store:Set(self.key, value)
+            self.pendingValue = nil
+            self.pendingTime = nil
         end
     end
     self.slider.Think = function(this)
@@ -456,14 +464,25 @@ function PANEL:Init()
         this.TextArea:SetFont(self:GetFont())
         this.TextArea:SetTextColor(self:GetTextColor())
 
+        local store = self:GetStore()
         if ( self.deferredUpdate and !this:IsEditing() and this.ValueChangedDeferred ) then
-            local store = self:GetStore()
             if ( store ) then
                 store:Set(self.key, this.ValueChangedDeferred)
                 this.ValueChangedDeferred = nil
+                self.pendingValue = nil
+                self.pendingTime = nil
             end
 
             return
+        end
+
+        if ( self.pendingValue != nil and self.pendingTime and !this:IsEditing() and self.debounceTime and self.debounceTime > 0 and (CurTime() - self.pendingTime) >= self.debounceTime ) then
+            if ( store ) then
+                store:Set(self.key, self.pendingValue)
+            end
+
+            self.pendingValue = nil
+            self.pendingTime = nil
         end
     end
 end
@@ -482,6 +501,11 @@ function PANEL:SetKey(key)
     self.deferredUpdate = data.deferredUpdate
     if ( self.deferredUpdate == nil ) then
         self.deferredUpdate = false
+    end
+
+    self.debounceTime = data.debounceTime
+    if ( self.debounceTime == nil ) then
+        self.debounceTime = 0.2
     end
 
     self.bInitializing = false
