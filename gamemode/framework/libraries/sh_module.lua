@@ -42,6 +42,11 @@ function ax.module:Include(path, timeFilter)
             end
 
             local moduleName = string.StripExtension(fileName)
+            if ( string.sub(moduleName, 1, 1) == "_" ) then
+                ax.util:PrintDebug("Skipping deprecated module file: " .. fileName)
+                continue
+            end
+
             local prefix = string.sub(moduleName, 1, 3)
             if ( prefix == "sh_" or prefix == "cl_" or prefix == "sv_" ) then
                 moduleName = string.sub(moduleName, 4)
@@ -75,6 +80,11 @@ function ax.module:Include(path, timeFilter)
                         ax.util:PrintDebug("Skipping unchanged module boot file (modified " .. (currentTime - fileTime) .. "s ago): " .. bootFile)
                         shouldSkip = true
                     end
+                end
+
+                if ( string.sub(dirName, 1, 1) == "_" ) then
+                    ax.util:PrintDebug("Skipping deprecated module directory: " .. dirName)
+                    continue
                 end
 
                 local scope = "schema"
