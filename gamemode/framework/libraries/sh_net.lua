@@ -17,6 +17,8 @@ ax.net = ax.net or {}
 ax.net.stored = ax.net.stored or {}
 ax.net.cooldown = ax.net.cooldown or {}
 
+-- TODO: Maybe some queue system, this shit can send too much messages at once
+
 --- Hooks a network message.
 -- @string name Unique identifier.
 -- @func callback Callback with player, unpacked arguments.
