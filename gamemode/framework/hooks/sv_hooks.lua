@@ -357,40 +357,6 @@ hook.Add("player_disconnect", "Parallax.PlayerDisconnected", function(data)
     end
 end)
 
-local function BuildInitialSyncPayload(client)
-    local payload = {
-        relay = ax.relay.data or {},
-        characters = {},
-        worldItems = {}
-    }
-
-    -- Collect existing active characters from other players
-    for _, otherClient in player.Iterator() do
-        if ( !IsValid(otherClient) or otherClient == client ) then continue end
-
-        local otherCharacter = otherClient:GetCharacter()
-        if ( !istable(otherCharacter) ) then continue end
-
-        payload.characters[#payload.characters + 1] = {
-            client = otherClient,
-            character = otherCharacter
-        }
-    end
-
-    -- Collect all world items (invID = 0) for the newly joined player
-    for itemID, item in pairs(ax.item.instances) do
-        if ( !istable(item) or item.invID != 0 ) then continue end
-
-        payload.worldItems[#payload.worldItems + 1] = {
-            id = item.id,
-            class = item.class,
-            data = item.data or {}
-        }
-    end
-
-    return payload
-end
-
 function GM:StartCommand(client, userCmd)
     local steamID64 = client:SteamID64()
     if ( AX_CLIENT_QUEUE[steamID64] and !userCmd:IsForced() ) then
@@ -431,13 +397,28 @@ function GM:StartCommand(client, userCmd)
 
                     ax.util:PrintDebug("Loaded player data for " .. steamID64)
 
-                    local payload = BuildInitialSyncPayload(client)
-                    ax.net:Start(client, "player.initial.sync", payload)
-
                     ax.character:Restore(client, function(characters)
-                        ax.inventory:Restore(client, function(inventory)
-                            hook.Run("PlayerReady", client)
-                        end)
+                        ax.inventory:Restore(client)
+                        ax.relay:Sync(client)
+
+                        -- Sync all existing active characters from other players
+                        for _, otherClient in player.Iterator() do
+                            if ( !IsValid(otherClient) or otherClient == client ) then continue end
+
+                            local otherCharacter = otherClient:GetCharacter()
+                            if ( !istable(otherCharacter) ) then continue end
+
+                            ax.character:Sync(otherClient, otherCharacter, client)
+                        end
+
+                        -- Sync all world items (invID = 0) to the newly joined player
+                        for itemID, item in pairs(ax.item.instances) do
+                            if ( !istable(item) or item.invID != 0 ) then continue end
+
+                            ax.net:Start(client, "inventory.item.add", 0, item.id, item.class, item.data or {})
+                        end
+
+                        hook.Run("PlayerReady", client)
                     end)
                 end)
             query:Execute()
