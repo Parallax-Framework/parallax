@@ -408,3 +408,14 @@ ax.net:Hook("spawnmenu.spawn.item", function(client, itemClass)
         end
     end, {})
 end)
+
+ax.net:Hook("command.run", function(caller, name, rawArgs)
+    if ( !IsValid(caller) ) then return end
+
+    local ok, result = ax.command:Run(caller, name, rawArgs)
+    if ( !ok ) then
+        caller:Notify(result or "Unknown error")
+    elseif ( result and result != "" ) then
+        caller:Notify(tostring(result))
+    end
+end)

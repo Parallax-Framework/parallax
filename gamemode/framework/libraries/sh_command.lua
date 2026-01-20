@@ -495,20 +495,6 @@ function ax.command:Help(name)
     return usage .. " - " .. def.description
 end
 
--- Server-side network receiver
-if ( SERVER ) then
-    ax.net:Hook("command.run", function(caller, name, rawArgs)
-        if ( !IsValid(caller) ) then return end
-
-        local ok, result = ax.command:Run(caller, name, rawArgs)
-        if ( !ok ) then
-            caller:Notify(result or "Unknown error")
-        elseif ( result and result != "" ) then
-            caller:Notify(tostring(result))
-        end
-    end)
-end
-
 -- Console command integration for server
 if ( SERVER ) then
     concommand.Add("ax_command", function(caller, cmd, args, argStr)
