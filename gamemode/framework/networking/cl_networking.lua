@@ -35,6 +35,57 @@ ax.net:Hook("player.ready", function()
     end
 end)
 
+ax.net:Hook("player.initial.sync", function(payload)
+    if ( !istable(payload) ) then return end
+
+    if ( istable(payload.relay) ) then
+        ax.relay.data = payload.relay
+    end
+
+    if ( istable(payload.characters) ) then
+        for i = 1, #payload.characters do
+            local entry = payload.characters[i]
+            if ( !istable(entry) ) then continue end
+
+            local client = entry.client
+            local character = entry.character
+
+            if ( !IsValid(client) or !istable(character) ) then continue end
+
+            client:GetTable().axCharacter = character
+
+            ax.character.instances[character.id] = setmetatable(character, ax.character.meta)
+
+            if ( characterVarQueue[character.id] ) then
+                if ( !istable(character.vars) ) then
+                    character.vars = {}
+                end
+
+                for varName, varValue in pairs(characterVarQueue[character.id]) do
+                    character.vars[varName] = varValue
+                end
+
+                characterVarQueue[character.id] = nil
+            end
+        end
+    end
+
+    if ( istable(payload.worldItems) ) then
+        for i = 1, #payload.worldItems do
+            local itemData = payload.worldItems[i]
+            if ( !istable(itemData) or !isnumber(itemData.id) ) then continue end
+
+            if ( ax.item.instances[itemData.id] ) then continue end
+
+            local itemObject = ax.item:Instance(itemData.id, itemData.class)
+            itemObject.invID = 0
+            itemObject.data = itemData.data or {}
+
+            ax.item.instances[itemData.id] = itemObject
+        end
+    end
+end)
+
 ax.net:Hook("character.create", function(characterID, characters)
     local client = ax.client
     if ( !IsValid(client) ) then

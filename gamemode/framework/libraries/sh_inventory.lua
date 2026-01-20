@@ -95,7 +95,7 @@ if ( SERVER ) then
     -- @param client Player The player whose inventories should be restored.
     -- @usage ax.inventory:Restore(client)
     -- @internal
-    function ax.inventory:Restore(client)
+    function ax.inventory:Restore(client, callback)
         local characterIDs = {}
         local clientTable = client:GetTable()
         for k, v in pairs(clientTable.axCharacters) do
@@ -179,6 +179,11 @@ if ( SERVER ) then
                                     if ( charInv == inventory.id ) then
                                         inventory:AddReceiver(client)
                                         ax.util:PrintDebug(string.format("Added %s as a receiver to inventory %d", client:SteamID64(), inventory.id))
+                                    end
+
+                                    -- and finally, call the callback if provided
+                                    if ( isfunction(callback) ) then
+                                        callback(inventory)
                                     end
                                 end)
                                 itemFetchQuery:Execute()
