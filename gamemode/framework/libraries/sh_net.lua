@@ -16,8 +16,89 @@
 ax.net = ax.net or {}
 ax.net.stored = ax.net.stored or {}
 ax.net.cooldown = ax.net.cooldown or {}
+ax.net.queue = ax.net.queue or {}
+ax.net.queueActive = ax.net.queueActive or false
 
--- TODO: Maybe some queue system, this shit can send too much messages at once
+--- Enqueue a net job to prevent overlapping net.Start calls.
+-- @param job function Callback that receives a done() function.
+function ax.net:Enqueue(job)
+    if ( !isfunction(job) ) then return end
+
+    self.queue[#self.queue + 1] = job
+
+    if ( self.queueActive ) then return end
+
+    self:ProcessQueue()
+end
+
+--- Processes the next queued net job.
+function ax.net:ProcessQueue()
+    if ( self.queueActive ) then return end
+
+    local job = self.queue[1]
+    if ( !isfunction(job) ) then return end
+
+    self.queueActive = true
+    table.remove(self.queue, 1)
+
+    local function done()
+        self.queueActive = false
+
+        if ( self.queue[1] == nil ) then return end
+
+        timer.Simple(0, function()
+            if ( !ax or !ax.net ) then return end
+
+            ax.net:ProcessQueue()
+        end)
+    end
+
+    job(done)
+end
+
+--- Builds the encoded payload for a net message.
+-- @param arguments table
+-- @return string|boolean Encoded payload or false on failure.
+function ax.net:BuildPayload(arguments)
+    local encoded = sfs.encode(arguments)
+
+    if ( !isstring(encoded) or #encoded < 1 ) then
+        return false
+    end
+
+    return encoded
+end
+
+--- Queues a net message to avoid overlapping net.Start calls.
+-- @param name string
+-- @param arguments table
+-- @param sendFunc function
+-- @param debugMessage string
+-- @param warningMessage string
+function ax.net:QueueMessage(name, arguments, sendFunc, debugMessage, warningMessage)
+    if ( !isfunction(sendFunc) ) then return end
+
+    local encoded = self:BuildPayload(arguments)
+    if ( !encoded ) then return end
+
+    self:Enqueue(function(done)
+        net.Start("ax.net.msg")
+        net.WriteString(name)
+        net.WriteData(encoded, #encoded)
+
+        sendFunc()
+
+        if ( isstring(debugMessage) and debugMessage != "" ) then
+            ax.util:PrintDebug(debugMessage)
+        end
+
+        if ( isstring(warningMessage) and warningMessage != "" ) then
+            ax.util:PrintWarning(warningMessage)
+        end
+
+        done()
+    end)
+end
 
 --- Hooks a network message.
 -- @string name Unique identifier.
@@ -29,35 +110,21 @@ end
 if ( SERVER ) then
     util.AddNetworkString("ax.net.msg")
 
-    function ax.net:WritePayload(name, arguments)
-        local encoded = sfs.encode(arguments)
-
-        if ( !isstring(encoded) or #encoded < 1 ) then
-            return false
-        end
-
-        net.Start("ax.net.msg")
-        net.WriteString(name)
-        net.WriteData(encoded, #encoded)
-
-        return true
-    end
-
     -- per request of eon.
     function ax.net:StartPVS(position, name, ...)
-        if ( !isvector(position) or !self:WritePayload(name, {...}) ) then return end
+        if ( !isvector(position) ) then return end
 
-        net.SendPVS(position)
-
-        ax.util:PrintDebug("[NET] Sent '" .. name .. "' to PVS at " .. tostring(position))
+        self:QueueMessage(name, {...}, function()
+            net.SendPVS(position)
+        end, "[NET] Sent '" .. name .. "' to PVS at " .. tostring(position))
     end
 
     function ax.net:StartPAS(position, name, ...)
-        if ( !isvector(position) or !self:WritePayload(name, {...}) ) then return end
+        if ( !isvector(position) ) then return end
 
-        net.SendPAS(position)
-
-        ax.util:PrintDebug("[NET] Sent '" .. name .. "' to PAS at " .. tostring(position))
+        self:QueueMessage(name, {...}, function()
+            net.SendPAS(position)
+        end, "[NET] Sent '" .. name .. "' to PAS at " .. tostring(position))
     end
 
     --- Starts a stream.
@@ -66,20 +133,22 @@ if ( SERVER ) then
     -- @vararg Arguments to send.
     function ax.net:Start(target, name, ...)
         local arguments = {...}
-        if ( !self:WritePayload(name, arguments) ) then
-            return
-        end
-
         -- Fast paths
         if ( target == nil ) then
-            net.Broadcast()
-            ax.util:PrintDebug("[NET] Sent '" .. name .. "' to all clients")
+            self:QueueMessage(name, arguments, function()
+                net.Broadcast()
+            end, "[NET] Sent '" .. name .. "' to all clients")
+
             return
         end
 
         if ( type(target) == "Player" ) then
-            net.Send(target)
-            ax.util:PrintDebug("[NET] Sent '" .. name .. "' to " .. target:Nick())
+            if ( !IsValid(target) ) then return end
+
+            self:QueueMessage(name, arguments, function()
+                net.Send(target)
+            end, "[NET] Sent '" .. name .. "' to " .. target:Nick())
+
             return
         end
 
@@ -90,23 +159,24 @@ if ( SERVER ) then
             for i = 1, targetCount do
                 local v = target[i]
 
-                if ( type(v) == "Player" ) then
+                if ( type(v) == "Player" and IsValid(v) ) then
                     recipients[#recipients + 1] = v
                 end
             end
 
             if ( recipients[1] != nil ) then
-                net.Send(recipients)
-                ax.util:PrintDebug("[NET] Sent '" .. name .. "' to " .. #recipients .. " recipients")
+                self:QueueMessage(name, arguments, function()
+                    net.Send(recipients)
+                end, "[NET] Sent '" .. name .. "' to " .. #recipients .. " recipients")
             end
 
             return
         end
 
         -- Fallback: broadcast if caller passed garbage
-        net.Broadcast()
-
-        ax.util:PrintWarning("ax.net:Start called with invalid target, broadcasting to all clients instead")
+        self:QueueMessage(name, arguments, function()
+            net.Broadcast()
+        end, nil, "ax.net:Start called with invalid target, broadcasting to all clients instead")
     end
 else
     --- Starts a stream.
@@ -115,15 +185,10 @@ else
     -- @vararg Arguments to send.
     function ax.net:Start(name, ...)
         local arguments = {...}
-        local encoded = sfs.encode(arguments)
-        if ( !isstring(encoded) or #encoded < 1 ) then return end
 
-        net.Start("ax.net.msg")
-            net.WriteString(name)
-            net.WriteData(encoded, #encoded)
-        net.SendToServer()
-
-        ax.util:PrintDebug("[NET] Sent '" .. name .. "' to server")
+        self:QueueMessage(name, arguments, function()
+            net.SendToServer()
+        end, "[NET] Sent '" .. name .. "' to server")
     end
 end
 
