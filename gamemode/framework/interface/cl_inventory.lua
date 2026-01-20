@@ -96,6 +96,11 @@ function PANEL:PopulateCharacterInfo()
 
     model.LayoutEntity = function(this, entity)
         entity:SetSkin(character:GetSkin() or 0)
+
+        local bodygroups = entity:GetBodyGroups()
+        for _, data in pairs(bodygroups) do
+            entity:SetBodygroup(data.id, ax.client:GetBodygroup(data.id))
+        end
     end
 
     model.PerformLayout = function(this, width, height)
