@@ -223,6 +223,11 @@ function PANEL:Populate(tab, scroller, type, category)
                 btn:Dock(TOP)
                 btn:SetType(type)
                 btn:SetKey(key)
+            elseif ( entry.type == ax.type.array ) then
+                local btn = scroller:Add("ax.store.array")
+                btn:Dock(TOP)
+                btn:SetType(type)
+                btn:SetKey(key)
             else
                 local label = scroller:Add("ax.text")
                 label:Dock(TOP)
@@ -634,3 +639,47 @@ function PANEL:SetKey(key)
 end
 
 vgui.Register("ax.store.color", PANEL, "ax.store.base")
+
+-- Array store element
+PANEL = {}
+
+DEFINE_BASECLASS("ax.store.base")
+
+function PANEL:Init()
+    self.elementType = "array"
+
+    self.combo = self:Add("DComboBox")
+    self.combo:Dock(RIGHT)
+    self.combo:DockMargin(0, ax.util:ScreenScale(4), ax.util:ScreenScale(8), ax.util:ScreenScale(4))
+    self.combo:SetWide(ax.util:ScreenScale(192))
+    self.combo.OnSelect = function(this, index, value, data)
+        if ( self.bInitializing ) then return end
+        local store = self:GetStore()
+        if ( store ) then
+            store:Set(self.key, data)
+        end
+    end
+end
+
+function PANEL:SetKey(key)
+    BaseClass.SetKey(self, key)
+
+    local store = self:GetStore()
+    if ( !store or store:Get(key) == nil ) then return end
+
+    local data = store:GetData(key)
+    self.combo:Clear()
+
+    if ( data.choices and istable(data.choices) ) then
+        for choiceKey, choiceLabel in pairs(data.choices) do
+            self.combo:AddChoice(choiceLabel, choiceKey)
+        end
+    end
+
+    local data = store.registry[key]
+
+    self.combo:SetValue( data.data.choices[ store:Get(key) ] or "unknown" )
+    self.bInitializing = false
+end
+
+vgui.Register("ax.store.array", PANEL, "ax.store.base")
