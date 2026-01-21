@@ -218,6 +218,11 @@ function PANEL:Populate(tab, scroller, type, category)
                 btn:Dock(TOP)
                 btn:SetType(type)
                 btn:SetKey(key)
+            elseif ( entry.type == ax.type.color ) then
+                local btn = scroller:Add("ax.store.color")
+                btn:Dock(TOP)
+                btn:SetType(type)
+                btn:SetKey(key)
             else
                 local label = scroller:Add("ax.text")
                 label:Dock(TOP)
@@ -562,3 +567,75 @@ function PANEL:SetKey(key)
 end
 
 vgui.Register("ax.store.string", PANEL, "ax.store.base")
+
+-- Colour store element
+PANEL = {}
+
+DEFINE_BASECLASS("ax.store.base")
+
+local STORE_FALLBACK_COLOR = Color(100, 100, 100)
+function PANEL:Init()
+    self.elementType = "color"
+
+    self.colorPanel = self:Add("ax.button.flat")
+    self.colorPanel:SetText("")
+    self.colorPanel:Dock(RIGHT)
+    self.colorPanel:DockMargin(0, ax.util:ScreenScale(4), ax.util:ScreenScale(8), ax.util:ScreenScale(4))
+    self.colorPanel:SetWide(ax.util:ScreenScale(64))
+    self.colorPanel.Paint = function(this, width, height)
+        local store = self:GetStore()
+        if ( !store ) then
+            ax.render.Draw(4, 0, 0, width, height, STORE_FALLBACK_COLOR)
+            return
+        end
+
+        local color = store:Get(self.key) or color_white
+        ax.render.Draw(4, 0, 0, width, height, color)
+    end
+
+    self.colorPanel.DoClick = function(this)
+        local store = self:GetStore()
+        if ( !store ) then
+            self:HandleError("Unknown type")
+            return
+        end
+
+        if ( IsValid(self.colorPicker) ) then
+            self.colorPicker:Remove()
+            self.colorPicker = nil
+        end
+
+        local currentColor = store:Get(self.key) or color_white
+
+        self.colorPicker = vgui.Create("DColorMixer")
+        self.colorPicker:SetPos(gui.MouseX(), gui.MouseY())
+        self.colorPicker:SetColor(currentColor)
+        self.colorPicker:MakePopup()
+        self.colorPicker.ValueChanged = function(this, newColor)
+            store:Set(self.key, newColor)
+            print("Set color for key", self.key, "to", newColor)
+        end
+        self.colorPicker.Think = function(this)
+            this:MoveToFront()
+        end
+        self.colorPanel.OnRemoved = function(this)
+            if ( IsValid(self.colorPicker) ) then
+                self.colorPicker:Remove()
+                self.colorPicker = nil
+            end
+        end
+        self.OnRemove = function(this)
+            if ( IsValid(self.colorPicker) ) then
+                self.colorPicker:Remove()
+                self.colorPicker = nil
+            end
+        end
+    end
+end
+
+function PANEL:SetKey(key)
+    BaseClass.SetKey(self, key)
+    self.bInitializing = false
+end
+
+vgui.Register("ax.store.color", PANEL, "ax.store.base")
