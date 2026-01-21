@@ -33,6 +33,30 @@ ax.mapscene.state = ax.mapscene.state or {
     pvsLastSend = 0
 }
 
+ax.mapscene.music = ax.mapscene.music or {
+    channel = nil,
+    path = nil,
+    resolvedPath = nil,
+    duration = 0,
+    startTime = 0,
+    volume = 0,
+    fadeIn = 0,
+    fadeOut = 0,
+    loopDelay = 0,
+    fadingIn = false,
+    fadingOut = false,
+    fadeStart = 0,
+    fadeDuration = 0,
+    fadeFrom = 0,
+    currentVolume = 0,
+    nextPlayTime = 0,
+    lastEndTime = 0,
+    bWasInScene = false,
+    resolveId = 0,
+    pendingResolveId = 0,
+    pendingResolvedPath = nil
+}
+
 --- Determine if map scenes should render.
 -- @param client Player
 -- @return boolean
