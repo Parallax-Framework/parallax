@@ -311,26 +311,6 @@ function GM:PlayerInitialSpawn(client)
     hook.Run("PlayerQueued", client)
 end
 
-function GM:PlayerDisconnected(client)
-    local steamID64 = client:SteamID64()
-
-    -- Clean up bot characters from memory
-    if ( client:IsBot() ) then
-        local character = client:GetCharacter()
-        if ( character and character.isBot ) then
-            ax.character.instances[character.id] = nil
-            ax.util:PrintDebug("Cleaned up temporary bot character: " .. (character:GetName() or "Unknown"))
-        end
-    end
-
-    -- Clean up timers and other player data
-    timer.Remove("ax.player.save." .. steamID64)
-
-    if ( client:GetTable().axJoinTime ) then
-        client:GetTable().axJoinTime = nil
-    end
-end
-
 gameevent.Listen("player_disconnect")
 
 hook.Add("player_disconnect", "Parallax.PlayerDisconnected", function(data)
@@ -548,6 +528,13 @@ function GM:PlayerDisconnected(client)
     client:SetLastLeave(os.time())
     client:SetPlayTime(playtime)
     client:Save()
+
+    local character = client:GetCharacter()
+    if ( istable(character) ) then
+        hook.Run("OnCharacterDisconnected", character)
+        character:Save()
+        ax.util:PrintDebug("Saved character " .. character:GetName() .. " for player " .. client:SteamName() .. " on disconnect.")
+    end
 
     for id, inv in pairs(ax.inventory.instances) do
         if ( inv:IsReceiver(client) ) then
