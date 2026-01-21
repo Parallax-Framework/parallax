@@ -54,6 +54,48 @@ ax.config:Add("map.scene.input", ax.type.bool, true, {
     description = "config.map.scene.input.help",
 })
 
+ax.config:Add("map.scene.music.path", ax.type.string, "music/hl1_song3.mp3", {
+    category = "camera",
+    subCategory = "mapscene",
+    description = "config.map.scene.music.path.help",
+})
+
+ax.config:Add("map.scene.music.volume", ax.type.number, 0.5, {
+    category = "camera",
+    subCategory = "mapscene",
+    description = "config.map.scene.music.volume.help",
+    min = 0,
+    max = 1,
+    decimals = 2
+})
+
+ax.config:Add("map.scene.music.loopDelay", ax.type.number, 0, {
+    category = "camera",
+    subCategory = "mapscene",
+    description = "config.map.scene.music.loopDelay.help",
+    min = 0,
+    max = 60,
+    decimals = 1
+})
+
+ax.config:Add("map.scene.music.fadeIn", ax.type.number, 1.5, {
+    category = "camera",
+    subCategory = "mapscene",
+    description = "config.map.scene.music.fadeIn.help",
+    min = 0,
+    max = 10,
+    decimals = 1
+})
+
+ax.config:Add("map.scene.music.fadeOut", ax.type.number, 1.5, {
+    category = "camera",
+    subCategory = "mapscene",
+    description = "config.map.scene.music.fadeOut.help",
+    min = 0,
+    max = 10,
+    decimals = 1
+})
+
 ax.config:Add("map.scene.strength", ax.type.number, 6, {
     category = "camera",
     subCategory = "mapscene",
