@@ -143,7 +143,7 @@ if ( SERVER ) then
         end
 
         if ( type(target) == "Player" ) then
-            if ( !IsValid(target) ) then return end
+            if ( !ax.util:IsValidPlayer(target) ) then return end
 
             self:QueueMessage(name, arguments, function()
                 net.Send(target)

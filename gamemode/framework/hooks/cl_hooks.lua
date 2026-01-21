@@ -235,7 +235,7 @@ function GM:HUDPaint()
     local target = trace.Entity
     targetData[target:EntIndex()] = targetData[target:EntIndex()] or { lastSeen = 0, alpha = 0 }
 
-    if ( IsValid(target) and target != client ) then
+    if ( ax.util:IsValidPlayer(target) and target != client ) then
         targetData[target:EntIndex()].lastSeen = CurTime()
     end
 

@@ -488,7 +488,7 @@ end
 -- print(ax.util:FindInCrosshair(Entity(1), Entity(2), 0.1))
 -- > false
 function ax.util:FindInCrosshair(client, target, range)
-    if ( !ax.util:IsValidPlayer(client) and !IsValid(target) ) then return end
+    if ( !ax.util:IsValidPlayer(client) and !ax.util:IsValidPlayer(target) ) then return end
 
     if ( !range ) then
         range = 0.9

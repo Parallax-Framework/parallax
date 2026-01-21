@@ -129,7 +129,7 @@ ax.chat:Add("ic", {
         local formattedMessage = ax.chat:FormatWithMarkdown(message)
         local target = GetLookTarget(speaker)
 
-        if ( IsValid(target) ) then
+        if ( ax.util:IsValidPlayer(target) ) then
             if ( target == listener ) then
                 -- Speaker is looking at this listener
                 return icColor, speaker:Nick() .. " " .. verb .. " to you, \"" .. formattedMessage .. "\""
@@ -180,7 +180,7 @@ ax.chat:Add("yell", {
         local formattedMessage = utf8.upper(ax.chat:FormatWithMarkdown(message, baseFont))
         local target = GetLookTarget(speaker)
 
-        if ( IsValid(target) ) then
+        if ( ax.util:IsValidPlayer(target) ) then
             if ( target == listener ) then
                 -- Speaker is looking at this listener
                 return yellColor, "<font=" .. baseFont .. ">" .. speaker:Nick() .. " " .. verb .. " to you, \"" .. formattedMessage .. "\"</font>"
@@ -218,7 +218,7 @@ ax.chat:Add("whisper", {
         local formattedMessage = ax.chat:FormatWithMarkdown(message, baseFont)
         local target = GetLookTarget(speaker)
 
-        if ( IsValid(target) ) then
+        if ( ax.util:IsValidPlayer(target) ) then
             if ( target == listener ) then
                 -- Speaker is looking at this listener
                 return whisperColor, "<font=" .. baseFont .. ">" .. speaker:Nick() .. " " .. verb .. " to you, \"" .. formattedMessage .. "\"</font>"

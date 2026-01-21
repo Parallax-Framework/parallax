@@ -84,7 +84,7 @@ function MODULE:DrawPlayers()
     if ( !ax.util:IsValidPlayer(client) or !client:IsAdmin() ) then return end
 
     for _, target in player.Iterator() do
-        if ( target == client or !IsValid(target) ) then continue end
+        if ( target == client or !ax.util:IsValidPlayer(target) ) then continue end
 
         local scr = target:GetPos():ToScreen()
         if ( !scr.visible ) then continue end

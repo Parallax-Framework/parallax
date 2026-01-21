@@ -362,7 +362,7 @@ function SWEP:GetRange(target)
         return customRange
     end
 
-    if ( IsValid(target) and target:GetClass() == "prop_ragdoll" ) then
+    if ( ax.util:IsValidPlayer(target) and target:GetClass() == "prop_ragdoll" ) then
         return 96
     else
         return 128

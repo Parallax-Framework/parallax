@@ -23,7 +23,7 @@ concommand.Add("ax_player_set_usergroup", function(client, command, arguments, a
     end
 
     local target = ax.util:FindPlayer(arguments[1])
-    if ( !IsValid(target) ) then
+    if ( !ax.util:IsValidPlayer(target) ) then
         if ( ax.util:IsValidPlayer(client) ) then
             client:Notify("You must specify a valid player to set the usergroup for.")
         else
@@ -38,7 +38,7 @@ concommand.Add("ax_player_set_usergroup", function(client, command, arguments, a
     target:SetUsergroup(usergroup) -- Update the player var as well
     target:Save()
 
-    if ( IsValid(target) ) then
+    if ( ax.util:IsValidPlayer(target) ) then
         target:Notify(Format("Your usergroup has been set to %s by %s.", usergroup, ax.util:IsValidPlayer(client) and client:SteamName() or "Console"))
     end
 

@@ -29,7 +29,7 @@ ax.command:Add("PM", {
         { name = "message", type = ax.type.text }
     },
     OnRun = function(def, client, target, message)
-        if ( !IsValid(target) ) then
+        if ( !ax.util:IsValidPlayer(target) ) then
             return "Target player not found."
         end
 
@@ -281,7 +281,7 @@ ax.command:Add("PlyWhitelist", {
         { name = "faction", type = ax.type.string }
     },
     OnRun = function(def, client, target, faction)
-        if ( !IsValid(target) ) then return "Invalid player." end
+        if ( !ax.util:IsValidPlayer(target) ) then return "Invalid player." end
 
         local factionTable = ax.faction:Get(faction)
         if ( !factionTable ) then return "Invalid faction." end
@@ -303,7 +303,7 @@ ax.command:Add("PlyWhitelistAll", {
         { name = "target", type = ax.type.player }
     },
     OnRun = function(def, client, target)
-        if ( !IsValid(target) ) then return "Invalid player." end
+        if ( !ax.util:IsValidPlayer(target) ) then return "Invalid player." end
 
         local whitelists = {}
         for _, faction in pairs(ax.faction:GetAll()) do
@@ -326,7 +326,7 @@ ax.command:Add("PlyUnWhitelist", {
         { name = "faction", type = ax.type.string }
     },
     OnRun = function(def, client, target, faction)
-        if ( !IsValid(target) ) then return "Invalid player." end
+        if ( !ax.util:IsValidPlayer(target) ) then return "Invalid player." end
 
         local factionTable = ax.faction:Get(faction)
         if ( !factionTable ) then return "Invalid faction." end
@@ -348,7 +348,7 @@ ax.command:Add("PlyUnWhitelistAll", {
         { name = "target", type = ax.type.player }
     },
     OnRun = function(def, client, target)
-        if ( !IsValid(target) ) then return "Invalid player." end
+        if ( !ax.util:IsValidPlayer(target) ) then return "Invalid player." end
 
         target:SetData("whitelists", {})
         target:Save()
@@ -363,7 +363,7 @@ ax.command:Add("PlyRespawn", {
         { name = "target", type = ax.type.player }
     },
     OnRun = function(def, client, target)
-        if ( !IsValid(target) ) then return "Invalid player." end
+        if ( !ax.util:IsValidPlayer(target) ) then return "Invalid player." end
 
         target:Spawn()
 
