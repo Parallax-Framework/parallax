@@ -68,7 +68,7 @@ end)
 
 -- When a player joins, send them the current version
 hook.Add("PlayerInitialSpawn", "ax.version.send_on_join", function(client)
-    if ( !IsValid(client) ) then return end
+    if ( !ax.util:IsValidPlayer(client) ) then return end
 
     BroadcastVersion(ax.version, client)
 end)

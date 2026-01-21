@@ -10,14 +10,14 @@
 ]]
 
 local function ApplyIK(client)
-    if ( !ax.config:Get("animations.ik") or !IsValid(client) ) then
+    if ( !ax.config:Get("animations.ik") or !ax.util:IsValidPlayer(client) ) then
         client:SetIK(false)
         return
     end
 
     client:SetIK(false)
     timer.Simple(0.1, function()
-        if ( IsValid(client) ) then
+        if ( ax.util:IsValidPlayer(client) ) then
             client:SetIK(client:GetMoveType() != MOVETYPE_NOCLIP)
         end
     end)
@@ -25,7 +25,7 @@ end
 
 ax.net:Hook("animations.update", function(client, animations, holdType)
 
-    if ( !IsValid(client) ) then return end
+    if ( !ax.util:IsValidPlayer(client) ) then return end
 
     local clientTable = client:GetTable()
 
@@ -37,13 +37,13 @@ ax.net:Hook("animations.update", function(client, animations, holdType)
 end)
 
 ax.net:Hook("sequence.reset", function(client)
-    if ( !IsValid(client) ) then return end
+    if ( !ax.util:IsValidPlayer(client) ) then return end
 
     hook.Run("PostPlayerLeaveSequence", client)
 end)
 
 ax.net:Hook("sequence.set", function(client)
-    if ( !IsValid(client) ) then return end
+    if ( !ax.util:IsValidPlayer(client) ) then return end
 
     hook.Run("PostPlayerForceSequence", client)
 end)

@@ -42,7 +42,7 @@ function net.Receive(messageName, callback)
     cache[messageName] = CurTime() + AX_WATCHER_COOLDOWN:GetInt()
 
     local function newCallback(len, client)
-        local name = IsValid(client) and ( client:Nick() .. " (" .. client:SteamID64() .. ")" ) or "unknown player"
+        local name = ax.util:IsValidPlayer(client) and ( client:Nick() .. " (" .. client:SteamID64() .. ")" ) or "unknown player"
         local phrase = "Net message \"" .. messageName .. "\" has been received by " .. name .. " in the " .. ((CLIENT and "client") or (SERVER and "server") or "unknown") .. " realm."
         if ( AX_WATCHER_LEVEL:GetInt() == 2 ) then
             local path = debug.getinfo(2)

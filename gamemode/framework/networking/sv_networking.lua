@@ -364,7 +364,7 @@ end)
 
 ax.net:Hook("spawnmenu.spawn.item", function(client, itemClass)
     -- TODO: Use CAMI to handle permissions
-    if ( !IsValid(client) or !client:IsSuperAdmin() ) then
+    if ( !ax.util:IsValidPlayer(client) or !client:IsSuperAdmin() ) then
         ax.util:PrintWarning(string.format("Player %s attempted to spawn an item without permission", tostring(client)))
         return
     end
@@ -421,7 +421,7 @@ ax.net:Hook("command.run", function(caller, name, rawArgs)
 end)
 
 ax.net:Hook("player.dermaStringRequest", function(client, bCancelled, text)
-    if ( !IsValid(client) ) then return end
+    if ( !ax.util:IsValidPlayer(client) ) then return end
 
     local clientTable = client:GetTable()
     if ( !istable(clientTable.axStringRequest) ) then return end
@@ -440,7 +440,7 @@ ax.net:Hook("player.dermaStringRequest", function(client, bCancelled, text)
 end)
 
 ax.net:Hook("player.dermaMessage", function(client)
-    if ( !IsValid(client) ) then return end
+    if ( !ax.util:IsValidPlayer(client) ) then return end
 
     local clientTable = client:GetTable()
     if ( !istable(clientTable.axDermaMessage) ) then return end

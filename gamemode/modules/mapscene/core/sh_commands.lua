@@ -35,7 +35,7 @@ ax.command:Add("MapSceneAdd", {
         { name = "tags", type = ax.type.text, optional = true },
     },
     OnRun = function(def, client, name, bPair, weight, tags)
-        if ( !IsValid(client) ) then return "Client required" end
+        if ( !ax.util:IsValidPlayer(client) ) then return "Client required" end
 
         local scene = BuildSceneFromClient(client, name, weight, tags)
         local ok, err = ax.mapscene:HandlePairCapture(client, scene, tobool(bPair))
@@ -55,7 +55,7 @@ ax.command:Add("MapSceneRemove", {
         { name = "radius", type = ax.type.number, optional = true },
     },
     OnRun = function(def, client, radius)
-        if ( !IsValid(client) ) then return "Client required" end
+        if ( !ax.util:IsValidPlayer(client) ) then return "Client required" end
 
         local removed = ax.mapscene:RemoveScenesNear(client:GetPos(), radius or 280)
         return "Removed " .. tostring(removed) .. " map scenes."
@@ -69,7 +69,7 @@ ax.command:Add("MapScenePreview", {
         { name = "identifier", type = ax.type.string, optional = true },
     },
     OnRun = function(def, client, identifier)
-        if ( !IsValid(client) ) then return "Client required" end
+        if ( !ax.util:IsValidPlayer(client) ) then return "Client required" end
 
         if ( isstring(identifier) ) then
             identifier = utf8.lower(string.Trim(identifier))
@@ -100,7 +100,7 @@ ax.command:Add("MapSceneExport", {
             return "Failed to export map scenes."
         end
 
-        if ( IsValid(client) ) then
+        if ( ax.util:IsValidPlayer(client) ) then
             ax.net:Start(client, "mapscene.export", json)
             return "Exported map scenes to your console."
         end

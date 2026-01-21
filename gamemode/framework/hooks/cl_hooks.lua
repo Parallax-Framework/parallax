@@ -65,7 +65,7 @@ local vignette = ax.util:GetMaterial("parallax/overlays/vignette.png", "smooth n
 local vignetteColor = Color(0, 0, 0, 255)
 function GM:HUDPaintBackground()
     local client = ax.client
-    if ( !IsValid(client) ) then return end
+    if ( !ax.util:IsValidPlayer(client) ) then return end
 
     if ( !client:Alive() and client:GetCharacter() ) then
         ax.render.Draw(0, 0, 0, ScrW(), ScrH(), Color(0, 0, 0, 255))
@@ -137,7 +137,7 @@ function GM:HUDShouldDraw(name)
     if ( gui.IsGameUIVisible() ) then return false end
 
     local client = ax.client
-    if ( !IsValid(client) ) then return false end
+    if ( !ax.util:IsValidPlayer(client) ) then return false end
 
     local viewEntity = client:GetViewEntity()
     if ( viewEntity and viewEntity:GetClass():find("camera") and cameraShow[name] != true ) then return false end
@@ -155,7 +155,7 @@ local armorColor = Color(100, 150, 255, 200)
 local speakingIcon = ax.util:GetMaterial("parallax/icons/volume-full.png", "smooth mips")
 function GM:HUDPaintCurvy()
     local client = ax.client
-    if ( !IsValid(client) or !client:Alive() ) then return end
+    if ( !ax.util:IsValidPlayer(client) or !client:Alive() ) then return end
 
     local width, height = ScrW(), ScrH()
 
@@ -221,7 +221,7 @@ end
 local targetData = {}
 function GM:HUDPaint()
     local client = ax.client
-    if ( !IsValid(client) or !client:Alive() ) then return end
+    if ( !ax.util:IsValidPlayer(client) or !client:Alive() ) then return end
 
     local trace = util.TraceHull({
         start = client:GetShootPos(),
@@ -320,7 +320,7 @@ function GM:PostDrawTranslucentRenderables(depth, skybox)
     local ft = FrameTime()
     local curTime = CurTime()
     for _, client in player.Iterator() do
-        if ( !IsValid(client) or !client:Alive() or client == ax.client or !client:IsSpeaking() ) then continue end
+        if ( !ax.util:IsValidPlayer(client) or !client:Alive() or client == ax.client or !client:IsSpeaking() ) then continue end
 
         local headBone = client:LookupBone("ValveBiped.Bip01_Head1")
         if ( !headBone ) then continue end
@@ -357,7 +357,7 @@ function GM:OnPauseMenuShow()
 end
 
 ax.viewstack:RegisterModifier("ragdoll", function(client, patch)
-    if ( !IsValid(client) or client:InVehicle() ) then return end
+    if ( !ax.util:IsValidPlayer(client) or client:InVehicle() ) then return end
 
     local ragdollIndex = client:GetRelay("ragdoll.index", -1)
     local ragdoll = Entity(ragdollIndex)
@@ -386,7 +386,7 @@ end, 1)
 
 local cameraFOV = CreateConVar("ax_camera_fov", "90", {FCVAR_ARCHIVE, FCVAR_REPLICATED}, "Set the camera FOV when using a view entity.")
 ax.viewstack:RegisterModifier("camera", function(client, patch)
-    if ( !IsValid(client) or client:InVehicle() ) then return end
+    if ( !ax.util:IsValidPlayer(client) or client:InVehicle() ) then return end
 
     local viewEntity = client:GetViewEntity()
     if ( IsValid(viewEntity) and viewEntity != client and viewEntity:GetClass() != "gmod_camera" ) then

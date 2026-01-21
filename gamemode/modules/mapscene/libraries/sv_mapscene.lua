@@ -281,14 +281,14 @@ end
 -- @param client Player
 -- @param identifier number|string|nil
 function ax.mapscene:SendPreview(client, identifier)
-    if ( !IsValid(client) ) then return end
+    if ( !ax.util:IsValidPlayer(client) ) then return end
     ax.net:Start(client, "mapscene.preview", identifier)
 end
 
 --- Add map scene origin to the PVS.
 -- @param client Player
 function ax.mapscene:SetupPlayerVisibility(client)
-    if ( !IsValid(client) ) then return end
+    if ( !ax.util:IsValidPlayer(client) ) then return end
 
     local origin = client.axMapSceneOrigin
     if ( self:IsValidVector(origin) ) then

@@ -22,7 +22,7 @@ hook.Add("PostDrawOpaqueRenderables", "ax.zones.debug", function()
     if ( !ax.zones.debug ) then return end
 
     local client = ax.client
-    if ( !IsValid(client) ) then return end
+    if ( !ax.util:IsValidPlayer(client) ) then return end
 
     local eyePos = client:EyePos()
 

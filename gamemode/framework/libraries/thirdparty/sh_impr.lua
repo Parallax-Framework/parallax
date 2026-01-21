@@ -30,7 +30,7 @@ function player.GetBySteamID64(steamID64)
     local ent = playerSteamID64[steamID64]
     if ( !IsValid(ent) ) then
         local client = intern_getBySteamID64(steamID64)
-        if ( IsValid(client) ) then
+        if ( ax.util:IsValidPlayer(client) ) then
             playerSteamID64[steamID64] = client
         end
 
@@ -46,7 +46,7 @@ function player.GetBySteamID(steamID)
     local ent = playerSteamID[steamID]
     if ( !IsValid(ent) ) then
         local client = intern_getBySteamID(steamID)
-        if ( IsValid(client) ) then
+        if ( ax.util:IsValidPlayer(client) ) then
             playerSteamID[steamID] = client
         end
 
@@ -60,7 +60,7 @@ function player.GetByAccountID(accountID)
     local ent = playerAccountID[accountID]
     if ( !IsValid(ent) ) then
         local client = intern_getByAccountID(accountID)
-        if ( IsValid(client) ) then
+        if ( ax.util:IsValidPlayer(client) ) then
             playerAccountID[accountID] = client
         end
 

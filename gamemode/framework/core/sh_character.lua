@@ -162,7 +162,7 @@ ax.character:RegisterVar("faction", {
     end,
     changed = function(character, value, previousValue, isNetworked, recipients)
         local client = character:GetOwner()
-        if ( IsValid(client) ) then
+        if ( ax.util:IsValidPlayer(client) ) then
             client:SetTeam(value)
         end
 
@@ -172,7 +172,7 @@ ax.character:RegisterVar("faction", {
             previousFaction:OnLeave(character, value, previousValue, isNetworked, recipients)
         end
 
-        if ( IsValid(client) ) then
+        if ( ax.util:IsValidPlayer(client) ) then
             hook.Run("PlayerLoadout", client)
         end
 
@@ -196,7 +196,7 @@ ax.character:RegisterVar("class", {
         end
 
         local client = character:GetOwner()
-        if ( IsValid(client) ) then
+        if ( ax.util:IsValidPlayer(client) ) then
             hook.Run("PlayerLoadout", client)
         end
 
@@ -221,7 +221,7 @@ ax.character:RegisterVar("rank", {
         end
 
         local client = character:GetOwner()
-        if ( IsValid(client) ) then
+        if ( ax.util:IsValidPlayer(client) ) then
             hook.Run("PlayerLoadout", client)
         end
 
@@ -616,7 +616,7 @@ ax.character:RegisterVar("model", {
     end,
     changed = function(character, value, previousValue, isNetworked, recipients)
         local client = character:GetOwner()
-        if ( IsValid(client) and client:GetModel() != value ) then
+        if ( ax.util:IsValidPlayer(client) and client:GetModel() != value ) then
             client:SetModel(value)
 
             for i = 0, client:GetNumBodyGroups() - 1 do
@@ -761,7 +761,7 @@ ax.character:RegisterVar("skin", {
     end,
     changed = function(character, value, previousValue, isNetworked, recipients)
         local client = character:GetOwner()
-        if ( IsValid(client) and client:GetModel() != value ) then
+        if ( ax.util:IsValidPlayer(client) and client:GetModel() != value ) then
             client:SetSkin(value)
         end
     end

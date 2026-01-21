@@ -98,7 +98,7 @@ function ax.character:Create(payload, callback)
 
             -- If we don't have an active character for the player, load this one.
             local client = player.GetBySteamID64(payload.steamID64)
-            if ( IsValid(client) and (client:GetTable().axCharacter == nil or client:GetTable().axCharacter.id == nil) ) then
+            if ( ax.util:IsValidPlayer(client) and (client:GetTable().axCharacter == nil or client:GetTable().axCharacter.id == nil) ) then
                 ax.character:Load(client, character)
             end
         end)
@@ -115,7 +115,7 @@ end
 -- @param character table The character object to load
 -- @usage ax.character:Load(player, characterObject)
 function ax.character:Load(client, character)
-    if ( !IsValid(client) ) then
+    if ( !ax.util:IsValidPlayer(client) ) then
         ax.util:PrintError("Attempted to load character ID " .. character.id .. " for an invalid player")
         return
     end
@@ -208,7 +208,7 @@ end
 -- @return boolean True if a character was unloaded
 -- @usage ax.character:Kick(client, "You have been kicked to the menu.")
 function ax.character:Kick(client, reason)
-    if ( !IsValid(client) ) then return false end
+    if ( !ax.util:IsValidPlayer(client) ) then return false end
 
     local character = client:GetCharacter()
     if ( !character ) then return false end

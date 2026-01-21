@@ -34,7 +34,7 @@ end
 
 function MODULE:HUDPaintCurvy()
     local client = ax.client
-    if ( !IsValid(client) or !client:Alive() ) then return end
+    if ( !ax.util:IsValidPlayer(client) or !client:Alive() ) then return end
 
     local shouldDraw = hook.Run("ShouldDrawWeaponAmmoCounter", client)
     if ( shouldDraw == false ) then return end

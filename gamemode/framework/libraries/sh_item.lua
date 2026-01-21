@@ -536,7 +536,7 @@ end
 
 -- TODO: Turn these into chat commands? Idk
 concommand.Add("ax_item_create", function(client, command, args, argStr)
-    if ( IsValid(client) and !client:IsSuperAdmin() ) then
+    if ( ax.util:IsValidPlayer(client) and !client:IsSuperAdmin() ) then
         ax.util:PrintError("You do not have permission to use this command!")
         return
     end
@@ -582,7 +582,7 @@ concommand.Add("ax_item_create", function(client, command, args, argStr)
 end)
 
 concommand.Add("ax_item_list", function(client, command, args, argStr)
-    if ( IsValid(client) and !client:IsSuperAdmin() ) then
+    if ( ax.util:IsValidPlayer(client) and !client:IsSuperAdmin() ) then
         ax.util:PrintError("You do not have permission to use this command!")
         return
     end
@@ -594,7 +594,7 @@ concommand.Add("ax_item_list", function(client, command, args, argStr)
 end)
 
 concommand.Add("ax_item_spawn", function(client, command, args, argStr)
-    if ( IsValid(client) and !client:IsSuperAdmin() ) then
+    if ( ax.util:IsValidPlayer(client) and !client:IsSuperAdmin() ) then
         ax.util:PrintError("You do not have permission to use this command!")
         return
     end

@@ -60,7 +60,7 @@ end
 -- @realm server
 -- @tparam Player client Player to sync to
 function ax.zones:SyncToPlayer(client)
-    if ( !IsValid(client) ) then return end
+    if ( !ax.util:IsValidPlayer(client) ) then return end
     local payload = BuildSyncPayload()
     ax.net:Start(client, "zones.sync", payload)
 

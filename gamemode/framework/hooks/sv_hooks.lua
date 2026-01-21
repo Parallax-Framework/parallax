@@ -14,7 +14,7 @@ DEFINE_BASECLASS("gamemode_sandbox")
 AX_CLIENT_QUEUE = AX_CLIENT_QUEUE or {}
 
 function GM:PlayerDeathThink(client)
-    if ( !IsValid(client) ) then return end
+    if ( !ax.util:IsValidPlayer(client) ) then return end
 
     if ( client:RateLimit("respawn", 30) and client:GetCharacter() ) then
         client:Spawn()
@@ -280,7 +280,7 @@ function GM:PlayerInitialSpawn(client)
 
             -- Small delay to ensure faction system is ready
             timer.Simple(0.1, function()
-                if ( IsValid(client) ) then
+                if ( ax.util:IsValidPlayer(client) ) then
                     ax.util:CreateBotCharacter(client)
                 end
             end)
@@ -292,7 +292,7 @@ function GM:PlayerInitialSpawn(client)
     end
 
     timer.Create("ax.player.save." .. steamID64, 300, 1, function()
-        if ( !IsValid(client) ) then return end
+        if ( !ax.util:IsValidPlayer(client) ) then return end
 
         client:Save()
 
@@ -569,7 +569,7 @@ function GM:OnPlayerItemPickup(client, entity, item)
     -- removed before the callback fires, so defensively handle invalid ents.
     if ( IsValid(entity) ) then
         entity:EmitSound("items/itempickup.wav")
-    elseif ( IsValid(client) ) then
+    elseif ( ax.util:IsValidPlayer(client) ) then
         client:EmitSound("items/itempickup.wav")
     end
 end

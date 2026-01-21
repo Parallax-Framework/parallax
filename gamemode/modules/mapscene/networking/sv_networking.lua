@@ -13,7 +13,7 @@
 -- @module ax.mapscene
 
 ax.net:Hook("mapscene.pvs", function(client, origin)
-    if ( !IsValid(client) ) then return end
+    if ( !ax.util:IsValidPlayer(client) ) then return end
 
     if ( ax.mapscene:IsValidVector(origin) ) then
         client.axMapSceneOrigin = origin

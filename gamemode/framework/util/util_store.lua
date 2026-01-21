@@ -496,7 +496,7 @@ function ax.util:CreateStore(spec, oldStore)
                 -- Handle config changes from clients (requires admin permission)
                 ax.net:Hook(spec.net.set, function(client, key, value)
                     if ( !ax.util:IsValidPlayer(client) or !client:IsAdmin() ) then
-                        ax.util:PrintWarning(spec.name, "Unauthorized config change attempt from", IsValid(client) and client:Nick() or "invalid client")
+                        ax.util:PrintWarning(spec.name, "Unauthorized config change attempt from", ax.util:IsValidPlayer(client) and client:Nick() or "invalid client")
                         return
                     end
 

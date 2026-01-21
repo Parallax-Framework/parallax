@@ -95,7 +95,7 @@ end
 -- @realm server
 -- @usage ax.util:CreateBotCharacter(bot)
 function ax.util:CreateBotCharacter(client)
-    if ( !IsValid(client) or !client:IsBot() ) then return false end
+    if ( !ax.util:IsValidPlayer(client) or !client:IsBot() ) then return false end
 
     -- Check if bot support is enabled
     if ( !ax.config:Get("bot.support", true) ) then

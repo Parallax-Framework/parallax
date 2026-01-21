@@ -13,7 +13,7 @@ end
 
 function MODULE:HUDPaint()
     local client = ax.client
-    if ( !IsValid(client) or !client:IsAdmin() ) then return end
+    if ( !ax.util:IsValidPlayer(client) or !client:IsAdmin() ) then return end
 
     if ( !ax.option:Get("admin.esp") ) then return end
     if ( client:InVehicle() ) then return end
@@ -81,7 +81,7 @@ end
 
 function MODULE:DrawPlayers()
     local client = ax.client
-    if ( !IsValid(client) or !client:IsAdmin() ) then return end
+    if ( !ax.util:IsValidPlayer(client) or !client:IsAdmin() ) then return end
 
     for _, target in player.Iterator() do
         if ( target == client or !IsValid(target) ) then continue end
@@ -148,7 +148,7 @@ local blacklist = {
 
 function MODULE:DrawEntities()
     local client = ax.client
-    if ( !IsValid(client) or !client:IsAdmin() ) then return end
+    if ( !ax.util:IsValidPlayer(client) or !client:IsAdmin() ) then return end
 
     for _, ent in ipairs(ents.FindByClass("ax_*")) do
         if ( !IsValid(ent) or blacklist[ent:GetClass()] or ent:GetOwner() ) then continue end

@@ -46,7 +46,7 @@ local function OnHotReloadOnce()
 end
 
 concommand.Add("ax_hotreload_now", function(client, command, arguments)
-    if ( IsValid(client) and !client:IsSuperAdmin() ) then
+    if ( ax.util:IsValidPlayer(client) and !client:IsSuperAdmin() ) then
         ax.util:PrintDebug("ax_hotreload_now: Permission denied for ", client)
         return
     end
@@ -179,7 +179,7 @@ local function resolveMultiplier(map, hitGroup)
 end
 
 function GM:ScalePlayerDamage(client, hitGroup, damageInfo)
-    local character = IsValid(client) and client:GetCharacter() or nil
+    local character = ax.util:IsValidPlayer(client) and client:GetCharacter() or nil
     if ( !character ) then return end
 
     local scale = 1.0
@@ -208,7 +208,7 @@ function GM:ScalePlayerDamage(client, hitGroup, damageInfo)
 end
 
 function GM:SetupMove(client, moveData)
-    local character = IsValid(client) and client:GetCharacter() or nil
+    local character = ax.util:IsValidPlayer(client) and client:GetCharacter() or nil
     if ( !character ) then return end
 
     local inventory = character:GetInventory()

@@ -14,7 +14,7 @@ AddCSLuaFile("shared.lua")
 include("shared.lua")
 
 ax.net:Hook("hands.reset", function(client)
-    if ( !IsValid(client) ) then return end
+    if ( !ax.util:IsValidPlayer(client) ) then return end
     if ( !client:RateLimit("hands", 0.5) ) then return end
 
     local weapon = client:GetActiveWeapon()

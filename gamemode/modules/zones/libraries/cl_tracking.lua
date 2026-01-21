@@ -40,7 +40,7 @@ end
 -- @realm client
 local function UpdateClientTracking()
     local client = ax.client
-    if ( !IsValid(client) ) then return end
+    if ( !ax.util:IsValidPlayer(client) ) then return end
 
     local state = ax.zones.clientTracking
     local now = CurTime()

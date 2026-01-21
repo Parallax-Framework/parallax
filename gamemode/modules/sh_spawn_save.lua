@@ -17,7 +17,7 @@ MODULE.author = "Riggs"
 
 function MODULE:OnCharacterDisconnected(character)
     local client = character:GetOwner()
-    if ( !IsValid(client) ) then return end
+    if ( !ax.util:IsValidPlayer(client) ) then return end
 
     local position = client:GetPos()
     local angles = client:EyeAngles()

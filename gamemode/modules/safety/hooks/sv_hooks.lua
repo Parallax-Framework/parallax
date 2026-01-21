@@ -14,7 +14,7 @@ local MODULE = MODULE
 function MODULE:KeyPress(client, key)
     if ( key == IN_RELOAD ) then
         timer.Create("ax.weapon.raise." .. client:SteamID64(), ax.config:Get("weapon.raise.time", 0.25), 1, function()
-            if ( IsValid(client) ) then
+            if ( ax.util:IsValidPlayer(client) ) then
                 client:ToggleWeaponRaise()
             end
         end)
@@ -29,7 +29,7 @@ end
 
 function MODULE:PlayerSwitchWeapon(client, oldWeapon, newWeapon)
     timer.Simple(0, function()
-        if ( IsValid(client) and IsValid(newWeapon) ) then
+        if ( ax.util:IsValidPlayer(client) and IsValid(newWeapon) ) then
             client:SetWeaponRaised(false)
         end
     end)

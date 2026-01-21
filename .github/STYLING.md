@@ -29,7 +29,7 @@ end
 * Prefer guard clauses over deep nesting
 
 ```lua
-if ( !IsValid(client) ) then return end
+if ( !ax.util:IsValidPlayer(client) ) then return end
 if ( !client:Alive() ) then return end
 ```
 
@@ -166,7 +166,7 @@ Encouraged. Nesting is how bugs breed.
 
 ```lua
 function module:DoThing(client)
-    if ( !IsValid(client) ) then return end
+    if ( !ax.util:IsValidPlayer(client) ) then return end
     if ( !client:IsPlayer() ) then return end
 
     -- real logic here

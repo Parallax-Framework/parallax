@@ -37,7 +37,7 @@ end)
 
 ax.net:Hook("character.create", function(characterID, characters)
     local client = ax.client
-    if ( !IsValid(client) ) then
+    if ( !ax.util:IsValidPlayer(client) ) then
         ax.util:PrintError("Invalid client received for character creation.")
         return
     end
@@ -105,7 +105,7 @@ end)
 
 ax.net:Hook("character.load", function(characterID)
     local client = ax.client
-    if ( !IsValid(client) ) then return end
+    if ( !ax.util:IsValidPlayer(client) ) then return end
 
     local character = ax.character:Get(characterID)
     if ( !istable(character) ) then
@@ -127,7 +127,7 @@ ax.net:Hook("character.load", function(characterID)
 end)
 
 ax.net:Hook("character.sync", function(client, character)
-    if ( !IsValid(client) ) then return end
+    if ( !ax.util:IsValidPlayer(client) ) then return end
 
     -- Assume we are trying to kick the player off of their character
     if ( character == nil or !istable(character) ) then
@@ -295,7 +295,7 @@ ax.net:Hook("character.setnameprompt", function(targetID)
 end)
 
 ax.net:Hook("player.var", function(client, key, value)
-    if ( !IsValid(client) ) then return end
+    if ( !ax.util:IsValidPlayer(client) ) then return end
 
     local clientTable = client:GetTable()
     if ( !istable(clientTable.axVars) ) then
@@ -306,7 +306,7 @@ ax.net:Hook("player.var", function(client, key, value)
 end)
 
 ax.net:Hook("player.data", function(client, key, value)
-    if ( !IsValid(client) ) then return end
+    if ( !ax.util:IsValidPlayer(client) ) then return end
 
     local clientTable = client:GetTable()
     if ( !istable(clientTable.axVars) ) then

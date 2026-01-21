@@ -148,7 +148,7 @@ function ax.util:FindCharacter(identifier)
 
     -- First: search active characters bound to players
     for _, client in player.Iterator() do
-        if ( !IsValid(client) ) then continue end
+        if ( !ax.util:IsValidPlayer(client) ) then continue end
 
         local char = client:GetCharacter()
         if ( !char ) then continue end

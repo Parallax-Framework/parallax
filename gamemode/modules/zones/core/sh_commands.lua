@@ -438,18 +438,18 @@ ax.command:Add("ZoneClear", {
 
 -- Console commands (for server console)
 concommand.Add("ax_zone_list", function(client, cmd, args)
-    if ( IsValid(client) ) then return end -- Server only
+    if ( ax.util:IsValidPlayer(client) ) then return end -- Server only
     ax.zones:List()
 end, nil, "List all zones")
 
 concommand.Add("ax_zone_clear", function(client, cmd, args)
-    if ( IsValid(client) ) then return end -- Server only
+    if ( ax.util:IsValidPlayer(client) ) then return end -- Server only
     ax.zones:Clear()
     print("All runtime zones cleared.")
 end, nil, "Clear all runtime zones")
 
 concommand.Add("ax_zone_reload", function(client, cmd, args)
-    if ( IsValid(client) ) then return end -- Server only
+    if ( ax.util:IsValidPlayer(client) ) then return end -- Server only
     ax.zones:Load()
     print("Zones reloaded from disk.")
 end, nil, "Reload zones from disk")

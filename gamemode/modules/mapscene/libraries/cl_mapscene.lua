@@ -61,7 +61,7 @@ ax.mapscene.music = ax.mapscene.music or {
 -- @param client Player
 -- @return boolean
 function ax.mapscene:ShouldRenderMapScene(client)
-    if ( !IsValid(client) ) then return false end
+    if ( !ax.util:IsValidPlayer(client) ) then return false end
     if ( !IsValid(ax.gui.main) ) then return false end
     if ( self:GetCount() < 1 ) then return false end
 

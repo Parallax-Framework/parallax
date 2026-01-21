@@ -53,7 +53,7 @@ end
 -- @realm server
 -- @tparam Player client Player to enable debug drawing for
 function ax.zones:DrawDebug(client)
-    if ( !IsValid(client) ) then return end
+    if ( !ax.util:IsValidPlayer(client) ) then return end
 
     -- Send zone data to client for drawing
     ax.net:Start(client, "zones.drawdebug", true)
@@ -65,7 +65,7 @@ end
 -- @realm server
 -- @tparam Player client Player to disable debug drawing for
 function ax.zones:StopDrawDebug(client)
-    if ( !IsValid(client) ) then return end
+    if ( !ax.util:IsValidPlayer(client) ) then return end
 
     ax.net:Start(client, "zones.drawdebug", false)
 

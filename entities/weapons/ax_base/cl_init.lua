@@ -85,7 +85,7 @@ end
 -- Combines base view offsets + ironsight offsets with smoothing
 function SWEP:GetViewModelPosition(pos, ang)
     local client = self:GetOwner()
-    if ( !IsValid(client) ) then return pos, ang end
+    if ( !ax.util:IsValidPlayer(client) ) then return pos, ang end
 
     local targetPos = self.ViewOffsetPos or vector_origin
     local targetAng = self.ViewOffsetAng or angle_zero

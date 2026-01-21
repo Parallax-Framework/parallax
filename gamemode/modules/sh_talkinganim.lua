@@ -120,7 +120,7 @@ function MODULE:PlayTalkingAnimation(client)
 end
 
 function MODULE:PlayerMessageSent(client, chatType, text)
-    if ( !IsValid(client) or !client:Alive() ) then return end
+    if ( !ax.util:IsValidPlayer(client) or !client:Alive() ) then return end
 
     -- Check if the player is talking
     if ( string.len(text) > 0 ) then

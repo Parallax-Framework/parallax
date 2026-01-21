@@ -75,7 +75,7 @@ local function validateCurrencyID(currencyID)
 end
 
 local function requireCharacter(client)
-    local character = IsValid(client) and client:GetCharacter() or nil
+    local character = ax.util:IsValidPlayer(client) and client:GetCharacter() or nil
     if ( !character ) then
         return nil, "Target has no active character"
     end

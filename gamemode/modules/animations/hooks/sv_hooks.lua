@@ -12,7 +12,7 @@
 local MODULE = MODULE
 
 function MODULE:UpdateClientAnimations(client)
-    if ( !IsValid(client) ) then return end
+    if ( !ax.util:IsValidPlayer(client) ) then return end
 
     local clientTable = client:GetTable()
     if ( !clientTable ) then return end
@@ -38,33 +38,33 @@ function MODULE:PostEntitySetModel(ent, model)
 end
 
 function MODULE:PostPlayerLoadout(client)
-    if ( !IsValid(client) ) then return end
+    if ( !ax.util:IsValidPlayer(client) ) then return end
 
     self:UpdateClientAnimations(client)
 end
 
 function MODULE:PlayerSwitchWeapon(client, oldWeapon, newWeapon)
-    if ( !IsValid(client) or !IsValid(newWeapon) ) then return end
+    if ( !ax.util:IsValidPlayer(client) or !IsValid(newWeapon) ) then return end
 
     timer.Simple(0, function()
-        if ( IsValid(client) ) then
+        if ( ax.util:IsValidPlayer(client) ) then
             self:UpdateClientAnimations(client)
         end
     end)
 end
 
 function MODULE:PlayerNoClip(client, toggle)
-    if ( !IsValid(client) ) then return end
+    if ( !ax.util:IsValidPlayer(client) ) then return end
 
     timer.Simple(0, function()
-        if ( IsValid(client) ) then
+        if ( ax.util:IsValidPlayer(client) ) then
             self:UpdateClientAnimations(client)
         end
     end)
 end
 
 function MODULE:PlayerWeaponRaised(client, bRaised)
-    if ( !IsValid(client) ) then return end
+    if ( !ax.util:IsValidPlayer(client) ) then return end
 
     self:UpdateClientAnimations(client)
 end

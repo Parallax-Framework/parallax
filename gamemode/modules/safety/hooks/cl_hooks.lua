@@ -15,7 +15,7 @@ local LOWERED_LERP = {pos = Vector(0, 0, 0), angles = Angle(0, 0, 0)}
 
 ax.viewstack:RegisterViewModelModifier("safety", function(weapon, patch)
     local client = ax.client
-    if ( !IsValid(client) ) then return end
+    if ( !ax.util:IsValidPlayer(client) ) then return end
 
     local targetPos = LOWERED_POS
     local targetAngles = LOWERED_ANGLES

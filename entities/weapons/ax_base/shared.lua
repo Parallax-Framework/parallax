@@ -218,7 +218,7 @@ if ( CLIENT ) then
         if ( !IsValid(weapon) ) then return end
 
         local client = weapon:GetOwner()
-        if ( !IsValid(client) or client == ax.client ) then return end
+        if ( !ax.util:IsValidPlayer(client) or client == ax.client ) then return end
 
         weapon:PrimaryAttack()
     end)
