@@ -35,6 +35,12 @@ function MODULE:PreDrawViewModel(viewModel, client, weapon)
     end
 end
 
+function MODULE:Think()
+    if ( !ax.mapscene ) then return end
+
+    ax.mapscene:UpdateMusic()
+end
+
 ax.viewstack:RegisterModifier("mapscene", function(client, patch)
     if ( !ax.mapscene ) then return end
 
