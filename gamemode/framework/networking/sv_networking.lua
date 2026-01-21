@@ -420,7 +420,7 @@ ax.net:Hook("command.run", function(caller, name, rawArgs)
     end
 end)
 
-ax.net:Hook("player.requestString", function(client, bCancelled, text)
+ax.net:Hook("player.dermaStringRequest", function(client, bCancelled, text)
     if ( !IsValid(client) ) then return end
 
     local clientTable = client:GetTable()
@@ -437,4 +437,17 @@ ax.net:Hook("player.requestString", function(client, bCancelled, text)
     end
 
     clientTable.axStringRequest = nil
+end)
+
+ax.net:Hook("player.dermaMessage", function(client)
+    if ( !IsValid(client) ) then return end
+
+    local clientTable = client:GetTable()
+    if ( !istable(clientTable.axDermaMessage) ) then return end
+
+    if ( isfunction(clientTable.axDermaMessage.onClosed) ) then
+        clientTable.axDermaMessage.onClosed()
+    end
+
+    clientTable.axDermaMessage = nil
 end)

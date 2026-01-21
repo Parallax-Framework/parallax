@@ -223,16 +223,27 @@ if ( SERVER ) then
         query:Execute()
     end
 
-    function ax.player.meta:RequestString(title, subtitle, default, confirm, cancel, confirmText, cancelText)
+    function ax.player.meta:DermaStringRequest(title, subtitle, default, confirm, cancel, confirmText, cancelText)
         confirmText = confirmText or "OK"
         cancelText = cancelText or "Cancel"
 
-        ax.net:Start(self, "player.requestString", title, subtitle, default or "", confirmText, cancelText)
+        ax.net:Start(self, "player.dermaStringRequest", title, subtitle, default or "", confirmText, cancelText)
 
         local clientTable = self:GetTable()
         clientTable.axStringRequest = clientTable.axStringRequest or {}
         clientTable.axStringRequest.confirm = confirm
         clientTable.axStringRequest.cancel = cancel
+    end
+
+    function ax.player.meta:DermaMessage(text, title, buttonName, onClosed)
+        ax.net:Start(self, "player.dermaMessage", text, title, buttonName)
+
+        local clientTable = self:GetTable()
+        clientTable.axDermaMessage = clientTable.axDermaMessage or {}
+        clientTable.axDermaMessage.onClosed = onClosed
+        clientTable.axDermaMessage.buttonName = buttonName
+        clientTable.axDermaMessage.title = title
+        clientTable.axDermaMessage.text = text
     end
 else
     function ax.player.meta:EnsurePlayer(callback)
