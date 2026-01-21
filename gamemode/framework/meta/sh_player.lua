@@ -222,6 +222,18 @@ if ( SERVER ) then
             end)
         query:Execute()
     end
+
+    function ax.player.meta:RequestString(title, subtitle, default, confirm, cancel, confirmText, cancelText)
+        confirmText = confirmText or "OK"
+        cancelText = cancelText or "Cancel"
+
+        ax.net:Start(self, "player.requestString", title, subtitle, default or "", confirmText, cancelText)
+
+        local clientTable = self:GetTable()
+        clientTable.axStringRequest = clientTable.axStringRequest or {}
+        clientTable.axStringRequest.confirm = confirm
+        clientTable.axStringRequest.cancel = cancel
+    end
 else
     function ax.player.meta:EnsurePlayer(callback)
         local clientTable = self:GetTable()

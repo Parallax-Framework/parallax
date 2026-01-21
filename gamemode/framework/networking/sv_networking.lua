@@ -419,3 +419,22 @@ ax.net:Hook("command.run", function(caller, name, rawArgs)
         caller:Notify(tostring(result))
     end
 end)
+
+ax.net:Hook("player.requestString", function(client, bCancelled, text)
+    if ( !IsValid(client) ) then return end
+
+    local clientTable = client:GetTable()
+    if ( !istable(clientTable.axStringRequest) ) then return end
+
+    if ( bCancelled ) then
+        if ( isfunction(clientTable.axStringRequest.cancel) ) then
+            clientTable.axStringRequest.cancel(text)
+        end
+    else
+        if ( isfunction(clientTable.axStringRequest.confirm) ) then
+            clientTable.axStringRequest.confirm(text)
+        end
+    end
+
+    clientTable.axStringRequest = nil
+end)
