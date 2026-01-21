@@ -608,15 +608,12 @@ function PANEL:Init()
         local currentColor = store:Get(self.key) or color_white
 
         self.colorPicker = vgui.Create("DColorMixer")
-        self.colorPicker:SetPos(gui.MouseX(), gui.MouseY())
+        self.colorPicker:SetPos(math.min(ScrW() - 256, gui.MouseX()), math.min(ScrH() - 256, gui.MouseY()))
         self.colorPicker:SetColor(currentColor)
         self.colorPicker:MakePopup()
+        self.colorPicker:MoveToFront()
         self.colorPicker.ValueChanged = function(this, newColor)
             store:Set(self.key, newColor)
-            print("Set color for key", self.key, "to", newColor)
-        end
-        self.colorPicker.Think = function(this)
-            this:MoveToFront()
         end
 
         local function removePicker()
@@ -627,7 +624,6 @@ function PANEL:Init()
         end
 
         self.colorPanel.OnRemoved = removePicker
-
         self.OnRemove = removePicker
     end
 end
