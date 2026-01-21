@@ -109,6 +109,12 @@ ax.localization:Register("tr", {
     ["option.chat.height"] = "Sohbet Kutusu Yüksekliği",
 
     --- Interface
+    ---- Chat
+    ["config.chat.ic.color"] = "IC Sohbet Rengi",
+    ["config.chat.me.color"] = "ME Sohbet Rengi",
+    ["config.chat.ooc.color"] = "OOC Sohbet Rengi",
+    ["config.chat.yell.color"] = "YELL Sohbet Rengi",
+    ["config.chat.whisper.color"] = "WHISPER Sohbet Rengi",
     ---- Buttons
     ["option.button.delay.click"] = "Buton Tıklama Gecikmesi",
 

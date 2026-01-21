@@ -91,6 +91,13 @@ ax.localization:Register("bg", {
     ["config.characters.max"] = "Максимален Брой Персонажи",
 
     --- Interface
+    ---- Chat
+    ["config.chat.ic.color"] = "Цвят на IC Чат",
+    ["config.chat.me.color"] = "Цвят на ME Чат",
+    ["config.chat.ooc.color"] = "Цвят на OOC Чат",
+    ["config.chat.yell.color"] = "Цвят на YELL Чат",
+    ["config.chat.whisper.color"] = "Цвят на WHISPER Чат",
+    
     ["config.interface.font.antialias"] = "Изглаждане на Шрифтове",
     ["config.interface.font.multiplier"] = "Мащаб на Шрифта",
 

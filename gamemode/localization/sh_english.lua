@@ -90,13 +90,6 @@ ax.localization:Register("en", {
     ["config.autosave.interval"] = "Character Autosave Interval",
     ["config.characters.max"] = "Max Characters",
 
-    --- Interface
-    ["config.interface.font.antialias"] = "Font Antialiasing",
-    ["config.interface.font.multiplier"] = "Font Scale",
-
-    ["config.interface.vignette.enabled"] = "Enable Vignette Effect",
-    ["config.interface.vignette.enabled.help"] = "Toggle the vignette effect around the edges of the screen.",
-
     -- Options Translations
     --- Chat
     ---- Basic
@@ -114,6 +107,13 @@ ax.localization:Register("en", {
     ["option.chat.height"] = "Chatbox Height",
 
     --- Interface
+    ---- Chat
+    ["config.chat.ic.color"] = "IC Chat Color",
+    ["config.chat.me.color"] = "ME Chat Color",
+    ["config.chat.ooc.color"] = "OOC Chat Color",
+    ["config.chat.yell.color"] = "YELL Chat Color",
+    ["config.chat.whisper.color"] = "WHISPER Chat Color",
+
     ---- Buttons
     ["option.button.delay.click"] = "Button Click Delay",
 
@@ -155,4 +155,10 @@ ax.localization:Register("en", {
 
     ["flag.t.name"] = "Toolgun Permission",
     ["flag.t.description"] = "Allows the use of the toolgun.",
+
+    ["config.interface.font.antialias"] = "Font Antialiasing",
+    ["config.interface.font.multiplier"] = "Font Scale",
+
+    ["config.interface.vignette.enabled"] = "Enable Vignette Effect",
+    ["config.interface.vignette.enabled.help"] = "Toggle the vignette effect around the edges of the screen.",
 })

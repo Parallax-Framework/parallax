@@ -115,6 +115,12 @@ ax.localization:Register("ru", {
     ["option.chat.height"] = "Высота Чата",
 
     --- Interface
+    ---- Chat
+    ["config.chat.ic.color"] = "Цвет IC Чата",
+    ["config.chat.me.color"] = "Цвет ME Чата",
+    ["config.chat.ooc.color"] = "Цвет OOC Чата",
+    ["config.chat.yell.color"] = "Цвет YELL Чата",
+    ["config.chat.whisper.color"] = "Цвет WHISPER Чата",
     ---- Buttons
     ["option.button.delay.click"] = "Задержка нажатия кнопки",
 
