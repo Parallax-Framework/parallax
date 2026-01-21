@@ -547,8 +547,9 @@ function PANEL:Init()
     self.entry:DockMargin(0, ax.util:ScreenScale(4), ax.util:ScreenScale(8), ax.util:ScreenScale(4))
     self.entry:SetWide(ax.util:ScreenScale(192))
     self.entry:SetText("unknown")
-    self.entry.OnValueChanged = function(this, value)
+    self.entry.OnValueChange = function(this, value)
         if ( self.bInitializing ) then return end
+
         local store = self:GetStore()
         if ( store ) then
             store:Set(self.key, value)
