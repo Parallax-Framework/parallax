@@ -243,7 +243,7 @@ ax.net:Hook("character.var", function(characterID, name, value)
 
     character.vars[name] = value
 
-    hook.Run("CharacterVarChanged", character, name, value)
+    hook.Run("OnCharacterVarChanged", character, name, value)
 end)
 
 ax.net:Hook("character.data", function(characterID, key, value)

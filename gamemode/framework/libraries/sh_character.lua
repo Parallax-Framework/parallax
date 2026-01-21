@@ -106,7 +106,7 @@ function ax.character:SetVar(char, name, value, bNoNetworking, recipients, bNoDB
         end
     end
 
-    hook.Run("CharacterVarChanged", char, name, value)
+    hook.Run("OnCharacterVarChanged", char, name, value)
 
     if ( SERVER and !bNoDBUpdate and isstring(varTable.field) ) then
         local query = mysql:Update("ax_characters")
