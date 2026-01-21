@@ -15,9 +15,9 @@ MODULE.name = "Spawn Save"
 MODULE.description = "Saves character's spawn locations to their previous position."
 MODULE.author = "Riggs"
 
-function MODULE:PlayerDisconnected(client)
-    local character = client:GetCharacter()
-    if ( !character ) then return end
+function MODULE:OnCharacterDisconnected(character)
+    local client = character:GetOwner()
+    if ( !IsValid(client) ) then return end
 
     local position = client:GetPos()
     local angles = client:EyeAngles()
@@ -25,7 +25,7 @@ function MODULE:PlayerDisconnected(client)
 end
 
 function MODULE:PlayerLoadedCharacter(client, character, previous)
-    if ( !character ) then return end
+    if ( CLIENT or !character ) then return end
 
     local spawnSave = character:GetData("spawn_save")
     if ( spawnSave ) then
@@ -33,5 +33,6 @@ function MODULE:PlayerLoadedCharacter(client, character, previous)
         client:SetEyeAngles(spawnSave[2])
 
         character:SetData("spawn_save", nil)
+        character:Save()
     end
 end
