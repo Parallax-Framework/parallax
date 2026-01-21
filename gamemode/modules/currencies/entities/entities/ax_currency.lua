@@ -40,7 +40,7 @@ if ( SERVER ) then
     end
 
     function ENT:Use(activator)
-        if ( !IsValid(activator) or !activator:IsPlayer() ) then return end
+        if ( !ax.util:IsValidPlayer(activator) or !activator:IsPlayer() ) then return end
 
         local character = activator:GetCharacter()
         if ( !character ) then

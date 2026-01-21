@@ -12,7 +12,7 @@
 local savedPositions = savedPositions or {}
 
 local function getIdentifier(player)
-    return IsValid(player) and player:SteamID64() or nil
+    return ax.util:IsValidPlayer(player) and player:SteamID64() or nil
 end
 
 local function savePosition(player)

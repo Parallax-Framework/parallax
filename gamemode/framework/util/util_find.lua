@@ -103,7 +103,7 @@ function ax.util:FindPlayer(identifier)
         for i = 1, #identifier do
             local foundPlayer = self:FindPlayer(identifier[i])
 
-            if ( IsValid(foundPlayer) ) then
+            if ( self:IsValidPlayer(foundPlayer) ) then
                 return foundPlayer
             end
         end

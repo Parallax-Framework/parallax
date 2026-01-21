@@ -181,7 +181,7 @@ end
 
 function SWEP:GetIronSights()
     local owner = self:GetOwner()
-    if ( !IsValid(owner) ) then return false end
+    if ( !ax.util:IsValidPlayer(owner) ) then return false end
 
     if ( self:GetReloading() ) then return false end
     if ( self.bNoIronSights == true ) then return false end
@@ -199,7 +199,7 @@ end
 
 function SWEP:CanPrimaryAttack()
     local owner = self:GetOwner()
-    if ( !IsValid(owner) ) then return false end
+    if ( !ax.util:IsValidPlayer(owner) ) then return false end
 
     if ( CLIENT and owner != ax.client ) then return true end
     if ( self:IsEmpty() ) then
@@ -226,7 +226,7 @@ end
 
 function SWEP:PrimaryAttack()
     local owner = self:GetOwner()
-    if ( !IsValid(owner) ) then print("Invalid owner") return end
+    if ( !ax.util:IsValidPlayer(owner) ) then print("Invalid owner") return end
 
     if ( !self:CanPrimaryAttack() ) then print("Cannot primary attack") return end
 
@@ -390,7 +390,7 @@ function SWEP:ApplyRecoilKick(pitchMult, yawMult)
     if ( SERVER ) then return end
 
     local owner = self:GetOwner()
-    if ( !IsValid(owner) or !owner:IsPlayer() ) then return end
+    if ( !ax.util:IsValidPlayer(owner) or !owner:IsPlayer() ) then return end
 
     pitchMult = pitchMult or 1.0
     yawMult = yawMult or 1.0
@@ -450,10 +450,8 @@ end
     @realm client
 ]]
 function SWEP:UpdateRecoilInterpolation()
-    if ( !IsValid(self:GetOwner()) ) then return end
-
     local owner = self:GetOwner()
-    if ( !owner:IsPlayer() ) then return end
+    if ( !ax.util:IsValidPlayer(owner) ) then return end
 
     local delta = FrameTime()
     local interpSpeed = self.RecoilInterpolationSpeed
@@ -525,7 +523,7 @@ end
 
 function SWEP:Reload()
     local owner = self:GetOwner()
-    if ( !IsValid(owner) ) then return end
+    if ( !ax.util:IsValidPlayer(owner) ) then return end
     if ( !self:CanReload() ) then return end
 
     if ( self.ShotgunReload ) then
@@ -604,7 +602,7 @@ function SWEP:InsertShell()
     end
 
     local owner = self:GetOwner()
-    if ( IsValid(owner) and owner:IsPlayer() ) then
+    if ( ax.util:IsValidPlayer(owner) and owner:IsPlayer() ) then
         owner:RemoveAmmo(1, self.Primary.Ammo)
     end
 
@@ -653,7 +651,7 @@ end
 -- @treturn string "idle", "walk", or "sprint"
 function SWEP:GetMovementState()
     local owner = self:GetOwner()
-    if ( !IsValid(owner) or !owner:IsPlayer() ) then return "idle" end
+    if ( !ax.util:IsValidPlayer(owner) or !owner:IsPlayer() ) then return "idle" end
 
     local vel = owner:GetVelocity()
     local speed = vel:Length2D()

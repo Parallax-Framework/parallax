@@ -26,7 +26,7 @@ end
 function PLAYER:Timer(name, time, reps, callback, failure)
     name = self:SteamID64() .. '-' .. name
     timer.Create(name, time, reps, function()
-        if IsValid(self) then
+        if ax.util:IsValidPlayer(self) then
             callback(self)
         else
             if (failure) then

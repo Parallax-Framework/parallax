@@ -383,7 +383,7 @@ function GM:StartCommand(client, userCmd)
 
                         -- Sync all existing active characters from other players
                         for _, otherClient in player.Iterator() do
-                            if ( !IsValid(otherClient) or otherClient == client ) then continue end
+                            if ( !ax.util:IsValidPlayer(otherClient) or otherClient == client ) then continue end
 
                             local otherCharacter = otherClient:GetCharacter()
                             if ( !istable(otherCharacter) ) then continue end
@@ -424,7 +424,7 @@ end
 
 local voiceDistance
 local function CalcPlayerCanHearPlayersVoice(listener)
-    if ( !IsValid(listener) ) then return end
+    if ( !ax.util:IsValidPlayer(listener) ) then return end
     if ( !listener:GetCharacter() ) then return end
 
     local dist = ax.config:Get("voice.distance", 512)
@@ -436,7 +436,7 @@ local function CalcPlayerCanHearPlayersVoice(listener)
     listenerTable.axVoiceHearDynamic = listenerTable.axVoiceHearDynamic or {}
 
     for _, speaker in player.Iterator() do
-        if ( !IsValid(speaker) or !speaker:GetCharacter() or speaker == listener ) then
+        if ( !ax.util:IsValidPlayer(speaker) or !speaker:GetCharacter() or speaker == listener ) then
             continue
         end
 

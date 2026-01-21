@@ -66,7 +66,8 @@ function SWEP:Initialize()
 end
 
 function SWEP:Deploy()
-    if ( !IsValid(self:GetOwner()) ) then return end
+    local owner = self:GetOwner()
+    if ( !ax.util:IsValidPlayer(owner) ) then return end
 
     self:Reset()
 
@@ -74,7 +75,8 @@ function SWEP:Deploy()
 end
 
 function SWEP:Holster()
-    if ( !IsValid(self:GetOwner()) ) then return end
+    local owner = self:GetOwner()
+    if ( !ax.util:IsValidPlayer(owner) ) then return end
 
     self:Reset()
 
@@ -263,7 +265,7 @@ function SWEP:PrimaryAttack()
     if ( !IsFirstTimePredicted() ) then return end
 
     local owner = self:GetOwner()
-    if ( !IsValid(owner) ) then return end
+    if ( !ax.util:IsValidPlayer(owner) ) then return end
 
     self:SetNextPrimaryFire(CurTime() + self.Primary.Delay)
 
@@ -288,7 +290,7 @@ function SWEP:SecondaryAttack()
     if ( !IsFirstTimePredicted() ) then return end
 
     local owner = self:GetOwner()
-    if ( !IsValid(owner) ) then return end
+    if ( !ax.util:IsValidPlayer(owner) ) then return end
 
     local data = {}
     data.start = owner:GetShootPos()
@@ -374,7 +376,7 @@ function SWEP:AllowPickup(target)
     local owner = self:GetOwner()
 
     return ( IsValid(physicsObject)
-    and IsValid(owner)
+    and ax.util:IsValidPlayer(owner)
     and !physicsObject:HasGameFlag(FVPHYSICS_NO_PLAYER_PICKUP)
     and physicsObject:GetMass() < ax.config:Get("hands.max.carry", 160)
     and !self:IsEntityStoodOn(target)
@@ -420,7 +422,7 @@ local entityViewPunchAngle = Angle(8, 0, 0)
 
 function SWEP:DoPunch()
     local owner = self:GetOwner()
-    if ( !IsValid(owner) ) then return end
+    if ( !ax.util:IsValidPlayer(owner) ) then return end
 
     if ( ax.stamina ) then
         local stamina = ax.stamina:Get(owner)
@@ -528,7 +530,7 @@ local down = Vector(0, 0, -1)
 function SWEP:AllowEntityDrop()
     local owner = self:GetOwner()
     local ent = self:GetTable().axCarry
-    if ( !IsValid(owner) or !IsValid(ent) ) then return false end
+    if ( !ax.util:IsValidPlayer(owner) or !IsValid(ent) ) then return false end
 
     local ground = owner:GetGroundEntity()
     if ( ground and ( ground:IsWorld() or IsValid(ground) ) ) then return true end

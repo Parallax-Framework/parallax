@@ -79,7 +79,7 @@ end
 if ( SERVER ) then
     function character:SetBodygroup(index, value)
         local owner = self:GetOwner()
-        if ( IsValid(owner) ) then
+        if ( ax.util:IsValidPlayer(owner) ) then
             owner:SetBodygroup(index, value)
         end
 
@@ -91,7 +91,7 @@ if ( SERVER ) then
 
     function character:SetBodygroupName(name, value)
         local owner = self:GetOwner()
-        if ( IsValid(owner) ) then
+        if ( ax.util:IsValidPlayer(owner) ) then
             local id = owner:FindBodygroupByName(name)
             if ( id and id >= 0 ) then
                 owner:SetBodygroup(id, value)

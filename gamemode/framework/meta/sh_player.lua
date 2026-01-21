@@ -274,7 +274,7 @@ else
     end)
 
     ax.net:Hook("player.playGesture", function(sender, slot, sequence)
-        if ( !IsValid(sender) ) then return end
+        if ( !ax.util:IsValidPlayer(sender) ) then return end
 
         sender:PlayGesture(slot, sequence)
     end)
@@ -342,7 +342,7 @@ end
 function ax.player.meta:PerformEntityAction(entity, label, duration, onComplete, onCancel)
     local timerName = "ax.player." .. self:SteamID64() .. ".entityAction"
     timer.Create(timerName, 0.1, 0, function()
-        if ( !IsValid(entity) or !IsValid(self) ) then
+        if ( !IsValid(entity) or !ax.util:IsValidPlayer(self) ) then
             timer.Remove(timerName)
             self:PerformAction()
 

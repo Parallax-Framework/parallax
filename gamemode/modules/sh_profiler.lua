@@ -158,7 +158,7 @@ if ( !ax.profiler._origNetReceive ) then
             local ok, res = pcall(func, len, ply)
             local dt = SysTime() - t0
             if ( ok and dt * 1000 >= threshold() ) then
-                local who = (SERVER and IsValid(ply)) and ply:Nick() or "client"
+                local who = (SERVER and ax.util:IsValidPlayer(ply)) and ply:Nick() or "client"
                 ax.profiler:Record("net:" .. tostring(channel), who, dt)
             end
             if ( !ok ) then

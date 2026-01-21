@@ -85,7 +85,7 @@ ax.command:Add("AdminTest", {
 ax.command:Add("VipCommand", {
     description = "VIP only command with custom access control",
     CanRun = function(self, caller)
-        if ( !IsValid(caller) ) then
+        if ( !ax.util:IsValidPlayer(caller) ) then
             return false, "Console cannot use VIP commands"
         end
 

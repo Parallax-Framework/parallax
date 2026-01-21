@@ -16,7 +16,7 @@
 ]]
 function SWEP:TranslateAnimation(anim)
     local owner = self:GetOwner()
-    if ( !IsValid(owner) ) then return -1 end
+    if ( !ax.util:IsValidPlayer(owner) ) then return -1 end
 
     local vm = owner:GetViewModel()
     if ( !IsValid(vm) ) then return -1 end
@@ -45,7 +45,7 @@ end
 ]]
 function SWEP:PlayAnimation(anim, rate)
     local owner = self:GetOwner()
-    if ( !IsValid(owner) ) then return end
+    if ( !ax.util:IsValidPlayer(owner) ) then return end
 
     local vm = owner:GetViewModel()
     if ( !IsValid(vm) ) then return end

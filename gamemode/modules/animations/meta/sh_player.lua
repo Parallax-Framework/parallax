@@ -21,7 +21,7 @@ function ax.player.meta:IsFemale()
 end
 
 function ax.player.meta:GetHoldType()
-    if ( !IsValid(self) ) then return "normal" end
+    if ( !ax.util:IsValidPlayer(self) ) then return "normal" end
 
     local weapon = self:GetActiveWeapon()
     if ( !IsValid(weapon) ) then return "normal" end
