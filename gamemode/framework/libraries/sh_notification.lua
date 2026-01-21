@@ -44,7 +44,7 @@ if ( SERVER ) then
         end
 
         local t = type or "generic"
-        local dur = tonumber(length) or (ax.config:Get("notificationDefaultLength", 5) or 5)
+        local dur = tonumber(length) or (ax.config:Get("notification.length.default", 5) or 5)
 
         ax.net:Start(plylist, "notification.push", msg, t, dur)
 
