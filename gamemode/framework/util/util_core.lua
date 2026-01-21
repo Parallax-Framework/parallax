@@ -314,7 +314,7 @@ end
 -- @return boolean True if entity is a valid player
 -- @usage if ax.util:IsValidPlayer(client) then -- do something end
 function ax.util:IsValidPlayer(client)
-    return IsValid(client) and client:IsPlayer()
+    return type(client) == "Player"
 end
 
 --- Tokenize a string into arguments, respecting quoted strings.
