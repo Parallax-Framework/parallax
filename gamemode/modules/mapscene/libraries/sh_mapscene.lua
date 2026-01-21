@@ -271,6 +271,14 @@ function ax.mapscene:OnConfigChanged(key, oldValue, value)
     if ( !string.StartWith(key, "map.scene.") ) then return end
 
     if ( CLIENT ) then
+        if ( string.StartWith(key, "map.scene.music.") ) then
+            if ( self.ResetMusic ) then
+                self:ResetMusic()
+            end
+
+            return
+        end
+
         self:ResetState()
     elseif ( SERVER and key == "map.scene.scope" ) then
         self:Load()
