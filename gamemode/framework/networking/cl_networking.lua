@@ -357,9 +357,16 @@ ax.net:Hook("inventory.receiver.add", function(inventory, receiver)
 
     if ( table.Count(inventory.items) != 0 ) then
         for itemID, item in pairs(inventory.items) do
-            item = setmetatable(item, ax.item.meta)
-            ax.item.instances[itemID] = item
-            inventory.items[itemID] = item
+            local itemObject = ax.item:Instance(itemID, item.class)
+            if ( !istable(itemObject) ) then
+                itemObject = setmetatable(item, ax.item.meta)
+            end
+
+            itemObject.invID = inventory.id
+            itemObject.data = item.data or itemObject.data or {}
+
+            ax.item.instances[itemID] = itemObject
+            inventory.items[itemID] = itemObject
         end
     end
 
