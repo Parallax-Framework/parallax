@@ -13,4 +13,4 @@ local MODULE = MODULE
 
 MODULE.name = "Map Scenes"
 MODULE.description = "Adds cinematic map scene camera transitions during character selection."
-MODULE.author = "Riggs, Parallax Contributors"
+MODULE.author = "Riggs"
