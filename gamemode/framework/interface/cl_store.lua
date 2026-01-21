@@ -618,10 +618,22 @@ function PANEL:Init()
         self.colorPicker.Think = function(this)
             this:MoveToFront()
         end
-        self.colorPanel.OnRemoved = function(this)
+
+        local function removePicker()
             if ( IsValid(self.colorPicker) ) then
                 self.colorPicker:Remove()
                 self.colorPicker = nil
+            end
+        end
+
+        self.colorPanel.OnRemoved = function(this)
+            removePicker()
+        end
+        self.OnRemove = function(this)
+            removePicker()
+        end
+    end
+end
             end
         end
         self.OnRemove = function(this)
