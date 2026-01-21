@@ -147,7 +147,7 @@ if ( SERVER ) then
             return
         end
 
-        if ( !chatClass:CanSay(speaker, text, data) or hook.Run("CanPlayerSendMessage", speaker, chatType, text, data) == false ) then return end
+        if ( IsValid(speaker) and ( !chatClass:CanSay(speaker, text, data) or hook.Run("CanPlayerSendMessage", speaker, chatType, text, data) == false ) ) then return end
 
         if ( !istable(receivers) ) then
             receivers = { speaker }
