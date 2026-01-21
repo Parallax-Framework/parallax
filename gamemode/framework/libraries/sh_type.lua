@@ -197,3 +197,11 @@ end
 function istable(val)
     return type(val) == "table"
 end
+
+function isfunction(val)
+    return type(val) == "function"
+end
+
+function isvector(val)
+    return type(val) == "Vector"
+end
