@@ -624,6 +624,8 @@ ax.character:RegisterVar("model", {
             end
         end
 
+        if ( CLIENT ) then return end
+
         character:SetData("bodygroups", nil) -- Reset bodygroups on model change
 
         -- Reset or apply the correct skin when the model changes. If the faction
