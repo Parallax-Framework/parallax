@@ -69,12 +69,22 @@ local rtHud = GetRenderTargetEx(
 
 local curvyMaterial = CreateMaterial("ax_curvy", "screenspace_general", {
     ["$basetexture"] = rtName,
+
     ["$pixshader"] = "curvy_inverted_ps30",
+
     ["$ignorez"] = "1",
+    ["$vertexcolor"] = "1",
     ["$vertextransform"] = "1",
-    ["$alphablend"] = "1",
-    ["$cull"] = "0",
+
+    ["$copyalpha"] = "0",
+    ["$alpha_blend_color_overlay"] = "0",
+    ["$alpha_blend"] = "1",
+
     ["$linearwrite"] = "1",
+    ["$linearread_basetexture"] = "1",
+    ["$linearread_texture1"] = "1",
+    ["$linearread_texture2"] = "1",
+    ["$linearread_texture3"] = "1",
 })
 
 local function RenderCurvy(hookName)
