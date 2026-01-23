@@ -270,8 +270,10 @@ function PANEL:Init()
     self:SetTextInset(ax.util:ScreenScale(8), 0)
 
     self.reset = self:Add("ax.button.flat.icon")
-    self.reset:SetIcon("parallax/icons/eraser.png")
+    self.reset:SetIcon("parallax/icons/chevron-right.png")
     self.reset:SetIconAlign("center")
+    self.reset:SetIconColor(color_white)
+    self.reset:Dock(RIGHT)
     self.reset.DoClick = function()
         local store = self:GetStore()
         if ( !store ) then
@@ -370,7 +372,7 @@ function PANEL:UpdateDisplay()
     -- Override in child panels
 end
 
-vgui.Register("ax.store.base", PANEL, "ax.button.flat")
+vgui.Register("ax.store.base", PANEL, "ax.button")
 
 -- Boolean store element
 PANEL = {}
@@ -649,10 +651,11 @@ DEFINE_BASECLASS("ax.store.base")
 function PANEL:Init()
     self.elementType = "array"
 
-    self.combo = self:Add("DComboBox")
+    self.combo = self:Add("ax.combobox")
     self.combo:Dock(RIGHT)
-    self.combo:DockMargin(0, ax.util:ScreenScale(4), ax.util:ScreenScale(8), ax.util:ScreenScale(4))
+    self.combo:DockMargin(0, ax.util:ScreenScale(3), ax.util:ScreenScale(8), ax.util:ScreenScale(3))
     self.combo:SetWide(ax.util:ScreenScale(192))
+    self.combo:SetSortItems(true)
     self.combo.OnSelect = function(this, index, value, data)
         if ( self.bInitializing ) then return end
         local store = self:GetStore()
