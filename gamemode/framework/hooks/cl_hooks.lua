@@ -427,20 +427,10 @@ end, function()
     for commandName, commandTable in pairs(ax.command.registry) do
         if ( ax.command:HasAccess(ax.client, commandTable) != true ) then continue end
 
-        local syntax = {}
-        for _, arg in ipairs(commandTable.arguments or {}) do
-            local surrounder = arg.optional and "[" or "<"
-            local endSurrounder = arg.optional and "]" or ">"
-
-            syntax[#syntax + 1] = surrounder .. arg.name .. endSurrounder
-        end
-
-        if ( syntax[1] != nil ) then
-            commandName = commandName .. table.concat(syntax, " ")
-        end
-
-        commands[#commands + 1] = "ax " .. commandName
+        commands[#commands + 1] = "ax " .. ax.command:Help(commandName)
     end
+
+    table.sort(commands)
 
     return commands
 end)
