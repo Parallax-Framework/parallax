@@ -136,6 +136,7 @@ ax.localization:Register("en", {
     ["option.notification.length.default"] = "Default Notification Length",
     ["option.notification.scale"] = "Notification Scale",
     ["option.notification.sounds"] = "Enable Notification Sounds",
+    ["option.notification.position"] = "Notification Position",
 
     ---- Inventory
     ["option.inventory.categories.italic"] = "Italicize Category Names",
