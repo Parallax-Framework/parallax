@@ -117,7 +117,6 @@ function PANEL:RebuildScoreboard()
             local name = row:Add("ax.text")
             name:Dock(LEFT)
             name:DockMargin(8, 0, 0, 0)
-            name:SetFont("ax.small")
 
             local steamName = client:SteamName()
             local toDisplay = ""
@@ -143,7 +142,6 @@ function PANEL:RebuildScoreboard()
             local ping = row:Add("ax.text")
             ping:Dock(RIGHT)
             ping:DockMargin(0, 0, 8, 0)
-            ping:SetFont("ax.small")
             ping:SetText(client:IsBot() and "Bot" or tostring(client:Ping()) .. " ms", true)
 
             row:SetTall(math.max(avatar:GetTall(), name:GetTall(), ping:GetTall()) * 1.5)
