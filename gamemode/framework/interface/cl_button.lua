@@ -28,10 +28,10 @@ AccessorFunc(PANEL, "wasHovered", "WasHovered", FORCE_BOOL)
 function PANEL:Init()
     BaseClass.Init(self)
 
-    self.soundEnter = "parallax/ui/rollover.wav"
-    self.soundClick = "parallax/ui/press.wav"
-    self.fontDefault = "ax.large"
-    self.fontHovered = "ax.large.bold"
+    self.soundEnter = "ax.gui.button.enter"
+    self.soundClick = "ax.gui.button.click"
+    self.fontDefault = "ax.regular"
+    self.fontHovered = "ax.regular.bold"
     self.textColor = Color(255, 255, 255)
     self.textColorMotion = Color(255, 255, 255)
     self.textColorHovered = Color(200, 200, 240)
@@ -80,7 +80,7 @@ function PANEL:SizeToContents()
     self:SizeToContentsInternal()
 
     local width, height = self:GetSize()
-    self:SetSize(width + ax.util:ScreenScale(8), height + ax.util:ScreenScaleH(8))
+    self:SetSize(width + ax.util:ScreenScale(16), height + ax.util:ScreenScaleH(8))
 end
 
 function PANEL:CanClick(mouseCode)
@@ -111,14 +111,14 @@ function PANEL:OnMousePressed(mouseCode)
     end
 
     if ( self.soundClick ) then
-        surface.PlaySound(self.soundClick)
+        ax.client:EmitSound(self.soundClick)
     end
 end
 
 function PANEL:Think()
     local hovering = self:IsHovered() and self:IsEnabled()
     if ( hovering and !self:GetWasHovered() ) then
-        surface.PlaySound(self.soundEnter)
+        ax.client:EmitSound(self.soundEnter)
         self:SetFont(self.fontHovered)
 
         if ( self.updateSizeOnHover ) then

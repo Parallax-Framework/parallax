@@ -1,4 +1,14 @@
 ax.localization:Register("en", {
+    -- General
+    ["yes"] = "Yes",
+    ["no"] = "No",
+    ["ok"] = "OK",
+    ["cancel"] = "Cancel",
+    ["apply"] = "Apply",
+    ["close"] = "Close",
+    ["back"] = "Back",
+    ["next"] = "Next",
+
     -- Main Menu Translations
     ["mainmenu.category.00_faction"] = "Factions",
     ["mainmenu.category.01_identity"] = "Identity",

@@ -109,7 +109,7 @@ function GM:PostRenderCurvy()
             versionText = versionText .. " (" .. ax.version.commitHash .. ")"
         end
 
-        draw.SimpleText(versionText, "ax.tiny.bold", ax.util:ScreenScale(4), height - ax.util:ScreenScaleH(4), Color(255, 255, 255, 50), TEXT_ALIGN_LEFT, TEXT_ALIGN_BOTTOM)
+        draw.SimpleText(versionText, "ax.small.bold", ax.util:ScreenScale(4), height - ax.util:ScreenScaleH(4), Color(255, 255, 255, 50), TEXT_ALIGN_LEFT, TEXT_ALIGN_BOTTOM)
     end
 end
 
@@ -306,10 +306,10 @@ function GM:HUDPaintTargetIDExtra(entity, x, y, alpha)
     end
 
     if ( desc ) then
-        local wrapped = ax.util:GetWrappedText(desc, "ax.tiny", ax.util:ScreenScale(128))
+        local wrapped = ax.util:GetWrappedText(desc, "ax.small", ax.util:ScreenScale(128))
         for i, line in ipairs(wrapped) do
-            draw.SimpleText(line, "ax.tiny", x + 1, y + ax.util:ScreenScaleH(6) * i + 1, Color(0, 0, 0, alpha / 4), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-            draw.SimpleText(line, "ax.tiny", x, y + ax.util:ScreenScaleH(6) * i, Color(255, 255, 255, alpha / 2), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+            draw.SimpleText(line, "ax.small", x + 1, y + ax.util:ScreenScaleH(6) * i + 1, Color(0, 0, 0, alpha / 4), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+            draw.SimpleText(line, "ax.small", x, y + ax.util:ScreenScaleH(6) * i, Color(255, 255, 255, alpha / 2), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
         end
     end
 end

@@ -115,13 +115,19 @@ function PANEL:CreateNavigation(parent, backText, backCallback, nextText, nextCa
     navigation:Dock(BOTTOM)
     navigation:DockMargin(ax.util:ScreenScale(32), 0, ax.util:ScreenScale(32), ax.util:ScreenScaleH(32))
 
-    local backButton = navigation:Add("ax.button.flat")
+    local backButton = navigation:Add("ax.button")
     backButton:Dock(LEFT)
     backButton:SetText(backText)
-    backButton.DoClick = backCallback
+    backButton.DoClick = function()
+        ax.client:EmitSound("ax.gui.menu.return")
+
+        if ( isfunction(backCallback) ) then
+            backCallback()
+        end
+    end
 
     if ( nextText and nextCallback ) then
-        local nextButton = navigation:Add("ax.button.flat")
+        local nextButton = navigation:Add("ax.button")
         nextButton:Dock(RIGHT)
         nextButton:SetText(nextText)
         nextButton.DoClick = nextCallback

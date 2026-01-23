@@ -52,6 +52,7 @@ function PANEL:Init()
         playButton:Dock(LEFT)
         playButton:SetText("mainmenu.play")
         playButton.DoClick = function()
+            ax.client:EmitSound("ax.gui.menu.close")
             parent:Remove()
         end
     end
@@ -121,7 +122,12 @@ function PANEL:PerformLayout()
     self.title:SetPos(ScrW() / 2 - self.title:GetWide() / 2, ScrH() / 8)
     self.subtitle:SetPos(ScrW() / 2 - self.subtitle:GetWide() / 2, ScrH() / 8 + self.title:GetTall())
 
-    self.buttons:SetSize(ScrW() / 1.25, ax.util:ScreenScaleH(32))
+    self.buttons:SetWide(ScrW() / 2)
+
+    for _, button in pairs(self.buttons:GetChildren()) do
+        self.buttons:SetTall(math.max(self.buttons:GetTall(), button:GetTall()))
+    end
+
     self.buttons:SetPos(ScrW() / 2 - self.buttons:GetWide() / 2, ScrH() - self.buttons:GetTall() - ax.util:ScreenScaleH(32))
 
     for _, button in pairs(self.buttons:GetChildren()) do

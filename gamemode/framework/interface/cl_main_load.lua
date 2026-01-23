@@ -55,7 +55,7 @@ end
 function PANEL:PopulateCharacterList()
     self.characters:Clear()
     local clientTable = ax.client:GetTable()
-    if ( !istable( clientTable.axCharacters ) ) then clientTable.axCharacters = {} end
+    if ( !istable(clientTable.axCharacters) ) then clientTable.axCharacters = {} end
     if ( clientTable.axCharacters[1] == nil ) then return end -- literally no reason to continue
 
     for k, v in pairs(clientTable.axCharacters or {}) do
@@ -129,7 +129,7 @@ function PANEL:PopulateCharacterList()
 
         local name = button:Add("ax.text")
         name:Dock(TOP)
-        name:SetFont("ax.huge.bold")
+        name:SetFont("ax.giant.bold")
         name:SetText(v:GetName():upper())
         name.Think = function(this)
             this:SetTextColor(button:GetTextColor())

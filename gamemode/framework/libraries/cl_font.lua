@@ -142,17 +142,18 @@ function ax.font:Load()
     local bigScale = ax.option:Get("fontScaleBig", 1)
 
     local baseSizes = {
-        tiny = 4,
-        small = 6,
-        regular = 8,
-        medium = 10,
-        large = 14,
-        massive = 20,
-        huge = 24
+        tiny = 5,
+        small = 7,
+        regular = 9,
+        medium = 11,
+        large = 15,
+        massive = 21,
+        huge = 25,
+        giant = 35
     }
 
-    local smallFamilies = { "tiny", "small", "regular" }
-    local bigFamilies = { "medium", "large", "massive", "huge" }
+    local smallFamilies = { "tiny", "small", "regular", "medium" }
+    local bigFamilies = { "large", "massive", "huge", "giant" }
 
     for name, base in pairs(baseSizes) do
         local scale = generalScale

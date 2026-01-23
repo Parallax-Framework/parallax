@@ -8,6 +8,12 @@ local surface = surface
 local Color = Color
 local draw = draw
 
+ax.util:AddSound("ax.gui.menu.return", "parallax/ui/pano_menu_return.ogg", 0.25, 100, CHAN_STATIC)
+ax.util:AddSound("ax.gui.menu.close", "parallax/ui/pano_menu_close.ogg", 0.25, 100, CHAN_STATIC)
+
+ax.util:AddSound("ax.gui.button.enter", "parallax/ui/pano_rollover.ogg", 0.25, 100, CHAN_STATIC)
+ax.util:AddSound("ax.gui.button.click", "parallax/ui/pano_select.ogg", 1, 100, CHAN_STATIC)
+
 SKIN = {}
 SKIN.PrintName = "Parallax Dark Mode"
 SKIN.Author = "Parallax Framework"
@@ -53,8 +59,8 @@ SKIN.control_color_bright = Color(150, 110, 220, 255)
 SKIN.control_color_dark = Color(50, 40, 70, 255)
 SKIN.control_color_highlight = Color(110, 85, 150, 255)
 SKIN.fontCategoryHeader = "ax.regular"
-SKIN.fontFrame = "ax.tiny"
-SKIN.fontTab = "ax.tiny"
+SKIN.fontFrame = "ax.small"
+SKIN.fontTab = "ax.small"
 SKIN.frame_border = Color(60, 45, 85, 255)
 SKIN.listview_hover = Color(45, 35, 65, 255)
 SKIN.listview_selected = Color(100, 70, 150, 255)
