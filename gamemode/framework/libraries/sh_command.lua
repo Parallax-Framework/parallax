@@ -378,7 +378,6 @@ function ax.command:Parse(text)
     table.remove(args, 1)
 
     local rawArgs = table.concat(args, " ")
-    print(commandName, rawArgs)
     return commandName, rawArgs
 end
 
