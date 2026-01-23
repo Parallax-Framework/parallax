@@ -56,21 +56,24 @@ ax.localization:Register("ru", {
 })
 
 ax.curvy = ax.curvy or {}
+ax.curvy.hud = ax.curvy.hud or nil
+ax.curvy.mat = ax.curvy.mat or nil
 
 local function RecreateMaterial()
-    local name = "ax_curvy_rt_hud_" .. ScrW() .. "x" .. ScrH() .. "_" .. os.time()
+    local scrW, scrH = ScrW(), ScrH()
+    local name = "ax_curvy_rt_hud_" .. scrW .. "x" .. scrH
 
     ax.curvy.hud = GetRenderTargetEx(
         name,
-        ScrW(),
-        ScrH(),
+        scrW,
+        scrH,
         RT_SIZE_OFFSCREEN,
         MATERIAL_RT_DEPTH_SHARED,
         0, 0,
         IMAGE_FORMAT_RGBA8888
     )
 
-    ax.curvy.mat = CreateMaterial("ax_curvy", "screenspace_general", {
+    ax.curvy.mat = CreateMaterial(name, "screenspace_general", {
         ["$basetexture"] = name,
 
         ["$pixshader"] = "curvy_inverted_ps30",
@@ -89,11 +92,11 @@ local function RecreateMaterial()
         ["$linearread_texture2"] = "1",
         ["$linearread_texture3"] = "1",
     })
-
-    print("Curvy material recreated.", ax.curvy.mat)
 end
 
-RecreateMaterial()
+function MODULE:OnSchemaLoaded()
+    RecreateMaterial()
+end
 
 function MODULE:OnScreenSizeChanged()
     RecreateMaterial()
