@@ -378,7 +378,6 @@ function ax.command:Parse(text)
     table.remove(args, 1)
 
     local rawArgs = table.concat(args, " ")
-    print(commandName, rawArgs)
     return commandName, rawArgs
 end
 
@@ -474,25 +473,28 @@ function ax.command:Help(name)
         return "Invalid command name"
     end
 
-    local def = self.registry[utf8.lower(name)]
+    local def = self.registry[name]
     if ( !def ) then
         return "Unknown command: " .. name
     end
 
     local parts = {def.name}
 
-    for _, argDef in ipairs(def.arguments) do
+    for i = 1, #def.arguments do
+        local argDef = def.arguments[i]
+        
         local argStr = argDef.name
         if ( argDef.optional ) then
             argStr = "[" .. argStr .. "]"
         else
             argStr = "<" .. argStr .. ">"
         end
+        
         parts[ #parts + 1 ] = argStr
     end
 
     local usage = table.concat(parts, " ")
-    return usage .. " - " .. def.description
+    return usage
 end
 
 -- Console command integration for server

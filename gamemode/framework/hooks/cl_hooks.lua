@@ -413,3 +413,24 @@ ax.viewstack:RegisterViewModelModifier("swep", function(weapon, patch)
 
     return { pos = pos, ang = ang }
 end, 1)
+
+concommand.Add("ax", function(client, cmd, args)
+    local command = args[1]
+    if ( !istable(ax.command.registry[command]) ) then
+        MsgC(Color(255, 100, 100), "ax: Unknown command '" .. tostring(command) .. "'\n")
+        return
+    end
+
+    RunConsoleCommand("say", "/" .. table.concat(args, " ", 1))
+end, function()
+    local commands = {}
+    for commandName, commandTable in pairs(ax.command.registry) do
+        if ( ax.command:HasAccess(ax.client, commandTable) != true ) then continue end
+
+        commands[#commands + 1] = "ax " .. ax.command:Help(commandName)
+    end
+
+    table.sort(commands)
+
+    return commands
+end)
