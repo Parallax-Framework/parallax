@@ -21,7 +21,7 @@ function PANEL:Init()
     local categories = {}
     hook.Run("PopulateHelpCategories", categories)
     for k, v in SortedPairs(categories) do
-        local button = self.categories:Add("ax.button.flat")
+        local button = self.categories:Add("ax.button")
         button:Dock(TOP)
         button:SetText(ax.localization:GetPhrase("category." .. k))
 

@@ -57,7 +57,7 @@ function PANEL:SetType(type)
     local categoryButtons = {}
 
     for k, v in SortedPairsByValue(categories) do
-        local button = self.categories:Add("ax.button.flat")
+        local button = self.categories:Add("ax.button")
         button:Dock(TOP)
         button:SetText(ax.localization:GetPhrase("category." .. v))
 

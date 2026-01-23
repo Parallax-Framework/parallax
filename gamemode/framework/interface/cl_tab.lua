@@ -169,12 +169,10 @@ function PANEL:PopulateTabs()
     local buttons = {}
     hook.Run("PopulateTabButtons", buttons)
     for k, v in SortedPairs(buttons) do
-        local button = self.buttons:Add("ax.button.flat")
+        local button = self.buttons:Add("ax.button")
         button:Dock(LEFT)
         button:SetText(ax.localization:GetPhrase("tab." .. k))
-
-        button:SetUpdateSizeOnHover(true)
-        button:SetSizeToContentsMotion(true)
+        button:SetWide(button:GetWide() * 1.5)
 
         self.buttons:SetTall(math.max(self.buttons:GetTall(), button:GetTall()))
         self.buttons:SetY(self.buttons:GetY())
@@ -182,19 +180,19 @@ function PANEL:PopulateTabs()
         self.subbuttons:SetY(self.subbuttons:GetY())
 
         -- TODO: add a toggle option for ax.button
-        button.Paint = function(this, width, height)
-            if ( ax.gui.tabLast == k ) then
-                ax.render.Draw(0, 0, 0, width, height, color_white)
-
-                if ( this:GetTextColor() != color_black ) then
-                    this:SetTextColor(color_black)
-                end
-            else
-                if ( this:GetTextColor() != color_white ) then
-                    this:SetTextColor(color_white)
-                end
-            end
-        end
+        -- button.Paint = function(this, width, height)
+        --     if ( ax.gui.tabLast == k ) then
+        --         ax.render.Draw(0, 0, 0, width, height, color_white)
+        --
+        --         if ( this:GetTextColor() != color_black ) then
+        --             this:SetTextColor(color_black)
+        --         end
+        --     else
+        --         if ( this:GetTextColor() != color_white ) then
+        --             this:SetTextColor(color_white)
+        --         end
+        --     end
+        -- end
 
         local tab = self:CreatePage()
         tab:SetXOffset(ax.util:ScreenScale(32))
