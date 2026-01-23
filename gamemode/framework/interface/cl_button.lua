@@ -338,16 +338,12 @@ function PANEL:Paint(width, height)
         local iconInertia = 1 - self.inertia
         local iconColor = Color(self.iconColor.r * iconInertia, self.iconColor.g * iconInertia, self.iconColor.b * iconInertia, 255)
 
-        surface.SetDrawColor(iconColor)
         if ( self.iconAlign == "left" ) then
-            surface.SetMaterial(self.icon)
-            surface.DrawTexturedRect(self.iconSpacing, iconY, self.iconSize, self.iconSize)
+            ax.render.DrawMaterial(0, self.iconSpacing, iconY, self.iconSize, self.iconSize, iconColor, self.icon)
         elseif ( self.iconAlign == "right" ) then
-            surface.SetMaterial(self.icon)
-            surface.DrawTexturedRect(width - self.iconSpacing - self.iconSize, iconY, self.iconSize, self.iconSize)
+            ax.render.DrawMaterial(0, width - self.iconSpacing - self.iconSize, iconY, self.iconSize, self.iconSize, iconColor, self.icon)
         elseif ( self.iconAlign == "center" ) then
-            surface.SetMaterial(self.icon)
-            surface.DrawTexturedRect((width - self.iconSize) / 2, iconY, self.iconSize, self.iconSize)
+            ax.render.DrawMaterial(0, (width - self.iconSize) / 2, iconY, self.iconSize, self.iconSize, iconColor, self.icon)
         end
     end
 
