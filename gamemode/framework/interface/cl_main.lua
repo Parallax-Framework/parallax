@@ -38,14 +38,14 @@ function PANEL:Init()
     self.options = self:Add("ax.main.options")
     self.options:StartAtBottom()
 
-    self.splash:StartAtLeft()
+    self.splash:StartAtTop()
     self.splash:SlideToFront()
 
     hook.Run("PostMainMenuCreated", self)
 end
 
 function PANEL:Paint(width, height)
-    ax.render.Draw(0, 0, 0, width, height, Color(0, 0, 0, 100))
+    ax.render.Draw(0, 0, 0, width, height, Color(100, 100, 100, 50))
 end
 
 vgui.Register("ax.main", PANEL, "EditablePanel")
