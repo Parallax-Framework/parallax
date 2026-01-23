@@ -19,19 +19,22 @@ function PANEL:Init()
     self:SetPos(0, 0)
     self:SetSize(ScrW(), ScrH())
 
-    self.title = self:Add("DLabel")
+    self.title = self:Add("ax.text")
     self.title:SetFont("ax.huge.bold")
     self.title:SetText("Parallax Framework")
     self.title:SetTextColor(Color(200, 200, 240, 255))
-    self.title:SizeToContents()
+    self.title.Paint = function(s, w, h)
+        ax.render.DrawShadows(h, 0, h / 4, w, h / 2, Color(0, 0, 0, 50), nil, nil, ax.render.BLUR)
+    end
 
-    self.subtitle = self:Add("DLabel")
-    self.subtitle:SetFont("ax.regular")
+    self.subtitle = self:Add("ax.text")
     self.subtitle:SetText("A new dimension of roleplay, built for you.")
     self.subtitle:SetTextColor(Color(160, 160, 200, 255))
-    self.subtitle:SizeToContents()
+    self.subtitle.Paint = function(s, w, h)
+        ax.render.DrawShadows(h, 0, h / 4, w, h / 2, Color(0, 0, 0, 25), nil, nil, ax.render.BLUR)
+    end
 
-    self.buttons = self:Add("ax.scroller.vertical")
+    self.buttons = self:Add("EditablePanel")
 
     -- Allow for buttons to be created by other scripts
     local buttons = {}
@@ -46,7 +49,7 @@ function PANEL:Init()
     local allowPlay = hook.Run("ShouldCreatePlayButton", self)
     if ( ax.client.axCharacter and allowPlay != false ) then
         local playButton = self.buttons:Add("ax.button")
-        playButton:Dock(TOP)
+        playButton:Dock(LEFT)
         playButton:SetText("mainmenu.play")
         playButton.DoClick = function()
             parent:Remove()
@@ -57,7 +60,7 @@ function PANEL:Init()
     local allowCreate = hook.Run("ShouldCreateCreateButton", self)
     if ( allowCreate != false ) then
         local createButton = self.buttons:Add("ax.button")
-        createButton:Dock(TOP)
+        createButton:Dock(LEFT)
         createButton:SetText("mainmenu.create")
         createButton.DoClick = function()
             self:SlideLeft()
@@ -69,7 +72,7 @@ function PANEL:Init()
     local allowLoad = hook.Run("ShouldCreateLoadButton", self)
     if ( allowLoad != false ) then
         local loadButton = self.buttons:Add("ax.button")
-        loadButton:Dock(TOP)
+        loadButton:Dock(LEFT)
         loadButton:SetText("mainmenu.load")
         loadButton.DoClick = function()
             self:SlideLeft()
@@ -81,7 +84,7 @@ function PANEL:Init()
     local allowOptions = hook.Run("ShouldCreateOptionsButton", self)
     if ( allowOptions != false ) then
         local optionsButton = self.buttons:Add("ax.button")
-        optionsButton:Dock(TOP)
+        optionsButton:Dock(LEFT)
         optionsButton:SetText("mainmenu.options")
         optionsButton.DoClick = function()
             self:SlideLeft()
@@ -93,7 +96,7 @@ function PANEL:Init()
     local allowDisconnect = hook.Run("ShouldCreateDisconnectButton", self)
     if ( allowDisconnect != false ) then
         local disconnectButton = self.buttons:Add("ax.button")
-        disconnectButton:Dock(TOP)
+        disconnectButton:Dock(LEFT)
         disconnectButton:SetText("mainmenu.disconnect")
         disconnectButton.DoClick = function()
             Derma_Query("Are you sure you want to disconnect?", "Disconnect",
@@ -105,12 +108,6 @@ function PANEL:Init()
         end
     end
 
-    -- Now we need to add docking to the bottom of each button
-    for _, button in ipairs(self.buttons:GetCanvas():GetChildren()) do
-        if ( IsValid(button) and button.SetTall ) then
-            button:DockMargin(0, 0, 0, ax.util:ScreenScaleH(8))
-        end
-    end
 
     hook.Run("PostMainMenuSplashCreated", self)
 end
@@ -121,15 +118,21 @@ hook.Add("ShouldCreateLoadButton", "ax.main.splash", function()
 end)
 
 function PANEL:PerformLayout()
-    self.title:SetPos(ax.util:ScreenScale(32), ScrH() / 3)
-    self.subtitle:SetPos(ax.util:ScreenScale(32), ScrH() / 3 + self.title:GetTall())
+    self.title:SetPos(ScrW() / 2 - self.title:GetWide() / 2, ScrH() / 8)
+    self.subtitle:SetPos(ScrW() / 2 - self.subtitle:GetWide() / 2, ScrH() / 8 + self.title:GetTall())
 
-    self.buttons:SetPos(ax.util:ScreenScale(32), ScrH() / 3 + self.title:GetTall() + self.subtitle:GetTall() + ax.util:ScreenScaleH(16))
-    self.buttons:SetSize(ScrW() / 6, ScrH() / 3)
+    self.buttons:SetSize(ScrW() / 1.25, ax.util:ScreenScaleH(32))
+    self.buttons:SetPos(ScrW() / 2 - self.buttons:GetWide() / 2, ScrH() - self.buttons:GetTall() - ax.util:ScreenScaleH(32))
+
+    for _, button in pairs(self.buttons:GetChildren()) do
+        button:SetWide(self.buttons:GetWide() / #self.buttons:GetChildren() - ax.util:ScreenScale(4))
+        button:DockMargin(ax.util:ScreenScale(2), 0, ax.util:ScreenScale(2), 0)
+    end
 end
 
 function PANEL:Paint(width, height)
-    ax.util:DrawGradient("left", 0, 0, width / 3, height, Color(0, 0, 0, 200))
+    ax.util:DrawGradient("up", 0, 0, width, height, Color(50, 50, 50, 200))
+    ax.util:DrawGradient("down", 0, 0, width, height, Color(0, 0, 0, 100))
 end
 
 vgui.Register("ax.main.splash", PANEL, "ax.transition")
