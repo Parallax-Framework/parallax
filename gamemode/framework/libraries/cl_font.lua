@@ -120,9 +120,9 @@ function ax.font:CreateFamily(name, font, size, fontData)
     for _, combo in ipairs(combinations) do
         local fontName = "ax." .. name .. (combo != "" and ("." .. combo) or "")
         local data = {
-            font = string.find(combo, "bold", 1, true) and "GorDIN Black" or font,
+            font = font,
             size = size,
-            weight = string.find(combo, "bold", 1, true) and 900 or 700,
+            weight = string.find(combo, "bold", 1, true) and 800 or 600,
             italic = string.find(combo, "italic", 1, true) and true or false,
             shadow = string.find(combo, "shadow", 1, true) and true or false,
             antialias = true,
@@ -142,13 +142,13 @@ function ax.font:Load()
     local bigScale = ax.option:Get("fontScaleBig", 1)
 
     local baseSizes = {
-        tiny = 6,
-        small = 8,
-        regular = 10,
-        medium = 12,
-        large = 16,
-        massive = 24,
-        huge = 32
+        tiny = 4,
+        small = 6,
+        regular = 8,
+        medium = 10,
+        large = 14,
+        massive = 20,
+        huge = 24
     }
 
     local smallFamilies = { "tiny", "small", "regular" }
@@ -162,7 +162,7 @@ function ax.font:Load()
             scale = scale / bigScale
         end
         local size = ax.util:ScreenScaleH(base) * scale
-        ax.font:CreateFamily(name, "GorDIN Regular", size)
+        ax.font:CreateFamily(name, "Inter", size)
     end
 
     hook.Run("LoadFonts")
