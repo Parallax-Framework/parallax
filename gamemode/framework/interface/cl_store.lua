@@ -695,4 +695,20 @@ function PANEL:SetKey(key)
     self.bInitializing = false
 end
 
+function PANEL:UpdateDisplay()
+    local store = self:GetStore()
+    if ( !store ) then
+        self.combo:SetValue("unknown")
+        return
+    end
+
+    local value = store:Get(self.key)
+    local data = store.registry[self.key]
+    if ( data ) then
+        self.combo:SetValue( data.data.choices[ value ] or "unknown" )
+    else
+        self.combo:SetValue("unknown")
+    end
+end
+
 vgui.Register("ax.store.array", PANEL, "ax.store.base")
