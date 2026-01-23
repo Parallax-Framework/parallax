@@ -280,3 +280,16 @@ function ax.player.meta:GetDistanceToZone(identifier)
 
     return pos:Distance(zonePos)
 end
+
+--- Returns the player's most highest priority zone's name.
+-- @realm shared
+-- @treturn string|nil Zone name or nil
+-- @usage local zoneName = client:GetCurrentZoneName()
+function ax.player.meta:GetCurrentZoneName()
+    local zone = self:GetHighestPriorityZone()
+    if ( zone ) then
+        return zone.name
+    end
+
+    return nil
+end
