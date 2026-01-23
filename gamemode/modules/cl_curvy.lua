@@ -55,37 +55,52 @@ ax.localization:Register("ru", {
     ["option.curvy.edge_fade"] = "Исчезновение Краев"
 })
 
-local rtName = "_rt_hudcurved"
+ax.curvy = ax.curvy or {}
+ax.curvy.hud = ax.curvy.hud or nil
+ax.curvy.mat = ax.curvy.mat or nil
 
-local rtHud = GetRenderTargetEx(
-    rtName,
-    ScrW(),
-    ScrH(),
-    RT_SIZE_OFFSCREEN,
-    MATERIAL_RT_DEPTH_SHARED,
-    0, 0,
-    IMAGE_FORMAT_RGBA8888
-)
+local function RecreateMaterial()
+    local scrW, scrH = ScrW(), ScrH()
+    local name = "ax_curvy_rt_hud_" .. scrW .. "x" .. scrH
 
-local curvyMaterial = CreateMaterial("ax_curvy", "screenspace_general", {
-    ["$basetexture"] = rtName,
+    ax.curvy.hud = GetRenderTargetEx(
+        name,
+        scrW,
+        scrH,
+        RT_SIZE_OFFSCREEN,
+        MATERIAL_RT_DEPTH_SHARED,
+        0, 0,
+        IMAGE_FORMAT_RGBA8888
+    )
 
-    ["$pixshader"] = "curvy_inverted_ps30",
+    ax.curvy.mat = CreateMaterial(name, "screenspace_general", {
+        ["$basetexture"] = name,
 
-    ["$ignorez"] = "1",
-    ["$vertexcolor"] = "1",
-    ["$vertextransform"] = "1",
+        ["$pixshader"] = "curvy_inverted_ps30",
 
-    ["$copyalpha"] = "0",
-    ["$alpha_blend_color_overlay"] = "0",
-    ["$alpha_blend"] = "1",
+        ["$ignorez"] = "1",
+        ["$vertexcolor"] = "1",
+        ["$vertextransform"] = "1",
 
-    ["$linearwrite"] = "1",
-    ["$linearread_basetexture"] = "1",
-    ["$linearread_texture1"] = "1",
-    ["$linearread_texture2"] = "1",
-    ["$linearread_texture3"] = "1",
-})
+        ["$copyalpha"] = "0",
+        ["$alpha_blend_color_overlay"] = "0",
+        ["$alpha_blend"] = "1",
+
+        ["$linearwrite"] = "1",
+        ["$linearread_basetexture"] = "1",
+        ["$linearread_texture1"] = "1",
+        ["$linearread_texture2"] = "1",
+        ["$linearread_texture3"] = "1",
+    })
+end
+
+function MODULE:OnSchemaLoaded()
+    RecreateMaterial()
+end
+
+function MODULE:OnScreenSizeChanged()
+    RecreateMaterial()
+end
 
 local function RenderCurvy(hookName)
     if ( !ax.option:Get("curvy") or ax.option:Get("curvy.intensity") <= 0 ) then
@@ -93,7 +108,12 @@ local function RenderCurvy(hookName)
         return
     end
 
-    render.PushRenderTarget(rtHud)
+    if ( !ax.curvy.hud or !ax.curvy.mat ) then
+        print("Curvy material or render target missing.")
+        return
+    end
+
+    render.PushRenderTarget(ax.curvy.hud)
         render.Clear(0, 0, 0, 0, true, true)
 
         cam.Start2D()
@@ -106,16 +126,16 @@ local function RenderCurvy(hookName)
     local intensity = ax.option:Get("curvy.intensity") / 10
     local edgeFade = ax.option:Get("curvy.edge_fade") / 10
 
-    curvyMaterial:SetFloat("$c0_x", intensity)
-    curvyMaterial:SetFloat("$c0_y", aspect)
-    curvyMaterial:SetFloat("$c0_z", edgeFade)
+    ax.curvy.mat:SetFloat("$c0_x", intensity)
+    ax.curvy.mat:SetFloat("$c0_y", aspect)
+    ax.curvy.mat:SetFloat("$c0_z", edgeFade)
 
-    curvyMaterial:SetFloat("$c1_x", 1.0)
-    curvyMaterial:SetFloat("$c1_y", 1.0)
-    curvyMaterial:SetFloat("$c1_z", 1.0)
-    curvyMaterial:SetFloat("$c1_w", 1.0)
+    ax.curvy.mat:SetFloat("$c1_x", 1.0)
+    ax.curvy.mat:SetFloat("$c1_y", 1.0)
+    ax.curvy.mat:SetFloat("$c1_z", 1.0)
+    ax.curvy.mat:SetFloat("$c1_w", 1.0)
 
-    render.SetMaterial(curvyMaterial)
+    render.SetMaterial(ax.curvy.mat)
     render.DrawScreenQuad()
 end
 
