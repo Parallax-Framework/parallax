@@ -28,8 +28,8 @@ AccessorFunc(PANEL, "wasHovered", "WasHovered", FORCE_BOOL)
 function PANEL:Init()
     BaseClass.Init(self)
 
-    self.soundEnter = "ui/buttonrollover.wav"
-    self.soundClick = "ui/buttonclickrelease.wav"
+    self.soundEnter = "parallax/ui/rollover.wav"
+    self.soundClick = "parallax/ui/press.wav"
     self.fontDefault = "ax.large"
     self.fontHovered = "ax.large.bold"
     self.textColor = Color(255, 255, 255)
@@ -202,144 +202,18 @@ DEFINE_BASECLASS("ax.button.core")
 
 PANEL = {}
 
-AccessorFunc(PANEL, "baseHeight", "BaseHeight", FORCE_NUMBER)
-AccessorFunc(PANEL, "baseHeightMotion", "BaseHeightMotion", FORCE_NUMBER)
-AccessorFunc(PANEL, "baseHeightHovered", "BaseHeightHovered", FORCE_NUMBER)
-AccessorFunc(PANEL, "textInsetX", "TextInsetX", FORCE_NUMBER)
-AccessorFunc(PANEL, "textInsetXMotion", "TextInsetXMotion", FORCE_NUMBER)
-AccessorFunc(PANEL, "textInsetXHovered", "TextInsetXHovered", FORCE_NUMBER)
-AccessorFunc(PANEL, "textInsetY", "TextInsetY", FORCE_NUMBER)
-AccessorFunc(PANEL, "textInsetYMotion", "TextInsetYMotion", FORCE_NUMBER)
-AccessorFunc(PANEL, "textInsetYHovered", "TextInsetYHovered", FORCE_NUMBER)
-
 function PANEL:Init()
     BaseClass.Init(self)
 
-    self.baseHeight = ax.util:ScreenScaleH(20)
-    self.baseHeightMotion = ax.util:ScreenScaleH(20)
-    self.baseHeightHovered = ax.util:ScreenScaleH(20) * 1.25
-    self.textInsetX = ax.util:ScreenScale(2)
-    self.textInsetXMotion = 0
-    self.textInsetXHovered = ax.util:ScreenScale(8)
-    self.textInsetY = 0
-    self.textInsetYMotion = 0
-    self.textInsetYHovered = 0
-
-    self:SetTall(self.baseHeight)
-    self:SetTextInset(self.textInsetX, self.textInsetY)
-end
-
-function PANEL:SetText(text)
-    if ( !text ) then return end
-
-    BaseClass.SetText(self, text)
-
-    text = self:GetText()
-    text = utf8.upper(text)
-
-    self:SetTextInternal(text)
-end
-
-function PANEL:SizeToContents()
-    BaseClass.SizeToContents(self)
-
-    local width, _ = self:GetSize()
-    self:SetSize(width + ax.util:ScreenScale(8), self.baseHeight)
-end
-
-function PANEL:Think()
-    local hovering = self:IsHovered() and self:IsEnabled()
-    if ( hovering and !self.wasHovered ) then
-        surface.PlaySound(self.soundEnter)
-        self:SetFont(self.fontHovered)
-        self.wasHovered = true
-
-        self:Motion(0.25, {
-            Target = {inertia = 1},
-            Easing = self.easing,
-            Think = function(this)
-                self:SetInertia(this.inertia)
-            end
-        })
-
-        self:Motion(0.25, {
-            Target = {textColorMotion = self.textColorHovered},
-            Easing = self.easing,
-            Think = function(this)
-                self:SetTextColorInternal(this.textColorMotion)
-            end
-        })
-
-        self:Motion(0.25, {
-            Target = {baseHeightMotion = self.baseHeightHovered},
-            Easing = self.easing,
-            Think = function(this)
-                self:SetTall(this.baseHeightMotion)
-            end
-        })
-
-        self:Motion(0.25, {
-            Target = {textInsetXMotion = self.textInsetXHovered, textInsetYMotion = self.textInsetYHovered},
-            Easing = self.easing,
-            Think = function(this)
-                self:SetTextInset(this.textInsetXMotion, this.textInsetYMotion)
-            end
-        })
-
-        if ( self.OnHovered ) then
-            self:OnHovered()
-        end
-    elseif ( !hovering and self.wasHovered ) then
-        self:SetFont(self.fontDefault)
-        self.wasHovered = false
-
-        self:Motion(0.25, {
-            Target = {inertia = 0},
-            Easing = self.easing,
-            Think = function(this)
-                self:SetInertia(this.inertia)
-            end
-        })
-
-        self:Motion(0.25, {
-            Target = {textColorMotion = self.textColor},
-            Easing = self.easing,
-            Think = function(this)
-                self:SetTextColorInternal(this.textColorMotion)
-            end
-        })
-
-        self:Motion(0.25, {
-            Target = {baseHeightMotion = self.baseHeight},
-            Easing = self.easing,
-            Think = function(this)
-                self:SetTall(this.baseHeightMotion)
-            end
-        })
-
-        self:Motion(0.25, {
-            Target = {textInsetXMotion = self.textInsetX, textInsetYMotion = self.textInsetY},
-            Easing = self.easing,
-            Think = function(this)
-                self:SetTextInset(this.textInsetXMotion, this.textInsetYMotion)
-            end
-        })
-
-        if ( self.OnUnHovered ) then
-            self:OnUnHovered()
-        end
-    end
-
-    if ( self.OnThink ) then
-        self:OnThink()
-    end
+    self:SetContentAlignment(5)
 end
 
 function PANEL:Paint(width, height)
-    local backgroundColor = Color(self.textColor.r / 8, self.textColor.g / 8, self.textColor.b / 8)
+    local border = height / 4
+    ax.render.DrawShadows(border, 0, 0, width, height, Color(200, 200, 200, 10 + 40 * self.inertia), 0, border / 4, ax.render.BLUR)
 
-    ax.render.Draw(0, 0, 0, width, height, ColorAlpha(backgroundColor, 100 * self.inertia))
-    ax.render.Draw(0, 0, 0, ax.util:ScreenScale(4) * self.inertia, height, Color(self.textColor.r, self.textColor.g, self.textColor.b, 200 * self.inertia))
+    -- underline shadow
+    ax.render.DrawShadows(border / 2, 0, 0, width, height, Color(0, 0, 0, 50 * self.inertia), border / 2, border)
 
     if ( self.PaintAdditional ) then
         self:PaintAdditional(width, height)
