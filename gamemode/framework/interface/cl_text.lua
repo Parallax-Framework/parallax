@@ -137,8 +137,9 @@ function PANEL:PaintInternal(width, height)
     BaseClass.Paint(self, width, height)
 end
 
+local BACKGROUND_COLOR = Color(35, 0, 70, 85)
 function PANEL:Paint(width, height)
-    ax.render.Draw(0, 0, 0, width, height, Color(0, 0, 0, 150))
+    ax.render.Draw(0, 0, 0, width, height, BACKGROUND_COLOR)
 
     self:PaintInternal(width, height)
 end
