@@ -21,14 +21,14 @@ function PANEL:Init()
 
     self.title = self:Add("ax.text")
     self.title:SetFont("ax.huge.bold")
-    self.title:SetText("Parallax Framework")
+    self.title:SetText(SCHEMA.name or "Parallax Framework")
     self.title:SetTextColor(Color(200, 200, 240, 255))
     self.title.Paint = function(s, w, h)
         ax.render.DrawShadows(h, 0, h / 4, w, h / 2, Color(0, 0, 0, 50), nil, nil, ax.render.BLUR)
     end
 
     self.subtitle = self:Add("ax.text")
-    self.subtitle:SetText("A new dimension of roleplay, built for you.")
+    self.subtitle:SetText(SCHEMA.description or "A new dimension of roleplay, built for you.")
     self.subtitle:SetTextColor(Color(160, 160, 200, 255))
     self.subtitle.Paint = function(s, w, h)
         ax.render.DrawShadows(h, 0, h / 4, w, h / 2, Color(0, 0, 0, 25), nil, nil, ax.render.BLUR)
