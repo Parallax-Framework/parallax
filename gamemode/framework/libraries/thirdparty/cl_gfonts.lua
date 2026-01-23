@@ -17,6 +17,7 @@ local function fontPropertiesMatch(props1, props2)
         props1.size == props2.size and
         props1.weight == props2.weight and
         props1.antialias == props2.antialias and
+        props1.italic == props2.italic and
         props1.shadow == props2.shadow and
         props1.additive == props2.additive and
         props1.outline == props2.outline and
@@ -37,6 +38,12 @@ function surface.CreateFont(name, fontProperties)
 
     -- If no match, proceed with creating the font and cache it
     fontCache[name] = fontProperties
+
+    if ( surface.axCreateFont ) then
+        surface.axCreateFont(name, fontProperties)
+        return
+    end
+
     _originalCreateFont(name, fontProperties)
 end
 
