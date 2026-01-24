@@ -420,32 +420,9 @@ concommand.Add("ax", function(client, cmd, args)
         return
     end
 
-    local bCommandFound = false
-    local command = args[1]
-    if ( ax.command.registry[command] ) then
-        bCommandFound = true
-    end
-
-    if ( bCommandFound != true ) then
-        -- check for aliases, and case sensitivity
-        for commandName, commandTable in pairs(ax.command.registry) do
-            if ( string.lower(commandName) == string.lower(command) ) then
-                bCommandFound = true
-                command = commandName
-                break
-            end
-
-            if ( commandTable.alias ) then
-                for i = 1, #commandTable.alias do
-                    local alias = commandTable.alias[i]
-                    if ( string.lower(alias) == string.lower(command) ) then
-                        bCommandFound = true
-                        command = commandName
-                        break
-                    end
-                end
-            end
-        end
+    if ( ax.command:Find(args[1], false, true) == nil ) then
+        MsgC(Color(255, 100, 100), "ax: Command \"" .. args[1] .. "\" not found.\n")
+        return
     end
 
     RunConsoleCommand("say", "/" .. table.concat(args, " ", 1))

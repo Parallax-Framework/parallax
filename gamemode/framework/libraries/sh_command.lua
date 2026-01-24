@@ -77,8 +77,16 @@ function ax.command:GetAll()
     return self.registry
 end
 
-function ax.command:Find(look, bCaseSensitive)
+function ax.command:Find(look, bCaseSensitive, bExact)
     for name, def in pairs(self.registry) do
+        if ( bExact ) then
+            if ( !bCaseSensitive and string.lower(name) == string.lower(look) ) then
+                return def
+            elseif ( bCaseSensitive and name == look ) then
+                return def
+            end
+        end
+
         if ( ax.util:FindString(name, look, bCaseSensitive) ) then
             return def
         end
@@ -106,8 +114,6 @@ function ax.command:FindAll(partial)
     if ( !isstring(partial) or partial == "" ) then
         return {}
     end
-
-    partial = utf8.lower(partial)
 
     local results = {}
     for name, def in pairs(self.registry) do
