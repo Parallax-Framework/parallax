@@ -2927,17 +2927,38 @@ function utf8.upper(str)
     return tableConcat(uppercase)
 end
 
---- Normalizes a string by converting Cyrillic characters to their Latin equivalents.
--- @realm shared
--- @param text string The string to normalize.
--- @return string Returns a normalized string.
-function string.utf8(text)
+function utf8.sub(str, startPos, endPos)
+    str = string.sub(str, startPos, endPos or -1)
+    local subStr = {}
     local len = 1
-    local normalized = {}
-    for _, char in utf8Codes(text) do
-        normalized[len] = utf8Char(casingsCyrillic[char] or char)
+    for _, char in utf8Codes(str) do
+        subStr[len] = utf8Char(char)
         len = len + 1
     end
 
-    return tableConcat(normalized)
+    return tableConcat(subStr)
+end
+
+function utf8.subUpper(str, startPos, endPos)
+    str = string.sub(str, startPos, endPos or -1)
+    local subStr = {}
+    local len = 1
+    for _, char in utf8Codes(str) do
+        subStr[len] = utf8Char(casingsLowerToUpper[char] or char)
+        len = len + 1
+    end
+
+    return tableConcat(subStr)
+end
+
+function utf8.subLower(str, startPos, endPos)
+    str = string.sub(str, startPos, endPos or -1)
+    local subStr = {}
+    local len = 1
+    for _, char in utf8Codes(str) do
+        subStr[len] = utf8Char(casingsUpperToLower[char] or char)
+        len = len + 1
+    end
+
+    return tableConcat(subStr)
 end
