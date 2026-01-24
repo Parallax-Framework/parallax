@@ -2940,7 +2940,7 @@ function utf8.sub(str, startPos, endPos)
 end
 
 function utf8.subUpper(str, startPos, endPos)
-    str = string.sub(str, startPos, endPos or -1)
+    str = string.sub(str, startPos, endPos)
     local subStr = {}
     local len = 1
     for _, char in utf8Codes(str) do
