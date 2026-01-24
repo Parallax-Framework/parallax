@@ -415,10 +415,36 @@ ax.viewstack:RegisterViewModelModifier("swep", function(weapon, patch)
 end, 1)
 
 concommand.Add("ax", function(client, cmd, args)
-    local command = args[1]
-    if ( !istable(ax.command.registry[command]) ) then
-        MsgC(Color(255, 100, 100), "ax: Unknown command '" .. tostring(command) .. "'\n")
+    if ( !istable(args) or args[1] == nil or string.Trim(args[1]) == "" ) then
+        MsgC(Color(255, 100, 100), "ax: No command specified.\n")
         return
+    end
+
+    local bCommandFound = false
+    local command = args[1]
+    if ( ax.command.registry[command] ) then
+        bCommandFound = true
+    end
+
+    if ( bCommandFound != true ) then
+        -- check for aliases, and case sensitivity
+        for commandName, commandTable in pairs(ax.command.registry) do
+            if ( string.lower(commandName) == string.lower(command) ) then
+                bCommandFound = true
+                command = commandName
+                break
+            end
+
+            if ( commandTable.alias ) then
+                for i = 1, #commandTable.alias do
+                    local alias = commandTable.alias[i]
+                    if ( string.lower(alias) == string.lower(command) ) then
+                        bCommandFound = true
+                        command = commandName
+                        break
+                    end
+                end
+            end
     end
 
     RunConsoleCommand("say", "/" .. table.concat(args, " ", 1))

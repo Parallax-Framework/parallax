@@ -360,9 +360,9 @@ function ax.command:Parse(text)
             break
         end
 
-        if ( istable(v.aliases) ) then
-            for i = 1, #v.aliases do
-                local alias = v.aliases[i]
+        if ( istable(v.alias) ) then
+            for i = 1, #v.alias do
+                local alias = v.alias[i]
                 if ( isstring(alias) and utf8.lower(alias) == commandName ) then
                     commandName = k
                     break
