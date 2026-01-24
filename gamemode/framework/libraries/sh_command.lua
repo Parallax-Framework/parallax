@@ -482,14 +482,19 @@ function ax.command:Help(name)
 
     for i = 1, #def.arguments do
         local argDef = def.arguments[i]
-        
-        local argStr = argDef.name
-        if ( argDef.optional ) then
+        local argName = "arg" .. i
+
+        if ( istable(argDef) and isstring(argDef.name) and argDef.name != "" ) then
+            argName = argDef.name
+        end
+
+        local argStr = argName
+        if ( istable(argDef) and argDef.optional ) then
             argStr = "[" .. argStr .. "]"
         else
             argStr = "<" .. argStr .. ">"
         end
-        
+
         parts[ #parts + 1 ] = argStr
     end
 
