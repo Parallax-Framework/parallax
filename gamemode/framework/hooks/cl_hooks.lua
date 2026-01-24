@@ -445,6 +445,7 @@ concommand.Add("ax", function(client, cmd, args)
                     end
                 end
             end
+        end
     end
 
     RunConsoleCommand("say", "/" .. table.concat(args, " ", 1))
