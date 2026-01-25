@@ -136,9 +136,6 @@ function GM:HUDShouldDraw(name)
     if ( hide[name] ) then return false end
     if ( gui.IsGameUIVisible() ) then return false end
 
-    local client = ax.client
-    if ( !ax.util:IsValidPlayer(client) ) then return false end
-
     local viewEntity = client:GetViewEntity()
     if ( viewEntity and viewEntity:GetClass():find("camera") and cameraShow[name] != true ) then return false end
 
