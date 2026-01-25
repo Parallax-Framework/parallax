@@ -136,10 +136,10 @@ function GM:HUDShouldDraw(name)
     if ( hide[name] ) then return false end
     if ( gui.IsGameUIVisible() ) then return false end
 
-    local viewEntity = client:GetViewEntity()
+    local viewEntity = ax.client:GetViewEntity()
     if ( viewEntity and viewEntity:GetClass():find("camera") and cameraShow[name] != true ) then return false end
 
-    local weapon = client:GetActiveWeapon()
+    local weapon = ax.client:GetActiveWeapon()
     if ( IsValid(weapon) and weapon:GetClass() == "gmod_camera" and cameraShow[name] != true ) then return false end
 
     return true
