@@ -777,7 +777,7 @@ ax.animations.stored["player_metrocop"] = {
         [ACT_MP_RUN] = {"run_hold_pistol", "run_aiming_pistol_alert_all"},
         [ACT_MP_CROUCH_IDLE] = {ACT_COVER_PISTOL_LOW, ACT_COVER_PISTOL_LOW},
         [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH, ACT_WALK_CROUCH},
-        [ACT_MP_JUMP] = {"jump_slam", "jump_revolver"},
+        [ACT_MP_JUMP] = {"jump_revolver", "jump_revolver"},
         ["land"] = "jump_land",
         ["shoot"] = "range_pistol",
         ["reload"] = "gesture_reload_357"
@@ -828,21 +828,21 @@ ax.animations.stored["player_metrocop"] = {
     },
     ["melee"] = {
         [ACT_MP_STAND_IDLE] = {{"batonidle1", "batonidle2"}, "batonangryidle1"},
-        [ACT_MP_WALK] = {"walk_all", "walk_hold_baton_angry"},
-        [ACT_MP_RUN] = {"run_all", "run_hold_baton_angry"},
+        [ACT_MP_WALK] = {"walk_all_unarmed", "walk_all_unarmed"},
+        [ACT_MP_RUN] = {"run_all_unarmed", "run_all_unarmed"},
         [ACT_MP_CROUCH_IDLE] = {ACT_COVER_PISTOL_LOW, ACT_COVER_PISTOL_LOW},
         [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH, ACT_WALK_CROUCH},
-        [ACT_MP_JUMP] = {"jump_slam", "jump_melee"},
+        [ACT_MP_JUMP] = {"jump_melee", "jump_melee"},
         ["land"] = "jump_land",
         ["shoot"] = "swinggesture"
     },
     ["grenade"] = {
         [ACT_MP_STAND_IDLE] = {{"batonidle1", "batonidle2"}, "batonangryidle1"},
-        [ACT_MP_WALK] = {"walk_all", "walk_hold_baton_angry"},
-        [ACT_MP_RUN] = {"run_all", "run_all"},
+        [ACT_MP_WALK] = {"walk_all_unarmed", "walk_all_unarmed"},
+        [ACT_MP_RUN] = {"run_all_unarmed", "run_all_unarmed"},
         [ACT_MP_CROUCH_IDLE] = {ACT_COVER_PISTOL_LOW, ACT_COVER_PISTOL_LOW},
         [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH, ACT_WALK_CROUCH},
-        [ACT_MP_JUMP] = {"jump_slam", "jump_melee"},
+        [ACT_MP_JUMP] = {"jump_melee", "jump_melee"},
         ["land"] = "jump_land",
         ["shoot"] = "swinggesture"
     }
