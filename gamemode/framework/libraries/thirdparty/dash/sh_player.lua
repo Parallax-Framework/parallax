@@ -4,7 +4,15 @@ local PLAYER, ENTITY = FindMetaTable 'Player', FindMetaTable 'Entity'
 local GetTable = ENTITY.GetTable
 
 function player.GetStaff()
-    return table.Filter(player.Iterator(), PLAYER.IsAdmin)
+    local staff = {}
+
+    for _, v in player.Iterator() do
+        if v:IsAdmin() then
+            table.insert(staff, v)
+        end
+    end
+
+    return staff
 end
 
 function PLAYER:__index(key)
