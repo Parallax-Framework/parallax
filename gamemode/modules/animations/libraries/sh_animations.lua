@@ -425,7 +425,7 @@ ax.animations.stored["player"] = {
         [ACT_MP_RUN] = {"run_all_01", "run_revolver"},
         [ACT_MP_CROUCH_IDLE] = {"cidle_all", "cidle_revolver"},
         [ACT_MP_CROUCHWALK] = {"cwalk_all", "cwalk_revolver"},
-        [ACT_MP_JUMP] = {"jump_slam", "jump_revolver"},
+        [ACT_MP_JUMP] = {"jump_revolver", "jump_revolver"},
         ["land"] = "jump_land",
         ["shoot"] = "range_pistol",
         ["reload"] = "gesture_reload_357"
@@ -480,7 +480,7 @@ ax.animations.stored["player"] = {
         [ACT_MP_RUN] = {"run_all_01", "run_melee"},
         [ACT_MP_CROUCH_IDLE] = {"cidle_all", "cidle_melee"},
         [ACT_MP_CROUCHWALK] = {"cwalk_all", "cwalk_melee"},
-        [ACT_MP_JUMP] = {"jump_slam", "jump_melee"},
+        [ACT_MP_JUMP] = {"jump_melee", "jump_melee"},
         ["land"] = "jump_land",
         ["shoot"] = "range_melee"
     },
@@ -490,7 +490,7 @@ ax.animations.stored["player"] = {
         [ACT_MP_RUN] = {"run_all_01", "run_grenade"},
         [ACT_MP_CROUCH_IDLE] = {"cidle_all", "cidle_grenade"},
         [ACT_MP_CROUCHWALK] = {"cwalk_all", "cwalk_grenade"},
-        [ACT_MP_JUMP] = {"jump_slam", "jump_grenade"},
+        [ACT_MP_JUMP] = {"jump_grenade", "jump_grenade"},
         ["land"] = "jump_land",
         ["shoot"] = "range_grenade"
     }
