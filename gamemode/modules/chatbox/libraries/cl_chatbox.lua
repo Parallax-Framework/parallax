@@ -166,7 +166,7 @@ function ax.chat:OverrideChatAddText()
         for _, v in ipairs(arguments) do
             if ( ax.type:Sanitise(ax.type.color, v) ) then
                 color = v
-            elseif ( IsValid(v) and v:IsPlayer() ) then
+            elseif ( ax.util:IsValidPlayer(v) ) then
                 local tc = team.GetColor(v:Team())
                 text = text .. string.format("<color=%d,%d,%d>%s</color>", tc.r, tc.g, tc.b, v:Nick())
             elseif ( isstring(v) ) then
