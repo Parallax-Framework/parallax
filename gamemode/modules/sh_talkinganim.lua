@@ -127,3 +127,11 @@ function MODULE:PlayerMessageSent(client, chatType, text)
         self:PlayTalkingAnimation(client)
     end
 end
+
+function MODULE:PlayerPostThink(client)
+    if ( !client:RateLimit("talking.anim", math.Rand(3, 6)) ) then return end
+
+    if ( client:IsSpeaking() ) then
+        self:PlayTalkingAnimation(client)
+    end
+end
