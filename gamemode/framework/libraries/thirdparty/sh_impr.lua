@@ -34,10 +34,10 @@ function player.GetBySteamID64(steamID64)
             playerSteamID64[steamID64] = client
         end
 
-        return client or NULL
+        return client
     end
 
-    return ent or NULL
+    return ent
 end
 
 function player.GetBySteamID(steamID)
@@ -50,10 +50,10 @@ function player.GetBySteamID(steamID)
             playerSteamID[steamID] = client
         end
 
-        return client or NULL
+        return client
     end
 
-    return ent or NULL
+    return ent
 end
 
 function player.GetByAccountID(accountID)
@@ -64,8 +64,8 @@ function player.GetByAccountID(accountID)
             playerAccountID[accountID] = client
         end
 
-        return client or NULL
+        return client
     end
 
-    return ent or NULL
+    return ent
 end
