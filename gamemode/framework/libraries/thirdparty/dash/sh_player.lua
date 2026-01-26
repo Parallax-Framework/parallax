@@ -8,7 +8,7 @@ function player.GetStaff()
 
     for _, v in player.Iterator() do
         if v:IsAdmin() then
-            table.insert(staff, v)
+            staff[#staff + 1] = v
         end
     end
 
