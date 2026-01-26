@@ -2798,6 +2798,101 @@ local casingsLowerToUpper = {
     [125251] = 125217,
 }
 
+local casingsCyrillic = {
+    -- Uppercase (1040 - 1071)
+    [1040] = 65,
+    [1041] = 66,
+    [1042] = 86,
+    [1043] = 71, 
+    [1044] = 68, 
+    [1045] = 69, 
+    [1046] = 90,
+    [1047] = 90,
+    [1048] = 73, 
+    [1049] = 74, 
+    [1050] = 75,
+    [1051] = 76, 
+    [1052] = 77, 
+    [1053] = 78, 
+    [1054] = 79, 
+    [1055] = 80,
+    [1056] = 82, 
+    [1057] = 83,
+    [1058] = 84,
+    [1059] = 85,
+    [1060] = 70,
+    [1061] = 72,
+    [1062] = 67,
+    [1063] = 67,
+    [1064] = 83, 
+    [1065] = 83,
+    [1066] = 65,
+    [1067] = 89,
+    [1068] = 74,
+    [1069] = 69,
+    [1070] = 85,
+    [1071] = 65,
+
+    -- Lowercase (1072 - 1103)
+    [1072] = 97,  
+    [1073] = 98,  
+    [1074] = 118, 
+    [1075] = 103, 
+    [1076] = 100, 
+    [1077] = 101, 
+    [1078] = 122, 
+    [1079] = 122,
+    [1080] = 105, 
+    [1081] = 106, 
+    [1082] = 107, 
+    [1083] = 108, 
+    [1084] = 109, 
+    [1085] = 110, 
+    [1086] = 111, 
+    [1087] = 112,
+    [1088] = 114, 
+    [1089] = 115, 
+    [1090] = 116, 
+    [1091] = 117, 
+    [1092] = 102, 
+    [1093] = 104, 
+    [1094] = 99,  
+    [1095] = 99,
+    [1096] = 115, 
+    [1097] = 115, 
+    [1098] = 97, 
+    [1099] = 121, 
+    [1100] = 106, 
+    [1101] = 101, 
+    [1102] = 117, 
+    [1103] = 97,
+
+    -- Regional/Special Extensions
+    [1025] = 69,  -- Ё -> E
+    [1105] = 101, -- ё -> e
+    [1028] = 69,  -- Є (UKR) -> E
+    [1108] = 101, -- є (UKR) -> e
+    [1030] = 73,  -- І (UKR/BEL) -> I
+    [1110] = 105, -- і (UKR/BEL) -> i
+    [1031] = 73,  -- Ї (UKR) -> I
+    [1111] = 105, -- ї (UKR) -> i
+    [1168] = 71,  -- Ґ (UKR) -> G
+    [1169] = 103, -- ґ (UKR) -> g
+    [1032] = 74,  -- Ј (SRB/MKD) -> J
+    [1112] = 106, -- ј (SRB/MKD) -> j
+    [1033] = 76,  -- Љ (SRB/MKD) -> L
+    [1113] = 108, -- љ (SRB/MKD) -> l
+    [1034] = 78,  -- Њ (SRB/MKD) -> N
+    [1114] = 110, -- њ (SRB/MKD) -> n
+    [1035] = 67,  -- Ћ (SRB) -> C
+    [1115] = 99,  -- ћ (SRB) -> c
+    [1039] = 68,  -- Џ (SRB/MKD) -> D
+    [1119] = 100, -- џ (SRB/MKD) -> d
+    [1038] = 85,  -- Ў (BEL) -> U
+    [1118] = 117  -- ў (BEL) -> u
+}
+
+
 local utf8Codes = utf8.codes
 local utf8Char = utf8.char
 local tableConcat = table.concat
@@ -2830,4 +2925,40 @@ function utf8.upper(str)
     end
 
     return tableConcat(uppercase)
+end
+
+function utf8.sub(str, startPos, endPos)
+    str = string.sub(str, startPos, endPos or -1)
+    local subStr = {}
+    local len = 1
+    for _, char in utf8Codes(str) do
+        subStr[len] = utf8Char(char)
+        len = len + 1
+    end
+
+    return tableConcat(subStr)
+end
+
+function utf8.subUpper(str, startPos, endPos)
+    str = string.sub(str, startPos, endPos)
+    local subStr = {}
+    local len = 1
+    for _, char in utf8Codes(str) do
+        subStr[len] = utf8Char(casingsLowerToUpper[char] or char)
+        len = len + 1
+    end
+
+    return tableConcat(subStr)
+end
+
+function utf8.subLower(str, startPos, endPos)
+    str = string.sub(str, startPos, endPos or -1)
+    local subStr = {}
+    local len = 1
+    for _, char in utf8Codes(str) do
+        subStr[len] = utf8Char(casingsUpperToLower[char] or char)
+        len = len + 1
+    end
+
+    return tableConcat(subStr)
 end

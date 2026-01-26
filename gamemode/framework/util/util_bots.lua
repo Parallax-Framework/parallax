@@ -117,7 +117,7 @@ function ax.util:CreateBotCharacter(client)
 
     local botName = self:GenerateBotName()
     if ( faction.GetDefaultName and isfunction(faction.GetDefaultName) ) then
-        local defaultName = faction:GetDefaultName()
+        local defaultName = faction:GetDefaultName(client)
         if ( isstring(defaultName) and defaultName != "" ) then
             botName = defaultName
         end

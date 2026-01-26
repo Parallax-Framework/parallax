@@ -479,8 +479,8 @@ function ax.command:Help(name)
         return "Invalid command name"
     end
 
-    local def = self.registry[name]
-    if ( !def ) then
+    local def = self:Find(name, false, true)
+    if ( !istable(def) ) then
         return "Unknown command: " .. name
     end
 
@@ -488,14 +488,16 @@ function ax.command:Help(name)
 
     for i = 1, #def.arguments do
         local argDef = def.arguments[i]
+        if ( !istable(argDef) ) then continue end
+
         local argName = "arg" .. i
 
-        if ( istable(argDef) and isstring(argDef.name) and argDef.name != "" ) then
+        if ( isstring(argDef.name) and argDef.name != "" ) then
             argName = argDef.name
         end
 
         local argStr = argName
-        if ( istable(argDef) and argDef.optional ) then
+        if ( argDef.optional ) then
             argStr = "[" .. argStr .. "]"
         else
             argStr = "<" .. argStr .. ">"
