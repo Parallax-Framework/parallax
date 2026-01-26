@@ -247,7 +247,6 @@ ax.net:Hook("character.var", function(characterID, name, value)
 end)
 
 ax.net:Hook("character.data", function(characterID, key, value)
-
     local character = ax.character:Get(characterID)
     if ( !character ) then return end -- TODO: make characterVarQueue for data? idk
 

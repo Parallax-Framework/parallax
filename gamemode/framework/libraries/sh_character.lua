@@ -25,6 +25,14 @@ ax.character.vars = ax.character.vars or {}
 -- @return table|nil The character table if found, nil if invalid ID or not found
 -- @usage local character = ax.character:Get(123)
 function ax.character:Get(id)
+    if ( isstring(id) ) then
+        local isBot = ax.character.instances[id] and ax.character.instances[id].isBot
+        
+        if ( isBot ) then
+            return ax.character.instances[id]
+        end
+    end
+
     if ( !isnumber(id) ) then
         ax.util:PrintError("Invalid character ID provided to ax.character:Get()")
         return nil
