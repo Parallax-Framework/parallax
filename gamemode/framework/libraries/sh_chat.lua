@@ -31,6 +31,10 @@ function ax.chat:Add(key, def)
 
     if ( CLIENT ) then
         if ( istable(def.prefix) ) then
+            if ax.command:Find(key, true, true) then
+                ax.command.registry[key] = nil
+            end
+
             for i = 1, #def.prefix do
                 local prefix = def.prefix[i]
                 if ( !isstring(prefix) or prefix == "" ) then
