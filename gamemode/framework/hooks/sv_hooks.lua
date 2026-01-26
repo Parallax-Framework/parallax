@@ -373,7 +373,6 @@ function GM:StartCommand(client, userCmd)
 
                     client:SetNameVar(client:SteamName()) -- Update the steam name in db
                     client:SetLastJoin(os.time())
-                    client:Save()
 
                     ax.util:PrintDebug("Loaded player data for " .. steamID64)
 
@@ -381,24 +380,12 @@ function GM:StartCommand(client, userCmd)
                         ax.inventory:Restore(client)
                         ax.relay:Sync(client)
 
-                        -- Sync all existing active characters from other players
-                        for _, otherClient in player.Iterator() do
-                            if ( !ax.util:IsValidPlayer(otherClient) or otherClient == client ) then continue end
-
-                            local otherCharacter = otherClient:GetCharacter()
-                            if ( !istable(otherCharacter) ) then continue end
-
-                            ax.character:Sync(otherClient, otherCharacter, client)
-                        end
-
                         -- Sync all world items (invID = 0) to the newly joined player
                         for itemID, item in pairs(ax.item.instances) do
                             if ( !istable(item) or item.invID != 0 ) then continue end
 
                             ax.net:Start(client, "inventory.item.add", 0, item.id, item.class, item.data or {})
                         end
-
-                        hook.Run("PlayerReady", client)
                     end)
                 end)
             query:Execute()
@@ -407,15 +394,25 @@ function GM:StartCommand(client, userCmd)
         client:SetNoDraw(true)
         client:SetNotSolid(true)
         client:SetMoveType(MOVETYPE_NONE)
-        client:KillSilent()
 
-        ax.net:Start(client, "player.ready")
+        hook.Run("PlayerReady", client)
     end
 end
 
 function GM:PlayerReady(client)
-    client:Spawn()
     client:SyncRelay()
+
+    ax.option:Sync(client)
+    ax.config:Sync(client)
+
+    for _, otherClient in player.Iterator() do
+        if ( !ax.util:IsValidPlayer(otherClient) or otherClient == client ) then continue end
+
+        local otherCharacter = otherClient:GetCharacter()
+        if ( !istable(otherCharacter) ) then continue end
+
+        ax.character:Sync(otherClient, otherCharacter, client)
+    end
 end
 
 function GM:OnDatabaseTablesCreated()
