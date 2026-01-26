@@ -391,6 +391,7 @@ function GM:StartCommand(client, userCmd)
             query:Execute()
         end)
 
+        client:Spawn()
         client:SetNoDraw(true)
         client:SetNotSolid(true)
         client:SetMoveType(MOVETYPE_NONE)
