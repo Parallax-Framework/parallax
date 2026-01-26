@@ -127,7 +127,7 @@ ax.net:Hook("character.load", function(characterID)
     hook.Run("PlayerLoadedCharacter", client, character, clientData.axCharacterPrevious)
 end)
 
-ax.net:Hook("character.sync", function(character)
+ax.net:Hook("character.sync", function(client, character)
     if ( !ax.util:IsValidPlayer(client) ) then return end
 
     -- Assume we are trying to kick the player off of their character
