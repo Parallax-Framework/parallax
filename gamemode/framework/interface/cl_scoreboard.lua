@@ -43,7 +43,7 @@ function PANEL:RebuildScoreboard()
     self.container:Clear()
 
     local teams = {}
-    for _, client in player.Iterator() do
+    for _, client in ipairs(player.GetAll()) do
         local tid = client:Team() or 0
         teams[tid] = teams[tid] or {}
         table.insert(teams[tid], client)

@@ -316,7 +316,7 @@ function GM:PostDrawTranslucentRenderables(depth, skybox)
 
     local ft = FrameTime()
     local curTime = CurTime()
-    for _, client in player.Iterator() do
+    for _, client in ipairs(player.GetAll()) do
         if ( !ax.util:IsValidPlayer(client) or !client:Alive() or client == ax.client or !client:IsSpeaking() ) then continue end
 
         local headBone = client:LookupBone("ValveBiped.Bip01_Head1")

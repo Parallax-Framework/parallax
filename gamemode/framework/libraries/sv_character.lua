@@ -142,7 +142,7 @@ function ax.character:Load(client, character)
 
         clientData.axCharacterPrevious.player = nil
 
-        local receivers = select(2, player.Iterator())
+        local receivers = select(2, ipairs(player.GetAll()))
         for i = 1, #receivers do
             if ( receivers[i] == client ) then table.remove(receivers, i) break end
         end

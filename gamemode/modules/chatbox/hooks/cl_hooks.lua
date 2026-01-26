@@ -68,7 +68,7 @@ end
 
 function MODULE:PostDrawTranslucentRenderables()
     -- Draw a text above the player who is typing to indicate that they are typing.
-    for _, client in player.Iterator() do
+    for _, client in ipairs(player.GetAll()) do
         if ( !ax.util:IsValidPlayer(client) or !client:Alive() ) then continue end
 
         local distToSqr = client:EyePos():DistToSqr(EyePos())

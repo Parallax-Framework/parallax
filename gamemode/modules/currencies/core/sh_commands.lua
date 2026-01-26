@@ -192,7 +192,7 @@ ax.command:Add("AddCurrencyAll", {
         amount = normalizeAmount(amount)
 
         local count = 0
-        for _, target in player.Iterator() do
+        for _, target in ipairs(player.GetAll()) do
             local character = target:GetCharacter()
             if ( character ) then
                 character:AddCurrency(amount, okID)
@@ -219,7 +219,7 @@ ax.command:Add("SetCurrencyAll", {
         amount = normalizeAmount(amount)
 
         local count = 0
-        for _, target in player.Iterator() do
+        for _, target in ipairs(player.GetAll()) do
             local character = target:GetCharacter()
             if ( character ) then
                 character:SetCurrency(amount, okID)

@@ -158,7 +158,7 @@ if ( SERVER ) then
         if ( !istable(receivers) ) then
             receivers = { speaker }
 
-            for _, v in player.Iterator() do
+            for _, v in ipairs(player.GetAll()) do
                 if ( !ax.util:IsValidPlayer(v) or v == speaker ) then continue end
 
                 if ( chatClass:CanHear(speaker, v, data) or hook.Run("CanPlayerReceiveMessage", v, speaker, chatType, text, data) != false ) then

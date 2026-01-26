@@ -83,7 +83,7 @@ function MODULE:DrawPlayers()
     local client = ax.client
     if ( !ax.util:IsValidPlayer(client) or !client:IsAdmin() ) then return end
 
-    for _, target in player.Iterator() do
+    for _, target in ipairs(player.GetAll()) do
         if ( target == client or !ax.util:IsValidPlayer(target) ) then continue end
 
         local scr = target:GetPos():ToScreen()
