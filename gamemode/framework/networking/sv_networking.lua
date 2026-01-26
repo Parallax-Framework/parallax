@@ -50,7 +50,6 @@ ax.net:Hook("chat.message", function(client, output)
     client:SetRelay("chatType", "")
 end)
 
-
 ax.net:Hook("chat.text.changed", function(client, text, chatType)
     if ( !client:RateLimit("chat.text.changed", 0.01) ) then return end
 

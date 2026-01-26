@@ -12,10 +12,17 @@
 local MODULE = MODULE
 
 function MODULE:PlayerSay(client, text, teamChat)
-    if ( !isstring(text) ) then return "" end
+    if ( !isstring(text) ) then
+        ax.util:PrintError("[CHAT] Player " .. client:SteamName() .. " sent a non-string message")
+        return ""
+    end
 
     text = string.Trim(text)
-    if ( text == "" ) then return "" end
+
+    if ( text == "" ) then
+        ax.util:PrintDebug("[CHAT] Player " .. client:SteamName() .. " attempted to send an empty message")
+        return ""
+    end
 
     local chatType, parsedText = ax.chat:Parse(text)
     if ( chatType == "ic" ) then
@@ -31,13 +38,15 @@ function MODULE:PlayerSay(client, text, teamChat)
         if ( bHasPrefix ) then
             local commandName, rawArgs = ax.command:Parse(parsedText)
             if ( !isstring(commandName) or commandName == "" ) then
-                client:Notify( ax.localization:GetPhrase("command.notvalid") )
+                client:Notify(ax.localization:GetPhrase("command.notvalid"))
+                ax.util:PrintWarning("[CHAT] Player " .. client:SteamName() .. " attempted to run invalid command")
                 return ""
             end
 
             local command = ax.command.registry[commandName]
             if ( !istable(command) ) then
-                client:Notify( ax.localization:GetPhrase("command.notfound") )
+                client:Notify(ax.localization:GetPhrase("command.notfound"))
+                ax.util:PrintWarning("[CHAT] Player " .. client:SteamName() .. " attempted to run unknown command '" .. commandName .. "'")
                 return ""
             end
 
@@ -46,13 +55,17 @@ function MODULE:PlayerSay(client, text, teamChat)
             end)
 
             if ( !ok ) then
-                ax.util:PrintError("Failed to execute command '" .. commandName .. "' for player " .. client:SteamName() .. " (" .. client:SteamID() .. "): " .. tostring(runOk))
+                ax.util:PrintError("[CHAT] Failed to execute command '" .. commandName .. "' for player " .. client:SteamName() .. " (" .. client:SteamID() .. "): " .. tostring(runOk))
                 client:Notify(ax.localization:GetPhrase("command.executionfailed"))
             else
                 if ( !runOk ) then
                     client:Notify(result or ax.localization:GetPhrase("command.unknownerror"))
+                    ax.util:PrintWarning("[CHAT] Command '" .. commandName .. "' execution failed for player " .. client:SteamName() .. ": " .. tostring(result))
                 elseif ( result and result != "" ) then
                     client:Notify(tostring(result))
+                    ax.util:PrintDebug("[CHAT] Command '" .. commandName .. "' executed for player " .. client:SteamName() .. " with message: " .. tostring(result))
+                else
+                    ax.util:PrintDebug("[CHAT] Command '" .. commandName .. "' executed successfully for player " .. client:SteamName())
                 end
             end
 
@@ -61,7 +74,9 @@ function MODULE:PlayerSay(client, text, teamChat)
     end
 
     text = ax.chat:Send(client, chatType, parsedText)
-
     hook.Run("PostPlayerSay", client, chatType, parsedText)
+
+    ax.util:PrintDebug("[CHAT] Player " .. client:SteamName() .. " said in chat type \"" .. chatType .. "\": " .. parsedText)
+
     return ""
 end
