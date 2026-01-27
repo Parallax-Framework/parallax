@@ -85,6 +85,28 @@ function ax.player:SetVar(client, key, value, bNoNetworking, recipients)
             ax.net:Start(nil, "player.var", client, key, value)
         end
     end
+
+    hook.Run("OnPlayerVarChanged", client, key, value)
+
+    if ( SERVER and !bNoDBUpdate and isstring(varTable.field) ) then
+        local query = mysql:Update("ax_players")
+            query:Where("steamid64", client:SteamID64())
+
+            if ( istable(value) ) then
+                value = ax.util:SafeParseTable(value, true)
+            elseif ( isbool(value) ) then
+                value = value == true and 1 or 0
+            end
+
+            query:Update(varTable.field, value)
+            query:Callback(function(result, status, lastID)
+                if ( result == false ) then
+                    ax.util:PrintError("Failed to update player variable '" .. key .. "' in database for player SteamID64 " .. client:SteamID64())
+                end
+
+            end)
+        query:Execute()
+    end
 end
 
 --- Register a new player variable.

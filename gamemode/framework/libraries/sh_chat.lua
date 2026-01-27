@@ -31,6 +31,10 @@ function ax.chat:Add(key, def)
 
     if ( CLIENT ) then
         if ( istable(def.prefix) ) then
+            if ( ax.command:Find(key, true, true) ) then
+                ax.command.registry[key] = nil
+            end
+
             for i = 1, #def.prefix do
                 local prefix = def.prefix[i]
                 if ( !isstring(prefix) or prefix == "" ) then
@@ -161,7 +165,7 @@ if ( SERVER ) then
             for _, v in ipairs(player.GetAll()) do
                 if ( !ax.util:IsValidPlayer(v) or v == speaker ) then continue end
 
-                if ( chatClass:CanHear(speaker, v, data) or hook.Run("CanPlayerReceiveMessage", v, speaker, chatType, text, data) != false ) then
+                if ( chatClass:CanHear(speaker, v, data) or hook.Run("CanPlayerReceiveMessage", v, speaker, chatType, text, data) == false ) then
                     receivers[#receivers + 1] = v
                     ax.util:PrintDebug("[CHAT] Added receiver " .. tostring(v) .. " for chat message of type \"" .. chatType .. "\" from " .. tostring(speaker))
                 end

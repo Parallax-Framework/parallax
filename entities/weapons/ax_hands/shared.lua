@@ -144,7 +144,10 @@ local function VelocityThrow(entity, owner, power)
     local physicsObject = entity:GetPhysicsObject()
     local vel = owner:GetAimVector()
     vel = vel * power
-    vel = math.min(vel, ax.config:Get("hands.force.max.throw", 1000))
+
+    local len = math.min(ax.config:Get("hands.force.max.throw", 150), vel:Length2D())
+    vel:Normalize()
+    vel = vel * len
 
     SetSubPhysMotionEnabled(entity, false)
     timer.Simple(0, function()

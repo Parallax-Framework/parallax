@@ -13,19 +13,20 @@
 local characterVarQueue = {}
 
 ax.net:Hook("player.ready", function()
-    local clientTable = LocalPlayer():GetTable()
+    
+end)
+
+function GM:OnClientCached()
+    local clientTable = ax.client:GetTable()
     if ( clientTable.axReady ) then return end
 
     clientTable.axReady = true
 
     vgui.Create("ax.main")
 
-    -- Run any queued EnsurePlayer callbacks
-    local client = LocalPlayer()
-    local t = client:GetTable()
-    if ( istable(t.axEnsureCallbacks) ) then
-        for i = 1, #t.axEnsureCallbacks do
-            local cb = t.axEnsureCallbacks[i]
+    if ( istable(clientTable.axEnsureCallbacks) ) then
+        for i = 1, #clientTable.axEnsureCallbacks do
+            local cb = clientTable.axEnsureCallbacks[i]
             if ( isfunction(cb) ) then
                 pcall(cb, true)
             end
@@ -33,7 +34,7 @@ ax.net:Hook("player.ready", function()
 
         t.axEnsureCallbacks = nil
     end
-end)
+end
 
 ax.net:Hook("character.create", function(characterID, characters)
     local client = ax.client
@@ -131,13 +132,13 @@ ax.net:Hook("character.sync", function(client, character)
 
     -- Assume we are trying to kick the player off of their character
     if ( character == nil or !istable(character) ) then
-        client:GetTable().axCharacter = nil
         return
     end
 
-    client:GetTable().axCharacter = character
+    character = setmetatable(character, ax.character.meta)
 
-    ax.character.instances[character.id] = setmetatable(character, ax.character.meta)
+    client:GetTable().axCharacter = character
+    ax.character.instances[character.id] = character
 
     -- Process any queued variable updates for this character
     if ( characterVarQueue[character.id] ) then
@@ -151,6 +152,7 @@ ax.net:Hook("character.sync", function(client, character)
 
         characterVarQueue[character.id] = nil
     end
+
 end)
 
 ax.net:Hook("character.restore", function(characters)

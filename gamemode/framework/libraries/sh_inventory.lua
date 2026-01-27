@@ -17,6 +17,24 @@ ax.inventory = ax.inventory or {}
 ax.inventory.meta = ax.inventory.meta or {}
 ax.inventory.instances = ax.inventory.instances or {}
 
+ax.inventory.instances[0] = setmetatable({
+    id = 0,
+    items = {},
+    maxWeight = 0.0,
+    GetReceivers = function(self)
+        local receivers = {}
+        for k, v in player.Iterator() do
+            receivers[#receivers + 1] = v
+        end
+
+        return receivers
+    end,
+    HasReceiver = function(self, client)
+        return true
+    end,
+}, ax.inventory.meta)
+
+
 if ( SERVER ) then
     --- Creates a new inventory in the database and returns the inventory object via callback.
     -- @realm server

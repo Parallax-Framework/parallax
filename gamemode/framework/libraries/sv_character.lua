@@ -72,7 +72,6 @@ function ax.character:Create(payload, callback)
 
         -- Override creationTime
         character:SetCreationTime( creationTime )
-        character:Save()
 
         -- Turn the data into a table rather than JSON from the database
         character.vars.data = ax.util:SafeParseTable(character.vars.data)
@@ -142,9 +141,10 @@ function ax.character:Load(client, character)
 
         clientData.axCharacterPrevious.player = nil
 
-        local receivers = select(2, ipairs(player.GetAll()))
-        for i = 1, #receivers do
-            if ( receivers[i] == client ) then table.remove(receivers, i) break end
+        local receivers = {}
+        for k, v in player.Iterator() do
+            if ( v == client ) then continue end
+            receivers[#receivers + 1] = v
         end
 
         ax.net:Start(receivers, "character.invalidate", client.axCharacterPrevious:GetID())
