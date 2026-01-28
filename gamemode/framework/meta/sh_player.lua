@@ -109,31 +109,7 @@ function ax.player.meta:PlayGesture(slot, sequence)
     end
 end
 
-function ax.player.meta:GetData(key, fallback)
-    local clientTable = self:GetTable()
-    if ( !istable(clientTable.axVars) ) then clientTable.axVars = {} end
-    if ( !istable(clientTable.axVars.data) ) then clientTable.axVars.data = {} end
-
-    return clientTable.axVars.data[key] == nil and fallback or clientTable.axVars.data[key]
-end
-
 if ( SERVER ) then
-    function ax.player.meta:SetData(key, value, bNoNetworking, recipients)
-        local clientTable = self:GetTable()
-        if ( !istable(clientTable.axVars) ) then clientTable.axVars = {} end
-        if ( !istable(clientTable.axVars.data) ) then clientTable.axVars.data = {} end
-
-        clientTable.axVars.data[key] = value
-
-        if ( !bNoNetworking ) then
-            if ( recipients ) then
-                ax.net:Start(recipients, "player.data", self, key, value)
-            else
-                ax.net:Start(nil, "player.data", self, key, value)
-            end
-        end
-    end
-
     function ax.player.meta:Save()
         local clientTable = self:GetTable()
         if ( !istable(clientTable.axVars) ) then clientTable.axVars = {} end

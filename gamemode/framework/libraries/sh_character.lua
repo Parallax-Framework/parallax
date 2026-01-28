@@ -27,7 +27,6 @@ ax.character.vars = ax.character.vars or {}
 function ax.character:Get(id)
     if ( isstring(id) ) then
         local isBot = ax.character.instances[id] and ax.character.instances[id].isBot
-        
         if ( isBot ) then
             return ax.character.instances[id]
         end
