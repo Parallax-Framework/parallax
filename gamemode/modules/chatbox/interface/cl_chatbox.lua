@@ -397,7 +397,18 @@ function PANEL:PopulateRecommendations(text, recommendationType)
                             self.entry:SetText(data.name)
                         end
                     else
-                        self.entry:SetText(data.name)
+                        local bHasTrailingSpace = string.EndsWith(currentText, " ")
+                        local trimmed = string.Trim(currentText)
+
+                        if ( trimmed == "" ) then
+                            self.entry:SetText(data.name)
+                        elseif ( bHasTrailingSpace ) then
+                            self.entry:SetText(currentText .. data.name)
+                        else
+                            local tokens = string.Explode(" ", trimmed)
+                            tokens[#tokens] = data.name
+                            self.entry:SetText(table.concat(tokens, " "))
+                        end
                     end
                 else
                     self.entry:SetText("/" .. data.name)
@@ -506,7 +517,18 @@ function PANEL:CycleRecommendations()
                 self.entry:SetText(data.name)
             end
         else
-            self.entry:SetText(data.name)
+            local bHasTrailingSpace = string.EndsWith(currentText, " ")
+            local trimmed = string.Trim(currentText)
+
+            if ( trimmed == "" ) then
+                self.entry:SetText(data.name)
+            elseif ( bHasTrailingSpace ) then
+                self.entry:SetText(currentText .. data.name)
+            else
+                local tokens = string.Explode(" ", trimmed)
+                tokens[#tokens] = data.name
+                self.entry:SetText(table.concat(tokens, " "))
+            end
         end
     else
         self.entry:SetText("/" .. data.name)
