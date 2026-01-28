@@ -133,11 +133,11 @@ ax.command:Add("CharSetCurrency", {
         character:SetCurrency(amount, okID)
 
         local formatted = ax.currencies:Format(amount, okID)
-        return string.format("Set %s's %s to %s", target:Nick(), okID, formatted)
+        return string.format("Set %s's %s to %s.", target:Nick(), okID, formatted)
     end
 })
 
-ax.command:Add("AddCurrency", {
+ax.command:Add("CharAddCurrency", {
     description = "Add an amount of currency to a player",
     superAdminOnly = true,
     arguments = {
@@ -157,11 +157,11 @@ ax.command:Add("AddCurrency", {
         local newTotal = character:AddCurrency(amount, okID)
         local delta = ax.currencies:Format(amount, okID)
         local total = ax.currencies:Format(newTotal, okID)
-        return string.format("Added %s to %s (%s total)", delta, target:Nick(), total)
+        return string.format("Added %s to %s (%s total).", delta, target:Nick(), total)
     end
 })
 
-ax.command:Add("TakeCurrency", {
+ax.command:Add("CharTakeCurrency", {
     description = "Take an amount of currency from a player",
     superAdminOnly = true,
     arguments = {
@@ -180,16 +180,16 @@ ax.command:Add("TakeCurrency", {
         if ( !character ) then return errMsg end
 
         if ( !character:TakeCurrency(amount, okID) ) then
-            return string.format("%s does not have enough %s", target:Nick(), okID)
+            return string.format("%s doesn't have enough %s.", target:Nick(), okID)
         end
 
         local delta = ax.currencies:Format(amount, okID)
         local remaining = ax.currencies:Format(character:GetCurrency(okID), okID)
-        return string.format("Took %s from %s (%s remaining)", delta, target:Nick(), remaining)
+        return string.format("Took %s from %s (%s remaining).", delta, target:Nick(), remaining)
     end
 })
 
-ax.command:Add("GetCurrency", {
+ax.command:Add("CharGetCurrency", {
     description = "Show a player's balance for a currency",
     superAdminOnly = true,
     arguments = {
@@ -205,11 +205,11 @@ ax.command:Add("GetCurrency", {
 
         local amount = character:GetCurrency(okID)
         local formatted = ax.currencies:Format(amount, okID)
-        return string.format("%s has %s", target:Nick(), formatted)
+        return string.format("%s has %s.", target:Nick(), formatted)
     end
 })
 
-ax.command:Add("AddCurrencyAll", {
+ax.command:Add("CharAddCurrencyAll", {
     description = "Add currency to all players with characters",
     superAdminOnly = true,
     arguments = {
@@ -232,11 +232,11 @@ ax.command:Add("AddCurrencyAll", {
         end
 
         local delta = ax.currencies:Format(amount, okID)
-        return string.format("Added %s to %d player(s)", delta, count)
+        return string.format("Added %s to %d player(s).", delta, count)
     end
 })
 
-ax.command:Add("SetCurrencyAll", {
+ax.command:Add("CharSetCurrencyAll", {
     description = "Set currency amount for all players with characters",
     superAdminOnly = true,
     arguments = {
@@ -259,11 +259,11 @@ ax.command:Add("SetCurrencyAll", {
         end
 
         local formatted = ax.currencies:Format(amount, okID)
-        return string.format("Set %s for %d player(s)", formatted, count)
+        return string.format("Set %s for %d player(s).", formatted, count)
     end
 })
 
-ax.command:Add("SetMoney", {
+ax.command:Add("CharSetMoney", {
     description = "Set a player's money (default currency)",
     superAdminOnly = true,
     arguments = {
@@ -271,24 +271,24 @@ ax.command:Add("SetMoney", {
         { name = "amount", type = ax.type.number, min = 0 }
     },
     OnRun = function(def, client, target, amount)
-        return ax.command.registry["SetCurrency"]:OnRun(client, target, amount, "credits")
+        return ax.command.registry["CharSetCurrency"]:OnRun(client, target, amount, "credits")
     end
 })
 
-ax.command:Add("AddMoney", {
+ax.command:Add("CharAddMoney", {
     description = "Add money to a player (default currency)",
     superAdminOnly = true,
     arguments = {
         { name = "player", type = ax.type.player },
         { name = "amount", type = ax.type.number, min = 1 }
     },
-    prefix = {"MoneyAdd", "GiveMoney"},
+    prefix = {"MoneyAdd"},
     OnRun = function(def, client, target, amount)
-        return ax.command.registry["AddCurrency"]:OnRun(client, target, amount, "credits")
+        return ax.command.registry["CharAddCurrency"]:OnRun(client, target, amount, "credits")
     end
 })
 
-ax.command:Add("TakeMoney", {
+ax.command:Add("CharTakeMoney", {
     description = "Take money from a player (default currency)",
     superAdminOnly = true,
     arguments = {
@@ -297,11 +297,11 @@ ax.command:Add("TakeMoney", {
     },
     alias = {"RemoveMoney"},
     OnRun = function(def, client, target, amount)
-        return ax.command.registry["TakeCurrency"]:OnRun(client, target, amount, "credits")
+        return ax.command.registry["CharTakeCurrency"]:OnRun(client, target, amount, "credits")
     end
 })
 
-ax.command:Add("GetMoney", {
+ax.command:Add("CharGetMoney", {
     description = "Show a player's money (default currency)",
     superAdminOnly = true,
     arguments = {
@@ -309,6 +309,6 @@ ax.command:Add("GetMoney", {
     },
     alias = {"MoneyGet", "BalanceMoney"},
     OnRun = function(def, client, target)
-        return ax.command.registry["GetCurrency"]:OnRun(client, target, "credits")
+        return ax.command.registry["CharGetCurrency"]:OnRun(client, target, "credits")
     end
 })
