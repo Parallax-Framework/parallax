@@ -224,6 +224,11 @@ ax.net:Hook("character.delete", function(id)
 end)
 
 ax.net:Hook("character.var", function(characterID, name, value)
+    if ( !isnumber(characterID) or characterID <= 0 ) then
+        ax.util:PrintWarning("Invalid character ID received for variable update.")
+        return
+    end
+
     local character = ax.character:Get(characterID)
     if ( !character ) then
         -- Queue the var update until the character is synced
