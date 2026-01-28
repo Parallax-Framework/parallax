@@ -12,7 +12,7 @@
 local MODULE = MODULE
 
 MODULE.name = "Spawn Save"
-MODULE.description = "Saves character's spawn locations to their previous position."
+MODULE.description = "Saves characters' spawn locations to their previous positions."
 MODULE.author = "Riggs"
 
 function MODULE:OnCharacterDisconnected(character)
@@ -21,18 +21,39 @@ function MODULE:OnCharacterDisconnected(character)
 
     local position = client:GetPos()
     local angles = client:EyeAngles()
-    character:SetData("spawn_save", {position, angles})
+
+    local data = ax.data:Get("spawn_save", {}, {
+        scope = "map"
+    })
+
+    data[character:GetID()] = {
+        position,
+        angles
+    }
+
+    ax.data:Set("spawn_save", data, {
+        scope = "map",
+        human = true
+    })
 end
 
 function MODULE:PlayerLoadedCharacter(client, character, previous)
     if ( CLIENT or !character ) then return end
 
-    local spawnSave = character:GetData("spawn_save")
-    if ( spawnSave ) then
-        client:SetPos(spawnSave[1])
-        client:SetEyeAngles(spawnSave[2])
+    local data = ax.data:Get("spawn_save", {}, {
+        scope = "map"
+    })
 
-        character:SetData("spawn_save", nil)
-        character:Save()
+    local spawn_save = data[character:GetID()]
+    if ( spawn_save ) then
+        client:SetPos(spawn_save[1])
+        client:SetEyeAngles(spawn_save[2])
+
+        data[character:GetID()] = nil
+
+        ax.data:Set("spawn_save", data, {
+            scope = "map",
+            human = true
+        })
     end
 end
