@@ -36,20 +36,8 @@ end
 
 character.GetInvID = character.GetInventoryID
 
-function character:GetData(key)
-    if ( !istable(self.vars.data) ) then self.vars.data = {} end
-
-    return self.vars.data[key]
-end
-
 function character:GetOwner()
     return self.player
-end
-
-function character:GetData(key, fallback)
-    if ( !istable(self.vars.data) ) then self.vars.data = {} end
-
-    return self.vars.data[key] == nil and fallback or self.vars.data[key]
 end
 
 function character:GetFactionData()
@@ -184,25 +172,6 @@ if ( SERVER ) then
             local letter = concatenated[i]
             self:GiveFlags(letter)
         end
-    end
-
-    function character:SetData(key, value, bNoNetworking, recipients)
-        if ( !istable(self.vars.data) ) then self.vars.data = {} end
-
-        self.vars.data[key] = value
-
-        -- Network character data changes to all clients
-        if ( !bNoNetworking ) then
-            if ( istable(recipients) or isentity(recipients) ) then
-                ax.net:Start(recipients, "character.data", self:GetID(), key, value)
-            elseif ( isvector(recipients) ) then
-                ax.net:StartPVS(recipients, "character.data", self:GetID(), key, value)
-            else
-                ax.net:Start(nil, "character.data", self:GetID(), key, value)
-            end
-        end
-
-        hook.Run("CharacterDataChanged", self, key, value)
     end
 
     function character:Save()

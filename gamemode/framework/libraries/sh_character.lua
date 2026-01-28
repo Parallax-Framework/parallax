@@ -27,7 +27,6 @@ ax.character.vars = ax.character.vars or {}
 function ax.character:Get(id)
     if ( isstring(id) ) then
         local isBot = ax.character.instances[id] and ax.character.instances[id].isBot
-        
         if ( isBot ) then
             return ax.character.instances[id]
         end
@@ -49,19 +48,31 @@ end
 -- @param fallback any Optional fallback value if variable is not set
 -- @return any The variable value, default value, or fallback
 -- @usage local description = ax.character:GetVar(character, "description", "No description")
-function ax.character:GetVar(char, name, fallback)
+function ax.character:GetVar(char, name, fallback, dataFallback)
     local varTable = ax.character.vars[name]
     if ( !istable(varTable) ) then
         ax.util:PrintError("Invalid character variable name provided to ax.character:GetVar()")
         return fallback
     end
 
-    if ( fallback == nil and varTable.default != nil ) then
-        fallback = varTable.default
-    end
-
     if ( !istable(char.vars) ) then
         char.vars = {}
+    end
+
+    if ( varTable.fieldType == ax.type.data ) then
+        if ( !istable(char.vars[name]) ) then
+            char.vars[name] = {}
+        end
+
+        if ( fallback == nil ) then
+            return char.vars[name]
+        end
+
+        return char.vars[name][fallback] == nil and dataFallback or char.vars[name][fallback]
+    end
+
+    if ( fallback == nil and varTable.default != nil ) then
+        fallback = varTable.default
     end
 
     return char.vars[name] == nil and fallback or char.vars[name]
@@ -72,12 +83,8 @@ end
 -- @realm shared
 -- @param char table The character instance
 -- @param name string The variable name to set
--- @param value any The new value to set
--- @param bNoNetworking boolean Optional flag to disable networking (server only)
--- @param recipients table Optional specific recipients for networking (server only)
--- @param bNoDBUpdate boolean Optional flag to disable database update (server only)
--- @usage ax.character:SetVar(character, "description", "A mysterious figure")
-function ax.character:SetVar(char, name, value, bNoNetworking, recipients, bNoDBUpdate)
+--- @usage ax.character:SetVar(character, "data", "flags", {dataValue = "ab", bNoNetworking = true})
+function ax.character:SetVar(char, name, value, opts)
     local varTable = ax.character.vars[name]
     if ( !istable(varTable) ) then
         ax.util:PrintError("Invalid character variable name provided to ax.character:SetVar()")
@@ -88,8 +95,62 @@ function ax.character:SetVar(char, name, value, bNoNetworking, recipients, bNoDB
         char.vars = {}
     end
 
+    local options = istable(opts) and opts or {}
+    local bNoNet = options.bNoNetworking == true
+    local netRecipients = options.recipients
+    local bNoDb = options.bNoDBUpdate == true
+
+    if ( varTable.fieldType == ax.type.data ) then
+        local key = value
+        local dataValue = options.dataValue
+
+        if ( !istable(char.vars[name]) ) then
+            char.vars[name] = {}
+        end
+
+        if ( key == nil ) then
+            return
+        end
+
+        local previousValue = char.vars[name][key]
+        char.vars[name][key] = dataValue
+
+        if ( SERVER and !bNoNet ) then
+            if ( istable(netRecipients) or isentity(netRecipients) ) then
+                ax.net:Start(netRecipients, "character.data", char:GetID(), name, key, dataValue)
+            elseif ( isvector(netRecipients) ) then
+                ax.net:StartPVS(netRecipients, "character.data", char:GetID(), name, key, dataValue)
+            else
+                ax.net:Start(nil, "character.data", char:GetID(), name, key, dataValue)
+            end
+        end
+
+        if ( isfunction(varTable.changed) ) then
+            local success, err = pcall(varTable.changed, char, dataValue, previousValue, bNoNet, netRecipients, bNoDb)
+            if ( !success ) then
+                ax.util:PrintError("Error occurred in character variable changed callback:", err)
+            end
+        end
+
+        hook.Run("CharacterDataChanged", char, name, key, dataValue)
+
+        if ( SERVER and !bNoDb and isstring(varTable.field) ) then
+            local query = mysql:Update("ax_characters")
+                query:Where("id", char:GetID())
+                query:Update(varTable.field, util.TableToJSON(char.vars[name] or {}))
+                query:Callback(function(result)
+                    if ( result == false ) then
+                        ax.util:PrintError("Failed to update character data var '" .. name .. "' in database for character ID " .. char:GetID())
+                    end
+                end)
+            query:Execute()
+        end
+
+        return
+    end
+
     if ( isfunction(varTable.changed) ) then
-        local success, err = pcall(varTable.changed, char, value, char.vars[name], bNoNetworking, recipients)
+        local success, err = pcall(varTable.changed, char, value, char.vars[name], bNoNet, netRecipients, bNoDb)
         if ( !success ) then
             ax.util:PrintError("Error occurred in character variable changed callback:", err)
             return
@@ -99,16 +160,16 @@ function ax.character:SetVar(char, name, value, bNoNetworking, recipients, bNoDB
     char.vars[name] = value
 
     -- Network character variable changes to all clients
-    if ( SERVER and !bNoNetworking ) then
+    if ( SERVER and !bNoNet ) then
         if ( char.isBot ) then
-            self:SyncBotToClients(char, recipients)
+            self:SyncBotToClients(char, netRecipients)
             return
         end
 
-        if ( istable(recipients) or isentity(recipients) ) then
-            ax.net:Start(recipients, "character.var", char:GetID(), name, value)
-        elseif ( isvector(recipients) ) then
-            ax.net:StartPVS(recipients, "character.var", char:GetID(), name, value)
+        if ( istable(netRecipients) or isentity(netRecipients) ) then
+            ax.net:Start(netRecipients, "character.var", char:GetID(), name, value)
+        elseif ( isvector(netRecipients) ) then
+            ax.net:StartPVS(netRecipients, "character.var", char:GetID(), name, value)
         else
             ax.net:Start(nil, "character.var", char:GetID(), name, value)
         end
@@ -116,7 +177,7 @@ function ax.character:SetVar(char, name, value, bNoNetworking, recipients, bNoDB
 
     hook.Run("OnCharacterVarChanged", char, name, value)
 
-    if ( SERVER and !bNoDBUpdate and isstring(varTable.field) ) then
+    if ( SERVER and !bNoDb and isstring(varTable.field) ) then
         local query = mysql:Update("ax_characters")
             query:Where("id", char:GetID())
 
@@ -212,44 +273,72 @@ function ax.character:RegisterVar(name, data)
     if ( !data.bNoGetter ) then
         local nameGet = "Get" .. prettyName
 
-        ax.character.meta[nameGet] = function(char, fallback)
+        ax.character.meta[nameGet] = function(char, ...)
             if ( isfunction(data.Get) ) then
                 if ( !istable(char.vars) ) then char.vars = {} end
 
-                return data:Get(char, fallback)
+                return data:Get(char, ...)
             else
-                return ax.character:GetVar(char, name, fallback)
+                if ( data.fieldType == ax.type.data ) then
+                    return ax.character:GetVar(char, name, ...)
+                end
+
+                return ax.character:GetVar(char, name, select(1, ...))
             end
         end
     end
 
     if ( !data.bNoSetter ) then
         local nameSet = "Set" .. prettyName
-        ax.character.meta[nameSet] = function(char, value, bNoNetworking, recipients, bNoDBUpdate)
+        ax.character.meta[nameSet] = function(char, ...)
+            local args = {...}
             -- TODO: add previous value to SetVar call, fuck you eon.
             local previousValue = nil
             if ( isfunction(data.Get) ) then
                 if ( !istable(char.vars) ) then char.vars = {} end
 
-                previousValue = data:Get(char)
+                if ( data.fieldType == ax.type.data ) then
+                    previousValue = data:Get(char, args[1])
+                else
+                    previousValue = data:Get(char)
+                end
             else
-                previousValue = ax.character:GetVar(char, name)
+                if ( data.fieldType == ax.type.data ) then
+                    previousValue = ax.character:GetVar(char, name, args[1])
+                else
+                    previousValue = ax.character:GetVar(char, name)
+                end
             end
 
             if ( isfunction(data.Set) ) then
                 if ( !istable(char.vars) ) then char.vars = {} end
 
-                data:Set(char, value, bNoNetworking, recipients, bNoDBUpdate)
+                data:Set(char, ...)
 
                 if ( isfunction(data.changed) ) then
                     -- Protect the callback to avoid crashes
-                    local success, err = pcall(data.changed, char, value, previousValue, bNoNetworking, recipients, bNoDBUpdate)
+                    local value = args[1]
+                    local options = istable(args[2]) and args[2] or {}
+
+                    if ( data.fieldType == ax.type.data ) then
+                        value = options.dataValue
+                    end
+
+                    local success, err = pcall(
+                        data.changed,
+                        char,
+                        value,
+                        previousValue,
+                        options.bNoNetworking == true,
+                        options.recipients,
+                        options.bNoDBUpdate == true
+                    )
                     if ( !success ) then
                         ax.util:PrintError("Error occurred in character variable changed callback:", err)
                     end
                 end
             else
-                ax.character:SetVar(char, name, value, bNoNetworking, recipients, bNoDBUpdate)
+                ax.character:SetVar(char, name, args[1], args[2])
             end
         end
     end

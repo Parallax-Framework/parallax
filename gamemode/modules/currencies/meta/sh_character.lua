@@ -47,7 +47,10 @@ function character:SetCurrency(amount, uniqueID, bNoNetworking, recipients)
     -- Clamp to non-negative values
     amount = math.max(0, amount)
 
-    ax.character:SetVar(self, "currency_" .. uniqueID, amount, bNoNetworking, recipients)
+    ax.character:SetVar(self, "currency_" .. uniqueID, amount, {
+        bNoNetworking = bNoNetworking == true,
+        recipients = recipients
+    })
 end
 
 --- Add an amount of currency to this character.

@@ -26,20 +26,32 @@ ax.player.vars = ax.player.vars or {}
 -- @param fallback any Optional fallback value if variable is not set
 -- @return any The variable value, default value, or fallback
 -- @usage local data = ax.player:GetVar(player, "customData", "default")
-function ax.player:GetVar(client, key, fallback)
+function ax.player:GetVar(client, key, fallback, dataFallback)
     local varTable = ax.player.vars[key]
     if ( !istable(varTable) ) then
         ax.util:PrintError("Invalid player variable key provided to ax.player:GetVar()")
         return fallback
     end
 
-    if ( fallback == nil and varTable.default != nil ) then
-        fallback = varTable.default
-    end
-
     local clientTable = client:GetTable()
     if ( !istable(clientTable.axVars) ) then
         clientTable.axVars = {}
+    end
+
+    if ( varTable.fieldType == ax.type.data ) then
+        if ( !istable(clientTable.axVars[key]) ) then
+            clientTable.axVars[key] = {}
+        end
+
+        if ( fallback == nil ) then
+            return clientTable.axVars[key]
+        end
+
+        return clientTable.axVars[key][fallback] == nil and dataFallback or clientTable.axVars[key][fallback]
+    end
+
+    if ( fallback == nil and varTable.default != nil ) then
+        fallback = varTable.default
     end
 
     return clientTable.axVars[key] == nil and fallback or clientTable.axVars[key]
@@ -51,10 +63,10 @@ end
 -- @param client Player The player entity
 -- @param key string The variable name to set
 -- @param value any The new value to set
--- @param bNoNetworking boolean Optional flag to disable networking (server only)
--- @param recipients table Optional specific recipients for networking (server only)
--- @usage ax.player:SetVar(player, "customData", "new value")
-function ax.player:SetVar(client, key, value, bNoNetworking, recipients)
+-- @param opts table|nil Optional options: bNoNetworking, recipients, bNoDBUpdate
+-- @usage ax.player:SetVar(player, "customData", "new value", {bNoDBUpdate = true})
+-- @usage ax.player:SetVar(player, "data", "flags", {dataValue = "ab", bNoNetworking = true})
+function ax.player:SetVar(client, key, value, opts)
     local varTable = ax.player.vars[key]
     if ( !istable(varTable) ) then
         ax.util:PrintError("Invalid player variable key provided to ax.player:SetVar()")
@@ -66,21 +78,72 @@ function ax.player:SetVar(client, key, value, bNoNetworking, recipients)
         clientTable.axVars = {}
     end
 
+    local options = istable(opts) and opts or {}
+    local bNoNet = options.bNoNetworking == true
+    local netRecipients = options.recipients
+    local bNoDb = options.bNoDBUpdate == true
+
+    if ( varTable.fieldType == ax.type.data ) then
+        local dataKey = value
+        local dataValue = options.dataValue
+
+        if ( !istable(clientTable.axVars[key]) ) then
+            clientTable.axVars[key] = {}
+        end
+
+        if ( dataKey == nil ) then
+            return
+        end
+
+        local previousValue = clientTable.axVars[key][dataKey]
+        clientTable.axVars[key][dataKey] = dataValue
+
+        if ( SERVER and !bNoNet ) then
+            if ( netRecipients ) then
+                ax.net:Start(netRecipients, "player.data", client, key, dataKey, dataValue)
+            else
+                ax.net:Start(nil, "player.data", client, key, dataKey, dataValue)
+            end
+        end
+
+        if ( isfunction(varTable.changed) ) then
+            local success, err = pcall(varTable.changed, client, dataValue, previousValue, bNoNet, netRecipients, bNoDb)
+            if ( !success ) then
+                ax.util:PrintError("Error occurred in player variable changed callback:", err)
+            end
+        end
+
+        hook.Run("PlayerDataChanged", client, key, dataKey, dataValue)
+
+        if ( SERVER and !bNoDb and isstring(varTable.field) ) then
+            local query = mysql:Update("ax_players")
+                query:Where("steamid64", client:SteamID64())
+                query:Update(varTable.field, util.TableToJSON(clientTable.axVars[key] or {}))
+                query:Callback(function(result)
+                    if ( result == false ) then
+                        ax.util:PrintError("Failed to update player data var '" .. key .. "' in database for player SteamID64 " .. client:SteamID64())
+                    end
+                end)
+            query:Execute()
+        end
+
+        return
+    end
+
     if ( isfunction(varTable.changed) ) then
-        local success, err = pcall(varTable.changed, client, value, clientTable.axVars[key], bNoNetworking, recipients)
+        local success, err = pcall(varTable.changed, client, value, clientTable.axVars[key], bNoNet, netRecipients, bNoDb)
         if ( !success ) then
             ax.util:PrintError("Error occurred in player variable changed callback:", err)
         end
     end
 
-
     clientTable.axVars[key] = value
 
-    if ( SERVER and !bNoNetworking ) then
-        if ( istable(recipients) or isentity(recipients) ) then
-            ax.net:Start(recipients, "player.var", client, key, value)
-        elseif ( isvector(recipients) ) then
-            ax.net:StartPVS(recipients, "player.var", client, key, value)
+    if ( SERVER and !bNoNet ) then
+        if ( istable(netRecipients) or isentity(netRecipients) ) then
+            ax.net:Start(netRecipients, "player.var", client, key, value)
+        elseif ( isvector(netRecipients) ) then
+            ax.net:StartPVS(netRecipients, "player.var", client, key, value)
         else
             ax.net:Start(nil, "player.var", client, key, value)
         end
@@ -88,7 +151,7 @@ function ax.player:SetVar(client, key, value, bNoNetworking, recipients)
 
     hook.Run("OnPlayerVarChanged", client, key, value)
 
-    if ( SERVER and !bNoDBUpdate and isstring(varTable.field) ) then
+    if ( SERVER and !bNoDb and isstring(varTable.field) ) then
         local query = mysql:Update("ax_players")
             query:Where("steamid64", client:SteamID64())
 
@@ -136,29 +199,48 @@ function ax.player:RegisterVar(key, data)
 
     if ( !data.bNoGetter ) then
         local keyGet = "Get" .. prettyName
-        ax.player.meta[keyGet] = function(client, fallback)
+        ax.player.meta[keyGet] = function(client, ...)
             if ( isfunction(data.Get) ) then
-                return data:Get(client, fallback)
+                return data:Get(client, ...)
             else
-                return ax.player:GetVar(client, key, fallback)
+                if ( data.fieldType == ax.type.data ) then
+                    return ax.player:GetVar(client, key, ...)
+                end
+
+                return ax.player:GetVar(client, key, select(1, ...))
             end
         end
     end
 
     if ( !data.bNoSetter ) then
         local keySet = "Set" .. prettyName
-        ax.player.meta[keySet] = function(client, value, bNoNetworking, recipients)
+        ax.player.meta[keySet] = function(client, ...)
+            local args = {...}
             if ( isfunction(data.Set) ) then
-                data:Set(client, value, bNoNetworking, recipients)
+                data:Set(client, ...)
 
                 if ( isfunction(data.changed) ) then
-                    local success, err = pcall(data.changed, client, value, bNoNetworking, recipients)
+                    local value = args[1]
+                    local options = istable(args[2]) and args[2] or {}
+
+                    if ( data.fieldType == ax.type.data ) then
+                        value = options.dataValue
+                    end
+
+                    local success, err = pcall(
+                        data.changed,
+                        client,
+                        value,
+                        options.bNoNetworking == true,
+                        options.recipients,
+                        options.bNoDBUpdate == true
+                    )
                     if ( !success ) then
                         ax.util:PrintError("Error occurred in player variable changed callback:", err)
                     end
                 end
             else
-                ax.player:SetVar(client, key, value, bNoNetworking, recipients)
+                ax.player:SetVar(client, key, args[1], args[2])
             end
         end
     end

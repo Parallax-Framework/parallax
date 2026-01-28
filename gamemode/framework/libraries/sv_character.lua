@@ -68,13 +68,14 @@ function ax.character:Create(payload, callback)
 
         for k, v in pairs(self.vars) do
             character.vars[k] = payload[k] or v.default
+
+            if ( v.fieldType == ax.type.data ) then
+                character.vars[k] = ax.util:SafeParseTable(character.vars[k]) or {}
+            end
         end
 
         -- Override creationTime
         character:SetCreationTime( creationTime )
-
-        -- Turn the data into a table rather than JSON from the database
-        character.vars.data = ax.util:SafeParseTable(character.vars.data)
 
         ax.character.instances[character.id] = character
 
@@ -293,11 +294,13 @@ function ax.character:Restore(client, callback)
             for k, v in pairs(self.vars) do
                 local field = v.field
                 local var = result[i][field] or v.default
+
+                if ( v.fieldType == ax.type.data ) then
+                    var = ax.util:SafeParseTable(var) or {}
+                end
+
                 character.vars[k] = var
             end
-
-            -- Turn the data into a table rather than JSON from the database
-            character.vars.data = ax.util:SafeParseTable(character.vars.data)
 
             ax.character.instances[character.id] = character
             clientData.axCharacters[ #clientData.axCharacters + 1 ] = character

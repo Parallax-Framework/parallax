@@ -35,8 +35,7 @@ ax.player:RegisterVar("playTime", {
 
 ax.player:RegisterVar("data", {
     field = "data",
-    fieldType = ax.type.text,
+    fieldType = ax.type.data,
     default = "[]",
-    bNoGetter = true,
-    bNoSetter = true
+    hide = true
 })
