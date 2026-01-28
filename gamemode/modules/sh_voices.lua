@@ -171,38 +171,64 @@ else
     }
 
     function MODULE:PlayerMessageSend(speaker, chatType, text, formattedText)
+        if ( !isstring(chatType) ) then return end
+
+        local normalizedChatType = utf8.lower(chatType)
+        print("[Voices] PlayerMessageSend:", speaker, "chatType=", chatType, "normalized=", normalizedChatType, "text=", text)
+
         local allowed = {}
         for k, v in pairs(allowedChatTypes) do
             allowed[k] = v
         end
 
-        for k, v in pairs(hook.Run("GetAdditionalVoiceChatTypes") or {}) do
-            allowed[v] = true
+        local isVoiceChatType = hook.Run("IsVoiceChatType", chatType)
+        if ( !isVoiceChatType and normalizedChatType != chatType ) then
+            isVoiceChatType = hook.Run("IsVoiceChatType", normalizedChatType)
         end
 
-        if ( !allowed[chatType] ) then return end
+        print("[Voices] IsVoiceChatType=", tostring(isVoiceChatType))
 
-        local class = ax.voices:GetClass(speaker, chatType)
+        if ( isVoiceChatType ) then
+            allowed[normalizedChatType] = true
+        end
+
+        local class = ax.voices:GetClass(speaker, normalizedChatType)
+        if ( !allowed[normalizedChatType] and #class > 0 ) then
+            allowed[normalizedChatType] = true
+            print("[Voices] Allowing chat type via class match:", normalizedChatType)
+        end
+
+        if ( !allowed[normalizedChatType] ) then
+            print("[Voices] Chat type not allowed:", normalizedChatType)
+            return
+        end
+
+        print("[Voices] Classes for type:", normalizedChatType, "->", table.concat(class, ", "))
         for k, v in pairs(class) do
+            print("[Voices] Processing class:", v)
             local texts = GetVoiceCommands(text, v)
             local isGlobal = false
             local completetext
             local sounds = {}
             texts = ExperimentalFormatting(texts)
+            print("[Voices] Parsed tokens:", #texts)
             for k2, v2 in ipairs(texts) do
                 if ( v2.path ) then
+                    print("[Voices] Token has path:", v2.path, "text=", v2.text)
                     if ( v2.global ) then
                         isGlobal = true
                         ax.util:PrintDebug("Global voice line detected:", v2.path)
                     end
 
                     table.insert(sounds, v2.path)
+                else
+                    print("[Voices] Token has no path:", v2.text)
                 end
 
                 local volume = isGlobal and 180 or 70
-                if ( chatType == "whisper" ) then
+                if ( normalizedChatType == "whisper" ) then
                     volume = 55
-                elseif ( chatType == "yell" ) then
+                elseif ( normalizedChatType == "yell" ) then
                     volume = 100
                 end
 
@@ -211,11 +237,38 @@ else
                 if ( k2 == #texts ) then
                     if ( table.IsEmpty(sounds) ) then break end
 
+                    print("[Voices] Emitting sounds:", table.concat(sounds, ", "))
                     local _ = !isGlobal and speaker:EmitQueuedSound(sounds, volume) or PlayQueuedSound(nil, sounds, 100, volume)
 
-                    if ( hook.Run("IsRadioVoiceChatType", chatType) ) then
-                        volume = 50
-                        PlayQueuedSound(nil, sounds, 100, volume)
+                    local isRadio = hook.Run("IsRadioVoiceChatType", chatType)
+                    local radioType = chatType
+                    if ( !isRadio and normalizedChatType != chatType ) then
+                        isRadio = hook.Run("IsRadioVoiceChatType", normalizedChatType)
+                        radioType = normalizedChatType
+                    end
+
+                    local receivers = nil
+                    if ( isRadio ) then
+                        receivers = hook.Run("GetRadioVoiceChatReceivers", speaker, radioType) or {}
+                    else
+                        receivers = hook.Run("GetRadioVoiceChatReceivers", speaker, normalizedChatType)
+                        if ( istable(receivers) ) then
+                            isRadio = true
+                            radioType = normalizedChatType
+                        end
+                    end
+
+                    print("[Voices] IsRadioVoiceChatType=", tostring(isRadio), "radioType=", radioType)
+
+                    if ( isRadio ) then
+                        receivers = receivers or {}
+                        print("[Voices] Radio receivers:", #receivers)
+                        for _, receiver in ipairs(receivers) do
+                            if ( receiver == speaker ) then continue end
+
+                            volume = 50
+                            PlayQueuedSound(receiver, sounds, 100, volume)
+                        end
                     end
 
                     text = completetext
