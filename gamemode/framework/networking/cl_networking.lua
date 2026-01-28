@@ -9,13 +9,6 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
--- Queue for character variable updates that arrive before character sync
-local characterVarQueue = {}
-
-ax.net:Hook("player.ready", function()
-    
-end)
-
 function GM:OnClientCached()
     local clientTable = ax.client:GetTable()
     if ( clientTable.axReady ) then return end
@@ -36,6 +29,7 @@ function GM:OnClientCached()
     end
 end
 
+local characterVarQueue = {}
 ax.net:Hook("character.create", function(characterID, characters)
     local client = ax.client
     if ( !ax.util:IsValidPlayer(client) ) then
