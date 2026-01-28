@@ -54,6 +54,51 @@ concommand.Add("ax_hotreload_now", function(client, command, arguments)
     OnHotReloadOnce()
 end)
 
+concommand.Add("ax", function(client, cmd, args)
+    if ( !istable(args) or args[1] == nil or string.Trim(args[1]) == "" ) then
+        if ( CLIENT ) then
+            MsgC(Color(255, 100, 100), "ax: No command specified.\n")
+        else
+            ax.util:PrintWarning("ax: No command specified.")
+        end
+        return
+    end
+
+    local def = ax.command:Find(args[1], false, true)
+    if ( def == nil ) then
+        if ( CLIENT ) then
+            MsgC(Color(255, 100, 100), "ax: Command \"" .. args[1] .. "\" not found.\n")
+        else
+            ax.util:PrintWarning("ax: Command \"" .. args[1] .. "\" not found.")
+        end
+        return
+    end
+
+    if ( SERVER ) then
+        local rawArgs = table.concat(args, " ", 2)
+        local ok, result = ax.command:Run(client, def.name, rawArgs)
+        if ( !ok ) then
+            ax.util:PrintWarning("ax: " .. tostring(result or "Unknown error"))
+        elseif ( isstring(result) and result != "" ) then
+            ax.util:PrintWarning(tostring(result))
+        end
+        return
+    end
+
+    ax.command:Send("/" .. table.concat(args, " ", 1))
+end, function()
+    local commands = {}
+    for commandName, commandTable in pairs(ax.command.registry) do
+        if ( ax.command:HasAccess(ax.client, commandTable) != true ) then continue end
+
+        commands[#commands + 1] = "ax " .. ax.command:Help(commandName)
+    end
+
+    table.sort(commands)
+
+    return commands
+end)
+
 local DEBOUNCE = 0.15
 local NAME = "ax.reload.debounce." .. (SERVER and "sv" or CLIENT and "cl")
 hook.Add("OnReloaded", NAME, function()

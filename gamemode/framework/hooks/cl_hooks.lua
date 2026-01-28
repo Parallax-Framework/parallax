@@ -410,28 +410,3 @@ ax.viewstack:RegisterViewModelModifier("swep", function(weapon, patch)
 
     return { pos = pos, ang = ang }
 end, 1)
-
-concommand.Add("ax", function(client, cmd, args)
-    if ( !istable(args) or args[1] == nil or string.Trim(args[1]) == "" ) then
-        MsgC(Color(255, 100, 100), "ax: No command specified.\n")
-        return
-    end
-
-    if ( ax.command:Find(args[1], false, true) == nil ) then
-        MsgC(Color(255, 100, 100), "ax: Command \"" .. args[1] .. "\" not found.\n")
-        return
-    end
-
-    RunConsoleCommand("say", "/" .. table.concat(args, " ", 1))
-end, function()
-    local commands = {}
-    for commandName, commandTable in pairs(ax.command.registry) do
-        if ( ax.command:HasAccess(ax.client, commandTable) != true ) then continue end
-
-        commands[#commands + 1] = "ax " .. ax.command:Help(commandName)
-    end
-
-    table.sort(commands)
-
-    return commands
-end)
