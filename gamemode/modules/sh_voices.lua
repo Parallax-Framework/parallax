@@ -247,7 +247,7 @@ else
                         for _, receiver in ipairs(receivers) do
                             if ( receiver == speaker ) then continue end
 
-                            volume = 50
+                            volume = 80
                             PlayQueuedSound(receiver, sounds, 100, volume)
                         end
                     end
