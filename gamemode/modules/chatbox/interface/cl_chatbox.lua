@@ -170,6 +170,28 @@ function PANEL:Init()
             return true
         end
 
+        if ( key == KEY_BACKSPACE and ( input.IsKeyDown(KEY_LCONTROL) or input.IsKeyDown(KEY_RCONTROL) ) ) then
+            local text = this:GetText() or ""
+            local caret = this:GetCaretPos() or 0
+            local textLength = #text
+
+            caret = math.Clamp(caret, 0, textLength)
+
+            if ( caret <= 0 ) then return true end
+
+            local left = string.sub(text, 1, caret)
+            local right = string.sub(text, caret + 1)
+
+            left = string.gsub(left, "%s+$", "")
+            left = string.gsub(left, "[^%s]+$", "")
+
+            local newText = left .. right
+            this:SetText(newText)
+            this:SetCaretPos(#left)
+
+            return true
+        end
+
         -- Navigate history with Up/Down
         if ( key == KEY_UP or key == KEY_DOWN ) then
             self.historyCache = self.historyCache or {}
