@@ -12,7 +12,7 @@
 local MODULE = MODULE
 
 MODULE.name = "Spawn Save"
-MODULE.description = "Saves character's spawn locations to their previous position."
+MODULE.description = "Saves characters' spawn locations to their previous positions."
 MODULE.author = "Riggs"
 
 function MODULE:OnCharacterDisconnected(character)
