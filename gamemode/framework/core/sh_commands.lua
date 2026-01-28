@@ -62,6 +62,7 @@ ax.command:Add("Roll", {
 
 ax.command:Add("CharSetModel", {
     description = "Set the model of a character.",
+    adminOnly = true,
     arguments = {
         { name = "target", type = ax.type.character },
         { name = "model", type = ax.type.text }
@@ -78,6 +79,7 @@ ax.command:Add("CharSetModel", {
 
 ax.command:Add("CharSetSkin", {
     description = "Set the skin of a character.",
+    adminOnly = true,
     arguments = {
         { name = "target", type = ax.type.character },
         { name = "skin", type = ax.type.number }
@@ -94,6 +96,7 @@ ax.command:Add("CharSetSkin", {
 
 ax.command:Add("CharSetName", {
     description = "Set the name of a character.",
+    adminOnly = true,
     arguments = {
         { name = "target", type = ax.type.character, optional = true },
         { name = "name", type = ax.type.string, optional = true }
@@ -118,6 +121,7 @@ ax.command:Add("CharSetName", {
 
 ax.command:Add("CharGiveFlags", {
     description = "Give flags to a character.",
+    adminOnly = true,
     arguments = {
         { name = "target", type = ax.type.character },
         { name = "flags", type = ax.type.string }
@@ -133,6 +137,7 @@ ax.command:Add("CharGiveFlags", {
 
 ax.command:Add("CharTakeFlags", {
     description = "Take flags from a character.",
+    adminOnly = true,
     arguments = {
         { name = "target", type = ax.type.character },
         { name = "flags", type = ax.type.string }
@@ -149,6 +154,7 @@ ax.command:Add("CharTakeFlags", {
 
 ax.command:Add("CharSetFlags", {
     description = "Set flags for a character.",
+    adminOnly = true,
     arguments = {
         { name = "target", type = ax.type.character, optional = true },
         { name = "flags", type = ax.type.string }
@@ -165,6 +171,7 @@ ax.command:Add("CharSetFlags", {
 
 ax.command:Add("CharSetFaction", {
     description = "Set the faction of a character.",
+    adminOnly = true,
     arguments = {
         { name = "target", type = ax.type.character, optional = true },
         { name = "faction", type = ax.type.string }
@@ -192,6 +199,7 @@ ax.command:Add("CharSetFaction", {
 
 ax.command:Add("CharSetClass", {
     description = "Set the class of a character.",
+    adminOnly = true,
     arguments = {
         { name = "target", type = ax.type.character, optional = true },
         { name = "class", type = ax.type.string }
@@ -241,6 +249,7 @@ ax.command:Add("CharSetClass", {
 
 ax.command:Add("CharSetRank", {
     description = "Set the rank of a character.",
+    adminOnly = true,
     arguments = {
         { name = "target", type = ax.type.character, optional = true },
         { name = "rank", type = ax.type.string }
@@ -276,6 +285,7 @@ ax.command:Add("CharSetRank", {
 
 ax.command:Add("PlyWhitelist", {
     description = "Whitelist a player for a faction.",
+    adminOnly = true,
     arguments = {
         { name = "target", type = ax.type.player },
         { name = "faction", type = ax.type.string }
@@ -299,6 +309,7 @@ ax.command:Add("PlyWhitelist", {
 
 ax.command:Add("PlyWhitelistAll", {
     description = "Whitelist a player for all factions.",
+    adminOnly = true,
     arguments = {
         { name = "target", type = ax.type.player }
     },
@@ -324,6 +335,7 @@ ax.command:Add("PlyWhitelistAll", {
 
 ax.command:Add("PlyUnWhitelist", {
     description = "Remove a player's whitelist for a faction.",
+    adminOnly = true,
     arguments = {
         { name = "target", type = ax.type.player },
         { name = "faction", type = ax.type.string }
@@ -344,6 +356,7 @@ ax.command:Add("PlyUnWhitelist", {
 
 ax.command:Add("PlyUnWhitelistAll", {
     description = "Remove a player's whitelist for all factions.",
+    adminOnly = true,
     arguments = {
         { name = "target", type = ax.type.player }
     },
@@ -359,6 +372,7 @@ ax.command:Add("PlyUnWhitelistAll", {
 
 ax.command:Add("PlyRespawn", {
     description = "Respawn a player.",
+    adminOnly = true,
     arguments = {
         { name = "target", type = ax.type.player }
     },
