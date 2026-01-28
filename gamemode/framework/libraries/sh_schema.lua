@@ -39,6 +39,7 @@ function ax.schema:Initialize(timeFilter)
     ax.util:IncludeDirectory(active .. "/gamemode/schema/hooks", true, nil, timeFilter)
     ax.util:IncludeDirectory(active .. "/gamemode/schema/networking", true, nil, timeFilter)
     ax.util:IncludeDirectory(active .. "/gamemode/schema/interface", true, nil, timeFilter)
+    ax.util:IncludeDirectory(active .. "/gamemode/schema/voices", true, nil, timeFilter)
 
     ax.util:IncludeDirectory(active .. "/gamemode/schema", true, {
         ["libraries"] = true,
@@ -47,6 +48,7 @@ function ax.schema:Initialize(timeFilter)
         ["hooks"] = true,
         ["networking"] = true,
         ["interface"] = true,
+        ["voices"] = true,
         ["factions"] = true,
         ["classes"] = true,
         ["ranks"] = true,
