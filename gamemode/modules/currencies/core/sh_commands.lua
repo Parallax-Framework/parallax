@@ -20,20 +20,20 @@ local function validateAndDrop(client, amount, currencyID)
     amount = normalizeAmount(amount)
 
     if ( amount <= 0 ) then
-        return "Amount must be a positive number"
+        return "Please enter a positive amount."
     end
 
     if ( !ax.currencies:IsValid(currencyID) ) then
-        return "Unknown currency: " .. tostring(currencyID)
+        return "That currency doesn't exist: " .. tostring(currencyID)
     end
 
     local character = client:GetCharacter()
     if ( !character ) then
-        return "You don't have an active character"
+        return "You don't have a character loaded right now."
     end
 
     if ( !character:HasCurrency(amount, currencyID) ) then
-        return "You don't have enough " .. (ax.currencies:Get(currencyID).plural or "funds")
+        return "You don't have enough " .. (ax.currencies:Get(currencyID).plural or "funds") .. "."
     end
 
     character:TakeCurrency(amount, currencyID)
@@ -42,7 +42,7 @@ local function validateAndDrop(client, amount, currencyID)
         ax.currencies:Spawn(amount, currencyID, client)
     end
 
-    return "Dropped " .. ax.currencies:Format(currencyID, amount)
+    return "You dropped " .. ax.currencies:Format(currencyID, amount) .. "."
 end
 
 ax.command:Add("DropCurrency", {
@@ -69,7 +69,7 @@ ax.command:Add("DropMoney", {
 local function validateCurrencyID(currencyID)
     currencyID = currencyID or "credits"
     if ( !ax.currencies:IsValid(currencyID) ) then
-        return nil, "Unknown currency: " .. tostring(currencyID)
+        return nil, "That currency doesn't exist: " .. tostring(currencyID)
     end
     return currencyID
 end
