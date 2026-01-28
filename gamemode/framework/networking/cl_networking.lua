@@ -248,7 +248,7 @@ ax.net:Hook("character.var", function(characterID, name, value)
     hook.Run("OnCharacterVarChanged", character, name, value)
 end)
 
-ax.net:Hook("character.data", function(characterID, key, value)
+ax.net:Hook("character.data", function(characterID, nameOrKey, keyOrValue, valueMaybe)
     local character = ax.character:Get(characterID)
     if ( !character ) then return end -- TODO: make characterVarQueue for data? idk
 
@@ -256,13 +256,23 @@ ax.net:Hook("character.data", function(characterID, key, value)
         character.vars = {}
     end
 
-    if ( !istable(character.vars.data) ) then
-        character.vars.data = {}
+    local varName = "data"
+    local key = nameOrKey
+    local value = keyOrValue
+
+    if ( istable(ax.character.vars[nameOrKey]) and ax.character.vars[nameOrKey].fieldType == ax.type.data ) then
+        varName = nameOrKey
+        key = keyOrValue
+        value = valueMaybe
     end
 
-    character.vars.data[key] = value
+    if ( !istable(character.vars[varName]) ) then
+        character.vars[varName] = {}
+    end
 
-    hook.Run("CharacterDataChanged", character, key, value)
+    character.vars[varName][key] = value
+
+    hook.Run("CharacterDataChanged", character, varName, key, value)
 end)
 
 ax.net:Hook("character.bot.sync", function(characterID, botCharacter)
@@ -306,7 +316,7 @@ ax.net:Hook("player.var", function(client, key, value)
     clientTable.axVars[key] = value
 end)
 
-ax.net:Hook("player.data", function(client, key, value)
+ax.net:Hook("player.data", function(client, nameOrKey, keyOrValue, valueMaybe)
     if ( !ax.util:IsValidPlayer(client) ) then return end
 
     local clientTable = client:GetTable()
@@ -314,11 +324,23 @@ ax.net:Hook("player.data", function(client, key, value)
         clientTable.axVars = {}
     end
 
-    if ( !istable(clientTable.axVars.data) ) then
-        clientTable.axVars.data = {}
+    local varName = "data"
+    local key = nameOrKey
+    local value = keyOrValue
+
+    if ( istable(ax.player.vars[nameOrKey]) and ax.player.vars[nameOrKey].fieldType == ax.type.data ) then
+        varName = nameOrKey
+        key = keyOrValue
+        value = valueMaybe
     end
 
-    clientTable.axVars.data[key] = value
+    if ( !istable(clientTable.axVars[varName]) ) then
+        clientTable.axVars[varName] = {}
+    end
+
+    clientTable.axVars[varName][key] = value
+
+    hook.Run("PlayerDataChanged", client, varName, key, value)
 end)
 
 ax.net:Hook("inventory.sync", function(inventoryID, inventoryItems, inventoryMaxWeight, inventoryReceivers)
