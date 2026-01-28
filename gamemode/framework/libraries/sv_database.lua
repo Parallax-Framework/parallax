@@ -24,6 +24,7 @@ ax.database = ax.database or {
         [ax.type.steamid] = "VARCHAR(19)",
         [ax.type.steamid64] = "VARCHAR(17)",
         [ax.type.bool] = "TINYINT(1)",
+        [ax.type.data] = "TEXT",
     }
 }
 

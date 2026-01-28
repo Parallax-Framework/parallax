@@ -29,6 +29,7 @@ ax.type = ax.type or {
     [1024]      = "steamid64",
     [2048]      = "array",
     [4096]      = "table",
+    [8192]      = "data",
 
     string      = 1,
     text        = 2,
@@ -43,6 +44,7 @@ ax.type = ax.type or {
     steamid64   = 1024,
     array       = 2048,
     table       = 4096,
+    data        = 8192,
 }
 
 --- Sanitizes a value to match the specified type ID.
@@ -88,6 +90,14 @@ function ax.type:Sanitise(typeID, value)
         return value
     elseif ( typeID == ax.type.table ) then
         return istable(value) and value
+    elseif ( typeID == ax.type.data ) then
+        if ( istable(value) ) then
+            return value
+        end
+
+        if ( isstring(value) ) then
+            return ax.util:SafeParseTable(value)
+        end
     end
 
     return nil
@@ -150,7 +160,8 @@ local typeNames = {
     [ax.type.steamid] = "SteamID",
     [ax.type.steamid64] = "SteamID64",
     [ax.type.array] = "Array",
-    [ax.type.table] = "Table"
+    [ax.type.table] = "Table",
+    [ax.type.data] = "Data"
 }
 
 --- Formats a type ID into a human-readable string.
