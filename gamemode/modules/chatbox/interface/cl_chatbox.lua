@@ -9,6 +9,8 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
+-- TODO: rewrite this whole chatbox, it's a mess
+
 local PANEL = {}
 
 DEFINE_BASECLASS("EditablePanel")
@@ -93,6 +95,7 @@ function PANEL:Init()
         self.recommendationDebounce = "ax.chatbox.recommendations." .. ax.client:EntIndex()
         timer.Create(self.recommendationDebounce, 0.15, 1, function()
             if ( !IsValid(self) or !IsValid(this) ) then return end
+            if ( self.suppressOnChange ) then return end
 
             self.chatTypePrevious = self.chatType or "ic"
             self.chatType = "ic"
@@ -120,15 +123,22 @@ function PANEL:Init()
 
                 local data = ax.command:FindClosest(command)
                 if ( data ) then
-                    ax.chat.currentType = data.displayName
+                    local chatClass = data.chatClass
+                    local chatType = chatClass and chatClass.key or data.name
+                    ax.chat.currentType = chatClass and (chatClass.displayName or data.displayName) or data.displayName
                     self.chatTypePrevious = self.chatType or "ic"
-                    self.chatType = utf8.lower(data.name)
+                    self.chatType = utf8.lower(chatType)
                     self:SelectRecommendation(data.displayName)
 
                     -- Populate voice recommendations for arguments after the command, and only if we are a chat command that supports voices
-                    if ( #arguments > 1 and data.chatCommand ) then
-                        local argumentText = table.concat(arguments, " ", 2)
-                        self:PopulateRecommendations(argumentText, "voices")
+                    if ( data.chatCommand or chatClass ) then
+                        if ( string.EndsWith(text, " ") ) then
+                            self:PopulateRecommendations("", "voices")
+                        elseif ( #arguments > 1 ) then
+                            local argumentText = table.concat(arguments, " ", 2)
+                            local lastToken = string.match(argumentText, "[^%s]+$")
+                            self:PopulateRecommendations(lastToken or "", "voices")
+                        end
                     end
                 end
             else
@@ -221,7 +231,7 @@ function PANEL:Init()
 end
 
 function PANEL:GetChatType()
-    return "ic"
+    return self.chatType or "ic"
 end
 
 function PANEL:PopulateRecommendations(text, recommendationType)
@@ -258,7 +268,13 @@ function PANEL:PopulateRecommendations(text, recommendationType)
     elseif ( recommendationType == "voices" ) then
         -- Get available voice classes for the current player
         if ( ax.voices and ax.voices.GetClass ) then
+            print("Populating voice line recommendations for chat type: " .. tostring(self.chatType))
             local voiceClasses = ax.voices:GetClass(ax.client, self.chatType)
+            if ( #voiceClasses == 0 ) then
+                ax.util:PrintDebug("No voice classes available for chat type \"" .. tostring(self.chatType) .. "\"!\n")
+                return
+            end
+
             local searchLower = utf8.lower(text)
             local maxResults = 20
 
@@ -268,9 +284,12 @@ function PANEL:PopulateRecommendations(text, recommendationType)
                     continue
                 end
 
+                print("Populating voice lines for class: " .. tostring(voiceClass))
+
                 for voiceKey, voiceData in pairs(ax.voices.stored[voiceClass]) do
                     -- Early exit if we have enough results
                     if ( #self.recommendations.list >= maxResults ) then
+                        ax.util:PrintDebug("Reached max voice line recommendation results (" .. tostring(maxResults) .. "), stopping search.\n")
                         break
                     end
 
@@ -293,6 +312,7 @@ function PANEL:PopulateRecommendations(text, recommendationType)
 
                 -- Early exit if we have enough results across all voice classes
                 if ( #self.recommendations.list >= maxResults ) then
+                    ax.util:PrintDebug("Reached max voice line recommendation results (" .. tostring(maxResults) .. "), stopping search.\n")
                     break
                 end
             end
@@ -307,6 +327,7 @@ function PANEL:PopulateRecommendations(text, recommendationType)
         self.recommendations:AlphaTo(255, 0.2, 0)
 
         self.recommendations.panels = {}
+        self.recommendations.cyclePrimed = false
         self.recommendations.maxSelection = #self.recommendations.list
         if ( self.recommendations.indexSelect > self.recommendations.maxSelection ) then
             self.recommendations.indexSelect = 0
@@ -329,7 +350,33 @@ function PANEL:PopulateRecommendations(text, recommendationType)
                 end
 
                 if ( rec.isVoice ) then
-                    self.entry:SetText(data.name)
+                    local currentText = self.entry:GetText() or ""
+                    if ( string.StartsWith(currentText, "/") ) then
+                        local arguments = string.Explode(" ", string.sub(currentText, 2))
+                        local command = arguments[1] or ""
+                        if ( command != "" ) then
+                            local existing = table.concat(arguments, " ", 2) or ""
+                            local bHasTrailingSpace = string.EndsWith(currentText, " ")
+                            existing = string.Trim(existing)
+
+                            if ( existing == "" ) then
+                                self.entry:SetText("/" .. command .. " " .. data.name)
+                            else
+                                local tokens = string.Explode(" ", existing)
+                                if ( bHasTrailingSpace ) then
+                                    table.insert(tokens, data.name)
+                                else
+                                    tokens[#tokens] = data.name
+                                end
+
+                                self.entry:SetText("/" .. command .. " " .. table.concat(tokens, " "))
+                            end
+                        else
+                            self.entry:SetText(data.name)
+                        end
+                    else
+                        self.entry:SetText(data.name)
+                    end
                 else
                     self.entry:SetText("/" .. data.name)
                 end
@@ -372,6 +419,7 @@ function PANEL:PopulateRecommendations(text, recommendationType)
             self.recommendations:Clear()
             self.recommendations:SetVisible(false)
         end)
+        self.recommendations.cyclePrimed = false
     end
 end
 
@@ -384,7 +432,12 @@ function PANEL:CycleRecommendations()
     if ( #recommendations < 1 ) then return end
 
     local index = self.recommendations.indexSelect
-    index = index + 1
+    if ( !self.recommendations.cyclePrimed ) then
+        index = index > 0 and index or 1
+        self.recommendations.cyclePrimed = true
+    else
+        index = index + 1
+    end
 
     if ( index > self.recommendations.maxSelection ) then
         index = 1
@@ -406,7 +459,33 @@ function PANEL:CycleRecommendations()
     end
 
     if ( data.isVoice ) then
-        self.entry:SetText(data.name)
+        local currentText = self.entry:GetText() or ""
+        if ( string.StartsWith(currentText, "/") ) then
+            local arguments = string.Explode(" ", string.sub(currentText, 2))
+            local command = arguments[1] or ""
+            if ( command != "" ) then
+                local existing = table.concat(arguments, " ", 2) or ""
+                local bHasTrailingSpace = string.EndsWith(currentText, " ")
+                existing = string.Trim(existing)
+
+                if ( existing == "" ) then
+                    self.entry:SetText("/" .. command .. " " .. data.name)
+                else
+                    local tokens = string.Explode(" ", existing)
+                    if ( bHasTrailingSpace ) then
+                        table.insert(tokens, data.name)
+                    else
+                        tokens[#tokens] = data.name
+                    end
+
+                    self.entry:SetText("/" .. command .. " " .. table.concat(tokens, " "))
+                end
+            else
+                self.entry:SetText(data.name)
+            end
+        else
+            self.entry:SetText(data.name)
+        end
     else
         self.entry:SetText("/" .. data.name)
     end
@@ -463,7 +542,7 @@ function PANEL:SetVisible(visible)
         self.entry:SetVisible(false)
 
         -- Only send network update when closing the chatbox
-        hook.Run("ChatboxOnTextChanged", "", "IC")
+        hook.Run("ChatboxOnTextChanged", "", "ic")
     end
 
     self:PopulateRecommendations()
