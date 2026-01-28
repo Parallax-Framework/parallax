@@ -364,8 +364,8 @@ function GM:StartCommand(client, userCmd)
                         local field = v.field
                         local var = data[field] or v.default
 
-                        if ( v.field == "data" ) then
-                            var = util.JSONToTable(var) or v.default or {}
+                        if ( v.fieldType == ax.type.data ) then
+                            var = ax.util:SafeParseTable(var) or {}
                         end
 
                         ax.player:SetVar(client, k, var)
