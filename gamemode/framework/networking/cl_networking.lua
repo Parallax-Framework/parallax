@@ -547,11 +547,6 @@ ax.net:Hook("item.spawn", function(itemID, itemClass, itemData)
 end)
 
 ax.net:Hook("chat.message", function(speaker, chatType, text, data)
-    if ( !ax.util:IsValidPlayer(speaker) ) then
-        ax.util:PrintError("[CHAT] Invalid speaker for chat message of type \"" .. chatType .. "\"")
-        return
-    end
-
     local chatClass = ax.chat.registry[chatType]
     if ( !istable(chatClass) ) then
         ax.util:PrintError("[CHAT] Invalid chat type \"" .. tostring(chatType) .. "\"")
