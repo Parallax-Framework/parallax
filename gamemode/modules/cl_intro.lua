@@ -329,7 +329,11 @@ function MODULE:OnSchemaLoaded()
     self:InitializeIntro(true)
 end
 
-MODULE:InitializeIntro(true)
+function MODULE:PlayerLoadedCharacter(client, character, currentChar)
+    if ( client != ax.client ) then return end
+
+    self:InitializeIntro(true)
+end
 
 local function ShouldDrawIntro(client)
     if ( !ax.util:IsValidPlayer(client) or !client:GetCharacter() ) then return false end
