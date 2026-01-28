@@ -122,10 +122,12 @@ ax.net:Hook("character.load", function(characterID)
 end)
 
 ax.net:Hook("character.sync", function(client, character)
+    ax.util:PrintDebug("Received character sync for client.")
     if ( !ax.util:IsValidPlayer(client) ) then return end
 
     -- Assume we are trying to kick the player off of their character
     if ( character == nil or !istable(character) ) then
+        client:GetTable().axCharacter = nil
         return
     end
 
@@ -133,6 +135,8 @@ ax.net:Hook("character.sync", function(client, character)
 
     client:GetTable().axCharacter = character
     ax.character.instances[character.id] = character
+
+    ax.util:PrintDebug("Character synced: ID " .. character.id .. ", Name: " .. character:GetName())
 
     -- Process any queued variable updates for this character
     if ( characterVarQueue[character.id] ) then
@@ -146,7 +150,6 @@ ax.net:Hook("character.sync", function(client, character)
 
         characterVarQueue[character.id] = nil
     end
-
 end)
 
 ax.net:Hook("character.restore", function(characters)
