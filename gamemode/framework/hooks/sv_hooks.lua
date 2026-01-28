@@ -405,16 +405,16 @@ function GM:StartCommand(client, userCmd)
                             ax.net:Start(client, "inventory.item.add", 0, item.id, item.class, item.data or {})
                         end
                     end)
+
+                    client:Spawn()
+                    client:SetNoDraw(true)
+                    client:SetNotSolid(true)
+                    client:SetMoveType(MOVETYPE_NONE)
+
+                    hook.Run("PlayerReady", client)
                 end)
             query:Execute()
         end)
-
-        client:Spawn()
-        client:SetNoDraw(true)
-        client:SetNotSolid(true)
-        client:SetMoveType(MOVETYPE_NONE)
-
-        hook.Run("PlayerReady", client)
     end
 end
 
