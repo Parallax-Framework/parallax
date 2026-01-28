@@ -77,12 +77,43 @@ end
 local function requireCharacter(client)
     local character = ax.util:IsValidPlayer(client) and client:GetCharacter() or nil
     if ( !character ) then
-        return nil, "Target has no active character"
+        return nil, "That player doesn't have an active character."
     end
     return character
 end
 
-ax.command:Add("SetCurrency", {
+ax.command:Add("GiveMoney", {
+    description = "Give money to the player you're looking at",
+    arguments = {
+        { name = "amount", type = ax.type.number, min = 1 }
+    },
+    OnRun = function(def, client, amount)
+        if ( !ax.util:IsValidPlayer(client) ) then
+            return "Couldn't identify you as a valid player."
+        end
+
+        amount = normalizeAmount(amount)
+        if ( amount <= 0 ) then
+            return "Please enter a positive amount."
+        end
+
+        local trace = client:GetEyeTrace()
+        local target = trace and trace.Entity or nil
+        if ( !ax.util:IsValidPlayer(target) ) then
+            return "You need to be looking at a valid player."
+        end
+
+        local character, errMsg = requireCharacter(target)
+        if ( !character ) then return errMsg end
+
+        local delta = ax.currencies:Format(amount, "credits")
+        character:AddCurrency(amount, "credits")
+
+        return string.format("You gave %s to %s.", delta, target:Nick())
+    end
+})
+
+ax.command:Add("CharSetCurrency", {
     description = "Set a player's currency to an exact amount",
     superAdminOnly = true,
     arguments = {
