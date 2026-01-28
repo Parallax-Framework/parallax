@@ -24,11 +24,9 @@ local function ApplyIK(client)
 end
 
 ax.net:Hook("animations.update", function(client, animations, holdType)
-
     if ( !ax.util:IsValidPlayer(client) ) then return end
 
     local clientTable = client:GetTable()
-
     clientTable.axAnimations = animations
     clientTable.axHoldType = holdType
     clientTable.axLastAct = -1

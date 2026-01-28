@@ -68,3 +68,9 @@ function MODULE:PlayerWeaponRaised(client, bRaised)
 
     self:UpdateClientAnimations(client)
 end
+
+function MODULE:PlayerReady(client)
+    for k, v in ipairs(player.GetAll()) do
+        self:UpdateClientAnimations(v)
+    end
+end
