@@ -290,7 +290,7 @@ ax.command:Add("PlyWhitelist", {
         local whitelists = target:GetData("whitelists", {})
         whitelists[factionTable.id] = true
 
-        target:SetData("whitelists", whitelists)
+        target:SetFactionWhitelisted(factionTable.id, true)
         target:Save()
 
         return target:Nick() .. "( " .. target:SteamName() .. " ) has been whitelisted for " .. factionTable.name .. "."
@@ -306,9 +306,12 @@ ax.command:Add("PlyWhitelistAll", {
         if ( !ax.util:IsValidPlayer(target) ) then return "Invalid player." end
 
         local whitelists = {}
-        for _, faction in pairs(ax.faction:GetAll()) do
-            if ( !faction.isDefault ) then
-                whitelists[faction.id] = true
+        
+        local factions = ax.faction:GetAll()
+        for i = 1, #factions do
+            local factionTable = factions[i]
+            if ( !factionTable.isDefault ) then
+                whitelists[factionTable.id] = true
             end
         end
 
@@ -332,10 +335,7 @@ ax.command:Add("PlyUnWhitelist", {
         if ( !factionTable ) then return "Invalid faction." end
         if ( factionTable.isDefault ) then return "This faction does not require whitelisting." end
 
-        local whitelists = target:GetData("whitelists", {})
-        whitelists[factionTable.id] = nil
-
-        target:SetData("whitelists", whitelists)
+        target:SetFactionWhitelisted(factionTable.id, false)
         target:Save()
 
         return target:Nick() .. "( " .. target:SteamName() .. " ) has been unwhitelisted for " .. factionTable.name .. "."

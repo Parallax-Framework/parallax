@@ -109,7 +109,42 @@ function ax.player.meta:PlayGesture(slot, sequence)
     end
 end
 
+function ax.player.meta:HasFactionWhitelist(iFactionID)
+    if ( !isnumber(iFactionID) ) then
+        ax.util:PrintError("Invalid faction ID provided to Player:HasFactionWhitelist()")
+        return false 
+    end
+
+    if ( !istable(ax.faction:Get(iFactionID)) ) then
+        ax.util:PrintWarning("Faction ID " .. tostring(iFactionID) .. " does not exist in the faction registry.")
+        return false
+    end
+
+    local whitelists = self:GetData("whitelists", {})
+    return whitelists[iFactionID] == true
+end
+
 if ( SERVER ) then
+    function ax.player.meta:SetFactionWhitelisted(iFactionID, bStatus)
+        if ( !isnumber(iFactionID) ) then
+            ax.util:PrintError("Invalid faction ID provided to Player:SetFactionWhitelisted()")
+            return
+        end
+
+        if ( !istable(ax.faction:Get(iFactionID)) ) then
+            ax.util:PrintError("Faction ID " .. tostring(iFactionID) .. " does not exist in the faction registry.")
+            return
+        end
+        if ( !isbool(bStatus) ) then
+            ax.util:PrintError("Invalid status provided to Player:SetFactionWhitelisted(), expected boolean.")
+            return
+        end
+
+        local whitelists = self:GetData("whitelists", {})
+        whitelists[iFactionID] = bStatus == false and nil or true
+        self:SetData("whitelists", whitelists)
+    end
+
     function ax.player.meta:Save()
         local clientTable = self:GetTable()
         if ( !istable(clientTable.axVars) ) then clientTable.axVars = {} end
