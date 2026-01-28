@@ -189,15 +189,11 @@ else
             allowed[normalizedChatType] = true
         end
 
-        local class = ax.voices:GetClass(speaker, normalizedChatType)
-        if ( !allowed[normalizedChatType] and #class > 0 ) then
-            allowed[normalizedChatType] = true
-        end
-
         if ( !allowed[normalizedChatType] ) then
             return
         end
 
+        local class = ax.voices:GetClass(speaker, normalizedChatType)
         for k, v in pairs(class) do
             local texts = GetVoiceCommands(text, v)
             local isGlobal = false
