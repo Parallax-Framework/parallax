@@ -337,6 +337,19 @@ hook.Add("player_disconnect", "Parallax.PlayerDisconnected", function(data)
     end
 end)
 
+local function LoadPlayerDataVar(client, key, value)
+    local clientTable = client:GetTable()
+    clientTable.axVars = clientTable.axVars or {}
+    clientTable.axVars[key] = value
+
+    for dataKey, dataValue in pairs(value) do
+        ax.player:SetVar(client, key, dataKey, {
+            dataValue = dataValue,
+            bNoDBUpdate = true
+        })
+    end
+end
+
 function GM:StartCommand(client, userCmd)
     local steamID64 = client:SteamID64()
     if ( AX_CLIENT_QUEUE[steamID64] and !userCmd:IsForced() ) then
@@ -366,9 +379,13 @@ function GM:StartCommand(client, userCmd)
 
                         if ( v.fieldType == ax.type.data ) then
                             var = ax.util:SafeParseTable(var) or {}
+                            LoadPlayerDataVar(client, k, var)
+                            continue
                         end
 
-                        ax.player:SetVar(client, k, var)
+                        ax.player:SetVar(client, k, var, {
+                            bNoDBUpdate = true
+                        })
                     end
 
                     client:SetNameVar(client:SteamName()) -- Update the steam name in db
