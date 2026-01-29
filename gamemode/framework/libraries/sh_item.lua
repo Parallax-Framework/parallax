@@ -206,6 +206,7 @@ function ax.item:LoadBasesFromDirectory(basePath, timeFilter)
         ITEM = setmetatable({ class = itemName, isBase = true }, ax.item.meta)
             ITEM:AddAction("drop", self:CreateDefaultDropAction())
             ax.util:Include(filePath, "shared")
+
             ax.util:PrintSuccess("Item base \"" .. tostring(ITEM.name or itemName) .. "\" initialized successfully.")
             ax.item.stored[itemName] = ITEM
         ITEM = nil
@@ -249,6 +250,7 @@ function ax.item:LoadItemsFromDirectory(path, timeFilter, prefix)
         ITEM = setmetatable({ class = itemName }, ax.item.meta)
             ITEM:AddAction("drop", self:CreateDefaultDropAction())
             ax.util:Include(filePath, "shared")
+
             ax.util:PrintSuccess("Item \"" .. tostring(ITEM.name or itemName) .. "\" initialized successfully.")
             ax.item.stored[itemName] = ITEM
         ITEM = nil
@@ -335,6 +337,7 @@ function ax.item:LoadItemsWithBase(dirPath, baseName, baseItem, timeFilter)
         })
 
         ax.util:Include(dirPath .. "/" .. fileName, "shared")
+
         ax.util:PrintSuccess("Item \"" .. tostring(ITEM.name or fullItemName) .. "\" (base: " .. baseName .. ") initialized successfully.")
         ax.item.stored[fullItemName] = ITEM
         ITEM = nil
