@@ -122,7 +122,11 @@ ax.net:Hook("character.load", function(characterID)
 end)
 
 ax.net:Hook("character.sync", function(client, character)
-    ax.util:PrintDebug("Received character sync for client.")
+    ax.util:PrintDebug("Received character sync for client. Printing all players the client knows about:")
+    for k, v in player.Iterator() do
+        ax.util:PrintDebug(" - Player: " .. tostring(k) .. " (" .. tostring(v) .. ")")
+    end
+    
     if ( !ax.util:IsValidPlayer(client) ) then return end
 
     -- Assume we are trying to kick the player off of their character
