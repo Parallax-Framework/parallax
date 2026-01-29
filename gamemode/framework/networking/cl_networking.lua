@@ -369,6 +369,16 @@ ax.net:Hook("inventory.sync", function(inventoryID, inventoryItems, inventoryMax
         maxWeight = inventoryMaxWeight,
         receivers = inventoryReceivers
     }, ax.inventory.meta)
+
+    if ( IsValid(ax.gui.inventory) and ax.gui.inventory.inventory and ax.gui.inventory.inventory.id == inventoryID ) then
+        ax.gui.inventory:PopulateItems()
+
+        if ( ax.gui.inventory.stack ) then
+            local stack = ax.gui.inventory.stack
+            ax.gui.inventory.info:Clear()
+            ax.gui.inventory:PopulateInfo(stack)
+        end
+    end
 end)
 
 ax.net:Hook("inventory.receiver.add", function(inventory, receiver)
