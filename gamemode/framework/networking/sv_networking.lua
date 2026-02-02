@@ -300,7 +300,7 @@ ax.net:Hook("character.load", function(client, charID)
         hook.Run("PlayerUnloadedCharacter", client, prevChar)
     end
 
-    local try, catch = hook.Run("CanPlayerLoadCharacter", client, character)
+    local try, catch = hook.Run("CanPlayerLoadCharacter", client, character, prevChar)
     if ( try == false ) then
         if ( isstring(catch) and #catch > 0 ) then
             client:Notify(catch, "error")
