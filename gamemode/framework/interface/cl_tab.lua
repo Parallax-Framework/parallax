@@ -13,11 +13,15 @@ DEFINE_BASECLASS("EditablePanel")
 
 local PANEL = {}
 
+AccessorFunc(PANEL, "backgroundBlur", "BackgroundBlur", FORCE_NUMBER)
+AccessorFunc(PANEL, "backgroundAlpha", "BackgroundAlpha", FORCE_NUMBER)
 AccessorFunc(PANEL, "gradientLeft", "GradientLeft", FORCE_NUMBER)
 AccessorFunc(PANEL, "gradientRight", "GradientRight", FORCE_NUMBER)
 AccessorFunc(PANEL, "gradientTop", "GradientTop", FORCE_NUMBER)
 AccessorFunc(PANEL, "gradientBottom", "GradientBottom", FORCE_NUMBER)
 
+AccessorFunc(PANEL, "backgroundBlurTarget", "BackgroundBlurTarget", FORCE_NUMBER)
+AccessorFunc(PANEL, "backgroundAlphaTarget", "BackgroundAlphaTarget", FORCE_NUMBER)
 AccessorFunc(PANEL, "gradientLeftTarget", "GradientLeftTarget", FORCE_NUMBER)
 AccessorFunc(PANEL, "gradientRightTarget", "GradientRightTarget", FORCE_NUMBER)
 AccessorFunc(PANEL, "gradientTopTarget", "GradientTopTarget", FORCE_NUMBER)
@@ -48,11 +52,15 @@ function PANEL:Init()
     self:SetAlpha(0)
     self.closing = false
 
+    self.backgroundBlur = 0
+    self.backgroundAlpha = 0
     self.gradientLeft = 0
     self.gradientRight = 0
     self.gradientTop = 0
     self.gradientBottom = 0
 
+    self.backgroundBlurTarget = 0
+    self.backgroundAlphaTarget = 0
     self.gradientLeftTarget = 0
     self.gradientRightTarget = 0
     self.gradientTopTarget = 0
@@ -232,18 +240,26 @@ function PANEL:PopulateTabs()
                     end
                 end
             end
-
-            if ( v.OnClose ) then
-                self:CallOnRemove("ax.tab." .. v.name, function()
-                    v.OnClose()
-                end)
-            end
         elseif ( isfunction(v) ) then
             v(tab)
         end
 
         button.DoClick = function()
             ax.gui.tabLast = k
+
+            -- call OnOpen and OnClose hooks
+            for tabKey, tabData in pairs(buttons) do
+                if ( tabKey == k ) then
+                    if ( isfunction(tabData.OnOpen) ) then
+                        tabData:OnOpen(self.tabs[tabKey], button)
+                    end
+                else
+                    if ( isfunction(tabData.OnClose) ) then
+                        tabData:OnClose(self.tabs[tabKey], self.buttonMap[tabKey])
+                    end
+                end
+            end
+
             self:TransitionToPage(button.tab.index, ax.option:Get("tabFadeTime", 0.25))
 
             if ( istable(v) and istable(v.Sections) and table.Count(v.Sections) > 0 ) then
@@ -334,7 +350,9 @@ function PANEL:PopulateTabs()
 
     if ( !self.restoredLastTab and ax.gui.tabLast and self.tabs[ax.gui.tabLast] ) then
         self.tabs[ax.gui.tabLast]:StartAtBottom()
-        self:TransitionToPage(self.tabs[ax.gui.tabLast].index, ax.option:Get("tabFadeTime", 0.25), true)
+        if ( self.buttonMap[ax.gui.tabLast] ) then
+            self.buttonMap[ax.gui.tabLast]:DoClick()
+        end
     else
         for k, v in SortedPairs(self.tabs) do
             if ( k == ax.gui.tabLast ) then
@@ -345,6 +363,8 @@ function PANEL:PopulateTabs()
         end
     end
 
+    self:SetBackgroundBlurTarget(1)
+    self:SetBackgroundAlphaTarget(1)
     self:SetGradientLeftTarget(1)
     self:SetGradientRightTarget(1)
     self:SetGradientTopTarget(1)
@@ -359,6 +379,8 @@ function PANEL:Close(callback)
     self:SetMouseInputEnabled(false)
     self:SetKeyboardInputEnabled(false)
 
+    self:SetBackgroundBlurTarget(0)
+    self:SetBackgroundAlphaTarget(0)
     self:SetGradientLeftTarget(0)
     self:SetGradientRightTarget(0)
     self:SetGradientTopTarget(0)
@@ -444,13 +466,18 @@ function PANEL:Paint(width, height)
         time = 1
     end
 
-    local fraction = self:GetAlpha() / 255
-    ax.render().Rect(0, 0, width, height)
-        :Rad(0)
-        :Flags(ax.render.SHAPE_IOS)
-        :Blur(1.4)
-        :Draw()
-    ax.render.Draw(0, 0, 0, width, height, Color(245, 250, 255, 30 * fraction))
+    self:SetBackgroundBlur(Lerp(time, self:GetBackgroundBlur(), self:GetBackgroundBlurTarget()))
+    self:SetBackgroundAlpha(Lerp(time, self:GetBackgroundAlpha(), self:GetBackgroundAlphaTarget()))
+
+    if ( self:GetBackgroundBlur() > 1 ) then
+        ax.render().Rect(0, 0, width, height)
+            :Rad(0)
+            :Flags(ax.render.SHAPE_IOS)
+            :Blur(1.4 * self:GetBackgroundBlur())
+            :Draw()
+    end
+
+    ax.render.Draw(0, 0, 0, width, height, Color(245, 250, 255, 30 * self:GetBackgroundAlpha()))
 
     self:SetGradientLeft(Lerp(time, self:GetGradientLeft(), self:GetGradientLeftTarget()))
     self:SetGradientRight(Lerp(time, self:GetGradientRight(), self:GetGradientRightTarget()))
