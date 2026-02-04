@@ -122,9 +122,6 @@ function ax.motion:CancelAll(panel)
     end
 end
 
--- Clean up existing hook to prevent duplicates on reload
-hook.Remove("Think", "ax.motion.Update")
-
 hook.Add("Think", "ax.motion.Update", function()
     local now = SysTime()
 
