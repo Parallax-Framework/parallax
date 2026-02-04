@@ -9,9 +9,9 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
-DEFINE_BASECLASS("DButton")
-
 local PANEL = {}
+
+DEFINE_BASECLASS("DButton")
 
 local GLASS_BUTTON_FLAGS = ax.render.SHAPE_IOS
 local GLASS_BUTTON_BORDER = Color(255, 255, 255, 70)
@@ -19,20 +19,23 @@ local GLASS_BUTTON_BG = Color(245, 250, 255, 80)
 local GLASS_BUTTON_BG_HOVER = Color(255, 255, 255, 130)
 local GLASS_BUTTON_BG_ACTIVE = Color(210, 240, 255, 170)
 
-local function DrawGlassButton(x, y, w, h, alpha, blur)
+local function DrawGlassButton(x, y, w, h, color, blur)
     local radius = math.max(4, math.min(12, h * 0.35))
-    local col = Color(GLASS_BUTTON_BG.r, GLASS_BUTTON_BG.g, GLASS_BUTTON_BG.b, alpha or GLASS_BUTTON_BG.a)
+    local col = color or GLASS_BUTTON_BG
 
-    ax.render().Rect(x, y, w, h)
-        :Rad(radius)
-        :Flags(GLASS_BUTTON_FLAGS)
-        :Blur(blur or 0.85)
-        :Draw()
+    if ( blur and blur > 0 ) then
+        ax.render().Rect(x, y, w, h)
+            :Rad(radius)
+            :Flags(GLASS_BUTTON_FLAGS)
+            :Blur(blur or 0.85)
+            :Draw()
+    end
 
     ax.render.Draw(radius, x, y, w, h, col, GLASS_BUTTON_FLAGS)
     ax.render.DrawOutlined(radius, x, y, w, h, GLASS_BUTTON_BORDER, 1, GLASS_BUTTON_FLAGS)
 end
 
+AccessorFunc(PANEL, "blur", "Blur", FORCE_NUMBER)
 AccessorFunc(PANEL, "soundEnter", "SoundEnter", FORCE_STRING)
 AccessorFunc(PANEL, "soundClick", "SoundClick", FORCE_STRING)
 AccessorFunc(PANEL, "fontDefault", "FontDefault", FORCE_STRING)
@@ -41,6 +44,9 @@ AccessorFunc(PANEL, "inertia", "Inertia", FORCE_NUMBER)
 -- AccessorFunc(PANEL, "textColor", "TextColor") -- this is already added by DButton
 AccessorFunc(PANEL, "textColorMotion", "TextColorMotion")
 AccessorFunc(PANEL, "textColorHovered", "TextColorHovered")
+AccessorFunc(PANEL, "backgroundColorUnHovered", "BackgroundColorUnHovered")
+AccessorFunc(PANEL, "backgroundColorHovered", "BackgroundColorHovered")
+AccessorFunc(PANEL, "backgroundColorActive", "BackgroundColorActive")
 AccessorFunc(PANEL, "easing", "Easing", FORCE_STRING)
 AccessorFunc(PANEL, "updateSizeOnHover", "UpdateSizeOnHover", FORCE_BOOL)
 AccessorFunc(PANEL, "wasHovered", "WasHovered", FORCE_BOOL)
@@ -48,13 +54,17 @@ AccessorFunc(PANEL, "wasHovered", "WasHovered", FORCE_BOOL)
 function PANEL:Init()
     BaseClass.Init(self)
 
+    self.blur = 0
     self.soundEnter = "ax.gui.button.enter"
     self.soundClick = "ax.gui.button.click"
     self.fontDefault = "ax.regular"
     self.fontHovered = "ax.regular.bold"
     self.textColor = Color(255, 255, 255)
     self.textColorMotion = Color(255, 255, 255)
-    self.textColorHovered = Color(200, 200, 240)
+    self.textColorHovered = Color(50, 50, 50)
+    self.backgroundColorUnHovered = Color(GLASS_BUTTON_BG.r, GLASS_BUTTON_BG.g, GLASS_BUTTON_BG.b, GLASS_BUTTON_BG.a)
+    self.backgroundColorHovered = Color(GLASS_BUTTON_BG_HOVER.r, GLASS_BUTTON_BG_HOVER.g, GLASS_BUTTON_BG_HOVER.b, GLASS_BUTTON_BG_HOVER.a)
+    self.backgroundColorActive = Color(GLASS_BUTTON_BG_ACTIVE.r, GLASS_BUTTON_BG_ACTIVE.g, GLASS_BUTTON_BG_ACTIVE.b, GLASS_BUTTON_BG_ACTIVE.a)
     self.inertia = 0
     self.easing = "OutQuint"
     self.updateSizeOnHover = false
@@ -229,14 +239,14 @@ function PANEL:Init()
 end
 
 function PANEL:Paint(width, height)
-    local border = height / 4
-    ax.render.DrawShadows(border, 0, 0, width, height, Color(200, 200, 200, 10 + 40 * self.inertia), 0, border / 4, ax.render.BLUR)
+    local color = self.backgroundColorUnHovered
+    if ( self.inertia > 0.8 ) then
+        color = self.backgroundColorActive
+    elseif ( self.inertia > 0.25 ) then
+        color = self.backgroundColorHovered
+    end
 
-    -- underline shadow
-    ax.render.DrawShadows(border / 2, 0, 0, width, height, Color(0, 0, 0, 50 * self.inertia), border / 2, border)
-
-    local alpha = math.Clamp(50 + (120 * self.inertia), 0, 200)
-    DrawGlassButton(0, 0, width, height, alpha, 0.9)
+    DrawGlassButton(0, 0, width, height, color, self:GetBlur())
 
     if ( self.PaintAdditional ) then
         self:PaintAdditional(width, height)
@@ -245,101 +255,9 @@ end
 
 vgui.Register("ax.button", PANEL, "ax.button.core")
 
+PANEL = {}
+
 DEFINE_BASECLASS("ax.button.core")
-
-PANEL = {}
-
-AccessorFunc(PANEL, "backgroundColor", "BackgroundColor")
-AccessorFunc(PANEL, "backgroundAlpha", "BackgroundAlpha", FORCE_NUMBER)
-AccessorFunc(PANEL, "backgroundAlphaHovered", "BackgroundAlphaHovered", FORCE_NUMBER)
-AccessorFunc(PANEL, "backgroundAlphaUnHovered", "BackgroundAlphaUnHovered", FORCE_NUMBER)
-AccessorFunc(PANEL, "sizeToContentsMotion", "SizeToContentsMotion", FORCE_BOOL)
-
-function PANEL:Init()
-    BaseClass.Init(self)
-
-    self.backgroundColor = Color(255, 255, 255)
-    self.backgroundAlphaHovered = 255
-    self.backgroundAlphaUnHovered = 0
-    self.sizeToContentsMotion = false
-
-    self:SetTextColorHovered(Color(0, 0, 0))
-    self:SetContentAlignment(5)
-end
-
-function PANEL:SetText(text)
-    if ( !text ) then return end
-
-    BaseClass.SetText(self, text)
-
-    text = self:GetText()
-    text = utf8.upper(text)
-
-    self:SetTextInternal(text)
-end
-
-function PANEL:SizeToContents()
-    if ( !self.sizeToContentsMotion ) then
-        BaseClass.SizeToContents(self)
-
-        local width, height = self:GetSize()
-        self:SetSize(width + ax.util:ScreenScale(8), height + ax.util:ScreenScaleH(8))
-
-        return
-    end
-
-    local oldWidth, oldHeight = self:GetSize()
-
-    BaseClass.SizeToContents(self)
-
-    local width, height = self:GetSize()
-    self:SetSize(oldWidth, oldHeight)
-
-    self.width = oldWidth
-    self.height = oldHeight
-
-    if ( !self.wasHovered ) then
-        width = width + ax.util:ScreenScale(8)
-        height = height + ax.util:ScreenScaleH(8)
-    end
-
-    self:Motion(0.25, {
-        Target = {width = width, height = height},
-        Easing = self.easing,
-        Think = function(this)
-            self:SetSize(this.width, this.height)
-        end
-    })
-end
-
-function PANEL:Paint(width, height)
-    local alpha = math.Clamp(self.backgroundAlphaUnHovered + (self.backgroundAlphaHovered - self.backgroundAlphaUnHovered) * self.inertia, 0, 220)
-    local color = Color(GLASS_BUTTON_BG.r, GLASS_BUTTON_BG.g, GLASS_BUTTON_BG.b, alpha)
-    if ( self.inertia > 0.8 ) then
-        color = Color(GLASS_BUTTON_BG_ACTIVE.r, GLASS_BUTTON_BG_ACTIVE.g, GLASS_BUTTON_BG_ACTIVE.b, alpha)
-    elseif ( self.inertia > 0.25 ) then
-        color = Color(GLASS_BUTTON_BG_HOVER.r, GLASS_BUTTON_BG_HOVER.g, GLASS_BUTTON_BG_HOVER.b, alpha)
-    end
-
-    ax.render().Rect(0, 0, width, height)
-        :Rad(math.max(4, math.min(10, height * 0.35)))
-        :Flags(GLASS_BUTTON_FLAGS)
-        :Blur(0.7)
-        :Draw()
-    ax.render.Draw(8, 0, 0, width, height, color, GLASS_BUTTON_FLAGS)
-    ax.render.DrawOutlined(8, 0, 0, width, height, GLASS_BUTTON_BORDER, 1, GLASS_BUTTON_FLAGS)
-
-    if ( self.PaintAdditional ) then
-        self:PaintAdditional(width, height)
-    end
-end
-
-vgui.Register("ax.button.flat", PANEL, "ax.button.core")
-
--- Flat button variant with icon support
-DEFINE_BASECLASS("ax.button.flat")
-
-PANEL = {}
 
 AccessorFunc(PANEL, "icon", "Icon")
 AccessorFunc(PANEL, "iconSize", "IconSize", FORCE_NUMBER)
