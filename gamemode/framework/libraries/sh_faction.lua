@@ -180,7 +180,7 @@ function ax.faction:CanBecome(identifier, client)
         return false, "That faction does not exist."
     end
 
-    local try, catch = hook.Run("CanBecomeFaction", factionTable, client)
+    local try, catch = hook.Run("CanPlayerBecomeFaction", factionTable, client)
     if ( try == false and isstring(catch) and #catch > 0 ) then
         return try, catch
     end

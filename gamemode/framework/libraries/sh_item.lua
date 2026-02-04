@@ -17,7 +17,36 @@
 ax.item = ax.item or {}
 ax.item.stored = ax.item.stored or {}
 ax.item.instances = ax.item.instances or {}
+ax.item.actions = ax.item.actions or {}
 ax.item.meta = ax.item.meta or {}
+
+--- Get a merged action table for a class, including inherited base actions.
+-- @realm shared
+-- @param class string The item class identifier
+-- @return table actions
+function ax.item:GetActionsForClass(class)
+    if ( !isstring(class) or class == "" ) then return {} end
+
+    local merged = {}
+    local stored = self.stored[class]
+    if ( istable(stored) and isstring(stored.base) and stored.base != "" ) then
+        local baseActions = self:GetActionsForClass(stored.base)
+        if ( istable(baseActions) ) then
+            for k, v in pairs(baseActions) do
+                merged[k] = v
+            end
+        end
+    end
+
+    local classActions = self.actions[class]
+    if ( istable(classActions) ) then
+        for k, v in pairs(classActions) do
+            merged[k] = v
+        end
+    end
+
+    return merged
+end
 
 --- Initialize the item system by loading all item files.
 -- Automatically includes items from framework, schema, and modules directories.
@@ -177,6 +206,7 @@ function ax.item:LoadBasesFromDirectory(basePath, timeFilter)
         ITEM = setmetatable({ class = itemName, isBase = true }, ax.item.meta)
             ITEM:AddAction("drop", self:CreateDefaultDropAction())
             ax.util:Include(filePath, "shared")
+
             ax.util:PrintSuccess("Item base \"" .. tostring(ITEM.name or itemName) .. "\" initialized successfully.")
             ax.item.stored[itemName] = ITEM
         ITEM = nil
@@ -220,6 +250,7 @@ function ax.item:LoadItemsFromDirectory(path, timeFilter, prefix)
         ITEM = setmetatable({ class = itemName }, ax.item.meta)
             ITEM:AddAction("drop", self:CreateDefaultDropAction())
             ax.util:Include(filePath, "shared")
+
             ax.util:PrintSuccess("Item \"" .. tostring(ITEM.name or itemName) .. "\" initialized successfully.")
             ax.item.stored[itemName] = ITEM
         ITEM = nil
@@ -306,6 +337,7 @@ function ax.item:LoadItemsWithBase(dirPath, baseName, baseItem, timeFilter)
         })
 
         ax.util:Include(dirPath .. "/" .. fileName, "shared")
+
         ax.util:PrintSuccess("Item \"" .. tostring(ITEM.name or fullItemName) .. "\" (base: " .. baseName .. ") initialized successfully.")
         ax.item.stored[fullItemName] = ITEM
         ITEM = nil

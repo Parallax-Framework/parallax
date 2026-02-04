@@ -90,18 +90,31 @@ function item:SetData(key, value)
 end
 
 function item:GetActions()
+    if ( isstring(self.class) and ax.item and isfunction(ax.item.GetActionsForClass) ) then
+        return ax.item:GetActionsForClass(self.class)
+    end
+
     return self.actions or {}
 end
 
 function item:AddAction(name, actionData)
-    -- If actions table doesn't exist directly on this item (it's inherited), create a new one
-    if ( !rawget(self, "actions") ) then
-        -- Copy existing actions from inheritance chain to preserve base actions
-        local inheritedActions = self.actions or {}
-        self.actions = table.Copy(inheritedActions)
+    if ( !isstring(name) or name == "" ) then return end
+    if ( !istable(actionData) ) then return end
+    if ( !isstring(self.class) or self.class == "" ) then return end
+
+    ax.item.actions = ax.item.actions or {}
+
+    local actions = ax.item.actions[self.class]
+    if ( !istable(actions) ) then
+        actions = {}
+
+        if ( isstring(self.base) and self.base != "" ) then
+            actions = table.Copy(ax.item:GetActionsForClass(self.base))
+        end
     end
 
-    self.actions[name] = actionData
+    actions[name] = actionData
+    ax.item.actions[self.class] = actions
 end
 
 function item:CanInteract(client, action, silent)
@@ -114,7 +127,8 @@ function item:CanInteract(client, action, silent)
         return false
     end
 
-    local actionTable = self.actions[action]
+    local actions = self:GetActions()
+    local actionTable = actions[action]
     if ( istable(actionTable) and isfunction(actionTable.CanUse) ) then
         local canRun, reason = actionTable:CanUse(self, client)
         if ( canRun == false ) then

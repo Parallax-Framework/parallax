@@ -174,7 +174,6 @@ else
         if ( !isstring(chatType) ) then return end
 
         local normalizedChatType = utf8.lower(chatType)
-        print("[Voices] PlayerMessageSend:", speaker, "chatType=", chatType, "normalized=", normalizedChatType, "text=", text)
 
         local allowed = {}
         for k, v in pairs(allowedChatTypes) do
@@ -186,24 +185,15 @@ else
             isVoiceChatType = hook.Run("IsVoiceChatType", normalizedChatType)
         end
 
-        print("[Voices] IsVoiceChatType=", tostring(isVoiceChatType))
-
         if ( isVoiceChatType ) then
             allowed[normalizedChatType] = true
         end
 
-        local class = ax.voices:GetClass(speaker, normalizedChatType)
-        if ( !allowed[normalizedChatType] and #class > 0 ) then
-            allowed[normalizedChatType] = true
-            print("[Voices] Allowing chat type via class match:", normalizedChatType)
-        end
-
         if ( !allowed[normalizedChatType] ) then
-            print("[Voices] Chat type not allowed:", normalizedChatType)
             return
         end
 
-        print("[Voices] Classes for type:", normalizedChatType, "->", table.concat(class, ", "))
+        local class = ax.voices:GetClass(speaker, normalizedChatType)
         for k, v in pairs(class) do
             print("[Voices] Processing class:", v)
             local texts = GetVoiceCommands(text, v)
@@ -258,15 +248,12 @@ else
                         end
                     end
 
-                    print("[Voices] IsRadioVoiceChatType=", tostring(isRadio), "radioType=", radioType)
-
                     if ( isRadio ) then
                         receivers = receivers or {}
-                        print("[Voices] Radio receivers:", #receivers)
                         for _, receiver in ipairs(receivers) do
                             if ( receiver == speaker ) then continue end
 
-                            volume = 50
+                            volume = 80
                             PlayQueuedSound(receiver, sounds, 100, volume)
                         end
                     end

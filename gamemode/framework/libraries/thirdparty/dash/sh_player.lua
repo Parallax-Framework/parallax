@@ -1,6 +1,6 @@
 -- https://github.com/SuperiorServers/dash/blob/master/lua/dash/extensions/player.lua
 
-local PLAYER, ENTITY = FindMetaTable 'Player', FindMetaTable 'Entity'
+local ENTITY = FindMetaTable("Entity")
 local GetTable = ENTITY.GetTable
 
 function player.GetStaff()
@@ -15,11 +15,9 @@ function player.GetStaff()
     return staff
 end
 
-function PLAYER:__index(key)
-    -- ENTITY.GetTable may be nil in some environments (clientside in modern GMod)
-    -- so guard against it to avoid 'attempt to index a nil value'.
-    local val = PLAYER[key] or ENTITY[key]
-    if val != nil then return val end
+function ax.player.meta:__index(key)
+    local val = ax.player.meta[key] or ENTITY[key]
+    if ( val != nil ) then return val end
 
     if ( isfunction(GetTable) ) then
         local tbl = GetTable(self)
@@ -31,8 +29,8 @@ function PLAYER:__index(key)
     return nil
 end
 
-function PLAYER:Timer(name, time, reps, callback, failure)
-    name = self:SteamID64() .. '-' .. name
+function ax.player.meta:Timer(name, time, reps, callback, failure)
+    name = self:SteamID64() .. "-" .. name
     timer.Create(name, time, reps, function()
         if ax.util:IsValidPlayer(self) then
             callback(self)
@@ -46,8 +44,8 @@ function PLAYER:Timer(name, time, reps, callback, failure)
     end)
 end
 
-function PLAYER:RemoveTimer(name)
-    timer.Remove(self:SteamID64() .. '-' .. name)
+function ax.player.meta:RemoveTimer(name)
+    timer.Remove(self:SteamID64() .. "-" .. name)
 end
 
 if ( CLIENT ) then return end
@@ -55,12 +53,12 @@ if ( CLIENT ) then return end
 -- Fix for https://github.com/Facepunch/garrysmod-issues/issues/2447
 local telequeue = {}
 local setpos = ENTITY.SetPos
-function PLAYER:SetPos(pos)
+function ax.player.meta:SetPos(pos)
     telequeue[self] = pos
 end
 
-hook.Add('FinishMove', 'SetPos.FinishMove', function(pl)
-    if telequeue[pl] then
+hook.Add("FinishMove", "SetPos.FinishMove", function(pl)
+    if ( telequeue[pl] ) then
         setpos(pl, telequeue[pl])
         telequeue[pl] = nil
         return true

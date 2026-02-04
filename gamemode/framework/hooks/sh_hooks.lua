@@ -129,7 +129,7 @@ hook.Add("OnReloaded", NAME, function()
     end)
 end)
 
-function GM:CanBecomeFaction(factionTable, client)
+function GM:CanPlayerBecomeFaction(factionTable, client)
     local whitelists = client:GetData("whitelists", {})
     if ( !factionTable.isDefault and !whitelists[factionTable.id] ) then
         return false, "You are not whitelisted for this faction."
@@ -138,11 +138,11 @@ function GM:CanBecomeFaction(factionTable, client)
     return true, nil
 end
 
-function GM:CanBecomeClass(classTable, client)
+function GM:CanPlayerBecomeClass(classTable, client)
     return true, nil
 end
 
-function GM:CanLoadCharacter(client, character)
+function GM:CanPlayerLoadCharacter(client, character, previousCharacter)
     return true
 end
 

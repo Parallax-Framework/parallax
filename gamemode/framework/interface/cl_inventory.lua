@@ -524,7 +524,7 @@ function PANEL:PopulateInfo(stack)
             for _, stackedItem in pairs(stack.stackedItems) do
                 -- Get the item template to check for actions
                 local itemTemplate = ax.item.stored[stackedItem.class]
-                if ( itemTemplate and itemTemplate.actions and itemTemplate.actions[k] ) then
+                if ( itemTemplate and itemTemplate:GetActions()[k] ) then
                     -- Check if we still have this item in inventory
                     local hasItem = false
                     for itemId, invItem in pairs(self.inventory:GetItems()) do

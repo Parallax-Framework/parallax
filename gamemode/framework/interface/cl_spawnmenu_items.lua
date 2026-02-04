@@ -116,6 +116,11 @@ spawnmenu.AddContentType("axitem", function(container, obj)
     spawnIcon:SetMouseInputEnabled(false)
     spawnIcon:SetZPos(1)
 
+    -- if we have an image, hide the spawn icon
+    if ( obj.material and obj.material != "" ) then
+        spawnIcon:SetVisible(false)
+    end
+
     if ( IsValid(container) ) then
         container:Add(icon)
     end

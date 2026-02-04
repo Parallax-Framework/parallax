@@ -122,10 +122,16 @@ ax.net:Hook("character.load", function(characterID)
 end)
 
 ax.net:Hook("character.sync", function(client, character)
+    ax.util:PrintDebug("Received character sync for client. Printing all players the client knows about:")
+    for k, v in player.Iterator() do
+        ax.util:PrintDebug(" - Player: " .. tostring(k) .. " (" .. tostring(v) .. ")")
+    end
+    
     if ( !ax.util:IsValidPlayer(client) ) then return end
 
     -- Assume we are trying to kick the player off of their character
     if ( character == nil or !istable(character) ) then
+        client:GetTable().axCharacter = nil
         return
     end
 
@@ -133,6 +139,8 @@ ax.net:Hook("character.sync", function(client, character)
 
     client:GetTable().axCharacter = character
     ax.character.instances[character.id] = character
+
+    ax.util:PrintDebug("Character synced: ID " .. character.id .. ", Name: " .. character:GetName())
 
     -- Process any queued variable updates for this character
     if ( characterVarQueue[character.id] ) then
@@ -146,7 +154,6 @@ ax.net:Hook("character.sync", function(client, character)
 
         characterVarQueue[character.id] = nil
     end
-
 end)
 
 ax.net:Hook("character.restore", function(characters)
@@ -366,6 +373,16 @@ ax.net:Hook("inventory.sync", function(inventoryID, inventoryItems, inventoryMax
         maxWeight = inventoryMaxWeight,
         receivers = inventoryReceivers
     }, ax.inventory.meta)
+
+    if ( IsValid(ax.gui.inventory) and ax.gui.inventory.inventory and ax.gui.inventory.inventory.id == inventoryID ) then
+        ax.gui.inventory:PopulateItems()
+
+        if ( ax.gui.inventory.stack ) then
+            local stack = ax.gui.inventory.stack
+            ax.gui.inventory.info:Clear()
+            ax.gui.inventory:PopulateInfo(stack)
+        end
+    end
 end)
 
 ax.net:Hook("inventory.receiver.add", function(inventory, receiver)

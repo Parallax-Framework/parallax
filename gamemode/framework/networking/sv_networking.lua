@@ -131,8 +131,9 @@ ax.net:Hook("inventory.item.action", function(client, itemID, action)
         return
     end
 
-    local actionTable = item.actions[action]
-    if ( !istable( item.actions[action] ) ) then
+    local actions = item:GetActions()
+    local actionTable = actions[action]
+    if ( !istable(actionTable) ) then
         ax.util:PrintError("Item with ID " .. itemID .. " does not have action '" .. action .. "'.")
         return
     end
@@ -155,6 +156,10 @@ ax.net:Hook("inventory.item.action", function(client, itemID, action)
     end
 
     hook.Run("OnPlayerItemAction", client, item, action)
+
+    if ( item.invID and item.invID > 0 ) then
+        ax.inventory:Sync(item.invID)
+    end
 end)
 
 ax.net:Hook("character.create", function(client, payload)
@@ -294,7 +299,7 @@ ax.net:Hook("character.load", function(client, charID)
         hook.Run("PlayerUnloadedCharacter", client, prevChar)
     end
 
-    local try, catch = hook.Run("CanPlayerLoadCharacter", client, character)
+    local try, catch = hook.Run("CanPlayerLoadCharacter", client, character, prevChar)
     if ( try == false ) then
         if ( isstring(catch) and #catch > 0 ) then
             client:Notify(catch, "error")

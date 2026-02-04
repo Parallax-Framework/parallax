@@ -70,7 +70,7 @@ function MODULE:PlayerWeaponRaised(client, bRaised)
 end
 
 function MODULE:PlayerReady(client)
-    for k, v in ipairs(player.GetAll()) do
+    for k, v in player.Iterator() do
         self:UpdateClientAnimations(v)
     end
 end

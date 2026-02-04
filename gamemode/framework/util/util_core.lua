@@ -506,70 +506,92 @@ function ax.util:FindInCrosshair(client, target, range)
     return false
 end
 
---- Draw a smooth arc using polygons
--- @realm client
--- @param x number Center X position
--- @param y number Center Y position
--- @param radius number Radius of the circle
--- @param segments number Number of segments for smoothness (default: 64)
--- @param startAngle number Starting angle in degrees (default: 0)
--- @param endAngle number Ending angle in degrees (default: 360)
-function ax.util:DrawCircle(x, y, radius, segments, startAngle, endAngle)
-    segments = segments or 64
-    startAngle = math.rad(startAngle or 0)
-    endAngle = math.rad(endAngle or 360)
-
-    local angleStep = (endAngle - startAngle) / segments
-
-    draw.NoTexture()
-
-    local vertices = {}
-    for i = 0, segments do
-        local angle = startAngle + (angleStep * i)
-        local px = x + math.cos(angle) * radius
-        local py = y + math.sin(angle) * radius
-
-        vertices[#vertices + 1] = {
-            x = px,
-            y = py
-        }
+function ax.util:Assert(condition, errorMessage, ...)
+    errorMessage = errorMessage or "Assertion failed"
+    if ( !condition ) then
+        ax.util:PrintError(errorMessage, ...)
+        return false, ...
     end
 
-    if ( vertices[1] != nil ) then
-        surface.DrawPoly(vertices)
-    end
+    return condition, ...
 end
 
-
---- Draw a circular slice (pie chart style progress indicator)
--- @realm client
--- @param x number Center X position
--- @param y number Center Y position
--- @param radius number Radius of the slice
--- @param startAngle number Starting angle in degrees (0 is top)
--- @param endAngle number Ending angle in degrees
--- @param color table Color table with r, g, b, a
-function ax.util:DrawSlice(x, y, radius, startAngle, endAngle, color)
-    local segments = 64
-    startAngle = math.rad(startAngle - 90) -- Offset to start at top
-    endAngle = math.rad(endAngle - 90)
-
-    local angleStep = (endAngle - startAngle) / segments
-
-    surface.SetDrawColor(color.r, color.g, color.b, color.a)
-    draw.NoTexture()
-
-    local vertices = {{ x = x, y = y }}
-
-    for i = 0, segments do
-        local angle = startAngle + (angleStep * i)
-        local px = x + math.cos(angle) * radius
-        local py = y + math.sin(angle) * radius
-
-        vertices[#vertices + 1] = { x = px, y = py }
+function ax.util:AssertDebug(condition, errorMessage, ...)
+    errorMessage = errorMessage or "Assertion failed"
+    if ( !condition ) then
+        ax.util:PrintDebug("[DEBUG-ASSERT] ", errorMessage, ...)
+        return false, ...
     end
 
-    if ( vertices[3] != nil ) then
-        surface.DrawPoly(vertices)
+    return condition, ...
+end
+
+if ( CLIENT ) then
+    --- Draw a smooth arc using polygons
+    -- @realm client
+    -- @param x number Center X position
+    -- @param y number Center Y position
+    -- @param radius number Radius of the circle
+    -- @param segments number Number of segments for smoothness (default: 64)
+    -- @param startAngle number Starting angle in degrees (default: 0)
+    -- @param endAngle number Ending angle in degrees (default: 360)
+    function ax.util:DrawCircle(x, y, radius, segments, startAngle, endAngle)
+        segments = segments or 64
+        startAngle = math.rad(startAngle or 0)
+        endAngle = math.rad(endAngle or 360)
+
+        local angleStep = (endAngle - startAngle) / segments
+
+        draw.NoTexture()
+
+        local vertices = {}
+        for i = 0, segments do
+            local angle = startAngle + (angleStep * i)
+            local px = x + math.cos(angle) * radius
+            local py = y + math.sin(angle) * radius
+
+            vertices[#vertices + 1] = {
+                x = px,
+                y = py
+            }
+        end
+
+        if ( vertices[1] != nil ) then
+            surface.DrawPoly(vertices)
+        end
+    end
+
+
+    --- Draw a circular slice (pie chart style progress indicator)
+    -- @realm client
+    -- @param x number Center X position
+    -- @param y number Center Y position
+    -- @param radius number Radius of the slice
+    -- @param startAngle number Starting angle in degrees (0 is top)
+    -- @param endAngle number Ending angle in degrees
+    -- @param color table Color table with r, g, b, a
+    function ax.util:DrawSlice(x, y, radius, startAngle, endAngle, color)
+        local segments = 64
+        startAngle = math.rad(startAngle - 90) -- Offset to start at top
+        endAngle = math.rad(endAngle - 90)
+
+        local angleStep = (endAngle - startAngle) / segments
+
+        surface.SetDrawColor(color.r, color.g, color.b, color.a)
+        draw.NoTexture()
+
+        local vertices = {{ x = x, y = y }}
+
+        for i = 0, segments do
+            local angle = startAngle + (angleStep * i)
+            local px = x + math.cos(angle) * radius
+            local py = y + math.sin(angle) * radius
+
+            vertices[#vertices + 1] = { x = px, y = py }
+        end
+
+        if ( vertices[3] != nil ) then
+            surface.DrawPoly(vertices)
+        end
     end
 end

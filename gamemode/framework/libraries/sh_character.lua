@@ -96,6 +96,7 @@ function ax.character:SetVar(char, name, value, opts)
     end
 
     local options = istable(opts) and opts or {}
+    local rawOpts = opts
     local bNoNet = options.bNoNetworking == true
     local netRecipients = options.recipients
     local bNoDb = options.bNoDBUpdate == true
@@ -103,9 +104,20 @@ function ax.character:SetVar(char, name, value, opts)
     if ( varTable.fieldType == ax.type.data ) then
         local key = value
         local dataValue = options.dataValue
+        if ( dataValue == nil and rawOpts != nil ) then
+            if ( !istable(rawOpts) ) then
+                dataValue = rawOpts
+            elseif ( options.bNoNetworking == nil and options.recipients == nil and options.bNoDBUpdate == nil and options.dataValue == nil ) then
+                dataValue = rawOpts
+            end
+        end
 
         if ( !istable(char.vars[name]) ) then
-            char.vars[name] = {}
+            if ( isstring(char.vars[name]) ) then
+                char.vars[name] = ax.util:SafeParseTable(char.vars[name]) or {}
+            else
+                char.vars[name] = {}
+            end
         end
 
         if ( key == nil ) then

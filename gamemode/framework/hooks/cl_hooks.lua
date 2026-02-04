@@ -35,6 +35,45 @@ function GM:ScoreboardHide()
     return false
 end
 
+local buildingTools = {
+    ["gmod_tool"] = true,
+    ["weapon_physgun"] = true,
+    ["weapon_physcannon"] = true,
+}
+
+local buildingBinds = {
+    ["+menu"] = true,
+    ["+menu_context"] = true,
+}
+
+function GM:PlayerBindPress(client, bind, pressed, code)
+    if ( pressed and buildingBinds[bind] ) then
+        local weapon = client:GetActiveWeapon()
+        if ( IsValid(weapon) ) then
+            local class = weapon:GetClass()
+            if ( buildingTools[class] ) then
+                return false
+            end
+        end
+
+        client.axMenuPressCount = (client.axMenuPressCount or 0) + 1
+        client.axMenuPressTime = CurTime()
+
+        if ( client.axMenuPressCount >= 3 ) then
+            client:Notify("You need building tools to access the " .. (bind == "+menu" and "spawn" or "context") .. " menu.")
+            client.axMenuPressCount = 0
+        else
+            timer.Simple(2, function()
+                if ( IsValid(client) and CurTime() - client.axMenuPressTime >= 2 ) then
+                    client.axMenuPressCount = 0
+                end
+            end)
+        end
+
+        return true
+    end
+end
+
 function GM:OnEntityCreated(entity)
     if ( entity == LocalPlayer() and !IsValid(ax.client) ) then
         ax.client = LocalPlayer()
