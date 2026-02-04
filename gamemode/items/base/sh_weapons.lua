@@ -17,7 +17,7 @@ ITEM.unequipSound = "items/ammo_pickup.wav" -- Default unequip sound
 ITEM:AddAction("equip", {
     name = "Equip",
     description = "Equip this item.",
-    icon = "icon16/accept.png",
+    icon = "parallax/icons/check-circle.png",
     OnRun = function(action, item, client)
         client:Give(item.weaponClass)
         client:SelectWeapon(item.weaponClass)
@@ -46,7 +46,7 @@ ITEM:AddAction("equip", {
 ITEM:AddAction("unequip", {
     name = "Unequip",
     description = "Unequip this item.",
-    icon = "icon16/cross.png",
+    icon = "parallax/icons/minus-circle.png",
     OnRun = function(action, item, client)
         client:StripWeapon(item.weaponClass)
         client:EmitSound(item.unequipSound or "items/ammo_pickup.wav")

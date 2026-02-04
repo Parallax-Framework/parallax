@@ -22,7 +22,7 @@ ITEM.replaceSkin = nil -- Optional skin to replace the player's skin when outfit
 ITEM:AddAction("equip", {
     name = "Equip",
     description = "Equip this outfit.",
-    icon = "icon16/accept.png",
+    icon = "parallax/icons/check-circle.png",
     OnRun = function(action, item, client)
         client:Notify("You have equipped the item: " .. item:GetName(), "info")
         return false -- Returning false prevents the item from being removed after use
@@ -35,7 +35,7 @@ ITEM:AddAction("equip", {
 ITEM:AddAction("unequip", {
     name = "Unequip",
     description = "Unequip this outfit.",
-    icon = "icon16/cross.png",
+    icon = "parallax/icons/minus-circle.png",
     OnRun = function(action, item, client)
         client:Notify("You have unequipped the item: " .. item:GetName(), "info")
         return false -- Returning false prevents the item from being removed after use

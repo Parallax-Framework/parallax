@@ -17,7 +17,7 @@ ITEM.camera = {
 ITEM:AddAction("use", {
     name = "Use",
     description = "Use this item.",
-    icon = "icon16/accept.png",
+    icon = "parallax/icons/check-circle.png",
     OnRun = function(action, item, client)
         client:Notify("You have used the item: " .. item:GetName(), "info")
         return false -- Returning false prevents the item from being removed after use

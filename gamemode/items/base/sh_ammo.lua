@@ -15,7 +15,7 @@ ITEM.ammoAmount = 30 -- Default ammo amount, should be overridden by specific am
 ITEM:AddAction("use", {
     name = "Use",
     description = "Use this item to gain ammo.",
-    icon = "icon16/accept.png",
+    icon = "parallax/icons/check-circle.png",
     OnRun = function(action, item, client)
         local ammoType = item.ammoType
         local ammoAmount = item.ammoAmount
