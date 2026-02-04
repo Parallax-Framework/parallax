@@ -253,7 +253,7 @@ function PANEL:PopulateTabs()
 
                 -- Add buttons for each section
                 for sectionKey, sectionData in pairs(v.Sections) do
-                    local subbutton = self.subbuttons:Add("ax.button.flat")
+                    local subbutton = self.subbuttons:Add("ax.button")
                     subbutton:Dock(LEFT)
                     subbutton:SetText(ax.localization:GetPhrase("tab." .. k .. "." .. sectionKey))
 

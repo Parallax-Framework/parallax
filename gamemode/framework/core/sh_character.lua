@@ -94,7 +94,7 @@ ax.character:RegisterVar("faction", {
 
             local descriptionWrapped = ax.util:GetWrappedText(description, "ax.regular.bold", buttonWidth - ax.util:ScreenScale(16))
 
-            local factionButton = factionList:Add("ax.button.flat")
+            local factionButton = factionList:Add("ax.button")
             factionButton:SetText("", true, true)
             factionButton:SetWide(buttonWidth)
             factionButton:Dock(LEFT)

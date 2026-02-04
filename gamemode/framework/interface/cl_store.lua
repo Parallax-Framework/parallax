@@ -276,7 +276,7 @@ function PANEL:Init()
     self:SetText("unknown")
     self:SetTextInset(ax.util:ScreenScale(8), 0)
 
-    self.reset = self:Add("ax.button.flat.icon")
+    self.reset = self:Add("ax.button.icon")
     self.reset:SetIcon("parallax/icons/chevron-right.png")
     self.reset:SetIconAlign("center")
     self.reset:SetIconColor(color_white)
@@ -601,7 +601,7 @@ local STORE_FALLBACK_COLOR = Color(100, 100, 100)
 function PANEL:Init()
     self.elementType = "color"
 
-    self.colorPanel = self:Add("ax.button.flat")
+    self.colorPanel = self:Add("ax.button")
     self.colorPanel:SetText("")
     self.colorPanel:Dock(RIGHT)
     self.colorPanel:DockMargin(0, ax.util:ScreenScale(4), ax.util:ScreenScale(8), ax.util:ScreenScale(4))

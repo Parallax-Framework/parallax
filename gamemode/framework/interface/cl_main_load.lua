@@ -59,7 +59,7 @@ function PANEL:PopulateCharacterList()
     if ( clientTable.axCharacters[1] == nil ) then return end -- literally no reason to continue
 
     for k, v in pairs(clientTable.axCharacters or {}) do
-        local button = self.characters:Add("ax.button.flat")
+        local button = self.characters:Add("ax.button")
         button:Dock(TOP)
         button:DockMargin(0, 0, 0, ax.util:ScreenScaleH(4))
         button:SetText("", true, true, true)
@@ -86,12 +86,13 @@ function PANEL:PopulateCharacterList()
             surface.DrawTexturedRect(0, 0, width, height)
         end
 
-        local deleteButton = button:Add("ax.button.flat")
+        local deleteButton = button:Add("ax.button")
         deleteButton:Dock(RIGHT)
         deleteButton:DockMargin(ax.util:ScreenScale(8), 0, 0, 0)
         deleteButton:SetText("X")
         deleteButton:SetTextColor(Color(200, 100, 100))
-        deleteButton:SetBackgroundColor(Color(200, 100, 100))
+        deleteButton:SetBackgroundColorActive(Color(200, 100, 100, 200))
+        deleteButton:SetBlur(0.75)
         deleteButton:SetSize(0, button:GetTall())
         deleteButton:SetContentAlignment(5)
         deleteButton.width = 0

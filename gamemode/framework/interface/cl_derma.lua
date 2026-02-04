@@ -91,7 +91,7 @@ function Derma_Message(text, title, buttonText)
     local btnPanel = frame:Add("EditablePanel")
     btnPanel:Dock(BOTTOM)
 
-    local btn = btnPanel:Add("ax.button.flat")
+    local btn = btnPanel:Add("ax.button")
     btn:Dock(FILL)
     btn:SetText(buttonText)
     btn.DoClick = function()
@@ -161,7 +161,7 @@ function Derma_Query(text, title, ...)
 
         local fn = select(i + 1, ...) or function() end
 
-        local btn = btnPanel:Add("ax.button.flat")
+        local btn = btnPanel:Add("ax.button")
         btn:Dock(LEFT)
         btn:DockMargin(0, 0, ax.util:ScreenScale(4), 0)
         btn:SetText(txt, true)
@@ -243,7 +243,7 @@ function Derma_StringRequest(title, text, defaultText, onEnter, onCancel, okText
     local btnPanel = frame:Add("EditablePanel")
     btnPanel:Dock(BOTTOM)
 
-    local btnOK = btnPanel:Add("ax.button.flat")
+    local btnOK = btnPanel:Add("ax.button")
     btnOK:Dock(LEFT)
     btnOK:SetText(okText or "OK")
     btnOK.DoClick = function()
@@ -251,7 +251,7 @@ function Derma_StringRequest(title, text, defaultText, onEnter, onCancel, okText
         onEnter(entry:GetValue())
     end
 
-    local btnCancel = btnPanel:Add("ax.button.flat")
+    local btnCancel = btnPanel:Add("ax.button")
     btnCancel:Dock(RIGHT)
     btnCancel:SetText(cancelText or "Cancel")
     btnCancel.DoClick = function()

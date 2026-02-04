@@ -49,7 +49,7 @@ function PANEL:Init()
     self:SetFocusTopLevel(true)
     self:SetPaintShadow(true)
 
-    self.btnClose = self:Add("ax.button.flat")
+    self.btnClose = self:Add("ax.button")
     self.btnClose:SetText("X", true, true)
     self.btnClose.DoClick = function() self:Close() end
 
