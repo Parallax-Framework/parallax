@@ -22,16 +22,16 @@ function PANEL:Init()
     self.title = self:Add("ax.text")
     self.title:SetFont("ax.huge.bold")
     self.title:SetText(SCHEMA.name or "Parallax Framework")
-    self.title:SetTextColor(Color(200, 200, 240, 255))
+    self.title:SetTextColor(Color(230, 245, 255, 255))
     self.title.Paint = function(s, w, h)
-        ax.render.DrawShadows(h, 0, h / 4, w, h / 2, Color(0, 0, 0, 50), nil, nil, ax.render.BLUR)
+        ax.render.DrawShadows(h, 0, h / 4, w, h / 2, Color(120, 170, 220, 45), nil, nil, ax.render.BLUR)
     end
 
     self.subtitle = self:Add("ax.text")
     self.subtitle:SetText(SCHEMA.description or "A new dimension of roleplay, built for you.")
-    self.subtitle:SetTextColor(Color(160, 160, 200, 255))
+    self.subtitle:SetTextColor(Color(200, 220, 245, 255))
     self.subtitle.Paint = function(s, w, h)
-        ax.render.DrawShadows(h, 0, h / 4, w, h / 2, Color(0, 0, 0, 25), nil, nil, ax.render.BLUR)
+        ax.render.DrawShadows(h, 0, h / 4, w, h / 2, Color(120, 170, 220, 25), nil, nil, ax.render.BLUR)
     end
 
     self.buttons = self:Add("EditablePanel")
@@ -128,17 +128,22 @@ function PANEL:PerformLayout()
         self.buttons:SetTall(math.max(self.buttons:GetTall(), button:GetTall()))
     end
 
-    self.buttons:SetPos(ScrW() / 2 - self.buttons:GetWide() / 2, ScrH() - self.buttons:GetTall() - ax.util:ScreenScaleH(32))
+    self.buttons:SetPos(ScrW() / 2 - self.buttons:GetWide() / 2, ScrH() - self.buttons:GetTall() - ax.util:ScreenScaleH(48))
 
     for _, button in pairs(self.buttons:GetChildren()) do
-        button:SetWide(self.buttons:GetWide() / #self.buttons:GetChildren() - ax.util:ScreenScale(4))
-        button:DockMargin(ax.util:ScreenScale(2), 0, ax.util:ScreenScale(2), 0)
+        button:SetWide(self.buttons:GetWide() / #self.buttons:GetChildren() - ax.util:ScreenScale(8))
+        button:DockMargin(ax.util:ScreenScale(4), 0, ax.util:ScreenScale(4), 0)
     end
 end
 
 function PANEL:Paint(width, height)
-    ax.util:DrawGradient("up", 0, 0, width, height, Color(50, 50, 50, 200))
-    ax.util:DrawGradient("down", 0, 0, width, height, Color(0, 0, 0, 100))
+    ax.render().Rect(0, 0, width, height)
+        :Rad(0)
+        :Flags(ax.render.SHAPE_IOS)
+        :Blur(1.2)
+        :Draw()
+    ax.util:DrawGradient(0, "up", 0, 0, width, height, Color(220, 240, 255, 40))
+    ax.util:DrawGradient(0, "down", 0, 0, width, height, Color(180, 210, 255, 35))
 end
 
 vgui.Register("ax.main.splash", PANEL, "ax.transition")

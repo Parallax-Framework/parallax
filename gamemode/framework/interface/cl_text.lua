@@ -137,9 +137,15 @@ function PANEL:PaintInternal(width, height)
     BaseClass.Paint(self, width, height)
 end
 
-local BACKGROUND_COLOR = Color(35, 0, 70, 85)
+local BACKGROUND_COLOR = Color(245, 250, 255, 70)
 function PANEL:Paint(width, height)
-    ax.render.Draw(0, 0, 0, width, height, BACKGROUND_COLOR)
+    ax.render().Rect(0, 0, width, height)
+        :Rad(math.max(4, math.min(8, height * 0.35)))
+        :Flags(ax.render.SHAPE_IOS)
+        :Blur(0.6)
+        :Draw()
+    ax.render.Draw(6, 0, 0, width, height, BACKGROUND_COLOR, ax.render.SHAPE_IOS)
+    ax.render.DrawOutlined(6, 0, 0, width, height, Color(255, 255, 255, 50), 1, ax.render.SHAPE_IOS)
 
     self:PaintInternal(width, height)
 end

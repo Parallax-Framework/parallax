@@ -13,6 +13,21 @@
 
 local PANEL = {}
 
+local GLASS_PANEL_RADIUS = 10
+local GLASS_PANEL_COLOR = Color(245, 250, 255, 70)
+local GLASS_PANEL_BORDER = Color(255, 255, 255, 45)
+local GLASS_PROGRESS = Color(120, 220, 240, 190)
+
+local function DrawGlassPanel(x, y, w, h, radius, blur)
+    ax.render().Rect(x, y, w, h)
+        :Rad(radius)
+        :Flags(ax.render.SHAPE_IOS)
+        :Blur(blur or 1.0)
+        :Draw()
+    ax.render.Draw(radius, x, y, w, h, GLASS_PANEL_COLOR, ax.render.SHAPE_IOS)
+    ax.render.DrawOutlined(radius, x, y, w, h, GLASS_PANEL_BORDER, 1, ax.render.SHAPE_IOS)
+end
+
 function PANEL:Init()
     ax.gui.inventory = self
 
@@ -32,10 +47,10 @@ function PANEL:Init()
 
     self.characterInfo = self:Add("EditablePanel")
     self.characterInfo:Dock(LEFT)
-    self.characterInfo:DockMargin(0, 0, ax.util:ScreenScale(16), 0)
+    self.characterInfo:DockMargin(0, 0, ax.util:ScreenScale(24), 0)
     self.characterInfo:SetWide(ax.util:ScreenScale(128))
     self.characterInfo.Paint = function(this, width, height)
-        ax.render.Draw(0, 0, 0, width, height, Color(0, 0, 0, 150))
+        DrawGlassPanel(0, 0, width, height, GLASS_PANEL_RADIUS, 1.0)
     end
 
     self.container = self:Add("ax.scroller.vertical")
@@ -47,7 +62,7 @@ function PANEL:Init()
     self.info:Dock(RIGHT)
     self.info:SetWide(0)
     self.info.Paint = function(this, width, height)
-        ax.render.Draw(0, 0, 0, width, height, Color(0, 0, 0, 150))
+        DrawGlassPanel(0, 0, width, height, GLASS_PANEL_RADIUS, 1.0)
     end
 
     local maxWeight = inventory:GetMaxWeight()
@@ -58,10 +73,10 @@ function PANEL:Init()
     self.weightProgress:SetTall(ax.util:ScreenScale(12))
     self.weightProgress:Dock(TOP)
     self.weightProgress.Paint = function(this, width, height)
-        ax.render.Draw(0, 0, 0, width, height, Color(0, 0, 0, 150))
+        DrawGlassPanel(0, 0, width, height, GLASS_PANEL_RADIUS, 0.6)
 
         local fraction = this:GetFraction()
-        ax.render.Draw(0, 0, 0, width * fraction, height, Color(100, 200, 175, 200))
+        ax.render.Draw(GLASS_PANEL_RADIUS, 0, 0, width * fraction, height, GLASS_PROGRESS, ax.render.SHAPE_IOS)
     end
 
     local totalWeight = maxWeight * self.weightProgress:GetFraction()
@@ -182,7 +197,7 @@ function PANEL:InfoOpen()
         Easing = "OutQuad",
         Think = function(this)
             self.info:SetWide(this.wide)
-            self.info:DockMargin(ax.util:ScreenScale(16) * this.fraction, 0, 0, 0)
+            self.info:DockMargin(ax.util:ScreenScale(24) * this.fraction, 0, 0, 0)
             -- Trigger layout update as info panel expands
             self:PerformLayout()
         end
@@ -195,7 +210,7 @@ function PANEL:InfoClose()
         Easing = "OutQuad",
         Think = function(this)
             self.info:SetWide(this.wide)
-            self.info:DockMargin(ax.util:ScreenScale(16) * this.fraction, 0, 0, 0)
+            self.info:DockMargin(ax.util:ScreenScale(24) * this.fraction, 0, 0, 0)
             -- Trigger layout update as info panel collapses
             self:PerformLayout()
         end

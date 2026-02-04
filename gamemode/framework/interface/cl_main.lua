@@ -45,7 +45,12 @@ function PANEL:Init()
 end
 
 function PANEL:Paint(width, height)
-    ax.render.Draw(0, 0, 0, width, height, Color(100, 100, 100, 50))
+    ax.render().Rect(0, 0, width, height)
+        :Rad(0)
+        :Flags(ax.render.SHAPE_IOS)
+        :Blur(1.25)
+        :Draw()
+    ax.render.Draw(0, 0, 0, width, height, Color(245, 250, 255, 20))
 end
 
 vgui.Register("ax.main", PANEL, "EditablePanel")

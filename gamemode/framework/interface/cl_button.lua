@@ -13,6 +13,26 @@ DEFINE_BASECLASS("DButton")
 
 local PANEL = {}
 
+local GLASS_BUTTON_FLAGS = ax.render.SHAPE_IOS
+local GLASS_BUTTON_BORDER = Color(255, 255, 255, 70)
+local GLASS_BUTTON_BG = Color(245, 250, 255, 80)
+local GLASS_BUTTON_BG_HOVER = Color(255, 255, 255, 130)
+local GLASS_BUTTON_BG_ACTIVE = Color(210, 240, 255, 170)
+
+local function DrawGlassButton(x, y, w, h, alpha, blur)
+    local radius = math.max(4, math.min(12, h * 0.35))
+    local col = Color(GLASS_BUTTON_BG.r, GLASS_BUTTON_BG.g, GLASS_BUTTON_BG.b, alpha or GLASS_BUTTON_BG.a)
+
+    ax.render().Rect(x, y, w, h)
+        :Rad(radius)
+        :Flags(GLASS_BUTTON_FLAGS)
+        :Blur(blur or 0.85)
+        :Draw()
+
+    ax.render.Draw(radius, x, y, w, h, col, GLASS_BUTTON_FLAGS)
+    ax.render.DrawOutlined(radius, x, y, w, h, GLASS_BUTTON_BORDER, 1, GLASS_BUTTON_FLAGS)
+end
+
 AccessorFunc(PANEL, "soundEnter", "SoundEnter", FORCE_STRING)
 AccessorFunc(PANEL, "soundClick", "SoundClick", FORCE_STRING)
 AccessorFunc(PANEL, "fontDefault", "FontDefault", FORCE_STRING)
@@ -215,6 +235,9 @@ function PANEL:Paint(width, height)
     -- underline shadow
     ax.render.DrawShadows(border / 2, 0, 0, width, height, Color(0, 0, 0, 50 * self.inertia), border / 2, border)
 
+    local alpha = math.Clamp(50 + (120 * self.inertia), 0, 200)
+    DrawGlassButton(0, 0, width, height, alpha, 0.9)
+
     if ( self.PaintAdditional ) then
         self:PaintAdditional(width, height)
     end
@@ -290,7 +313,21 @@ function PANEL:SizeToContents()
 end
 
 function PANEL:Paint(width, height)
-    ax.render.Draw(0, 0, 0, width, height, ColorAlpha(self.backgroundColor, self.backgroundAlphaHovered * self.inertia))
+    local alpha = math.Clamp(self.backgroundAlphaUnHovered + (self.backgroundAlphaHovered - self.backgroundAlphaUnHovered) * self.inertia, 0, 220)
+    local color = Color(GLASS_BUTTON_BG.r, GLASS_BUTTON_BG.g, GLASS_BUTTON_BG.b, alpha)
+    if ( self.inertia > 0.8 ) then
+        color = Color(GLASS_BUTTON_BG_ACTIVE.r, GLASS_BUTTON_BG_ACTIVE.g, GLASS_BUTTON_BG_ACTIVE.b, alpha)
+    elseif ( self.inertia > 0.25 ) then
+        color = Color(GLASS_BUTTON_BG_HOVER.r, GLASS_BUTTON_BG_HOVER.g, GLASS_BUTTON_BG_HOVER.b, alpha)
+    end
+
+    ax.render().Rect(0, 0, width, height)
+        :Rad(math.max(4, math.min(10, height * 0.35)))
+        :Flags(GLASS_BUTTON_FLAGS)
+        :Blur(0.7)
+        :Draw()
+    ax.render.Draw(8, 0, 0, width, height, color, GLASS_BUTTON_FLAGS)
+    ax.render.DrawOutlined(8, 0, 0, width, height, GLASS_BUTTON_BORDER, 1, GLASS_BUTTON_FLAGS)
 
     if ( self.PaintAdditional ) then
         self:PaintAdditional(width, height)
@@ -331,7 +368,21 @@ function PANEL:SetIcon(iconPath)
 end
 
 function PANEL:Paint(width, height)
-    ax.render.Draw(0, 0, 0, width, height, ColorAlpha(self.backgroundColor, self.backgroundAlphaHovered * self.inertia))
+    local alpha = math.Clamp(self.backgroundAlphaUnHovered + (self.backgroundAlphaHovered - self.backgroundAlphaUnHovered) * self.inertia, 0, 220)
+    local color = Color(GLASS_BUTTON_BG.r, GLASS_BUTTON_BG.g, GLASS_BUTTON_BG.b, alpha)
+    if ( self.inertia > 0.8 ) then
+        color = Color(GLASS_BUTTON_BG_ACTIVE.r, GLASS_BUTTON_BG_ACTIVE.g, GLASS_BUTTON_BG_ACTIVE.b, alpha)
+    elseif ( self.inertia > 0.25 ) then
+        color = Color(GLASS_BUTTON_BG_HOVER.r, GLASS_BUTTON_BG_HOVER.g, GLASS_BUTTON_BG_HOVER.b, alpha)
+    end
+
+    ax.render().Rect(0, 0, width, height)
+        :Rad(math.max(4, math.min(10, height * 0.35)))
+        :Flags(GLASS_BUTTON_FLAGS)
+        :Blur(0.7)
+        :Draw()
+    ax.render.Draw(8, 0, 0, width, height, color, GLASS_BUTTON_FLAGS)
+    ax.render.DrawOutlined(8, 0, 0, width, height, GLASS_BUTTON_BORDER, 1, GLASS_BUTTON_FLAGS)
 
     if ( self.icon ) then
         local iconY = (height - self.iconSize) / 2

@@ -678,8 +678,8 @@ function PANEL:Paint(width, height)
 
     ax.render.Draw(0, 0, 0, width, height, Color(50, 50, 50, 100))
 
-    ax.util:DrawGradient("right", 0, 0, width, height, Color(0, 0, 0, 100))
-    ax.util:DrawGradient("down", 0, 0, width, height, Color(0, 0, 0, 100))
+    ax.util:DrawGradient(0, "right", 0, 0, width, height, Color(0, 0, 0, 100))
+    ax.util:DrawGradient(0, "down", 0, 0, width, height, Color(0, 0, 0, 100))
 end
 
 function PANEL:PerformLayout(width, height)

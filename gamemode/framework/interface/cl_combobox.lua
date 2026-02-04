@@ -48,7 +48,7 @@ function PANEL:AddOption( strText, funcFunction )
 		--derma.SkinHook( "Paint", "MenuOption", p, w, h )
 
 		if ( p.Hovered ) then
-			ax.util:DrawGradient("left", 0, 0, w, h, MENU_OPTION_HOVERED_COLOR)
+			ax.util:DrawGradient(0, "left", 0, 0, w, h, MENU_OPTION_HOVERED_COLOR)
 			
 			ax.render.DrawMaterial(0, 8, h / 2 - 8, 16, 16, color_white, MENU_OPTION_HOVERED_MATERIAL)
 		end
@@ -164,8 +164,13 @@ function PANEL:Paint( w, h )
 
 	--derma.SkinHook( "Paint", "Menu", self, w, h )
 
-	ax.render.Draw(0, 0, 0, w, h, color_white, ax.render.BLUR)
-	ax.render.Draw(0, 0, 0, w, h, DMENU_COLOR_BACKGROUND)
+	ax.render().Rect(0, 0, w, h)
+		:Rad(8)
+		:Flags(ax.render.SHAPE_IOS)
+		:Blur(0.9)
+		:Draw()
+	ax.render.Draw(8, 0, 0, w, h, Color(245, 250, 255, 70), ax.render.SHAPE_IOS)
+	ax.render.DrawOutlined(8, 0, 0, w, h, Color(255, 255, 255, 50), 1, ax.render.SHAPE_IOS)
 	return true
 
 end
@@ -635,9 +640,15 @@ function PANEL:DoClick()
 
 end
 
-local COLOR_BACKGROUND = Color(255, 255, 255, 30)
+local COLOR_BACKGROUND = Color(245, 250, 255, 80)
 function PANEL:Paint(width, height)
-	ax.render.Draw(0, 0, 0, width, height, COLOR_BACKGROUND)
+	ax.render().Rect(0, 0, width, height)
+		:Rad(math.max(4, math.min(8, height * 0.35)))
+		:Flags(ax.render.SHAPE_IOS)
+		:Blur(0.7)
+		:Draw()
+	ax.render.Draw(6, 0, 0, width, height, COLOR_BACKGROUND, ax.render.SHAPE_IOS)
+	ax.render.DrawOutlined(6, 0, 0, width, height, Color(255, 255, 255, 50), 1, ax.render.SHAPE_IOS)
 end
 
 vgui.Register("ax.combobox", PANEL, "DButton")

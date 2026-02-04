@@ -256,7 +256,7 @@ function PANEL:CreateOrGetCategoryTab(category, index)
 
     tab.container = tab:Add("EditablePanel")
     tab.container:Dock(FILL)
-    tab.container:DockMargin(ax.util:ScreenScale(32), ax.util:ScreenScaleH(32), ax.util:ScreenScale(32), ax.util:ScreenScaleH(32))
+    tab.container:DockMargin(ax.util:ScreenScale(48), ax.util:ScreenScaleH(40), ax.util:ScreenScale(48), ax.util:ScreenScaleH(40))
     tab.container:InvalidateParent(true)
 
     self.tabs[category] = tab
@@ -266,7 +266,7 @@ function PANEL:CreateOrGetCategoryTab(category, index)
     local displayText = ax.localisation:GetPhrase("mainmenu.category." .. category)
     title:SetText(utf8.upper(displayText))
     title:Dock(TOP)
-    title:DockMargin(ax.util:ScreenScale(32), ax.util:ScreenScaleH(32), 0, 0)
+    title:DockMargin(ax.util:ScreenScale(48), ax.util:ScreenScaleH(40), 0, 0)
 
     return tab
 end
@@ -457,7 +457,12 @@ function PANEL:OnPayloadChanged(payload)
 end
 
 function PANEL:Paint(width, height)
-    ax.util:DrawGradient("down", 0, 0, width, height, Color(0, 0, 0, 200))
+    ax.render().Rect(0, 0, width, height)
+        :Rad(0)
+        :Flags(ax.render.SHAPE_IOS)
+        :Blur(1.1)
+        :Draw()
+    ax.util:DrawGradient(0, "down", 0, 0, width, height, Color(200, 230, 255, 40))
 end
 
 vgui.Register("ax.main.create", PANEL, "ax.transition.pages")

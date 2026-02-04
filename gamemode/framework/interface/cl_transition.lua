@@ -113,7 +113,7 @@ end
 function PANEL:CreateNavigation(parent, backText, backCallback, nextText, nextCallback)
     local navigation = parent:Add("EditablePanel")
     navigation:Dock(BOTTOM)
-    navigation:DockMargin(ax.util:ScreenScale(32), 0, ax.util:ScreenScale(32), ax.util:ScreenScaleH(32))
+    navigation:DockMargin(ax.util:ScreenScale(48), ax.util:ScreenScaleH(16), ax.util:ScreenScale(48), ax.util:ScreenScaleH(32))
 
     local backButton = navigation:Add("ax.button")
     backButton:Dock(LEFT)
@@ -425,7 +425,12 @@ function PANEL:HideAllPages()
 end
 
 function PANEL:Paint(width, height)
-    ax.render.Draw(0, 0, 0, width, height, Color(0, 0, 0, 150))
+    ax.render().Rect(0, 0, width, height)
+        :Rad(0)
+        :Flags(ax.render.SHAPE_IOS)
+        :Blur(1.0)
+        :Draw()
+    ax.render.Draw(0, 0, 0, width, height, Color(245, 250, 255, 50))
 end
 
 vgui.Register("ax.transition.pages", PANEL, "ax.transition")

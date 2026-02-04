@@ -26,6 +26,25 @@ AccessorFunc(PANEL, "m_iMinWidth",        "MinWidth",      FORCE_NUMBER)
 AccessorFunc(PANEL, "m_iMinHeight",       "MinHeight",     FORCE_NUMBER)
 AccessorFunc(PANEL, "m_bBackgroundBlur",  "BackgroundBlur",FORCE_BOOL)
 
+local GLASS_FLAGS = ax.render.SHAPE_IOS
+local GLASS_BORDER = Color(255, 255, 255, 40)
+local GLASS_BG = Color(245, 250, 255, 70)
+local GLASS_HEADER = Color(255, 255, 255, 110)
+local GLASS_HEADER_FLAGS = bit.bor(GLASS_FLAGS, ax.render.NO_BL, ax.render.NO_BR)
+
+local function DrawGlassPanel(x, y, w, h, radius, color, blurIntensity, flags)
+    flags = flags or GLASS_FLAGS
+
+    ax.render().Rect(x, y, w, h)
+        :Rad(radius)
+        :Flags(flags)
+        :Blur(blurIntensity or 1.2)
+        :Draw()
+
+    ax.render.Draw(radius, x, y, w, h, color, flags)
+    ax.render.DrawOutlined(radius, x, y, w, h, GLASS_BORDER, 1, flags)
+end
+
 function PANEL:Init()
     self:SetFocusTopLevel(true)
     self:SetPaintShadow(true)
@@ -51,7 +70,7 @@ function PANEL:Init()
 
     self.m_fCreateTime = SysTime()
 
-    self:DockPadding(5, 48 + 15, 5, 5)
+    self:DockPadding(12, 64, 12, 12)
 end
 
 function PANEL:ShowCloseButton(bShow)
@@ -176,11 +195,11 @@ function PANEL:OnMouseReleased()
 end
 
 function PANEL:PerformLayout()
-    self.btnClose:SetPos(self:GetWide() - 48 - 5, 5)
+    self.btnClose:SetPos(self:GetWide() - 48 - 12, 12)
     self.btnClose:SetSize(48, 48)
 
-    self.lblTitle:SetPos(8, 4)
-    self.lblTitle:SetSize(self:GetWide() - 24, 48)
+    self.lblTitle:SetPos(16, 10)
+    self.lblTitle:SetSize(self:GetWide() - 32, 40)
 end
 
 function PANEL:Paint(width, height)
@@ -188,8 +207,8 @@ function PANEL:Paint(width, height)
         Derma_DrawBackgroundBlur(self, self.m_fCreateTime)
     end
 
-    ax.render.Draw(0, 0, 0, width, height, Color(0, 0, 0, 150))
-    ax.render.Draw(0, 0, 0, width, 58, Color(0, 0, 0, 200))
+    DrawGlassPanel(0, 0, width, height, 12, GLASS_BG, 1.1)
+    DrawGlassPanel(0, 0, width, 58, 12, GLASS_HEADER, 1.4, GLASS_HEADER_FLAGS)
 
     return true
 end

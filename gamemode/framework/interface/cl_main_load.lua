@@ -29,7 +29,7 @@ function PANEL:Init()
 
     self.characters = self.characterList:Add("ax.scroller.vertical")
     self.characters:Dock(FILL)
-    self.characters:DockMargin(ax.util:ScreenScale(128), ax.util:ScreenScaleH(32), ax.util:ScreenScale(128), ax.util:ScreenScaleH(32))
+    self.characters:DockMargin(ax.util:ScreenScale(144), ax.util:ScreenScaleH(40), ax.util:ScreenScale(144), ax.util:ScreenScaleH(40))
     self.characters:InvalidateParent(true)
     self.characters:GetVBar():SetWide(0)
     self.characters.Paint = nil
@@ -153,13 +153,13 @@ function PANEL:PopulateDeletePanel(character)
 
     local title = self.deleteContainer:Add("ax.text")
     title:Dock(TOP)
-    title:DockMargin(ax.util:ScreenScale(32), ax.util:ScreenScaleH(32), 0, 0)
+    title:DockMargin(ax.util:ScreenScale(48), ax.util:ScreenScaleH(40), 0, 0)
     title:SetFont("ax.huge.bold")
     title:SetText("ARE YOU SURE YOU WANT TO DELETE")
 
     local name = self.deleteContainer:Add("ax.text")
     name:Dock(TOP)
-    name:DockMargin(ax.util:ScreenScale(64), 0, 0, ax.util:ScreenScaleH(16))
+    name:DockMargin(ax.util:ScreenScale(72), 0, 0, ax.util:ScreenScaleH(20))
     name:SetFont("ax.huge.bold")
     name:SetText(character:GetName():upper())
     name:SetTextColor(team.GetColor(character:GetFaction()) or color_white)
@@ -198,7 +198,12 @@ function PANEL:PopulateDeletePanel(character)
 end
 
 function PANEL:Paint(width, height)
-    ax.util:DrawGradient("down", 0, 0, width, height, Color(0, 0, 0, 200))
+    ax.render().Rect(0, 0, width, height)
+        :Rad(0)
+        :Flags(ax.render.SHAPE_IOS)
+        :Blur(1.1)
+        :Draw()
+    ax.util:DrawGradient(0, "down", 0, 0, width, height, Color(200, 230, 255, 40))
 end
 
 vgui.Register("ax.main.load", PANEL, "ax.transition")

@@ -36,7 +36,12 @@ function Derma_DrawBackgroundBlur(panel, starttime)
         end
     end
 
-    ax.render.Draw(0, x * -1, y * -1, ScrW(), ScrH(), Color(0, 0, 0, 200 * fraction))
+    ax.render().Rect(x * -1, y * -1, ScrW(), ScrH())
+        :Rad(0)
+        :Flags(ax.render.SHAPE_IOS)
+        :Blur(1.1)
+        :Draw()
+    ax.render.Draw(0, x * -1, y * -1, ScrW(), ScrH(), Color(235, 245, 255, 80 * fraction))
 
     DisableClipping(wasEnabled)
 end
@@ -54,6 +59,8 @@ function Derma_Message(text, title, buttonText)
     frame.starttime = SysTime()
     frame.Paint = function(this, w, h)
         Derma_DrawBackgroundBlur(this, this.starttime)
+        ax.render.Draw(12, 0, 0, w, h, Color(245, 250, 255, 120), ax.render.SHAPE_IOS)
+        ax.render.DrawOutlined(12, 0, 0, w, h, Color(255, 255, 255, 60), 1, ax.render.SHAPE_IOS)
     end
     frame.Close = function(this)
         if ( IsValid(this) ) then
@@ -113,6 +120,8 @@ function Derma_Query(text, title, ...)
     frame.starttime = SysTime()
     frame.Paint = function(this, w, h)
         Derma_DrawBackgroundBlur(this, this.starttime)
+        ax.render.Draw(12, 0, 0, w, h, Color(245, 250, 255, 120), ax.render.SHAPE_IOS)
+        ax.render.DrawOutlined(12, 0, 0, w, h, Color(255, 255, 255, 60), 1, ax.render.SHAPE_IOS)
     end
     frame.Close = function(this)
         if ( IsValid(this) ) then
@@ -192,6 +201,8 @@ function Derma_StringRequest(title, text, defaultText, onEnter, onCancel, okText
     frame.starttime = SysTime()
     frame.Paint = function(this, width, height)
         Derma_DrawBackgroundBlur(this, this.starttime)
+        ax.render.Draw(12, 0, 0, width, height, Color(245, 250, 255, 120), ax.render.SHAPE_IOS)
+        ax.render.DrawOutlined(12, 0, 0, width, height, Color(255, 255, 255, 60), 1, ax.render.SHAPE_IOS)
     end
     frame.Close = function(this)
         if ( IsValid(this) ) then

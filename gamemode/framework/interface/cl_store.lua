@@ -59,6 +59,7 @@ function PANEL:SetType(type)
     for k, v in SortedPairsByValue(categories) do
         local button = self.categories:Add("ax.button")
         button:Dock(TOP)
+        button:DockMargin(0, 0, 0, ax.util:ScreenScaleH(4))
         button:SetText(ax.localization:GetPhrase("category." .. v))
 
         -- ["general"] = "General",
@@ -201,6 +202,7 @@ function PANEL:Populate(tab, scroller, type, category)
             if ( entry.type == ax.type.bool ) then
                 local btn = scroller:Add("ax.store.bool")
                 btn:Dock(TOP)
+                btn:DockMargin(0, 0, 0, ax.util:ScreenScaleH(4))
                 btn:SetType(type)
                 btn:SetKey(key)
             elseif ( entry.type == ax.type.number ) then
@@ -211,26 +213,31 @@ function PANEL:Populate(tab, scroller, type, category)
 
                 local btn = scroller:Add("ax.store.number")
                 btn:Dock(TOP)
+                btn:DockMargin(0, 0, 0, ax.util:ScreenScaleH(4))
                 btn:SetType(type)
                 btn:SetKey(key)
             elseif ( entry.type == ax.type.string ) then
                 local btn = scroller:Add("ax.store.string")
                 btn:Dock(TOP)
+                btn:DockMargin(0, 0, 0, ax.util:ScreenScaleH(4))
                 btn:SetType(type)
                 btn:SetKey(key)
             elseif ( entry.type == ax.type.color ) then
                 local btn = scroller:Add("ax.store.color")
                 btn:Dock(TOP)
+                btn:DockMargin(0, 0, 0, ax.util:ScreenScaleH(4))
                 btn:SetType(type)
                 btn:SetKey(key)
             elseif ( entry.type == ax.type.array ) then
                 local btn = scroller:Add("ax.store.array")
                 btn:Dock(TOP)
+                btn:DockMargin(0, 0, 0, ax.util:ScreenScaleH(4))
                 btn:SetType(type)
                 btn:SetKey(key)
             else
                 local label = scroller:Add("ax.text")
                 label:Dock(TOP)
+                label:DockMargin(0, 0, 0, ax.util:ScreenScaleH(4))
                 label:SetFont("ax.large.italic")
                 label:SetText(string.format("Unsupported type '%s' for key: %s", ax.type:Format(entry.type), tostring(key)), true)
                 label:SetContentAlignment(5)
@@ -365,7 +372,7 @@ function PANEL:PaintAdditional(width, height)
     local value = store:Get(self.key)
 
     if ( value == default ) then return end
-    ax.util:DrawGradient("left", 0, 0, width / 3, height, ColorAlpha(self:GetTextColor(), 100))
+    ax.util:DrawGradient(8, "left", 0, 0, width / 3, height, ColorAlpha(self:GetTextColor(), 100))
 end
 
 function PANEL:UpdateDisplay()
