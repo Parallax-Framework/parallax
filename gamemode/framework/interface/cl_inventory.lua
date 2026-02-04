@@ -369,10 +369,6 @@ function PANEL:PopulateItems()
 
             -- Display stack count in item name if stacked
             local displayName = representativeItem:GetName() or tostring(representativeItem)
-            if ( stack.stackCount > 1 ) then
-                displayName = displayName .. " (x" .. stack.stackCount .. ")"
-            end
-
             item:SetText(displayName, true)
             item:SetContentAlignment(4)
             item:SetTextInset(item:GetTall() + ax.util:ScreenScale(8), 0)
