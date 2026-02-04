@@ -21,6 +21,8 @@ local INVENTORY_PREVIEW_WIDTH = ax.util:ScreenScale(256)
 local INVENTORY_INFO_HEIGHT = ax.util:ScreenScaleH(128)
 local INVENTORY_CATEGORY_SPACING = ax.util:ScreenScaleH(4)
 local INVENTORY_ACTIONS_WIDTH = ax.util:ScreenScale(128)
+local INVENTORY_PREVIEW_BLEND_SPEED = 6
+local INVENTORY_PREVIEW_TARGET_FOV = 45
 
 local function DrawGlassPanel(x, y, w, h, radius, blur)
     ax.render().Rect(x, y, w, h)
@@ -96,42 +98,45 @@ function PANEL:Init()
     self.container.Paint = nil
 
     self.previewActive = nil
+    self.previewTransitioning = false
     self.previewState = {}
-    self.previewDesired = {
-        origin = EyePos(),
-        angles = EyeAngles(),
-        fov = GetConVar("fov_desired"):GetInt()
-    }
 
     self:PopulateItems()
 end
 
+local function GetDesiredFov()
+    local conVar = GetConVar("fov_desired")
+
+    if ( conVar ) then
+        return conVar:GetInt()
+    end
+
+    return 90
+end
+
 function PANEL:SetPreviewActive(active)
     active = tobool(active)
-    if ( self.previewActive == active ) then return end
+    if ( (self.previewActive == true) == active and !self.previewTransitioning ) then
+        return
+    end
+
+    self.previewState = self.previewState or {}
+
+    if ( self.previewState.blend == nil ) then
+        self.previewState.blend = active and 0 or 0
+    end
 
     self.previewActive = active
+    self.previewTransitioning = active or self.previewState.blend > 0.01
     self:ApplyInventoryGradients(active)
-
-    if ( active ) then
-        self:Motion(1, {
-            Target = {
-                previewOrigin = self.previewDesired.origin,
-                previewAngles = self.previewDesired.angles,
-                previewFov = self.previewDesired.fov
-            },
-            Easing = "OutQuad",
-            Think = function(this)
-                self.previewDesired.origin = this.previewOrigin
-                self.previewDesired.angles = this.previewAngles
-                self.previewDesired.fov = this.previewFov
-            end
-        })
-    end
 end
 
 function PANEL:GetPreviewActive()
     return self.previewActive == true
+end
+
+function PANEL:IsPreviewViewActive()
+    return self.previewActive == true or self.previewTransitioning == true
 end
 
 function PANEL:ApplyInventoryGradients(active)
@@ -154,58 +159,66 @@ end
 function PANEL:BuildPreviewView(client)
     if ( !ax.util:IsValidPlayer(client) ) then return end
     if ( client:InVehicle() ) then return end
-    if ( self.previewActive == nil ) then return end
+    if ( !self:IsPreviewViewActive() ) then return end
+
+    local defaultOrigin = client:EyePos()
+    local defaultAngles = client:EyeAngles()
+    local defaultFov = GetDesiredFov()
 
     local head = client:LookupBone("ValveBiped.Bip01_Head1")
-    local headPos = head and client:GetBonePosition(head) or client:EyePos()
-    local baseAngles = Angle(0, client:EyeAngles().y, 0)
+    local headPos = defaultOrigin
 
-    local lookAt = headPos - baseAngles:Right() * 18 + Vector(0, 0, -2)
-    local camOffset = baseAngles:Forward() * 64 + baseAngles:Right() * 32 - Vector(0, 0, 8)
-    local targetOrigin = lookAt + camOffset
-    local targetAngles = (lookAt - targetOrigin):Angle()
-    local targetFov = 45
-
-    if ( self.previewActive == false ) then
-        targetOrigin = client:EyePos()
-        targetAngles = client:EyeAngles()
-        targetFov = GetConVar("fov_desired"):GetInt()
+    if ( head ) then
+        local bonePos = client:GetBonePosition(head)
+        if ( isvector(bonePos) and bonePos != vector_origin ) then
+            headPos = bonePos
+        end
     end
+
+    local baseAngles = Angle(0, defaultAngles.y, 0)
+    local previewLookAt = headPos - baseAngles:Right() * 18 + Vector(0, 0, -2)
+    local previewOffset = baseAngles:Forward() * 64 + baseAngles:Right() * 32 - Vector(0, 0, 8)
+    local previewOrigin = previewLookAt + previewOffset
+    local previewAngles = (previewLookAt - previewOrigin):Angle()
 
     local state = self.previewState or {}
     self.previewState = state
 
-    local lerpSpeed = FrameTime() * 6
-    state.origin = state.origin and LerpVector(lerpSpeed, state.origin, targetOrigin) or targetOrigin
-    state.angles = state.angles and LerpAngle(lerpSpeed, state.angles, targetAngles) or targetAngles
-    state.fov = state.fov and Lerp(lerpSpeed, state.fov, targetFov) or targetFov
+    local targetBlend = self.previewActive and 1 or 0
+    local blend = state.blend
 
-    local fraction = 0
-    if ( self.previewActive ) then
-        fraction = math.min(1, (state.origin - targetOrigin):Length() / 128)
+    if ( blend == nil ) then
+        blend = targetBlend
     else
-        fraction = 1 - math.min(1, (state.origin - targetOrigin):Length() / 128)
+        blend = Lerp(FrameTime() * INVENTORY_PREVIEW_BLEND_SPEED, blend, targetBlend)
     end
 
-    if ( fraction < 0.01 ) then
-        fraction = 0
-    elseif ( fraction > 0.99 ) then
-        fraction = 1
+    if ( math.abs(blend - targetBlend) < 0.01 ) then
+        blend = targetBlend
+        self.previewTransitioning = false
+
+        if ( !self.previewActive ) then
+            self.previewState = {
+                blend = 0,
+                origin = defaultOrigin,
+                angles = defaultAngles,
+                fov = defaultFov
+            }
+        end
+    else
+        self.previewTransitioning = true
     end
 
-    if ( fraction == 1 ) then
-        state.origin = targetOrigin
-        state.angles = targetAngles
-        state.fov = targetFov
-
-        self.previewActive = nil
-    end
+    state.blend = math.Clamp(blend, 0, 1)
+    state.origin = LerpVector(state.blend, defaultOrigin, previewOrigin)
+    state.angles = LerpAngle(state.blend, defaultAngles, previewAngles)
+    state.fov = Lerp(state.blend, defaultFov, INVENTORY_PREVIEW_TARGET_FOV)
 
     return {
         origin = state.origin,
         angles = state.angles,
         fov = state.fov,
-        drawviewer = fraction < 0.5
+        drawviewer = state.blend > 0.5
     }
 end
 
@@ -576,6 +589,10 @@ vgui.Register("ax.tab.inventory", PANEL, "EditablePanel")
 ax.viewstack:RegisterModifier("inventory", function(client, patch)
     local panel = ax.gui.inventory
     if ( !IsValid(panel) ) then
+        return
+    end
+
+    if ( !panel:IsPreviewViewActive() ) then
         return
     end
 
