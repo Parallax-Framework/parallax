@@ -387,6 +387,7 @@ function PANEL:Close(callback)
     self:SetGradientBottomTarget(0)
 
     local fadeDuration = ax.option:Get("tabFadeTime", 0.25)
+    hook.Run("OnTabMenuClosing", self, fadeDuration)
 
     self:AlphaTo(0, fadeDuration, 0, function()
         self:Remove()

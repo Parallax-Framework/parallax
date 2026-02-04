@@ -614,3 +614,9 @@ hook.Add("PopulateTabButtons", "ax.tab.inventory", function(buttons)
         end,
     }
 end)
+
+hook.Add("OnTabMenuClosing", "ax.tab.inventory.previewfade", function()
+    if ( !IsValid(ax.gui.inventory) ) then return end
+
+    ax.gui.inventory:SetPreviewActive(false)
+end)
