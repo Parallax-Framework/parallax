@@ -274,7 +274,7 @@ function PANEL:Init()
     self.iconSize = ax.util:ScreenScale(16)
     self.iconColor = Color(255, 255, 255)
     self.iconSpacing = ax.util:ScreenScale(4)
-    self.iconAlign = "left" -- left, right, or center
+    self.iconAlign = "left" -- options: left, right, center
 
     self:SetContentAlignment(5)
 end
@@ -283,24 +283,21 @@ function PANEL:SetIcon(iconPath)
     if ( !isstring(iconPath) ) then return end
 
     self.icon = ax.util:GetMaterial(iconPath)
+    self.iconSize = self:GetTall()
+
+    local _, textInsetY = self:GetTextInset()
+    self:SetTextInset(self:GetTall() + self.iconSpacing * 2, textInsetY)
 end
 
 function PANEL:Paint(width, height)
-    local alpha = math.Clamp(self.backgroundAlphaUnHovered + (self.backgroundAlphaHovered - self.backgroundAlphaUnHovered) * self.inertia, 0, 220)
-    local color = Color(GLASS_BUTTON_BG.r, GLASS_BUTTON_BG.g, GLASS_BUTTON_BG.b, alpha)
+    local color = self.backgroundColorUnHovered
     if ( self.inertia > 0.8 ) then
-        color = Color(GLASS_BUTTON_BG_ACTIVE.r, GLASS_BUTTON_BG_ACTIVE.g, GLASS_BUTTON_BG_ACTIVE.b, alpha)
+        color = self.backgroundColorActive
     elseif ( self.inertia > 0.25 ) then
-        color = Color(GLASS_BUTTON_BG_HOVER.r, GLASS_BUTTON_BG_HOVER.g, GLASS_BUTTON_BG_HOVER.b, alpha)
+        color = self.backgroundColorHovered
     end
 
-    ax.render().Rect(0, 0, width, height)
-        :Rad(math.max(4, math.min(10, height * 0.35)))
-        :Flags(GLASS_BUTTON_FLAGS)
-        :Blur(0.7)
-        :Draw()
-    ax.render.Draw(8, 0, 0, width, height, color, GLASS_BUTTON_FLAGS)
-    ax.render.DrawOutlined(8, 0, 0, width, height, GLASS_BUTTON_BORDER, 1, GLASS_BUTTON_FLAGS)
+    DrawGlassButton(0, 0, width, height, color, self:GetBlur())
 
     if ( self.icon ) then
         local iconY = (height - self.iconSize) / 2
@@ -321,18 +318,4 @@ function PANEL:Paint(width, height)
     end
 end
 
-function PANEL:GetTextInset()
-    if ( !self.icon ) then return BaseClass.GetTextInset(self) end
-
-    local insetLeft, insetTop = BaseClass.GetTextInset(self)
-
-    if ( self.iconAlign == "left" ) then
-        return insetLeft + self.iconSize + self.iconSpacing, insetTop
-    elseif ( self.iconAlign == "right" ) then
-        return insetLeft, insetTop
-    end
-
-    return insetLeft, insetTop
-end
-
-vgui.Register("ax.button.flat.icon", PANEL, "ax.button.flat")
+vgui.Register("ax.button.icon", PANEL, "ax.button.core")
