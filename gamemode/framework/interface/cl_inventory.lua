@@ -21,7 +21,7 @@ local INVENTORY_PREVIEW_WIDTH = ax.util:ScreenScale(256)
 local INVENTORY_INFO_HEIGHT = ax.util:ScreenScaleH(128)
 local INVENTORY_CATEGORY_SPACING = ax.util:ScreenScaleH(4)
 local INVENTORY_ACTIONS_WIDTH = ax.util:ScreenScale(128)
-local INVENTORY_PREVIEW_BLEND_SPEED = 6
+local INVENTORY_PREVIEW_TRANSITION_TIME = ax.option:Get("tabFadeTime", 0.25)
 local INVENTORY_PREVIEW_TARGET_FOV = 45
 
 local function DrawGlassPanel(x, y, w, h, radius, blur)
@@ -116,18 +116,33 @@ end
 
 function PANEL:SetPreviewActive(active)
     active = tobool(active)
-    if ( (self.previewActive == true) == active and !self.previewTransitioning ) then
+    self.previewState = self.previewState or {}
+    local state = self.previewState
+    local currentBlend = state.blend
+    local targetBlend = active and 1 or 0
+
+    if ( currentBlend == nil ) then
+        currentBlend = (self.previewActive == true) and 1 or 0
+    end
+
+    if ( self.previewTransitioning and state.transitionStartTime and state.transitionDuration ) then
+        local duration = math.max(state.transitionDuration, 0.001)
+        local frac = math.Clamp((CurTime() - state.transitionStartTime) / duration, 0, 1)
+        currentBlend = Lerp(frac, state.transitionStartBlend or currentBlend, state.transitionTargetBlend or currentBlend)
+    end
+
+    if ( !self.previewTransitioning and math.abs(currentBlend - targetBlend) <= 0.001 and (self.previewActive == true) == active ) then
         return
     end
 
-    self.previewState = self.previewState or {}
-
-    if ( self.previewState.blend == nil ) then
-        self.previewState.blend = active and 0 or 0
-    end
+    state.blend = currentBlend
+    state.transitionStartBlend = currentBlend
+    state.transitionTargetBlend = targetBlend
+    state.transitionStartTime = CurTime()
+    state.transitionDuration = INVENTORY_PREVIEW_TRANSITION_TIME
 
     self.previewActive = active
-    self.previewTransitioning = active or self.previewState.blend > 0.01
+    self.previewTransitioning = math.abs(currentBlend - targetBlend) > 0.001
     self:ApplyInventoryGradients(active)
 end
 
@@ -184,29 +199,34 @@ function PANEL:BuildPreviewView(client)
     local state = self.previewState or {}
     self.previewState = state
 
-    local targetBlend = self.previewActive and 1 or 0
     local blend = state.blend
-
     if ( blend == nil ) then
-        blend = targetBlend
-    else
-        blend = Lerp(FrameTime() * INVENTORY_PREVIEW_BLEND_SPEED, blend, targetBlend)
+        blend = self.previewActive and 1 or 0
     end
 
-    if ( math.abs(blend - targetBlend) < 0.01 ) then
-        blend = targetBlend
-        self.previewTransitioning = false
+    if ( self.previewTransitioning ) then
+        local startTime = state.transitionStartTime or CurTime()
+        local duration = math.max(state.transitionDuration or INVENTORY_PREVIEW_TRANSITION_TIME, 0.001)
+        local frac = math.Clamp((CurTime() - startTime) / duration, 0, 1)
+        local startBlend = state.transitionStartBlend or blend
+        local targetBlend = state.transitionTargetBlend
 
-        if ( !self.previewActive ) then
-            self.previewState = {
-                blend = 0,
-                origin = defaultOrigin,
-                angles = defaultAngles,
-                fov = defaultFov
-            }
+        if ( targetBlend == nil ) then
+            targetBlend = self.previewActive and 1 or 0
+        end
+
+        blend = Lerp(frac, startBlend, targetBlend)
+
+        if ( frac >= 1 ) then
+            blend = targetBlend
+            self.previewTransitioning = false
+            state.transitionStartBlend = nil
+            state.transitionTargetBlend = nil
+            state.transitionStartTime = nil
+            state.transitionDuration = nil
         end
     else
-        self.previewTransitioning = true
+        blend = self.previewActive and 1 or 0
     end
 
     state.blend = math.Clamp(blend, 0, 1)
