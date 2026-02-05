@@ -89,7 +89,7 @@ ax.character:RegisterVar("faction", {
             end
 
             local name = (v.name and utf8.upper(v.name)) or "UNKNOWN FACTION"
-            local description = (v.description and utf8.upper(v.description)) or "UNKNOWN FACTION DESCRIPTION"
+            local description = v.description or "UNKNOWN FACTION DESCRIPTION"
             description = ax.util:CapTextWord(description, buttonWidth / 2) -- Unreliable, but it works for now
 
             local descriptionWrapped = ax.util:GetWrappedText(description, "ax.regular.bold", buttonWidth - ax.util:ScreenScale(16))
@@ -99,7 +99,6 @@ ax.character:RegisterVar("faction", {
             factionButton:SetWide(buttonWidth)
             factionButton:Dock(LEFT)
             factionButton:DockMargin(ax.util:ScreenScale(2), 0, ax.util:ScreenScale(2), 0)
-
             factionButton.DoClick = function()
                 table.Empty(payload or {})
                 payload.faction = v.index
@@ -112,6 +111,7 @@ ax.character:RegisterVar("faction", {
 
                 ax.gui.main.create:NavigateToNextTab(parent)
             end
+            factionButton.Paint = nil
 
             local banner = v.image or hook.Run("GetFactionBanner", v.index) or "parallax/banners/unknown.png"
             if ( isstring(banner) ) then
@@ -123,21 +123,30 @@ ax.character:RegisterVar("faction", {
             image:SetSize(factionButton:GetTall(), factionButton:GetTall())
             image:Dock(FILL)
             image.Paint = function(_, width, height)
-                local imageHeight = height * 0.75
+                local glass = ax.theme:GetGlass()
+
+                local imageHeight = height * 0.8
                 imageHeight = math.Round(imageHeight)
 
-                ax.render.DrawMaterial(0, 0, 0, width, imageHeight, color_white, banner)
+                ax.render.DrawMaterial(12, 0, 0, width, imageHeight - 8, color_white, banner)
 
                 local inertia = factionButton:GetInertia()
-                local boxHeightStatic = (height * 0.15)
+                local boxHeightStatic = (height * 0.2)
                 boxHeightStatic = math.Round(boxHeightStatic)
 
-                local boxHeight = boxHeightStatic * inertia
+                local boxHeight = boxHeightStatic + boxHeightStatic * inertia
                 boxHeight = math.Round(boxHeight)
-                ax.render.Draw(0, 0, imageHeight - boxHeight, width, boxHeight, Color(255, 255, 255, 255 * inertia))
 
-                local textColor = factionButton:GetTextColor()
+                ax.theme:DrawGlassPanel(0, height - boxHeight, width, boxHeight, {
+                    radius = 12,
+                    blur = 1.1,
+                    flags = ax.render.SHAPE_IOS,
+                    fill = glass.panel,
+                    border = glass.panelBorder
+                })
+
                 local hovered = factionButton:IsHovered()
+                local textColor = hovered and glass.textHover or glass.text
                 local font = "ax.huge"
                 if ( v.Font ) then
                     font = v.Font
@@ -149,11 +158,12 @@ ax.character:RegisterVar("faction", {
                     font = font .. ".bold"
                 end
 
-                draw.SimpleText(name, font, ax.util:ScreenScale(8), imageHeight - boxHeight + boxHeightStatic / 2, textColor, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+                draw.SimpleText(name, font, ax.util:ScreenScale(8), height - boxHeight + boxHeightStatic / 2, textColor, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
 
-                local textHeight = ax.util:GetTextHeight("ax.regular.bold") / 1.5
+                local textHeight = ax.util:GetTextHeight("ax.regular.italic") / 1.5
+                local descColor = ColorAlpha(textColor, 255 * inertia)
                 for d = 1, #descriptionWrapped do
-                    draw.SimpleText(descriptionWrapped[d], "ax.regular.bold", ax.util:ScreenScale(8), imageHeight - boxHeight + boxHeightStatic + (d - 1) * textHeight, ColorAlpha(textColor, 255 * inertia), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+                    draw.SimpleText(descriptionWrapped[d], "ax.regular.italic", ax.util:ScreenScale(8), height - boxHeight + boxHeightStatic + (d - 1) * textHeight, descColor, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
                 end
             end
 
@@ -361,12 +371,13 @@ ax.character:RegisterVar("name", {
             -- Clear docking to insert hints before re-docking
             entry:Dock(NODOCK)
 
+            local glass = ax.theme:GetGlass()
             local hintZPos = this.sortOrder + 0.5
             for i, hintText in ipairs(this.hints) do
                 local hint = container:Add("ax.text")
                 hint:SetFont("ax.small.italic")
                 hint:SetText("• " .. hintText)
-                hint:SetTextColor(Color(200, 200, 200))
+                hint:SetTextColor(glass.textMuted)
                 hint:SetZPos(hintZPos + i * 0.1)
                 hint:Dock(TOP)
             end
@@ -463,12 +474,13 @@ ax.character:RegisterVar("description", {
             -- Clear docking to insert hints before re-docking
             entry:Dock(NODOCK)
 
+            local glass = ax.theme:GetGlass()
             local hintZPos = this.sortOrder + 0.5
             for i, hintText in ipairs(this.hints) do
                 local hint = container:Add("ax.text")
                 hint:SetFont("ax.small.italic")
                 hint:SetText("• " .. hintText)
-                hint:SetTextColor(Color(200, 200, 200))
+                hint:SetTextColor(glass.textMuted)
                 hint:SetZPos(hintZPos + i * 0.1)
                 hint:Dock(TOP)
             end
@@ -571,8 +583,16 @@ ax.character:RegisterVar("model", {
 
             modelButton.PaintOver = function(_, width, height)
                 if ( payload.model == model ) then
-                    surface.SetDrawColor(0, 150, 255, 100)
-                    surface.DrawRect(0, 0, width, height)
+                    local glass = ax.theme:GetGlass()
+                    local metrics = ax.theme:GetMetrics()
+
+                    -- Glass highlight border for selected model
+                    local borderColor = glass.highlight or Color(90, 140, 200, 120)
+                    ax.render.DrawOutlined(metrics.roundness * 0.5, 0, 0, width, height, borderColor, 2)
+
+                    -- Subtle fill overlay
+                    local fillColor = ColorAlpha(glass.highlight, (glass.highlight.a or 120) * 0.4)
+                    ax.render.Draw(metrics.roundness * 0.5, 0, 0, width, height, fillColor)
                 end
             end
         end
