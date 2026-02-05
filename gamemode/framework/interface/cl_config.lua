@@ -9,10 +9,9 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
--- Clean up existing hook to prevent duplicates on reload
-hook.Remove("PopulateTabButtons", "ax.tab.config")
-
 hook.Add("PopulateTabButtons", "ax.tab.config", function(buttons)
+    if ( !ax.client:IsSuperAdmin() ) then return end -- TODO: Replace with proper permission check
+
     buttons["config"] = {
         Populate = function(this, panel)
             local settings = panel:Add("ax.store")
