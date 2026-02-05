@@ -36,7 +36,8 @@ ax.theme.themes.dark = {
         tabBackdrop = Color(12, 16, 20, 35),
         text = Color(230, 235, 245, 255),
         textHover = Color(245, 250, 255, 255),
-        textMuted = Color(180, 190, 205, 255)
+        textMuted = Color(180, 190, 205, 255),
+        comboboxHoveredArrow = Color(255, 255, 255, 200)
     }
 }
 
@@ -64,7 +65,8 @@ ax.theme.themes.light = {
         tabBackdrop = Color(225, 232, 242, 60),
         text = Color(20, 25, 35, 255),
         textHover = Color(5, 10, 20, 255),
-        textMuted = Color(70, 85, 105, 255)
+        textMuted = Color(70, 85, 105, 255),
+        comboboxHoveredArrow = Color(20, 25, 35, 200)
     }
 }
 
@@ -92,7 +94,8 @@ ax.theme.themes.blue = {
         tabBackdrop = Color(8, 12, 22, 40),
         text = Color(220, 235, 255, 255),
         textHover = Color(240, 250, 255, 255),
-        textMuted = Color(160, 180, 210, 255)
+        textMuted = Color(160, 180, 210, 255),
+        comboboxHoveredArrow = Color(220, 235, 255, 200)
     }
 }
 
@@ -120,7 +123,8 @@ ax.theme.themes.purple = {
         tabBackdrop = Color(14, 10, 22, 40),
         text = Color(235, 220, 255, 255),
         textHover = Color(250, 240, 255, 255),
-        textMuted = Color(180, 160, 210, 255)
+        textMuted = Color(180, 160, 210, 255),
+        comboboxHoveredArrow = Color(235, 220, 255, 200)
     }
 }
 
@@ -148,7 +152,8 @@ ax.theme.themes.green = {
         tabBackdrop = Color(10, 16, 14, 40),
         text = Color(220, 245, 230, 255),
         textHover = Color(240, 255, 245, 255),
-        textMuted = Color(160, 200, 175, 255)
+        textMuted = Color(160, 200, 175, 255),
+        comboboxHoveredArrow = Color(220, 245, 230, 200)
     }
 }
 
@@ -176,7 +181,8 @@ ax.theme.themes.red = {
         tabBackdrop = Color(18, 10, 12, 40),
         text = Color(245, 220, 225, 255),
         textHover = Color(255, 240, 245, 255),
-        textMuted = Color(200, 160, 170, 255)
+        textMuted = Color(200, 160, 170, 255),
+        comboboxHoveredArrow = Color(245, 220, 225, 200)
     }
 }
 
@@ -244,7 +250,8 @@ function ax.theme:GetGlass()
         tabBackdrop = ScaleAlpha(glass.tabBackdrop or glass.overlay, metrics.opacity),
         text = glass.text or color_white,
         textHover = glass.textHover or color_white,
-        textMuted = glass.textMuted or color_white
+        textMuted = glass.textMuted or color_white,
+        comboboxHoveredArrow = glass.comboboxHoveredArrow or color_white
     }
 end
 

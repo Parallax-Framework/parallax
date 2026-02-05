@@ -48,9 +48,11 @@ function PANEL:AddOption( strText, funcFunction )
 		--derma.SkinHook( "Paint", "MenuOption", p, w, h )
 
 		if ( p.Hovered ) then
+			local theme = ax.theme:GetGlass()
+
 			ax.util:DrawGradient(0, "left", 0, 0, w, h, MENU_OPTION_HOVERED_COLOR)
 
-			ax.render.DrawMaterial(0, 8, h / 2 - 8, 16, 16, color_white, MENU_OPTION_HOVERED_MATERIAL)
+			ax.render.DrawMaterial(0, 8, h / 2 - 8, 16, 16, theme.comboboxHoveredArrow, MENU_OPTION_HOVERED_MATERIAL)
 		end
 	end
 
