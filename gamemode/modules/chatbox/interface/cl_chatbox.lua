@@ -440,15 +440,19 @@ function PANEL:PopulateRecommendations(text, recommendationType)
             end
             rec.Paint = function(_, width, height)
                 if ( self.recommendations.indexSelect == i ) then
-                    ax.render.Draw(0, 0, 0, width, height, Color(200, 50, 50, 150))
+                    local glass = ax.theme:GetGlass()
+                    local highlight = glass.highlight or Color(90, 140, 200, 120)
+                    ax.render.Draw(0, 0, 0, width, height, highlight)
                 end
             end
 
+            local glass = ax.theme:GetGlass()
             local title = rec:Add("ax.text")
             title:Dock(LEFT)
             title:DockMargin(8, 0, 8, 0)
             title:SetFont("ax.small")
             title:SetText(item.displayName, true)
+            title:SetTextColor(glass.text)
 
             local descriptionText = item.description
             if ( !descriptionText or descriptionText == "" ) then
@@ -460,7 +464,7 @@ function PANEL:PopulateRecommendations(text, recommendationType)
             description:DockMargin(8, 0, 8, 0)
             description:SetFont("ax.small")
             description:SetText(descriptionText, true)
-            description:SetTextColor(Color(255, 255, 255, 150))
+            description:SetTextColor(glass.textMuted)
 
             rec:SetTall(math.max(title:GetTall(), description:GetTall()) + ScreenScale(1))
 
