@@ -23,6 +23,80 @@ ax.option:Add("inventory.categories.italic", ax.type.bool, true, {
     bNoNetworking = true
 })
 
+ax.option:Add("interface.theme", ax.type.array, "dark", {
+    category = "interface",
+    subCategory = "display",
+    description = "interface.theme.help",
+    choices = {
+        ["dark"] = "theme.dark",
+        ["light"] = "theme.light",
+        ["blue"] = "theme.blue",
+        ["purple"] = "theme.purple",
+        ["green"] = "theme.green",
+        ["red"] = "theme.red"
+    },
+    bNoNetworking = true,
+    OnChanged = function(self, oldValue, value)
+        if ( IsValid(ax.gui.main) ) then
+            ax.gui.main:Remove()
+            vgui.Create("ax.main")
+
+            -- just notify the user that the main menu has been rebuilt to apply the new theme
+            Derma_Message("The main menu has been rebuilt to apply the new theme.", "Theme Changed", "OK")
+        end
+    end
+})
+
+ax.option:Add("interface.glass.roundness", ax.type.number, 8, {
+    category = "interface",
+    subCategory = "display",
+    description = "interface.glass.roundness.help",
+    min = 0,
+    max = 24,
+    decimals = 0,
+    bNoNetworking = true
+})
+
+ax.option:Add("interface.glass.blur", ax.type.number, 1.0, {
+    category = "interface",
+    subCategory = "display",
+    description = "interface.glass.blur.help",
+    min = 0,
+    max = 2.0,
+    decimals = 2,
+    bNoNetworking = true
+})
+
+ax.option:Add("interface.glass.opacity", ax.type.number, 1.0, {
+    category = "interface",
+    subCategory = "display",
+    description = "interface.glass.opacity.help",
+    min = 0.2,
+    max = 1.5,
+    decimals = 2,
+    bNoNetworking = true
+})
+
+ax.option:Add("interface.glass.borderOpacity", ax.type.number, 1.0, {
+    category = "interface",
+    subCategory = "display",
+    description = "interface.glass.borderOpacity.help",
+    min = 0.2,
+    max = 1.5,
+    decimals = 2,
+    bNoNetworking = true
+})
+
+ax.option:Add("interface.glass.gradientOpacity", ax.type.number, 1.0, {
+    category = "interface",
+    subCategory = "display",
+    description = "interface.glass.gradientOpacity.help",
+    min = 0.0,
+    max = 1.5,
+    decimals = 2,
+    bNoNetworking = true
+})
+
 -- UI scaling and layout options
 ax.option:Add("interface.scale", ax.type.number, 1.0, {
     min = 0.5,

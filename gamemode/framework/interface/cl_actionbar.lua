@@ -81,13 +81,22 @@ ax.actionBar.labelColor = Color(200, 200, 200, 255)
 
 function ax.actionBar:Render()
     if ( !self:IsActive() ) then return end
-    if ( hook.Run("ShouldDrawActionBar", activeBar) == false ) then self:Stop(true) return end
+    if ( hook.Run("ShouldDrawActionBar", self) == false ) then self:Stop(true) return end
 
     local client = ax.client
     if ( !ax.util:IsValidPlayer(client) ) then
         self:Stop(true)
         return
     end
+
+    local glass = ax.theme and ax.theme:GetGlass()
+    local ringColor = glass and (glass.highlight or glass.progress) or self.bgColor
+    local progressColor = glass and (glass.panel or glass.button) or self.progressColor
+    local outlineColor = glass and (glass.panelBorder or glass.buttonBorder) or Color(255, 255, 255, 90)
+    local innerFillColor = glass and (glass.overlayStrong or glass.overlay) or Color(0, 0, 0, 160)
+    local ringGlowColor = ColorAlpha(ringColor, math.Clamp((ringColor.a or 255) + 80, 0, 255))
+    local textColor = glass and (glass.text or self.textColor) or self.textColor
+    local labelColor = glass and (glass.textMuted or self.labelColor) or self.labelColor
 
     local elapsed = CurTime() - self.startTime
     local progress = math.Clamp(elapsed / self.duration, 0, 1)
@@ -100,19 +109,49 @@ function ax.actionBar:Render()
 
     local scrW, scrH = ScrW(), ScrH()
     local centerX = scrW / 2
-    local centerY = scrH - ScreenScaleH(120)
-    local circleRadius = ScreenScale(16)
+    local centerY = scrH - ScreenScaleH(128)
+    local circleRadius = ScreenScale(24)
 
-    ax.render.DrawCircle(centerX, centerY, circleRadius * 2 - 2, ax.actionBar.progressColor)
+    local outerDiameter = circleRadius * 2
+    local ringThickness = math.max(3, circleRadius * 0.45)
+    local innerDiameter = math.max(outerDiameter - (ringThickness * 2), circleRadius)
 
-    local progressAngle = 360 * (1 - progress)
-    ax.util:DrawSlice(centerX, centerY, circleRadius, 0, progressAngle, ax.actionBar.bgColor)
+    ax.render().Circle(centerX, centerY, outerDiameter)
+        :Blur(0.8)
+        :Draw()
+    ax.render.DrawCircle(centerX, centerY, outerDiameter, progressColor)
+    ax.render.DrawCircleOutlined(centerX, centerY, outerDiameter, outlineColor, 1.5)
+
+    local remainingProgress = math.Clamp(1 - progress, 0, 1)
+    local progressAngle = 360 * remainingProgress
+
+    ax.render().Circle(centerX, centerY, outerDiameter)
+        :Rotation(90)
+        :Outline(ringThickness)
+        :StartAngle(0)
+        :EndAngle(progressAngle)
+        :Blur(0.4)
+        :Color(ringGlowColor)
+        :Draw()
+    ax.render().Circle(centerX, centerY, outerDiameter - 2)
+        :Rotation(90)
+        :Outline(ringThickness)
+        :StartAngle(0)
+        :EndAngle(progressAngle)
+        :Color(ringColor)
+        :Draw()
+
+    ax.render().Circle(centerX, centerY, innerDiameter)
+        :Blur(0.9)
+        :Draw()
+    ax.render.DrawCircle(centerX, centerY, innerDiameter, innerFillColor)
+    ax.render.DrawCircleOutlined(centerX, centerY, innerDiameter, outlineColor, 1)
 
     local timeText = string.ToMinutesSecondsMilliseconds(remaining)
-    draw.SimpleText(timeText, "ax.small.bold", centerX, centerY, ax.actionBar.textColor, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+    draw.SimpleText(timeText, "ax.small.bold", centerX, centerY, textColor, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 
     local labelY = centerY + circleRadius + ScreenScaleH(8)
-    draw.SimpleText(self.label, "ax.regular.italic", centerX, labelY, ax.actionBar.labelColor, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+    draw.SimpleText(self.label, "ax.regular.italic", centerX, labelY, labelColor, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 end
 
 -- Hook into HUD paint

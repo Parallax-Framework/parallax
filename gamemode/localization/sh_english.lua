@@ -129,7 +129,27 @@ ax.localization:Register("en", {
 
     ---- Display
     ["option.interface.scale"] = "Interface Scale",
+    ["option.interface.theme"] = "Interface Theme",
+    ["option.interface.theme.help"] = "Choose the color theme for the interface.",
+    ["option.interface.glass.roundness"] = "Glass Roundness",
+    ["option.interface.glass.roundness.help"] = "Adjust the corner radius of glass UI elements.",
+    ["option.interface.glass.blur"] = "Glass Blur Intensity",
+    ["option.interface.glass.blur.help"] = "Control the blur strength behind glass UI elements.",
+    ["option.interface.glass.opacity"] = "Glass Opacity",
+    ["option.interface.glass.opacity.help"] = "Adjust the opacity of glass UI panels.",
+    ["option.interface.glass.borderOpacity"] = "Glass Border Opacity",
+    ["option.interface.glass.borderOpacity.help"] = "Control the visibility of glass UI borders.",
+    ["option.interface.glass.gradientOpacity"] = "Glass Gradient Opacity",
+    ["option.interface.glass.gradientOpacity.help"] = "Adjust the strength of gradient overlays on glass panels.",
     ["option.performance.animations"] = "Enable Interface Animations",
+
+    -- Theme Names
+    ["theme.dark"] = "Dark",
+    ["theme.light"] = "Light",
+    ["theme.blue"] = "Blue",
+    ["theme.purple"] = "Purple",
+    ["theme.green"] = "Green",
+    ["theme.red"] = "Red",
 
     ---- Fonts
     ["option.fontScaleGeneral"] = "General Font Scale",

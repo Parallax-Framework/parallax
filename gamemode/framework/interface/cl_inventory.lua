@@ -14,9 +14,6 @@
 local PANEL = {}
 
 local GLASS_PANEL_RADIUS = 10
-local GLASS_PANEL_COLOR = Color(245, 250, 255, 35)
-local GLASS_PANEL_BORDER = Color(255, 255, 255, 45)
-local GLASS_PROGRESS = Color(120, 220, 240, 190)
 local INVENTORY_PREVIEW_WIDTH = ax.util:ScreenScale(256)
 local INVENTORY_INFO_HEIGHT = ax.util:ScreenScaleH(128)
 local INVENTORY_CATEGORY_SPACING = ax.util:ScreenScaleH(4)
@@ -25,13 +22,11 @@ local INVENTORY_PREVIEW_TRANSITION_TIME = ax.option:Get("tabFadeTime", 0.25)
 local INVENTORY_PREVIEW_TARGET_FOV = 45
 
 local function DrawGlassPanel(x, y, w, h, radius, blur)
-    ax.render().Rect(x, y, w, h)
-        :Rad(radius)
-        :Flags(ax.render.SHAPE_IOS)
-        :Blur(blur or 1.0)
-        :Draw()
-    ax.render.Draw(radius, x, y, w, h, GLASS_PANEL_COLOR, ax.render.SHAPE_IOS)
-    ax.render.DrawOutlined(radius, x, y, w, h, GLASS_PANEL_BORDER, 1, ax.render.SHAPE_IOS)
+    ax.theme:DrawGlassPanel(x, y, w, h, {
+        radius = radius,
+        blur = blur,
+        flags = ax.render.SHAPE_IOS
+    })
 end
 
 function PANEL:Init()
@@ -78,7 +73,8 @@ function PANEL:Init()
         DrawGlassPanel(0, 0, width, height, GLASS_PANEL_RADIUS, 0.6)
 
         local fraction = this:GetFraction()
-        ax.render.Draw(GLASS_PANEL_RADIUS, 0, 0, width * fraction, height, GLASS_PROGRESS, ax.render.SHAPE_IOS)
+        local glass = ax.theme:GetGlass()
+        ax.render.Draw(GLASS_PANEL_RADIUS, 0, 0, width * fraction, height, glass.progress, ax.render.SHAPE_IOS)
     end
 
     local totalWeight = maxWeight * self.weightProgress:GetFraction()

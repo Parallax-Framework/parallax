@@ -27,23 +27,7 @@ AccessorFunc(PANEL, "m_iMinHeight",       "MinHeight",     FORCE_NUMBER)
 AccessorFunc(PANEL, "m_bBackgroundBlur",  "BackgroundBlur",FORCE_BOOL)
 
 local GLASS_FLAGS = ax.render.SHAPE_IOS
-local GLASS_BORDER = Color(255, 255, 255, 40)
-local GLASS_BG = Color(245, 250, 255, 70)
-local GLASS_HEADER = Color(255, 255, 255, 110)
 local GLASS_HEADER_FLAGS = bit.bor(GLASS_FLAGS, ax.render.NO_BL, ax.render.NO_BR)
-
-local function DrawGlassPanel(x, y, w, h, radius, color, blurIntensity, flags)
-    flags = flags or GLASS_FLAGS
-
-    ax.render().Rect(x, y, w, h)
-        :Rad(radius)
-        :Flags(flags)
-        :Blur(blurIntensity or 1.2)
-        :Draw()
-
-    ax.render.Draw(radius, x, y, w, h, color, flags)
-    ax.render.DrawOutlined(radius, x, y, w, h, GLASS_BORDER, 1, flags)
-end
 
 function PANEL:Init()
     self:SetFocusTopLevel(true)
@@ -207,8 +191,20 @@ function PANEL:Paint(width, height)
         Derma_DrawBackgroundBlur(self, self.m_fCreateTime)
     end
 
-    DrawGlassPanel(0, 0, width, height, 12, GLASS_BG, 1.1)
-    DrawGlassPanel(0, 0, width, 58, 12, GLASS_HEADER, 1.4, GLASS_HEADER_FLAGS)
+    local glass = ax.theme:GetGlass()
+    ax.theme:DrawGlassPanel(0, 0, width, height, {
+        radius = 12,
+        blur = 1.1,
+        flags = GLASS_FLAGS,
+        fill = glass.panel
+    })
+
+    ax.theme:DrawGlassPanel(0, 0, width, 58, {
+        radius = 12,
+        blur = 1.4,
+        flags = GLASS_HEADER_FLAGS,
+        fill = glass.header
+    })
 
     return true
 end

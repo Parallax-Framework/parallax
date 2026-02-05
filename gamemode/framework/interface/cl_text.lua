@@ -15,7 +15,7 @@ local PANEL = {}
 
 function PANEL:Init()
     self:SetFont("ax.regular")
-    self:SetTextColor(color_white)
+    self:SetTextColor(ax.theme:GetGlass().text)
 end
 
 function PANEL:SetText(text, bNoTranslate, bNoSizeToContents)
@@ -50,7 +50,7 @@ AccessorFunc(PANEL, "fTypingSpeed", "TypingSpeed", FORCE_NUMBER)
 
 function PANEL:Init()
     self:SetFont("ax.regular")
-    self:SetTextColor(color_white)
+    self:SetTextColor(ax.theme:GetGlass().text)
 
     self.fullText = ""
     self.displayedText = ""
@@ -137,15 +137,14 @@ function PANEL:PaintInternal(width, height)
     BaseClass.Paint(self, width, height)
 end
 
-local BACKGROUND_COLOR = Color(245, 250, 255, 70)
 function PANEL:Paint(width, height)
-    ax.render().Rect(0, 0, width, height)
-        :Rad(math.max(4, math.min(8, height * 0.35)))
-        :Flags(ax.render.SHAPE_IOS)
-        :Blur(0.6)
-        :Draw()
-    ax.render.Draw(6, 0, 0, width, height, BACKGROUND_COLOR, ax.render.SHAPE_IOS)
-    ax.render.DrawOutlined(6, 0, 0, width, height, Color(255, 255, 255, 50), 1, ax.render.SHAPE_IOS)
+    local glass = ax.theme:GetGlass()
+    ax.theme:DrawGlassPanel(0, 0, width, height, {
+        radius = math.max(4, math.min(8, height * 0.35)),
+        blur = 0.6,
+        fill = glass.input,
+        border = glass.inputBorder
+    })
 
     self:PaintInternal(width, height)
 end

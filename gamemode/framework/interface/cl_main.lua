@@ -45,12 +45,13 @@ function PANEL:Init()
 end
 
 function PANEL:Paint(width, height)
-    ax.render().Rect(0, 0, width, height)
-        :Rad(0)
-        :Flags(ax.render.SHAPE_IOS)
-        :Blur(1.25)
-        :Draw()
-    ax.render.Draw(0, 0, 0, width, height, Color(245, 250, 255, 20))
+    local glass = ax.theme:GetGlass()
+    ax.theme:DrawGlassBackdrop(0, 0, width, height, {
+        radius = 0,
+        blur = 1.25,
+        flags = ax.render.SHAPE_IOS,
+        fill = glass.overlay
+    })
 end
 
 vgui.Register("ax.main", PANEL, "EditablePanel")

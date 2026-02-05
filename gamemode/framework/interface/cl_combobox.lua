@@ -40,7 +40,7 @@ function PANEL:AddOption( strText, funcFunction )
 
 	local pnl = vgui.Create( "DMenuOption", self )
 	pnl:SetMenu( self )
-	pnl:SetText( strText )
+	pnl:SetText( ax.localization:GetPhrase(strText) )
 	pnl:SetFont( "ax.small" )
 	if ( funcFunction ) then pnl.DoClick = funcFunction end
 
@@ -49,7 +49,7 @@ function PANEL:AddOption( strText, funcFunction )
 
 		if ( p.Hovered ) then
 			ax.util:DrawGradient(0, "left", 0, 0, w, h, MENU_OPTION_HOVERED_COLOR)
-			
+
 			ax.render.DrawMaterial(0, 8, h / 2 - 8, 16, 16, color_white, MENU_OPTION_HOVERED_MATERIAL)
 		end
 	end
@@ -72,7 +72,7 @@ function PANEL:AddCVar( strText, convar, on, off, funcFunction )
 
 	local pnl = vgui.Create( "DMenuOptionCVar", self )
 	pnl:SetMenu( self )
-	pnl:SetText( strText )
+	pnl:SetText( ax.localization:GetPhrase(strText) )
 	pnl:SetFont( "ax.regular" )
 	if ( funcFunction ) then pnl.DoClick = funcFunction end
 
@@ -105,7 +105,7 @@ function PANEL:AddSubMenu( strText, funcFunction )
 	local pnl = vgui.Create( "DMenuOption", self )
 	local SubMenu = pnl:AddSubMenu()
 
-	pnl:SetText( strText )
+	pnl:SetText( ax.localization:GetPhrase(strText) )
 	pnl:SetFont( "ax.regular" )
 	if ( funcFunction ) then pnl.DoClick = funcFunction end
 
@@ -157,20 +157,19 @@ function PANEL:CloseSubMenu( menu )
 
 end
 
-local DMENU_COLOR_BACKGROUND = Color(60, 60, 60, 30)
 function PANEL:Paint( w, h )
 
 	if ( !self:GetPaintBackground() ) then return end
 
 	--derma.SkinHook( "Paint", "Menu", self, w, h )
 
-	ax.render().Rect(0, 0, w, h)
-		:Rad(8)
-		:Flags(ax.render.SHAPE_IOS)
-		:Blur(0.9)
-		:Draw()
-	ax.render.Draw(8, 0, 0, w, h, Color(245, 250, 255, 70), ax.render.SHAPE_IOS)
-	ax.render.DrawOutlined(8, 0, 0, w, h, Color(255, 255, 255, 50), 1, ax.render.SHAPE_IOS)
+	ax.theme:DrawGlassPanel(0, 0, w, h, {
+		radius = 8,
+		blur = 0.9,
+		flags = ax.render.SHAPE_IOS,
+		fill = ax.theme:GetGlass().menu,
+		border = ax.theme:GetGlass().menuBorder
+	})
 	return true
 
 end
@@ -374,10 +373,10 @@ function PANEL:Init()
 	self:SetFont( "ax.regular" )
 	self.UpdateColours = function( p )
 		if ( !p:IsEnabled() ) then
-			return p:SetTextColor( COMBO_DISABLED_COLOR )
+			return p:SetTextColor( ax.theme:GetGlass().textMuted )
 		end
 
-		p:SetTextColor( color_white )
+		p:SetTextColor( ax.theme:GetGlass().text )
 	end
 
 end
@@ -441,7 +440,7 @@ end
 function PANEL:ChooseOption( value, index )
 
 	self:CloseMenu()
-	self:SetText( value )
+	self:SetText( ax.localization:GetPhrase(value) )
 
 	-- This should really be the here, but it is too late now and convar
 	-- changes are handled differently by different child elements
@@ -626,7 +625,7 @@ end
 
 function PANEL:SetValue( strValue )
 
-	self:SetText( strValue )
+	self:SetText( ax.localization:GetPhrase(strValue) )
 
 end
 
@@ -640,15 +639,15 @@ function PANEL:DoClick()
 
 end
 
-local COLOR_BACKGROUND = Color(245, 250, 255, 80)
 function PANEL:Paint(width, height)
-	ax.render().Rect(0, 0, width, height)
-		:Rad(math.max(4, math.min(8, height * 0.35)))
-		:Flags(ax.render.SHAPE_IOS)
-		:Blur(0.7)
-		:Draw()
-	ax.render.Draw(6, 0, 0, width, height, COLOR_BACKGROUND, ax.render.SHAPE_IOS)
-	ax.render.DrawOutlined(6, 0, 0, width, height, Color(255, 255, 255, 50), 1, ax.render.SHAPE_IOS)
+	local glass = ax.theme:GetGlass()
+	ax.theme:DrawGlassPanel(0, 0, width, height, {
+		radius = math.max(4, math.min(8, height * 0.35)),
+		blur = 0.7,
+		flags = ax.render.SHAPE_IOS,
+		fill = glass.input,
+		border = glass.inputBorder
+	})
 end
 
 vgui.Register("ax.combobox", PANEL, "DButton")

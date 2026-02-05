@@ -36,12 +36,13 @@ function Derma_DrawBackgroundBlur(panel, starttime)
         end
     end
 
-    ax.render().Rect(x * -1, y * -1, ScrW(), ScrH())
-        :Rad(0)
-        :Flags(ax.render.SHAPE_IOS)
-        :Blur(1.1)
-        :Draw()
-    ax.render.Draw(0, x * -1, y * -1, ScrW(), ScrH(), Color(235, 245, 255, 80 * fraction))
+    local glass = ax.theme:GetGlass()
+    ax.theme:DrawGlassBackdrop(x * -1, y * -1, ScrW(), ScrH(), {
+        radius = 0,
+        blur = 1.1,
+        flags = ax.render.SHAPE_IOS,
+        fill = ColorAlpha(glass.overlay, math.Clamp((glass.overlay.a or 0) * fraction, 0, 255))
+    })
 
     DisableClipping(wasEnabled)
 end
@@ -56,11 +57,18 @@ function Derma_Message(text, title, buttonText)
     frame:Center()
     frame:SetAlpha(0)
     frame:AlphaTo(255, 0.1, 0)
+    frame:DockPadding(ax.util:ScreenScale(8), ax.util:ScreenScaleH(8), ax.util:ScreenScale(8), ax.util:ScreenScaleH(8))
     frame.starttime = SysTime()
     frame.Paint = function(this, w, h)
         Derma_DrawBackgroundBlur(this, this.starttime)
-        ax.render.Draw(12, 0, 0, w, h, Color(245, 250, 255, 120), ax.render.SHAPE_IOS)
-        ax.render.DrawOutlined(12, 0, 0, w, h, Color(255, 255, 255, 60), 1, ax.render.SHAPE_IOS)
+        local glass = ax.theme:GetGlass()
+        ax.theme:DrawGlassPanel(0, 0, w, h, {
+            radius = 12,
+            blur = 1.1,
+            flags = ax.render.SHAPE_IOS,
+            fill = glass.panel,
+            border = glass.panelBorder
+        })
     end
     frame.Close = function(this)
         if ( IsValid(this) ) then
@@ -74,7 +82,6 @@ function Derma_Message(text, title, buttonText)
 
     local label = frame:Add("ax.text")
     label:Dock(TOP)
-    label:DockMargin(0, ax.util:ScreenScaleH(8), 0, 0)
     label:SetFont("ax.huge.bold")
     label:SetText(utf8.upper(title), true)
 
@@ -88,18 +95,14 @@ function Derma_Message(text, title, buttonText)
         textHeight = textHeight + textLabel:GetTall()
     end
 
-    local btnPanel = frame:Add("EditablePanel")
-    btnPanel:Dock(BOTTOM)
-
-    local btn = btnPanel:Add("ax.button")
-    btn:Dock(FILL)
+    local btn = frame:Add("ax.button")
+    btn:Dock(BOTTOM)
     btn:SetText(buttonText)
     btn.DoClick = function()
         frame:Close()
     end
 
-    btnPanel:SetTall(btn:GetTall())
-    frame:SetTall(label:GetTall() + textHeight + btnPanel:GetTall() + ax.util:ScreenScaleH(24))
+    frame:SetTall(label:GetTall() + textHeight + btn:GetTall() + ax.util:ScreenScaleH(32))
     frame:Center()
 
     frame:MakePopup()
@@ -117,11 +120,18 @@ function Derma_Query(text, title, ...)
     frame:Center()
     frame:SetAlpha(0)
     frame:AlphaTo(255, 0.1, 0)
+    frame:DockPadding(ax.util:ScreenScale(8), ax.util:ScreenScaleH(8), ax.util:ScreenScale(8), ax.util:ScreenScaleH(8))
     frame.starttime = SysTime()
     frame.Paint = function(this, w, h)
         Derma_DrawBackgroundBlur(this, this.starttime)
-        ax.render.Draw(12, 0, 0, w, h, Color(245, 250, 255, 120), ax.render.SHAPE_IOS)
-        ax.render.DrawOutlined(12, 0, 0, w, h, Color(255, 255, 255, 60), 1, ax.render.SHAPE_IOS)
+        local glass = ax.theme:GetGlass()
+        ax.theme:DrawGlassPanel(0, 0, w, h, {
+            radius = 12,
+            blur = 1.1,
+            flags = ax.render.SHAPE_IOS,
+            fill = glass.panel,
+            border = glass.panelBorder
+        })
     end
     frame.Close = function(this)
         if ( IsValid(this) ) then
@@ -135,7 +145,6 @@ function Derma_Query(text, title, ...)
 
     local label = frame:Add("ax.text")
     label:Dock(TOP)
-    label:DockMargin(0, ax.util:ScreenScaleH(8), 0, 0)
     label:SetFont("ax.huge.bold")
     label:SetText(utf8.upper(title), true)
 
@@ -163,17 +172,19 @@ function Derma_Query(text, title, ...)
 
         local btn = btnPanel:Add("ax.button")
         btn:Dock(LEFT)
-        btn:DockMargin(0, 0, ax.util:ScreenScale(4), 0)
+        btn:DockMargin(0, 0, ax.util:ScreenScale(8), 0)
         btn:SetText(txt, true)
         btn.DoClick = function()
             frame:Close()
             fn()
         end
 
+        btnPanel:SetTall(math.min(btnPanel:GetTall(), btn:GetTall()))
+
         numOptions = numOptions + 1
     end
 
-    frame:SetTall(label:GetTall() + textHeight + btnPanel:GetTall() + ax.util:ScreenScaleH(24))
+    frame:SetTall(label:GetTall() + textHeight + btnPanel:GetTall() + ax.util:ScreenScaleH(32))
     frame:Center()
 
     frame:MakePopup()
@@ -198,11 +209,18 @@ function Derma_StringRequest(title, text, defaultText, onEnter, onCancel, okText
     frame:Center()
     frame:SetAlpha(0)
     frame:AlphaTo(255, 0.1, 0)
+    frame:DockPadding(ax.util:ScreenScale(8), ax.util:ScreenScaleH(8), ax.util:ScreenScale(8), ax.util:ScreenScaleH(8))
     frame.starttime = SysTime()
     frame.Paint = function(this, width, height)
         Derma_DrawBackgroundBlur(this, this.starttime)
-        ax.render.Draw(12, 0, 0, width, height, Color(245, 250, 255, 120), ax.render.SHAPE_IOS)
-        ax.render.DrawOutlined(12, 0, 0, width, height, Color(255, 255, 255, 60), 1, ax.render.SHAPE_IOS)
+        local glass = ax.theme:GetGlass()
+        ax.theme:DrawGlassPanel(0, 0, width, height, {
+            radius = 12,
+            blur = 1.1,
+            flags = ax.render.SHAPE_IOS,
+            fill = glass.panel,
+            border = glass.panelBorder
+        })
     end
     frame.Close = function(this)
         if ( IsValid(this) ) then
@@ -216,7 +234,6 @@ function Derma_StringRequest(title, text, defaultText, onEnter, onCancel, okText
 
     local label = frame:Add("ax.text")
     label:Dock(TOP)
-    label:DockMargin(0, ax.util:ScreenScaleH(8), 0, 0)
     label:SetFont("ax.huge.bold")
     label:SetText(utf8.upper(title), true)
 
@@ -288,9 +305,6 @@ end
 concommand.Add("ax_derma_hideall", function()
     Derma_HideAll()
 end)
-
--- Clean up existing hook to prevent duplicates on reload
-hook.Remove("OnReloaded", "ax_derma_hideall")
 
 hook.Add("OnReloaded", "ax_derma_hideall", function()
     Derma_HideAll()

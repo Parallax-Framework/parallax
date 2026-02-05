@@ -14,26 +14,6 @@ local PANEL = {}
 DEFINE_BASECLASS("DButton")
 
 local GLASS_BUTTON_FLAGS = ax.render.SHAPE_IOS
-local GLASS_BUTTON_BORDER = Color(255, 255, 255, 70)
-local GLASS_BUTTON_BG = Color(245, 250, 255, 80)
-local GLASS_BUTTON_BG_HOVER = Color(255, 255, 255, 130)
-local GLASS_BUTTON_BG_ACTIVE = Color(210, 240, 255, 170)
-
-local function DrawGlassButton(x, y, w, h, color, blur)
-    local radius = math.max(4, math.min(12, h * 0.35))
-    local col = color or GLASS_BUTTON_BG
-
-    if ( blur and blur > 0 ) then
-        ax.render().Rect(x, y, w, h)
-            :Rad(radius)
-            :Flags(GLASS_BUTTON_FLAGS)
-            :Blur(blur or 0.85)
-            :Draw()
-    end
-
-    ax.render.Draw(radius, x, y, w, h, col, GLASS_BUTTON_FLAGS)
-    ax.render.DrawOutlined(radius, x, y, w, h, GLASS_BUTTON_BORDER, 1, GLASS_BUTTON_FLAGS)
-end
 
 AccessorFunc(PANEL, "blur", "Blur", FORCE_NUMBER)
 AccessorFunc(PANEL, "soundEnter", "SoundEnter", FORCE_STRING)
@@ -59,12 +39,13 @@ function PANEL:Init()
     self.soundClick = "ax.gui.button.click"
     self.fontDefault = "ax.regular"
     self.fontHovered = "ax.regular.bold"
-    self.textColor = Color(255, 255, 255)
-    self.textColorMotion = Color(255, 255, 255)
-    self.textColorHovered = Color(50, 50, 50)
-    self.backgroundColorUnHovered = Color(GLASS_BUTTON_BG.r, GLASS_BUTTON_BG.g, GLASS_BUTTON_BG.b, GLASS_BUTTON_BG.a)
-    self.backgroundColorHovered = Color(GLASS_BUTTON_BG_HOVER.r, GLASS_BUTTON_BG_HOVER.g, GLASS_BUTTON_BG_HOVER.b, GLASS_BUTTON_BG_HOVER.a)
-    self.backgroundColorActive = Color(GLASS_BUTTON_BG_ACTIVE.r, GLASS_BUTTON_BG_ACTIVE.g, GLASS_BUTTON_BG_ACTIVE.b, GLASS_BUTTON_BG_ACTIVE.a)
+    local glass = ax.theme:GetGlass()
+    self.textColor = glass.text
+    self.textColorMotion = glass.text
+    self.textColorHovered = glass.textHover
+    self.backgroundColorUnHovered = glass.button
+    self.backgroundColorHovered = glass.buttonHover
+    self.backgroundColorActive = glass.buttonActive
     self.inertia = 0
     self.easing = "OutQuint"
     self.updateSizeOnHover = false
@@ -239,6 +220,13 @@ function PANEL:Init()
 end
 
 function PANEL:Paint(width, height)
+    local glass = ax.theme:GetGlass()
+    self.textColor = glass.text
+    self.textColorHovered = glass.textHover
+    self.backgroundColorUnHovered = glass.button
+    self.backgroundColorHovered = glass.buttonHover
+    self.backgroundColorActive = glass.buttonActive
+
     local color = self.backgroundColorUnHovered
     if ( self.inertia > 0.8 ) then
         color = self.backgroundColorActive
@@ -246,7 +234,11 @@ function PANEL:Paint(width, height)
         color = self.backgroundColorHovered
     end
 
-    DrawGlassButton(0, 0, width, height, color, self:GetBlur())
+    ax.theme:DrawGlassButton(0, 0, width, height, {
+        fill = color,
+        blur = self:GetBlur(),
+        flags = GLASS_BUTTON_FLAGS
+    })
 
     if ( self.PaintAdditional ) then
         self:PaintAdditional(width, height)
@@ -290,6 +282,13 @@ function PANEL:SetIcon(iconPath)
 end
 
 function PANEL:Paint(width, height)
+    local glass = ax.theme:GetGlass()
+    self.textColor = glass.text
+    self.textColorHovered = glass.textHover
+    self.backgroundColorUnHovered = glass.button
+    self.backgroundColorHovered = glass.buttonHover
+    self.backgroundColorActive = glass.buttonActive
+
     local color = self.backgroundColorUnHovered
     if ( self.inertia > 0.8 ) then
         color = self.backgroundColorActive
@@ -297,7 +296,11 @@ function PANEL:Paint(width, height)
         color = self.backgroundColorHovered
     end
 
-    DrawGlassButton(0, 0, width, height, color, self:GetBlur())
+    ax.theme:DrawGlassButton(0, 0, width, height, {
+        fill = color,
+        blur = self:GetBlur(),
+        flags = GLASS_BUTTON_FLAGS
+    })
 
     if ( self.icon ) then
         local iconY = (height - self.iconSize) / 2

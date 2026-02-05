@@ -425,12 +425,13 @@ function PANEL:HideAllPages()
 end
 
 function PANEL:Paint(width, height)
-    ax.render().Rect(0, 0, width, height)
-        :Rad(0)
-        :Flags(ax.render.SHAPE_IOS)
-        :Blur(1.0)
-        :Draw()
-    ax.render.Draw(0, 0, 0, width, height, Color(245, 250, 255, 50))
+    local glass = ax.theme:GetGlass()
+    ax.theme:DrawGlassBackdrop(0, 0, width, height, {
+        radius = 0,
+        blur = 1.0,
+        flags = ax.render.SHAPE_IOS,
+        fill = glass.overlayStrong
+    })
 end
 
 vgui.Register("ax.transition.pages", PANEL, "ax.transition")

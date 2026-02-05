@@ -66,22 +66,26 @@ function PANEL:RebuildScoreboard()
         header:Dock(TOP)
         header.Paint = function(_, width, height)
             local col = team.GetColor(tid) or Color(80, 80, 80)
-            local tint = Color(230, 245, 255, 120)
-            ax.render().Rect(0, 0, width, height)
-                :Rad(8)
-                :Flags(ax.render.SHAPE_IOS)
-                :Blur(0.8)
-                :Draw()
+            local glass = ax.theme:GetGlass()
+            ax.theme:DrawGlassPanel(0, 0, width, height, {
+                radius = 8,
+                blur = 0.8,
+                flags = ax.render.SHAPE_IOS,
+                fill = glass.panel
+            })
             ax.render.Draw(8, 0, 0, width, height, ColorAlpha(col, 90), ax.render.SHAPE_IOS)
-            ax.render.Draw(8, 0, 0, width, height, tint, ax.render.SHAPE_IOS)
-            ax.render.DrawOutlined(8, 0, 0, width, height, Color(255, 255, 255, 50), 1, ax.render.SHAPE_IOS)
+            ax.render.Draw(8, 0, 0, width, height, glass.highlight, ax.render.SHAPE_IOS)
         end
+
+        local darkTheme = ax.theme:Get("dark")
+        local lightTheme = ax.theme:Get("light")
 
         local title = header:Add("ax.text")
         title:Dock(FILL)
         title:SetFont("ax.large.bold.italic")
         title:SetText(team.GetName(tid) or ("Team " .. tostring(tid)), true)
         title:SetTextInset(ax.util:ScreenScale(2), -ax.util:ScreenScaleH(1))
+        title:SetTextColor(team.GetColor(tid):IsDark() and lightTheme.glass.text or darkTheme.glass.text)
         title:SetExpensiveShadow(2, Color(0, 0, 0, 200))
 
         header:SetTall(title:GetTall())
@@ -93,13 +97,11 @@ function PANEL:RebuildScoreboard()
             row:DockMargin(0, 0, 0, index == #members and ax.util:ScreenScaleH(12) or 0)
             row:SetMouseInputEnabled(true)
             row.Paint = function(_, width, height)
-                ax.render().Rect(0, 0, width, height)
-                    :Rad(8)
-                    :Flags(ax.render.SHAPE_IOS)
-                    :Blur(0.7)
-                    :Draw()
-                ax.render.Draw(8, 0, 0, width, height, Color(245, 250, 255, 60), ax.render.SHAPE_IOS)
-                ax.render.DrawOutlined(8, 0, 0, width, height, Color(255, 255, 255, 40), 1, ax.render.SHAPE_IOS)
+                ax.theme:DrawGlassPanel(0, 0, width, height, {
+                    radius = 8,
+                    blur = 0.7,
+                    flags = ax.render.SHAPE_IOS
+                })
             end
 
             -- Right-click context menu support. Other modules can add entries

@@ -36,12 +36,6 @@ function PANEL:Init()
 end
 
 function PANEL:Paint(width, height)
-    ax.render().Rect(0, 0, width, height)
-        :Rad(0)
-        :Flags(ax.render.SHAPE_IOS)
-        :Blur(1.1)
-        :Draw()
-    ax.util:DrawGradient(0, "down", 0, 0, width, height, Color(200, 230, 255, 40))
 end
 
 vgui.Register("ax.main.options", PANEL, "ax.transition")

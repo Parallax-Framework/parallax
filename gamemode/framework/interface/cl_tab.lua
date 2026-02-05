@@ -478,17 +478,20 @@ function PANEL:Paint(width, height)
             :Draw()
     end
 
-    ax.render.Draw(0, 0, 0, width, height, Color(245, 250, 255, 30 * self:GetBackgroundAlpha()))
+    local glass = ax.theme:GetGlass()
+    ax.render.Draw(0, 0, 0, width, height, ColorAlpha(glass.tabBackdrop, 50 * self:GetBackgroundAlpha()))
 
     self:SetGradientLeft(Lerp(time, self:GetGradientLeft(), self:GetGradientLeftTarget()))
     self:SetGradientRight(Lerp(time, self:GetGradientRight(), self:GetGradientRightTarget()))
     self:SetGradientTop(Lerp(time, self:GetGradientTop(), self:GetGradientTopTarget()))
     self:SetGradientBottom(Lerp(time, self:GetGradientBottom(), self:GetGradientBottomTarget()))
 
-    ax.util:DrawGradient(0, "left", 0, 0, width, height, Color(200, 235, 255, 30 * self:GetGradientLeft()))
-    ax.util:DrawGradient(0, "right", 0, 0, width, height, Color(200, 235, 255, 30 * self:GetGradientRight()))
-    ax.util:DrawGradient(0, "top", 0, 0, width, height, Color(255, 255, 255, 35 * self:GetGradientTop()))
-    ax.util:DrawGradient(0, "bottom", 0, 0, width, height, Color(200, 220, 255, 35 * self:GetGradientBottom()))
+    ax.theme:DrawGlassGradients(0, 0, width, height, {
+        left = ColorAlpha(glass.gradientLeft, 50 * self:GetGradientLeft()),
+        right = ColorAlpha(glass.gradientRight, 50 * self:GetGradientRight()),
+        top = ColorAlpha(glass.gradientTop, 50 * self:GetGradientTop()),
+        bottom = ColorAlpha(glass.gradientBottom, 50 * self:GetGradientBottom())
+    })
 end
 
 vgui.Register("ax.tab", PANEL, "ax.transition.pages")
