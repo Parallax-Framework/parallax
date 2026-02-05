@@ -624,6 +624,12 @@ hook.Add("PopulateTabButtons", "ax.tab.inventory", function(buttons)
         OnOpen = function(this, panel)
             if ( !IsValid(ax.gui.inventory) ) then return end
             ax.gui.inventory:SetPreviewActive(true)
+
+            -- Delay gradient application to ensure tab is fully initialized
+            timer.Simple(0, function()
+                if ( !IsValid(ax.gui.inventory) ) then return end
+                ax.gui.inventory:ApplyInventoryGradients(true)
+            end)
         end,
         OnClose = function(this, panel)
             if ( !IsValid(ax.gui.inventory) ) then return end
@@ -636,4 +642,13 @@ hook.Add("OnTabMenuClosing", "ax.tab.inventory.previewfade", function()
     if ( !IsValid(ax.gui.inventory) ) then return end
 
     ax.gui.inventory:SetPreviewActive(false)
+end)
+
+hook.Add("OnTabMenuOpened", "ax.tab.inventory.applygradients", function(activeTab)
+    if ( activeTab == "inventory" and IsValid(ax.gui.inventory) ) then
+        timer.Simple(0, function()
+            if ( !IsValid(ax.gui.inventory) ) then return end
+            ax.gui.inventory:ApplyInventoryGradients(true)
+        end)
+    end
 end)
