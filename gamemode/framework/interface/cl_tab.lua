@@ -179,7 +179,7 @@ function PANEL:PopulateTabs()
     for k, v in SortedPairs(buttons) do
         local button = self.buttons:Add("ax.button")
         button:Dock(LEFT)
-        button:DockMargin(0, 0, ax.util:ScreenScale(8), 0)
+        button:DockMargin(0, 0, ax.util:ScreenScale(4), 0)
         button:SetText(ax.localization:GetPhrase("tab." .. k))
         button:SetWide(button:GetWide() * 1.5)
 
@@ -271,6 +271,7 @@ function PANEL:PopulateTabs()
                 for sectionKey, sectionData in pairs(v.Sections) do
                     local subbutton = self.subbuttons:Add("ax.button")
                     subbutton:Dock(LEFT)
+                    subbutton:DockMargin(0, 0, ax.util:ScreenScale(4), 0)
                     subbutton:SetText(ax.localization:GetPhrase("tab." .. k .. "." .. sectionKey))
 
                     subbutton:SetUpdateSizeOnHover(true)

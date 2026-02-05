@@ -395,7 +395,7 @@ function PANEL:PopulateItems()
             item:SetFontDefault("ax.small")
             item:SetFontHovered("ax.small.bold")
             item:Dock(TOP)
-            item:DockMargin(0, 0, 0, ax.util:ScreenScaleH(6))
+            item:DockMargin(0, 0, 0, ax.util:ScreenScaleH(4))
             item.isInventoryRow = true
 
             -- Display stack count in item name if stacked
@@ -443,7 +443,7 @@ function PANEL:PopulateInfo(stack)
 
     local header = self.info:Add("EditablePanel")
     header:Dock(TOP)
-    header:DockMargin(ax.util:ScreenScale(16), ax.util:ScreenScaleH(10), ax.util:ScreenScale(8), 0)
+    header:DockMargin(ax.util:ScreenScale(16), ax.util:ScreenScaleH(16), ax.util:ScreenScale(8), 0)
 
     local title = header:Add("ax.text")
     title:Dock(TOP)
@@ -495,13 +495,12 @@ function PANEL:PopulateInfo(stack)
     actionsPanel:Dock(RIGHT)
     actionsPanel:SetZPos(-99)
     actionsPanel:SetWide(INVENTORY_ACTIONS_WIDTH)
-    actionsPanel:DockMargin(ax.util:ScreenScale(8), ax.util:ScreenScaleH(8), ax.util:ScreenScale(8), ax.util:ScreenScaleH(8))
+    actionsPanel:DockMargin(ax.util:ScreenScale(8), ax.util:ScreenScaleH(16), ax.util:ScreenScale(8), ax.util:ScreenScaleH(8))
     actionsPanel:GetVBar():SetWide(0)
     actionsPanel.Paint = nil
 
     local actionsHeader = actionsPanel:Add("ax.text")
     actionsHeader:Dock(TOP)
-    actionsHeader:DockMargin(0, 0, 0, ax.util:ScreenScaleH(8))
     actionsHeader:SetFont("ax.small.italic")
     actionsHeader:SetText("ACTIONS", true)
     actionsHeader:SetContentAlignment(4)
@@ -526,7 +525,7 @@ function PANEL:PopulateInfo(stack)
 
         local actionButton = actionsPanel:Add("ax.button.icon")
         actionButton:Dock(TOP)
-        actionButton:DockMargin(0, 0, 0, ax.util:ScreenScaleH(8))
+        actionButton:DockMargin(0, 0, 0, ax.util:ScreenScaleH(4))
         actionButton:SetFont("ax.small")
         actionButton:SetFontDefault("ax.small")
         actionButton:SetFontHovered("ax.small.italic")
