@@ -741,12 +741,18 @@ function PANEL:OnMouseReleased()
 end
 
 function PANEL:Paint(width, height)
-    ax.util:DrawBlur(0, 0, 0, width, height, color_white)
+    local glass = ax.theme:GetGlass()
+    local metrics = ax.theme:GetMetrics()
 
-    ax.render.Draw(0, 0, 0, width, height, Color(50, 50, 50, 100))
+    ax.theme:DrawGlassPanel(0, 0, width, height, {
+        radius = metrics.roundness,
+        blur = 1.1,
+        flags = ax.render.SHAPE_IOS,
+        fill = glass.panel,
+        border = glass.panelBorder
+    })
 
-    ax.util:DrawGradient(0, "right", 0, 0, width, height, Color(0, 0, 0, 100))
-    ax.util:DrawGradient(0, "down", 0, 0, width, height, Color(0, 0, 0, 100))
+    ax.theme:DrawGlassGradients(0, 0, width, height)
 end
 
 function PANEL:PerformLayout(width, height)
