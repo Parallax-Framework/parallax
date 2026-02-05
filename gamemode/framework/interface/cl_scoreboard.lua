@@ -85,7 +85,7 @@ function PANEL:RebuildScoreboard()
         title:SetFont("ax.large.bold.italic")
         title:SetText(team.GetName(tid) or ("Team " .. tostring(tid)), true)
         title:SetTextInset(ax.util:ScreenScale(2), -ax.util:ScreenScaleH(1))
-        title:SetTextColor(team.GetColor(tid):IsDark() and lightTheme.glass.text or darkTheme.glass.text)
+        title:SetTextColor(!team.GetColor(tid):IsDark() and lightTheme.glass.text or darkTheme.glass.text)
         title:SetExpensiveShadow(2, Color(0, 0, 0, 200))
 
         header:SetTall(title:GetTall())
