@@ -470,7 +470,7 @@ function PANEL:Paint(width, height)
     self:SetBackgroundBlur(Lerp(time, self:GetBackgroundBlur(), self:GetBackgroundBlurTarget()))
     self:SetBackgroundAlpha(Lerp(time, self:GetBackgroundAlpha(), self:GetBackgroundAlphaTarget()))
 
-    if ( self:GetBackgroundBlur() > 1 ) then
+    if ( math.Round(self:GetBackgroundBlur()) > 0 ) then
         ax.render().Rect(0, 0, width, height)
             :Rad(0)
             :Flags(ax.render.SHAPE_IOS)
