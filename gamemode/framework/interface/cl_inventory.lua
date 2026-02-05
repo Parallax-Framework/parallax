@@ -156,11 +156,13 @@ function PANEL:ApplyInventoryGradients(active)
 
     if ( active ) then
         tab:SetBackgroundBlurTarget(0)
+        tab:SetBackgroundAlphaTarget(0.25) -- keep some tint so it doesn't look weird
         tab:SetGradientLeftTarget(0)
         tab:SetGradientTopTarget(0)
         tab:SetGradientBottomTarget(0)
     else
-        tab:SetBackgroundBlurTarget(0)
+        tab:SetBackgroundBlurTarget(1)
+        tab:SetBackgroundAlphaTarget(1)
         tab:SetGradientLeftTarget(1)
         tab:SetGradientTopTarget(1)
         tab:SetGradientBottomTarget(1)
