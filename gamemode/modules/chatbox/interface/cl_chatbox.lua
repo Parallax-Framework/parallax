@@ -47,7 +47,16 @@ function PANEL:Init()
     self.bottom:Dock(BOTTOM)
     self.bottom:DockMargin(ScreenScale(2), ScreenScale(2), ScreenScale(2), ScreenScale(2))
     self.bottom.Paint = function(this, width, height)
-        ax.render.Draw(0, 0, 0, width, height, Color(0, 0, 0, 100))
+        local glass = ax.theme:GetGlass()
+        local metrics = ax.theme:GetMetrics()
+
+        ax.theme:DrawGlassPanel(0, 0, width, height, {
+            radius = math.max(4, metrics.roundness * 0.6),
+            blur = 0.9,
+            flags = ax.render.SHAPE_IOS,
+            fill = glass.input,
+            border = glass.inputBorder
+        })
     end
 
     self.entry = self.bottom:Add("ax.text.entry")
@@ -231,8 +240,18 @@ function PANEL:Init()
     self.recommendations.indexSelect = 0
     self.recommendations.maxSelection = 0
     self.recommendations.Paint = function(this, width, height)
-        ax.util:DrawBlur(0, 0, 0, width, height, color_white)
-        ax.render.Draw(0, 0, 0, width, height, Color(0, 0, 0, 100))
+        local glass = ax.theme:GetGlass()
+        local metrics = ax.theme:GetMetrics()
+
+        ax.theme:DrawGlassPanel(0, 0, width, height, {
+            radius = math.max(4, metrics.roundness * 0.6),
+            blur = 0.9,
+            flags = ax.render.SHAPE_IOS,
+            fill = glass.menu or glass.overlay,
+            border = glass.menuBorder or glass.panelBorder
+        })
+
+        ax.theme:DrawGlassGradients(0, 0, width, height)
     end
 
     self:SetVisible(false)
