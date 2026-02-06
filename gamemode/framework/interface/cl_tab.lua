@@ -85,8 +85,8 @@ function PANEL:Init()
     self.buttons:SetZPos(2)
 
     self.subbuttons = self:Add("ax.scroller.horizontal")
-    self.subbuttons:SetSize(ScrW() - ax.util:ScreenScale(96), ax.util:ScreenScaleH(40))
-    self.subbuttons:SetPos(ax.util:ScreenScale(48), -ax.util:ScreenScaleH(40))
+    self.subbuttons:SetSize(ScrW() - ax.util:ScreenScale(48), ax.util:ScreenScaleH(40))
+    self.subbuttons:SetPos(ax.util:ScreenScale(24), -ax.util:ScreenScaleH(40))
     self.subbuttons.x = self.subbuttons:GetX()
     self.subbuttons.y = self.subbuttons:GetY()
     self.subbuttons.alpha = 0
@@ -146,7 +146,7 @@ function PANEL:Open()
 
     if ( hasSubbuttons ) then
         self.subbuttons:Motion(ax.option:Get("tabFadeTime", 0.25), {
-            Target = {y = ax.util:ScreenScaleH(24) + self.buttons:GetTall(), alpha = 255},
+            Target = {y = ax.util:ScreenScaleH(28) + self.buttons:GetTall(), alpha = 255},
             Easing = "OutQuad",
             Think = function(vars)
                 self.subbuttons:SetPos(self.subbuttons:GetX(), vars.y)
@@ -158,7 +158,7 @@ function PANEL:Open()
     end
 
     self.subbuttons:Motion(ax.option:Get("tabFadeTime", 0.25), {
-        Target = {y = ax.util:ScreenScaleH(24), alpha = 0},
+        Target = {y = ax.util:ScreenScaleH(28), alpha = 0},
         Easing = "OutQuad",
         Think = function(vars)
             self.subbuttons:SetY(vars.y)
@@ -275,22 +275,20 @@ function PANEL:PopulateTabs()
                     subbutton:SetText(ax.localization:GetPhrase("tab." .. k .. "." .. sectionKey))
 
                     subbutton:SetUpdateSizeOnHover(true)
-                    subbutton:SetSizeToContentsMotion(true)
 
                     -- TODO: add a toggle option for ax.button
-                    subbutton.Paint = function(this, width, height)
-                        if ( ax.gui.tabLast == sectionKey ) then
-                            ax.render.Draw(0, 0, 0, width, height, color_white)
-
-                            if ( this:GetTextColor() != color_black ) then
-                                this:SetTextColor(color_black)
-                            end
-                        else
-                            if ( this:GetTextColor() != color_white ) then
-                                this:SetTextColor(color_white)
-                            end
-                        end
-                    end
+                    -- subbutton.Paint = function(this, width, height)
+                    --     if ( ax.gui.tabLast == sectionKey ) then
+                    --         ax.render.Draw(0, 0, 0, width, height, color_white)
+                    --         if ( this:GetTextColor() != color_black ) then
+                    --             this:SetTextColor(color_black)
+                    --         end
+                    --     else
+                    --         if ( this:GetTextColor() != color_white ) then
+                    --             this:SetTextColor(color_white)
+                    --         end
+                    --     end
+                    -- end
 
                     subbutton.DoClick = function()
                         ax.gui.tabLast = sectionKey
@@ -310,7 +308,7 @@ function PANEL:PopulateTabs()
 
                 -- Motion below the main buttons
                 self.subbuttons:Motion(ax.option:Get("tabFadeTime", 0.25), {
-                    Target = {y = ax.util:ScreenScaleH(24) + self.buttons:GetTall(), alpha = 255},
+                    Target = {y = ax.util:ScreenScaleH(28) + self.buttons:GetTall(), alpha = 255},
                     Easing = "OutQuad",
                     Think = function(this)
                         self.subbuttons:SetPos(self.subbuttons:GetX(), this.y)
