@@ -83,8 +83,12 @@ function ax.localization:GetPhrase(phrase, ...)
 
     local langCode = CLIENT and GetConVar("gmod_language"):GetString() or "en"
     local lang = ax.localization.langs[langCode]
-    if ( !istable(lang) or !lang[phrase] ) then
-        return phrase
+    if ( !istable(lang) ) then
+        lang = ax.localization.langs.en
+        if ( !istable(lang) ) then
+            ax.util:PrintWarning("No valid localization found for \"" .. langCode .. "\" or fallback \"en\"")
+            return phrase
+        end
     end
 
     local translation = lang[phrase]
