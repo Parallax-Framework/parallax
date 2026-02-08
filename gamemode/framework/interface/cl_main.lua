@@ -48,7 +48,7 @@ function PANEL:Paint(width, height)
     local glass = ax.theme:GetGlass()
     ax.theme:DrawGlassBackdrop(0, 0, width, height, {
         radius = 0,
-        blur = 1.25,
+        blur = 0.5,
         flags = ax.render.SHAPE_IOS,
         fill = glass.overlay
     })
