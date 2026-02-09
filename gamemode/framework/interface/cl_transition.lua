@@ -254,6 +254,10 @@ function PANEL:HidePanel()
     self.guard:SetVisible(false)
 
     self.active = false
+
+    if ( self.OnHidden ) then
+        self:OnHidden()
+    end
 end
 
 function PANEL:SlideLeft(time, callback)
