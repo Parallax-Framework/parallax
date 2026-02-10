@@ -63,6 +63,74 @@ function ax.util:CreateStore(spec, oldStore)
     -- Server-side per-player cache for options (networked keys only)
     local SERVER_CACHE = {}
 
+    local function ResolvePath(pathSpec)
+        if ( isfunction(pathSpec) ) then
+            local ok, resolved = pcall(pathSpec, spec, store)
+            if ( ok and isstring(resolved) and resolved != "" ) then
+                return resolved
+            end
+
+            return nil
+        end
+
+        if ( isstring(pathSpec) and pathSpec != "" ) then
+            return pathSpec
+        end
+
+        return nil
+    end
+
+    local function GetPrimaryPath()
+        return ResolvePath(spec.path)
+    end
+
+    local function GetLegacyPaths()
+        if ( !istable(spec.legacyPaths) ) then
+            return {}
+        end
+
+        local paths = {}
+        for i = 1, #spec.legacyPaths do
+            local path = ResolvePath(spec.legacyPaths[i])
+            if ( isstring(path) and path != "" ) then
+                paths[#paths + 1] = path
+            end
+        end
+
+        return paths
+    end
+
+    local function LoadPersistedData()
+        local primaryPath = GetPrimaryPath()
+        if ( !primaryPath ) then
+            return nil, nil
+        end
+
+        local data = ax.util:ReadJSON(primaryPath)
+        if ( data ) then
+            return data, primaryPath
+        end
+
+        local legacyPaths = GetLegacyPaths()
+        for i = 1, #legacyPaths do
+            local legacyPath = legacyPaths[i]
+            if ( legacyPath == primaryPath ) then continue end
+
+            local legacyData = ax.util:ReadJSON(legacyPath)
+            if ( legacyData ) then
+                if ( ax.util:WriteJSON(primaryPath, legacyData) ) then
+                    ax.util:PrintDebug(spec.name, " Migrated store data from ", legacyPath, " to ", primaryPath)
+                else
+                    ax.util:PrintWarning(spec.name, " Failed to migrate store data from ", legacyPath, " to ", primaryPath)
+                end
+
+                return legacyData, primaryPath
+            end
+        end
+
+        return nil, primaryPath
+    end
+
     --- Add a new setting definition to the store.
     -- @realm shared
     -- @param key string Setting key
@@ -92,7 +160,7 @@ function ax.util:CreateStore(spec, oldStore)
         end
 
         if ( (spec.authority == "client" and CLIENT) or (spec.authority == "server" and SERVER) ) then
-            local storedValues = ax.util:ReadJSON(spec.path) or {}
+            local storedValues = LoadPersistedData() or {}
             if ( storedValues[key] != nil ) then
                 local coerced, err = ax.type:Sanitise(type, storedValues[key])
                 if ( coerced != nil ) then
@@ -250,10 +318,10 @@ function ax.util:CreateStore(spec, oldStore)
             elseif ( spec.name == "option" ) then
                 hook.Run("OnOptionChanged", key, oldValue, coerced)
             end
+        end
 
-            if ( !bNoSave ) then
-                self:Save()
-            end
+        if ( !bNoSave ) then
+            self:Save()
         end
 
         if ( store.networkedKeys[key] ) then
@@ -377,9 +445,9 @@ function ax.util:CreateStore(spec, oldStore)
             return false
         end
 
-        local data = ax.util:ReadJSON(spec.path)
+        local data, dataPath = LoadPersistedData()
         if ( !data ) then
-            ax.util:PrintDebug(spec.name, " Load: No data file found at ", spec.path)
+            ax.util:PrintDebug(spec.name, " Load: No data file found at ", dataPath or "<invalid path>")
             return false
         end
 
@@ -397,7 +465,7 @@ function ax.util:CreateStore(spec, oldStore)
             end
         end
 
-        ax.util:PrintDebug(spec.name, " Loaded ", loaded, " settings from ", spec.path)
+        ax.util:PrintDebug(spec.name, " Loaded ", loaded, " settings from ", dataPath or "<invalid path>")
 
         if ( spec.name == "config" ) then
             hook.Run("OnConfigsLoaded")
@@ -422,11 +490,17 @@ function ax.util:CreateStore(spec, oldStore)
             data[key] = value
         end
 
-        local success = ax.util:WriteJSON(spec.path, data)
+        local dataPath = GetPrimaryPath()
+        if ( !isstring(dataPath) or dataPath == "" ) then
+            ax.util:PrintWarning(spec.name, " Failed to save settings: invalid data path")
+            return false
+        end
+
+        local success = ax.util:WriteJSON(dataPath, data)
         if ( success ) then
-            ax.util:PrintDebug(spec.name, " Saved ", table.Count(data), " settings to ", spec.path)
+            ax.util:PrintDebug(spec.name, " Saved ", table.Count(data), " settings to ", dataPath)
         else
-            ax.util:PrintWarning(spec.name, " Failed to save settings to ", spec.path)
+            ax.util:PrintWarning(spec.name, " Failed to save settings to ", dataPath)
         end
 
         return success
@@ -485,6 +559,13 @@ function ax.util:CreateStore(spec, oldStore)
             end)
 
             return
+        end
+
+        if ( (spec.authority == "server" and SERVER) or (spec.authority == "client" and CLIENT) ) then
+            local shutdownHookName = "ax." .. spec.name .. ".PersistOnShutdown"
+            hook.Add("ShutDown", shutdownHookName, function()
+                store:Save()
+            end)
         end
 
         if ( spec.name == "config" ) then
