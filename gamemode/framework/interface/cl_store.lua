@@ -207,7 +207,11 @@ function PANEL:Populate(tab, scroller, type, category)
                 btn:SetKey(key)
             elseif ( entry.type == ax.type.number ) then
                 if ( entry.data.keybind ) then
-                    -- TODO: Kill this drilla
+                    local btn = scroller:Add("ax.store.keybind")
+                    btn:Dock(TOP)
+                    btn:DockMargin(0, 0, 0, ax.util:ScreenScaleH(4))
+                    btn:SetType(type)
+                    btn:SetKey(key)
                     continue
                 end
 
@@ -541,7 +545,86 @@ function PANEL:UpdateDisplay()
     self.slider:SetValue(value)
 end
 
+function PANEL:OnRemove()
+    if ( self.bInitializing ) then return end
+
+    local store = self:GetStore()
+    if ( !store ) then return end
+
+    local deferredValue = self.slider and self.slider.ValueChangedDeferred or nil
+    if ( deferredValue != nil ) then
+        store:Set(self.key, deferredValue)
+        self.slider.ValueChangedDeferred = nil
+    elseif ( self.pendingValue != nil ) then
+        store:Set(self.key, self.pendingValue)
+    end
+
+    self.pendingValue = nil
+    self.pendingTime = nil
+end
+
 vgui.Register("ax.store.number", PANEL, "ax.store.base")
+
+-- Keybind store element
+PANEL = {}
+
+DEFINE_BASECLASS("ax.store.base")
+
+function PANEL:Init()
+    self.elementType = "keybind"
+    self.bSuppressOnChange = false
+
+    self.binder = self:Add("DBinder")
+    self.binder:Dock(RIGHT)
+    self.binder:DockMargin(0, ax.util:ScreenScale(4), ax.util:ScreenScale(8), ax.util:ScreenScale(4))
+    self.binder:SetWide(ax.util:ScreenScale(192))
+    self.binder:SetSelectedNumber(KEY_NONE or 0)
+    self.binder.OnChange = function(this, value)
+        if ( self.bInitializing or self.bSuppressOnChange ) then return end
+
+        local store = self:GetStore()
+        if ( store ) then
+            store:Set(self.key, value)
+        end
+    end
+end
+
+function PANEL:SetBinderValue(value)
+    value = tonumber(value) or (KEY_NONE or 0)
+
+    if ( self.binder:GetSelectedNumber() == value ) then return end
+
+    self.bSuppressOnChange = true
+    self.binder:SetSelectedNumber(value)
+    self.bSuppressOnChange = false
+end
+
+function PANEL:SetKey(key)
+    BaseClass.SetKey(self, key)
+
+    local store = self:GetStore()
+    if ( !store or store:Get(key) == nil ) then return end
+
+    local default = store:GetDefault(key)
+    if ( default != nil ) then
+        self.binder:SetDefaultNumber(default)
+    end
+
+    self:SetBinderValue(store:Get(key))
+    self.bInitializing = false
+end
+
+function PANEL:UpdateDisplay()
+    local store = self:GetStore()
+    if ( !store ) then
+        self:SetBinderValue(KEY_NONE or 0)
+        return
+    end
+
+    self:SetBinderValue(store:Get(self.key))
+end
+
+vgui.Register("ax.store.keybind", PANEL, "ax.store.base")
 
 -- String store element
 PANEL = {}
@@ -566,12 +649,16 @@ function PANEL:Init()
         end
     end
     self.entry.OnLoseFocus = function(this)
-        if ( self.bInitializing ) then return end
+        self:CommitCurrentText()
+    end
+end
 
-        local store = self:GetStore()
-        if ( store ) then
-            store:Set(self.key, this:GetText())
-        end
+function PANEL:CommitCurrentText()
+    if ( self.bInitializing or !IsValid(self.entry) ) then return end
+
+    local store = self:GetStore()
+    if ( store ) then
+        store:Set(self.key, self.entry:GetText())
     end
 end
 
@@ -588,6 +675,10 @@ end
 function PANEL:SetKey(key)
     BaseClass.SetKey(self, key)
     self.bInitializing = false
+end
+
+function PANEL:OnRemove()
+    self:CommitCurrentText()
 end
 
 vgui.Register("ax.store.string", PANEL, "ax.store.base")
