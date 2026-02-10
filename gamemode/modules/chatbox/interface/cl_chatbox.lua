@@ -10,6 +10,10 @@
 ]]
 
 -- TODO: rewrite this whole chatbox, it's a mess
+-- TODO: Split into smaller, focused modules (entry handling, recommendations, history, layout)
+-- TODO: Extract recommendation logic into separate class/module
+-- TODO: Remove duplicate text parsing logic used in multiple places
+-- TODO: Implement proper state machine for chat type management
 
 local PANEL = {}
 
@@ -28,6 +32,8 @@ function PANEL:Init()
         ax.gui.chatbox:Remove()
     end
 
+    -- TODO: Chat type management is fragile; should use proper state machine
+    -- TODO: Track chat type history in array instead of prev/current pair
     self.chatType = "ic"
     self.chatTypePrevious = "ic"
 
@@ -96,6 +102,11 @@ function PANEL:Init()
     end
 
     self.entry.OnChange = function(this)
+        -- TODO: This entire OnChange callback is 100+ lines doing too many unrelated things
+        -- TODO: Extract to separate methods: ParseChatType(), UpdateRecommendations(), etc.
+        -- TODO: Consider using proper debounce wrapper instead of string concatenation for timer name
+        -- TODO: Magic number 0.15 should be config constant
+        -- TODO: Debounce timer not cleaned up on panel destruction
         -- Debounce all heavy operations to avoid lag on every keystroke
         if ( self.recommendationDebounce ) then
             timer.Remove(self.recommendationDebounce)
@@ -113,8 +124,9 @@ function PANEL:Init()
             local firstChar = string.sub(text, 1, 1)
             local firstThree = string.sub(text, 1, 3)
 
-            if ( firstThree == ".//" ) then
-                -- Check if it's a way of using local out of character chat using .// prefix
+            if ( firstThree == ".//" ) then                -- TODO: Magic prefix ".//" should be configurable constant
+                -- TODO: This looc logic duplicates command finding; should use unified handler
+                -- TODO: No error handling if FindClosest returns nil for "looc"                -- Check if it's a way of using local out of character chat using .// prefix
                 local data = ax.command:FindClosest("looc")
                 if ( data ) then
                     ax.chat.currentType = data.displayName
@@ -125,6 +137,9 @@ function PANEL:Init()
                 -- No voices needed for looc, just clear recommendations
                 self:PopulateRecommendations()
             elseif ( firstChar == "/" ) then
+                -- TODO: Command parsing should be extracted to CommandParser class
+                -- TODO: string.Explode is inefficient for single delimiter; use custom parser
+                -- TODO: No validation that command exists before building recommendations
                 -- This is a command, so we need to parse it
                 local arguments = string.Explode(" ", string.sub(text, 2))
                 local command = arguments[1]
@@ -151,6 +166,10 @@ function PANEL:Init()
                     end
                 end
             else
+                -- TODO: Voice line search should only happen if player has valid voice class
+                -- TODO: This logic to find last space is duplicated in CycleRecommendations and OnMousePressed
+                -- TODO: Should extract to utility function: ExtractVoiceSearchText(text)
+                -- TODO: Finding first space instead of last space may be incorrect for multi-word voice lines
                 -- Check if text ends with a space followed by optional text (i.e. a voice line was selected and space was added)
                 local lastSpacePos = string.find(text, " ", 1, true)
                 if ( lastSpacePos ) then
@@ -276,6 +295,10 @@ function PANEL:GetChatType()
 end
 
 function PANEL:PopulateRecommendations(text, recommendationType)
+    -- TODO: This function does too much: filtering, UI creation, animation all mixed together
+    -- TODO: Should separate into: GetRecommendations() and RenderRecommendations()
+    -- TODO: Magic numbers: 0.2 (animation duration) should be constant
+    -- TODO: List and panels should be single data source; panel array is redundant
     if ( !text ) then
         if ( IsValid(self.recommendations) and self.recommendations:GetAlpha() > 0 ) then
             self.recommendations:AlphaTo(0, 0.2, 0, function()
@@ -297,6 +320,8 @@ function PANEL:PopulateRecommendations(text, recommendationType)
     local matches = {}
 
     if ( recommendationType == "commands" ) then
+        -- TODO: Command recommendations should have max result limit like voices (20)
+        -- TODO: No caching of command lookups despite potentially expensive operation
         if ( text == "" ) then
             matches = ax.command:GetAll()
         else
@@ -307,6 +332,11 @@ function PANEL:PopulateRecommendations(text, recommendationType)
             self.recommendations.list[#self.recommendations.list + 1] = command
         end
     elseif ( recommendationType == "voices" ) then
+        -- TODO: Replace debug print() calls with ax.util:PrintDebug() for consistency
+        -- TODO: Extract magic number 20 to VOICE_RECOMMENDATIONS_MAX constant
+        -- TODO: Calling utf8.lower on every iteration is inefficient; cache it once
+        -- TODO: No handling if ax.voices module doesn't exist; should fail gracefully
+        -- TODO: GetClass call could be expensive; consider caching results
         -- Get available voice classes for the current player
         if ( ax.voices and ax.voices.GetClass ) then
             print("Populating voice line recommendations for chat type: " .. tostring(self.chatType))
@@ -325,15 +355,19 @@ function PANEL:PopulateRecommendations(text, recommendationType)
                     continue
                 end
 
+                -- TODO: Replace debug print() here and below with ax.util:PrintDebug()
                 print("Populating voice lines for class: " .. tostring(voiceClass))
 
                 for voiceKey, voiceData in pairs(ax.voices.stored[voiceClass]) do
+                    -- TODO: Nested loop with early exit is inefficient; should use better search structure
+                    -- TODO: No indication to user that results are truncated (maxResults exceeded)
                     -- Early exit if we have enough results
                     if ( #self.recommendations.list >= maxResults ) then
                         ax.util:PrintDebug("Reached max voice line recommendation results (" .. tostring(maxResults) .. "), stopping search.\n")
                         break
                     end
 
+                    -- TODO: utf8.lower is O(n) per call; should pre-process and cache voice data
                     -- Cache lowercased strings to avoid repeated utf8.lower calls
                     local keyLower = utf8.lower(voiceKey)
                     local descLower = utf8.lower(voiceData.text or "")
@@ -363,6 +397,9 @@ function PANEL:PopulateRecommendations(text, recommendationType)
     end
 
     if ( self.recommendations.list[1] != nil ) then
+        -- TODO: Clearing and recreating all panels every time is wasteful; use pool or diff
+        -- TODO: AlphaTo magic value 0.2 should be ANIM_DURATION constant
+        -- TODO: cyclePrimed flag is a hack; should use proper state
         self.recommendations:Clear()
         self.recommendations:SetVisible(true)
         self.recommendations:AlphaTo(255, 0.2, 0)
@@ -383,6 +420,8 @@ function PANEL:PopulateRecommendations(text, recommendationType)
             rec.index = i
             rec.isVoice = item.isVoice or false
             rec.OnMousePressed = function()
+                -- TODO: THIS ENTIRE FUNCTION (through line ~400) IS DUPLICATED in CycleRecommendations()
+                -- TODO: Extract to helper: ApplyRecommendation(data, isVoice)
                 self.recommendations.indexSelect = rec.index
 
                 local data = self.recommendations.list[rec.index]
@@ -391,6 +430,9 @@ function PANEL:PopulateRecommendations(text, recommendationType)
                 end
 
                 if ( rec.isVoice ) then
+                    -- TODO: This entire block duplicates voice text insertion logic from CycleRecommendations
+                    -- TODO: Extract to InsertVoiceRecommendation(voiceName)
+                    -- TODO: string.Explode for single space is inefficient
                     local currentText = self.entry:GetText() or ""
                     if ( string.StartsWith(currentText, "/") ) then
                         local arguments = string.Explode(" ", string.sub(currentText, 2))
@@ -446,6 +488,9 @@ function PANEL:PopulateRecommendations(text, recommendationType)
                 end
             end
 
+            -- TODO: Magic numbers for DockMargin (8, 0, 8, 0) should be constants
+            -- TODO: Hardcoded string "No description provided." should use localization
+            -- TODO: Colors from theme retrieved per item; should cache once outside loop
             local glass = ax.theme:GetGlass()
             local title = rec:Add("ax.text")
             title:Dock(LEFT)
@@ -480,6 +525,10 @@ function PANEL:PopulateRecommendations(text, recommendationType)
 end
 
 function PANEL:CycleRecommendations()
+    -- TODO: DUPLICATE OF OnMousePressed voice logic (lines ~370-420)
+    -- TODO: Extract shared ApplyRecommendation(data, isVoice) function
+    -- TODO: Alpha comparison should use constant (e.g., ALPHA_HIDDEN = 0)
+    -- TODO: Guard clauses should come first; current logic is confusing
     if ( self.recommendations:GetAlpha() < 0 and self.recommendations.maxSelection < 0 ) then
         return
     end
@@ -488,6 +537,8 @@ function PANEL:CycleRecommendations()
     if ( #recommendations < 1 ) then return end
 
     local index = self.recommendations.indexSelect
+    -- TODO: cyclePrimed hack is confusing; use proper state machine (IDLE, CYCLING, etc.)
+    -- TODO: Wrapping from last to first should be configurable behavior
     if ( !self.recommendations.cyclePrimed ) then
         index = index > 0 and index or 1
         self.recommendations.cyclePrimed = true
@@ -514,6 +565,8 @@ function PANEL:CycleRecommendations()
         return
     end
 
+    -- TODO: THIS BLOCK (here to line ~500) IS IDENTICAL TO OnMousePressed
+    -- TODO: CRITICAL: Extract to ApplyRecommendation(data) method immediately
     if ( data.isVoice ) then
         local currentText = self.entry:GetText() or ""
         if ( string.StartsWith(currentText, "/") ) then
@@ -588,6 +641,11 @@ function PANEL:SelectRecommendation(identifier)
 end
 
 function PANEL:SetVisible(visible)
+    -- TODO: suppressOnChange flag is a code smell; consider proper event system
+    -- TODO: Magic alpha value 255 should be constant (ALPHA_VISIBLE)
+    -- TODO: Cursor positioning logic (LocalToScreen) seems fragile
+    -- TODO: Should emit proper events instead of hardcoded hook calls
+    -- TODO: No cleanup of timers when chatbox closes
     if ( visible ) then
         input.SetCursorPos(self:LocalToScreen(self:GetWide() / 2, self:GetTall() / 2))
 
@@ -600,6 +658,7 @@ function PANEL:SetVisible(visible)
         self:SetMouseInputEnabled(false)
         self:SetKeyboardInputEnabled(false)
 
+        -- TODO: suppressOnChange is not a good pattern; consider using proper state
         -- Suppress OnChange callback while clearing text to prevent network spam
         self.suppressOnChange = true
         self.entry:SetText("")
@@ -616,6 +675,10 @@ function PANEL:SetVisible(visible)
 end
 
 function PANEL:Think()
+    -- TODO: Too much logic in Think(); should use OnMouseMoved, OnKeyCode, etc.
+    -- TODO: Dragging/Sizing in Think() causes layout thrashing; should be event-driven
+    -- TODO: Screen clamp logic in multiple places (Dragging and here) - extract to method
+    -- TODO: Magic margins (20, 24) should be constants (RESIZE_HANDLE_WIDTH, etc.)
     if ( input.IsKeyDown(KEY_ESCAPE) and self:IsVisible() ) then
         self:SetVisible(false)
     end
@@ -624,6 +687,9 @@ function PANEL:Think()
     local mousey = math.Clamp(gui.MouseY(), 1, ScrH() - 1)
 
     if ( self.Dragging ) then
+        -- TODO: Dragging as array [offsetX, offsetY] is unreadable; use {x, y} table
+        -- TODO: Position updates sent to server every frame while dragging; debounce needed
+        -- TODO: screen bounds check duplicates code from OnMousePressed
         local x = mousex - self.Dragging[1]
         local y = mousey - self.Dragging[2]
 
@@ -635,11 +701,16 @@ function PANEL:Think()
 
         self:SetPos(x, y)
 
+        -- TODO: Every frame network calls during drag is excessive; debounce these
         ax.option:Set("chat.x", x, false, true)
         ax.option:Set("chat.y", y, false, true)
     end
 
     if ( self.Sizing ) then
+        -- TODO: Sizing array same issue as Dragging; readability problem
+        -- TODO: One-liner ternaries with multiple conditions are hard to read; break up
+        -- TODO: Size updates sent every frame; needs debounce like dragging
+        -- TODO: Duplicate min constraint checking from SetMinWidth/SetMinHeight
         local x = mousex - self.Sizing[1]
         local y = mousey - self.Sizing[2]
         local px, py = self:GetPos()
@@ -648,12 +719,16 @@ function PANEL:Think()
         if ( y < self.m_iMinHeight ) then y = self.m_iMinHeight elseif ( y > ScrH() - py and self:GetScreenLock() ) then y = ScrH() - py end
 
         self:SetSize(x, y)
+        -- TODO: Debounce network calls during resize
         ax.option:Set("chat.width", x, false, true)
         ax.option:Set("chat.height", y, false, true)
         self:SetCursor("sizenwse")
         return
     end
 
+    -- TODO: Magic number 20 (resize handle width) used here and OnMousePressed; extract to constant
+    -- TODO: Magic number 24 (title bar height) used here and elsewhere; extract to constant
+    -- TODO: Cursor check logic should be in separate method for clarity
     local screenX, screenY = self:LocalToScreen( 0, 0 )
     if ( self.Hovered and self.m_bSizable and mousex > ( screenX + self:GetWide() - 20 ) and mousey > ( screenY + self:GetTall() - 20 ) ) then
         self:SetCursor("sizenwse")
@@ -684,6 +759,10 @@ function PANEL:OnKeyCodePressed(key)
 end
 
 function PANEL:OnMousePressed(mouseCode)
+    -- TODO: Context menu strings not localized
+    -- TODO: Menu setup should be extracted to BuildContextMenu() method
+    -- TODO: Reset functions duplicate option retrieval logic
+    -- TODO: No confirmation dialog for destructive "Clear Chat History" action
     if ( mouseCode == MOUSE_RIGHT ) then
         local menu = DermaMenu(false, self)
         menu:AddOption("Close Chat", function()
@@ -718,6 +797,8 @@ function PANEL:OnMousePressed(mouseCode)
         return
     end
 
+    -- TODO: Duplicate resize/drag detection logic from Think(); should be unified
+    -- TODO: Magic numbers 20, 24 same as in Think(); extract to class constants
     local screenX, screenY = self:LocalToScreen(0, 0)
     if ( self.m_bSizable and gui.MouseX() > ( screenX + self:GetWide() - 20 ) and gui.MouseY() > ( screenY + self:GetTall() - 20 ) ) then
         self.Sizing = {gui.MouseX() - self:GetWide(), gui.MouseY() - self:GetTall()}
@@ -756,6 +837,10 @@ function PANEL:Paint(width, height)
 end
 
 function PANEL:PerformLayout(width, height)
+    -- TODO: Layout math is complex and error-prone; should use Dock(FILL) instead
+    -- TODO: ScreenScale(2), ScreenScale(4) magic values should be constants (PADDING, MARGIN)
+    -- TODO: Magic division height / 2 has no comment explaining why
+    -- TODO: Only called in Init(); should also be called on resize
     if ( IsValid(self.bottom) and IsValid(self.history) ) then
         self.history:SetSize(width - ScreenScale(4), height - self.bottom:GetTall() - ScreenScale(4) - ScreenScale(2))
         self.history:SetPos(ScreenScale(2), ScreenScale(2))
@@ -772,7 +857,5 @@ vgui.Register("ax.chatbox", PANEL, "EditablePanel")
 -- If any existing chatbox instance exists, remove it and create a new one
 if ( IsValid(ax.gui.chatbox) ) then
     ax.gui.chatbox:Remove()
-
-    -- Create a new chatbox instance
     vgui.Create("ax.chatbox")
 end
