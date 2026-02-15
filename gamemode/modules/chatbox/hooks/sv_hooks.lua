@@ -18,6 +18,12 @@ function MODULE:PlayerSay(client, text, teamChat)
     end
 
     text = string.Trim(text)
+    local maxLength = tonumber(ax.config:Get("chatbox.max_message_length", 512)) or 512
+    maxLength = math.max(16, math.floor(maxLength))
+
+    if ( #text > maxLength ) then
+        text = string.sub(text, 1, maxLength)
+    end
 
     if ( text == "" ) then
         ax.util:PrintDebug("[CHAT] Player " .. client:SteamName() .. " attempted to send an empty message")

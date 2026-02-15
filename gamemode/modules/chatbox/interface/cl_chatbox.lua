@@ -9,12 +9,6 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
--- TODO: rewrite this whole chatbox, it's a mess
--- TODO: Split into smaller, focused modules (entry handling, recommendations, history, layout)
--- TODO: Extract recommendation logic into separate class/module
--- TODO: Remove duplicate text parsing logic used in multiple places
--- TODO: Implement proper state machine for chat type management
-
 local PANEL = {}
 
 DEFINE_BASECLASS("EditablePanel")
@@ -26,239 +20,263 @@ AccessorFunc(PANEL, "m_bScreenLock", "ScreenLock", FORCE_BOOL)
 AccessorFunc(PANEL, "m_iMinWidth", "MinWidth", FORCE_NUMBER)
 AccessorFunc(PANEL, "m_iMinHeight", "MinHeight", FORCE_NUMBER)
 
+function PANEL:GetChatType()
+    return self.chatTypeState and self.chatTypeState.current or ax.chatbox.util.constants.CHAT_TYPE_DEFAULT or "ic"
+end
+
+function PANEL:IsChatboxOpen()
+    return self.chatboxVisible == true
+end
+
+function PANEL:LockEntry(callback)
+    self.entryLockCount = (self.entryLockCount or 0) + 1
+    local ok, err = pcall(callback)
+    self.entryLockCount = math.max(0, (self.entryLockCount or 1) - 1)
+
+    if ( !ok ) then
+        ax.util:PrintError("[CHATBOX] Entry lock callback failed: " .. tostring(err))
+    end
+end
+
+function PANEL:QueueOptionUpdate(name, value)
+    self.pendingOptions[name] = value
+
+    timer.Create(self.optionFlushTimerID, ax.chatbox.util.constants.OPTION_FLUSH_INTERVAL or 0.12, 1, function()
+        if ( !IsValid(self) ) then return end
+        self:FlushOptionUpdates()
+    end)
+end
+
+function PANEL:FlushOptionUpdates(force)
+    if ( force ) then
+        timer.Remove(self.optionFlushTimerID)
+    end
+
+    if ( !self.pendingOptions or table.IsEmpty(self.pendingOptions) ) then
+        return
+    end
+
+    for name, value in pairs(self.pendingOptions) do
+        ax.option:Set(name, value, false, true)
+    end
+
+    table.Empty(self.pendingOptions)
+end
+
+function PANEL:IsOverResize(mouseX, mouseY)
+    local x, y = self:LocalToScreen(0, 0)
+    local size = ax.chatbox.util.constants.RESIZE_HANDLE_SIZE or 20
+
+    return mouseX > (x + self:GetWide() - size) and mouseY > (y + self:GetTall() - size)
+end
+
+function PANEL:IsOverDrag(mouseX, mouseY)
+    local x, y = self:LocalToScreen(0, 0)
+    local height = ax.chatbox.util.constants.DRAG_ZONE_HEIGHT or 24
+
+    return mouseX >= x and mouseX <= (x + self:GetWide()) and mouseY >= y and mouseY <= (y + height)
+end
+
+function PANEL:ClampToScreen(x, y, width, height)
+    if ( !self:GetScreenLock() ) then
+        return x, y
+    end
+
+    width = width or self:GetWide()
+    height = height or self:GetTall()
+
+    return math.Clamp(x, 0, ScrW() - width), math.Clamp(y, 0, ScrH() - height)
+end
+
+function PANEL:BuildContextMenu()
+    local menu = DermaMenu(false, self)
+
+    menu:AddOption(ax.chatbox.util:GetPhrase("chatbox.menu.close", "Close Chat"), function()
+        self:SetVisible(false)
+    end)
+
+    menu:AddOption(ax.chatbox.util:GetPhrase("chatbox.menu.clear_history", "Clear Chat History"), function()
+        Derma_Query(
+            ax.chatbox.util:GetPhrase("chatbox.menu.confirm_clear_message", "Clear all chat history?"),
+            ax.chatbox.util:GetPhrase("chatbox.menu.confirm_clear_title", "Clear Chat History"),
+            ax.chatbox.util:GetPhrase("yes", "Yes"),
+            function()
+                if ( IsValid(self.history) ) then
+                    self.history:Clear()
+                end
+            end,
+            ax.chatbox.util:GetPhrase("no", "No")
+        )
+    end)
+
+    menu:AddSpacer()
+
+    menu:AddOption(ax.chatbox.util:GetPhrase("chatbox.menu.reset_position", "Reset Position"), function()
+        local x = ax.option:GetDefault("chat.x")
+        local y = ax.option:GetDefault("chat.y")
+
+        if ( isnumber(x) and isnumber(y) ) then
+            self:SetPos(x, y)
+            ax.option:SetToDefault("chat.x")
+            ax.option:SetToDefault("chat.y")
+        end
+    end)
+
+    menu:AddOption(ax.chatbox.util:GetPhrase("chatbox.menu.reset_size", "Reset Size"), function()
+        local width = ax.option:GetDefault("chat.width")
+        local height = ax.option:GetDefault("chat.height")
+
+        if ( isnumber(width) and isnumber(height) ) then
+            self:SetSize(width, height)
+            ax.option:SetToDefault("chat.width")
+            ax.option:SetToDefault("chat.height")
+            self:InvalidateLayout(true)
+        end
+    end)
+
+    menu:Open()
+end
+
+function PANEL:SetVisible(visible)
+    visible = visible == true
+
+    if ( visible ) then
+        self.chatboxVisible = true
+        self:SetAlpha(ax.chatbox.util.constants.RECOMMEND_ALPHA_VISIBLE or 255)
+        self:SetMouseInputEnabled(true)
+        self:SetKeyboardInputEnabled(true)
+        self:MakePopup()
+        self.entry:SetVisible(true)
+        self.entry:RequestFocus()
+
+        local x, y = self.entry:LocalToScreen(self.entry:GetWide() / 2, self.entry:GetTall() / 2)
+        input.SetCursorPos(math.Clamp(math.floor(x), 0, ScrW()), math.Clamp(math.floor(y), 0, ScrH()))
+
+        hook.Run("ChatboxOnVisibilityChanged", true, self)
+        return
+    end
+
+    local oldType = self:GetChatType()
+
+    self.chatboxVisible = false
+    self:SetAlpha(ax.chatbox.util.constants.RECOMMEND_ALPHA_HIDDEN or 0)
+    self:SetMouseInputEnabled(false)
+    self:SetKeyboardInputEnabled(false)
+
+    if ( ax.chatbox.recommendations.CancelDebounce ) then
+        ax.chatbox.recommendations:CancelDebounce(self)
+    end
+
+    if ( ax.chatbox.recommendations.Hide ) then
+        ax.chatbox.recommendations:Hide(self)
+    end
+
+    self:LockEntry(function()
+        self.entry:SetText("")
+        self.entry:SetCaretPos(0)
+    end)
+
+    self.entry:SetVisible(false)
+
+    local newType = oldType
+    local changed = false
+
+    if ( ax.chatbox.recommendations.SetChatType ) then
+        _, newType, changed = ax.chatbox.recommendations:SetChatType(self, ax.chatbox.util.constants.CHAT_TYPE_DEFAULT or "ic")
+    end
+
+    hook.Run("ChatboxOnTextChanged", "", newType)
+    if ( changed ) then
+        hook.Run("ChatboxOnChatTypeChanged", newType, oldType)
+    end
+
+    self:FlushOptionUpdates(true)
+    hook.Run("ChatboxOnVisibilityChanged", false, self)
+end
+
+function PANEL:PopulateRecommendations(text, kind)
+    if ( ax.chatbox.recommendations.Populate ) then
+        ax.chatbox.recommendations:Populate(self, text, kind)
+    end
+end
+
+function PANEL:CycleRecommendations()
+    if ( ax.chatbox.recommendations.Cycle ) then
+        ax.chatbox.recommendations:Cycle(self)
+    end
+end
+
+function PANEL:SelectRecommendation(identifier)
+    if ( ax.chatbox.recommendations.Select ) then
+        ax.chatbox.recommendations:Select(self, identifier)
+    end
+end
+
+local PANEL_INSTANCE_COUNTER = 0
 function PANEL:Init()
-    -- Remove any existing chatbox instance before creating a new one
-    if ( IsValid(ax.gui.chatbox) ) then
+    if ( IsValid(ax.gui.chatbox) and ax.gui.chatbox != self ) then
         ax.gui.chatbox:Remove()
     end
 
-    -- TODO: Chat type management is fragile; should use proper state machine
-    -- TODO: Track chat type history in array instead of prev/current pair
-    self.chatType = "ic"
-    self.chatTypePrevious = "ic"
+    PANEL_INSTANCE_COUNTER = PANEL_INSTANCE_COUNTER + 1
+    self.instanceID = PANEL_INSTANCE_COUNTER
+    self.recommendTimerID = "ax.chatbox.recommendations." .. self.instanceID
+    self.optionFlushTimerID = "ax.chatbox.option.flush." .. self.instanceID
+
+    self.chatTypeState = {
+        current = ax.chatbox.util.constants.CHAT_TYPE_DEFAULT or "ic",
+        previous = ax.chatbox.util.constants.CHAT_TYPE_DEFAULT or "ic",
+        history = { ax.chatbox.util.constants.CHAT_TYPE_DEFAULT or "ic" }
+    }
+
+    self.historyCache = {}
+    self.historyIndex = 0
+    self.entryLockCount = 0
+    self.chatboxVisible = false
+
+    self.commandClosestCache = {}
+    self.commandRecommendCache = {}
+    self.voiceClassCache = {}
+    self.voiceEntryCache = {}
+    self.warnedVoiceUnavailable = false
+    self.pendingOptions = {}
 
     self:SetFocusTopLevel(true)
-
     self:SetSize(hook.Run("GetChatboxSize"))
     self:SetPos(hook.Run("GetChatboxPos"))
-
     self:SetDraggable(true)
     self:SetSizable(true)
     self:SetScreenLock(true)
-
     self:SetMinWidth(ax.util:ScreenScale(225) / 3)
     self:SetMinHeight(ax.util:ScreenScaleH(150) / 3)
 
-    self.bottom = self:Add("DPanel")
-    self.bottom:Dock(BOTTOM)
-    self.bottom:DockMargin(ScreenScale(2), ScreenScale(2), ScreenScale(2), ScreenScale(2))
-    self.bottom.Paint = function(this, width, height)
-        local glass = ax.theme:GetGlass()
-        local metrics = ax.theme:GetMetrics()
-
-        ax.theme:DrawGlassPanel(0, 0, width, height, {
-            radius = math.max(4, metrics.roundness * 0.6),
-            blur = 0.9,
-            flags = ax.render.SHAPE_IOS,
-            fill = glass.input,
-            border = glass.inputBorder
-        })
+    if ( ax.chatbox.bottom.Build ) then
+        ax.chatbox.bottom:Build(self)
     end
 
-    self.entry = self.bottom:Add("ax.text.entry")
-    self.entry:Dock(FILL)
-    self.entry:SetFont("ax.small")
-    self.entry:SetPlaceholderText("Say something...")
-    self.entry:SetDrawLanguageID(false)
-    self.entry:SetTabbingDisabled(true)
-    self.entry.Paint = function(this, width, height)
-        this:PaintInternal(width, height)
-    end
+    local pad = ScreenScale(ax.chatbox.util.constants.SCREEN_PADDING_SCALE or 2)
 
-    self.bottom:SetTall(ScreenScale(8))
+    self.content = self:Add("EditablePanel")
+    self.content:Dock(FILL)
+    self.content:DockMargin(pad, pad, pad, pad)
 
-    self.entry.OnEnter = function(this)
-        local text = this:GetValue()
-        if ( #text > 0 ) then
-            -- remove <font> tags to prevent exploits
-            text = string.gsub(text, "<font.->", "")
-            text = string.gsub(text, "</font>", "")
-
-            ax.net:Start("chat.message", text)
-
-            self.historyCache = self.historyCache or {}
-            table.insert(self.historyCache, 1, text)
-
-            if ( #self.historyCache > 128 ) then
-                table.remove(self.historyCache, #self.historyCache)
-            end
-
-            this:SetText("")
-
-            self.historyIndex = 0
-        end
-
-        self:SetVisible(false)
-    end
-
-    self.entry.OnChange = function(this)
-        -- TODO: This entire OnChange callback is 100+ lines doing too many unrelated things
-        -- TODO: Extract to separate methods: ParseChatType(), UpdateRecommendations(), etc.
-        -- TODO: Consider using proper debounce wrapper instead of string concatenation for timer name
-        -- TODO: Magic number 0.15 should be config constant
-        -- TODO: Debounce timer not cleaned up on panel destruction
-        -- Debounce all heavy operations to avoid lag on every keystroke
-        if ( self.recommendationDebounce ) then
-            timer.Remove(self.recommendationDebounce)
-        end
-
-        self.recommendationDebounce = "ax.chatbox.recommendations." .. ax.client:EntIndex()
-        timer.Create(self.recommendationDebounce, 0.15, 1, function()
-            if ( !IsValid(self) or !IsValid(this) ) then return end
-            if ( self.suppressOnChange ) then return end
-
-            self.chatTypePrevious = self.chatType or "ic"
-            self.chatType = "ic"
-
-            local text = this:GetValue()
-            local firstChar = string.sub(text, 1, 1)
-            local firstThree = string.sub(text, 1, 3)
-
-            if ( firstThree == ".//" ) then                -- TODO: Magic prefix ".//" should be configurable constant
-                -- TODO: This looc logic duplicates command finding; should use unified handler
-                -- TODO: No error handling if FindClosest returns nil for "looc"                -- Check if it's a way of using local out of character chat using .// prefix
-                local data = ax.command:FindClosest("looc")
-                if ( data ) then
-                    ax.chat.currentType = data.displayName
-                    self.chatTypePrevious = self.chatType or "ic"
-                    self.chatType = utf8.lower(data.name)
-                end
-
-                -- No voices needed for looc, just clear recommendations
-                self:PopulateRecommendations()
-            elseif ( firstChar == "/" ) then
-                -- TODO: Command parsing should be extracted to CommandParser class
-                -- TODO: string.Explode is inefficient for single delimiter; use custom parser
-                -- TODO: No validation that command exists before building recommendations
-                -- This is a command, so we need to parse it
-                local arguments = string.Explode(" ", string.sub(text, 2))
-                local command = arguments[1]
-                self:PopulateRecommendations(command, "commands")
-
-                local data = ax.command:FindClosest(command)
-                if ( data ) then
-                    local chatClass = data.chatClass
-                    local chatType = chatClass and chatClass.key or data.name
-                    ax.chat.currentType = chatClass and (chatClass.displayName or data.displayName) or data.displayName
-                    self.chatTypePrevious = self.chatType or "ic"
-                    self.chatType = utf8.lower(chatType)
-                    self:SelectRecommendation(data.displayName)
-
-                    -- Populate voice recommendations for arguments after the command, and only if we are a chat command that supports voices
-                    if ( data.chatCommand or chatClass ) then
-                        if ( string.EndsWith(text, " ") ) then
-                            self:PopulateRecommendations("", "voices")
-                        elseif ( #arguments > 1 ) then
-                            local argumentText = table.concat(arguments, " ", 2)
-                            local lastToken = string.match(argumentText, "[^%s]+$")
-                            self:PopulateRecommendations(lastToken or "", "voices")
-                        end
-                    end
-                end
-            else
-                -- TODO: Voice line search should only happen if player has valid voice class
-                -- TODO: This logic to find last space is duplicated in CycleRecommendations and OnMousePressed
-                -- TODO: Should extract to utility function: ExtractVoiceSearchText(text)
-                -- TODO: Finding first space instead of last space may be incorrect for multi-word voice lines
-                -- Check if text ends with a space followed by optional text (i.e. a voice line was selected and space was added)
-                local lastSpacePos = string.find(text, " ", 1, true)
-                if ( lastSpacePos ) then
-                    -- Get text after the last space for voice recommendations
-                    local voiceText = string.sub(text, lastSpacePos + 1)
-                    if ( voiceText and #voiceText > 0 ) then
-                        self:PopulateRecommendations(voiceText, "voices")
-                    else
-                        -- Just a space, show all available voice lines
-                        self:PopulateRecommendations("", "voices")
-                    end
-                else
-                    -- No space yet, populate based on full text
-                    self:PopulateRecommendations(text, "voices")
-                end
-            end
-
-            hook.Run("ChatboxOnTextChanged", text, self.chatType)
-            hook.Run("ChatboxOnChatTypeChanged", self.chatType, self.chatTypePrevious)
-        end)
-    end
-
-    self.entry.OnKeyCode = function(this, key)
-        if ( key == KEY_TAB ) then
-            self:CycleRecommendations()
-            return true
-        end
-
-        if ( key == KEY_BACKSPACE and ( input.IsKeyDown(KEY_LCONTROL) or input.IsKeyDown(KEY_RCONTROL) ) ) then
-            local text = this:GetText() or ""
-            local caret = this:GetCaretPos() or 0
-            local textLength = #text
-
-            caret = math.Clamp(caret, 0, textLength)
-
-            if ( caret <= 0 ) then return true end
-
-            local left = string.sub(text, 1, caret)
-            local right = string.sub(text, caret + 1)
-
-            left = string.gsub(left, "%s+$", "")
-            left = string.gsub(left, "[^%s]+$", "")
-
-            local newText = left .. right
-            this:SetText(newText)
-            this:SetCaretPos(#left)
-
-            return true
-        end
-
-        -- Navigate history with Up/Down
-        if ( key == KEY_UP or key == KEY_DOWN ) then
-            self.historyCache = self.historyCache or {}
-            if ( #self.historyCache == 0 ) then return end
-
-            this:SetCaretPos(0)
-            self.historyIndex = self.historyIndex or 0
-
-            if ( key == KEY_UP ) then
-                self.historyIndex = math.min(#self.historyCache, (self.historyIndex or 0) + 1)
-            else
-                self.historyIndex = math.max(0, (self.historyIndex or 0) - 1)
-            end
-
-            if ( self.historyIndex > 0 ) then
-                this:SetText(self.historyCache[self.historyIndex])
-                this:SetCaretPos(#this:GetText())
-            else
-                this:SetText("")
-            end
-
-            return true
-        end
-    end
-
-    self.history = self:Add("ax.scroller.vertical")
+    self.history = self.content:Add("ax.scroller.vertical")
+    self.history:Dock(FILL)
     self.history:GetVBar():SetWide(0)
     self.history:SetInverted(true)
     self.history:SetMouseInputEnabled(false)
 
-    self.recommendations = self:Add("ax.scroller.vertical")
+    self.recommendations = self.content:Add("ax.scroller.vertical")
     self.recommendations:SetVisible(false)
-    self.recommendations:SetAlpha(0)
+    self.recommendations:SetAlpha(ax.chatbox.util.constants.RECOMMEND_ALPHA_HIDDEN or 0)
     self.recommendations:GetVBar():SetWide(0)
-    self.recommendations.list = {}
-    self.recommendations.panels = {}
+    self.recommendations.items = {}
+    self.recommendations.rows = {}
     self.recommendations.indexSelect = 0
     self.recommendations.maxSelection = 0
-    self.recommendations.Paint = function(this, width, height)
+    self.recommendations.cycleState = ax.chatbox.util.constants.RECOMMEND_CYCLE_IDLE or 0
+    self.recommendations.kind = nil
+    self.recommendations.Paint = function(_, width, height)
         local glass = ax.theme:GetGlass()
         local metrics = ax.theme:GetMetrics()
 
@@ -273,8 +291,29 @@ function PANEL:Init()
         ax.theme:DrawGlassGradients(0, 0, width, height)
     end
 
-    self:SetVisible(false)
-    self:InvalidateLayout(true)
+    self.recommendations.hint = self.recommendations:Add("ax.text")
+    self.recommendations.hint:Dock(TOP)
+    self.recommendations.hint:DockMargin(8, ScreenScale(ax.chatbox.util.constants.INNER_PADDING_SCALE or 1), 8, ScreenScale(ax.chatbox.util.constants.INNER_PADDING_SCALE or 1))
+    self.recommendations.hint:SetFont("ax.small")
+    self.recommendations.hint:SetContentAlignment(4)
+    self.recommendations.hint:SetZPos(-100)
+    self.recommendations.hint:SetTall(draw.GetFontHeight("ax.small") + ScreenScale(ax.chatbox.util.constants.INNER_PADDING_SCALE or 1) * 2)
+    self.recommendations.hint:SetVisible(false)
+
+    self.recommendations.notice = self.recommendations:Add("ax.text")
+    self.recommendations.notice:Dock(BOTTOM)
+    self.recommendations.notice:DockMargin(8, 0, 8, ScreenScale(ax.chatbox.util.constants.INNER_PADDING_SCALE or 1))
+    self.recommendations.notice:SetFont("ax.small")
+    self.recommendations.notice:SetVisible(false)
+
+    if ( ax.chatbox.bottom.BindCallbacks ) then
+        ax.chatbox.bottom:BindCallbacks(self)
+    end
+
+    self:SetAlpha(ax.chatbox.util.constants.RECOMMEND_ALPHA_HIDDEN or 0)
+    self:SetMouseInputEnabled(false)
+    self:SetKeyboardInputEnabled(false)
+    self.entry:SetVisible(false)
 
     chat.GetChatBoxPos = function()
         return self:GetPos()
@@ -284,530 +323,95 @@ function PANEL:Init()
         return self:GetSize()
     end
 
-    self:PerformLayout(self:GetWide(), self:GetTall())
-
-    -- Register this chatbox as the global instance
+    self:InvalidateLayout(true)
     ax.gui.chatbox = self
 end
 
-function PANEL:GetChatType()
-    return self.chatType or "ic"
-end
-
-function PANEL:PopulateRecommendations(text, recommendationType)
-    -- TODO: This function does too much: filtering, UI creation, animation all mixed together
-    -- TODO: Should separate into: GetRecommendations() and RenderRecommendations()
-    -- TODO: Magic numbers: 0.2 (animation duration) should be constant
-    -- TODO: List and panels should be single data source; panel array is redundant
-    if ( !text ) then
-        if ( IsValid(self.recommendations) and self.recommendations:GetAlpha() > 0 ) then
-            self.recommendations:AlphaTo(0, 0.2, 0, function()
-                self.recommendations:Clear()
-            end)
-
-            self.recommendations.list = {}
-            self.recommendations.panels = {}
-            self.recommendations.indexSelect = 0
-            self.recommendations.maxSelection = 0
-        end
-
-        return
-    end
-
-    self.recommendations.list = {}
-    self.recommendations.panels = {}
-
-    local matches = {}
-
-    if ( recommendationType == "commands" ) then
-        -- TODO: Command recommendations should have max result limit like voices (20)
-        -- TODO: No caching of command lookups despite potentially expensive operation
-        if ( text == "" ) then
-            matches = ax.command:GetAll()
-        else
-            matches = ax.command:FindAll(text)
-        end
-
-        for key, command in SortedPairs(matches) do
-            self.recommendations.list[#self.recommendations.list + 1] = command
-        end
-    elseif ( recommendationType == "voices" ) then
-        -- TODO: Replace debug print() calls with ax.util:PrintDebug() for consistency
-        -- TODO: Extract magic number 20 to VOICE_RECOMMENDATIONS_MAX constant
-        -- TODO: Calling utf8.lower on every iteration is inefficient; cache it once
-        -- TODO: No handling if ax.voices module doesn't exist; should fail gracefully
-        -- TODO: GetClass call could be expensive; consider caching results
-        -- Get available voice classes for the current player
-        if ( ax.voices and ax.voices.GetClass ) then
-            print("Populating voice line recommendations for chat type: " .. tostring(self.chatType))
-            local voiceClasses = ax.voices:GetClass(ax.client, self.chatType)
-            if ( #voiceClasses == 0 ) then
-                ax.util:PrintDebug("No voice classes available for chat type \"" .. tostring(self.chatType) .. "\"!\n")
-                return
-            end
-
-            local searchLower = utf8.lower(text)
-            local maxResults = 20
-
-            for _, voiceClass in ipairs(voiceClasses) do
-                if ( !ax.voices.stored[voiceClass] ) then
-                    ax.util:PrintDebug("Voice class \"" .. tostring(voiceClass) .. "\" has no stored voice lines!\n")
-                    continue
-                end
-
-                -- TODO: Replace debug print() here and below with ax.util:PrintDebug()
-                print("Populating voice lines for class: " .. tostring(voiceClass))
-
-                for voiceKey, voiceData in pairs(ax.voices.stored[voiceClass]) do
-                    -- TODO: Nested loop with early exit is inefficient; should use better search structure
-                    -- TODO: No indication to user that results are truncated (maxResults exceeded)
-                    -- Early exit if we have enough results
-                    if ( #self.recommendations.list >= maxResults ) then
-                        ax.util:PrintDebug("Reached max voice line recommendation results (" .. tostring(maxResults) .. "), stopping search.\n")
-                        break
-                    end
-
-                    -- TODO: utf8.lower is O(n) per call; should pre-process and cache voice data
-                    -- Cache lowercased strings to avoid repeated utf8.lower calls
-                    local keyLower = utf8.lower(voiceKey)
-                    local descLower = utf8.lower(voiceData.text or "")
-
-                    if ( ax.util:FindText(keyLower, searchLower) == false and
-                         ax.util:FindText(descLower, searchLower) == false ) then
-                        continue
-                    end
-
-                    self.recommendations.list[#self.recommendations.list + 1] = {
-                        name = voiceKey,
-                        displayName = voiceKey,
-                        description = voiceData.text,
-                        isVoice = true
-                    }
-                end
-
-                -- Early exit if we have enough results across all voice classes
-                if ( #self.recommendations.list >= maxResults ) then
-                    ax.util:PrintDebug("Reached max voice line recommendation results (" .. tostring(maxResults) .. "), stopping search.\n")
-                    break
-                end
-            end
-        else
-            ax.util:PrintWarning("Attempted to populate voice line recommendations, but voice module is not loaded!")
-        end
-    end
-
-    if ( self.recommendations.list[1] != nil ) then
-        -- TODO: Clearing and recreating all panels every time is wasteful; use pool or diff
-        -- TODO: AlphaTo magic value 0.2 should be ANIM_DURATION constant
-        -- TODO: cyclePrimed flag is a hack; should use proper state
-        self.recommendations:Clear()
-        self.recommendations:SetVisible(true)
-        self.recommendations:AlphaTo(255, 0.2, 0)
-
-        self.recommendations.panels = {}
-        self.recommendations.cyclePrimed = false
-        self.recommendations.maxSelection = #self.recommendations.list
-        if ( self.recommendations.indexSelect > self.recommendations.maxSelection ) then
-            self.recommendations.indexSelect = 0
-        end
-
-        for i = 1, #self.recommendations.list do
-            local item = self.recommendations.list[i]
-            local rec = self.recommendations:Add("DPanel")
-            rec:Dock(TOP)
-            rec:SetMouseInputEnabled(true)
-            rec:SetCursor("hand")
-            rec.index = i
-            rec.isVoice = item.isVoice or false
-            rec.OnMousePressed = function()
-                -- TODO: THIS ENTIRE FUNCTION (through line ~400) IS DUPLICATED in CycleRecommendations()
-                -- TODO: Extract to helper: ApplyRecommendation(data, isVoice)
-                self.recommendations.indexSelect = rec.index
-
-                local data = self.recommendations.list[rec.index]
-                if ( !data ) then
-                    return
-                end
-
-                if ( rec.isVoice ) then
-                    -- TODO: This entire block duplicates voice text insertion logic from CycleRecommendations
-                    -- TODO: Extract to InsertVoiceRecommendation(voiceName)
-                    -- TODO: string.Explode for single space is inefficient
-                    local currentText = self.entry:GetText() or ""
-                    if ( string.StartsWith(currentText, "/") ) then
-                        local arguments = string.Explode(" ", string.sub(currentText, 2))
-                        local command = arguments[1] or ""
-                        if ( command != "" ) then
-                            local existing = table.concat(arguments, " ", 2) or ""
-                            local bHasTrailingSpace = string.EndsWith(currentText, " ")
-                            existing = string.Trim(existing)
-
-                            if ( existing == "" ) then
-                                self.entry:SetText("/" .. command .. " " .. data.name)
-                            else
-                                local tokens = string.Explode(" ", existing)
-                                if ( bHasTrailingSpace ) then
-                                    table.insert(tokens, data.name)
-                                else
-                                    tokens[#tokens] = data.name
-                                end
-
-                                self.entry:SetText("/" .. command .. " " .. table.concat(tokens, " "))
-                            end
-                        else
-                            self.entry:SetText(data.name)
-                        end
-                    else
-                        local bHasTrailingSpace = string.EndsWith(currentText, " ")
-                        local trimmed = string.Trim(currentText)
-
-                        if ( trimmed == "" ) then
-                            self.entry:SetText(data.name)
-                        elseif ( bHasTrailingSpace ) then
-                            self.entry:SetText(currentText .. data.name)
-                        else
-                            local tokens = string.Explode(" ", trimmed)
-                            tokens[#tokens] = data.name
-                            self.entry:SetText(table.concat(tokens, " "))
-                        end
-                    end
-                else
-                    self.entry:SetText("/" .. data.name)
-                end
-
-                self.entry:RequestFocus()
-                self.entry:SetCaretPos(#self.entry:GetText())
-
-                surface.PlaySound("ui/buttonrollover.wav")
-            end
-            rec.Paint = function(_, width, height)
-                if ( self.recommendations.indexSelect == i ) then
-                    local glass = ax.theme:GetGlass()
-                    local highlight = glass.highlight or Color(90, 140, 200, 120)
-                    ax.render.Draw(0, 0, 0, width, height, highlight)
-                end
-            end
-
-            -- TODO: Magic numbers for DockMargin (8, 0, 8, 0) should be constants
-            -- TODO: Hardcoded string "No description provided." should use localization
-            -- TODO: Colors from theme retrieved per item; should cache once outside loop
-            local glass = ax.theme:GetGlass()
-            local title = rec:Add("ax.text")
-            title:Dock(LEFT)
-            title:DockMargin(8, 0, 8, 0)
-            title:SetFont("ax.small")
-            title:SetText(item.displayName, true)
-            title:SetTextColor(glass.text)
-
-            local descriptionText = item.description
-            if ( !descriptionText or descriptionText == "" ) then
-                descriptionText = "No description provided."
-            end
-
-            local description = rec:Add("ax.text")
-            description:Dock(RIGHT)
-            description:DockMargin(8, 0, 8, 0)
-            description:SetFont("ax.small")
-            description:SetText(descriptionText, true)
-            description:SetTextColor(glass.textMuted)
-
-            rec:SetTall(math.max(title:GetTall(), description:GetTall()) + ScreenScale(1))
-
-            self.recommendations.panels[i] = rec
-        end
-    else
-        self.recommendations:AlphaTo(0, 0.2, 0, function()
-            self.recommendations:Clear()
-            self.recommendations:SetVisible(false)
-        end)
-        self.recommendations.cyclePrimed = false
-    end
-end
-
-function PANEL:CycleRecommendations()
-    -- TODO: DUPLICATE OF OnMousePressed voice logic (lines ~370-420)
-    -- TODO: Extract shared ApplyRecommendation(data, isVoice) function
-    -- TODO: Alpha comparison should use constant (e.g., ALPHA_HIDDEN = 0)
-    -- TODO: Guard clauses should come first; current logic is confusing
-    if ( self.recommendations:GetAlpha() < 0 and self.recommendations.maxSelection < 0 ) then
-        return
-    end
-
-    local recommendations = self.recommendations.list
-    if ( #recommendations < 1 ) then return end
-
-    local index = self.recommendations.indexSelect
-    -- TODO: cyclePrimed hack is confusing; use proper state machine (IDLE, CYCLING, etc.)
-    -- TODO: Wrapping from last to first should be configurable behavior
-    if ( !self.recommendations.cyclePrimed ) then
-        index = index > 0 and index or 1
-        self.recommendations.cyclePrimed = true
-    else
-        index = index + 1
-    end
-
-    if ( index > self.recommendations.maxSelection ) then
-        index = 1
-    end
-
-    self.recommendations.indexSelect = index
-
-    for i = 1, #self.recommendations.panels do
-        local panel = self.recommendations.panels[i]
-        panel.index = panel.index or 1
-        if ( panel.index == index ) then
-            self.recommendations:ScrollToChild(panel)
-        end
-    end
-
-    local data = recommendations[index]
-    if ( !data ) then
-        return
-    end
-
-    -- TODO: THIS BLOCK (here to line ~500) IS IDENTICAL TO OnMousePressed
-    -- TODO: CRITICAL: Extract to ApplyRecommendation(data) method immediately
-    if ( data.isVoice ) then
-        local currentText = self.entry:GetText() or ""
-        if ( string.StartsWith(currentText, "/") ) then
-            local arguments = string.Explode(" ", string.sub(currentText, 2))
-            local command = arguments[1] or ""
-            if ( command != "" ) then
-                local existing = table.concat(arguments, " ", 2) or ""
-                local bHasTrailingSpace = string.EndsWith(currentText, " ")
-                existing = string.Trim(existing)
-
-                if ( existing == "" ) then
-                    self.entry:SetText("/" .. command .. " " .. data.name)
-                else
-                    local tokens = string.Explode(" ", existing)
-                    if ( bHasTrailingSpace ) then
-                        table.insert(tokens, data.name)
-                    else
-                        tokens[#tokens] = data.name
-                    end
-
-                    self.entry:SetText("/" .. command .. " " .. table.concat(tokens, " "))
-                end
-            else
-                self.entry:SetText(data.name)
-            end
-        else
-            local bHasTrailingSpace = string.EndsWith(currentText, " ")
-            local trimmed = string.Trim(currentText)
-
-            if ( trimmed == "" ) then
-                self.entry:SetText(data.name)
-            elseif ( bHasTrailingSpace ) then
-                self.entry:SetText(currentText .. data.name)
-            else
-                local tokens = string.Explode(" ", trimmed)
-                tokens[#tokens] = data.name
-                self.entry:SetText(table.concat(tokens, " "))
-            end
-        end
-    else
-        self.entry:SetText("/" .. data.name)
-    end
-
-    self.entry:RequestFocus()
-    self.entry:SetCaretPos(#self.entry:GetText())
-
-    surface.PlaySound("ui/buttonrollover.wav")
-end
-
-function PANEL:SelectRecommendation(identifier)
-    local recommendations = self.recommendations.list
-    if ( #recommendations < 1 ) then
-        return
-    end
-
-    for i = 1, #recommendations do
-        local command = recommendations[i]
-        if ( command.displayName == identifier ) then
-            self.recommendations.indexSelect = i
-
-            for j = 1, #self.recommendations.panels do
-                local panel = self.recommendations.panels[j]
-                panel.index = panel.index or 1
-                if ( panel.index == i ) then
-                    self.recommendations:ScrollToChild(panel)
-                end
-            end
-
-            return
-        end
-    end
-end
-
-function PANEL:SetVisible(visible)
-    -- TODO: suppressOnChange flag is a code smell; consider proper event system
-    -- TODO: Magic alpha value 255 should be constant (ALPHA_VISIBLE)
-    -- TODO: Cursor positioning logic (LocalToScreen) seems fragile
-    -- TODO: Should emit proper events instead of hardcoded hook calls
-    -- TODO: No cleanup of timers when chatbox closes
-    if ( visible ) then
-        input.SetCursorPos(self:LocalToScreen(self:GetWide() / 2, self:GetTall() / 2))
-
-        self:SetAlpha(255)
-        self:MakePopup()
-        self.entry:RequestFocus()
-        self.entry:SetVisible(true)
-    else
-        self:SetAlpha(0)
-        self:SetMouseInputEnabled(false)
-        self:SetKeyboardInputEnabled(false)
-
-        -- TODO: suppressOnChange is not a good pattern; consider using proper state
-        -- Suppress OnChange callback while clearing text to prevent network spam
-        self.suppressOnChange = true
-        self.entry:SetText("")
-        self.entry:SetCaretPos(0)
-        self.suppressOnChange = false
-
-        self.entry:SetVisible(false)
-
-        -- Only send network update when closing the chatbox
-        hook.Run("ChatboxOnTextChanged", "", "ic")
-    end
-
-    self:PopulateRecommendations()
-end
-
 function PANEL:Think()
-    -- TODO: Too much logic in Think(); should use OnMouseMoved, OnKeyCode, etc.
-    -- TODO: Dragging/Sizing in Think() causes layout thrashing; should be event-driven
-    -- TODO: Screen clamp logic in multiple places (Dragging and here) - extract to method
-    -- TODO: Magic margins (20, 24) should be constants (RESIZE_HANDLE_WIDTH, etc.)
-    if ( input.IsKeyDown(KEY_ESCAPE) and self:IsVisible() ) then
+    if ( input.IsKeyDown(KEY_ESCAPE) and self:IsChatboxOpen() ) then
         self:SetVisible(false)
     end
 
-    local mousex = math.Clamp(gui.MouseX(), 1, ScrW() - 1)
-    local mousey = math.Clamp(gui.MouseY(), 1, ScrH() - 1)
+    local mouseX = math.Clamp(gui.MouseX(), 1, ScrW() - 1)
+    local mouseY = math.Clamp(gui.MouseY(), 1, ScrH() - 1)
 
-    if ( self.Dragging ) then
-        -- TODO: Dragging as array [offsetX, offsetY] is unreadable; use {x, y} table
-        -- TODO: Position updates sent to server every frame while dragging; debounce needed
-        -- TODO: screen bounds check duplicates code from OnMousePressed
-        local x = mousex - self.Dragging[1]
-        local y = mousey - self.Dragging[2]
+    if ( self.dragState ) then
+        local x = mouseX - self.dragState.offsetX
+        local y = mouseY - self.dragState.offsetY
+        x, y = self:ClampToScreen(x, y)
+        self:SetPos(x, y)
+        self:QueueOptionUpdate("chat.x", x)
+        self:QueueOptionUpdate("chat.y", y)
+    end
 
-        -- Lock to screen bounds if screenlock is enabled
+    if ( self.resizeState ) then
+        local width = mouseX - self.resizeState.offsetX
+        local height = mouseY - self.resizeState.offsetY
+
+        width = math.max(width, self:GetMinWidth())
+        height = math.max(height, self:GetMinHeight())
+
         if ( self:GetScreenLock() ) then
-            x = math.Clamp(x, 0, ScrW() - self:GetWide())
-            y = math.Clamp(y, 0, ScrH() - self:GetTall())
+            local x, y = self:GetPos()
+            width = math.min(width, ScrW() - x)
+            height = math.min(height, ScrH() - y)
         end
 
-        self:SetPos(x, y)
-
-        -- TODO: Every frame network calls during drag is excessive; debounce these
-        ax.option:Set("chat.x", x, false, true)
-        ax.option:Set("chat.y", y, false, true)
-    end
-
-    if ( self.Sizing ) then
-        -- TODO: Sizing array same issue as Dragging; readability problem
-        -- TODO: One-liner ternaries with multiple conditions are hard to read; break up
-        -- TODO: Size updates sent every frame; needs debounce like dragging
-        -- TODO: Duplicate min constraint checking from SetMinWidth/SetMinHeight
-        local x = mousex - self.Sizing[1]
-        local y = mousey - self.Sizing[2]
-        local px, py = self:GetPos()
-
-        if ( x < self.m_iMinWidth ) then x = self.m_iMinWidth elseif ( x > ScrW() - px and self:GetScreenLock() ) then x = ScrW() - px end
-        if ( y < self.m_iMinHeight ) then y = self.m_iMinHeight elseif ( y > ScrH() - py and self:GetScreenLock() ) then y = ScrH() - py end
-
-        self:SetSize(x, y)
-        -- TODO: Debounce network calls during resize
-        ax.option:Set("chat.width", x, false, true)
-        ax.option:Set("chat.height", y, false, true)
+        self:SetSize(width, height)
+        self:QueueOptionUpdate("chat.width", width)
+        self:QueueOptionUpdate("chat.height", height)
         self:SetCursor("sizenwse")
         return
     end
 
-    -- TODO: Magic number 20 (resize handle width) used here and OnMousePressed; extract to constant
-    -- TODO: Magic number 24 (title bar height) used here and elsewhere; extract to constant
-    -- TODO: Cursor check logic should be in separate method for clarity
-    local screenX, screenY = self:LocalToScreen( 0, 0 )
-    if ( self.Hovered and self.m_bSizable and mousex > ( screenX + self:GetWide() - 20 ) and mousey > ( screenY + self:GetTall() - 20 ) ) then
+    if ( self.Hovered and self:GetSizable() and self:IsOverResize(mouseX, mouseY) ) then
         self:SetCursor("sizenwse")
         return
     end
 
-    if ( self.Hovered and self:GetDraggable() and mousey < ( screenY + 24 ) ) then
+    if ( self.Hovered and self:GetDraggable() and self:IsOverDrag(mouseX, mouseY) ) then
         self:SetCursor("sizeall")
         return
     end
 
     self:SetCursor("arrow")
 
-    -- Don't allow the frame to go higher than 0
     if ( self.y < 0 ) then
         self:SetPos(self.x, 0)
     end
 end
 
 function PANEL:OnKeyCodePressed(key)
-    if ( !self:IsVisible() ) then return end
-
-    if ( key != KEY_TAB ) then
-        return
-    end
-
-    self:CycleRecommendations()
+    if ( !self:IsChatboxOpen() ) then return end
+    if ( key == KEY_TAB ) then self:CycleRecommendations() end
 end
 
 function PANEL:OnMousePressed(mouseCode)
-    -- TODO: Context menu strings not localized
-    -- TODO: Menu setup should be extracted to BuildContextMenu() method
-    -- TODO: Reset functions duplicate option retrieval logic
-    -- TODO: No confirmation dialog for destructive "Clear Chat History" action
     if ( mouseCode == MOUSE_RIGHT ) then
-        local menu = DermaMenu(false, self)
-        menu:AddOption("Close Chat", function()
-            self:SetVisible(false)
-        end)
-
-        menu:AddOption("Clear Chat History", function()
-            self.history:Clear()
-        end)
-
-        menu:AddSpacer()
-
-        menu:AddOption("Reset Position", function()
-            local x, y = ax.option:GetDefault("chat.x"), ax.option:GetDefault("chat.y")
-
-            self:SetPos(x, y)
-
-            ax.option:SetToDefault("chat.x")
-            ax.option:SetToDefault("chat.y")
-        end)
-
-        menu:AddOption("Reset Size", function()
-            local width, height = ax.option:GetDefault("chat.width"), ax.option:GetDefault("chat.height")
-
-            self:SetSize(width, height)
-
-            ax.option:SetToDefault("chat.width")
-            ax.option:SetToDefault("chat.height")
-        end)
-
-        menu:Open()
+        self:BuildContextMenu()
         return
     end
 
-    -- TODO: Duplicate resize/drag detection logic from Think(); should be unified
-    -- TODO: Magic numbers 20, 24 same as in Think(); extract to class constants
-    local screenX, screenY = self:LocalToScreen(0, 0)
-    if ( self.m_bSizable and gui.MouseX() > ( screenX + self:GetWide() - 20 ) and gui.MouseY() > ( screenY + self:GetTall() - 20 ) ) then
-        self.Sizing = {gui.MouseX() - self:GetWide(), gui.MouseY() - self:GetTall()}
+    local mouseX, mouseY = gui.MouseX(), gui.MouseY()
+
+    if ( self:GetSizable() and self:IsOverResize(mouseX, mouseY) ) then
+        self.resizeState = {
+            offsetX = mouseX - self:GetWide(),
+            offsetY = mouseY - self:GetTall()
+        }
+
         self:MouseCapture(true)
         return
     end
 
-    if ( self:GetDraggable() and gui.MouseY() < ( screenY + 24 ) ) then
-        self.Dragging = {gui.MouseX() - self.x, gui.MouseY() - self.y}
+    if ( self:GetDraggable() and self:IsOverDrag(mouseX, mouseY) ) then
+        local x, y = self:GetPos()
+
+        self.dragState = {
+            offsetX = mouseX - x,
+            offsetY = mouseY - y
+        }
+
         self:MouseCapture(true)
         return
     end
@@ -816,9 +420,36 @@ function PANEL:OnMousePressed(mouseCode)
 end
 
 function PANEL:OnMouseReleased()
-    self.Dragging = nil
-    self.Sizing = nil
+    local hadDrag = self.dragState != nil
+    local hadResize = self.resizeState != nil
+
+    self.dragState = nil
+    self.resizeState = nil
     self:MouseCapture(false)
+
+    if ( hadDrag or hadResize ) then
+        self:FlushOptionUpdates(true)
+    end
+end
+
+function PANEL:OnSizeChanged()
+    self:InvalidateLayout(true)
+end
+
+function PANEL:OnRemove()
+    self:FlushOptionUpdates(true)
+
+    if ( ax.chatbox.recommendations.CancelDebounce ) then
+        ax.chatbox.recommendations:CancelDebounce(self)
+    end
+
+    if ( self.optionFlushTimerID ) then
+        timer.Remove(self.optionFlushTimerID)
+    end
+
+    if ( ax.gui.chatbox == self ) then
+        ax.gui.chatbox = nil
+    end
 end
 
 function PANEL:Paint(width, height)
@@ -837,24 +468,31 @@ function PANEL:Paint(width, height)
 end
 
 function PANEL:PerformLayout(width, height)
-    -- TODO: Layout math is complex and error-prone; should use Dock(FILL) instead
-    -- TODO: ScreenScale(2), ScreenScale(4) magic values should be constants (PADDING, MARGIN)
-    -- TODO: Magic division height / 2 has no comment explaining why
-    -- TODO: Only called in Init(); should also be called on resize
-    if ( IsValid(self.bottom) and IsValid(self.history) ) then
-        self.history:SetSize(width - ScreenScale(4), height - self.bottom:GetTall() - ScreenScale(4) - ScreenScale(2))
-        self.history:SetPos(ScreenScale(2), ScreenScale(2))
+    local pad = ScreenScale(ax.chatbox.util.constants.SCREEN_PADDING_SCALE or 2)
+
+    if ( IsValid(self.bottom) ) then
+        self.bottom:DockMargin(pad, pad, pad, pad)
     end
 
-    if ( IsValid(self.recommendations) and IsValid(self.history) ) then
-        self.recommendations:SetSize(width - ScreenScale(4), height / 2 - self.bottom:GetTall() - ScreenScale(8))
-        self.recommendations:SetPos(ScreenScale(2), ScreenScale(2))
+    if ( IsValid(self.content) ) then
+        self.content:DockMargin(pad, pad, pad, pad)
+    end
+
+    if ( IsValid(self.bottom) and IsValid(self.entry) ) then
+        local innerPad = ScreenScale(ax.chatbox.util.constants.INNER_PADDING_SCALE or 1)
+        local entryFont = self.entry:GetFont() or "ax.small"
+        local entryTall = draw.GetFontHeight(entryFont) + 8
+        self.bottom:SetTall(math.max(ScreenScale(8), entryTall + innerPad * 2))
+    end
+
+    if ( IsValid(self.recommendations) and IsValid(self.content) ) then
+        self.recommendations:SetPos(0, 0)
+        self.recommendations:SetSize(self.content:GetWide(), math.max(0, math.floor(self.content:GetTall() * 0.5)))
     end
 end
 
 vgui.Register("ax.chatbox", PANEL, "EditablePanel")
 
--- If any existing chatbox instance exists, remove it and create a new one
 if ( IsValid(ax.gui.chatbox) ) then
     ax.gui.chatbox:Remove()
     vgui.Create("ax.chatbox")
