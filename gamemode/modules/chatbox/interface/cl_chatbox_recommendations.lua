@@ -43,7 +43,7 @@ local function findCommand(panel, input)
                 continue
             end
 
-            local loweredName = util:Lower(name)
+            local loweredName = ax.chatbox.util:Lower(name)
 
             if ( loweredName == key ) then
                 result = def
@@ -78,7 +78,7 @@ local function findCommand(panel, input)
                 continue
             end
 
-            local loweredName = util:Lower(name)
+            local loweredName = ax.chatbox.util:Lower(name)
             local length = #loweredName
 
             if (
@@ -398,7 +398,7 @@ function ax.chatbox.recommendations:BuildCommandArgumentHintText(commandData, ar
         return usage .. " | " .. ax.chatbox.util:GetPhrase("chatbox.recommendations.arguments.complete", "All arguments are filled.")
     end
 
-    return usage .. " | " .. util:GetPhrase(
+    return usage .. " | " .. ax.chatbox.util:GetPhrase(
         "chatbox.recommendations.arguments.next",
         "Next: %s",
         self:BuildArgumentDescriptor(arguments[activeIndex], activeIndex)
@@ -496,7 +496,7 @@ function ax.chatbox.recommendations:GetCommandRecommendations(panel, query)
 
     local cached = panel.commandRecommendCache[key]
     if ( cached and cached.limit == limit ) then
-        return util:CopyRecommendations(cached.items), cached.truncated == true
+        return ax.chatbox.util:CopyRecommendations(cached.items), cached.truncated == true
     end
 
     if ( !ax.command or !ax.command.GetAll or !ax.command.FindAll ) then
@@ -517,7 +517,7 @@ function ax.chatbox.recommendations:GetCommandRecommendations(panel, query)
     end
 
     table.sort(list, function(a, b)
-        return util:Lower(a.displayName or a.name) < util:Lower(b.displayName or b.name)
+        return ax.chatbox.util:Lower(a.displayName or a.name) < ax.chatbox.util:Lower(b.displayName or b.name)
     end)
 
     local output = {}
