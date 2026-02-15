@@ -199,54 +199,36 @@ function PANEL:Populate(tab, scroller, type, category)
 
         -- Add entries for this subcategory
         for key, entry in SortedPairs(entries) do
-            if ( entry.type == ax.type.bool ) then
-                local btn = scroller:Add("ax.store.bool")
-                btn:Dock(TOP)
-                btn:DockMargin(0, 0, 0, ax.util:ScreenScaleH(4))
-                btn:SetType(type)
-                btn:SetKey(key)
-            elseif ( entry.type == ax.type.number ) then
-                if ( entry.data.keybind ) then
-                    local btn = scroller:Add("ax.store.keybind")
-                    btn:Dock(TOP)
-                    btn:DockMargin(0, 0, 0, ax.util:ScreenScaleH(4))
-                    btn:SetType(type)
-                    btn:SetKey(key)
-                    continue
-                end
+            local panelName = nil
 
-                local btn = scroller:Add("ax.store.number")
-                btn:Dock(TOP)
-                btn:DockMargin(0, 0, 0, ax.util:ScreenScaleH(4))
-                btn:SetType(type)
-                btn:SetKey(key)
+            if ( entry.type == ax.type.bool ) then
+                panelName = "ax.store.bool"
+            elseif ( entry.type == ax.type.number ) then
+                panelName = entry.data.keybind and "ax.store.keybind" or "ax.store.number"
             elseif ( entry.type == ax.type.string ) then
-                local btn = scroller:Add("ax.store.string")
-                btn:Dock(TOP)
-                btn:DockMargin(0, 0, 0, ax.util:ScreenScaleH(4))
-                btn:SetType(type)
-                btn:SetKey(key)
+                panelName = "ax.store.string"
             elseif ( entry.type == ax.type.color ) then
-                local btn = scroller:Add("ax.store.color")
-                btn:Dock(TOP)
-                btn:DockMargin(0, 0, 0, ax.util:ScreenScaleH(4))
-                btn:SetType(type)
-                btn:SetKey(key)
+                panelName = "ax.store.color"
             elseif ( entry.type == ax.type.array ) then
-                local btn = scroller:Add("ax.store.array")
+                panelName = "ax.store.array"
+            end
+
+            if ( panelName ) then
+                local btn = scroller:Add(panelName)
                 btn:Dock(TOP)
                 btn:DockMargin(0, 0, 0, ax.util:ScreenScaleH(4))
                 btn:SetType(type)
                 btn:SetKey(key)
-            else
-                local label = scroller:Add("ax.text")
-                label:Dock(TOP)
-                label:DockMargin(0, 0, 0, ax.util:ScreenScaleH(4))
-                label:SetFont("ax.large.italic")
-                label:SetText(string.format("Unsupported type '%s' for key: %s", ax.type:Format(entry.type), tostring(key)), true)
-                label:SetContentAlignment(5)
-                label:SetTextColor(Color(200, 200, 200))
+                continue
             end
+
+            local label = scroller:Add("ax.text")
+            label:Dock(TOP)
+            label:DockMargin(0, 0, 0, ax.util:ScreenScaleH(4))
+            label:SetFont("ax.large.italic")
+            label:SetText(string.format("Unsupported type '%s' for key: %s", ax.type:Format(entry.type), tostring(key)), true)
+            label:SetContentAlignment(5)
+            label:SetTextColor(Color(200, 200, 200))
         end
 
         -- Add spacing between subcategories (except for the last one)
