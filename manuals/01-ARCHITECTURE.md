@@ -23,6 +23,7 @@ Your Schema (e.g., parallax-hl2rp)
 ```
 
 This means:
+
 - Your schema inherits all Sandbox functionality
 - Parallax extends Sandbox with roleplay systems
 - Your schema extends Parallax with game-specific content
@@ -562,6 +563,7 @@ Always know where your code fits in the loading sequence. Framework code loads b
 ### 3. Respect File Prefixes
 
 Use proper prefixes to ensure code runs on correct realm:
+
 - `sh_` for shared logic (most common)
 - `cl_` for UI and client-side only logic
 - `sv_` for database and server-only operations

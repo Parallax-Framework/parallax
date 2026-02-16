@@ -569,6 +569,7 @@ hook.Run("OnCustomEvent", {value = "test"})
 ### 1. Keep It Modular
 
 Organize code into logical directories:
+
 - Factions in `factions/`
 - Items in `items/`
 - Hooks in `hooks/`
@@ -625,6 +626,7 @@ end
 ### 6. Test Incrementally
 
 Start with a minimal schema and add features one at a time:
+
 1. Create basic schema structure
 2. Add one faction
 3. Add one item

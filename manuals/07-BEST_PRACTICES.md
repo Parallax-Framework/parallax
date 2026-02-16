@@ -531,6 +531,7 @@ end
 ### 3. Use Multiple Players
 
 Test with multiple players to check:
+
 - Network synchronization
 - Database concurrency
 - Resource contention
@@ -550,6 +551,7 @@ query:Execute()
 ### 5. Test Hot-Reload
 
 Test hot-reloading to ensure:
+
 - Code updates apply
 - No memory leaks
 - No orphaned entities
@@ -612,6 +614,7 @@ bugfix/*       -- Bug fix branches
 ### 5. Code Reviews
 
 Review code changes before merging to ensure:
+
 - Code quality
 - No bugs
 - Consistent style

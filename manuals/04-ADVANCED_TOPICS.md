@@ -406,6 +406,7 @@ ax.character:RegisterVar("customData", {
 ### Type Validation
 
 The framework uses types for:
+
 - Database column types
 - Character variable types
 - Command argument types

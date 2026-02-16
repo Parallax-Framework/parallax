@@ -29,6 +29,7 @@ Parallax is a roleplay framework for Garry's Mod that provides a modular, extens
 ### Separation of Concerns
 
 Framework provides foundation, schema defines gameplay. This separation allows:
+
 - Framework updates without breaking schemas
 - Multiple schemas running on same framework
 - Focus on gameplay mechanics instead of core systems
@@ -73,6 +74,7 @@ ax.character:RegisterVar("health", {
 ### Community
 
 Growing ecosystem of modules and schemas with:
+
 - Shared knowledge and examples
 - Reusable components
 - Community support
@@ -211,6 +213,7 @@ Now that you have Parallax installed, continue with:
 ### Getting Help
 
 If you continue to have issues:
+
 1. Review [Best Practices](07-BEST_PRACTICES.md)
 2. Check [Examples](06-EXAMPLES.md) for similar implementations
 3. Examine framework source code in `parallax/gamemode/framework/`

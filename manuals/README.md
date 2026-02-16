@@ -36,6 +36,7 @@ Browse [Examples](06-EXAMPLES.md) to see practical implementations.
 ## Getting Help
 
 If you encounter issues or have questions:
+
 1. Check the [Best Practices](07-BEST_PRACTICES.md) section
 2. Review [Examples](06-EXAMPLES.md) for similar use cases
 3. Examine the framework source code in `parallax/gamemode/framework/`

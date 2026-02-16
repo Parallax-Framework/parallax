@@ -828,6 +828,7 @@ return MODULE
 ### Module Capabilities
 
 Modules can add:
+
 - Factions (`factions/` directory)
 - Items (`items/` directory)
 - Hooks (`sh_hooks.lua`, `cl_hooks.lua`, `sv_hooks.lua`)
