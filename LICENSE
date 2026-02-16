@@ -9,6 +9,20 @@ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
 
+If this Software, or substantial portions of it, are taken, used, copied,
+modified, merged, published, distributed, sublicensed, or sold, the recipient
+must clearly and visibly disclose:
+
+1. That the work contains code from the Parallax Framework project.
+2. Credit to the original copyright holders:
+   Riggs and bloodycop6385.
+3. Whether the code has been modified, including a short statement that changes
+   were made.
+
+This disclosure must appear in at least one prominent place where users or
+developers would reasonably find licensing/credit information (for example:
+LICENSE, NOTICE, README, about page, or repository description).
+
 The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
 
