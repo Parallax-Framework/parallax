@@ -124,14 +124,31 @@ ax.command:Add("CharGiveFlags", {
     adminOnly = true,
     arguments = {
         { name = "target", type = ax.type.character },
-        { name = "flags", type = ax.type.string }
+        { name = "flags", type = ax.type.string, optional = true }
     },
     OnRun = function(def, client, target, flags)
         if ( !target ) then target = client:GetCharacter() end
 
-        target:GiveFlags(flags)
+        if ( !flags or flags == "" ) then
+            local flagsToGive = ""
+            for flag, _ in pairs(ax.flag.stored) do
+                if ( !target:HasFlags(flag) ) then
+                    flagsToGive = flagsToGive .. flag
+                end
+            end
 
-        return "Flags given to " .. target:GetName() .. ": " .. flags
+            client:DermaStringRequest("Enter flags", "Enter the flags to give to the character.", flagsToGive, function(text)
+                if ( text == "" ) then return end
+
+                target:GiveFlags(text)
+            end)
+
+            return
+        else
+            target:GiveFlags(flags)
+
+            return "Flags given to " .. target:GetName() .. ": " .. flags
+        end
     end
 })
 
@@ -140,15 +157,31 @@ ax.command:Add("CharTakeFlags", {
     adminOnly = true,
     arguments = {
         { name = "target", type = ax.type.character },
-        { name = "flags", type = ax.type.string }
+        { name = "flags", type = ax.type.string, optional = true }
     },
     OnRun = function(def, client, target, flags)
         if ( !target ) then target = client:GetCharacter() end
 
-        target:TakeFlags(flags)
-        target:Save()
+        if ( !flags or flags == "" ) then
+            local flagsToTake = ""
+            for flag, _ in pairs(ax.flag.stored) do
+                if ( target:HasFlags(flag) ) then
+                    flagsToTake = flagsToTake .. flag
+                end
+            end
 
-        return "Flags taken from " .. target:GetName() .. ": " .. flags
+            client:DermaStringRequest("Enter flags", "Enter the flags to take from the character.", flagsToTake, function(text)
+                if ( text == "" ) then return end
+                
+                target:TakeFlags(text)
+            end)
+
+            return
+        else
+            target:TakeFlags(flags)
+
+            return "Flags taken from " .. target:GetName() .. ": " .. flags
+        end
     end
 })
 
