@@ -473,10 +473,11 @@ end
 
 function GM:PlayerCanHearPlayersVoice(listener, speaker)
     local config = ax.config:Get("voice.distance", 512)
+    local configSqr = config * config
     if ( voiceDistance == nil ) then
-        voiceDistance = config * config
-    elseif ( voiceDistance != config * config ) then
-        voiceDistance = config * config
+        voiceDistance = configSqr
+    elseif ( voiceDistance != configSqr ) then
+        voiceDistance = configSqr
     end
 
     local listenerTable = listener:GetTable()
@@ -489,7 +490,7 @@ function GM:PlayerCanHearPlayersVoice(listener, speaker)
         return true, true
     end
 
-    return false
+    return false, false
 end
 
 function GM:Think()
