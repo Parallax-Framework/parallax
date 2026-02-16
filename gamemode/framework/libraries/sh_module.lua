@@ -104,20 +104,22 @@ function ax.module:Include(path, timeFilter)
                     ax.util:IncludeDirectory(path .. "/" .. dirName .. "/networking", true, nil, timeFilter)
                     ax.util:IncludeDirectory(path .. "/" .. dirName .. "/interface", true, nil, timeFilter)
 
-                    ax.util:IncludeDirectory(path .. "/" .. dirName, true, {
-                        ["libraries"] = true,
-                        ["meta"] = true,
-                        ["core"] = true,
-                        ["hooks"] = true,
-                        ["networking"] = true,
-                        ["interface"] = true,
-                        ["factions"] = true,
-                        ["classes"] = true,
-                        ["ranks"] = true,
-                        ["items"] = true,
-                        ["entities"] = true,
-                        ["boot.lua"] = true
-                    }, timeFilter)
+                    if ( MODULE.autoload != false ) then
+                        ax.util:IncludeDirectory(path .. "/" .. dirName, true, {
+                            ["libraries"] = true,
+                            ["meta"] = true,
+                            ["core"] = true,
+                            ["hooks"] = true,
+                            ["networking"] = true,
+                            ["interface"] = true,
+                            ["factions"] = true,
+                            ["classes"] = true,
+                            ["ranks"] = true,
+                            ["items"] = true,
+                            ["entities"] = true,
+                            ["boot.lua"] = true
+                        }, timeFilter)
+                    end
 
                     ax.faction:Include(path .. "/" .. dirName .. "/factions", timeFilter)
                     ax.class:Include(path .. "/" .. dirName .. "/classes", timeFilter)
