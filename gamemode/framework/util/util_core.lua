@@ -192,14 +192,14 @@ if ( CLIENT ) then
     -- @param w number Width
     -- @param h number Height
     -- @param color Color|nil Optional tint color (defaults to white)
-    -- @usage ax.util:DrawGradient("left", 0, 0, 200, 400, Color(0,0,0,200))
-    function ax.util:DrawGradient(name, x, y, w, h, color)
+    -- @usage ax.util:DrawGradient(0, "left", 0, 0, 200, 400, Color(0,0,0,200))
+    function ax.util:DrawGradient(r, name, x, y, w, h, color)
         local mat = self:GetGradient(name)
         if ( !mat ) then return end
 
         color = color or Color(255, 255, 255, 255)
 
-        ax.render.DrawMaterial(0, x, y, w, h, color, mat)
+        ax.render.DrawMaterial(r, x, y, w, h, color, mat)
     end
 end
 

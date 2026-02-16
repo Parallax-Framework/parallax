@@ -198,10 +198,10 @@ function PANEL:Init()
 
     self:SetOverlap(0)
 
-    self.btnLeft = self:Add("ax.button.flat", self)
+    self.btnLeft = self:Add("ax.button", self)
     self.btnLeft:SetText("")
 
-    self.btnRight = self:Add("ax.button.flat", self)
+    self.btnRight = self:Add("ax.button", self)
     self.btnRight:SetText("")
 end
 

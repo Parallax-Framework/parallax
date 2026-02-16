@@ -72,17 +72,17 @@ function ax.ease:Lerp(easeType, time, startValue, endValue)
 
     if ( easeType == "Linear" ) then
         -- Simple linear interpolation
-        if ( istable(startValue) and istable(endValue) ) then
+        if ( isvector(startValue) and isvector(endValue) ) then
+            return LerpVector(time, startValue, endValue)
+        elseif ( isangle(startValue) and isangle(endValue) ) then
+            return LerpAngle(time, startValue, endValue)
+        elseif ( istable(startValue) and istable(endValue) ) then
             return {
                 r = Lerp(time, startValue.r, endValue.r),
                 g = Lerp(time, startValue.g, endValue.g),
                 b = Lerp(time, startValue.b, endValue.b),
                 a = Lerp(time, startValue.a or 255, endValue.a or 255)
             }
-        elseif ( isvector(startValue) and isvector(endValue) ) then
-            return LerpVector(time, startValue, endValue)
-        elseif ( isangle(startValue) and isangle(endValue) ) then
-            return LerpAngle(time, startValue, endValue)
         else
             return Lerp(time, startValue, endValue)
         end
@@ -95,7 +95,13 @@ function ax.ease:Lerp(easeType, time, startValue, endValue)
 
     local easedT = easeFunc(math.Clamp(time, 0, 1))
 
-    if ( istable(startValue) and istable(endValue) ) then
+    if ( isvector(startValue) and isvector(endValue) ) then
+        -- Handle vector lerping
+        return LerpVector(easedT, startValue, endValue)
+    elseif ( isangle(startValue) and isangle(endValue) ) then
+        -- Handle angle lerping
+        return LerpAngle(easedT, startValue, endValue)
+    elseif ( istable(startValue) and istable(endValue) ) then
         -- Handle color lerping
         return {
             r = Lerp(easedT, startValue.r, endValue.r),
@@ -103,12 +109,6 @@ function ax.ease:Lerp(easeType, time, startValue, endValue)
             b = Lerp(easedT, startValue.b, endValue.b),
             a = Lerp(easedT, startValue.a or 255, endValue.a or 255)
         }
-    elseif ( isvector(startValue) and isvector(endValue) ) then
-        -- Handle vector lerping
-        return LerpVector(easedT, startValue, endValue)
-    elseif ( isangle(startValue) and isangle(endValue) ) then
-        -- Handle angle lerping
-        return LerpAngle(easedT, startValue, endValue)
     else
         -- Handle numeric lerping
         return Lerp(easedT, startValue, endValue)

@@ -125,6 +125,28 @@ ax.localization:Register("ru", {
     ["option.button.delay.click"] = "Задержка нажатия кнопки",
 
     ---- Display
+    ["option.interface.theme"] = "Тема интерфейса",
+    ["option.interface.theme.help"] = "Выберите цветовую тему для интерфейса.",
+    ["option.interface.glass.roundness"] = "Округлость стекла",
+    ["option.interface.glass.roundness.help"] = "Настройте радиус углов стеклянных элементов интерфейса.",
+    ["option.interface.glass.blur"] = "Интенсивность размытия стекла",
+    ["option.interface.glass.blur.help"] = "Управляйте силой размытия за стеклянными элементами интерфейса.",
+    ["option.interface.glass.opacity"] = "Непрозрачность стекла",
+    ["option.interface.glass.opacity.help"] = "Настройте непрозрачность стеклянных панелей интерфейса.",
+    ["option.interface.glass.borderOpacity"] = "Непрозрачность границ стекла",
+    ["option.interface.glass.borderOpacity.help"] = "Управляйте видимостью границ стеклянного интерфейса.",
+    ["option.interface.glass.gradientOpacity"] = "Непрозрачность градиента стекла",
+    ["option.interface.glass.gradientOpacity.help"] = "Настройте силу градиентных наложений на стеклянных панелях.",
+
+    -- Theme Names
+    ["theme.dark"] = "Тёмная",
+    ["theme.light"] = "Светлая",
+    ["theme.blue"] = "Синяя",
+    ["theme.purple"] = "Фиолетовая",
+    ["theme.green"] = "Зелёная",
+    ["theme.red"] = "Красная",
+
+    ---- Display
     ["option.interface.scale"] = "Размер Интерфейса",
     ["option.performance.animations"] = "Включить анимацию интерфейса",
 
@@ -192,4 +214,23 @@ ax.localization:Register("ru", {
     ["category.admin"] = "Админы",
     ["option.admin.esp"] = "Админ ESP",
     ["option.admin.esp.help"] = "Включить или отключить админское ESP.",
+    ["chatbox.entry.placeholder"] = "Say something...",
+    ["chatbox.recommendations.no_description"] = "No description provided.",
+    ["chatbox.recommendations.truncated"] = "Showing first %d results.",
+    ["chatbox.menu.close"] = "Close Chat",
+    ["chatbox.menu.clear_history"] = "Clear Chat History",
+    ["chatbox.menu.reset_position"] = "Reset Position",
+    ["chatbox.menu.reset_size"] = "Reset Size",
+    ["chatbox.menu.confirm_clear_title"] = "Clear Chat History",
+    ["chatbox.menu.confirm_clear_message"] = "Clear all chat history?",
+
+    ["config.chatbox.max_message_length"] = "Chatbox Max Message Length",
+    ["config.chatbox.history_size"] = "Chatbox Input History Size",
+    ["config.chatbox.chat_type_history"] = "Chatbox Chat-Type History Size",
+    ["config.chatbox.looc_prefix"] = "Chatbox LOOc Prefix",
+    ["config.chatbox.recommendations.debounce"] = "Chatbox Recommendation Debounce",
+    ["config.chatbox.recommendations.animation_duration"] = "Chatbox Recommendation Animation Duration",
+    ["config.chatbox.recommendations.command_limit"] = "Chatbox Command Recommendation Limit",
+    ["config.chatbox.recommendations.voice_limit"] = "Chatbox Voice Recommendation Limit",
+    ["config.chatbox.recommendations.wrap_cycle"] = "Chatbox Recommendation Cycle Wrap",
 })

@@ -18,12 +18,12 @@ ax.chat.registry = ax.chat.registry or {}
 
 function ax.chat:Add(key, def)
     if ( !isstring(key) or key == "" ) then
-        ax.util:PrintError("ax.chat:Add - Invalid chat key provided")
+        ax.util:PrintError("[CHAT] Invalid chat key provided")
         return
     end
 
     if ( !istable(def) ) then
-        ax.util:PrintError("ax.chat:Add - Invalid chat definition provided for \"" .. key .. "\"")
+        ax.util:PrintError("[CHAT] Invalid chat definition provided for \"" .. key .. "\"")
         return
     end
 
@@ -38,7 +38,7 @@ function ax.chat:Add(key, def)
             for i = 1, #def.prefix do
                 local prefix = def.prefix[i]
                 if ( !isstring(prefix) or prefix == "" ) then
-                    ax.util:PrintError("ax.chat:Add - Invalid prefix provided for chat type \"" .. key .. "\"")
+                    ax.util:PrintError("[CHAT] Invalid prefix provided for chat type \"" .. key .. "\"")
                     def.prefix[i] = nil
                 end
 
@@ -80,10 +80,14 @@ function ax.chat:Add(key, def)
                 if ( dist > (this.hearDistance * this.hearDistance) ) then
                     return false
                 end
+            else
+                ax.util:PrintWarning("[CHAT] No hearDistance defined for chat type \"" .. key .. "\"; defaulting to global chat distance")
             end
 
             return true
         end
+    else
+        ax.util:PrintDebug("[CHAT] Custom CanHear function defined for chat type \"" .. key .. "\"")
     end
 
     if ( !isfunction(def.CanSay) ) then
@@ -94,6 +98,8 @@ function ax.chat:Add(key, def)
 
             return true
         end
+    else
+        ax.util:PrintDebug("[CHAT] Custom CanSay function defined for chat type \"" .. key .. "\"")
     end
 
     self.registry[key] = def
@@ -113,12 +119,12 @@ function ax.chat:Parse(message)
         local chosenPrefix = ""
         local noSpaceAfter = v.noSpaceAfter
 
-        if (istable(v.prefix) and v.prefix[1] != nil) then
+        if ( istable(v.prefix) and v.prefix[1] != nil ) then
             for _ = 1, #v.prefix do
                 local prefix = v.prefix[_]
                 prefix = string.lower(prefix)
-                local fullPrefix = prefix .. (noSpaceAfter and "" or " ")
 
+                local fullPrefix = prefix .. (noSpaceAfter and "" or " ")
                 if ( string.lower(string.sub(message, 1, string.len(prefix) + (noSpaceAfter and 0 or 1))) == fullPrefix:lower()) then
                     isChosen = true
                     chosenPrefix = fullPrefix
@@ -147,24 +153,26 @@ if ( SERVER ) then
     function ax.chat:Send(speaker, chatType, text, data, receivers)
         local chatClass = self.registry[chatType]
         if ( !istable(chatClass) ) then
-            ax.util:PrintError("ax.chat:Send - Invalid chat type \"" .. tostring(chatType) .. "\"")
+            ax.util:PrintError("[CHAT] Invalid chat type \"" .. tostring(chatType) .. "\"")
             return
         end
 
-        if ( IsValid(speaker) and ( !chatClass:CanSay(speaker, text, data) or hook.Run("CanPlayerSendMessage", speaker, chatType, text, data) == false ) ) then return end
+        if ( ax.util:IsValidPlayer(speaker) and ( !chatClass:CanSay(speaker, text, data) or hook.Run("CanPlayerSendMessage", speaker, chatType, text, data) == false ) ) then return end
 
         if ( !istable(receivers) ) then
             receivers = { speaker }
 
-            for _, v in player.Iterator() do
-                if ( !IsValid(v) or v == speaker ) then continue end
+            for _, v in ipairs(player.GetAll()) do
+                if ( !ax.util:IsValidPlayer(v) or v == speaker ) then continue end
 
                 if ( chatClass:CanHear(speaker, v, data) or hook.Run("CanPlayerReceiveMessage", v, speaker, chatType, text, data) == false ) then
                     receivers[#receivers + 1] = v
+                    ax.util:PrintDebug("[CHAT] Added receiver " .. tostring(v) .. " for chat message of type \"" .. chatType .. "\" from " .. tostring(speaker))
                 end
             end
 
             if ( receivers[1] == nil ) then
+                ax.util:PrintWarning("[CHAT] No receivers for chat message, aborting")
                 return
             end
         end
@@ -180,6 +188,8 @@ if ( SERVER ) then
                 ax.net:StartPAS(speaker:EyePos(), "chat.message", speaker, chatType, text, payload)
             elseif ( payload.receiversPVS ) then
                 ax.net:StartPVS(speaker:EyePos(), "chat.message", speaker, chatType, text, payload)
+            else
+                ax.util:PrintError("[CHAT] Invalid receiver vector provided for chat message")
             end
         else
             ax.net:Start(receivers, "chat.message", speaker, chatType, text, payload)

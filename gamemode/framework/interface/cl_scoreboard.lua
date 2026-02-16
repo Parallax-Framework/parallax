@@ -43,7 +43,7 @@ function PANEL:RebuildScoreboard()
     self.container:Clear()
 
     local teams = {}
-    for _, client in player.Iterator() do
+    for _, client in ipairs(player.GetAll()) do
         local tid = client:Team() or 0
         teams[tid] = teams[tid] or {}
         table.insert(teams[tid], client)
@@ -66,14 +66,26 @@ function PANEL:RebuildScoreboard()
         header:Dock(TOP)
         header.Paint = function(_, width, height)
             local col = team.GetColor(tid) or Color(80, 80, 80)
-            ax.render.Draw(0, 0, 0, width, height, ColorAlpha(col, 180))
+            local glass = ax.theme:GetGlass()
+            ax.theme:DrawGlassPanel(0, 0, width, height, {
+                radius = 8,
+                blur = 0.8,
+                flags = ax.render.SHAPE_IOS,
+                fill = glass.panel
+            })
+            ax.render.Draw(8, 0, 0, width, height, ColorAlpha(col, 90), ax.render.SHAPE_IOS)
+            ax.render.Draw(8, 0, 0, width, height, glass.highlight, ax.render.SHAPE_IOS)
         end
+
+        local darkTheme = ax.theme:Get("dark")
+        local lightTheme = ax.theme:Get("light")
 
         local title = header:Add("ax.text")
         title:Dock(FILL)
         title:SetFont("ax.large.bold.italic")
         title:SetText(team.GetName(tid) or ("Team " .. tostring(tid)), true)
         title:SetTextInset(ax.util:ScreenScale(2), -ax.util:ScreenScaleH(1))
+        title:SetTextColor(!team.GetColor(tid):IsDark() and lightTheme.glass.text or darkTheme.glass.text)
         title:SetExpensiveShadow(2, Color(0, 0, 0, 200))
 
         header:SetTall(title:GetTall())
@@ -82,10 +94,14 @@ function PANEL:RebuildScoreboard()
         for index, client in ipairs(members) do
             local row = self.container:Add("EditablePanel")
             row:Dock(TOP)
-            row:DockMargin(0, 0, 0, index == #members and ax.util:ScreenScaleH(8) or 0)
+            row:DockMargin(0, 0, 0, index == #members and ax.util:ScreenScaleH(12) or 0)
             row:SetMouseInputEnabled(true)
             row.Paint = function(_, width, height)
-                ax.render.Draw(0, 0, 0, width, height, Color(0, 0, 0, 150))
+                ax.theme:DrawGlassPanel(0, 0, width, height, {
+                    radius = 8,
+                    blur = 0.7,
+                    flags = ax.render.SHAPE_IOS
+                })
             end
 
             -- Right-click context menu support. Other modules can add entries
@@ -117,7 +133,6 @@ function PANEL:RebuildScoreboard()
             local name = row:Add("ax.text")
             name:Dock(LEFT)
             name:DockMargin(8, 0, 0, 0)
-            name:SetFont("ax.small")
 
             local steamName = client:SteamName()
             local toDisplay = ""
@@ -143,7 +158,6 @@ function PANEL:RebuildScoreboard()
             local ping = row:Add("ax.text")
             ping:Dock(RIGHT)
             ping:DockMargin(0, 0, 8, 0)
-            ping:SetFont("ax.small")
             ping:SetText(client:IsBot() and "Bot" or tostring(client:Ping()) .. " ms", true)
 
             row:SetTall(math.max(avatar:GetTall(), name:GetTall(), ping:GetTall()) * 1.5)

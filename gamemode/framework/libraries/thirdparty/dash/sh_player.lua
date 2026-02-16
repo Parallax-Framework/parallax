@@ -6,7 +6,7 @@ local GetTable = ENTITY.GetTable
 function player.GetStaff()
     local staff = {}
 
-    for _, v in player.Iterator() do
+    for _, v in ipairs(player.GetAll()) do
         if v:IsAdmin() then
             staff[#staff + 1] = v
         end

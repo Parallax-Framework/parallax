@@ -113,15 +113,21 @@ end
 function PANEL:CreateNavigation(parent, backText, backCallback, nextText, nextCallback)
     local navigation = parent:Add("EditablePanel")
     navigation:Dock(BOTTOM)
-    navigation:DockMargin(ax.util:ScreenScale(32), 0, ax.util:ScreenScale(32), ax.util:ScreenScaleH(32))
+    navigation:DockMargin(ax.util:ScreenScale(48), ax.util:ScreenScaleH(16), ax.util:ScreenScale(48), ax.util:ScreenScaleH(32))
 
-    local backButton = navigation:Add("ax.button.flat")
+    local backButton = navigation:Add("ax.button")
     backButton:Dock(LEFT)
     backButton:SetText(backText)
-    backButton.DoClick = backCallback
+    backButton.DoClick = function()
+        ax.client:EmitSound("ax.gui.menu.return")
+
+        if ( isfunction(backCallback) ) then
+            backCallback()
+        end
+    end
 
     if ( nextText and nextCallback ) then
-        local nextButton = navigation:Add("ax.button.flat")
+        local nextButton = navigation:Add("ax.button")
         nextButton:Dock(RIGHT)
         nextButton:SetText(nextText)
         nextButton.DoClick = nextCallback
@@ -248,6 +254,10 @@ function PANEL:HidePanel()
     self.guard:SetVisible(false)
 
     self.active = false
+
+    if ( self.OnHidden ) then
+        self:OnHidden()
+    end
 end
 
 function PANEL:SlideLeft(time, callback)
@@ -419,7 +429,13 @@ function PANEL:HideAllPages()
 end
 
 function PANEL:Paint(width, height)
-    ax.render.Draw(0, 0, 0, width, height, Color(0, 0, 0, 150))
+    local glass = ax.theme:GetGlass()
+    ax.theme:DrawGlassBackdrop(0, 0, width, height, {
+        radius = 0,
+        blur = 1.0,
+        flags = ax.render.SHAPE_IOS,
+        fill = glass.overlayStrong
+    })
 end
 
 vgui.Register("ax.transition.pages", PANEL, "ax.transition")

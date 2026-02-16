@@ -29,7 +29,7 @@ function PANEL:Init()
 
     self.characters = self.characterList:Add("ax.scroller.vertical")
     self.characters:Dock(FILL)
-    self.characters:DockMargin(ax.util:ScreenScale(128), ax.util:ScreenScaleH(32), ax.util:ScreenScale(128), ax.util:ScreenScaleH(32))
+    self.characters:DockMargin(ax.util:ScreenScale(144), ax.util:ScreenScaleH(40), ax.util:ScreenScale(144), ax.util:ScreenScaleH(40))
     self.characters:InvalidateParent(true)
     self.characters:GetVBar():SetWide(0)
     self.characters.Paint = nil
@@ -55,11 +55,11 @@ end
 function PANEL:PopulateCharacterList()
     self.characters:Clear()
     local clientTable = ax.client:GetTable()
-    if ( !istable( clientTable.axCharacters ) ) then clientTable.axCharacters = {} end
+    if ( !istable(clientTable.axCharacters) ) then clientTable.axCharacters = {} end
     if ( clientTable.axCharacters[1] == nil ) then return end -- literally no reason to continue
 
     for k, v in pairs(clientTable.axCharacters or {}) do
-        local button = self.characters:Add("ax.button.flat")
+        local button = self.characters:Add("ax.button")
         button:Dock(TOP)
         button:DockMargin(0, 0, 0, ax.util:ScreenScaleH(4))
         button:SetText("", true, true, true)
@@ -86,12 +86,13 @@ function PANEL:PopulateCharacterList()
             surface.DrawTexturedRect(0, 0, width, height)
         end
 
-        local deleteButton = button:Add("ax.button.flat")
+        local deleteButton = button:Add("ax.button")
         deleteButton:Dock(RIGHT)
         deleteButton:DockMargin(ax.util:ScreenScale(8), 0, 0, 0)
         deleteButton:SetText("X")
         deleteButton:SetTextColor(Color(200, 100, 100))
-        deleteButton:SetBackgroundColor(Color(200, 100, 100))
+        deleteButton:SetBackgroundColorActive(Color(200, 100, 100, 200))
+        deleteButton:SetBlur(0.75)
         deleteButton:SetSize(0, button:GetTall())
         deleteButton:SetContentAlignment(5)
         deleteButton.width = 0
@@ -129,7 +130,7 @@ function PANEL:PopulateCharacterList()
 
         local name = button:Add("ax.text")
         name:Dock(TOP)
-        name:SetFont("ax.huge.bold")
+        name:SetFont("ax.giant.bold")
         name:SetText(v:GetName():upper())
         name.Think = function(this)
             this:SetTextColor(button:GetTextColor())
@@ -153,13 +154,13 @@ function PANEL:PopulateDeletePanel(character)
 
     local title = self.deleteContainer:Add("ax.text")
     title:Dock(TOP)
-    title:DockMargin(ax.util:ScreenScale(32), ax.util:ScreenScaleH(32), 0, 0)
+    title:DockMargin(ax.util:ScreenScale(48), ax.util:ScreenScaleH(40), 0, 0)
     title:SetFont("ax.huge.bold")
     title:SetText("ARE YOU SURE YOU WANT TO DELETE")
 
     local name = self.deleteContainer:Add("ax.text")
     name:Dock(TOP)
-    name:DockMargin(ax.util:ScreenScale(64), 0, 0, ax.util:ScreenScaleH(16))
+    name:DockMargin(ax.util:ScreenScale(72), 0, 0, ax.util:ScreenScaleH(20))
     name:SetFont("ax.huge.bold")
     name:SetText(character:GetName():upper())
     name:SetTextColor(team.GetColor(character:GetFaction()) or color_white)
@@ -198,7 +199,6 @@ function PANEL:PopulateDeletePanel(character)
 end
 
 function PANEL:Paint(width, height)
-    ax.util:DrawGradient("down", 0, 0, width, height, Color(0, 0, 0, 200))
 end
 
 vgui.Register("ax.main.load", PANEL, "ax.transition")

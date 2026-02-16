@@ -409,7 +409,7 @@ ax.command:Add("BotKick", {
     OnRun = function(def, client)
         if ( SERVER ) then
             local count = 0
-            for _, target in player.Iterator() do
+            for _, target in ipairs(player.GetAll()) do
                 if ( target:IsBot() ) then
                     target:Kick("Removed by admin")
                     count = count + 1
@@ -447,7 +447,7 @@ ax.command:Add("BotList", {
     OnRun = function(def, client)
         if ( SERVER ) then
             local bots = {}
-            for _, target in player.Iterator() do
+            for _, target in ipairs(player.GetAll()) do
                 if ( target:IsBot() ) then
                     local character = target:GetCharacter()
                     local charName = character and character:GetName() or "No Character"

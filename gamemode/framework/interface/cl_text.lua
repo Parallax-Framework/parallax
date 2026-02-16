@@ -15,7 +15,7 @@ local PANEL = {}
 
 function PANEL:Init()
     self:SetFont("ax.regular")
-    self:SetTextColor(color_white)
+    self:SetTextColor(ax.theme:GetGlass().text)
 end
 
 function PANEL:SetText(text, bNoTranslate, bNoSizeToContents)
@@ -50,7 +50,7 @@ AccessorFunc(PANEL, "fTypingSpeed", "TypingSpeed", FORCE_NUMBER)
 
 function PANEL:Init()
     self:SetFont("ax.regular")
-    self:SetTextColor(color_white)
+    self:SetTextColor(ax.theme:GetGlass().text)
 
     self.fullText = ""
     self.displayedText = ""
@@ -138,7 +138,13 @@ function PANEL:PaintInternal(width, height)
 end
 
 function PANEL:Paint(width, height)
-    ax.render.Draw(0, 0, 0, width, height, Color(0, 0, 0, 150))
+    local glass = ax.theme:GetGlass()
+    ax.theme:DrawGlassPanel(0, 0, width, height, {
+        radius = math.max(4, math.min(8, height * 0.35)),
+        blur = 0.6,
+        fill = glass.input,
+        border = glass.inputBorder
+    })
 
     self:PaintInternal(width, height)
 end

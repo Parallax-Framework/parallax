@@ -57,8 +57,9 @@ function PANEL:SetType(type)
     local categoryButtons = {}
 
     for k, v in SortedPairsByValue(categories) do
-        local button = self.categories:Add("ax.button.flat")
+        local button = self.categories:Add("ax.button")
         button:Dock(TOP)
+        button:DockMargin(0, 0, 0, ax.util:ScreenScaleH(4))
         button:SetText(ax.localization:GetPhrase("category." .. v))
 
         -- ["general"] = "General",
@@ -198,44 +199,36 @@ function PANEL:Populate(tab, scroller, type, category)
 
         -- Add entries for this subcategory
         for key, entry in SortedPairs(entries) do
-            if ( entry.type == ax.type.bool ) then
-                local btn = scroller:Add("ax.store.bool")
-                btn:Dock(TOP)
-                btn:SetType(type)
-                btn:SetKey(key)
-            elseif ( entry.type == ax.type.number ) then
-                if ( entry.data.keybind ) then
-                    -- TODO: Kill this drilla
-                    continue
-                end
+            local panelName = nil
 
-                local btn = scroller:Add("ax.store.number")
-                btn:Dock(TOP)
-                btn:SetType(type)
-                btn:SetKey(key)
+            if ( entry.type == ax.type.bool ) then
+                panelName = "ax.store.bool"
+            elseif ( entry.type == ax.type.number ) then
+                panelName = entry.data.keybind and "ax.store.keybind" or "ax.store.number"
             elseif ( entry.type == ax.type.string ) then
-                local btn = scroller:Add("ax.store.string")
-                btn:Dock(TOP)
-                btn:SetType(type)
-                btn:SetKey(key)
+                panelName = "ax.store.string"
             elseif ( entry.type == ax.type.color ) then
-                local btn = scroller:Add("ax.store.color")
-                btn:Dock(TOP)
-                btn:SetType(type)
-                btn:SetKey(key)
+                panelName = "ax.store.color"
             elseif ( entry.type == ax.type.array ) then
-                local btn = scroller:Add("ax.store.array")
+                panelName = "ax.store.array"
+            end
+
+            if ( panelName ) then
+                local btn = scroller:Add(panelName)
                 btn:Dock(TOP)
+                btn:DockMargin(0, 0, 0, ax.util:ScreenScaleH(4))
                 btn:SetType(type)
                 btn:SetKey(key)
-            else
-                local label = scroller:Add("ax.text")
-                label:Dock(TOP)
-                label:SetFont("ax.large.italic")
-                label:SetText(string.format("Unsupported type '%s' for key: %s", ax.type:Format(entry.type), tostring(key)), true)
-                label:SetContentAlignment(5)
-                label:SetTextColor(Color(200, 200, 200))
+                continue
             end
+
+            local label = scroller:Add("ax.text")
+            label:Dock(TOP)
+            label:DockMargin(0, 0, 0, ax.util:ScreenScaleH(4))
+            label:SetFont("ax.large.italic")
+            label:SetText(string.format("Unsupported type '%s' for key: %s", ax.type:Format(entry.type), tostring(key)), true)
+            label:SetContentAlignment(5)
+            label:SetTextColor(Color(200, 200, 200))
         end
 
         -- Add spacing between subcategories (except for the last one)
@@ -269,9 +262,11 @@ function PANEL:Init()
     self:SetText("unknown")
     self:SetTextInset(ax.util:ScreenScale(8), 0)
 
-    self.reset = self:Add("ax.button.flat.icon")
-    self.reset:SetIcon("parallax/icons/eraser.png")
+    self.reset = self:Add("ax.button.icon")
+    self.reset:SetIcon("parallax/icons/chevron-right.png")
     self.reset:SetIconAlign("center")
+    self.reset:SetIconColor(color_white)
+    self.reset:Dock(RIGHT)
     self.reset.DoClick = function()
         local store = self:GetStore()
         if ( !store ) then
@@ -363,14 +358,14 @@ function PANEL:PaintAdditional(width, height)
     local value = store:Get(self.key)
 
     if ( value == default ) then return end
-    ax.util:DrawGradient("left", 0, 0, width / 3, height, ColorAlpha(self:GetTextColor(), 100))
+    ax.util:DrawGradient(8, "left", 0, 0, width / 3, height, ColorAlpha(self:GetTextColor(), 100))
 end
 
 function PANEL:UpdateDisplay()
     -- Override in child panels
 end
 
-vgui.Register("ax.store.base", PANEL, "ax.button.flat")
+vgui.Register("ax.store.base", PANEL, "ax.button")
 
 -- Boolean store element
 PANEL = {}
@@ -532,7 +527,86 @@ function PANEL:UpdateDisplay()
     self.slider:SetValue(value)
 end
 
+function PANEL:OnRemove()
+    if ( self.bInitializing ) then return end
+
+    local store = self:GetStore()
+    if ( !store ) then return end
+
+    local deferredValue = self.slider and self.slider.ValueChangedDeferred or nil
+    if ( deferredValue != nil ) then
+        store:Set(self.key, deferredValue)
+        self.slider.ValueChangedDeferred = nil
+    elseif ( self.pendingValue != nil ) then
+        store:Set(self.key, self.pendingValue)
+    end
+
+    self.pendingValue = nil
+    self.pendingTime = nil
+end
+
 vgui.Register("ax.store.number", PANEL, "ax.store.base")
+
+-- Keybind store element
+PANEL = {}
+
+DEFINE_BASECLASS("ax.store.base")
+
+function PANEL:Init()
+    self.elementType = "keybind"
+    self.bSuppressOnChange = false
+
+    self.binder = self:Add("DBinder")
+    self.binder:Dock(RIGHT)
+    self.binder:DockMargin(0, ax.util:ScreenScale(4), ax.util:ScreenScale(8), ax.util:ScreenScale(4))
+    self.binder:SetWide(ax.util:ScreenScale(192))
+    self.binder:SetSelectedNumber(KEY_NONE or 0)
+    self.binder.OnChange = function(this, value)
+        if ( self.bInitializing or self.bSuppressOnChange ) then return end
+
+        local store = self:GetStore()
+        if ( store ) then
+            store:Set(self.key, value)
+        end
+    end
+end
+
+function PANEL:SetBinderValue(value)
+    value = tonumber(value) or (KEY_NONE or 0)
+
+    if ( self.binder:GetSelectedNumber() == value ) then return end
+
+    self.bSuppressOnChange = true
+    self.binder:SetSelectedNumber(value)
+    self.bSuppressOnChange = false
+end
+
+function PANEL:SetKey(key)
+    BaseClass.SetKey(self, key)
+
+    local store = self:GetStore()
+    if ( !store or store:Get(key) == nil ) then return end
+
+    local default = store:GetDefault(key)
+    if ( default != nil ) then
+        self.binder:SetDefaultNumber(default)
+    end
+
+    self:SetBinderValue(store:Get(key))
+    self.bInitializing = false
+end
+
+function PANEL:UpdateDisplay()
+    local store = self:GetStore()
+    if ( !store ) then
+        self:SetBinderValue(KEY_NONE or 0)
+        return
+    end
+
+    self:SetBinderValue(store:Get(self.key))
+end
+
+vgui.Register("ax.store.keybind", PANEL, "ax.store.base")
 
 -- String store element
 PANEL = {}
@@ -547,6 +621,7 @@ function PANEL:Init()
     self.entry:DockMargin(0, ax.util:ScreenScale(4), ax.util:ScreenScale(8), ax.util:ScreenScale(4))
     self.entry:SetWide(ax.util:ScreenScale(192))
     self.entry:SetText("unknown")
+    self.entry:SetUpdateOnType(false)
     self.entry.OnValueChange = function(this, value)
         if ( self.bInitializing ) then return end
 
@@ -554,6 +629,18 @@ function PANEL:Init()
         if ( store ) then
             store:Set(self.key, value)
         end
+    end
+    self.entry.OnLoseFocus = function(this)
+        self:CommitCurrentText()
+    end
+end
+
+function PANEL:CommitCurrentText()
+    if ( self.bInitializing or !IsValid(self.entry) ) then return end
+
+    local store = self:GetStore()
+    if ( store ) then
+        store:Set(self.key, self.entry:GetText())
     end
 end
 
@@ -572,6 +659,10 @@ function PANEL:SetKey(key)
     self.bInitializing = false
 end
 
+function PANEL:OnRemove()
+    self:CommitCurrentText()
+end
+
 vgui.Register("ax.store.string", PANEL, "ax.store.base")
 
 -- Colour store element
@@ -583,7 +674,7 @@ local STORE_FALLBACK_COLOR = Color(100, 100, 100)
 function PANEL:Init()
     self.elementType = "color"
 
-    self.colorPanel = self:Add("ax.button.flat")
+    self.colorPanel = self:Add("ax.button")
     self.colorPanel:SetText("")
     self.colorPanel:Dock(RIGHT)
     self.colorPanel:DockMargin(0, ax.util:ScreenScale(4), ax.util:ScreenScale(8), ax.util:ScreenScale(4))
@@ -649,10 +740,11 @@ DEFINE_BASECLASS("ax.store.base")
 function PANEL:Init()
     self.elementType = "array"
 
-    self.combo = self:Add("DComboBox")
+    self.combo = self:Add("ax.combobox")
     self.combo:Dock(RIGHT)
-    self.combo:DockMargin(0, ax.util:ScreenScale(4), ax.util:ScreenScale(8), ax.util:ScreenScale(4))
+    self.combo:DockMargin(0, ax.util:ScreenScale(3), ax.util:ScreenScale(8), ax.util:ScreenScale(3))
     self.combo:SetWide(ax.util:ScreenScale(192))
+    self.combo:SetSortItems(true)
     self.combo.OnSelect = function(this, index, value, data)
         if ( self.bInitializing ) then return end
         local store = self:GetStore()
@@ -681,6 +773,22 @@ function PANEL:SetKey(key)
 
     self.combo:SetValue( data.data.choices[ store:Get(key) ] or "unknown" )
     self.bInitializing = false
+end
+
+function PANEL:UpdateDisplay()
+    local store = self:GetStore()
+    if ( !store ) then
+        self.combo:SetValue("unknown")
+        return
+    end
+
+    local value = store:Get(self.key)
+    local data = store.registry[self.key]
+    if ( data ) then
+        self.combo:SetValue( data.data.choices[ value ] or "unknown" )
+    else
+        self.combo:SetValue("unknown")
+    end
 end
 
 vgui.Register("ax.store.array", PANEL, "ax.store.base")

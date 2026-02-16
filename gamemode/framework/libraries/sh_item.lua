@@ -126,7 +126,7 @@ local success, reason -- No idea why glualint is being weird about this
 function ax.item:CreateDefaultDropAction()
     return {
         name = "Drop",
-        icon = "icon16/arrow_down.png",
+        icon = "parallax/icons/caret-down-circle.png",
         order = 1,
         CanUse = function(this, client)
             return true

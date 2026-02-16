@@ -208,7 +208,7 @@ end)
 hook.Add("OnReloaded", "ax.zones.tracking", function()
     ax.zones.tracked = {}
 
-    for _, client in player.Iterator() do
+    for _, client in ipairs(player.GetAll()) do
         ax.zones:TrackEntity(client)
     end
 end)

@@ -1,4 +1,14 @@
 ax.localization:Register("en", {
+    -- General
+    ["yes"] = "Yes",
+    ["no"] = "No",
+    ["ok"] = "OK",
+    ["cancel"] = "Cancel",
+    ["apply"] = "Apply",
+    ["close"] = "Close",
+    ["back"] = "Back",
+    ["next"] = "Next",
+
     -- Main Menu Translations
     ["mainmenu.category.00_faction"] = "Factions",
     ["mainmenu.category.01_identity"] = "Identity",
@@ -119,7 +129,27 @@ ax.localization:Register("en", {
 
     ---- Display
     ["option.interface.scale"] = "Interface Scale",
+    ["option.interface.theme"] = "Interface Theme",
+    ["option.interface.theme.help"] = "Choose the color theme for the interface.",
+    ["option.interface.glass.roundness"] = "Glass Roundness",
+    ["option.interface.glass.roundness.help"] = "Adjust the corner radius of glass UI elements.",
+    ["option.interface.glass.blur"] = "Glass Blur Intensity",
+    ["option.interface.glass.blur.help"] = "Control the blur strength behind glass UI elements.",
+    ["option.interface.glass.opacity"] = "Glass Opacity",
+    ["option.interface.glass.opacity.help"] = "Adjust the opacity of glass UI panels.",
+    ["option.interface.glass.borderOpacity"] = "Glass Border Opacity",
+    ["option.interface.glass.borderOpacity.help"] = "Control the visibility of glass UI borders.",
+    ["option.interface.glass.gradientOpacity"] = "Glass Gradient Opacity",
+    ["option.interface.glass.gradientOpacity.help"] = "Adjust the strength of gradient overlays on glass panels.",
     ["option.performance.animations"] = "Enable Interface Animations",
+
+    -- Theme Names
+    ["theme.dark"] = "Dark",
+    ["theme.light"] = "Light",
+    ["theme.blue"] = "Blue",
+    ["theme.purple"] = "Purple",
+    ["theme.green"] = "Green",
+    ["theme.red"] = "Red",
 
     ---- Fonts
     ["option.fontScaleGeneral"] = "General Font Scale",
@@ -162,4 +192,25 @@ ax.localization:Register("en", {
 
     ["config.interface.vignette.enabled"] = "Enable Vignette Effect",
     ["config.interface.vignette.enabled.help"] = "Toggle the vignette effect around the edges of the screen.",
+
+    -- Chatbox
+    ["chatbox.entry.placeholder"] = "Say something...",
+    ["chatbox.recommendations.no_description"] = "No description provided.",
+    ["chatbox.recommendations.truncated"] = "Showing first %d results.",
+    ["chatbox.menu.close"] = "Close Chat",
+    ["chatbox.menu.clear_history"] = "Clear Chat History",
+    ["chatbox.menu.reset_position"] = "Reset Position",
+    ["chatbox.menu.reset_size"] = "Reset Size",
+    ["chatbox.menu.confirm_clear_title"] = "Clear Chat History",
+    ["chatbox.menu.confirm_clear_message"] = "Clear all chat history?",
+
+    ["config.chatbox.max_message_length"] = "Chatbox Max Message Length",
+    ["config.chatbox.history_size"] = "Chatbox Input History Size",
+    ["config.chatbox.chat_type_history"] = "Chatbox Chat-Type History Size",
+    ["config.chatbox.looc_prefix"] = "Chatbox LOOc Prefix",
+    ["config.chatbox.recommendations.debounce"] = "Chatbox Recommendation Debounce",
+    ["config.chatbox.recommendations.animation_duration"] = "Chatbox Recommendation Animation Duration",
+    ["config.chatbox.recommendations.command_limit"] = "Chatbox Command Recommendation Limit",
+    ["config.chatbox.recommendations.voice_limit"] = "Chatbox Voice Recommendation Limit",
+    ["config.chatbox.recommendations.wrap_cycle"] = "Chatbox Recommendation Cycle Wrap",
 })

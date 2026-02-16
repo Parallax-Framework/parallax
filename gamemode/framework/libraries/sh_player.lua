@@ -97,7 +97,11 @@ function ax.player:SetVar(client, key, value, opts)
         end
 
         if ( !istable(clientTable.axVars[key]) ) then
-            clientTable.axVars[key] = {}
+            if ( isstring(clientTable.axVars[key]) ) then
+                clientTable.axVars[key] = ax.util:SafeParseTable(clientTable.axVars[key]) or {}
+            else
+                clientTable.axVars[key] = {}
+            end
         end
 
         if ( dataKey == nil ) then

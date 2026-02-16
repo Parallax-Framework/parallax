@@ -13,11 +13,15 @@ DEFINE_BASECLASS("EditablePanel")
 
 local PANEL = {}
 
+AccessorFunc(PANEL, "backgroundBlur", "BackgroundBlur", FORCE_NUMBER)
+AccessorFunc(PANEL, "backgroundAlpha", "BackgroundAlpha", FORCE_NUMBER)
 AccessorFunc(PANEL, "gradientLeft", "GradientLeft", FORCE_NUMBER)
 AccessorFunc(PANEL, "gradientRight", "GradientRight", FORCE_NUMBER)
 AccessorFunc(PANEL, "gradientTop", "GradientTop", FORCE_NUMBER)
 AccessorFunc(PANEL, "gradientBottom", "GradientBottom", FORCE_NUMBER)
 
+AccessorFunc(PANEL, "backgroundBlurTarget", "BackgroundBlurTarget", FORCE_NUMBER)
+AccessorFunc(PANEL, "backgroundAlphaTarget", "BackgroundAlphaTarget", FORCE_NUMBER)
 AccessorFunc(PANEL, "gradientLeftTarget", "GradientLeftTarget", FORCE_NUMBER)
 AccessorFunc(PANEL, "gradientRightTarget", "GradientRightTarget", FORCE_NUMBER)
 AccessorFunc(PANEL, "gradientTopTarget", "GradientTopTarget", FORCE_NUMBER)
@@ -48,11 +52,15 @@ function PANEL:Init()
     self:SetAlpha(0)
     self.closing = false
 
+    self.backgroundBlur = 0
+    self.backgroundAlpha = 0
     self.gradientLeft = 0
     self.gradientRight = 0
     self.gradientTop = 0
     self.gradientBottom = 0
 
+    self.backgroundBlurTarget = 0
+    self.backgroundAlphaTarget = 0
     self.gradientLeftTarget = 0
     self.gradientRightTarget = 0
     self.gradientTopTarget = 0
@@ -68,8 +76,8 @@ function PANEL:Init()
     self:MakePopup()
 
     self.buttons = self:Add("ax.scroller.horizontal")
-    self.buttons:SetSize(ScrW() - ax.util:ScreenScale(32), ax.util:ScreenScaleH(32))
-    self.buttons:SetPos(ax.util:ScreenScale(16), -ax.util:ScreenScaleH(32))
+    self.buttons:SetSize(ScrW() - ax.util:ScreenScale(48), ax.util:ScreenScaleH(40))
+    self.buttons:SetPos(ax.util:ScreenScale(24), -ax.util:ScreenScaleH(40))
     self.buttons.x = self.buttons:GetX()
     self.buttons.y = self.buttons:GetY()
     self.buttons.alpha = 0
@@ -77,8 +85,8 @@ function PANEL:Init()
     self.buttons:SetZPos(2)
 
     self.subbuttons = self:Add("ax.scroller.horizontal")
-    self.subbuttons:SetSize(ScrW() - ax.util:ScreenScale(64), ax.util:ScreenScaleH(32))
-    self.subbuttons:SetPos(ax.util:ScreenScale(32), -ax.util:ScreenScaleH(32))
+    self.subbuttons:SetSize(ScrW() - ax.util:ScreenScale(48), ax.util:ScreenScaleH(40))
+    self.subbuttons:SetPos(ax.util:ScreenScale(24), -ax.util:ScreenScaleH(40))
     self.subbuttons.x = self.subbuttons:GetX()
     self.subbuttons.y = self.subbuttons:GetY()
     self.subbuttons.alpha = 0
@@ -100,7 +108,7 @@ function PANEL:Open()
     })
 
     self.buttons:Motion(ax.option:Get("tabFadeTime", 0.25), {
-        Target = {x = ax.util:ScreenScale(16), y = ax.util:ScreenScaleH(16), alpha = 255},
+        Target = {x = ax.util:ScreenScale(24), y = ax.util:ScreenScaleH(24), alpha = 255},
         Easing = "OutQuad",
         Think = function(vars)
             self.buttons:SetPos(vars.x, vars.y)
@@ -138,7 +146,7 @@ function PANEL:Open()
 
     if ( hasSubbuttons ) then
         self.subbuttons:Motion(ax.option:Get("tabFadeTime", 0.25), {
-            Target = {y = ax.util:ScreenScaleH(16) + self.buttons:GetTall(), alpha = 255},
+            Target = {y = ax.util:ScreenScaleH(28) + self.buttons:GetTall(), alpha = 255},
             Easing = "OutQuad",
             Think = function(vars)
                 self.subbuttons:SetPos(self.subbuttons:GetX(), vars.y)
@@ -150,7 +158,7 @@ function PANEL:Open()
     end
 
     self.subbuttons:Motion(ax.option:Get("tabFadeTime", 0.25), {
-        Target = {y = ax.util:ScreenScaleH(16), alpha = 0},
+        Target = {y = ax.util:ScreenScaleH(28), alpha = 0},
         Easing = "OutQuad",
         Think = function(vars)
             self.subbuttons:SetY(vars.y)
@@ -169,37 +177,36 @@ function PANEL:PopulateTabs()
     local buttons = {}
     hook.Run("PopulateTabButtons", buttons)
     for k, v in SortedPairs(buttons) do
-        local button = self.buttons:Add("ax.button.flat")
+        local button = self.buttons:Add("ax.button")
         button:Dock(LEFT)
+        button:DockMargin(0, 0, ax.util:ScreenScale(4), 0)
         button:SetText(ax.localization:GetPhrase("tab." .. k))
+        button:SetWide(button:GetWide() * 1.5)
 
-        button:SetUpdateSizeOnHover(true)
-        button:SetSizeToContentsMotion(true)
-
-        self.buttons:SetTall(math.max(self.buttons:GetTall(), button:GetTall()))
+        self.buttons:SetTall(math.max(0, button:GetTall()))
         self.buttons:SetY(self.buttons:GetY())
-        self.subbuttons:SetTall(math.max(self.subbuttons:GetTall(), button:GetTall()))
+        self.subbuttons:SetTall(math.max(0, button:GetTall()))
         self.subbuttons:SetY(self.subbuttons:GetY())
 
         -- TODO: add a toggle option for ax.button
-        button.Paint = function(this, width, height)
-            if ( ax.gui.tabLast == k ) then
-                ax.render.Draw(0, 0, 0, width, height, color_white)
-
-                if ( this:GetTextColor() != color_black ) then
-                    this:SetTextColor(color_black)
-                end
-            else
-                if ( this:GetTextColor() != color_white ) then
-                    this:SetTextColor(color_white)
-                end
-            end
-        end
+        -- button.Paint = function(this, width, height)
+        --     if ( ax.gui.tabLast == k ) then
+        --         ax.render.Draw(0, 0, 0, width, height, color_white)
+        --
+        --         if ( this:GetTextColor() != color_black ) then
+        --             this:SetTextColor(color_black)
+        --         end
+        --     else
+        --         if ( this:GetTextColor() != color_white ) then
+        --             this:SetTextColor(color_white)
+        --         end
+        --     end
+        -- end
 
         local tab = self:CreatePage()
-        tab:SetXOffset(ax.util:ScreenScale(32))
+        tab:SetXOffset(ax.util:ScreenScale(24))
         tab:SetYOffset(self.buttons:GetTall() + ax.util:ScreenScaleH(32))
-        tab:SetWidthOffset(-ax.util:ScreenScale(32) * 2)
+        tab:SetWidthOffset(-ax.util:ScreenScale(24) * 2)
         tab:SetHeightOffset(-self.buttons:GetTall() - ax.util:ScreenScaleH(64))
         tab.key = k
         self.tabs[k] = tab
@@ -220,9 +227,9 @@ function PANEL:PopulateTabs()
                     self.sectionParentMap[sectionKey] = k
 
                     local subTab = self:CreatePage()
-                    subTab:SetXOffset(ax.util:ScreenScale(32))
+                    subTab:SetXOffset(ax.util:ScreenScale(24))
                     subTab:SetYOffset(self.buttons:GetTall() + self.subbuttons:GetTall() + ax.util:ScreenScaleH(32))
-                    subTab:SetWidthOffset(-ax.util:ScreenScale(32) * 2)
+                    subTab:SetWidthOffset(-ax.util:ScreenScale(24) * 2)
                     subTab:SetHeightOffset(-self.buttons:GetTall() - self.subbuttons:GetTall() - ax.util:ScreenScaleH(64))
                     subTab.key = sectionKey
                     self.tabs[sectionKey] = subTab
@@ -233,18 +240,26 @@ function PANEL:PopulateTabs()
                     end
                 end
             end
-
-            if ( v.OnClose ) then
-                self:CallOnRemove("ax.tab." .. v.name, function()
-                    v.OnClose()
-                end)
-            end
         elseif ( isfunction(v) ) then
             v(tab)
         end
 
         button.DoClick = function()
             ax.gui.tabLast = k
+
+            -- call OnOpen and OnClose hooks
+            for tabKey, tabData in pairs(buttons) do
+                if ( tabKey == k ) then
+                    if ( isfunction(tabData.OnOpen) ) then
+                        tabData:OnOpen(self.tabs[tabKey], button)
+                    end
+                else
+                    if ( isfunction(tabData.OnClose) ) then
+                        tabData:OnClose(self.tabs[tabKey], self.buttonMap[tabKey])
+                    end
+                end
+            end
+
             self:TransitionToPage(button.tab.index, ax.option:Get("tabFadeTime", 0.25))
 
             if ( istable(v) and istable(v.Sections) and table.Count(v.Sections) > 0 ) then
@@ -254,27 +269,26 @@ function PANEL:PopulateTabs()
 
                 -- Add buttons for each section
                 for sectionKey, sectionData in pairs(v.Sections) do
-                    local subbutton = self.subbuttons:Add("ax.button.flat")
+                    local subbutton = self.subbuttons:Add("ax.button")
                     subbutton:Dock(LEFT)
+                    subbutton:DockMargin(0, 0, ax.util:ScreenScale(4), 0)
                     subbutton:SetText(ax.localization:GetPhrase("tab." .. k .. "." .. sectionKey))
 
                     subbutton:SetUpdateSizeOnHover(true)
-                    subbutton:SetSizeToContentsMotion(true)
 
                     -- TODO: add a toggle option for ax.button
-                    subbutton.Paint = function(this, width, height)
-                        if ( ax.gui.tabLast == sectionKey ) then
-                            ax.render.Draw(0, 0, 0, width, height, color_white)
-
-                            if ( this:GetTextColor() != color_black ) then
-                                this:SetTextColor(color_black)
-                            end
-                        else
-                            if ( this:GetTextColor() != color_white ) then
-                                this:SetTextColor(color_white)
-                            end
-                        end
-                    end
+                    -- subbutton.Paint = function(this, width, height)
+                    --     if ( ax.gui.tabLast == sectionKey ) then
+                    --         ax.render.Draw(0, 0, 0, width, height, color_white)
+                    --         if ( this:GetTextColor() != color_black ) then
+                    --             this:SetTextColor(color_black)
+                    --         end
+                    --     else
+                    --         if ( this:GetTextColor() != color_white ) then
+                    --             this:SetTextColor(color_white)
+                    --         end
+                    --     end
+                    -- end
 
                     subbutton.DoClick = function()
                         ax.gui.tabLast = sectionKey
@@ -294,7 +308,7 @@ function PANEL:PopulateTabs()
 
                 -- Motion below the main buttons
                 self.subbuttons:Motion(ax.option:Get("tabFadeTime", 0.25), {
-                    Target = {y = ax.util:ScreenScaleH(16) + self.buttons:GetTall(), alpha = 255},
+                    Target = {y = ax.util:ScreenScaleH(28) + self.buttons:GetTall(), alpha = 255},
                     Easing = "OutQuad",
                     Think = function(this)
                         self.subbuttons:SetPos(self.subbuttons:GetX(), this.y)
@@ -335,7 +349,9 @@ function PANEL:PopulateTabs()
 
     if ( !self.restoredLastTab and ax.gui.tabLast and self.tabs[ax.gui.tabLast] ) then
         self.tabs[ax.gui.tabLast]:StartAtBottom()
-        self:TransitionToPage(self.tabs[ax.gui.tabLast].index, ax.option:Get("tabFadeTime", 0.25), true)
+        if ( self.buttonMap[ax.gui.tabLast] ) then
+            self.buttonMap[ax.gui.tabLast]:DoClick()
+        end
     else
         for k, v in SortedPairs(self.tabs) do
             if ( k == ax.gui.tabLast ) then
@@ -346,6 +362,8 @@ function PANEL:PopulateTabs()
         end
     end
 
+    self:SetBackgroundBlurTarget(1)
+    self:SetBackgroundAlphaTarget(1)
     self:SetGradientLeftTarget(1)
     self:SetGradientRightTarget(1)
     self:SetGradientTopTarget(1)
@@ -360,12 +378,15 @@ function PANEL:Close(callback)
     self:SetMouseInputEnabled(false)
     self:SetKeyboardInputEnabled(false)
 
+    self:SetBackgroundBlurTarget(0)
+    self:SetBackgroundAlphaTarget(0)
     self:SetGradientLeftTarget(0)
     self:SetGradientRightTarget(0)
     self:SetGradientTopTarget(0)
     self:SetGradientBottomTarget(0)
 
     local fadeDuration = ax.option:Get("tabFadeTime", 0.25)
+    hook.Run("OnTabMenuClosing", self, fadeDuration)
 
     self:AlphaTo(0, fadeDuration, 0, function()
         self:Remove()
@@ -376,7 +397,7 @@ function PANEL:Close(callback)
     end)
 
     self.buttons:Motion(fadeDuration, {
-        Target = {x = ax.util:ScreenScale(16), y = -self.buttons:GetTall() - ax.util:ScreenScaleH(16), alpha = 0},
+        Target = {x = ax.util:ScreenScale(24), y = -self.buttons:GetTall() - ax.util:ScreenScaleH(24), alpha = 0},
         Easing = "OutQuad",
         Think = function(this)
             self.buttons:SetPos(this.x, this.y)
@@ -385,7 +406,7 @@ function PANEL:Close(callback)
     })
 
     self.subbuttons:Motion(fadeDuration, {
-        Target = {y = -self.subbuttons:GetTall() - ax.util:ScreenScaleH(16), alpha = 0},
+        Target = {y = -self.subbuttons:GetTall() - ax.util:ScreenScaleH(24), alpha = 0},
         Easing = "OutQuad",
         Think = function(this)
             self.subbuttons:SetY(this.y)
@@ -445,18 +466,31 @@ function PANEL:Paint(width, height)
         time = 1
     end
 
-    local fraction = self:GetAlpha() / 255
-    ax.util:DrawBlur(0, 0, 0, width, height, Color(255, 255, 255, 150 * fraction))
+    self:SetBackgroundBlur(Lerp(time, self:GetBackgroundBlur(), self:GetBackgroundBlurTarget()))
+    self:SetBackgroundAlpha(Lerp(time, self:GetBackgroundAlpha(), self:GetBackgroundAlphaTarget()))
+
+    if ( math.Round(self:GetBackgroundBlur()) > 0 ) then
+        ax.render().Rect(0, 0, width, height)
+            :Rad(0)
+            :Flags(ax.render.SHAPE_IOS)
+            :Blur(1.4 * self:GetBackgroundBlur())
+            :Draw()
+    end
+
+    local glass = ax.theme:GetGlass()
+    ax.render.Draw(0, 0, 0, width, height, ColorAlpha(glass.tabBackdrop, 50 * self:GetBackgroundAlpha()))
 
     self:SetGradientLeft(Lerp(time, self:GetGradientLeft(), self:GetGradientLeftTarget()))
     self:SetGradientRight(Lerp(time, self:GetGradientRight(), self:GetGradientRightTarget()))
     self:SetGradientTop(Lerp(time, self:GetGradientTop(), self:GetGradientTopTarget()))
     self:SetGradientBottom(Lerp(time, self:GetGradientBottom(), self:GetGradientBottomTarget()))
 
-    ax.util:DrawGradient("left", 0, 0, width, height, Color(0, 0, 0, 100 * self:GetGradientLeft()))
-    ax.util:DrawGradient("right", 0, 0, width, height, Color(0, 0, 0, 100 * self:GetGradientRight()))
-    ax.util:DrawGradient("top", 0, 0, width, height, Color(0, 0, 0, 100 * self:GetGradientTop()))
-    ax.util:DrawGradient("bottom", 0, 0, width, height, Color(0, 0, 0, 100 * self:GetGradientBottom()))
+    ax.theme:DrawGlassGradients(0, 0, width, height, {
+        left = ColorAlpha(glass.gradientLeft, 50 * self:GetGradientLeft()),
+        right = ColorAlpha(glass.gradientRight, 50 * self:GetGradientRight()),
+        top = ColorAlpha(glass.gradientTop, 50 * self:GetGradientTop()),
+        bottom = ColorAlpha(glass.gradientBottom, 50 * self:GetGradientBottom())
+    })
 end
 
 vgui.Register("ax.tab", PANEL, "ax.transition.pages")

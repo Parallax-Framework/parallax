@@ -38,7 +38,7 @@ function surface.CreateFont(name, data)
     surface.axCreateFont(name, data)
 end
 
-local styleModifiers = { "bold", "italic", "shadow" }
+local styleModifiers = { "black", "bold", "italic", "shadow" }
 
 --- Generate all permutations of a table
 -- @realm client
@@ -119,12 +119,17 @@ function ax.font:CreateFamily(name, font, size, fontData)
     local combinations = self:GenerateStyleCombinations()
     for _, combo in ipairs(combinations) do
         local fontName = "ax." .. name .. (combo != "" and ("." .. combo) or "")
+
+        local black = string.find(combo, "black", 1, true)
+        local bold = string.find(combo, "bold", 1, true)
+        local italic = string.find(combo, "italic", 1, true)
+        local shadow = string.find(combo, "shadow", 1, true)
+
         local data = {
-            font = string.find(combo, "bold", 1, true) and "GorDIN Black" or font,
+            font = black and (font .. " Black") or (bold and (font .. " Bold") or font),
             size = size,
-            weight = string.find(combo, "bold", 1, true) and 900 or 700,
-            italic = string.find(combo, "italic", 1, true) and true or false,
-            shadow = string.find(combo, "shadow", 1, true) and true or false,
+            italic = italic and true or false,
+            shadow = shadow and true or false,
             antialias = true,
             extended = true
         }
@@ -142,17 +147,18 @@ function ax.font:Load()
     local bigScale = ax.option:Get("fontScaleBig", 1)
 
     local baseSizes = {
-        tiny = 6,
-        small = 8,
-        regular = 10,
-        medium = 12,
-        large = 16,
-        massive = 24,
-        huge = 32
+        tiny = 5,
+        small = 7,
+        regular = 9,
+        medium = 11,
+        large = 15,
+        massive = 21,
+        huge = 25,
+        giant = 35
     }
 
-    local smallFamilies = { "tiny", "small", "regular" }
-    local bigFamilies = { "medium", "large", "massive", "huge" }
+    local smallFamilies = { "tiny", "small", "regular", "medium" }
+    local bigFamilies = { "large", "massive", "huge", "giant" }
 
     for name, base in pairs(baseSizes) do
         local scale = generalScale
@@ -162,7 +168,7 @@ function ax.font:Load()
             scale = scale / bigScale
         end
         local size = ax.util:ScreenScaleH(base) * scale
-        ax.font:CreateFamily(name, "GorDIN Regular", size)
+        ax.font:CreateFamily(name, "Inter", size)
     end
 
     hook.Run("LoadFonts")
@@ -173,7 +179,7 @@ end
 -- @return table Array of all font names
 function ax.font:GenerateAvailableFonts()
     local fonts = {}
-    local baseFonts = { "tiny", "small", "regular", "medium", "large", "massive", "huge" }
+    local baseFonts = { "tiny", "small", "regular", "medium", "large", "massive", "huge", "giant" }
 
     for _, baseName in ipairs(baseFonts) do
         for _, combo in ipairs(self:GenerateStyleCombinations()) do

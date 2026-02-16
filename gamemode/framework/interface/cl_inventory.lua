@@ -13,6 +13,22 @@
 
 local PANEL = {}
 
+local GLASS_PANEL_RADIUS = 10
+local INVENTORY_PREVIEW_WIDTH = ax.util:ScreenScale(256)
+local INVENTORY_INFO_HEIGHT = ax.util:ScreenScaleH(128)
+local INVENTORY_CATEGORY_SPACING = ax.util:ScreenScaleH(4)
+local INVENTORY_ACTIONS_WIDTH = ax.util:ScreenScale(128)
+local INVENTORY_PREVIEW_TRANSITION_TIME = ax.option:Get("tabFadeTime", 0.25)
+local INVENTORY_PREVIEW_TARGET_FOV = 45
+
+local function DrawGlassPanel(x, y, w, h, radius, blur)
+    ax.theme:DrawGlassPanel(x, y, w, h, {
+        radius = radius,
+        blur = blur,
+        flags = ax.render.SHAPE_IOS
+    })
+end
+
 function PANEL:Init()
     ax.gui.inventory = self
 
@@ -30,38 +46,35 @@ function PANEL:Init()
 
     self.inventory = inventory
 
-    self.characterInfo = self:Add("EditablePanel")
-    self.characterInfo:Dock(LEFT)
-    self.characterInfo:DockMargin(0, 0, ax.util:ScreenScale(16), 0)
-    self.characterInfo:SetWide(ax.util:ScreenScale(128))
-    self.characterInfo.Paint = function(this, width, height)
-        ax.render.Draw(0, 0, 0, width, height, Color(0, 0, 0, 150))
-    end
-
-    self.container = self:Add("ax.scroller.vertical")
-    self.container:Dock(FILL)
-    self.container:GetVBar():SetWide(0)
-    self.container.Paint = nil
+    self.listing = self:Add("EditablePanel")
+    self.listing:Dock(FILL)
+    self.listing:DockMargin(INVENTORY_PREVIEW_WIDTH, 0, 0, 0)
+    self.listing.Paint = nil
 
     self.info = self:Add("EditablePanel")
-    self.info:Dock(RIGHT)
-    self.info:SetWide(0)
+    self.info:Dock(BOTTOM)
+    self.info:DockMargin(INVENTORY_PREVIEW_WIDTH, 0, 0, 0)
+    self.info:SetTall(0)
     self.info.Paint = function(this, width, height)
-        ax.render.Draw(0, 0, 0, width, height, Color(0, 0, 0, 150))
+        DrawGlassPanel(0, 0, width, height, GLASS_PANEL_RADIUS, 1.0)
     end
 
     local maxWeight = inventory:GetMaxWeight()
     local weight = inventory:GetWeight()
 
-    self.weightProgress = self:Add("DProgress")
+    self.infoExpandedHeight = INVENTORY_INFO_HEIGHT
+
+    self.weightProgress = self.listing:Add("DProgress")
     self.weightProgress:SetFraction(weight / maxWeight)
     self.weightProgress:SetTall(ax.util:ScreenScale(12))
     self.weightProgress:Dock(TOP)
+    self.weightProgress:DockMargin(0, 0, 0, ax.util:ScreenScaleH(8))
     self.weightProgress.Paint = function(this, width, height)
-        ax.render.Draw(0, 0, 0, width, height, Color(0, 0, 0, 150))
+        DrawGlassPanel(0, 0, width, height, GLASS_PANEL_RADIUS, 0.6)
 
         local fraction = this:GetFraction()
-        ax.render.Draw(0, 0, 0, width * fraction, height, Color(100, 200, 175, 200))
+        local glass = ax.theme:GetGlass()
+        ax.render.Draw(GLASS_PANEL_RADIUS, 0, 0, width * fraction, height, glass.progress, ax.render.SHAPE_IOS)
     end
 
     local totalWeight = maxWeight * self.weightProgress:GetFraction()
@@ -75,129 +88,176 @@ function PANEL:Init()
     self.weightCounter:SetContentAlignment(5)
     self.weightCounter:Dock(FILL)
 
-    self:PopulateCharacterInfo()
+    self.container = self.listing:Add("ax.scroller.vertical")
+    self.container:Dock(FILL)
+    self.container:GetVBar():SetWide(0)
+    self.container.Paint = nil
+
+    self.previewActive = nil
+    self.previewTransitioning = false
+    self.previewState = {}
+
     self:PopulateItems()
 end
 
-function PANEL:PopulateCharacterInfo()
-    local character = self.character
-    if ( !character ) then return end
+local function GetDesiredFov()
+    local conVar = GetConVar("fov_desired")
 
-    local factionData = character:GetFactionData()
-    if ( !factionData ) then return end
+    if ( conVar ) then
+        return conVar:GetInt()
+    end
 
-    self.characterInfo:Clear()
+    return 90
+end
 
-    local model = self.characterInfo:Add("DModelPanel")
-    model:Dock(FILL)
-    model:DockMargin(0, ax.util:ScreenScaleH(16), 0, 0)
-    model:SetModel(character:GetModel() or "models/props_junk/wood_crate001a.mdl")
-    model:SetMouseInputEnabled(false)
+function PANEL:SetPreviewActive(active)
+    active = tobool(active)
+    self.previewState = self.previewState or {}
+    local state = self.previewState
+    local currentBlend = state.blend
+    local targetBlend = active and 1 or 0
 
-    model.LayoutEntity = function(this, entity)
-        entity:SetSkin(character:GetSkin() or 0)
+    if ( currentBlend == nil ) then
+        currentBlend = (self.previewActive == true) and 1 or 0
+    end
 
-        local bodygroups = entity:GetBodyGroups()
-        for _, data in pairs(bodygroups) do
-            entity:SetBodygroup(data.id, ax.client:GetBodygroup(data.id))
+    if ( self.previewTransitioning and state.transitionStartTime and state.transitionDuration ) then
+        local duration = math.max(state.transitionDuration, 0.001)
+        local frac = math.Clamp((CurTime() - state.transitionStartTime) / duration, 0, 1)
+        currentBlend = Lerp(frac, state.transitionStartBlend or currentBlend, state.transitionTargetBlend or currentBlend)
+    end
+
+    if ( !self.previewTransitioning and math.abs(currentBlend - targetBlend) <= 0.001 and (self.previewActive == true) == active ) then
+        return
+    end
+
+    state.blend = currentBlend
+    state.transitionStartBlend = currentBlend
+    state.transitionTargetBlend = targetBlend
+    state.transitionStartTime = CurTime()
+    state.transitionDuration = INVENTORY_PREVIEW_TRANSITION_TIME
+
+    self.previewActive = active
+    self.previewTransitioning = math.abs(currentBlend - targetBlend) > 0.001
+    self:ApplyInventoryGradients(active)
+end
+
+function PANEL:GetPreviewActive()
+    return self.previewActive == true
+end
+
+function PANEL:IsPreviewViewActive()
+    return self.previewActive == true or self.previewTransitioning == true
+end
+
+function PANEL:ApplyInventoryGradients(active)
+    local tab = ax.gui.tab
+    if ( !IsValid(tab) ) then return end
+
+    if ( active ) then
+        tab:SetBackgroundBlurTarget(0)
+        tab:SetBackgroundAlphaTarget(0.25) -- keep some tint so it doesn't look weird
+        tab:SetGradientLeftTarget(0)
+        tab:SetGradientTopTarget(0)
+        tab:SetGradientBottomTarget(0)
+    else
+        tab:SetBackgroundBlurTarget(1)
+        tab:SetBackgroundAlphaTarget(1)
+        tab:SetGradientLeftTarget(1)
+        tab:SetGradientTopTarget(1)
+        tab:SetGradientBottomTarget(1)
+    end
+end
+
+function PANEL:BuildPreviewView(client)
+    if ( !ax.util:IsValidPlayer(client) ) then return end
+    if ( client:InVehicle() ) then return end
+    if ( !self:IsPreviewViewActive() ) then return end
+
+    local defaultOrigin = client:EyePos()
+    local defaultAngles = client:EyeAngles()
+    local defaultFov = GetDesiredFov()
+
+    local head = client:LookupBone("ValveBiped.Bip01_Head1")
+    local headPos = defaultOrigin
+
+    if ( head ) then
+        local bonePos = client:GetBonePosition(head)
+        if ( isvector(bonePos) and bonePos != vector_origin ) then
+            headPos = bonePos
         end
     end
 
-    model.PerformLayout = function(this, width, height)
-        local entity = this:GetEntity()
-        if ( !IsValid(entity) ) then return end
+    local baseAngles = Angle(0, defaultAngles.y, 0)
+    local previewLookAt = headPos - baseAngles:Right() * 18 + Vector(0, 0, -2)
+    local previewOffset = baseAngles:Forward() * 64 + baseAngles:Right() * 32 - Vector(0, 0, 8)
+    local previewOrigin = previewLookAt + previewOffset
+    local previewAngles = (previewLookAt - previewOrigin):Angle()
 
-        local head = entity:LookupBone("ValveBiped.Bip01_Head1")
-        local headPos = head and entity:GetBonePosition(head) or entity:GetPos() + Vector(0, 0, 70)
+    local state = self.previewState or {}
+    self.previewState = state
 
-        local offset = Vector(0, 0, -4)
-
-        this:SetCamPos(entity:GetPos() + Vector(64, 0, headPos.z) + offset)
-        this:SetLookAt(headPos + offset)
-        this:SetFOV(15)
-
-        entity:SetAngles(Angle(0, 10, 0))
-        entity:SetEyeTarget(this:GetCamPos())
-
-        local sequence = entity:LookupSequence("idle_all_01")
-        local class = ax.animations:GetModelClass(entity:GetModel())
-        local anims = ax.animations.stored[class]
-        if ( anims and anims["normal"] and anims["normal"][ACT_MP_STAND_IDLE] ) then
-            local preferred = anims["normal"][ACT_MP_STAND_IDLE]
-            if ( preferred and istable(preferred) ) then
-                sequence = preferred[1]
-            elseif ( preferred and isnumber(preferred) ) then
-                sequence = preferred
-            end
-        end
-
-        if ( istable(sequence) ) then
-            sequence = sequence[1]
-        end
-
-        if ( isstring(sequence) ) then
-            sequence = entity:LookupSequence(sequence)
-        end
-
-        if ( sequence and sequence > 0 and entity:GetSequence() != sequence ) then
-            entity:ResetSequence(sequence)
-        end
+    local blend = state.blend
+    if ( blend == nil ) then
+        blend = self.previewActive and 1 or 0
     end
 
-    local name = self.characterInfo:Add("ax.text")
-    name:Dock(TOP)
-    name:DockMargin(0, 0, 0, -ax.util:ScreenScaleH(4))
-    name:SetFont("ax.large.bold")
-    name:SetText(character:GetName() or "Unknown", true)
-    name:SetTextColor(factionData.color or color_white)
-    name:SetContentAlignment(5)
+    if ( self.previewTransitioning ) then
+        local startTime = state.transitionStartTime or CurTime()
+        local duration = math.max(state.transitionDuration or INVENTORY_PREVIEW_TRANSITION_TIME, 0.001)
+        local frac = math.Clamp((CurTime() - startTime) / duration, 0, 1)
+        local startBlend = state.transitionStartBlend or blend
+        local targetBlend = state.transitionTargetBlend
 
-    local descWrapped = ax.util:GetWrappedText(character:GetDescription() or "No description available.", "ax.regular", ax.util:ScreenScale(128) - ax.util:ScreenScale(16))
-    for _ = 1, #descWrapped do
-        local line = descWrapped[_]
-        local descLine = self.characterInfo:Add("ax.text")
-        descLine:Dock(TOP)
-        descLine:DockMargin(0, 0, 0, -ax.util:ScreenScaleH(4))
-        descLine:SetText(line, true)
-        descLine:SetContentAlignment(5)
-    end
-
-    if ( ax.currencies ) then
-        local currencies = ax.currencies:GetAll()
-        for currencyID, currencyData in pairs(currencies) do
-            local balance = character:GetCurrency(currencyID) or 0
-
-            local currencyLine = self.characterInfo:Add("ax.text")
-            currencyLine:Dock(TOP)
-            currencyLine:SetFont("ax.regular.bold")
-            currencyLine:SetText((currencyData.symbol or "") .. balance .. " " .. (currencyData.plural or "Funds"), true)
-            currencyLine:SetContentAlignment(5)
+        if ( targetBlend == nil ) then
+            targetBlend = self.previewActive and 1 or 0
         end
+
+        blend = Lerp(frac, startBlend, targetBlend)
+
+        if ( frac >= 1 ) then
+            blend = targetBlend
+            self.previewTransitioning = false
+            state.transitionStartBlend = nil
+            state.transitionTargetBlend = nil
+            state.transitionStartTime = nil
+            state.transitionDuration = nil
+        end
+    else
+        blend = self.previewActive and 1 or 0
     end
+
+    state.blend = math.Clamp(blend, 0, 1)
+    state.origin = LerpVector(state.blend, defaultOrigin, previewOrigin)
+    state.angles = LerpAngle(state.blend, defaultAngles, previewAngles)
+    state.fov = Lerp(state.blend, defaultFov, INVENTORY_PREVIEW_TARGET_FOV)
+
+    return {
+        origin = state.origin,
+        angles = state.angles,
+        fov = state.fov,
+        drawviewer = state.blend > 0.5
+    }
 end
 
 function PANEL:InfoOpen()
     self.info:Motion(0.25, {
-        Target = {wide = ax.util:ScreenScale(128), fraction = 1.0},
+        Target = {tall = self.infoExpandedHeight or INVENTORY_INFO_HEIGHT, fraction = 1.0},
         Easing = "OutQuad",
         Think = function(this)
-            self.info:SetWide(this.wide)
-            self.info:DockMargin(ax.util:ScreenScale(16) * this.fraction, 0, 0, 0)
-            -- Trigger layout update as info panel expands
-            self:PerformLayout()
+            self.info:SetTall(this.tall)
+            self.info:DockMargin(INVENTORY_PREVIEW_WIDTH, ax.util:ScreenScaleH(10) * (1 - this.fraction), 0, 0)
         end
     })
 end
 
 function PANEL:InfoClose()
     self.info:Motion(0.25, {
-        Target = {wide = 0.0, fraction = 0.0},
+        Target = {tall = 0.0, fraction = 0.0},
         Easing = "OutQuad",
         Think = function(this)
-            self.info:SetWide(this.wide)
-            self.info:DockMargin(ax.util:ScreenScale(16) * this.fraction, 0, 0, 0)
-            -- Trigger layout update as info panel collapses
-            self:PerformLayout()
+            self.info:SetTall(this.tall)
+            self.info:DockMargin(INVENTORY_PREVIEW_WIDTH, ax.util:ScreenScaleH(10) * (1 - this.fraction), 0, 0)
         end
     })
 end
@@ -229,9 +289,6 @@ function PANEL:PopulateItems()
 
     self.container:Clear()
 
-    -- Initialize grid items storage for responsive layout
-    self.gridItems = {}
-
     local weightText = ax.localization:GetPhrase("inventory.weight.abbreviation")
     self.weightProgress:SetFraction(inventory:GetWeight() / inventory:GetMaxWeight())
     self.weightCounter:SetText(math.Round(inventory:GetWeight(), 2) .. weightText .. " / " .. inventory:GetMaxWeight() .. weightText, true)
@@ -242,15 +299,6 @@ function PANEL:PopulateItems()
     -- TODO: Implement search/filter functionality
     -- TODO: Support drag-and-drop for item management (e.g., moving to hotbar, equipping)
     -- TODO: Add pagination for large inventories
-
-    -- Grid layout configuration
-    local gridColumns = ax.option:Get("inventory.columns", 4)
-    local containerWidth = self.container:GetWide()
-    local itemWidth = containerWidth / gridColumns
-    local itemHeight = ax.util:ScreenScaleH(32)
-    local categoryHeight = ax.util:ScreenScaleH(24) -- use ScreenScaleH?
-
-    local currentY = 0
 
     -- Organize items by category first, with stacking support
     local categorizedItems = {}
@@ -323,9 +371,6 @@ function PANEL:PopulateItems()
         return utf8.lower(tostring(a)) < utf8.lower(tostring(b))
     end)
 
-    -- Store the sorted category order for PerformLayout
-    self.sortedCategoryOrder = sortedCategories
-
     -- Create grid layout for each category in sorted order
     for i = 1, #sortedCategories do
         local categoryName = sortedCategories[i]
@@ -339,43 +384,25 @@ function PANEL:PopulateItems()
 
         categoryPanel:SetFont(categoryFont)
         categoryPanel:SetText(utf8.upper(categoryName), true)
-        categoryPanel:SetPos(0, currentY)
-        categoryPanel:SetSize(containerWidth, categoryHeight)
-
-        -- Store category data for responsive layout
-        self.gridItems[categoryName] = {
-            header = categoryPanel,
-            items = {}
-        }
-
-        currentY = currentY + categoryHeight
-
-        -- Create grid for stacks in this category
-        local currentColumn = 0
-        local currentRow = 0
+        categoryPanel:Dock(TOP)
+        categoryPanel:DockMargin(0, 0, 0, ax.util:ScreenScaleH(4))
 
         for _, stack in ipairs(stacks) do
-            local itemX = currentColumn * itemWidth
-            local itemY = currentY + (currentRow * itemHeight)
-
             local representativeItem = stack.representativeItem
 
-            local item = self.container:Add("ax.button.flat")
+            local item = self.container:Add("ax.button")
             item:SetFont("ax.small")
             item:SetFontDefault("ax.small")
-            item:SetFontHovered("ax.regular.bold")
+            item:SetFontHovered("ax.small.bold")
+            item:Dock(TOP)
+            item:DockMargin(0, 0, 0, ax.util:ScreenScaleH(4))
+            item.isInventoryRow = true
 
             -- Display stack count in item name if stacked
             local displayName = representativeItem:GetName() or tostring(representativeItem)
-            if ( stack.stackCount > 1 ) then
-                displayName = displayName .. " (x" .. stack.stackCount .. ")"
-            end
-
             item:SetText(displayName, true)
             item:SetContentAlignment(4)
-            item:SetTextInset(itemHeight + ax.util:ScreenScale(2), 0)
-            item:SetPos(itemX, itemY)
-            item:SetSize(itemWidth, itemHeight)
+            item:SetTextInset(item:GetTall() + ax.util:ScreenScale(8), 0)
 
             item.DoClick = function()
                 self:InfoOpen()
@@ -383,27 +410,26 @@ function PANEL:PopulateItems()
                 self:PopulateInfo(stack)
             end
 
-            -- Store item reference for responsive layout
-            table.insert(self.gridItems[categoryName].items, item)
-
             local icon = item:Add("SpawnIcon")
-            icon:SetWide(itemHeight)
-            icon:DockMargin(0, 0, ax.util:ScreenScale(4), 0)
+            icon:SetWide(item:GetTall() - 16)
+            icon:DockMargin(8, 8, 8, 8)
             icon:SetModel(representativeItem:GetModel() or "models/props_junk/wood_crate001a.mdl")
             icon:SetMouseInputEnabled(false)
             icon:Dock(LEFT)
 
-            -- Move to next position in grid
-            currentColumn = currentColumn + 1
-            if ( currentColumn >= gridColumns ) then
-                currentColumn = 0
-                currentRow = currentRow + 1
+            if ( stack.stackCount > 1 ) then
+                local stackLabel = item:Add("ax.text")
+                stackLabel:Dock(RIGHT)
+                stackLabel:DockMargin(0, 0, ax.util:ScreenScale(8), 0)
+                stackLabel:SetFont("ax.small.italic")
+                stackLabel:SetText("x" .. stack.stackCount, true)
+                stackLabel:SetContentAlignment(6)
             end
         end
 
-        -- Update currentY for next category (account for the rows we used)
-        local rowsUsed = math.ceil(#stacks / gridColumns)
-        currentY = currentY + (rowsUsed * itemHeight)
+        local spacer = self.container:Add("Panel")
+        spacer:Dock(TOP)
+        spacer:SetTall(INVENTORY_CATEGORY_SPACING)
     end
 end
 
@@ -415,34 +441,11 @@ function PANEL:PopulateInfo(stack)
 
     self.stack = stack
 
-    local icon = self.info:Add("DModelPanel")
-    icon:Dock(TOP)
-    icon:DockMargin(0, 0, 0, ax.util:ScreenScaleH(8))
-    icon:SetTall(ax.util:ScreenScaleH(128))
-    icon:SetModel(representativeItem:GetModel() or "models/props_junk/wood_crate001a.mdl")
-    icon:SetMouseInputEnabled(false)
-    icon.PerformLayout = function(this, width, height)
-        local entity = this:GetEntity()
-        if ( !IsValid(entity) ) then return end
+    local header = self.info:Add("EditablePanel")
+    header:Dock(TOP)
+    header:DockMargin(ax.util:ScreenScale(16), ax.util:ScreenScaleH(16), ax.util:ScreenScale(8), 0)
 
-        local center = entity:OBBCenter()
-
-        -- Use PositionSpawnIcon to compute camera parameters for the icon
-        local tab = PositionSpawnIcon(entity, center, true)
-        if ( istable(tab) ) then
-            if ( tab.origin ) then this:SetCamPos(tab.origin) end
-            if ( tab.fov ) then this:SetFOV(tab.fov) end
-        else
-            local size = entity:OBBMaxs() - entity:OBBMins()
-            local camPos = center + Vector(size.x, size.y, size.z / 4) * 8
-            this:SetCamPos(camPos)
-            this:SetFOV(15)
-        end
-
-        this:SetLookAt(center)
-    end
-
-    local title = self.info:Add("ax.text")
+    local title = header:Add("ax.text")
     title:Dock(TOP)
     title:SetFont("ax.large.bold")
     local titleText = representativeItem:GetName() or "Unknown Item"
@@ -450,40 +453,67 @@ function PANEL:PopulateInfo(stack)
         titleText = titleText .. " x" .. stack.stackCount
     end
     title:SetText(titleText, true)
-    title:SetContentAlignment(5)
+    title:SetContentAlignment(4)
 
     -- Add stack information
     if ( stack.shouldStack ) then
-        local stackInfo = self.info:Add("ax.text")
+        local stackInfo = header:Add("ax.text")
         stackInfo:Dock(TOP)
         stackInfo:SetFont("ax.small.italic")
         stackInfo:SetText("Stack: " .. stack.stackCount .. " / " .. stack.maxStack, true)
-        stackInfo:SetContentAlignment(5)
-        stackInfo:DockMargin(0, 0, 0, ax.util:ScreenScaleH(4))
+        stackInfo:SetContentAlignment(4)
+
+        header:SetTall(title:GetTall() + stackInfo:GetTall() + ax.util:ScreenScaleH(4))
+    else
+        header:SetTall(title:GetTall())
     end
 
+    local content = self.info:Add("EditablePanel")
+    content:Dock(FILL)
+    content:DockMargin(ax.util:ScreenScale(16), 0, ax.util:ScreenScale(8), ax.util:ScreenScaleH(8))
+    content.Paint = nil
+
+    local body = content:Add("ax.scroller.vertical")
+    body:Dock(FILL)
+    body:GetVBar():SetWide(0)
+    body.Paint = nil
+
     local description = representativeItem:GetDescription() or "No description available."
-    local descriptionWrapped = ax.util:GetWrappedText(description, "ax.regular", ax.util:ScreenScale(128) - ax.util:ScreenScale(16))
+    local availableWidth = math.max(self:GetWide() - INVENTORY_PREVIEW_WIDTH - INVENTORY_ACTIONS_WIDTH - ax.util:ScreenScale(48), ax.util:ScreenScale(120))
+    local descriptionWrapped = ax.util:GetWrappedText(description, "ax.regular", availableWidth)
 
     for _ = 1, #descriptionWrapped do
         local line = descriptionWrapped[_]
-        local descLine = self.info:Add("ax.text")
+        local descLine = body:Add("ax.text")
         descLine:Dock(TOP)
         descLine:SetFont("ax.regular")
         descLine:SetText(line, true)
-        descLine:SetContentAlignment(5)
+        descLine:SetContentAlignment(4)
     end
+
+    local actionsPanel = self.info:Add("ax.scroller.vertical")
+    actionsPanel:Dock(RIGHT)
+    actionsPanel:SetZPos(-99)
+    actionsPanel:SetWide(INVENTORY_ACTIONS_WIDTH)
+    actionsPanel:DockMargin(ax.util:ScreenScale(8), ax.util:ScreenScaleH(16), ax.util:ScreenScale(8), ax.util:ScreenScaleH(8))
+    actionsPanel:GetVBar():SetWide(0)
+    actionsPanel.Paint = nil
+
+    local actionsHeader = actionsPanel:Add("ax.text")
+    actionsHeader:Dock(TOP)
+    actionsHeader:SetFont("ax.small.italic")
+    actionsHeader:SetText("ACTIONS", true)
+    actionsHeader:SetContentAlignment(4)
 
     -- Get actions from representative item
     local actions = representativeItem:GetActions() or {}
     if ( table.IsEmpty(actions) ) then
-        local noActions = self.info:Add("ax.text")
-        noActions:Dock(BOTTOM)
+        local noActions = actionsPanel:Add("ax.text")
+        noActions:Dock(TOP)
         noActions:SetFont("ax.regular.italic")
         noActions:SetText("No actions available for this item.", true)
-        noActions:SizeToContentsY()
         noActions:DockMargin(0, 0, 0, ax.util:ScreenScaleH(4))
-        noActions:SetContentAlignment(5)
+        noActions:SetContentAlignment(4)
 
         return
     end
@@ -493,13 +523,14 @@ function PANEL:PopulateInfo(stack)
             continue
         end
 
-        local actionButton = self.info:Add("ax.button.flat")
-        actionButton:Dock(BOTTOM)
+        local actionButton = actionsPanel:Add("ax.button.icon")
+        actionButton:Dock(TOP)
+        actionButton:DockMargin(0, 0, 0, ax.util:ScreenScaleH(4))
         actionButton:SetFont("ax.small")
         actionButton:SetFontDefault("ax.small")
         actionButton:SetFontHovered("ax.small.italic")
         actionButton:SetText(v.name or k, true)
-        actionButton:SetContentAlignment(5)
+        actionButton:SetContentAlignment(4)
         actionButton:SetIcon(v.icon)
 
         actionButton.DoClick = function()
@@ -570,82 +601,54 @@ function PANEL:PopulateInfo(stack)
     end
 end
 
-function PANEL:PerformLayout(width, height)
-    if ( !self.gridItems or !self.sortedCategoryOrder ) then return end
-
-    -- Recalculate grid layout based on current container width
-    local gridColumns = ax.option:Get("inventory.columns", 4)
-    local containerWidth = self.container:GetWide()
-    local itemWidth = containerWidth / gridColumns
-    local itemHeight = ax.util:ScreenScaleH(32)
-    local categoryHeight = ax.util:ScreenScaleH(24)
-
-    local currentY = 0
-
-    -- Use the same sorted order as PopulateItems
-    for _ = 1, #self.sortedCategoryOrder do
-        local categoryName = self.sortedCategoryOrder[_]
-        local categoryData = self.gridItems[categoryName]
-        if ( !categoryData ) then continue end
-        -- Reposition category header
-        local categoryPanel = categoryData.header
-        if ( IsValid(categoryPanel) ) then
-            categoryPanel:SetPos(0, currentY)
-            categoryPanel:SetSize(containerWidth, categoryHeight)
-
-            -- Update font based on user preference
-            local useItalic = ax.option:Get("inventory.categories.italic", false)
-            local categoryFont = useItalic and "ax.huge.bold.italic" or "ax.huge.bold"
-            categoryPanel:SetFont(categoryFont)
-        end
-
-        currentY = currentY + categoryHeight
-
-        -- Reposition items in grid
-        local currentColumn = 0
-        local currentRow = 0
-
-        for i = 1, #categoryData.items do
-            local item = categoryData.items[i]
-            if ( IsValid(item) ) then
-                local itemX = currentColumn * itemWidth
-                local itemY = currentY + (currentRow * itemHeight)
-
-                item:SetPos(itemX, itemY)
-                item:SetSize(itemWidth, itemHeight)
-
-                -- Update text inset for new size
-                item:SetTextInset(itemHeight + ax.util:ScreenScale(2), 0)
-
-                -- Update icon size
-                local icon = item:GetChildren()[1]
-                if ( IsValid(icon) ) then
-                    icon:SetWide(itemHeight)
-                end
-            end
-
-            currentColumn = currentColumn + 1
-            if ( currentColumn >= gridColumns ) then
-                currentColumn = 0
-                currentRow = currentRow + 1
-            end
-        end
-
-        -- Update currentY for next category
-        local rowsUsed = math.ceil(#categoryData.items / gridColumns)
-        currentY = currentY + (rowsUsed * itemHeight)
-    end
-end
-
-function PANEL:Paint(width, height)
-end
-
 vgui.Register("ax.tab.inventory", PANEL, "EditablePanel")
+
+ax.viewstack:RegisterModifier("inventory", function(client, patch)
+    local panel = ax.gui.inventory
+    if ( !IsValid(panel) ) then
+        return
+    end
+
+    if ( !panel:IsPreviewViewActive() ) then
+        return
+    end
+
+    return panel:BuildPreviewView(client)
+end, 900)
 
 hook.Add("PopulateTabButtons", "ax.tab.inventory", function(buttons)
     buttons["inventory"] = {
         Populate = function(this, panel)
             panel:Add("ax.tab.inventory")
-        end
+        end,
+        OnOpen = function(this, panel)
+            if ( !IsValid(ax.gui.inventory) ) then return end
+            ax.gui.inventory:SetPreviewActive(true)
+
+            -- Delay gradient application to ensure tab is fully initialized
+            timer.Simple(0, function()
+                if ( !IsValid(ax.gui.inventory) ) then return end
+                ax.gui.inventory:ApplyInventoryGradients(true)
+            end)
+        end,
+        OnClose = function(this, panel)
+            if ( !IsValid(ax.gui.inventory) ) then return end
+            ax.gui.inventory:SetPreviewActive(false)
+        end,
     }
+end)
+
+hook.Add("OnTabMenuClosing", "ax.tab.inventory.previewfade", function()
+    if ( !IsValid(ax.gui.inventory) ) then return end
+
+    ax.gui.inventory:SetPreviewActive(false)
+end)
+
+hook.Add("OnTabMenuOpened", "ax.tab.inventory.applygradients", function(activeTab)
+    if ( activeTab == "inventory" and IsValid(ax.gui.inventory) ) then
+        timer.Simple(0, function()
+            if ( !IsValid(ax.gui.inventory) ) then return end
+            ax.gui.inventory:ApplyInventoryGradients(true)
+        end)
+    end
 end)

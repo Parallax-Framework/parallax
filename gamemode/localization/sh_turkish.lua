@@ -119,6 +119,28 @@ ax.localization:Register("tr", {
     ["option.button.delay.click"] = "Buton Tıklama Gecikmesi",
 
     ---- Display
+    ["option.interface.theme"] = "Arayüz Teması",
+    ["option.interface.theme.help"] = "Arayüz için renk temasını seçin.",
+    ["option.interface.glass.roundness"] = "Cam Yuvarlaklığı",
+    ["option.interface.glass.roundness.help"] = "Cam arayüz öğelerinin köşe yarıçapını ayarlayın.",
+    ["option.interface.glass.blur"] = "Cam Bulanıklık Yoğunluğu",
+    ["option.interface.glass.blur.help"] = "Cam arayüz öğelerinin arkasındaki bulanıklık gücünü kontrol edin.",
+    ["option.interface.glass.opacity"] = "Cam Opaklığı",
+    ["option.interface.glass.opacity.help"] = "Cam arayüz panellerinin opaklığını ayarlayın.",
+    ["option.interface.glass.borderOpacity"] = "Cam Kenarlık Opaklığı",
+    ["option.interface.glass.borderOpacity.help"] = "Cam arayüz kenarlıklarının görünürlüğünü kontrol edin.",
+    ["option.interface.glass.gradientOpacity"] = "Cam Gradyan Opaklığı",
+    ["option.interface.glass.gradientOpacity.help"] = "Cam panellerdeki gradyan katmanlarının gücünü ayarlayın.",
+
+    -- Theme Names
+    ["theme.dark"] = "Koyu",
+    ["theme.light"] = "Açık",
+    ["theme.blue"] = "Mavi",
+    ["theme.purple"] = "Mor",
+    ["theme.green"] = "Yeşil",
+    ["theme.red"] = "Kırmızı",
+
+    ---- Display
     ["option.interface.scale"] = "Arayüz Ölçeği",
     ["option.performance.animations"] = "Arayüz Animasyonlarını Etkinleştir",
 
@@ -149,4 +171,23 @@ ax.localization:Register("tr", {
     ["notify.chat.ooc.disabled"] = "Bu sunucuda OOC sohbet şu anda devre dışı.",
     ["notify.chat.ooc.wait"] = "Başka bir OOC mesajı göndermeden önce lütfen %d saniye bekleyin.",
     ["notify.chat.ooc.rate_limited"] = "Son %d dakika içinde OOC mesaj limiti (%d) aşıldı.",
+    ["chatbox.entry.placeholder"] = "Say something...",
+    ["chatbox.recommendations.no_description"] = "No description provided.",
+    ["chatbox.recommendations.truncated"] = "Showing first %d results.",
+    ["chatbox.menu.close"] = "Close Chat",
+    ["chatbox.menu.clear_history"] = "Clear Chat History",
+    ["chatbox.menu.reset_position"] = "Reset Position",
+    ["chatbox.menu.reset_size"] = "Reset Size",
+    ["chatbox.menu.confirm_clear_title"] = "Clear Chat History",
+    ["chatbox.menu.confirm_clear_message"] = "Clear all chat history?",
+
+    ["config.chatbox.max_message_length"] = "Chatbox Max Message Length",
+    ["config.chatbox.history_size"] = "Chatbox Input History Size",
+    ["config.chatbox.chat_type_history"] = "Chatbox Chat-Type History Size",
+    ["config.chatbox.looc_prefix"] = "Chatbox LOOc Prefix",
+    ["config.chatbox.recommendations.debounce"] = "Chatbox Recommendation Debounce",
+    ["config.chatbox.recommendations.animation_duration"] = "Chatbox Recommendation Animation Duration",
+    ["config.chatbox.recommendations.command_limit"] = "Chatbox Command Recommendation Limit",
+    ["config.chatbox.recommendations.voice_limit"] = "Chatbox Voice Recommendation Limit",
+    ["config.chatbox.recommendations.wrap_cycle"] = "Chatbox Recommendation Cycle Wrap",
 })

@@ -26,11 +26,14 @@ AccessorFunc(PANEL, "m_iMinWidth",        "MinWidth",      FORCE_NUMBER)
 AccessorFunc(PANEL, "m_iMinHeight",       "MinHeight",     FORCE_NUMBER)
 AccessorFunc(PANEL, "m_bBackgroundBlur",  "BackgroundBlur",FORCE_BOOL)
 
+local GLASS_FLAGS = ax.render.SHAPE_IOS
+local GLASS_HEADER_FLAGS = bit.bor(GLASS_FLAGS, ax.render.NO_BL, ax.render.NO_BR)
+
 function PANEL:Init()
     self:SetFocusTopLevel(true)
     self:SetPaintShadow(true)
 
-    self.btnClose = self:Add("ax.button.flat")
+    self.btnClose = self:Add("ax.button")
     self.btnClose:SetText("X", true, true)
     self.btnClose.DoClick = function() self:Close() end
 
@@ -51,7 +54,7 @@ function PANEL:Init()
 
     self.m_fCreateTime = SysTime()
 
-    self:DockPadding(5, 48 + 15, 5, 5)
+    self:DockPadding(12, 64, 12, 12)
 end
 
 function PANEL:ShowCloseButton(bShow)
@@ -176,11 +179,11 @@ function PANEL:OnMouseReleased()
 end
 
 function PANEL:PerformLayout()
-    self.btnClose:SetPos(self:GetWide() - 48 - 5, 5)
+    self.btnClose:SetPos(self:GetWide() - 48 - 12, 12)
     self.btnClose:SetSize(48, 48)
 
-    self.lblTitle:SetPos(8, 4)
-    self.lblTitle:SetSize(self:GetWide() - 24, 48)
+    self.lblTitle:SetPos(16, 10)
+    self.lblTitle:SetSize(self:GetWide() - 32, 40)
 end
 
 function PANEL:Paint(width, height)
@@ -188,8 +191,20 @@ function PANEL:Paint(width, height)
         Derma_DrawBackgroundBlur(self, self.m_fCreateTime)
     end
 
-    ax.render.Draw(0, 0, 0, width, height, Color(0, 0, 0, 150))
-    ax.render.Draw(0, 0, 0, width, 58, Color(0, 0, 0, 200))
+    local glass = ax.theme:GetGlass()
+    ax.theme:DrawGlassPanel(0, 0, width, height, {
+        radius = 12,
+        blur = 1.1,
+        flags = GLASS_FLAGS,
+        fill = glass.panel
+    })
+
+    ax.theme:DrawGlassPanel(0, 0, width, 58, {
+        radius = 12,
+        blur = 1.4,
+        flags = GLASS_HEADER_FLAGS,
+        fill = glass.header
+    })
 
     return true
 end

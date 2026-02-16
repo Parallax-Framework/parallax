@@ -563,15 +563,15 @@ ax.net:Hook("item.spawn", function(itemID, itemClass, itemData)
 end)
 
 ax.net:Hook("chat.message", function(speaker, chatType, text, data)
-
     local chatClass = ax.chat.registry[chatType]
     if ( !istable(chatClass) ) then
-        ax.util:PrintError("ax.chat.message - Invalid chat type \"" .. tostring(chatType) .. "\"")
+        ax.util:PrintError("[CHAT] Invalid chat type \"" .. tostring(chatType) .. "\"")
         return
     end
 
     if ( hook.Run("ShouldFormatMessage", speaker, chatType, text, data) != false ) then
         text = ax.chat:Format(text)
+        ax.util:PrintDebug("[CHAT] Formatted message for chat type \"" .. chatType .. "\": " .. text)
     end
 
     if ( isfunction(chatClass.OnRun) ) then
@@ -581,6 +581,9 @@ ax.net:Hook("chat.message", function(speaker, chatType, text, data)
         end
 
         ax.client:ChatPrint(unpack(packaged))
+        ax.util:PrintDebug("[CHAT] Delivered chat message of type \"" .. chatType .. "\" from " .. tostring(speaker) .. " to client.")
+    else
+        ax.util:PrintError("[CHAT] Chat class for type \"" .. chatType .. "\" does not have an OnRun function.")
     end
 end)
 

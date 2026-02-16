@@ -195,19 +195,24 @@ else
 
         local class = ax.voices:GetClass(speaker, normalizedChatType)
         for k, v in pairs(class) do
+            print("[Voices] Processing class:", v)
             local texts = GetVoiceCommands(text, v)
             local isGlobal = false
             local completetext
             local sounds = {}
             texts = ExperimentalFormatting(texts)
+            print("[Voices] Parsed tokens:", #texts)
             for k2, v2 in ipairs(texts) do
                 if ( v2.path ) then
+                    print("[Voices] Token has path:", v2.path, "text=", v2.text)
                     if ( v2.global ) then
                         isGlobal = true
                         ax.util:PrintDebug("Global voice line detected:", v2.path)
                     end
 
                     table.insert(sounds, v2.path)
+                else
+                    print("[Voices] Token has no path:", v2.text)
                 end
 
                 local volume = isGlobal and 180 or 70
@@ -222,6 +227,7 @@ else
                 if ( k2 == #texts ) then
                     if ( table.IsEmpty(sounds) ) then break end
 
+                    print("[Voices] Emitting sounds:", table.concat(sounds, ", "))
                     local _ = !isGlobal and speaker:EmitQueuedSound(sounds, volume) or PlayQueuedSound(nil, sounds, 100, volume)
 
                     local isRadio = hook.Run("IsRadioVoiceChatType", chatType)

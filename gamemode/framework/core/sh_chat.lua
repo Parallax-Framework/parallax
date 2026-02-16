@@ -208,13 +208,13 @@ ax.chat:Add("whisper", {
     prefix = {"/w", "/whisper"},
     OnRun = function(this, client, message)
         local whisperColor = ax.config:Get("chat.whisper.color")
-        local baseFont = "ax.tiny.shadow"
+        local baseFont = "ax.small.shadow"
         return whisperColor, "<font=" .. baseFont .. ">" .. client:Nick() .. " " .. expressions["whisper"][math.random(#expressions["whisper"])] .. ", \"" .. ax.chat:FormatWithMarkdown(message, baseFont) .. "\"</font>"
     end,
     OnFormatForListener = function(this, speaker, listener, message, data)
         local whisperColor = ax.config:Get("chat.whisper.color")
         local verb = GetVerb(listener, "whisper")
-        local baseFont = "ax.tiny.shadow"
+        local baseFont = "ax.small.shadow"
         local formattedMessage = ax.chat:FormatWithMarkdown(message, baseFont)
         local target = GetLookTarget(speaker)
 

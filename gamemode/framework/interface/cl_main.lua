@@ -38,14 +38,20 @@ function PANEL:Init()
     self.options = self:Add("ax.main.options")
     self.options:StartAtBottom()
 
-    self.splash:StartAtLeft()
+    self.splash:StartAtTop()
     self.splash:SlideToFront()
 
     hook.Run("PostMainMenuCreated", self)
 end
 
 function PANEL:Paint(width, height)
-    ax.render.Draw(0, 0, 0, width, height, Color(0, 0, 0, 100))
+    local glass = ax.theme:GetGlass()
+    ax.theme:DrawGlassBackdrop(0, 0, width, height, {
+        radius = 0,
+        blur = 0.5,
+        flags = ax.render.SHAPE_IOS,
+        fill = glass.overlay
+    })
 end
 
 vgui.Register("ax.main", PANEL, "EditablePanel")

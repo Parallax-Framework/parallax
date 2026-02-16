@@ -31,7 +31,12 @@
 -- Create the config store (preserve existing store during hot-reload)
 local configSpec = {
     name = "config",
-    path = "parallax/config.json",
+    path = function()
+        return ax.util:BuildDataPath("config", { scope = "project" })
+    end,
+    legacyPaths = {
+        "parallax/config.json"
+    },
     authority = "server",
     net = {
         init = "config.init",

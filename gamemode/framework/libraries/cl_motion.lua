@@ -49,8 +49,21 @@ function ax.motion:Motion(panel, duration, data)
 
     -- capture starting values, cancel overlapping anims
     for key, target in pairs(data.Target) do
-        origin[key] = panel[key] or 0
-        current[key] = origin[key]
+        local val = panel[key]
+        if ( val == nil ) then
+            -- if the panel property is nil, use a default based on target type
+            if ( IsColor(target) ) then
+                val = Color(0, 0, 0, 0)
+            elseif ( isvector(target) ) then
+                val = Vector(0, 0, 0)
+            elseif ( isangle(target) ) then
+                val = Angle(0, 0, 0)
+            else
+                val = 0
+            end
+        end
+        origin[key] = val
+        current[key] = val
     end
 
     -- remove any existing anims on this panel that share any key
@@ -108,9 +121,6 @@ function ax.motion:CancelAll(panel)
         end
     end
 end
-
--- Clean up existing hook to prevent duplicates on reload
-hook.Remove("Think", "ax.motion.Update")
 
 hook.Add("Think", "ax.motion.Update", function()
     local now = SysTime()

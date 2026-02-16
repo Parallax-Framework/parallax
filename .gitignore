@@ -1,1 +1,5 @@
 /.VSCodeCounter
+__pycache__
+docs
+site
+mkdocs.yml

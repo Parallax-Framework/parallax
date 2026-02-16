@@ -44,7 +44,12 @@
 -- Create the option store (preserve existing store during hot-reload)
 local optionSpec = {
     name = "option",
-    path = "parallax/options.json",
+    path = function()
+        return ax.util:BuildDataPath("parallax_options", { scope = "global" })
+    end,
+    legacyPaths = {
+        "parallax/options.json"
+    },
     authority = "client",
     net = {
         sync = "option.sync",

@@ -28,7 +28,7 @@ function MODULE:OnConfigChanged(key, oldValue, newValue)
     if ( key != "animations.ik" ) then return end
 
     -- Reapply IK settings to all players when the config changes
-    for _, client in player.Iterator() do
+    for _, client in ipairs(player.GetAll()) do
         if ( !ax.util:IsValidPlayer(client) ) then continue end
 
         local clientTable = client:GetTable()

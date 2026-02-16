@@ -253,7 +253,7 @@ function SWEP:CheckValidity()
 end
 
 function SWEP:IsEntityStoodOn(entity)
-    for k, v in player.Iterator() do
+    for k, v in ipairs(player.GetAll()) do
         if ( v:GetGroundEntity() == entity ) then
             return true
         end

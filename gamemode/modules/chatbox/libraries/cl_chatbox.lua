@@ -9,8 +9,9 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
-ax.chat = ax.chat or {}
-ax.chat.messages = ax.chat.messages or {}
+ax.chatbox = ax.chatbox or {}
+ax.chatbox.messages = ax.chatbox.messages or {}
+ax.chatbox.util = ax.chatbox.util or {}
 
 --- Count visible characters (excluding markup tags)
 local function CountVisibleChars(text)
@@ -42,7 +43,7 @@ local function RevealText(text, maxChars)
 end
 
 --- Inject color tags around text while preserving font tags
-function ax.chat:InjectColorTags(text, color)
+function ax.chatbox:InjectColorTags(text, color)
     local result, pos = "", 1
     local colorTag = string.format("<color=%d,%d,%d>%%s</color>", color.r, color.g, color.b)
 
@@ -66,7 +67,7 @@ function ax.chat:InjectColorTags(text, color)
 end
 
 --- Create message panel with animated text reveal
-function ax.chat:CreateMessagePanel(markupText, maxWidth, revealSpeed)
+function ax.chatbox:CreateMessagePanel(markupText, maxWidth, revealSpeed)
     if ( !IsValid(ax.gui.chatbox) ) then
         ax.gui.chatbox = vgui.Create("ax.chatbox")
     end
@@ -121,7 +122,7 @@ function ax.chat:CreateMessagePanel(markupText, maxWidth, revealSpeed)
     return panel
 end
 
-function ax.chat:PlayReceiveSound()
+function ax.chatbox:PlayReceiveSound()
     if ( ax.client and ax.client.EmitSound ) then
         ax.client:EmitSound("ui/hint.wav", 75, 100, 0.1, CHAN_AUTO)
     else
@@ -129,7 +130,7 @@ function ax.chat:PlayReceiveSound()
     end
 end
 
-function ax.chat:ScrollHistoryToBottom(panel)
+function ax.chatbox:ScrollHistoryToBottom(panel)
     timer.Simple(0.1, function()
         if ( !IsValid(panel) ) then return end
 
@@ -143,7 +144,7 @@ function ax.chat:ScrollHistoryToBottom(panel)
     end)
 end
 
-function ax.chat:OverrideChatAddText()
+function ax.chatbox:OverrideChatAddText()
     chat.AddTextInternal = chat.AddTextInternal or chat.AddText
 
     function chat.AddText(...)
@@ -171,7 +172,7 @@ function ax.chat:OverrideChatAddText()
                 text = text .. string.format("<color=%d,%d,%d>%s</color>", tc.r, tc.g, tc.b, v:Nick())
             elseif ( isstring(v) ) then
                 if ( string.find(v, "<font=") ) then
-                    text = text .. ax.chat:InjectColorTags(v, color)
+                    text = text .. ax.chatbox:InjectColorTags(v, color)
                 else
                     text = text .. string.format("<color=%d,%d,%d>%s</color>", color.r, color.g, color.b, v)
                 end
@@ -186,7 +187,7 @@ function ax.chat:OverrideChatAddText()
         -- where we add a timestamp (<font=...>...</font>) but the rest of the
         -- message isn't wrapped, which would prevent markup.Parse from having
         -- a stable top-level font context.
-        local defaultFont = hook.Run("GetChatFont", ax.chat.currentType or "ic") or "ax.small.shadow"
+        local defaultFont = hook.Run("GetChatFont", ax.chatbox.currentType or "ic") or "ax.small.shadow"
         local function IsFullyWrappedByFont(str)
             if ( !isstring(str) ) then return false end
             -- allow optional leading/trailing whitespace
@@ -197,14 +198,14 @@ function ax.chat:OverrideChatAddText()
             text = "<font=" .. defaultFont .. ">" .. text .. "</font>"
         end
 
-        local panel = ax.chat:CreateMessagePanel(text, ax.gui.chatbox:GetWide() - 20, 100)
-        ax.chat.messages[#ax.chat.messages + 1] = panel
-        ax.chat.currentType = nil
+        local panel = ax.chatbox:CreateMessagePanel(text, ax.gui.chatbox:GetWide() - 20, 100)
+        ax.chatbox.messages[#ax.chatbox.messages + 1] = panel
+        ax.chatbox.currentType = nil
 
-        ax.chat:PlayReceiveSound()
-        ax.chat:ScrollHistoryToBottom(panel)
+        ax.chatbox:PlayReceiveSound()
+        ax.chatbox:ScrollHistoryToBottom(panel)
     end
 end
 
 -- Apply the override initially
-ax.chat:OverrideChatAddText()
+ax.chatbox:OverrideChatAddText()
