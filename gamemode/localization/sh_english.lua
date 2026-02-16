@@ -33,6 +33,7 @@ ax.localization:Register("en", {
     ["category.general"] = "General",
     ["category.interface"] = "Interface",
     ["category.modules"] = "Modules",
+    ["category.schema"] = "Schema",
 
     -- Subcategory Translations
     ["subcategory.basic"] = "Basic",
@@ -56,6 +57,7 @@ ax.localization:Register("en", {
     ["store.disabled"] = "Disabled",
 
     -- Config Translations
+
     --- Chat
     ---- Distances
     ["config.chat.ic.distance"] = "IC Chat Distance",
