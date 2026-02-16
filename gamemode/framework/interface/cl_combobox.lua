@@ -222,11 +222,6 @@ function PANEL:PerformLayout( w, h )
 
 end
 
---[[---------------------------------------------------------
-	Open - Opens the menu.
-	x and y are optional, if they're not provided the menu
-		will appear at the cursor.
------------------------------------------------------------]]
 function PANEL:Open( x, y, skipanimation, ownerpanel )
 
 	RegisterDermaMenuForClose( self )
