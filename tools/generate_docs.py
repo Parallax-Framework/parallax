@@ -18,6 +18,8 @@ from typing import Dict, List, Optional, Sequence, Tuple
 DEFAULT_SOURCE_DIRS = ("gamemode/framework", "gamemode/modules")
 DEFAULT_DOCS_DIR = "docs"
 DEFAULT_API_SUBDIR = "api"
+DEFAULT_MANUALS_SOURCE_DIR = "manuals"
+DEFAULT_MANUALS_SUBDIR = "manuals"
 DEFAULT_MKDOCS_FILE = "mkdocs.yml"
 DEFAULT_SITE_NAME = "Parallax Framework Documentation"
 DEFAULT_SITE_DESCRIPTION = "Parallax manuals and generated API reference."
@@ -159,6 +161,16 @@ def parse_args() -> argparse.Namespace:
         "--api-subdir",
         default=DEFAULT_API_SUBDIR,
         help="API output subdirectory under docs_dir.",
+    )
+    parser.add_argument(
+        "--manuals-source",
+        default=DEFAULT_MANUALS_SOURCE_DIR,
+        help="Manuals source directory (relative to --root unless absolute).",
+    )
+    parser.add_argument(
+        "--manuals-subdir",
+        default=DEFAULT_MANUALS_SUBDIR,
+        help="Manuals output subdirectory under docs_dir.",
     )
     parser.add_argument(
         "--mkdocs-file",
@@ -670,7 +682,8 @@ def build_mkdocs_yaml(
     docs_dir_relative: str,
     site_name: str,
     site_description: str,
-    manual_pages: Sequence[Tuple[str, str]],
+    root_pages: Sequence[Tuple[str, str]],
+    manuals_nav_lines: Sequence[str],
     file_docs: Sequence[FileDoc],
     api_subdir: str,
     logo_path: Optional[str] = None,
@@ -736,8 +749,12 @@ def build_mkdocs_yaml(
     lines.append("      permalink: true")
     lines.append("nav:")
 
-    for title, page in manual_pages:
+    for title, page in root_pages:
         lines.append(f"  - {yaml_quote(title)}: {normalize_nav_path(page)}")
+
+    if manuals_nav_lines:
+        lines.append("  - Manuals:")
+        lines.extend(manuals_nav_lines)
 
     lines.append("  - API:")
     lines.append(f"      - Overview: {normalize_nav_path(f'{api_subdir}/index.md')}")
@@ -785,7 +802,96 @@ def ensure_docs_scaffold(docs_dir: Path, dry_run: bool) -> None:
         print(f"Created file: {path}")
 
 
-def collect_manual_pages(docs_dir: Path) -> List[Tuple[str, str]]:
+def sync_manuals_to_docs(manuals_source_dir: Path, manuals_docs_dir: Path, dry_run: bool) -> None:
+    if not manuals_source_dir.exists():
+        print(f"Skipping manuals sync, missing source path: {manuals_source_dir}")
+        return
+
+    source_files = sorted(
+        manuals_source_dir.rglob("*.md"),
+        key=lambda path: path.relative_to(manuals_source_dir).as_posix().casefold(),
+    )
+
+    expected_outputs: set[str] = set()
+    for source_file in source_files:
+        relative = source_file.relative_to(manuals_source_dir)
+        output_file = manuals_docs_dir / relative
+        expected_outputs.add(str(output_file.resolve()))
+
+        content = read_text(source_file)
+        if write_if_changed(output_file, content, dry_run):
+            status = "[dry-run] Would sync manual" if dry_run else "Synced manual"
+            print(f"{status}: {output_file}")
+
+    if manuals_docs_dir.exists():
+        stale_files = sorted(
+            (
+                path
+                for path in manuals_docs_dir.rglob("*.md")
+                if str(path.resolve()) not in expected_outputs
+            ),
+            key=lambda path: path.as_posix().casefold(),
+        )
+
+        for stale_file in stale_files:
+            if dry_run:
+                print(f"[dry-run] Would remove stale manual: {stale_file}")
+                continue
+
+            stale_file.unlink()
+            print(f"Removed stale manual: {stale_file}")
+
+    if not dry_run and manuals_docs_dir.exists():
+        for directory in sorted(
+            (path for path in manuals_docs_dir.rglob("*") if path.is_dir()),
+            key=lambda path: len(path.parts),
+            reverse=True,
+        ):
+            try:
+                directory.rmdir()
+            except OSError:
+                pass
+
+
+def build_manuals_nav_lines(manuals_docs_dir: Path, manuals_subdir: str, indent: int = 6) -> List[str]:
+    if not manuals_docs_dir.exists():
+        return []
+
+    def file_sort_key(path: Path) -> Tuple[int, str]:
+        name = path.name.casefold()
+        return (0 if name == "readme.md" else 1, name)
+
+    def render_dir(directory: Path, level_indent: int) -> List[str]:
+        lines: List[str] = []
+
+        markdown_files = sorted(
+            (path for path in directory.glob("*.md") if path.is_file()),
+            key=file_sort_key,
+        )
+        for markdown_file in markdown_files:
+            relative = markdown_file.relative_to(manuals_docs_dir).as_posix()
+            nav_path = normalize_nav_path(f"{manuals_subdir}/{relative}")
+            title = "Overview" if markdown_file.name.casefold() == "readme.md" else extract_markdown_title(markdown_file)
+            lines.append(f'{" " * level_indent}- {yaml_quote(title)}: {nav_path}')
+
+        subdirectories = sorted(
+            (path for path in directory.iterdir() if path.is_dir()),
+            key=lambda path: path.name.casefold(),
+        )
+        for subdirectory in subdirectories:
+            nested_lines = render_dir(subdirectory, level_indent + 4)
+            if not nested_lines:
+                continue
+
+            lines.append(f'{" " * level_indent}- {yaml_quote(pretty_nav_label(subdirectory.name))}:')
+            lines.extend(nested_lines)
+
+        return lines
+
+    return render_dir(manuals_docs_dir, indent)
+
+
+def collect_root_pages(docs_dir: Path) -> List[Tuple[str, str]]:
     pages: List[Tuple[str, str]] = []
 
     index_page = docs_dir / "index.md"
@@ -814,12 +920,15 @@ def main() -> None:
     root = args.root.resolve()
     source_inputs = args.source or list(DEFAULT_SOURCE_DIRS)
     source_dirs = [normalize_path(root, source) for source in source_inputs]
+    manuals_source_dir = normalize_path(root, args.manuals_source)
 
     docs_dir = normalize_path(root, args.docs_dir)
     api_dir = docs_dir / args.api_subdir
+    manuals_docs_dir = docs_dir / args.manuals_subdir
     mkdocs_path = normalize_path(root, args.mkdocs_file)
 
     ensure_docs_scaffold(docs_dir, args.dry_run)
+    sync_manuals_to_docs(manuals_source_dir, manuals_docs_dir, args.dry_run)
 
     if args.clean and api_dir.exists():
         if args.dry_run:
@@ -865,7 +974,8 @@ def main() -> None:
         status = "[dry-run] Would write" if args.dry_run else "Wrote"
         print(f"{status}: {api_index_path.relative_to(root)}")
 
-    manual_pages = collect_manual_pages(docs_dir)
+    root_pages = collect_root_pages(docs_dir)
+    manuals_nav_lines = build_manuals_nav_lines(manuals_docs_dir, args.manuals_subdir)
     logo_relative = "assets/images/parallax-logo.png"
     favicon_relative = "assets/images/favicon.png"
     extra_css_relative = "assets/stylesheets/extra.css"
@@ -878,7 +988,8 @@ def main() -> None:
         docs_dir_relative=args.docs_dir,
         site_name=args.site_name,
         site_description=args.site_description,
-        manual_pages=manual_pages,
+        root_pages=root_pages,
+        manuals_nav_lines=manuals_nav_lines,
         file_docs=file_docs,
         api_subdir=args.api_subdir,
         logo_path=logo_path,
