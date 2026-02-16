@@ -46,7 +46,7 @@ ASSIGN_FUNCTION_DEF_RE = re.compile(
 )
 HEADER_RE = re.compile(r"^\s*#\s+(.+)\s*$")
 
-PARAM_TAG_RE = re.compile(r"^@param\s+([A-Za-z_][\w]*)\s+([^\s]+)\s*(.*)$")
+PARAM_TAG_RE = re.compile(r"^@param\s+(\.\.\.|[A-Za-z_][\w]*)\s+([^\s]+)\s*(.*)$")
 RETURN_TAG_RE = re.compile(r"^@return\s+([^\s]+)\s*(.*)$")
 TRETURN_TAG_RE = re.compile(r"^@treturn\s+([^\s]+)\s*(.*)$")
 REALM_TAG_RE = re.compile(r"^@realm\s+([^\s]+)\s*$")
@@ -263,14 +263,18 @@ def collect_doc_lines_above(lines: Sequence[str], index: int) -> List[str]:
         if stripped.startswith("--[[") or stripped.startswith("]]"):
             continue
         if stripped.startswith("---"):
-            text = stripped[3:].strip()
-            cleaned.append(text)
+            text = stripped[3:]
+            if text.startswith(" "):
+                text = text[1:]
+            cleaned.append(text.rstrip())
             has_doc_signal = True
             continue
         if stripped.startswith("--"):
-            text = stripped[2:].strip()
-            cleaned.append(text)
-            if text.startswith("@"):
+            text = stripped[2:]
+            if text.startswith(" "):
+                text = text[1:]
+            cleaned.append(text.rstrip())
+            if text.lstrip().startswith("@"):
                 has_doc_signal = True
             continue
         cleaned.append("")
@@ -287,7 +291,8 @@ def parse_comment_lines(comment_lines: Sequence[str]) -> ParsedComment:
     context: Optional[str] = None
 
     for text in comment_lines:
-        line = text.strip()
+        raw_line = text.rstrip()
+        line = raw_line.strip()
 
         if not line:
             if context == "usage" and parsed.usage:
@@ -322,11 +327,19 @@ def parse_comment_lines(comment_lines: Sequence[str]) -> ParsedComment:
 
             param_match = PARAM_TAG_RE.match(line)
             if param_match:
+                name = param_match.group(1).strip()
                 type_name = param_match.group(2).rstrip(":")
                 description = param_match.group(3).lstrip("-: ").strip()
+
+                # Support description-first varargs style:
+                # @param ... A variable number of KEY_* constants.
+                if name == "..." and type_name.casefold() in {"a", "an", "the"}:
+                    description = f"{type_name} {description}".strip()
+                    type_name = "any"
+
                 parsed.params.append(
                     ParamDoc(
-                        name=param_match.group(1).strip(),
+                        name=name,
                         type_name=type_name.strip(),
                         description=description,
                     )
@@ -366,7 +379,7 @@ def parse_comment_lines(comment_lines: Sequence[str]) -> ParsedComment:
             continue
 
         if context == "usage" and parsed.usage:
-            parsed.usage[-1] += ("\n" + line)
+            parsed.usage[-1] += ("\n" + raw_line)
             continue
 
         if context == "param" and parsed.params:
@@ -387,7 +400,7 @@ def parse_comment_lines(comment_lines: Sequence[str]) -> ParsedComment:
         context = "description"
 
     parsed.description = "\n".join(description_lines).strip()
-    parsed.usage = [entry.strip() for entry in parsed.usage if entry.strip()]
+    parsed.usage = [entry.strip("\r\n") for entry in parsed.usage if entry.strip()]
     return parsed
 
 
@@ -574,6 +587,8 @@ def render_file_markdown(file_doc: FileDoc, root: Path) -> str:
         anchor = slugify(f"{function.name}-{function.line}")
         lines.append(f"- [`{function.signature}`](#{anchor})")
 
+    lines.append("")
+    lines.append("---")
     lines.append("")
 
     for function in functions:
