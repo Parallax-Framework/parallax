@@ -85,6 +85,19 @@ function inventory:GetItemByID(itemID)
     return nil
 end
 
+function inventory:GetItemCount(itemID)
+    local count = 0
+    for id, v in pairs(self.items) do
+        if ( type(itemID) == "number" and id == itemID ) then
+            count = count + 1
+        elseif ( type(itemID) == "string" and v.class == itemID ) then
+            count = count + 1
+        end
+    end
+
+    return count
+end
+
 function inventory:GetReceivers()
     return self.receivers or {}
 end
@@ -102,13 +115,13 @@ end
 function inventory:HasItem(identifier)
     for id, v in pairs(self.items) do
         if ( isnumber(identifier) and id == identifier ) then
-            return true, v
+            return v
         elseif ( isstring(identifier) and v.class == identifier ) then
-            return true, v
+            return v
         end
     end
 
-    return false, nil
+    return false
 end
 
 function inventory:IsReceiver(client)
