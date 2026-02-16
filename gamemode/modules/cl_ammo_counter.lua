@@ -32,6 +32,10 @@ local function UpdateShake()
     end
 end
 
+function MODULE:ShouldDrawWeaponAmmoCounter(client)
+    if ( ax.gui.tab and ax.gui.tab:IsVisible() ) then return false end
+end
+
 function MODULE:HUDPaintCurvy()
     local client = ax.client
     if ( !ax.util:IsValidPlayer(client) or !client:Alive() ) then return end
