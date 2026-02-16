@@ -96,18 +96,20 @@ if ( SERVER ) then
         if ( !isstring(flags) or #flags < 1 ) then return end
 
         local bOutdated = false
+        local newFlags = self:GetData("flags", "")
         for i = 1, #flags do
             local letter = flags[i]
             local flagData = ax.flag:Get(letter)
             if ( !istable(flagData) ) then continue end
             if ( self:HasFlags(letter) ) then continue end
 
-            self:SetData("flags", self:GetData("flags", "") .. letter)
+            newFlags = newFlags .. letter
 
             if ( isfunction(flagData.OnGiven) ) then
                 flagData:OnGiven(self)
             end
 
+            self:SetData("flags", newFlags)
             if ( !bOutdated ) then
                 bOutdated = true
             end
@@ -130,7 +132,6 @@ if ( SERVER ) then
 
             local flagData = ax.flag:Get(letter)
             if ( !istable(flagData) ) then continue end
-
             if ( !self:HasFlags(letter) ) then continue end
 
             newFlags = string.Replace(newFlags, letter, "")
