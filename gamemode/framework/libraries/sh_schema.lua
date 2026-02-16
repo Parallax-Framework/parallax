@@ -61,7 +61,6 @@ function ax.schema:Initialize(timeFilter)
     ax.util:IncludeDirectory(active .. "/gamemode/schema/hooks", true, nil, timeFilter)
     ax.util:IncludeDirectory(active .. "/gamemode/schema/networking", true, nil, timeFilter)
     ax.util:IncludeDirectory(active .. "/gamemode/schema/interface", true, nil, timeFilter)
-    LoadSchemaConfig(active, timeFilter)
 
     ax.util:IncludeDirectory(active .. "/gamemode/schema", true, {
         ["libraries"] = true,
@@ -84,6 +83,9 @@ function ax.schema:Initialize(timeFilter)
     ax.item:Include(active .. "/gamemode/schema/items", timeFilter)
 
     ax.module:Include(active .. "/gamemode/modules", timeFilter)
+
+    -- Finally, load the schema config files (including map-specific configs)
+    LoadSchemaConfig(active, timeFilter)
 
     -- Initialize the schema
     ax.util:PrintSuccess("Schema \"" .. active .. "\" initialized successfully.")
