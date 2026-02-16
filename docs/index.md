@@ -9,7 +9,7 @@ Welcome to the Parallax docs portal. This site is split into a fast reference tr
 </div>
 
 <div class="home-grid">
-  <a class="home-card" href="api/index/">
+  <a class="home-card" href="api/">
     <h3>API Overview</h3>
     <p>Start from the generated index and drill down into all documented files.</p>
   </a>
