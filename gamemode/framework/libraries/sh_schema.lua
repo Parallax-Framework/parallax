@@ -15,6 +15,28 @@
 
 ax.schema = ax.schema or {}
 
+local function LoadSchemaConfig(active, timeFilter)
+    local configPath = active .. "/gamemode/schema/config"
+
+    -- Load shared schema config files, but skip per-map files in config/maps.
+    ax.util:IncludeDirectory(configPath, true, {
+        ["maps"] = true
+    }, timeFilter)
+
+    local mapName = game.GetMap and game.GetMap() or nil
+    if ( !isstring(mapName) or mapName == "" ) then
+        return
+    end
+
+    local mapConfigPath = configPath .. "/maps/" .. mapName .. ".lua"
+    if ( file.Exists(mapConfigPath, "LUA") ) then
+        ax.util:Include(mapConfigPath, "shared")
+        ax.util:PrintSuccess("Loaded schema map config for \"" .. mapName .. "\".")
+    else
+        ax.util:PrintWarning("No schema map config found for map \"" .. mapName .. "\".")
+    end
+end
+
 --- Initialize the active schema and load all its components.
 -- Loads the schema's boot file, includes all directories in proper order,
 -- and initializes factions, classes, items, and modules.
@@ -39,6 +61,7 @@ function ax.schema:Initialize(timeFilter)
     ax.util:IncludeDirectory(active .. "/gamemode/schema/hooks", true, nil, timeFilter)
     ax.util:IncludeDirectory(active .. "/gamemode/schema/networking", true, nil, timeFilter)
     ax.util:IncludeDirectory(active .. "/gamemode/schema/interface", true, nil, timeFilter)
+    LoadSchemaConfig(active, timeFilter)
 
     ax.util:IncludeDirectory(active .. "/gamemode/schema", true, {
         ["libraries"] = true,
@@ -51,6 +74,7 @@ function ax.schema:Initialize(timeFilter)
         ["classes"] = true,
         ["ranks"] = true,
         ["items"] = true,
+        ["config"] = true,
         ["boot.lua"] = true
     }, timeFilter)
 
