@@ -56,7 +56,7 @@ function character:HasFlags(flags)
     local data = self:GetData("flags", "")
     for i = 1, #flags do
         local letter = flags[i]
-        if ( !ax.util:FindString(data, letter) ) then
+        if ( !ax.util:FindString(data, letter, true) ) then
             return false
         end
     end
