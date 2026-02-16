@@ -211,7 +211,7 @@ function ax.currencies:Spawn(amount, uniqueID, position, angle)
     end
 
     -- Handle player position
-    if ( IsValid(position) and position:IsPlayer() ) then
+    if ( ax.util:IsValidPlayer(position) ) then
         position = position:GetPos() + position:GetForward() * 32 + Vector(0, 0, 16)
     end
 

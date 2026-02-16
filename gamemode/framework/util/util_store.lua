@@ -189,7 +189,7 @@ function ax.util:CreateStore(spec, oldStore)
     function store:Get(...)
         -- Server-side per-player read for option
         local key, default = select(1, ...), select(2, ...)
-        if ( spec.name == "option" and SERVER and IsValid(key) and key:IsPlayer() ) then
+        if ( spec.name == "option" and SERVER and ax.util:IsValidPlayer(key) ) then
             local client, actualKey, fallback = key, default, select(3, ...) or nil
             if ( !ax.util:IsValidPlayer(client) ) then
                 ax.util:PrintDebug(spec.name, " Get: Invalid player provided")

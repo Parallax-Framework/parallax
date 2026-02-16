@@ -294,7 +294,7 @@ function GM:HUDPaint()
             local displayText, displayColor = hook.Run("GetEntityDisplayText", ent)
             if ( isstring(displayText) ) then
                 local pos = ent:LocalToWorld(ent:OBBCenter())
-                if ( ent:IsPlayer() ) then
+                if ( ax.util:IsValidPlayer(ent) ) then
                     pos = pos + Vector(0, 0, 16)
                 end
 
@@ -321,7 +321,7 @@ function GM:HUDPaint()
 end
 
 function GM:GetEntityDisplayText(entity)
-    if ( entity:IsPlayer() ) then
+    if ( ax.util:IsValidPlayer(entity) ) then
         return entity:Nick(), team.GetColor(entity:Team())
     elseif ( entity:GetClass() == "ax_item" ) then
         local itemTable = entity:GetItemTable()

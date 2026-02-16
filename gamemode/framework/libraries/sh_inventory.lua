@@ -217,7 +217,7 @@ if ( SERVER ) then
 end
 
 concommand.Add("ax_inventory_restore", function(client, command, args)
-    if ( !ax.util:IsValidPlayer(client) or !client:IsPlayer() ) then return end
+    if ( !ax.util:IsValidPlayer(client) ) then return end
     if ( !client:IsSuperAdmin() ) then return end
 
     ax.inventory:Restore(client)

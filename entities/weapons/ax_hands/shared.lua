@@ -324,9 +324,9 @@ function SWEP:SecondaryAttack()
             self:SetNextPrimaryFire(CurTime() + 1)
 
             hook.Run("PlayerKnock", owner, entity)
-        elseif ( !entity:IsPlayer() and !entity:IsNPC() ) then
+        elseif ( !ax.util:IsValidPlayer(entity) and !entity:IsNPC() ) then
             self:DoPickup()
-        elseif ( entity:IsPlayer() and entity:Alive() ) then
+        elseif ( ax.util:IsValidPlayer(entity) and entity:Alive() ) then
             if ( !self:RateLimit("push", 0.5) ) then return end
             if ( entity:GetPos():DistToSqr(owner:GetPos()) > 2000 ) then return end
             if ( hook.Run("PlayerCanPush", owner, entity) == false ) then
@@ -477,7 +477,7 @@ function SWEP:DoPunch()
 
             owner:EmitSound(Sound("Flesh.ImpactHard"))
 
-            if ( entity:IsPlayer() ) then
+            if ( ax.util:IsValidPlayer(entity) ) then
                 --if ( entity:GetRelay("state") == STATE_KNOCKOUT ) then
                 --    owner:LagCompensation(false)
                 --    return

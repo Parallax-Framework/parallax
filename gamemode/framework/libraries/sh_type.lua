@@ -141,7 +141,7 @@ function ax.type:Detect(value)
         end
     end
 
-    if ( IsValid(value) and value:IsPlayer() ) then
+    if ( ax.util:IsValidPlayer(value) ) then
         return ax.type.player
     end
 

@@ -302,7 +302,7 @@ hook.Add("CalcViewModelView", "ax.viewstack.CalcViewModelView", function(weapon,
     if ( !IsValid(weapon) or !IsValid(viewmodel) ) then return end
 
     local client = weapon:GetOwner()
-    if ( !ax.util:IsValidPlayer(client) or !client:IsPlayer() or client != LocalPlayer() or client:InVehicle() or !client:Alive() ) then return end
+    if ( !ax.util:IsValidPlayer(client) or client != LocalPlayer() or client:InVehicle() or !client:Alive() ) then return end
     if ( hook.Run("ShouldDrawLocalPlayer", client) == true ) then return end
 
     if ( ax.viewstack.inVM ) then return end

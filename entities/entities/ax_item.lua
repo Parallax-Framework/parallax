@@ -30,7 +30,7 @@ if ( SERVER ) then
     end
 
     function ENT:Use(activator, caller)
-        if ( !IsValid(activator) or !activator:IsPlayer() ) then return end
+        if ( !ax.util:IsValidPlayer(activator) ) then return end
 
         -- Prevent multiple rapid Use calls on the same entity from creating
         -- concurrent async transfers.
@@ -75,7 +75,7 @@ if ( SERVER ) then
                     tostring(activator),
                     tostring(item.id),
                     tostring(inventory.id),
-                    tostring(reason or "Unknown Reason")
+                    tostring(transferReason or "Unknown Reason")
                 ))
 
                 if ( IsValid(self) ) then

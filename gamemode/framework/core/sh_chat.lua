@@ -11,10 +11,10 @@
 
 -- Helper function to check if speaker is looking at a target player
 local function GetLookTarget(speaker)
-    if ( !IsValid(speaker) or !speaker:IsPlayer() ) then return nil end
+    if ( !ax.util:IsValidPlayer(speaker) ) then return nil end
 
     local trace = speaker:GetEyeTrace()
-    if ( IsValid(trace.Entity) and trace.Entity:IsPlayer() ) then
+    if ( IsValid(trace.Entity) and ax.util:IsValidPlayer(trace.Entity) ) then
         return trace.Entity
     end
 

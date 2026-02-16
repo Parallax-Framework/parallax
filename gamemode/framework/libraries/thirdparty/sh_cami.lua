@@ -281,7 +281,7 @@ extraInfoTbl)
         whether Player %s has privilege "%s", but an admin mod did not give an
         immediate answer!]]
         error(string.format(err,
-            actorPly:IsPlayer() and actorPly:Nick() or tostring(actorPly),
+            ax.util:IsValidPlayer(actorPly) and actorPly:Nick() or tostring(actorPly),
             privilegeName))
     end
 

@@ -65,7 +65,7 @@ ITEM:AddAction("unequip", {
 })
 
 function ITEM:OnPlayerLoadedCharacter(client, character) -- Called when a character is loaded
-    if ( !ax.util:IsValidPlayer(client) or !client:IsPlayer() ) then return end
+    if ( !ax.util:IsValidPlayer(client) ) then return end
 
     if ( self:GetData("equipped") ) then
         if ( self.weaponClass and !client:HasWeapon(self.weaponClass) ) then

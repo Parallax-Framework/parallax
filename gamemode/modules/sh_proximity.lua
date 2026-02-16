@@ -178,7 +178,7 @@ end
 
 -- Cleanup cache when players leave
 hook.Add("EntityRemoved", "ax.proximity.cleanup", function(ent)
-    if ( !IsValid(ent) or !ent:IsPlayer() ) then return end
+    if ( !ax.util:IsValidPlayer(ent) ) then return end
 
     local entIndex = ent:EntIndex()
     voiceVolumeCache[entIndex] = nil

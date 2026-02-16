@@ -45,7 +45,7 @@ function ENTITY:SetRelay(name, value, bNoNetworking, recipients)
     end
 
     local index = tostring(self:EntIndex())
-    if ( self:IsPlayer() ) then
+    if ( ax.util:IsValidPlayer(self) ) then
         index = self:SteamID64()
     end
 
@@ -80,7 +80,7 @@ function ENTITY:GetRelay(name, fallback)
     if ( !isstring(name) ) then return fallback end
 
     local index = tostring(self:EntIndex())
-    if ( self:IsPlayer() ) then
+    if ( ax.util:IsValidPlayer(self) ) then
         index = self:SteamID64()
     end
 
@@ -138,7 +138,7 @@ hook.Add("EntityRemoved", "ax.relay.cleanup", function(ent, fullUpdate)
     if ( fullUpdate ) then return end
 
     local index = tostring(ent:EntIndex())
-    if ( ent:IsPlayer() ) then
+    if ( ax.util:IsValidPlayer(ent) ) then
         index = ent:SteamID64()
     end
 

@@ -32,7 +32,7 @@ function MODULE:UpdateClientAnimations(client)
 end
 
 function MODULE:PostEntitySetModel(ent, model)
-    if ( !IsValid(ent) or !ent:IsPlayer() ) then return end
+    if ( !ax.util:IsValidPlayer(ent) ) then return end
 
     self:UpdateClientAnimations(ent)
 end

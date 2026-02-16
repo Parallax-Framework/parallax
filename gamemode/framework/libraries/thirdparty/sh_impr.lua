@@ -7,7 +7,7 @@ hook.Remove("OnEntityCreated", "ax.Impr.OnEntityCreated")
 hook.Remove("EntityRemoved", "ax.Impr.EntityRemoved")
 
 hook.Add("OnEntityCreated", "ax.Impr.OnEntityCreated", function(ent)
-    if ( !ent:IsPlayer() ) then return end
+    if ( !ax.util:IsValidPlayer(ent) ) then return end
 
     playerSteamID64[ent:SteamID64()] = ent
     playerSteamID[ent:SteamID()] = ent
@@ -15,7 +15,7 @@ hook.Add("OnEntityCreated", "ax.Impr.OnEntityCreated", function(ent)
 end)
 
 hook.Add("EntityRemoved", "ax.Impr.EntityRemoved", function(ent)
-    if ( !ent:IsPlayer() ) then return end
+    if ( !ax.util:IsValidPlayer(ent) ) then return end
 
     playerSteamID64[ent:SteamID64()] = nil
     playerSteamID[ent:SteamID()] = nil

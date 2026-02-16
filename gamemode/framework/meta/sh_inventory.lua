@@ -159,7 +159,7 @@ function inventory:AddReceiver(receiver)
 
     if ( istable(receiver) ) then
         for i = #receiver, 1, -1 do
-            if ( !receiver[i]:IsPlayer() ) then
+            if ( !ax.util:IsValidPlayer(receiver[i]) ) then
                 ax.util:PrintError("Invalid player provided to ax.inventory:AddReceiver() (" .. tostring(receiver[i]) .. ")")
                 return false
             end

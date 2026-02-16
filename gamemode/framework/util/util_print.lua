@@ -28,7 +28,7 @@ function ax.util:PreparePackage(...)
         if ( isentity(arg) and IsValid(arg) ) then
             package[#package + 1] = tostring(arg)
 
-            if ( arg:IsPlayer() ) then
+            if ( ax.util:IsValidPlayer(arg) ) then
                 package[#package + 1] = "[" .. arg:SteamID64() .. "]"
             end
         else

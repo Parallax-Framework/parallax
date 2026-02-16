@@ -390,7 +390,7 @@ function SWEP:ApplyRecoilKick(pitchMult, yawMult)
     if ( SERVER ) then return end
 
     local owner = self:GetOwner()
-    if ( !ax.util:IsValidPlayer(owner) or !owner:IsPlayer() ) then return end
+    if ( !ax.util:IsValidPlayer(owner) ) then return end
 
     pitchMult = pitchMult or 1.0
     yawMult = yawMult or 1.0
@@ -602,7 +602,7 @@ function SWEP:InsertShell()
     end
 
     local owner = self:GetOwner()
-    if ( ax.util:IsValidPlayer(owner) and owner:IsPlayer() ) then
+    if ( ax.util:IsValidPlayer(owner) ) then
         owner:RemoveAmmo(1, self.Primary.Ammo)
     end
 
@@ -651,7 +651,7 @@ end
 -- @treturn string "idle", "walk", or "sprint"
 function SWEP:GetMovementState()
     local owner = self:GetOwner()
-    if ( !ax.util:IsValidPlayer(owner) or !owner:IsPlayer() ) then return "idle" end
+    if ( !ax.util:IsValidPlayer(owner) ) then return "idle" end
 
     local vel = owner:GetVelocity()
     local speed = vel:Length2D()

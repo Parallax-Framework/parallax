@@ -319,7 +319,7 @@ function ax.player.meta:SyncRelay()
         if ( entityIndex == "global" ) then continue end
 
         local ent = Entity( tonumber( entityIndex ) or 0 )
-        if ( !IsValid( ent ) or ( ent:IsPlayer() and ent:SteamID64() != entityIndex ) ) then continue end
+        if ( !IsValid( ent ) or ( ax.util:IsValidPlayer(ent) and ent:SteamID64() != entityIndex ) ) then continue end
 
         for k, v in pairs( data ) do
             ent:SetRelay( k, v, false, self )
