@@ -150,10 +150,10 @@ ax.bind.translations = {
     [KEY_XSTICK2_UP] = "XSTICK2_UP",
 }
 
---- Translate a list of KEY* constants into a human-readable string.
--- @param ... A variable number of KEY* constants.
--- @treturn string The translated key combination, or "NONE
-function ax.bind:Translate( ... )
+--- Translate a list of KEY_* constants into a human-readable string.
+-- @param ... varargs variable number of KEY_* constants.
+-- @treturn string The translated key combination, or "NONE"
+function ax.bind:Translate(...)
     local parts = {}
 
     local keysLength = select("#", ...)
@@ -169,21 +169,19 @@ function ax.bind:Translate( ... )
     return table.concat(parts, " + ")
 end
 
---[[
-ax.bind:Register( { KEY_LCTRL, KEY_K }, function()
-    print("You pressed LCTRL + K")
-end, function()
-    print("You released LCTRL + K")
-end )
---]]
-
 --- Register a key combination with press and release callbacks.
--- @param keys A table of KEY* constants representing the key combination.
--- @param onPress A function to call when the key combination is pressed.
--- @param onRelease A function to call when the key combination is released.
-function ax.bind:Register( keys, onPress, onRelease )
+-- @param keys table table of KEY_* constants representing the key combination.
+-- @param onPress function function to call when the key combination is pressed.
+-- @param onRelease function function to call when the key combination is released.
+-- @usage
+-- ax.bind:Register({KEY_LCTRL, KEY_K}, function()
+--     print("You pressed LCTRL + K")
+-- end, function()
+--     print("You released LCTRL + K")
+-- end)
+function ax.bind:Register(keys, onPress, onRelease)
     if ( !istable(keys) ) then
-        error("ax.bind:Register: 'keys' must be a table of KEY* constants", 2)
+        error("ax.bind:Register: 'keys' must be a table of KEY_* constants", 2)
     end
 
     if ( keys[1] == nil ) then
@@ -193,7 +191,7 @@ function ax.bind:Register( keys, onPress, onRelease )
     for i = 1, #keys do
         local key = keys[i]
         if ( !isnumber(key) or !self.translations[key] ) then
-            error("ax.bind:Register: 'keys' table must only contain KEY* constants", 2)
+            error("ax.bind:Register: 'keys' table must only contain KEY_* constants", 2)
         end
     end
 
