@@ -112,7 +112,7 @@ end
 function ax.player.meta:HasFactionWhitelist(iFactionID)
     if ( !isnumber(iFactionID) ) then
         ax.util:PrintError("Invalid faction ID provided to Player:HasFactionWhitelist()")
-        return false 
+        return false
     end
 
     if ( !istable(ax.faction:Get(iFactionID)) ) then

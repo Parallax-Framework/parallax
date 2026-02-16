@@ -317,7 +317,6 @@ ax.command:Add("PlyWhitelistAll", {
         if ( !ax.util:IsValidPlayer(target) ) then return "Invalid player." end
 
         local whitelists = {}
-        
         local factions = ax.faction:GetAll()
         for i = 1, #factions do
             local factionTable = factions[i]
