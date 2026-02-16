@@ -31,7 +31,7 @@ Browse [Examples](06-EXAMPLES.md) to see practical implementations.
 
 - [Garry's Mod Wiki](https://wiki.facepunch.com/gmod) - Official GMod documentation
 - [Lua Reference](https://www.lua.org/manual/5.1/) - Lua 5.1 manual
-- [Framework Source](../../framework/) - Examine implementation details
+- [Framework API](../api/index.md) - Browse generated framework and module API reference
 
 ## Getting Help
 
