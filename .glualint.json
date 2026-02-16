@@ -1,3 +1,15 @@
 {
-    "lint_deprecated": false
+    "lint_deprecated": false,
+    "lint_maxScopeDepth": 0,
+    "lint_shadowing": false,
+    "lint_unusedVars": false,
+    "lint_ignoreFiles": [
+        "gamemode/framework/libraries/thirdparty/**",
+        "content/**",
+        "models/**",
+        "modelsrc/**",
+        "materials/**",
+        "sound/**",
+        "website/**"
+    ]
 }
