@@ -1,0 +1,100 @@
+:root {
+  --md-primary-fg-color: #4a2574;
+  --md-primary-fg-color--light: #6a3ea4;
+  --md-primary-fg-color--dark: #2a1541;
+  --md-accent-fg-color: #a86bff;
+}
+
+@media screen and (min-width: 76.25em) {
+  .md-sidebar--primary {
+    width: 18rem;
+  }
+
+  .md-grid {
+    max-width: 92rem;
+  }
+}
+
+.md-nav__title {
+  letter-spacing: 0.02em;
+  font-weight: 700;
+}
+
+.md-nav__link--active {
+  font-weight: 700;
+}
+
+.md-search__input {
+  border-radius: 0.5rem;
+}
+
+.md-typeset code {
+  border-radius: 0.25rem;
+}
+
+.md-typeset table:not([class]) th {
+  font-weight: 700;
+}
+
+.home-hero {
+  margin: 0.5rem 0 1.25rem;
+  padding: 1.25rem 1.25rem 1.1rem;
+  border-radius: 0.85rem;
+  color: #fff;
+  background: linear-gradient(125deg, #2c1744 0%, #4f2a78 58%, #6e3ea8 100%);
+  box-shadow: 0 10px 24px rgba(72, 32, 124, 0.3);
+}
+
+.home-hero h2 {
+  margin: 0.2rem 0 0.55rem;
+  font-size: 1.45rem;
+  line-height: 1.2;
+  color: inherit !important;
+}
+
+.home-hero p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.93);
+}
+
+.home-eyebrow {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.73rem;
+  font-weight: 700;
+  opacity: 0.95;
+}
+
+.home-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(215px, 1fr));
+  gap: 0.85rem;
+  margin: 1rem 0 1.5rem;
+}
+
+.home-card {
+  display: block;
+  padding: 0.95rem;
+  border: 1px solid color-mix(in srgb, var(--md-default-fg-color) 16%, transparent);
+  border-radius: 0.75rem;
+  background: color-mix(in srgb, var(--md-default-bg-color) 86%, var(--md-default-fg-color) 2%);
+  text-decoration: none;
+  transition: transform 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.home-card h3 {
+  margin: 0 0 0.35rem;
+  font-size: 1rem;
+}
+
+.home-card p {
+  margin: 0;
+  color: var(--md-default-fg-color--light);
+}
+
+.home-card:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--md-primary-fg-color) 45%, transparent);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+}
