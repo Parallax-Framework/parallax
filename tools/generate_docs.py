@@ -21,6 +21,20 @@ DEFAULT_API_SUBDIR = "api"
 DEFAULT_MKDOCS_FILE = "mkdocs.yml"
 DEFAULT_SITE_NAME = "Parallax Framework Documentation"
 DEFAULT_SITE_DESCRIPTION = "Parallax manuals and generated API reference."
+DEFAULT_INDEX_CONTENT = """# Parallax Documentation
+
+Welcome to the Parallax documentation site.
+
+- Use the left sidebar to browse the API tree.
+- Use search (`/`) to quickly jump to symbols.
+"""
+DEFAULT_EXTRA_CSS_CONTENT = """:root {
+  --md-primary-fg-color: #4a2574;
+  --md-primary-fg-color--light: #6a3ea4;
+  --md-primary-fg-color--dark: #2a1541;
+  --md-accent-fg-color: #a86bff;
+}
+"""
 
 FUNCTION_DEF_RE = re.compile(
     r"^\s*(?:local\s+)?function\s+([A-Za-z_][\w\.:]*)\s*\(([^)]*)\)"
@@ -659,6 +673,9 @@ def build_mkdocs_yaml(
     manual_pages: Sequence[Tuple[str, str]],
     file_docs: Sequence[FileDoc],
     api_subdir: str,
+    logo_path: Optional[str] = None,
+    favicon_path: Optional[str] = None,
+    extra_css_path: Optional[str] = None,
 ) -> str:
     api_tree = build_api_nav_tree(file_docs, api_subdir)
     lines: List[str] = []
@@ -673,8 +690,10 @@ def build_mkdocs_yaml(
     lines.append("theme:")
     lines.append("  name: material")
     lines.append("  language: en")
-    lines.append("  logo: assets/images/parallax-logo.png")
-    lines.append("  favicon: assets/images/favicon.png")
+    if logo_path:
+        lines.append(f"  logo: {normalize_nav_path(logo_path)}")
+    if favicon_path:
+        lines.append(f"  favicon: {normalize_nav_path(favicon_path)}")
     lines.append("  font:")
     lines.append("    text: IBM Plex Sans")
     lines.append("    code: IBM Plex Mono")
@@ -695,8 +714,9 @@ def build_mkdocs_yaml(
     lines.append("      accent: purple")
     lines.append("plugins:")
     lines.append("  - search")
-    lines.append("extra_css:")
-    lines.append("  - assets/stylesheets/extra.css")
+    if extra_css_path:
+        lines.append("extra_css:")
+        lines.append(f"  - {normalize_nav_path(extra_css_path)}")
     lines.append("markdown_extensions:")
     lines.append("  - admonition")
     lines.append("  - attr_list")
@@ -739,6 +759,32 @@ def write_if_changed(path: Path, content: str, dry_run: bool) -> bool:
     return True
 
 
+def ensure_docs_scaffold(docs_dir: Path, dry_run: bool) -> None:
+    if not docs_dir.exists():
+        if dry_run:
+            print(f"[dry-run] Would create directory: {docs_dir}")
+        else:
+            docs_dir.mkdir(parents=True, exist_ok=True)
+            print(f"Created docs directory: {docs_dir}")
+
+    defaults: List[Tuple[Path, str]] = [
+        (docs_dir / "index.md", DEFAULT_INDEX_CONTENT),
+        (docs_dir / "assets" / "stylesheets" / "extra.css", DEFAULT_EXTRA_CSS_CONTENT),
+    ]
+
+    for path, content in defaults:
+        if path.exists():
+            continue
+
+        if dry_run:
+            print(f"[dry-run] Would create file: {path}")
+            continue
+
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(content, encoding="utf-8")
+        print(f"Created file: {path}")
+
+
 def collect_manual_pages(docs_dir: Path) -> List[Tuple[str, str]]:
     pages: List[Tuple[str, str]] = []
 
@@ -773,8 +819,7 @@ def main() -> None:
     api_dir = docs_dir / args.api_subdir
     mkdocs_path = normalize_path(root, args.mkdocs_file)
 
-    if not docs_dir.exists():
-        raise FileNotFoundError(f"docs_dir does not exist: {docs_dir}")
+    ensure_docs_scaffold(docs_dir, args.dry_run)
 
     if args.clean and api_dir.exists():
         if args.dry_run:
@@ -821,6 +866,14 @@ def main() -> None:
         print(f"{status}: {api_index_path.relative_to(root)}")
 
     manual_pages = collect_manual_pages(docs_dir)
+    logo_relative = "assets/images/parallax-logo.png"
+    favicon_relative = "assets/images/favicon.png"
+    extra_css_relative = "assets/stylesheets/extra.css"
+
+    logo_path = logo_relative if (docs_dir / logo_relative).exists() else None
+    favicon_path = favicon_relative if (docs_dir / favicon_relative).exists() else None
+    extra_css_path = extra_css_relative if (docs_dir / extra_css_relative).exists() else None
+
     mkdocs_content = build_mkdocs_yaml(
         docs_dir_relative=args.docs_dir,
         site_name=args.site_name,
@@ -828,6 +881,9 @@ def main() -> None:
         manual_pages=manual_pages,
         file_docs=file_docs,
         api_subdir=args.api_subdir,
+        logo_path=logo_path,
+        favicon_path=favicon_path,
+        extra_css_path=extra_css_path,
     )
     if write_if_changed(mkdocs_path, mkdocs_content, args.dry_run):
         status = "[dry-run] Would write" if args.dry_run else "Wrote"
