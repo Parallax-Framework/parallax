@@ -1,8 +1,0 @@
-# Exclude vendored or external code from automatic fixes and linting
-gamemode/framework/libraries/thirdparty/**
-content/**
-models/**
-modelsrc/**
-materials/**
-sound/**
-website/**
