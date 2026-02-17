@@ -6,6 +6,7 @@ Generate MkDocs documentation for Parallax from Lua doc comments.
 from __future__ import annotations
 
 import argparse
+import os
 import re
 import shutil
 from collections import defaultdict
@@ -18,6 +19,8 @@ from typing import Dict, List, Optional, Sequence, Tuple
 DEFAULT_SOURCE_DIRS = ("gamemode/framework", "gamemode/modules")
 DEFAULT_DOCS_DIR = "docs"
 DEFAULT_API_SUBDIR = "api"
+DEFAULT_LIBRARIES_SUBDIR = "libraries"
+DEFAULT_HOOKS_SUBDIR = "hooks"
 DEFAULT_MANUALS_SOURCE_DIR = "manuals"
 DEFAULT_MANUALS_SUBDIR = "manuals"
 DEFAULT_MKDOCS_FILE = "mkdocs.yml"
@@ -54,6 +57,19 @@ USAGE_TAG_RE = re.compile(r"^@usage\s*(.*)$")
 MODULE_TAG_RE = re.compile(r"^@module\s+([^\s]+)\s*$")
 SECTION_TAG_RE = re.compile(r"^@section\s+([^\s]+)\s*$")
 GENERIC_TAG_RE = re.compile(r"^@([A-Za-z_][\w\[\]=\.]*)\s+([A-Za-z_][\w]*)\s*(.*)$")
+
+GM_HOOK_DEF_RE = re.compile(r"^\s*(?:local\s+)?function\s+GM:([A-Za-z_][\w]*)\s*\(")
+MODULE_HOOK_DEF_RE = re.compile(r"^\s*(?:local\s+)?function\s+MODULE:([A-Za-z_][\w]*)\s*\(")
+HOOK_RUN_RE = re.compile(r'\bhook\.Run\s*\(\s*["\']([^"\']+)["\']')
+HOOK_ADD_RE = re.compile(r'\bhook\.Add\s*\(\s*["\']([^"\']+)["\']')
+
+HOOK_KIND_ORDER = ("gm", "module", "run", "add")
+HOOK_KIND_TITLE = {
+    "gm": "GM Hook Definitions",
+    "module": "MODULE Hook Definitions",
+    "run": "hook.Run Calls",
+    "add": "hook.Add Registrations",
+}
 
 PARAM_FALLBACK_TAGS = {
     "player",
@@ -135,6 +151,14 @@ class FileDoc:
     functions: List[FunctionDoc]
 
 
+@dataclass
+class HookOccurrence:
+    kind: str
+    hook_name: str
+    source_path: Path
+    line: int
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Generate MkDocs docs for Parallax.")
     parser.add_argument(
@@ -161,6 +185,16 @@ def parse_args() -> argparse.Namespace:
         "--api-subdir",
         default=DEFAULT_API_SUBDIR,
         help="API output subdirectory under docs_dir.",
+    )
+    parser.add_argument(
+        "--libraries-subdir",
+        default=DEFAULT_LIBRARIES_SUBDIR,
+        help="Libraries output subdirectory under docs_dir.",
+    )
+    parser.add_argument(
+        "--hooks-subdir",
+        default=DEFAULT_HOOKS_SUBDIR,
+        help="Hooks output subdirectory under docs_dir.",
     )
     parser.add_argument(
         "--manuals-source",
@@ -491,6 +525,368 @@ def render_api_nav_lines(node: Dict[str, object], indent: int) -> List[str]:
     return lines
 
 
+def relative_doc_link(from_doc: Path, to_doc: Path) -> str:
+    relative = Path(os.path.relpath(str(to_doc), str(from_doc.parent)))
+    return normalize_nav_path(relative.as_posix())
+
+
+def anchor_for_function(function_doc: FunctionDoc) -> str:
+    return slugify(f"{function_doc.name}-{function_doc.line}")
+
+
+def extract_ax_library_name(function_name: str) -> Optional[str]:
+    if not function_name.startswith("ax."):
+        return None
+
+    if ":" in function_name:
+        return function_name.split(":", 1)[0]
+
+    parts = function_name.split(".")
+    if len(parts) >= 2:
+        return ".".join(parts[:2])
+    return None
+
+
+def build_ax_library_index(file_docs: Sequence[FileDoc]) -> Dict[str, List[Tuple[FileDoc, FunctionDoc]]]:
+    index: Dict[str, List[Tuple[FileDoc, FunctionDoc]]] = defaultdict(list)
+    for file_doc in file_docs:
+        for function_doc in file_doc.functions:
+            library_name = extract_ax_library_name(function_doc.name)
+            if library_name:
+                index[library_name].append((file_doc, function_doc))
+
+    for library_name, entries in index.items():
+        entries.sort(
+            key=lambda item: (
+                nav_sort_key(item[0].output_relative.as_posix()),
+                nav_sort_key(item[1].name),
+                item[1].line,
+            )
+        )
+
+    return dict(sorted(index.items(), key=lambda item: nav_sort_key(item[0])))
+
+
+def render_libraries_index(
+    library_index: Dict[str, List[Tuple[FileDoc, FunctionDoc]]],
+    library_pages: Dict[str, Path],
+    libraries_subdir: str,
+) -> str:
+    index_doc = Path(libraries_subdir) / "index.md"
+    lines: List[str] = []
+    lines.append("# Libraries")
+    lines.append("")
+    lines.append("Namespace-first view of documented `ax.*` libraries.")
+    lines.append("")
+    lines.append(f"Libraries: **{len(library_index)}**")
+    lines.append(f"Documented functions: **{sum(len(entries) for entries in library_index.values())}**")
+    lines.append("")
+    lines.append("| Library | Functions | Files |")
+    lines.append("| --- | --- | --- |")
+
+    for library_name, entries in sorted(library_index.items(), key=lambda item: nav_sort_key(item[0])):
+        page_path = library_pages[library_name]
+        link = relative_doc_link(index_doc, page_path)
+        unique_files = {entry[0].output_relative.as_posix() for entry in entries}
+        lines.append(f"| [`{library_name}`]({link}) | {len(entries)} | {len(unique_files)} |")
+
+    lines.append("")
+    lines.append("Use this section for quick namespace browsing. Raw file hierarchy remains under `API`.")
+    lines.append("")
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def render_library_page(
+    root: Path,
+    library_name: str,
+    output_relative: Path,
+    entries: Sequence[Tuple[FileDoc, FunctionDoc]],
+) -> str:
+    lines: List[str] = []
+    lines.append(f"# {library_name}")
+    lines.append("")
+    lines.append("Auto-generated namespace index from Lua annotations.")
+    lines.append("")
+    lines.append(f"Documented functions: **{len(entries)}**")
+    lines.append(f"Source files: **{len({entry[0].output_relative.as_posix() for entry in entries})}**")
+    lines.append("")
+
+    lines.append("## Source Files")
+    lines.append("")
+    seen_files: set[str] = set()
+    for file_doc, _ in entries:
+        file_key = file_doc.output_relative.as_posix()
+        if file_key in seen_files:
+            continue
+        seen_files.add(file_key)
+        link = relative_doc_link(output_relative, file_doc.output_relative)
+        source_rel = file_doc.source_path.relative_to(root).as_posix()
+        lines.append(f"- [`{source_rel}`]({link})")
+    lines.append("")
+
+    lines.append("## Functions")
+    lines.append("")
+    lines.append("| Function | Source |")
+    lines.append("| --- | --- |")
+    for file_doc, function_doc in entries:
+        anchor = anchor_for_function(function_doc)
+        function_link = relative_doc_link(output_relative, file_doc.output_relative) + f"#{anchor}"
+        source_rel = file_doc.source_path.relative_to(root).as_posix()
+        lines.append(f"| [`{function_doc.signature}`]({function_link}) | `{source_rel}:{function_doc.line}` |")
+
+    lines.append("")
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def build_libraries_nav_tree(library_pages: Dict[str, Path]) -> Dict[str, object]:
+    root = make_nav_node()
+    for library_name, page_path in sorted(library_pages.items(), key=lambda item: nav_sort_key(item[0])):
+        parts = library_name.split(".")
+        node = root
+        for part in parts[:-1]:
+            dirs = node["dirs"]
+            if part not in dirs:
+                dirs[part] = make_nav_node()
+            node = dirs[part]
+
+        node["pages"].append((parts[-1], normalize_nav_path(page_path.as_posix())))
+
+    return root
+
+
+def render_namespace_nav_lines(node: Dict[str, object], indent: int) -> List[str]:
+    lines: List[str] = []
+    dirs: Dict[str, Dict[str, object]] = node["dirs"]
+    pages: List[Tuple[str, str]] = node["pages"]
+
+    for dir_name in sorted(dirs.keys(), key=nav_sort_key):
+        lines.append(f'{" " * indent}- {yaml_quote(dir_name)}:')
+        lines.extend(render_namespace_nav_lines(dirs[dir_name], indent + 4))
+
+    for page_label, page_path in sorted(pages, key=lambda item: nav_sort_key(item[0])):
+        lines.append(f'{" " * indent}- {yaml_quote(page_label)}: {page_path}')
+
+    return lines
+
+
+def build_libraries_nav_lines(
+    library_pages: Dict[str, Path],
+    libraries_subdir: str,
+    indent: int = 6,
+) -> List[str]:
+    if not library_pages:
+        return []
+
+    lines = [f'{" " * indent}- "Overview": {normalize_nav_path(f"{libraries_subdir}/index.md")}']
+    lines.extend(render_namespace_nav_lines(build_libraries_nav_tree(library_pages), indent))
+    return lines
+
+
+def collect_hook_occurrences(source_dirs: Sequence[Path]) -> List[HookOccurrence]:
+    occurrences: List[HookOccurrence] = []
+    for source_dir in source_dirs:
+        if not source_dir.exists():
+            continue
+
+        for lua_file in sorted(source_dir.rglob("*.lua")):
+            lines = read_text(lua_file).splitlines()
+            for line_number, line in enumerate(lines, start=1):
+                gm_match = GM_HOOK_DEF_RE.match(line)
+                if gm_match:
+                    occurrences.append(
+                        HookOccurrence(
+                            kind="gm",
+                            hook_name=gm_match.group(1),
+                            source_path=lua_file,
+                            line=line_number,
+                        )
+                    )
+
+                module_match = MODULE_HOOK_DEF_RE.match(line)
+                if module_match:
+                    occurrences.append(
+                        HookOccurrence(
+                            kind="module",
+                            hook_name=module_match.group(1),
+                            source_path=lua_file,
+                            line=line_number,
+                        )
+                    )
+
+                for match in HOOK_RUN_RE.finditer(line):
+                    occurrences.append(
+                        HookOccurrence(
+                            kind="run",
+                            hook_name=match.group(1),
+                            source_path=lua_file,
+                            line=line_number,
+                        )
+                    )
+
+                for match in HOOK_ADD_RE.finditer(line):
+                    occurrences.append(
+                        HookOccurrence(
+                            kind="add",
+                            hook_name=match.group(1),
+                            source_path=lua_file,
+                            line=line_number,
+                        )
+                    )
+
+    return occurrences
+
+
+def group_hook_occurrences(
+    occurrences: Sequence[HookOccurrence],
+) -> Dict[str, Dict[str, List[HookOccurrence]]]:
+    grouped: Dict[str, Dict[str, List[HookOccurrence]]] = {
+        kind: defaultdict(list) for kind in HOOK_KIND_ORDER
+    }
+    for occurrence in occurrences:
+        grouped[occurrence.kind][occurrence.hook_name].append(occurrence)
+
+    normalized: Dict[str, Dict[str, List[HookOccurrence]]] = {}
+    for kind in HOOK_KIND_ORDER:
+        by_name = grouped[kind]
+        sorted_by_name: Dict[str, List[HookOccurrence]] = {}
+        for hook_name in sorted(by_name.keys(), key=nav_sort_key):
+            sorted_by_name[hook_name] = sorted(
+                by_name[hook_name],
+                key=lambda entry: (
+                    nav_sort_key(entry.source_path.as_posix()),
+                    entry.line,
+                ),
+            )
+        normalized[kind] = sorted_by_name
+    return normalized
+
+
+def render_hooks_overview(
+    grouped_hooks: Dict[str, Dict[str, List[HookOccurrence]]],
+    hooks_subdir: str,
+) -> str:
+    overview_doc = Path(hooks_subdir) / "index.md"
+    lines: List[str] = []
+    lines.append("# Hooks")
+    lines.append("")
+    lines.append("Auto-generated hook tracker from framework and module Lua files.")
+    lines.append("")
+
+    total_unique = set()
+    for kind in HOOK_KIND_ORDER:
+        total_unique.update(grouped_hooks[kind].keys())
+
+    lines.append(f"Unique hook names: **{len(total_unique)}**")
+    lines.append(f"Tracked occurrences: **{sum(len(items) for kind in HOOK_KIND_ORDER for items in grouped_hooks[kind].values())}**")
+    lines.append("")
+    lines.append("| Category | Unique Hooks | Occurrences |")
+    lines.append("| --- | --- | --- |")
+
+    for kind in HOOK_KIND_ORDER:
+        hook_count = len(grouped_hooks[kind])
+        occurrence_count = sum(len(items) for items in grouped_hooks[kind].values())
+        target = Path(hooks_subdir) / f"{kind}.md"
+        link = relative_doc_link(overview_doc, target)
+        lines.append(f"| [{HOOK_KIND_TITLE[kind]}]({link}) | {hook_count} | {occurrence_count} |")
+
+    lines.append("")
+    lines.append("Use this section to discover implemented hooks and runtime hook usage.")
+    lines.append("")
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def render_hook_kind_page(
+    root: Path,
+    kind: str,
+    grouped_by_name: Dict[str, List[HookOccurrence]],
+    source_to_api_page: Dict[str, Path],
+    hooks_subdir: str,
+) -> str:
+    current_doc = Path(hooks_subdir) / f"{kind}.md"
+    lines: List[str] = []
+    lines.append(f"# {HOOK_KIND_TITLE[kind]}")
+    lines.append("")
+    lines.append(f"Unique hook names: **{len(grouped_by_name)}**")
+    lines.append(f"Occurrences: **{sum(len(items) for items in grouped_by_name.values())}**")
+    lines.append("")
+
+    if not grouped_by_name:
+        lines.append("No hooks detected in this category.")
+        lines.append("")
+        return "\n".join(lines).rstrip() + "\n"
+
+    lines.append("## Hook List")
+    lines.append("")
+    for hook_name, items in grouped_by_name.items():
+        lines.append(f"- `{hook_name}` ({len(items)})")
+    lines.append("")
+    lines.append("---")
+    lines.append("")
+
+    for hook_name, items in grouped_by_name.items():
+        lines.append(f"## {hook_name}")
+        lines.append("")
+        for item in items:
+            source_rel = item.source_path.relative_to(root).as_posix()
+            source_key = str(item.source_path.resolve())
+            api_target = source_to_api_page.get(source_key)
+            if api_target:
+                link = relative_doc_link(current_doc, api_target)
+                lines.append(f"- [`{source_rel}`]({link}) (line {item.line})")
+            else:
+                lines.append(f"- `{source_rel}:{item.line}`")
+        lines.append("")
+
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def build_hooks_nav_lines(hooks_subdir: str, indent: int = 6) -> List[str]:
+    return [
+        f'{" " * indent}- "Overview": {normalize_nav_path(f"{hooks_subdir}/index.md")}',
+        f'{" " * indent}- "GM Definitions": {normalize_nav_path(f"{hooks_subdir}/gm.md")}',
+        f'{" " * indent}- "MODULE Definitions": {normalize_nav_path(f"{hooks_subdir}/module.md")}',
+        f'{" " * indent}- "hook.Run Calls": {normalize_nav_path(f"{hooks_subdir}/run.md")}',
+        f'{" " * indent}- "hook.Add Registrations": {normalize_nav_path(f"{hooks_subdir}/add.md")}',
+    ]
+
+
+def remove_stale_generated_markdown(
+    section_dir: Path,
+    expected_files: set[str],
+    dry_run: bool,
+) -> None:
+    if not section_dir.exists():
+        return
+
+    stale_files = sorted(
+        (
+            path
+            for path in section_dir.rglob("*.md")
+            if str(path.resolve()) not in expected_files
+        ),
+        key=lambda path: path.as_posix().casefold(),
+    )
+
+    for stale_file in stale_files:
+        if dry_run:
+            print(f"[dry-run] Would remove stale generated file: {stale_file}")
+            continue
+
+        stale_file.unlink()
+        print(f"Removed stale generated file: {stale_file}")
+
+    if not dry_run and section_dir.exists():
+        for directory in sorted(
+            (path for path in section_dir.rglob("*") if path.is_dir()),
+            key=lambda path: len(path.parts),
+            reverse=True,
+        ):
+            try:
+                directory.rmdir()
+            except OSError:
+                pass
+
+
 def escape_table_cell(value: str) -> str:
     escaped = value.replace("|", "\\|")
     return escaped.replace("\n", "<br>")
@@ -648,7 +1044,12 @@ def render_file_markdown(file_doc: FileDoc, root: Path) -> str:
     return "\n".join(lines).rstrip() + "\n"
 
 
-def render_api_index(file_docs: Sequence[FileDoc], api_subdir: str) -> str:
+def render_api_index(
+    file_docs: Sequence[FileDoc],
+    api_subdir: str,
+    libraries_subdir: str,
+    hooks_subdir: str,
+) -> str:
     grouped: Dict[str, List[FileDoc]] = defaultdict(list)
     for file_doc in file_docs:
         grouped[file_doc.source_group].append(file_doc)
@@ -656,8 +1057,12 @@ def render_api_index(file_docs: Sequence[FileDoc], api_subdir: str) -> str:
     lines: List[str] = []
     lines.append("# API Reference")
     lines.append("")
-    lines.append("Auto-generated from Lua annotations by `tools/generate_docs.py`.")
+    lines.append("Raw file-by-file API export generated from Lua annotations.")
     lines.append("")
+    lines.append("For namespace-first browsing, use [Libraries](../{}/index.md).".format(libraries_subdir))
+    lines.append("For hook discovery, use [Hooks](../{}/index.md).".format(hooks_subdir))
+    lines.append("")
+    lines.append(f"Total documented functions: **{sum(len(file_doc.functions) for file_doc in file_docs)}**")
     lines.append(f"Pages: **{len(file_docs)}**")
     lines.append("")
 
@@ -699,8 +1104,12 @@ def build_mkdocs_yaml(
     site_description: str,
     root_pages: Sequence[Tuple[str, str]],
     manuals_nav_lines: Sequence[str],
+    libraries_nav_lines: Sequence[str],
+    hooks_nav_lines: Sequence[str],
     file_docs: Sequence[FileDoc],
     api_subdir: str,
+    libraries_subdir: str,
+    hooks_subdir: str,
     logo_path: Optional[str] = None,
     favicon_path: Optional[str] = None,
     extra_css_path: Optional[str] = None,
@@ -778,6 +1187,14 @@ def build_mkdocs_yaml(
     if manuals_nav_lines:
         lines.append("  - Manuals:")
         lines.extend(manuals_nav_lines)
+
+    if libraries_nav_lines:
+        lines.append("  - Libraries:")
+        lines.extend(libraries_nav_lines)
+
+    if hooks_nav_lines:
+        lines.append("  - Hooks:")
+        lines.extend(hooks_nav_lines)
 
     lines.append("  - API:")
     lines.append(f"      - Overview: {normalize_nav_path(f'{api_subdir}/index.md')}")
@@ -947,6 +1364,8 @@ def main() -> None:
 
     docs_dir = normalize_path(root, args.docs_dir)
     api_dir = docs_dir / args.api_subdir
+    libraries_docs_dir = docs_dir / args.libraries_subdir
+    hooks_docs_dir = docs_dir / args.hooks_subdir
     manuals_docs_dir = docs_dir / args.manuals_subdir
     mkdocs_path = normalize_path(root, args.mkdocs_file)
 
@@ -959,6 +1378,18 @@ def main() -> None:
         else:
             shutil.rmtree(api_dir)
             print(f"Removed: {api_dir}")
+    if args.clean and libraries_docs_dir.exists():
+        if args.dry_run:
+            print(f"[dry-run] Would remove: {libraries_docs_dir}")
+        else:
+            shutil.rmtree(libraries_docs_dir)
+            print(f"Removed: {libraries_docs_dir}")
+    if args.clean and hooks_docs_dir.exists():
+        if args.dry_run:
+            print(f"[dry-run] Would remove: {hooks_docs_dir}")
+        else:
+            shutil.rmtree(hooks_docs_dir)
+            print(f"Removed: {hooks_docs_dir}")
 
     file_docs: List[FileDoc] = []
     scanned_files = 0
@@ -991,14 +1422,83 @@ def main() -> None:
             status = "[dry-run] Would write" if args.dry_run else "Wrote"
             print(f"{status}: {output_path.relative_to(root)}")
 
+    source_to_api_page = {
+        str(file_doc.source_path.resolve()): file_doc.output_relative for file_doc in file_docs
+    }
+
+    library_index = build_ax_library_index(file_docs)
+    library_pages: Dict[str, Path] = {}
+    changed_library_files = 0
+    expected_library_files: set[str] = set()
+    for library_name, entries in library_index.items():
+        output_relative = Path(args.libraries_subdir).joinpath(*library_name.split(".")).with_suffix(".md")
+        library_pages[library_name] = output_relative
+        output_path = docs_dir / output_relative
+        expected_library_files.add(str(output_path.resolve()))
+        content = render_library_page(root, library_name, output_relative, entries)
+        if write_if_changed(output_path, content, args.dry_run):
+            changed_library_files += 1
+            status = "[dry-run] Would write" if args.dry_run else "Wrote"
+            print(f"{status}: {output_path.relative_to(root)}")
+
+    libraries_index_relative = Path(args.libraries_subdir) / "index.md"
+    libraries_index_path = docs_dir / libraries_index_relative
+    expected_library_files.add(str(libraries_index_path.resolve()))
+    libraries_index_content = render_libraries_index(library_index, library_pages, args.libraries_subdir)
+    if write_if_changed(libraries_index_path, libraries_index_content, args.dry_run):
+        changed_library_files += 1
+        status = "[dry-run] Would write" if args.dry_run else "Wrote"
+        print(f"{status}: {libraries_index_path.relative_to(root)}")
+
+    remove_stale_generated_markdown(libraries_docs_dir, expected_library_files, args.dry_run)
+
+    hook_occurrences = collect_hook_occurrences(source_dirs)
+    grouped_hooks = group_hook_occurrences(hook_occurrences)
+    changed_hook_files = 0
+    expected_hook_files: set[str] = set()
+
+    hooks_index_relative = Path(args.hooks_subdir) / "index.md"
+    hooks_index_path = docs_dir / hooks_index_relative
+    expected_hook_files.add(str(hooks_index_path.resolve()))
+    hooks_index_content = render_hooks_overview(grouped_hooks, args.hooks_subdir)
+    if write_if_changed(hooks_index_path, hooks_index_content, args.dry_run):
+        changed_hook_files += 1
+        status = "[dry-run] Would write" if args.dry_run else "Wrote"
+        print(f"{status}: {hooks_index_path.relative_to(root)}")
+
+    for kind in HOOK_KIND_ORDER:
+        output_relative = Path(args.hooks_subdir) / f"{kind}.md"
+        output_path = docs_dir / output_relative
+        expected_hook_files.add(str(output_path.resolve()))
+        content = render_hook_kind_page(
+            root=root,
+            kind=kind,
+            grouped_by_name=grouped_hooks[kind],
+            source_to_api_page=source_to_api_page,
+            hooks_subdir=args.hooks_subdir,
+        )
+        if write_if_changed(output_path, content, args.dry_run):
+            changed_hook_files += 1
+            status = "[dry-run] Would write" if args.dry_run else "Wrote"
+            print(f"{status}: {output_path.relative_to(root)}")
+
+    remove_stale_generated_markdown(hooks_docs_dir, expected_hook_files, args.dry_run)
+
     api_index_path = api_dir / "index.md"
-    api_index_content = render_api_index(file_docs, args.api_subdir)
+    api_index_content = render_api_index(
+        file_docs=file_docs,
+        api_subdir=args.api_subdir,
+        libraries_subdir=args.libraries_subdir,
+        hooks_subdir=args.hooks_subdir,
+    )
     if write_if_changed(api_index_path, api_index_content, args.dry_run):
         status = "[dry-run] Would write" if args.dry_run else "Wrote"
         print(f"{status}: {api_index_path.relative_to(root)}")
 
     root_pages = collect_root_pages(docs_dir)
     manuals_nav_lines = build_manuals_nav_lines(manuals_docs_dir, args.manuals_subdir)
+    libraries_nav_lines = build_libraries_nav_lines(library_pages, args.libraries_subdir)
+    hooks_nav_lines = build_hooks_nav_lines(args.hooks_subdir)
     logo_relative = "assets/images/parallax-logo.png"
     favicon_relative = "assets/images/favicon.png"
     extra_css_relative = "assets/stylesheets/extra.css"
@@ -1013,8 +1513,12 @@ def main() -> None:
         site_description=args.site_description,
         root_pages=root_pages,
         manuals_nav_lines=manuals_nav_lines,
+        libraries_nav_lines=libraries_nav_lines,
+        hooks_nav_lines=hooks_nav_lines,
         file_docs=file_docs,
         api_subdir=args.api_subdir,
+        libraries_subdir=args.libraries_subdir,
+        hooks_subdir=args.hooks_subdir,
         logo_path=logo_path,
         favicon_path=favicon_path,
         extra_css_path=extra_css_path,
@@ -1024,10 +1528,12 @@ def main() -> None:
         print(f"{status}: {mkdocs_path.relative_to(root)}")
 
     print(
-        "Done. Scanned {} Lua files, documented {} files, changed {} API pages{}.".format(
+        "Done. Scanned {} Lua files, documented {} files, changed {} API pages, {} library pages, {} hook pages{}.".format(
             scanned_files,
             len(file_docs),
             changed_api_files,
+            changed_library_files,
+            changed_hook_files,
             " (dry-run)" if args.dry_run else "",
         )
     )
