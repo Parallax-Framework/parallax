@@ -172,7 +172,7 @@ ax.command:Add("CharTakeFlags", {
 
             client:DermaStringRequest("Enter flags", "Enter the flags to take from the character.", flagsToTake, function(text)
                 if ( text == "" ) then return end
-                
+
                 target:TakeFlags(text)
             end)
 
