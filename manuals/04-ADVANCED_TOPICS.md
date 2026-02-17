@@ -179,7 +179,7 @@ ax.net:Start(nil, "my_message", arg1, arg2, {
 
 ```lua
 -- Client or Server: Receive message
-ax.net.Receive("my_message", function(arg1, arg2, arg3)
+ax.net:Hook("my_message", function(arg1, arg2, arg3)
     print("Received:", arg1, arg2, arg3)
 end)
 ```
@@ -537,7 +537,7 @@ local function OpenCustomMenu()
 end
 
 -- Call from server command
-ax.net.Receive("open_menu", OpenCustomMenu)
+ax.net:Hook("open_menu", OpenCustomMenu)
 ```
 
 ---

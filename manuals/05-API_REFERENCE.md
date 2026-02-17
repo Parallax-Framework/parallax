@@ -9,7 +9,6 @@ Complete reference for all Parallax Framework functions and methods.
 - [`ax.character`](#axcharacter)
 - [`ax.inventory`](#axinventory)
 - [`ax.command`](#axcommand)
-- [`ax.module`](#axmodule)
 - [`ax.net`](#axnet)
 - [`ax.config`](#axconfig)
 - [`ax.util`](#axutil)
@@ -21,7 +20,9 @@ Complete reference for all Parallax Framework functions and methods.
 
 ### `ax.hook:Register(name)`
 
-Register a new hook type.
+Register a new hook type, this allows to create groups of hook families.
+
+For example, registering "SCHEMA" allows to create hooks like "SCHEMA:PlayerSpawn" or "SCHEMA:CharacterCreated". This is purely organizational and has no functional effect other than grouping hooks together. You can also create custom hook types for your own systems, for example "INVENTORY" for inventory-related hooks or "FACTION" for faction-related hooks.
 
 **Parameters:**
 
@@ -640,48 +641,6 @@ local help = ax.command:Help("pm")
 
 ---
 
-## `ax.module`
-
-### Module Methods
-
-#### `MODULE:Initialize()`
-
-Called when module loads.
-
-**Parameters:**
-
-- None
-
-**Returns:**
-
-- None
-
-#### `MODULE:OnSchemaLoaded()`
-
-Called when schema finishes loading.
-
-**Parameters:**
-
-- None
-
-**Returns:**
-
-- None
-
-#### `MODULE:OnPlayerSpawn(player)`
-
-Called when player spawns.
-
-**Parameters:**
-
-- `player` (Player): Player entity
-
-**Returns:**
-
-- None
-
----
-
 ## `ax.net`
 
 ### `ax.net:Start(recipients, message, ...)`
@@ -713,7 +672,7 @@ ax.net:StartPVS(position, "my_message", arg1, arg2)
 ax.net:Start({client1, client2}, "my_message", arg1, arg2)
 ```
 
-### `ax.net:Receive(message, callback)`
+### `ax.net:Hook(message, callback)`
 
 Register network message handler.
 
@@ -728,7 +687,7 @@ Register network message handler.
 
 **Example:**
 ```lua
-ax.net.Receive("my_message", function(arg1, arg2)
+ax.net:Hook("my_message", function(arg1, arg2)
     print("Received:", arg1, arg2)
 end)
 ```
