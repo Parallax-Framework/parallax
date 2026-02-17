@@ -7,7 +7,7 @@
 
 @media screen and (min-width: 76.25em) {
   .md-sidebar--primary {
-    width: 18rem;
+    width: 22rem;
   }
 
   .md-grid {
@@ -15,14 +15,73 @@
   }
 }
 
-.md-nav__title {
-  letter-spacing: 0.02em;
-  font-weight: 700;
+/* Sidebar tree modernization */
+.md-sidebar--primary .md-sidebar__scrollwrap {
+  padding: 0.28rem 0.08rem 0.5rem;
 }
 
-.md-nav__link--active {
-  font-weight: 700;
+.md-sidebar--primary .md-nav--primary > .md-nav__list {
+  padding: 0.06rem;
+  border-radius: 0;
+  border: none;
+  background: transparent;
+  box-shadow: none;
 }
+
+.md-sidebar--primary .md-nav--primary > .md-nav__title {
+  display: none;
+}
+
+.md-sidebar--primary .md-nav__title {
+  margin: 0 0 0.16rem;
+  padding: 0.24rem 0.36rem;
+  border-radius: 0.45rem;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: color-mix(in srgb, var(--md-accent-fg-color) 54%, #ffffff 46%);
+  background: color-mix(in srgb, var(--md-primary-fg-color) 14%, transparent);
+}
+
+.md-sidebar--primary .md-nav__item {
+  margin: 0.02rem 0;
+}
+
+.md-sidebar--primary .md-nav__link {
+  margin: 0;
+  padding: 0.22rem 0.32rem;
+  border-radius: 0.48rem;
+  font-weight: 500;
+  transition: background-color 130ms ease, color 130ms ease, transform 130ms ease;
+}
+
+.md-sidebar--primary .md-nav__link:hover {
+  color: #ffffff;
+  background: color-mix(in srgb, var(--md-accent-fg-color) 16%, transparent);
+  transform: translateX(1px);
+}
+
+.md-sidebar--primary .md-nav__item--active > .md-nav__link,
+.md-sidebar--primary .md-nav__link--active {
+  font-weight: 700;
+  color: #ffffff;
+  background: color-mix(in srgb, var(--md-accent-fg-color) 22%, transparent);
+  box-shadow: inset 2px 0 0 color-mix(in srgb, var(--md-accent-fg-color) 74%, #ffffff 26%);
+}
+
+.md-sidebar--primary .md-nav__item .md-nav {
+  margin: 0.06rem 0 0.1rem 0.22rem;
+  padding: 0.06rem 0 0.06rem 0.34rem;
+  border-left: 1px solid color-mix(in srgb, var(--md-accent-fg-color) 24%, transparent);
+}
+
+.md-sidebar--primary .md-nav__item .md-nav .md-nav {
+  margin-left: 0.18rem;
+  padding-left: 0.3rem;
+  border-left-color: color-mix(in srgb, var(--md-accent-fg-color) 18%, transparent);
+}
+
 
 .md-search__input {
   border-radius: 0.5rem;
