@@ -22,7 +22,9 @@ Complete reference for all Parallax Framework functions and methods.
 
 Register a new hook type, this allows to create groups of hook families.
 
-For example, registering "SCHEMA" allows to create hooks like "SCHEMA:PlayerSpawn" or "SCHEMA:CharacterCreated". This is purely organizational and has no functional effect other than grouping hooks together. You can also create custom hook types for your own systems, for example "INVENTORY" for inventory-related hooks or "FACTION" for faction-related hooks.
+For example, registering `SCHEMA` allows to create hooks like `SCHEMA:PlayerSpawn` or `SCHEMA:CharacterCreated`. This is purely organizational and has no functional effect other than grouping hooks together. You can also create custom hook types for your own systems, for example "INVENTORY" for inventory-related hooks or "FACTION" for faction-related hooks.
+
+***SCHEMA is automatically registered by the framework, so you don't need to register it manually unless you want to, if you do register it manually it will just be ignored since it already exists.***
 
 **Parameters:**
 
