@@ -190,22 +190,26 @@ Now that you have Parallax installed, continue with:
 ### Common Issues
 
 **Schema fails to load:**
+
 - Verify `gamemode/init.lua` and `gamemode/cl_init.lua` call `DeriveGamemode("parallax")`
 - Check console for Lua errors
 - Ensure `schema/boot.lua` exists and defines `SCHEMA.name`
 
 **Database connection fails:**
+
 - Verify database credentials in `sv_database.lua`
 - Ensure MySQL server is running
 - Check firewall settings
 - Test connection with MySQL client
 
 **Items not loading:**
+
 - Check file naming conventions (use `sh_` prefix for shared items)
 - Verify files are in correct directory (`schema/items/`)
 - Check console for item initialization messages
 
 **Hooks not firing:**
+
 - Ensure hook is registered with `ax.hook:Register("SCHEMA")`
 - Check function name matches hook signature
 - Verify file is included in correct directory (`schema/hooks/`)

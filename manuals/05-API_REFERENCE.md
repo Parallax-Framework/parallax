@@ -24,9 +24,11 @@ Complete reference for all Parallax Framework functions and methods.
 Register a new hook type.
 
 **Parameters:**
+
 - `name` (string): Hook type name
 
 **Returns:**
+
 - None
 
 **Example:**
@@ -43,9 +45,11 @@ ax.hook:Register("SCHEMA")
 Get faction by ID, index, or name.
 
 **Parameters:**
+
 - `identifier` (string|number): Faction identifier
 
 **Returns:**
+
 - (table|nil): Faction table or nil
 
 **Example:**
@@ -59,10 +63,12 @@ local faction = ax.faction:Get(1)
 Check if player can join faction.
 
 **Parameters:**
+
 - `identifier` (string|number): Faction identifier
 - `client` (Player): Player entity
 
 **Returns:**
+
 - (boolean): Can join
 - (string|nil): Reason if denied
 
@@ -79,9 +85,11 @@ end
 Get all factions.
 
 **Parameters:**
+
 - None
 
 **Returns:**
+
 - (table): Table of all factions
 
 **Example:**
@@ -97,9 +105,11 @@ end
 Check if faction exists.
 
 **Parameters:**
+
 - `identifier` (string|number): Faction identifier
 
 **Returns:**
+
 - (boolean): Faction exists
 
 **Example:**
@@ -118,9 +128,11 @@ end
 Get item definition or instance.
 
 **Parameters:**
+
 - `identifier` (string|number): Item class or instance ID
 
 **Returns:**
+
 - (table|nil): Item definition/instance or nil
 
 **Example:**
@@ -134,12 +146,14 @@ local itemInstance = ax.item:Get(123)
 Spawn item in world (server).
 
 **Parameters:**
+
 - `class` (string): Item class
 - `position` (Vector): Spawn position
 - `angle` (Angle): Spawn angle
 - `callback` (function): Completion callback
 
 **Returns:**
+
 - None
 
 **Example:**
@@ -154,12 +168,14 @@ end)
 Transfer item between inventories.
 
 **Parameters:**
+
 - `item` (table): Item instance
 - `fromInv` (table|number): Source inventory
 - `toInv` (table|number): Destination inventory
 - `callback` (function): Completion callback
 
 **Returns:**
+
 - (boolean): Success
 - (string|nil): Error message
 
@@ -177,9 +193,11 @@ end)
 Get actions for item class.
 
 **Parameters:**
+
 - `class` (string): Item class
 
 **Returns:**
+
 - (table): Table of actions
 
 **Example:**
@@ -199,9 +217,11 @@ end
 Get character by ID.
 
 **Parameters:**
+
 - `id` (number): Character ID
 
 **Returns:**
+
 - (table|nil): Character table or nil
 
 **Example:**
@@ -217,10 +237,12 @@ end
 Register a character variable.
 
 **Parameters:**
+
 - `name` (string): Variable name
 - `data` (table): Variable configuration
 
 **Returns:**
+
 - None
 
 **Example:**
@@ -238,6 +260,7 @@ ax.character:RegisterVar("description", {
 Get character ID.
 
 **Returns:**
+
 - (number): Character ID
 
 #### `character:GetName()`
@@ -245,6 +268,7 @@ Get character ID.
 Get character name.
 
 **Returns:**
+
 - (string): Character name
 
 #### `character:SetName(name, options)`
@@ -252,10 +276,12 @@ Get character name.
 Set character name.
 
 **Parameters:**
+
 - `name` (string): New name
 - `options` (table): Options (bNoNetworking, bNoDBUpdate, recipients)
 
 **Returns:**
+
 - None
 
 #### `character:GetDescription(fallback)`
@@ -263,9 +289,11 @@ Set character name.
 Get character description.
 
 **Parameters:**
+
 - `fallback` (string): Fallback value
 
 **Returns:**
+
 - (string): Character description
 
 #### `character:SetDescription(description, options)`
@@ -273,10 +301,12 @@ Get character description.
 Set character description.
 
 **Parameters:**
+
 - `description` (string): New description
 - `options` (table): Options
 
 **Returns:**
+
 - None
 
 #### `character:GetFaction()`
@@ -284,6 +314,7 @@ Set character description.
 Get character faction ID.
 
 **Returns:**
+
 - (number): Faction ID
 
 #### `character:SetFaction(faction, options)`
@@ -291,10 +322,12 @@ Get character faction ID.
 Set character faction.
 
 **Parameters:**
+
 - `faction` (number): Faction ID
 - `options` (table): Options
 
 **Returns:**
+
 - None
 
 #### `character:GetInventoryID()`
@@ -302,6 +335,7 @@ Set character faction.
 Get character inventory ID.
 
 **Returns:**
+
 - (number): Inventory ID
 
 #### `character:GetOwner()`
@@ -309,6 +343,7 @@ Get character inventory ID.
 Get player who owns character.
 
 **Returns:**
+
 - (Player): Player entity
 
 #### `character:GetVar(name, fallback)`
@@ -316,10 +351,12 @@ Get player who owns character.
 Get character variable.
 
 **Parameters:**
+
 - `name` (string): Variable name
 - `fallback` (any): Fallback value
 
 **Returns:**
+
 - (any): Variable value
 
 #### `character:SetVar(name, value, options)`
@@ -327,11 +364,13 @@ Get character variable.
 Set character variable.
 
 **Parameters:**
+
 - `name` (string): Variable name
 - `value` (any): Variable value
 - `options` (table): Options
 
 **Returns:**
+
 - None
 
 ---
@@ -343,9 +382,11 @@ Set character variable.
 Get inventory by ID.
 
 **Parameters:**
+
 - `id` (number): Inventory ID
 
 **Returns:**
+
 - (table|nil): Inventory table or nil
 
 **Example:**
@@ -361,10 +402,12 @@ end
 Create new inventory (server).
 
 **Parameters:**
+
 - `data` (table): Inventory properties
 - `callback` (function): Completion callback
 
 **Returns:**
+
 - None
 
 **Example:**
@@ -381,6 +424,7 @@ end)
 Get inventory ID.
 
 **Returns:**
+
 - (number): Inventory ID
 
 #### `inventory:GetWeight()`
@@ -388,6 +432,7 @@ Get inventory ID.
 Get current weight.
 
 **Returns:**
+
 - (number): Weight in kg
 
 #### `inventory:GetMaxWeight()`
@@ -395,6 +440,7 @@ Get current weight.
 Get maximum weight.
 
 **Returns:**
+
 - (number): Maximum weight in kg
 
 #### `inventory:AddItem(class, data, callback)`
@@ -402,11 +448,13 @@ Get maximum weight.
 Add item to inventory.
 
 **Parameters:**
+
 - `class` (string): Item class
 - `data` (table): Item data
 - `callback` (function): Completion callback
 
 **Returns:**
+
 - (boolean): Success
 - (string|nil): Error message
 
@@ -415,9 +463,11 @@ Add item to inventory.
 Remove item from inventory.
 
 **Parameters:**
+
 - `itemID` (number): Item ID
 
 **Returns:**
+
 - (boolean): Success
 - (string|nil): Error message
 
@@ -426,9 +476,11 @@ Remove item from inventory.
 Check if client can see inventory.
 
 **Parameters:**
+
 - `client` (Player): Player entity
 
 **Returns:**
+
 - (boolean): Client can see inventory
 
 #### `inventory:AddReceiver(client)`
@@ -436,9 +488,11 @@ Check if client can see inventory.
 Add receiver to inventory.
 
 **Parameters:**
+
 - `client` (Player): Player entity
 
 **Returns:**
+
 - None
 
 #### `inventory:RemoveReceiver(client)`
@@ -446,9 +500,11 @@ Add receiver to inventory.
 Remove receiver from inventory.
 
 **Parameters:**
+
 - `client` (Player): Player entity
 
 **Returns:**
+
 - None
 
 #### `inventory:GetReceivers()`
@@ -456,6 +512,7 @@ Remove receiver from inventory.
 Get all receivers.
 
 **Returns:**
+
 - (table): Table of players
 
 ---
@@ -467,10 +524,12 @@ Get all receivers.
 Register a new command.
 
 **Parameters:**
+
 - `name` (string): Command name
 - `def` (table): Command definition
 
 **Returns:**
+
 - None
 
 **Example:**
@@ -488,11 +547,13 @@ ax.command:Add("test", {
 Execute a command.
 
 **Parameters:**
+
 - `caller` (Entity): Player or console
 - `name` (string): Command name
 - `rawArgs` (string): Raw argument string
 
 **Returns:**
+
 - (boolean): Success
 - (string): Result/error message
 
@@ -506,9 +567,11 @@ local success, result = ax.command:Run(client, "pm", "player1 hello")
 Find command by name.
 
 **Parameters:**
+
 - `name` (string): Command name
 
 **Returns:**
+
 - (table|nil): Command table or nil
 
 ### `ax.command:FindAll(name)`
@@ -516,9 +579,11 @@ Find command by name.
 Find all matching commands.
 
 **Parameters:**
+
 - `name` (string): Partial command name
 
 **Returns:**
+
 - (table): Table of matching commands
 
 ### `ax.command:FindClosest(name)`
@@ -526,9 +591,11 @@ Find all matching commands.
 Get closest matching command.
 
 **Parameters:**
+
 - `name` (string): Partial command name
 
 **Returns:**
+
 - (table|nil): Command table or nil
 
 ### `ax.command:HasAccess(client, command)`
@@ -536,10 +603,12 @@ Get closest matching command.
 Check if client can use command.
 
 **Parameters:**
+
 - `client` (Player): Player entity
 - `command` (table): Command table
 
 **Returns:**
+
 - (boolean): Can use
 - (string|nil): Reason if denied
 
@@ -548,6 +617,7 @@ Check if client can use command.
 Get all commands.
 
 **Returns:**
+
 - (table): Table of all commands
 
 ### `ax.command:Help(name)`
@@ -555,9 +625,11 @@ Get all commands.
 Generate help string for command.
 
 **Parameters:**
+
 - `name` (string): Command name
 
 **Returns:**
+
 - (string): Help string
 
 **Example:**
@@ -577,9 +649,11 @@ local help = ax.command:Help("pm")
 Called when module loads.
 
 **Parameters:**
+
 - None
 
 **Returns:**
+
 - None
 
 #### `MODULE:OnSchemaLoaded()`
@@ -587,9 +661,11 @@ Called when module loads.
 Called when schema finishes loading.
 
 **Parameters:**
+
 - None
 
 **Returns:**
+
 - None
 
 #### `MODULE:OnPlayerSpawn(player)`
@@ -597,9 +673,11 @@ Called when schema finishes loading.
 Called when player spawns.
 
 **Parameters:**
+
 - `player` (Player): Player entity
 
 **Returns:**
+
 - None
 
 ---
@@ -611,11 +689,13 @@ Called when player spawns.
 Start network message (server).
 
 **Parameters:**
+
 - `recipients` (nil|Player|table|Vector): Recipients (nil = all)
 - `message` (string): Message name
 - `...` (any): Message data
 
 **Returns:**
+
 - None
 
 **Example:**
@@ -638,10 +718,12 @@ ax.net:Start({client1, client2}, "my_message", arg1, arg2)
 Register network message handler.
 
 **Parameters:**
+
 - `message` (string): Message name
 - `callback` (function): Handler function
 
 **Returns:**
+
 - None
 
 **Example:**
@@ -660,10 +742,12 @@ end)
 Set configuration value.
 
 **Parameters:**
+
 - `key` (string): Configuration key
 - `value` (any): Configuration value
 
 **Returns:**
+
 - None
 
 **Example:**
@@ -677,10 +761,12 @@ ax.config:Set("economy.starting_money", 500)
 Get configuration value.
 
 **Parameters:**
+
 - `key` (string): Configuration key
 - `fallback` (any): Fallback value
 
 **Returns:**
+
 - (any): Configuration value
 
 **Example:**
@@ -698,9 +784,11 @@ local maxPlayers = ax.config:Get("server.max_players", 32)
 Print success message (green).
 
 **Parameters:**
+
 - `message` (string): Message
 
 **Returns:**
+
 - None
 
 ### `ax.util:PrintWarning(message)`
@@ -708,9 +796,11 @@ Print success message (green).
 Print warning message (yellow).
 
 **Parameters:**
+
 - `message` (string): Message
 
 **Returns:**
+
 - None
 
 ### `ax.util:PrintError(message)`
@@ -718,9 +808,11 @@ Print warning message (yellow).
 Print error message (red).
 
 **Parameters:**
+
 - `message` (string): Message
 
 **Returns:**
+
 - None
 
 ### `ax.util:PrintDebug(message, color)`
@@ -728,10 +820,12 @@ Print error message (red).
 Print debug message (white).
 
 **Parameters:**
+
 - `message` (string): Message
 - `color` (Color): Text color
 
 **Returns:**
+
 - None
 
 ### `ax.util:FindPlayer(target)`
@@ -739,9 +833,11 @@ Print debug message (white).
 Find player by name or SteamID.
 
 **Parameters:**
+
 - `target` (string): Search term
 
 **Returns:**
+
 - (Player|nil): Found player or nil
 
 ### `ax.util:FindPlayers(target)`
@@ -749,9 +845,11 @@ Find player by name or SteamID.
 Find all matching players.
 
 **Parameters:**
+
 - `target` (string): Search term
 
 **Returns:**
+
 - (table): Table of matching players
 
 ### `ax.util:IsValidPlayer(entity)`
@@ -759,9 +857,11 @@ Find all matching players.
 Check if entity is valid player.
 
 **Parameters:**
+
 - `entity` (Entity): Entity to check
 
 **Returns:**
+
 - (boolean): Entity is valid player
 
 ### `ax.util:IncludeDirectory(directory, recursive, exclude, timeFilter)`
@@ -769,12 +869,14 @@ Check if entity is valid player.
 Include all files in directory.
 
 **Parameters:**
+
 - `directory` (string): Directory path
 - `recursive` (boolean): Include subdirectories
 - `exclude` (table): Files/directories to exclude
 - `timeFilter` (number): Only load files modified within timeFilter seconds
 
 **Returns:**
+
 - None
 
 **Example:**
@@ -790,10 +892,12 @@ ax.util:IncludeDirectory("schema/hooks", true, {
 Find string (case-insensitive partial match).
 
 **Parameters:**
+
 - `str` (string): String to search
 - `search` (string): Search term
 
 **Returns:**
+
 - (boolean): String contains search term
 
 ### `ax.util:TokenizeString(str)`
@@ -801,9 +905,11 @@ Find string (case-insensitive partial match).
 Tokenize string (respecting quotes).
 
 **Parameters:**
+
 - `str` (string): String to tokenize
 
 **Returns:**
+
 - (table): Table of tokens
 
 **Example:**
@@ -817,9 +923,11 @@ local tokens = ax.util:TokenizeString('say "hello world" arg2')
 Convert unique ID to display name.
 
 **Parameters:**
+
 - `id` (string): Unique ID
 
 **Returns:**
+
 - (string): Display name
 
 **Example:**
@@ -839,9 +947,11 @@ local name = ax.util:UniqueIDToName("weapon_pistol")
 Create SELECT query.
 
 **Parameters:**
+
 - `table` (string): Table name
 
 **Returns:**
+
 - (table): Query object
 
 #### `mysql:Insert(table)`
@@ -849,9 +959,11 @@ Create SELECT query.
 Create INSERT query.
 
 **Parameters:**
+
 - `table` (string): Table name
 
 **Returns:**
+
 - (table): Query object
 
 #### `mysql:Update(table)`
@@ -859,9 +971,11 @@ Create INSERT query.
 Create UPDATE query.
 
 **Parameters:**
+
 - `table` (string): Table name
 
 **Returns:**
+
 - (table): Query object
 
 #### `mysql:Delete(table)`
@@ -869,9 +983,11 @@ Create UPDATE query.
 Create DELETE query.
 
 **Parameters:**
+
 - `table` (string): Table name
 
 **Returns:**
+
 - (table): Query object
 
 ### Query Methods
@@ -881,10 +997,12 @@ Create DELETE query.
 Add WHERE clause.
 
 **Parameters:**
+
 - `column` (string): Column name
 - `value` (any): Value
 
 **Returns:**
+
 - (table): Query object (for chaining)
 
 #### `query:Insert(column, value)`
@@ -892,10 +1010,12 @@ Add WHERE clause.
 Add INSERT value.
 
 **Parameters:**
+
 - `column` (string): Column name
 - `value` (any): Value
 
 **Returns:**
+
 - (table): Query object (for chaining)
 
 #### `query:Update(column, value)`
@@ -903,10 +1023,12 @@ Add INSERT value.
 Add UPDATE value.
 
 **Parameters:**
+
 - `column` (string): Column name
 - `value` (any): Value
 
 **Returns:**
+
 - (table): Query object (for chaining)
 
 #### `query:Limit(count)`
@@ -914,9 +1036,11 @@ Add UPDATE value.
 Add LIMIT clause.
 
 **Parameters:**
+
 - `count` (number): Limit count
 
 **Returns:**
+
 - (table): Query object (for chaining)
 
 #### `query:Callback(callback)`
@@ -924,9 +1048,11 @@ Add LIMIT clause.
 Set callback function.
 
 **Parameters:**
+
 - `callback` (function): Callback function
 
 **Returns:**
+
 - (table): Query object (for chaining)
 
 **Example:**
@@ -949,9 +1075,11 @@ query:Execute()
 Execute query.
 
 **Parameters:**
+
 - None
 
 **Returns:**
+
 - None
 
 ---

@@ -9,12 +9,16 @@ If it works but violates this file, it still needs fixing.
 
 ### Indentation
 - **4 spaces**
+
 - **No tabs**
+
 - `end` is always on its own line
 
 ### Whitespace
 - Spaces **inside parentheses**
+
 - Spaces **around operators**
+
 - One statement per line
 
 ```lua

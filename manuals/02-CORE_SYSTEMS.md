@@ -296,6 +296,7 @@ ITEM:AddAction("drop", {
 ```
 
 **Common Actions:**
+
 - `drop` - Drop item to world
 - `use` - Use/consume item
 - `eat` - Eat food item
