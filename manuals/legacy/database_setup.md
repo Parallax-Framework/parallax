@@ -1,5 +1,5 @@
 
-# Database Setup Manual (Server Owners)
+# Database Setup
 
 This manual explains how to configure Parallax to use an external MySQL database for persistent data storage. By default, Parallax uses SQLite (built into Garry's Mod) which requires no configuration and works out of the box. However, you may want to use MySQL if you need to:
 
