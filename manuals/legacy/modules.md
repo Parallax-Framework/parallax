@@ -1,5 +1,4 @@
-
-# Parallax Modules
+# Modules
 
 This file documents how modules work in the Parallax gamemode framework. It's a compact, practical reference for contributors: where to place modules, how they're auto-loaded, lifecycle hooks, schema-level modules, examples, and best practices.
 
