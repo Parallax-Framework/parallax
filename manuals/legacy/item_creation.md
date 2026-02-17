@@ -1,5 +1,4 @@
-
-# Item Creation Manual (Schema Developers)
+# Item Creation
 
 This manual explains how to define items within your schema using Parallax. Items are content objects (weapons, consumables, resources, etc.) that can be registered, spawned, networked, and interacted with by players. Parallax provides a flexible item registration API, hot-reload support, and conventions for advanced features.
 
