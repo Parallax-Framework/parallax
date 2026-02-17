@@ -96,14 +96,14 @@ local function UpdateTracking(ent)
     -- Fire enter events
     for zoneId, zone in pairs(newPhysicalSet) do
         if ( !oldPhysicalSet[zoneId] ) then
-            hook.Run("ax.ZoneEntered", ent, zone)
+            hook.Run("OnZoneEntered", ent, zone)
         end
     end
 
     -- Fire exit events
     for zoneId, zone in pairs(oldPhysicalSet) do
         if ( !newPhysicalSet[zoneId] ) then
-            hook.Run("ax.ZoneExited", ent, zone)
+            hook.Run("OnZoneExited", ent, zone)
         end
     end
 
@@ -121,14 +121,14 @@ local function UpdateTracking(ent)
     -- Fire seen events
     for zoneId, zone in pairs(newVisibleSet) do
         if ( !oldVisibleSet[zoneId] ) then
-            hook.Run("ax.ZoneSeen", ent, zone)
+            hook.Run("OnZoneSeen", ent, zone)
         end
     end
 
     -- Fire unseen events
     for zoneId, zone in pairs(oldVisibleSet) do
         if ( !newVisibleSet[zoneId] ) then
-            hook.Run("ax.ZoneUnseen", ent, zone)
+            hook.Run("OnZoneUnseen", ent, zone)
         end
     end
 
@@ -156,7 +156,7 @@ local function UpdateTracking(ent)
             state.hysteresis.candidate = nil
             state.hysteresis.since = 0
 
-            hook.Run("ax.ZoneChanged", ent, oldDominant, newDominant)
+            hook.Run("OnZoneChanged", ent, oldDominant, newDominant)
         end
     else
         -- Same dominant, reset hysteresis
