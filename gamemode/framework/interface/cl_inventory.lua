@@ -298,7 +298,9 @@ function PANEL:PopulateItems()
     -- TODO: Allow pressing categories to collapse/expand them
     -- TODO: Implement search/filter functionality
     -- TODO: Support drag-and-drop for item management (e.g., moving to hotbar, equipping)
+    -- TODO: Add support for inventory tabs which would be used for things like bags/backpacks or different storage containers, etc. Drag and drop items between tabs to move them. This would also be used for things like crafting where you have a separate crafting tab that you can move items into to craft with, etc. or if you want to move things from your inventory to a container in the world, etc. Though storage containers still need to be implemented in the framework before we can do that, but it would be a good idea to design the inventory interface with that in mind from the start.
     -- TODO: Add pagination for large inventories
+    -- TODO: Replace the representative item feature with a more robust system that can handle cases where items in the same stack have different appearances or actions (e.g., partially used items, items with durability, etc.)
 
     -- Organize items by category first, with stacking support
     local categorizedItems = {}
