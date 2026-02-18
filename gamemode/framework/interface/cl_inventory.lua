@@ -9,7 +9,17 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
--- TODO: Rewrite entire inventory interface, this is complete chaos
+-- TODO: Rewrite entire inventory interface, this is complete chaos. split into multiple files like "cl_inventory.lua" for main panel, "cl_inventory_item.lua" for item rows, "cl_inventory_info.lua" for info panel, etc.
+
+-- TODO: Make this into a util function in case we want to use it for other things like weapon inspection or character preview in character menu, etc.
+local function GetDesiredFov()
+    local conVar = GetConVar("fov_desired")
+    if ( conVar ) then
+        return conVar:GetInt()
+    end
+
+    return 90
+end
 
 local PANEL = {}
 
@@ -98,16 +108,6 @@ function PANEL:Init()
     self.previewState = {}
 
     self:PopulateItems()
-end
-
-local function GetDesiredFov()
-    local conVar = GetConVar("fov_desired")
-
-    if ( conVar ) then
-        return conVar:GetInt()
-    end
-
-    return 90
 end
 
 function PANEL:SetPreviewActive(active)
