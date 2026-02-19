@@ -34,3 +34,9 @@ LANG["config.animations.ik.help"] = "Если включено, ноги игр�
 LANG["category.animations"] = "Анимации"
 
 ax.localization:Register("ru", LANG)
+
+LANG["config.animations.ik"] = "Cinemática Inversa (IK)"
+LANG["config.animations.ik.help"] = "Cuando está habilitado, los pies del jugador se ajustarán al terreno irregular para un movimiento más realista."
+LANG["category.animations"] = "Animaciones"
+
+ax.localization:Register("es", LANG)
