@@ -191,6 +191,33 @@ ax.localization:Register("ru", {
     ["option.thirdperson.desired.lerp.fov.help"] = "Скорость интерполяции для желаемого угла обзора камеры от третьего лица. При меньших значениях скорость интерполяции будет более плавной, но и реакция будет медленнее. Установите значение 0, чтобы отключить интерполяцию."
 })
 
+ax.localization:Register("es", {
+    ["category.camera"] = "Cámara",
+    ["subcategory.thirdperson"] = "Tercera Persona",
+    ["config.thirdperson"] = "Habilitar Tercera Persona",
+    ["config.thirdperson.help"] = "Si el servidor permite o no la funcionalidad de cámara en tercera persona.",
+    ["option.thirdperson"] = "Habilitar Tercera Persona",
+    ["option.thirdperson.help"] = "Alternar el modo de cámara en tercera persona.",
+    ["option.thirdperson.x"] = "Desplazamiento X",
+    ["option.thirdperson.x.help"] = "Desplazamiento X para la cámara en tercera persona.",
+    ["option.thirdperson.y"] = "Desplazamiento Y",
+    ["option.thirdperson.y.help"] = "Desplazamiento Y para la cámara en tercera persona.",
+    ["option.thirdperson.z"] = "Desplazamiento Z",
+    ["option.thirdperson.z.help"] = "Desplazamiento Z para la cámara en tercera persona.",
+    ["option.thirdperson.follow.head"] = "Seguir Cabeza",
+    ["option.thirdperson.follow.head.help"] = "Hacer que la cámara en tercera persona siga los movimientos de la cabeza del modelo del jugador.",
+    ["option.thirdperson.follow.angles"] = "Seguir Ángulos",
+    ["option.thirdperson.follow.angles.help"] = "Hacer que la cámara en tercera persona siga la dirección de la mira del jugador en lugar de los ángulos de vista.",
+    ["option.thirdperson.follow.fov"] = "Seguir Campo de Visión",
+    ["option.thirdperson.follow.fov.help"] = "Hacer que el FOV de la cámara en tercera persona se calcule en función de la distancia desde el punto final del rastro hasta el jugador.",
+    ["option.thirdperson.desired.lerp.pos"] = "Velocidad de Interpolación de Posición Deseada",
+    ["option.thirdperson.desired.lerp.pos.help"] = "Velocidad de interpolación para la posición deseada de la cámara en tercera persona. Valores más bajos serán más suaves pero también más lentos para responder. Establezca en 0 para desactivar la interpolación.",
+    ["option.thirdperson.desired.lerp.angle"] = "Velocidad de Interpolación de Ángulo Deseado",
+    ["option.thirdperson.desired.lerp.angle.help"] = "Velocidad de interpolación para el ángulo deseado de la cámara en tercera persona. Valores más bajos serán más suaves pero también más lentos para responder. Establezca en 0 para desactivar la interpolación.",
+    ["option.thirdperson.desired.lerp.fov"] = "Velocidad de Interpolación de FOV Deseado",
+    ["option.thirdperson.desired.lerp.fov.help"] = "Velocidad de interpolación para el FOV deseado de la cámara en tercera persona. Valores más bajos serán más suaves pero también más lentos para responder. Establezca en 0 para desactivar la interpolación."
+})
+
 if ( SERVER ) then return end
 
 local FIXED_RADIUS = 6

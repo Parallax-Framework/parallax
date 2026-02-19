@@ -55,6 +55,14 @@ ax.localization:Register("ru", {
     ["option.curvy.edge_fade"] = "Исчезновение Краев"
 })
 
+ax.localization:Register("es", {
+    ["category.visual"] = "Visual",
+    ["subcategory.curvy"] = "Curvo",
+    ["option.curvy"] = "HUD Curvo",
+    ["option.curvy.intensity"] = "Curvatura",
+    ["option.curvy.edge_fade"] = "Desvanecimiento de Bordes"
+})
+
 ax.curvy = ax.curvy or {}
 ax.curvy.hud = ax.curvy.hud or nil
 ax.curvy.mat = ax.curvy.mat or nil
