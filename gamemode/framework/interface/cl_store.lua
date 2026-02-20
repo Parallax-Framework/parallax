@@ -60,7 +60,7 @@ function PANEL:SetType(type)
         local button = self.categories:Add("ax.button")
         button:Dock(TOP)
         button:DockMargin(0, 0, 0, ax.util:ScreenScaleH(4))
-        button:SetText(ax.localization:GetPhrase("category." .. v))
+        button:SetText("category." .. v)
 
         -- ["general"] = "General",
         -- ["category.general"] = "General",
@@ -329,7 +329,7 @@ function PANEL:SetKey(key)
     end
 
     self.key = key
-    self:SetText(ax.localization:GetPhrase(self.type .. "." .. key))
+    self:SetText(self.type .. "." .. key)
 
     if ( self.UpdateDisplay ) then
         self:UpdateDisplay()
@@ -396,8 +396,8 @@ function PANEL:UpdateDisplay()
     end
 
     local value = store:Get(self.key)
-    value = value == true and  ax.localization:GetPhrase("store.enabled") or ax.localization:GetPhrase("store.disabled")
-    self.value:SetText(string.format("<%s>", value))
+    value = value == true and ax.localization:GetPhrase("store.enabled") or ax.localization:GetPhrase("store.disabled")
+    self.value:SetText(string.format("<%s>", value), true)
 end
 
 function PANEL:DoClick()

@@ -23,7 +23,7 @@ function PANEL:Init()
     for k, v in SortedPairs(categories) do
         local button = self.categories:Add("ax.button")
         button:Dock(TOP)
-        button:SetText(ax.localization:GetPhrase("category." .. k))
+        button:SetText("category." .. k)
 
         self.categories:SetWide(math.max(self.categories:GetWide(), button:GetWide() + ax.util:ScreenScale(16)))
 
