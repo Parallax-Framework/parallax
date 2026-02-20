@@ -14,61 +14,6 @@ local PANEL = {}
 function PANEL:Init()
     self:Dock(FILL)
     self:InvalidateParent(true)
-
-    self.categories = self:Add("ax.scroller.vertical")
-    self.categories:SetSize(ax.util:ScreenScale(32), ScrH() - ax.util:ScreenScaleH(64))
-
-    local categories = {}
-    hook.Run("PopulateHelpCategories", categories)
-    for k, v in SortedPairs(categories) do
-        local button = self.categories:Add("ax.button")
-        button:Dock(TOP)
-        button:SetText("category." .. k)
-
-        self.categories:SetWide(math.max(self.categories:GetWide(), button:GetWide() + ax.util:ScreenScale(16)))
-
-        local tab = self:CreatePage()
-
-        button.tab = tab
-        button.tab.index = tab.index
-        button.category = k
-
-        button.DoClick = function()
-            -- Track last selected category
-            ax.gui.helpLastCategory = k
-            self:TransitionToPage(button.tab.index, ax.option:Get("tabFadeTime", 0.25))
-            self:Populate(k, tab)
-        end
-    end
-
-    -- Adjust all pages now that we know the final width of categories
-    for k, v in ipairs(self:GetPages()) do
-        v:SetXOffset(self.categories:GetWide() + ax.util:ScreenScale(32))
-        v:SetWidthOffset(-self.categories:GetWide() - ax.util:ScreenScale(32))
-    end
-end
-
-function PANEL:Populate(category, tab)
-    if ( tab.populated ) then return end
-    tab.populated = true
-
-    local buttons = {}
-    hook.Run("PopulateHelpCategories", buttons)
-
-    local data = buttons[category]
-    if ( istable(data) ) then
-        if ( isfunction(data.Populate) ) then
-            data:Populate(tab)
-        end
-
-        if ( data.OnClose ) then
-            self:CallOnRemove("ax.tab.help." .. data.name, function()
-                data.OnClose()
-            end)
-        end
-    elseif ( isfunction(data) ) then
-        data(tab)
-    end
 end
 
 function PANEL:Paint(width, height)
@@ -83,8 +28,16 @@ hook.Add("PopulateTabButtons", "ax.tab.help", function(buttons)
     buttons["help"] = {
         Populate = function(this, panel)
             panel:Add("ax.tab.help")
-        end
+        end,
+        Sections = {} -- populated by "PopulateHelpCategories" hook
     }
+
+    local categories = {}
+    hook.Run("PopulateHelpCategories", categories)
+
+    for k, v in SortedPairsByMemberValue(categories, "name") do
+        buttons["help"].Sections[k] = v
+    end
 end)
 
 hook.Add("PopulateHelpCategories", "ax.tab.help", function(categories)
