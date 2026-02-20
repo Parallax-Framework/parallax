@@ -270,11 +270,13 @@ function ax.theme:DrawGlassPanel(x, y, w, h, options)
     local fill = options.fill or glass.panel
     local border = options.border or glass.panelBorder
 
-    ax.render().Rect(x, y, w, h)
-        :Rad(radius)
-        :Flags(flags)
-        :Blur(blur)
-        :Draw()
+    if ( blur > 0 ) then
+        ax.render().Rect(x, y, w, h)
+            :Rad(radius)
+            :Flags(flags)
+            :Blur(blur)
+            :Draw()
+    end
 
     if ( fill ) then
         ax.render.Draw(radius, x, y, w, h, fill, flags)
@@ -296,11 +298,13 @@ function ax.theme:DrawGlassButton(x, y, w, h, options)
     local fill = options.fill or glass.button
     local border = options.border or glass.buttonBorder
 
-    ax.render().Rect(x, y, w, h)
-        :Rad(radius)
-        :Flags(flags)
-        :Blur(blur)
-        :Draw()
+    if ( blur > 0 ) then
+        ax.render().Rect(x, y, w, h)
+            :Rad(radius)
+            :Flags(flags)
+            :Blur(blur)
+            :Draw()
+    end
 
     if ( fill ) then
         ax.render.Draw(radius, x, y, w, h, fill, flags)
@@ -322,11 +326,13 @@ function ax.theme:DrawGlassBackdrop(x, y, w, h, options)
     local fill = options.fill or glass.overlay
     local border = options.border
 
-    ax.render().Rect(x, y, w, h)
-        :Rad(radius)
-        :Flags(flags)
-        :Blur(blur)
-        :Draw()
+    if ( blur > 0 ) then
+        ax.render().Rect(x, y, w, h)
+            :Rad(radius)
+            :Flags(flags)
+            :Blur(blur)
+            :Draw()
+    end
 
     if ( fill ) then
         ax.render.Draw(radius, x, y, w, h, fill, flags)
