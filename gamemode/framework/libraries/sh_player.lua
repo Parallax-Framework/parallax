@@ -132,8 +132,8 @@ function ax.player:SetVar(client, key, value, opts)
             local query = mysql:Update("ax_players")
                 query:Where("steamid64", client:SteamID64())
                 query:Update(varTable.field, util.TableToJSON(clientTable.axVars[key] or {}))
-                query:Callback(function(result)
-                    if ( result == false ) then
+                query:Callback(function(result, status)
+                    if ( status == false or result == false ) then
                         ax.util:PrintError("Failed to update player data var '" .. key .. "' in database for player SteamID64 " .. client:SteamID64())
                     end
                 end)
@@ -175,8 +175,8 @@ function ax.player:SetVar(client, key, value, opts)
             end
 
             query:Update(varTable.field, value)
-            query:Callback(function(result, status, lastID)
-                if ( result == false ) then
+            query:Callback(function(result, status)
+                if ( status == false or result == false ) then
                     ax.util:PrintError("Failed to update player variable '" .. key .. "' in database for player SteamID64 " .. client:SteamID64())
                 end
 
@@ -253,7 +253,23 @@ function ax.player:RegisterVar(key, data)
                     end
                 end
             else
-                ax.player:SetVar(client, key, args[1], args[2])
+                -- Support SetData(dataKey, value, opts) while preserving legacy SetData(dataKey, optsLikeValue).
+                if ( data.fieldType == ax.type.data and args[3] != nil ) then
+                    local passthrough = args[3]
+                    if ( !istable(passthrough) ) then
+                        passthrough = {}
+                    else
+                        passthrough = table.Copy(passthrough)
+                    end
+
+                    if ( passthrough.dataValue == nil ) then
+                        passthrough.dataValue = args[2]
+                    end
+
+                    ax.player:SetVar(client, key, args[1], passthrough)
+                else
+                    ax.player:SetVar(client, key, args[1], args[2])
+                end
             end
         end
     end
