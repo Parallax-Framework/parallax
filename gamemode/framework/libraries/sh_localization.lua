@@ -81,7 +81,24 @@ function ax.localization:GetPhrase(phrase, ...)
         return ""
     end
 
-    local langCode = CLIENT and GetConVar("gmod_language"):GetString() or "en"
+    local langCode
+    if ( CLIENT ) then
+        if ( istable(ax) and ax.config ) then
+            local cfg = ax.config:Get("language")
+            if ( isstring(cfg) and cfg ~= "" ) then
+                langCode = cfg
+            else
+                local cvar = GetConVar("gmod_language")
+                langCode = (cvar and cvar:GetString()) or "en"
+            end
+        else
+            local cvar = GetConVar("gmod_language")
+            langCode = (cvar and cvar:GetString()) or "en"
+        end
+    else
+        langCode = "en"
+    end
+
     local lang = ax.localization.langs[langCode]
     if ( !istable(lang) ) then
         lang = ax.localization.langs.en
