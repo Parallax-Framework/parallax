@@ -700,3 +700,11 @@ function GM:CanTool(client, tr, tool)
 
     return true
 end
+
+function GM:PlayerSpray(client)
+    return false
+end
+
+function GM:CanDrive(client, ent)
+    return client:IsAdmin()
+end
