@@ -1,5 +1,15 @@
 -- translated by MrMono for Parallax Framework
 ax.localization:Register("ru", {
+    -- General
+    ["yes"] = "Да",
+    ["no"] = "Нет",
+    ["ok"] = "ОК",
+    ["cancel"] = "Отмена",
+    ["apply"] = "Применить",
+    ["close"] = "Закрыть",
+    ["back"] = "Назад",
+    ["next"] = "Далее",
+
     -- Main Menu Translations
     ["mainmenu.category.00_faction"] = "Фракции",
     ["mainmenu.category.01_identity"] = "О Вас",
@@ -15,8 +25,8 @@ ax.localization:Register("ru", {
     ["tab.config"] = "Настройки",
     ["tab.help"] = "Помощь",
     ["tab.inventory"] = "Инвентарь",
-    ["tab.scoreboard"] = "Scoreboard",
-    ["tab.settings"] = "Settings",
+    ["tab.scoreboard"] = "Таблица",
+    ["tab.settings"] = "Настройки",
 
     -- Category Translations
     ["category.chat"] = "Чат",
@@ -25,6 +35,7 @@ ax.localization:Register("ru", {
     ["category.audio"] = "Аудио",
     ["category.interface"] = "Интерфейс",
     ["category.modules"] = "Модули",
+    ["category.schema"] = "Схема",
 
     -- Subcategory Translations
     ["subcategory.basic"] = "База",
@@ -48,6 +59,7 @@ ax.localization:Register("ru", {
     ["store.disabled"] = "Выкл",
 
     -- Config Translations
+
     --- Chat
     ---- Distances
     ["config.chat.ic.distance"] = "IC Дистанция",
@@ -60,17 +72,33 @@ ax.localization:Register("ru", {
 
     --- Gameplay
     ---- Interaction
-    ["config.hands.force.max"] = "Максимальная сила удара", -- in future
-    ["config.hands.force.max.throw"] = "Максимальная сила броска руками", -- in future
-    ["config.hands.max.carry"] = "Максимальный переносимый вес в руках", -- in future
-    ["config.hands.range.max"] = "Максимальное расстояние досягаемости рук", -- in future
+    ["config.hands.force.max"] = "Максимальная сила рук",
+    ["config.hands.force.max.throw"] = "Максимальная сила броска",
+    ["config.hands.max.carry"] = "Максимальный переносимый вес",
+    ["config.hands.range.max"] = "Максимальная дистанция досягаемости",
 
     ---- Inventory
     ["config.inventory.weight.max"] = "Максимальный Вес",
+    ["config.inventory.sync.delta"] = "Дельта-синхронизация инвентаря",
+    ["config.inventory.sync.debounce"] = "Задержка синхронизации инвентаря",
+    ["config.inventory.sync.full_refresh_interval"] = "Интервал полного обновления инвентаря",
+    ["config.inventory.action.rate_limit"] = "Ограничение частоты действий с инвентарем",
+    ["config.inventory.transfer.rate_limit"] = "Ограничение частоты передачи инвентаря",
+    ["config.inventory.pagination.default_page_size"] = "Размер страницы инвентаря по умолчанию",
+    ["config.inventory.pagination.max_page_size"] = "Максимальный размер страницы инвентаря",
+    ["config.inventory.restore.batch_size"] = "Размер пакета восстановления инвентаря",
+    ["config.inventory.sync.delta.help"] = "Включает дельта-синхронизацию инвентаря, чтобы отправлять только измененные предметы.",
+    ["config.inventory.sync.debounce.help"] = "Задержка в секундах перед отправкой обновлений синхронизации инвентаря.",
+    ["config.inventory.sync.full_refresh_interval.help"] = "Минимальное количество секунд между полными обновлениями, когда дельта-синхронизация включена.",
+    ["config.inventory.action.rate_limit.help"] = "Минимальная задержка в секундах между действиями с предметами для каждого игрока.",
+    ["config.inventory.transfer.rate_limit.help"] = "Минимальная задержка в секундах между запросами на передачу инвентаря для каждого игрока.",
+    ["config.inventory.pagination.default_page_size.help"] = "Количество стеков предметов на странице инвентаря по умолчанию.",
+    ["config.inventory.pagination.max_page_size.help"] = "Максимальное количество стеков предметов на одной странице.",
+    ["config.inventory.restore.batch_size.help"] = "Количество предметов мирового инвентаря, восстанавливаемых за один пакет синхронизации.",
 
     ---- Movement
     ["config.jump.power"] = "Сила Прыжка",
-    ["config.movement.bunnyhop.reduction"] = "Bunnyhop Speed Reduction",
+    ["config.movement.bunnyhop.reduction"] = "Снижение скорости при баннихопе",
     ["config.speed.run"] = "Скорость Бега",
     ["config.speed.walk"] = "Скорость Ходьбы",
     ["config.speed.walk.crouched"] = "Скорость В Приседание",
@@ -92,12 +120,13 @@ ax.localization:Register("ru", {
     ["config.autosave.interval"] = "Интервал Сохранения Персонажей",
     ["config.characters.max"] = "Максимально Персонажей",
 
-    --- Interface
-    ["config.interface.font.antialias"] = "Антиалиасинг шрифтов",
-    ["config.interface.font.multiplier"] = "Размер шрифтов",
-
-    ["config.interface.vignette.enabled"] = "Включить эффект виньетки",
-    ["config.interface.vignette.enabled.help"] = "Переключите эффект виньетки по краям экрана.",
+    -- Audio
+    ["config.proximity"] = "Включить голосовой чат по близости",
+    ["config.proximityMaxDistance"] = "Максимальная дистанция близости",
+    ["config.proximityMaxTraces"] = "Максимум трассировок близости",
+    ["config.proximityMaxVolume"] = "Максимальная громкость близости",
+    ["config.proximityMuteVolume"] = "Громкость при заглушении близости",
+    ["config.proximityUnMutedDistance"] = "Дистанция восстановления громкости",
 
     -- Options Translations
     --- Chat
@@ -105,7 +134,7 @@ ax.localization:Register("ru", {
     ["option.chat.sounds"] = "Включить звуки чата",
     ["option.chat.timestamps"] = "Время в чате",
     ["option.chat.randomized.verbs"] = "Использование Случайных Эмоутов",
-    ["option.chat.randomized.verbs.help"] = "При включении в сообщениях чата будут использоваться различные глаголы (восклицает, бормочет, кричит). При отключении используются глаголы по умолчанию (говорит, шепчет, кричит)..",
+    ["option.chat.randomized.verbs.help"] = "Если включено, в сообщениях чата будут использоваться разные глаголы (восклицает, бормочет, кричит). Если отключено, используются глаголы по умолчанию (говорит, шепчет, кричит).",
 
     ---- Position
     ["option.chat.x"] = "Позиция чата X",
@@ -122,10 +151,12 @@ ax.localization:Register("ru", {
     ["config.chat.ooc.color"] = "Цвет OOC Чата",
     ["config.chat.yell.color"] = "Цвет YELL Чата",
     ["config.chat.whisper.color"] = "Цвет WHISPER Чата",
+
     ---- Buttons
     ["option.button.delay.click"] = "Задержка нажатия кнопки",
 
     ---- Display
+    ["option.interface.scale"] = "Размер Интерфейса",
     ["option.interface.theme"] = "Тема интерфейса",
     ["option.interface.theme.help"] = "Выберите цветовую тему для интерфейса.",
     ["option.interface.glass.roundness"] = "Округлость стекла",
@@ -138,6 +169,7 @@ ax.localization:Register("ru", {
     ["option.interface.glass.borderOpacity.help"] = "Управляйте видимостью границ стеклянного интерфейса.",
     ["option.interface.glass.gradientOpacity"] = "Непрозрачность градиента стекла",
     ["option.interface.glass.gradientOpacity.help"] = "Настройте силу градиентных наложений на стеклянных панелях.",
+    ["option.performance.animations"] = "Включить анимацию интерфейса",
 
     -- Theme Names
     ["theme.dark"] = "Тёмная",
@@ -146,10 +178,6 @@ ax.localization:Register("ru", {
     ["theme.purple"] = "Фиолетовая",
     ["theme.green"] = "Зелёная",
     ["theme.red"] = "Красная",
-
-    ---- Display
-    ["option.interface.scale"] = "Размер Интерфейса",
-    ["option.performance.animations"] = "Включить анимацию интерфейса",
 
     ---- Fonts
     ["option.fontScaleGeneral"] = "Размер основного шрифта",
@@ -166,11 +194,27 @@ ax.localization:Register("ru", {
     ["option.notification.length.default"] = "Длина уведомления по умолчанию",
     ["option.notification.scale"] = "Размер уведомления",
     ["option.notification.sounds"] = "Включить звуки уведомлений",
+    ["option.notification.position"] = "Позиция уведомлений",
 
     ---- Inventory
     ["option.inventory.categories.italic"] = "Выделение названий категорий",
-    -- ["option.inventory.columns"] = "Number of Inventory Columns",
     ["option.inventory.columns"] = "Число колонок инвентаря",
+    ["option.inventory.sort.categories"] = "Режим сортировки категорий инвентаря",
+    ["option.inventory.sort.items"] = "Режим сортировки предметов инвентаря",
+    ["option.inventory.search.live"] = "Поиск в инвентаре в реальном времени",
+    ["option.inventory.categories.collapsible"] = "Сворачиваемые категории инвентаря",
+    ["option.inventory.pagination.page_size"] = "Размер страницы инвентаря",
+    ["option.inventory.actions.confirm_bulk_drop"] = "Подтверждать массовый выброс",
+    ["option.inventory.sort.categories.help"] = "Выберите способ сортировки категорий инвентаря.",
+    ["option.inventory.sort.items.help"] = "Выберите способ сортировки предметов внутри каждой категории.",
+    ["option.inventory.search.live.help"] = "Обновляет результаты поиска во время ввода.",
+    ["option.inventory.categories.collapsible.help"] = "Позволяет сворачивать и разворачивать категории инвентаря.",
+    ["option.inventory.pagination.page_size.help"] = "Количество стеков инвентаря на одной странице.",
+    ["option.inventory.actions.confirm_bulk_drop.help"] = "Запрашивает подтверждение перед выбросом нескольких предметов из одного стека.",
+    ["inventory.sort.alphabetical"] = "По алфавиту",
+    ["inventory.sort.manual"] = "Вручную",
+    ["inventory.sort.weight"] = "По весу",
+    ["inventory.sort.class"] = "По классу",
 
     -- Inventory Translations
     ["inventory.weight.abbreviation"] = "кг",
@@ -187,12 +231,40 @@ ax.localization:Register("ru", {
     ["flag.t.name"] = "Toolgun Доступ",
     ["flag.t.description"] = "Дает доступ к использованию toolgun.",
 
+    ["config.interface.font.antialias"] = "Антиалиасинг шрифтов",
+    ["config.interface.font.multiplier"] = "Размер шрифтов",
+
+    ["config.interface.vignette.enabled"] = "Включить эффект виньетки",
+    ["config.interface.vignette.enabled.help"] = "Переключите эффект виньетки по краям экрана.",
+
+    -- Chatbox
+    ["chatbox.entry.placeholder"] = "Скажите что-нибудь...",
+    ["chatbox.recommendations.no_description"] = "Описание отсутствует.",
+    ["chatbox.recommendations.truncated"] = "Показаны первые %d результатов.",
+    ["chatbox.menu.close"] = "Закрыть чат",
+    ["chatbox.menu.clear_history"] = "Очистить историю чата",
+    ["chatbox.menu.reset_position"] = "Сбросить позицию",
+    ["chatbox.menu.reset_size"] = "Сбросить размер",
+    ["chatbox.menu.confirm_clear_title"] = "Очистка истории чата",
+    ["chatbox.menu.confirm_clear_message"] = "Очистить всю историю чата?",
+
+    ["config.chatbox.max_message_length"] = "Максимальная длина сообщения в чате",
+    ["config.chatbox.history_size"] = "Размер истории ввода чата",
+    ["config.chatbox.chat_type_history"] = "Размер истории типов чата",
+    ["config.chatbox.looc_prefix"] = "Префикс LOOC чата",
+    ["config.chatbox.recommendations.debounce"] = "Задержка рекомендаций чата",
+    ["config.chatbox.recommendations.animation_duration"] = "Длительность анимации рекомендаций чата",
+    ["config.chatbox.recommendations.command_limit"] = "Лимит рекомендаций команд чата",
+    ["config.chatbox.recommendations.voice_limit"] = "Лимит голосовых рекомендаций чата",
+    ["config.chatbox.recommendations.wrap_cycle"] = "Зацикливание рекомендаций чата",
+
+    -- Extra Localization Keys
     ["category.camera"] = "Камера",
     ["subcategory.thirdperson"] = "Третье Лицо",
     ["config.thirdperson"] = "Включить Третье лицо",
-    ["config.thirdperson.help"] = "Wether or not the server allows third-person camera functionality.",
+    ["config.thirdperson.help"] = "Определяет, разрешена ли на сервере камера от третьего лица.",
     ["option.thirdperson"] = "Включить Третье лицо",
-    ["option.thirdperson.help"] = "Toggle third-person camera mode.",
+    ["option.thirdperson.help"] = "Переключает режим камеры от третьего лица.",
     ["option.thirdperson.x"] = "X Смещение",
     ["option.thirdperson.x.help"] = "X Смещение для камеры Третье лица.",
     ["option.thirdperson.y"] = "Y Смещение",
@@ -211,27 +283,7 @@ ax.localization:Register("ru", {
     ["option.thirdperson.desired.lerp.angle.help"] = "Скорость интерполяции для желаемого ракурса камеры от третьего лица. При меньших значениях скорость интерполяции будет более плавной, но и реакция будет медленнее. Установите значение 0, чтобы отключить интерполяцию.",
     ["option.thirdperson.desired.lerp.fov"] = "Требуемая скорость интерполяции поля зрения",
     ["option.thirdperson.desired.lerp.fov.help"] = "Скорость интерполяции для желаемого угла обзора камеры от третьего лица. При меньших значениях скорость интерполяции будет более плавной, но и реакция будет медленнее. Установите значение 0, чтобы отключить интерполяцию.",
-
     ["category.admin"] = "Админы",
     ["option.admin.esp"] = "Админ ESP",
     ["option.admin.esp.help"] = "Включить или отключить админское ESP.",
-    ["chatbox.entry.placeholder"] = "Say something...",
-    ["chatbox.recommendations.no_description"] = "No description provided.",
-    ["chatbox.recommendations.truncated"] = "Showing first %d results.",
-    ["chatbox.menu.close"] = "Close Chat",
-    ["chatbox.menu.clear_history"] = "Clear Chat History",
-    ["chatbox.menu.reset_position"] = "Reset Position",
-    ["chatbox.menu.reset_size"] = "Reset Size",
-    ["chatbox.menu.confirm_clear_title"] = "Clear Chat History",
-    ["chatbox.menu.confirm_clear_message"] = "Clear all chat history?",
-
-    ["config.chatbox.max_message_length"] = "Chatbox Max Message Length",
-    ["config.chatbox.history_size"] = "Chatbox Input History Size",
-    ["config.chatbox.chat_type_history"] = "Chatbox Chat-Type History Size",
-    ["config.chatbox.looc_prefix"] = "Chatbox LOOc Prefix",
-    ["config.chatbox.recommendations.debounce"] = "Chatbox Recommendation Debounce",
-    ["config.chatbox.recommendations.animation_duration"] = "Chatbox Recommendation Animation Duration",
-    ["config.chatbox.recommendations.command_limit"] = "Chatbox Command Recommendation Limit",
-    ["config.chatbox.recommendations.voice_limit"] = "Chatbox Voice Recommendation Limit",
-    ["config.chatbox.recommendations.wrap_cycle"] = "Chatbox Recommendation Cycle Wrap",
 })

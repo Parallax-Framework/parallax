@@ -1,4 +1,14 @@
 ax.localization:Register("bg", {
+    -- General
+    ["yes"] = "Да",
+    ["no"] = "Не",
+    ["ok"] = "ОК",
+    ["cancel"] = "Отказ",
+    ["apply"] = "Приложи",
+    ["close"] = "Затвори",
+    ["back"] = "Назад",
+    ["next"] = "Напред",
+
     -- Main Menu Translations
     ["mainmenu.category.00_faction"] = "Фракции",
     ["mainmenu.category.01_identity"] = "Самоличност",
@@ -24,6 +34,7 @@ ax.localization:Register("bg", {
     ["category.audio"] = "Аудио",
     ["category.interface"] = "Интерфейс",
     ["category.modules"] = "Модули",
+    ["category.schema"] = "Схема",
 
     -- Subcategory Translations
     ["subcategory.basic"] = "Основни",
@@ -47,6 +58,7 @@ ax.localization:Register("bg", {
     ["store.disabled"] = "Изключено",
 
     -- Config Translations
+
     --- Chat
     ---- Distances
     ["config.chat.ic.distance"] = "Разстояние IC Чат",
@@ -66,6 +78,22 @@ ax.localization:Register("bg", {
 
     ---- Inventory
     ["config.inventory.weight.max"] = "Максимална Тежест на Инвентара",
+    ["config.inventory.sync.delta"] = "Делта синхронизация на инвентара",
+    ["config.inventory.sync.debounce"] = "Забавяне на синхронизацията на инвентара",
+    ["config.inventory.sync.full_refresh_interval"] = "Интервал за пълно опресняване на инвентара",
+    ["config.inventory.action.rate_limit"] = "Ограничение на честотата на действията в инвентара",
+    ["config.inventory.transfer.rate_limit"] = "Ограничение на честотата на прехвърляне в инвентара",
+    ["config.inventory.pagination.default_page_size"] = "Размер на страницата по подразбиране за инвентара",
+    ["config.inventory.pagination.max_page_size"] = "Максимален размер на страницата за инвентара",
+    ["config.inventory.restore.batch_size"] = "Размер на партидата за възстановяване на инвентара",
+    ["config.inventory.sync.delta.help"] = "Включва делта синхронизация на инвентара, за да се изпращат само променените предмети.",
+    ["config.inventory.sync.debounce.help"] = "Забавяне в секунди преди изпращане на обновления за синхронизация на инвентара.",
+    ["config.inventory.sync.full_refresh_interval.help"] = "Минимални секунди между пълните опреснявания, когато делта синхронизацията е включена.",
+    ["config.inventory.action.rate_limit.help"] = "Минимално забавяне в секунди между действията с предмети за играч.",
+    ["config.inventory.transfer.rate_limit.help"] = "Минимално забавяне в секунди между заявките за прехвърляне на инвентар за играч.",
+    ["config.inventory.pagination.default_page_size.help"] = "Брой стекове с предмети по подразбиране на страница от инвентара.",
+    ["config.inventory.pagination.max_page_size.help"] = "Максимален брой стекове с предмети, позволени на страница.",
+    ["config.inventory.restore.batch_size.help"] = "Брой предмети от световния инвентар, възстановявани на партида при синхронизация.",
 
     ---- Movement
     ["config.jump.power"] = "Сила на Скока",
@@ -91,19 +119,13 @@ ax.localization:Register("bg", {
     ["config.autosave.interval"] = "Интервал на Автоматично Запазване",
     ["config.characters.max"] = "Максимален Брой Персонажи",
 
-    --- Interface
-    ---- Chat
-    ["config.chat.ic.color"] = "Цвят на IC Чат",
-    ["config.chat.me.color"] = "Цвят на ME Чат",
-    ["config.chat.ooc.color"] = "Цвят на OOC Чат",
-    ["config.chat.yell.color"] = "Цвят на YELL Чат",
-    ["config.chat.whisper.color"] = "Цвят на WHISPER Чат",
-
-    ["config.interface.font.antialias"] = "Изглаждане на Шрифтове",
-    ["config.interface.font.multiplier"] = "Мащаб на Шрифта",
-
-    ["config.interface.vignette.enabled"] = "Включи Ефект Винетка",
-    ["config.interface.vignette.enabled.help"] = "Превключва ефекта винетка около ръбовете на екрана.",
+    -- Audio
+    ["config.proximity"] = "Включи гласов чат по близост",
+    ["config.proximityMaxDistance"] = "Максимална дистанция на близост",
+    ["config.proximityMaxTraces"] = "Максимален брой трасировки за близост",
+    ["config.proximityMaxVolume"] = "Максимална сила на звука при близост",
+    ["config.proximityMuteVolume"] = "Заглушена сила на звука при близост",
+    ["config.proximityUnMutedDistance"] = "Дистанция за възстановяване на звука",
 
     -- Options Translations
     --- Chat
@@ -122,10 +144,18 @@ ax.localization:Register("bg", {
     ["option.chat.height"] = "Височина на Чата",
 
     --- Interface
+    ---- Chat
+    ["config.chat.ic.color"] = "Цвят на IC Чат",
+    ["config.chat.me.color"] = "Цвят на ME Чат",
+    ["config.chat.ooc.color"] = "Цвят на OOC Чат",
+    ["config.chat.yell.color"] = "Цвят на YELL Чат",
+    ["config.chat.whisper.color"] = "Цвят на WHISPER Чат",
+
     ---- Buttons
     ["option.button.delay.click"] = "Забавяне при Кликване на Бутон",
 
     ---- Display
+    ["option.interface.scale"] = "Мащаб на Интерфейса",
     ["option.interface.theme"] = "Тема на интерфейса",
     ["option.interface.theme.help"] = "Изберете цветова тема за интерфейса.",
     ["option.interface.glass.roundness"] = "Закръгленост на стъклото",
@@ -138,6 +168,7 @@ ax.localization:Register("bg", {
     ["option.interface.glass.borderOpacity.help"] = "Контролирайте видимостта на границите на стъклените интерфейси.",
     ["option.interface.glass.gradientOpacity"] = "Непрозрачност на градиента на стъклото",
     ["option.interface.glass.gradientOpacity.help"] = "Регулирайте силата на градиентните наслагвания върху стъклените панели.",
+    ["option.performance.animations"] = "Включи Анимации на Интерфейса",
 
     -- Theme Names
     ["theme.dark"] = "Тъмна",
@@ -146,10 +177,6 @@ ax.localization:Register("bg", {
     ["theme.purple"] = "Лилава",
     ["theme.green"] = "Зелена",
     ["theme.red"] = "Червена",
-
-    ---- Display
-    ["option.interface.scale"] = "Мащаб на Интерфейса",
-    ["option.performance.animations"] = "Включи Анимации на Интерфейса",
 
     ---- Fonts
     ["option.fontScaleGeneral"] = "Общ Мащаб на Шрифта",
@@ -166,10 +193,27 @@ ax.localization:Register("bg", {
     ["option.notification.length.default"] = "Продължителност на Известията по Подразбиране",
     ["option.notification.scale"] = "Мащаб на Известията",
     ["option.notification.sounds"] = "Включи Звуци за Известия",
+    ["option.notification.position"] = "Позиция на известията",
 
     ---- Inventory
     ["option.inventory.categories.italic"] = "Курсив за Имена на Категории",
     ["option.inventory.columns"] = "Брой Колони в Инвентара",
+    ["option.inventory.sort.categories"] = "Режим на сортиране на категориите в инвентара",
+    ["option.inventory.sort.items"] = "Режим на сортиране на предметите в инвентара",
+    ["option.inventory.search.live"] = "Търсене в инвентара в реално време",
+    ["option.inventory.categories.collapsible"] = "Сгъваеми категории в инвентара",
+    ["option.inventory.pagination.page_size"] = "Размер на страницата на инвентара",
+    ["option.inventory.actions.confirm_bulk_drop"] = "Потвърждение за масово изхвърляне",
+    ["option.inventory.sort.categories.help"] = "Изберете как да бъдат подредени категориите в инвентара.",
+    ["option.inventory.sort.items.help"] = "Изберете как да бъдат подредени предметите във всяка категория.",
+    ["option.inventory.search.live.help"] = "Обновява резултатите от търсене, докато пишете.",
+    ["option.inventory.categories.collapsible.help"] = "Позволява категориите в инвентара да се свиват и разгъват.",
+    ["option.inventory.pagination.page_size.help"] = "Брой стекове в инвентара, показвани на страница.",
+    ["option.inventory.actions.confirm_bulk_drop.help"] = "Иска потвърждение преди изхвърляне на множество предмети от един стек.",
+    ["inventory.sort.alphabetical"] = "Азбучно",
+    ["inventory.sort.manual"] = "Ръчно",
+    ["inventory.sort.weight"] = "Тегло",
+    ["inventory.sort.class"] = "Клас",
 
     -- Inventory Translations
     ["inventory.weight.abbreviation"] = "кг",
@@ -185,23 +229,31 @@ ax.localization:Register("bg", {
 
     ["flag.t.name"] = "Разрешение за Toolgun",
     ["flag.t.description"] = "Позволява използването на toolgun.",
-    ["chatbox.entry.placeholder"] = "Say something...",
-    ["chatbox.recommendations.no_description"] = "No description provided.",
-    ["chatbox.recommendations.truncated"] = "Showing first %d results.",
-    ["chatbox.menu.close"] = "Close Chat",
-    ["chatbox.menu.clear_history"] = "Clear Chat History",
-    ["chatbox.menu.reset_position"] = "Reset Position",
-    ["chatbox.menu.reset_size"] = "Reset Size",
-    ["chatbox.menu.confirm_clear_title"] = "Clear Chat History",
-    ["chatbox.menu.confirm_clear_message"] = "Clear all chat history?",
 
-    ["config.chatbox.max_message_length"] = "Chatbox Max Message Length",
-    ["config.chatbox.history_size"] = "Chatbox Input History Size",
-    ["config.chatbox.chat_type_history"] = "Chatbox Chat-Type History Size",
-    ["config.chatbox.looc_prefix"] = "Chatbox LOOc Prefix",
-    ["config.chatbox.recommendations.debounce"] = "Chatbox Recommendation Debounce",
-    ["config.chatbox.recommendations.animation_duration"] = "Chatbox Recommendation Animation Duration",
-    ["config.chatbox.recommendations.command_limit"] = "Chatbox Command Recommendation Limit",
-    ["config.chatbox.recommendations.voice_limit"] = "Chatbox Voice Recommendation Limit",
-    ["config.chatbox.recommendations.wrap_cycle"] = "Chatbox Recommendation Cycle Wrap",
+    ["config.interface.font.antialias"] = "Изглаждане на Шрифтове",
+    ["config.interface.font.multiplier"] = "Мащаб на Шрифта",
+
+    ["config.interface.vignette.enabled"] = "Включи Ефект Винетка",
+    ["config.interface.vignette.enabled.help"] = "Превключва ефекта винетка около ръбовете на екрана.",
+
+    -- Chatbox
+    ["chatbox.entry.placeholder"] = "Кажи нещо...",
+    ["chatbox.recommendations.no_description"] = "Няма предоставено описание.",
+    ["chatbox.recommendations.truncated"] = "Показани са първите %d резултата.",
+    ["chatbox.menu.close"] = "Затвори чата",
+    ["chatbox.menu.clear_history"] = "Изчисти историята на чата",
+    ["chatbox.menu.reset_position"] = "Нулирай позицията",
+    ["chatbox.menu.reset_size"] = "Нулирай размера",
+    ["chatbox.menu.confirm_clear_title"] = "Изчистване на историята на чата",
+    ["chatbox.menu.confirm_clear_message"] = "Да се изчисти ли цялата история на чата?",
+
+    ["config.chatbox.max_message_length"] = "Максимална дължина на съобщение в чата",
+    ["config.chatbox.history_size"] = "Размер на историята на въвеждане в чата",
+    ["config.chatbox.chat_type_history"] = "Размер на историята на типовете чат",
+    ["config.chatbox.looc_prefix"] = "LOOC префикс на чата",
+    ["config.chatbox.recommendations.debounce"] = "Забавяне на препоръките в чата",
+    ["config.chatbox.recommendations.animation_duration"] = "Продължителност на анимацията на препоръките в чата",
+    ["config.chatbox.recommendations.command_limit"] = "Лимит на командните препоръки в чата",
+    ["config.chatbox.recommendations.voice_limit"] = "Лимит на гласовите препоръки в чата",
+    ["config.chatbox.recommendations.wrap_cycle"] = "Циклично превъртане на препоръките в чата",
 })

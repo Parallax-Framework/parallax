@@ -1,4 +1,14 @@
 ax.localization:Register("tr", {
+    -- General
+    ["yes"] = "Evet",
+    ["no"] = "Hayır",
+    ["ok"] = "Tamam",
+    ["cancel"] = "İptal",
+    ["apply"] = "Uygula",
+    ["close"] = "Kapat",
+    ["back"] = "Geri",
+    ["next"] = "İleri",
+
     -- Main Menu Translations
     ["mainmenu.category.00_faction"] = "Fraksiyonlar",
     ["mainmenu.category.01_identity"] = "Kimlik",
@@ -24,6 +34,7 @@ ax.localization:Register("tr", {
     ["category.audio"] = "Ses",
     ["category.interface"] = "Arayüz",
     ["category.modules"] = "Modüller",
+    ["category.schema"] = "Şema",
 
     -- Subcategory Translations
     ["subcategory.basic"] = "Temel",
@@ -47,6 +58,7 @@ ax.localization:Register("tr", {
     ["store.disabled"] = "Devre Dışı",
 
     -- Config Translations
+
     --- Chat
     ---- Distances
     ["config.chat.ic.distance"] = "IC Sohbet Mesafesi",
@@ -59,13 +71,29 @@ ax.localization:Register("tr", {
 
     --- Gameplay
     ---- Interaction
-    ["config.hands.force.max"] = "Eller Maksimum El Kuvveti",
-    ["config.hands.force.max.throw"] = "Eller Maksimum Fırlatma Gücü",
-    ["config.hands.max.carry"] = "Eller Maksimum Taşıma Ağırlığı",
-    ["config.hands.range.max"] = "Eller Maksimum Uzanma Mesafesi",
+    ["config.hands.force.max"] = "Maksimum El Kuvveti",
+    ["config.hands.force.max.throw"] = "Maksimum Fırlatma Kuvveti",
+    ["config.hands.max.carry"] = "Maksimum Taşıma Ağırlığı",
+    ["config.hands.range.max"] = "Maksimum Uzanma Mesafesi",
 
     ---- Inventory
     ["config.inventory.weight.max"] = "Envanter Maksimum Ağırlık",
+    ["config.inventory.sync.delta"] = "Envanter Delta Senkronizasyonu",
+    ["config.inventory.sync.debounce"] = "Envanter Senkronizasyon Gecikmesi",
+    ["config.inventory.sync.full_refresh_interval"] = "Envanter Tam Yenileme Aralığı",
+    ["config.inventory.action.rate_limit"] = "Envanter Eylem Hız Sınırı",
+    ["config.inventory.transfer.rate_limit"] = "Envanter Transfer Hız Sınırı",
+    ["config.inventory.pagination.default_page_size"] = "Varsayılan Envanter Sayfa Boyutu",
+    ["config.inventory.pagination.max_page_size"] = "Maksimum Envanter Sayfa Boyutu",
+    ["config.inventory.restore.batch_size"] = "Envanter Geri Yükleme Toplu İş Boyutu",
+    ["config.inventory.sync.delta.help"] = "Yalnızca değişen öğeleri göndermek için envanter delta senkronizasyonunu etkinleştirir.",
+    ["config.inventory.sync.debounce.help"] = "Senkronizasyon güncellemeleri gönderilmeden önce saniye cinsinden gecikme.",
+    ["config.inventory.sync.full_refresh_interval.help"] = "Delta senkronizasyonu etkinken tam yenilemeler arasındaki minimum saniye.",
+    ["config.inventory.action.rate_limit.help"] = "Oyuncu başına öğe eylemleri arasındaki minimum saniye gecikmesi.",
+    ["config.inventory.transfer.rate_limit.help"] = "Oyuncu başına envanter transfer istekleri arasındaki minimum saniye gecikmesi.",
+    ["config.inventory.pagination.default_page_size.help"] = "Envanter sayfası başına varsayılan öğe yığını sayısı.",
+    ["config.inventory.pagination.max_page_size.help"] = "Sayfa başına izin verilen maksimum öğe yığını sayısı.",
+    ["config.inventory.restore.batch_size.help"] = "Senkronizasyon başına geri yüklenen dünya envanteri öğe sayısı.",
 
     ---- Movement
     ["config.jump.power"] = "Zıplama Gücü",
@@ -91,13 +119,19 @@ ax.localization:Register("tr", {
     ["config.autosave.interval"] = "Karakteri Otomatik Kaydetme Sıklığı",
     ["config.characters.max"] = "Maksimum Karakter Sayısı",
 
-    --- Interface
-    ["config.interface.font.antialias"] = "Yazı Tipi Kenar Yumuşatma",
-    ["config.interface.font.multiplier"] = "Yazı Tipi Ölçeği",
+    -- Audio
+    ["config.proximity"] = "Yakınlık Sesli Sohbetini Etkinleştir",
+    ["config.proximityMaxDistance"] = "Maksimum Yakınlık Mesafesi",
+    ["config.proximityMaxTraces"] = "Maksimum Yakınlık İz Sayısı",
+    ["config.proximityMaxVolume"] = "Maksimum Yakınlık Ses Seviyesi",
+    ["config.proximityMuteVolume"] = "Yakınlık Sessiz Ses Seviyesi",
+    ["config.proximityUnMutedDistance"] = "Yakınlık Sesi Açma Mesafesi",
 
     -- Options Translations
     --- Chat
     ---- Basic
+    ["option.chat.sounds"] = "Sohbet Seslerini Etkinleştir",
+    ["option.chat.timestamps"] = "Sohbette Zaman Damgalarını Göster",
     ["option.chat.randomized.verbs"] = "Rastgele Sohbet Fiillerini Kullan",
     ["option.chat.randomized.verbs.help"] = "Açık olduğunda, sohbet mesajları farklı fiiller kullanır (bağırır, homurdanır, haykırır). Kapalı olduğunda varsayılan fiilleri kullanır (der, fısıldar, bağırır).",
 
@@ -116,10 +150,12 @@ ax.localization:Register("tr", {
     ["config.chat.ooc.color"] = "OOC Sohbet Rengi",
     ["config.chat.yell.color"] = "YELL Sohbet Rengi",
     ["config.chat.whisper.color"] = "WHISPER Sohbet Rengi",
+
     ---- Buttons
     ["option.button.delay.click"] = "Buton Tıklama Gecikmesi",
 
     ---- Display
+    ["option.interface.scale"] = "Arayüz Ölçeği",
     ["option.interface.theme"] = "Arayüz Teması",
     ["option.interface.theme.help"] = "Arayüz için renk temasını seçin.",
     ["option.interface.glass.roundness"] = "Cam Yuvarlaklığı",
@@ -132,6 +168,7 @@ ax.localization:Register("tr", {
     ["option.interface.glass.borderOpacity.help"] = "Cam arayüz kenarlıklarının görünürlüğünü kontrol edin.",
     ["option.interface.glass.gradientOpacity"] = "Cam Gradyan Opaklığı",
     ["option.interface.glass.gradientOpacity.help"] = "Cam panellerdeki gradyan katmanlarının gücünü ayarlayın.",
+    ["option.performance.animations"] = "Arayüz Animasyonlarını Etkinleştir",
 
     -- Theme Names
     ["theme.dark"] = "Koyu",
@@ -140,10 +177,6 @@ ax.localization:Register("tr", {
     ["theme.purple"] = "Mor",
     ["theme.green"] = "Yeşil",
     ["theme.red"] = "Kırmızı",
-
-    ---- Display
-    ["option.interface.scale"] = "Arayüz Ölçeği",
-    ["option.performance.animations"] = "Arayüz Animasyonlarını Etkinleştir",
 
     ---- Fonts
     ["option.fontScaleGeneral"] = "Genel Yazı Tipi Ölçeği",
@@ -160,10 +193,27 @@ ax.localization:Register("tr", {
     ["option.notification.length.default"] = "Varsayılan Bildirim Süresi",
     ["option.notification.scale"] = "Bildirim Ölçeği",
     ["option.notification.sounds"] = "Bildirim Seslerini Etkinleştir",
+    ["option.notification.position"] = "Bildirim Konumu",
 
     ---- Inventory
     ["option.inventory.categories.italic"] = "Kategori Adlarını İtalik Yap",
     ["option.inventory.columns"] = "Envanter Sütunlarının Sayısı",
+    ["option.inventory.sort.categories"] = "Envanter Kategori Sıralama Modu",
+    ["option.inventory.sort.items"] = "Envanter Öğe Sıralama Modu",
+    ["option.inventory.search.live"] = "Canlı Envanter Araması",
+    ["option.inventory.categories.collapsible"] = "Daraltılabilir Envanter Kategorileri",
+    ["option.inventory.pagination.page_size"] = "Envanter Sayfa Boyutu",
+    ["option.inventory.actions.confirm_bulk_drop"] = "Toplu Bırakma İşlemlerini Onayla",
+    ["option.inventory.sort.categories.help"] = "Envanter kategorilerinin nasıl sıralanacağını seçin.",
+    ["option.inventory.sort.items.help"] = "Öğelerin her kategori içinde nasıl sıralanacağını seçin.",
+    ["option.inventory.search.live.help"] = "Yazarken arama sonuçlarını günceller.",
+    ["option.inventory.categories.collapsible.help"] = "Envanter kategorilerinin daraltılıp genişletilmesine izin verir.",
+    ["option.inventory.pagination.page_size.help"] = "Sayfa başına gösterilen envanter yığını sayısı.",
+    ["option.inventory.actions.confirm_bulk_drop.help"] = "Bir yığından birden fazla öğe bırakmadan önce onay ister.",
+    ["inventory.sort.alphabetical"] = "Alfabetik",
+    ["inventory.sort.manual"] = "Manuel",
+    ["inventory.sort.weight"] = "Ağırlık",
+    ["inventory.sort.class"] = "Sınıf",
 
     -- Inventory Translations
     ["inventory.weight.abbreviation"] = "kg",
@@ -172,23 +222,38 @@ ax.localization:Register("tr", {
     ["notify.chat.ooc.disabled"] = "Bu sunucuda OOC sohbet şu anda devre dışı.",
     ["notify.chat.ooc.wait"] = "Başka bir OOC mesajı göndermeden önce lütfen %d saniye bekleyin.",
     ["notify.chat.ooc.rate_limited"] = "Son %d dakika içinde OOC mesaj limiti (%d) aşıldı.",
-    ["chatbox.entry.placeholder"] = "Say something...",
-    ["chatbox.recommendations.no_description"] = "No description provided.",
-    ["chatbox.recommendations.truncated"] = "Showing first %d results.",
-    ["chatbox.menu.close"] = "Close Chat",
-    ["chatbox.menu.clear_history"] = "Clear Chat History",
-    ["chatbox.menu.reset_position"] = "Reset Position",
-    ["chatbox.menu.reset_size"] = "Reset Size",
-    ["chatbox.menu.confirm_clear_title"] = "Clear Chat History",
-    ["chatbox.menu.confirm_clear_message"] = "Clear all chat history?",
 
-    ["config.chatbox.max_message_length"] = "Chatbox Max Message Length",
-    ["config.chatbox.history_size"] = "Chatbox Input History Size",
-    ["config.chatbox.chat_type_history"] = "Chatbox Chat-Type History Size",
-    ["config.chatbox.looc_prefix"] = "Chatbox LOOc Prefix",
-    ["config.chatbox.recommendations.debounce"] = "Chatbox Recommendation Debounce",
-    ["config.chatbox.recommendations.animation_duration"] = "Chatbox Recommendation Animation Duration",
-    ["config.chatbox.recommendations.command_limit"] = "Chatbox Command Recommendation Limit",
-    ["config.chatbox.recommendations.voice_limit"] = "Chatbox Voice Recommendation Limit",
-    ["config.chatbox.recommendations.wrap_cycle"] = "Chatbox Recommendation Cycle Wrap",
+    ---- Flags
+    ["flag.p.name"] = "Physgun Yetkisi",
+    ["flag.p.description"] = "Physgun kullanımına izin verir.",
+
+    ["flag.t.name"] = "Toolgun Yetkisi",
+    ["flag.t.description"] = "Toolgun kullanımına izin verir.",
+
+    ["config.interface.font.antialias"] = "Yazı Tipi Kenar Yumuşatma",
+    ["config.interface.font.multiplier"] = "Yazı Tipi Ölçeği",
+
+    ["config.interface.vignette.enabled"] = "Vinyet Efektini Etkinleştir",
+    ["config.interface.vignette.enabled.help"] = "Ekran kenarlarındaki vinyet efektini açıp kapatır.",
+
+    -- Chatbox
+    ["chatbox.entry.placeholder"] = "Bir şey söyle...",
+    ["chatbox.recommendations.no_description"] = "Açıklama sağlanmadı.",
+    ["chatbox.recommendations.truncated"] = "İlk %d sonuç gösteriliyor.",
+    ["chatbox.menu.close"] = "Sohbeti Kapat",
+    ["chatbox.menu.clear_history"] = "Sohbet Geçmişini Temizle",
+    ["chatbox.menu.reset_position"] = "Konumu Sıfırla",
+    ["chatbox.menu.reset_size"] = "Boyutu Sıfırla",
+    ["chatbox.menu.confirm_clear_title"] = "Sohbet Geçmişini Temizle",
+    ["chatbox.menu.confirm_clear_message"] = "Tüm sohbet geçmişi temizlensin mi?",
+
+    ["config.chatbox.max_message_length"] = "Sohbet Kutusu Maksimum Mesaj Uzunluğu",
+    ["config.chatbox.history_size"] = "Sohbet Kutusu Girdi Geçmişi Boyutu",
+    ["config.chatbox.chat_type_history"] = "Sohbet Kutusu Sohbet Türü Geçmişi Boyutu",
+    ["config.chatbox.looc_prefix"] = "Sohbet Kutusu LOOC Ön Eki",
+    ["config.chatbox.recommendations.debounce"] = "Sohbet Kutusu Öneri Gecikmesi",
+    ["config.chatbox.recommendations.animation_duration"] = "Sohbet Kutusu Öneri Animasyon Süresi",
+    ["config.chatbox.recommendations.command_limit"] = "Sohbet Kutusu Komut Öneri Limiti",
+    ["config.chatbox.recommendations.voice_limit"] = "Sohbet Kutusu Ses Öneri Limiti",
+    ["config.chatbox.recommendations.wrap_cycle"] = "Sohbet Kutusu Öneri Döngü Sarma",
 })

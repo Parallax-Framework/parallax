@@ -29,12 +29,12 @@ ax.localization:Register("es", {
 
     -- Category Translations
     ["category.chat"] = "Chat",
-    ["category.gameplay"] = "Gameplay",
+    ["category.gameplay"] = "Jugabilidad",
     ["category.general"] = "General",
     ["category.audio"] = "Audio",
     ["category.interface"] = "Interfaz",
     ["category.modules"] = "Módulos",
-    ["category.schema"] = "Schema",
+    ["category.schema"] = "Esquema",
 
     -- Subcategory Translations
     ["subcategory.basic"] = "Básico",
@@ -78,6 +78,22 @@ ax.localization:Register("es", {
 
     ---- Inventory
     ["config.inventory.weight.max"] = "Peso Máximo del Inventario",
+    ["config.inventory.sync.delta"] = "Sincronización delta del inventario",
+    ["config.inventory.sync.debounce"] = "Retardo de sincronización del inventario",
+    ["config.inventory.sync.full_refresh_interval"] = "Intervalo de actualización completa del inventario",
+    ["config.inventory.action.rate_limit"] = "Límite de frecuencia de acciones de inventario",
+    ["config.inventory.transfer.rate_limit"] = "Límite de frecuencia de transferencias de inventario",
+    ["config.inventory.pagination.default_page_size"] = "Tamaño de página predeterminado del inventario",
+    ["config.inventory.pagination.max_page_size"] = "Tamaño máximo de página del inventario",
+    ["config.inventory.restore.batch_size"] = "Tamaño de lote de restauración del inventario",
+    ["config.inventory.sync.delta.help"] = "Habilita la sincronización delta del inventario para enviar solo los elementos modificados.",
+    ["config.inventory.sync.debounce.help"] = "Retraso en segundos antes de enviar actualizaciones de sincronización del inventario.",
+    ["config.inventory.sync.full_refresh_interval.help"] = "Segundos mínimos entre actualizaciones completas cuando la sincronización delta está habilitada.",
+    ["config.inventory.action.rate_limit.help"] = "Retraso mínimo en segundos entre acciones de objetos por jugador.",
+    ["config.inventory.transfer.rate_limit.help"] = "Retraso mínimo en segundos entre solicitudes de transferencia de inventario por jugador.",
+    ["config.inventory.pagination.default_page_size.help"] = "Número predeterminado de pilas de objetos por página de inventario.",
+    ["config.inventory.pagination.max_page_size.help"] = "Número máximo de pilas de objetos permitidas por página.",
+    ["config.inventory.restore.batch_size.help"] = "Número de objetos de inventario del mundo restaurados por lote de sincronización.",
 
     ---- Movement
     ["config.jump.power"] = "Potencia de Salto",
@@ -182,6 +198,22 @@ ax.localization:Register("es", {
     ---- Inventory
     ["option.inventory.categories.italic"] = "Cursiva en Nombres de Categorías",
     ["option.inventory.columns"] = "Número de Columnas del Inventario",
+    ["option.inventory.sort.categories"] = "Modo de orden de categorías del inventario",
+    ["option.inventory.sort.items"] = "Modo de orden de objetos del inventario",
+    ["option.inventory.search.live"] = "Búsqueda en vivo del inventario",
+    ["option.inventory.categories.collapsible"] = "Categorías de inventario colapsables",
+    ["option.inventory.pagination.page_size"] = "Tamaño de página del inventario",
+    ["option.inventory.actions.confirm_bulk_drop"] = "Confirmar acciones de descarte masivo",
+    ["option.inventory.sort.categories.help"] = "Elige cómo se ordenan las categorías del inventario.",
+    ["option.inventory.sort.items.help"] = "Elige cómo se ordenan los objetos dentro de cada categoría.",
+    ["option.inventory.search.live.help"] = "Actualiza los resultados de búsqueda mientras escribes.",
+    ["option.inventory.categories.collapsible.help"] = "Permite contraer y expandir las categorías del inventario.",
+    ["option.inventory.pagination.page_size.help"] = "Número de pilas de inventario mostradas por página.",
+    ["option.inventory.actions.confirm_bulk_drop.help"] = "Solicita confirmación antes de soltar varios objetos de una pila.",
+    ["inventory.sort.alphabetical"] = "Alfabético",
+    ["inventory.sort.manual"] = "Manual",
+    ["inventory.sort.weight"] = "Peso",
+    ["inventory.sort.class"] = "Clase",
 
     -- Inventory Translations
     ["inventory.weight.abbreviation"] = "kg",
@@ -218,7 +250,7 @@ ax.localization:Register("es", {
     ["config.chatbox.max_message_length"] = "Longitud Máxima de Mensaje del Chatbox",
     ["config.chatbox.history_size"] = "Tamaño del Historial de Entrada del Chatbox",
     ["config.chatbox.chat_type_history"] = "Tamaño del Historial de Tipo de Chat del Chatbox",
-    ["config.chatbox.looc_prefix"] = "Prefijo LOOc del Chatbox",
+    ["config.chatbox.looc_prefix"] = "Prefijo LOOC del Chatbox",
     ["config.chatbox.recommendations.debounce"] = "Retardo de Recomendación del Chatbox",
     ["config.chatbox.recommendations.animation_duration"] = "Duración de Animación de Recomendación del Chatbox",
     ["config.chatbox.recommendations.command_limit"] = "Límite de Recomendación de Comandos del Chatbox",

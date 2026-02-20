@@ -71,13 +71,29 @@ ax.localization:Register("en", {
 
     --- Gameplay
     ---- Interaction
-    ["config.hands.force.max"] = "Hands Max Hand Force",
-    ["config.hands.force.max.throw"] = "Hands Max Throw Force",
-    ["config.hands.max.carry"] = "Hands Max Carry Weight",
-    ["config.hands.range.max"] = "Hands Max Reach Distance",
+    ["config.hands.force.max"] = "Maximum Hand Force",
+    ["config.hands.force.max.throw"] = "Maximum Throw Force",
+    ["config.hands.max.carry"] = "Maximum Carry Weight",
+    ["config.hands.range.max"] = "Maximum Reach Distance",
 
     ---- Inventory
     ["config.inventory.weight.max"] = "Inventory Max Weight",
+    ["config.inventory.sync.delta"] = "Inventory Delta Sync",
+    ["config.inventory.sync.debounce"] = "Inventory Sync Debounce",
+    ["config.inventory.sync.full_refresh_interval"] = "Inventory Full Refresh Interval",
+    ["config.inventory.action.rate_limit"] = "Inventory Action Rate Limit",
+    ["config.inventory.transfer.rate_limit"] = "Inventory Transfer Rate Limit",
+    ["config.inventory.pagination.default_page_size"] = "Inventory Default Page Size",
+    ["config.inventory.pagination.max_page_size"] = "Inventory Max Page Size",
+    ["config.inventory.restore.batch_size"] = "Inventory Restore Batch Size",
+    ["config.inventory.sync.delta.help"] = "Enable delta inventory syncing to send only changed items.",
+    ["config.inventory.sync.debounce.help"] = "Delay in seconds before sending inventory sync updates.",
+    ["config.inventory.sync.full_refresh_interval.help"] = "Minimum seconds between full sync refreshes when delta sync is enabled.",
+    ["config.inventory.action.rate_limit.help"] = "Minimum delay in seconds between item actions per player.",
+    ["config.inventory.transfer.rate_limit.help"] = "Minimum delay in seconds between inventory transfer requests per player.",
+    ["config.inventory.pagination.default_page_size.help"] = "Default number of item stacks per inventory page.",
+    ["config.inventory.pagination.max_page_size.help"] = "Maximum number of item stacks allowed per page.",
+    ["config.inventory.restore.batch_size.help"] = "Number of world inventory items restored per sync batch.",
 
     ---- Movement
     ["config.jump.power"] = "Jump Power",
@@ -91,8 +107,8 @@ ax.localization:Register("en", {
     ["respawning"] = "Respawning...",
     ["command.notvalid"] = "That doesn't look like a real command.",
     ["command.notfound"] = "No command by that name. Check the spelling.",
-    ["command.executionfailed"] = "That command tripped on the way out. Try again.",
-    ["command.unknownerror"] = "Something went sideways. Please try again.",
+    ["command.executionfailed"] = "That command failed to run. Try again.",
+    ["command.unknownerror"] = "Something went wrong. Please try again.",
 
     --- General
     ---- Basic
@@ -117,7 +133,7 @@ ax.localization:Register("en", {
     ["option.chat.sounds"] = "Enable Chat Sounds",
     ["option.chat.timestamps"] = "Show Timestamps in Chat",
     ["option.chat.randomized.verbs"] = "Use Randomized Chat Verbs",
-    ["option.chat.randomized.verbs.help"] = "When enabled, chat messages will use varied verbs (exclaims, mutters, shouts). When disabled, uses default verbs (says, whispers, yells).",
+    ["option.chat.randomized.verbs.help"] = "When enabled, chat messages use varied verbs (exclaims, mutters, shouts). When disabled, they use the default verbs (says, whispers, yells).",
 
     ---- Position
     ["option.chat.x"] = "Chatbox X Position",
@@ -182,6 +198,22 @@ ax.localization:Register("en", {
     ---- Inventory
     ["option.inventory.categories.italic"] = "Italicize Category Names",
     ["option.inventory.columns"] = "Number of Inventory Columns",
+    ["option.inventory.sort.categories"] = "Inventory Category Sort Mode",
+    ["option.inventory.sort.items"] = "Inventory Item Sort Mode",
+    ["option.inventory.search.live"] = "Live Inventory Search",
+    ["option.inventory.categories.collapsible"] = "Collapsible Inventory Categories",
+    ["option.inventory.pagination.page_size"] = "Inventory Page Size",
+    ["option.inventory.actions.confirm_bulk_drop"] = "Confirm Bulk Drop Actions",
+    ["option.inventory.sort.categories.help"] = "Choose how inventory categories are ordered.",
+    ["option.inventory.sort.items.help"] = "Choose how items are ordered inside each category.",
+    ["option.inventory.search.live.help"] = "Update search results while typing.",
+    ["option.inventory.categories.collapsible.help"] = "Allow inventory categories to be collapsed and expanded.",
+    ["option.inventory.pagination.page_size.help"] = "Number of inventory stacks shown per page.",
+    ["option.inventory.actions.confirm_bulk_drop.help"] = "Ask for confirmation before dropping multiple items from a stack.",
+    ["inventory.sort.alphabetical"] = "Alphabetical",
+    ["inventory.sort.manual"] = "Manual",
+    ["inventory.sort.weight"] = "Weight",
+    ["inventory.sort.class"] = "Class",
 
     -- Inventory Translations
     ["inventory.weight.abbreviation"] = "kg",
@@ -217,8 +249,8 @@ ax.localization:Register("en", {
 
     ["config.chatbox.max_message_length"] = "Chatbox Max Message Length",
     ["config.chatbox.history_size"] = "Chatbox Input History Size",
-    ["config.chatbox.chat_type_history"] = "Chatbox Chat-Type History Size",
-    ["config.chatbox.looc_prefix"] = "Chatbox LOOc Prefix",
+    ["config.chatbox.chat_type_history"] = "Chatbox Chat Type History Size",
+    ["config.chatbox.looc_prefix"] = "Chatbox LOOC Prefix",
     ["config.chatbox.recommendations.debounce"] = "Chatbox Recommendation Debounce",
     ["config.chatbox.recommendations.animation_duration"] = "Chatbox Recommendation Animation Duration",
     ["config.chatbox.recommendations.command_limit"] = "Chatbox Command Recommendation Limit",
