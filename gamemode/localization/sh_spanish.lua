@@ -26,6 +26,7 @@ ax.localization:Register("es", {
     ["tab.inventory"] = "Inventario",
     ["tab.scoreboard"] = "Marcador",
     ["tab.settings"] = "Ajustes",
+    ["tab.characters"] = "Personajes",
 
     -- Category Translations
     ["category.chat"] = "Chat",

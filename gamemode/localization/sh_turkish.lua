@@ -26,6 +26,7 @@ ax.localization:Register("tr", {
     ["tab.inventory"] = "Envanter",
     ["tab.scoreboard"] = "Skorbord",
     ["tab.settings"] = "Seçenekler",
+    ["tab.characters"] = "Karakterler",
 
     -- Category Translations
     ["category.chat"] = "Sohbet",

@@ -95,6 +95,18 @@ function PANEL:Init()
 
     self:PopulateTabs()
 
+    local characters = self.buttons:Add("ax.button")
+    characters:Dock(LEFT)
+    characters:DockMargin(0, 0, ax.util:ScreenScale(4), 0)
+    characters:SetText("tab.characters")
+    characters:SetWide(characters:GetWide() * 1.25)
+    characters.DoClick = function()
+        self:Close(function()
+            ax.gui.main = vgui.Create("ax.main")
+        end)
+    end
+    self.buttons:AddPanel(characters)
+
     self:Open()
 end
 
@@ -181,7 +193,7 @@ function PANEL:PopulateTabs()
         button:Dock(LEFT)
         button:DockMargin(0, 0, ax.util:ScreenScale(4), 0)
         button:SetText("tab." .. k)
-        button:SetWide(button:GetWide() * 1.5)
+        button:SetWide(button:GetWide() * 1.25)
 
         self.buttons:SetTall(math.max(0, button:GetTall()))
         self.buttons:SetY(self.buttons:GetY())

@@ -26,6 +26,7 @@ ax.localization:Register("bg", {
     ["tab.inventory"] = "Инвентар",
     ["tab.scoreboard"] = "Табло",
     ["tab.settings"] = "Настройки",
+    ["tab.characters"] = "Персонажи",
 
     -- Category Translations
     ["category.chat"] = "Чат",
