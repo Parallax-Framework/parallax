@@ -21,21 +21,21 @@ ax.currencies.registry = ax.currencies.registry or {}
 -- Creates a currency definition that can be used for character money management.
 -- Automatically registers a character variable for storing the currency value.
 -- @realm shared
--- @param uniqueID string The unique identifier for the currency (e.g., "credits", "tokens")
+-- @param uniqueID string The unique identifier for the currency (e.g., "dollars", "tokens")
 -- @param data table Currency configuration table with the following fields:
 --   - name (string): Display name of the currency
 --   - symbol (string): Currency symbol (e.g., "$", "¥", "₹")
 --   - default (number): Default starting amount (defaults to 0)
---   - singular (string): Singular form of currency name (e.g., "credit")
---   - plural (string): Plural form of currency name (e.g., "credits")
+--   - singular (string): Singular form of currency name (e.g., "dollar")
+--   - plural (string): Plural form of currency name (e.g., "dollars")
 --   - format (function): Optional custom formatting function(amount) -> string
 -- @return bool True if registration succeeded, false otherwise
--- @usage ax.currencies:Register("credits", {
+-- @usage ax.currencies:Register("dollars", {
 --     name = "Credits",
---     symbol = "¢",
+--     symbol = "$",
 --     default = 100,
---     singular = "credit",
---     plural = "credits"
+--     singular = "dollar",
+--     plural = "dollars"
 -- })
 function ax.currencies:Register(uniqueID, data)
     if ( !isstring(uniqueID) or !istable(data) ) then
@@ -89,7 +89,7 @@ end
 -- @realm shared
 -- @param uniqueID string The unique identifier of the currency
 -- @return table|nil The currency data table if found, nil otherwise
--- @usage local credits = ax.currencies:Get("credits")
+-- @usage local dollars = ax.currencies:Get("dollars")
 function ax.currencies:Get(uniqueID)
     if ( !isstring(uniqueID) ) then
         ax.util:PrintError("Invalid currency ID provided to ax.currencies:Get()")
@@ -113,7 +113,7 @@ end
 -- @realm shared
 -- @param uniqueID string The unique identifier to check
 -- @return bool True if the currency exists, false otherwise
--- @usage if (ax.currencies:IsValid("credits")) then
+-- @usage if (ax.currencies:IsValid("dollars")) then
 --     print("Credits currency is registered")
 -- end
 function ax.currencies:IsValid(uniqueID)
@@ -125,12 +125,12 @@ end
 -- @realm shared
 -- @param amount number The amount to format
 -- @param uniqueID string The unique identifier of the currency
--- @return string Formatted currency string (e.g., "1,234 credits")
--- @usage local formatted = ax.currencies:Format("credits", 1000)
--- -- Returns: "1,000 credits"
+-- @return string Formatted currency string (e.g., "1,234 dollars")
+-- @usage local formatted = ax.currencies:Format("dollars", 1000)
+-- -- Returns: "1,000 dollars"
 function ax.currencies:Format(amount, uniqueID)
     amount = tonumber(amount) or 0
-    uniqueID = uniqueID or "credits"
+    uniqueID = uniqueID or "dollars"
 
     local currencyData = self:Get(uniqueID)
     if ( !currencyData ) then
@@ -147,6 +147,11 @@ function ax.currencies:Format(amount, uniqueID)
         end
     end
 
+    -- Special condition if we are using dollars
+    if ( uniqueID == "dollars" ) then
+        return string.Comma(math.floor(amount))
+    end
+
     -- Fallback formatting
     return string.Comma(math.floor(amount)) .. " " .. currencyData.plural
 end
@@ -158,11 +163,11 @@ end
 -- @param useSymbol boolean Whether to include the currency symbol (default: false)
 -- @param symbolPosition string "prefix" or "suffix" to position the symbol (default: "prefix")
 -- @return string Formatted currency string with symbol (e.g., "$1,000" or "1,000$")
--- @usage local formatted = ax.currencies:FormatWithSymbol(1000, "credits", true, "prefix")
--- -- Returns: "¢1,000"
+-- @usage local formatted = ax.currencies:FormatWithSymbol(1000, "dollars", true, "prefix")
+-- -- Returns: "$1,000"
 function ax.currencies:FormatWithSymbol(amount, uniqueID, useSymbol, symbolPosition)
     amount = tonumber(amount) or 0
-    uniqueID = uniqueID or "credits"
+    uniqueID = uniqueID or "dollars"
     useSymbol = useSymbol or false
     symbolPosition = symbolPosition or "prefix"
 
@@ -173,6 +178,10 @@ function ax.currencies:FormatWithSymbol(amount, uniqueID, useSymbol, symbolPosit
     end
 
     local formattedAmount = self:Format(amount, uniqueID)
+    if ( uniqueID == "dollars" ) then
+        return currencyData.symbol .. formattedAmount
+    end
+
     if ( useSymbol ) then
         if ( symbolPosition == "prefix" ) then
             return currencyData.symbol .. formattedAmount
@@ -189,16 +198,16 @@ end
 -- Creates a physical entity representing dropped currency that players can pick up.
 -- @realm server
 -- @param amount number The amount of currency to spawn
--- @param uniqueID string The unique identifier of the currency (defaults to "credits")
+-- @param uniqueID string The unique identifier of the currency (defaults to "dollars")
 -- @param position vector|Player The position to spawn at, or a player (spawns at their drop position)
 -- @param angle Angle Optional angle for the entity (defaults to random)
 -- @return Entity|nil The spawned currency entity, or nil if invalid parameters
--- @usage local money = ax.currencies:Spawn(500, "credits", player:GetPos() + Vector(0, 0, 32))
+-- @usage local money = ax.currencies:Spawn(500, "dollars", player:GetPos() + Vector(0, 0, 32))
 function ax.currencies:Spawn(amount, uniqueID, position, angle)
     if ( CLIENT ) then return nil end
 
     amount = math.abs(tonumber(amount) or 0)
-    uniqueID = uniqueID or "credits"
+    uniqueID = uniqueID or "dollars"
 
     if ( amount <= 0 ) then
         ax.util:PrintError("Invalid amount for currency spawn: " .. tostring(amount))
@@ -244,10 +253,10 @@ function ax.currencies:Spawn(amount, uniqueID, position, angle)
 end
 
 -- Register default currency on initialization
-ax.currencies:Register("credits", {
+ax.currencies:Register("dollars", {
     name = "Credits",
-    symbol = "¢",
+    symbol = "$",
     default = 0,
-    singular = "credit",
-    plural = "credits"
+    singular = "dollar",
+    plural = "dollars"
 })
