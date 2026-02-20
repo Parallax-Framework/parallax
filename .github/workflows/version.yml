@@ -19,6 +19,7 @@ jobs:
           persist-credentials: true
 
       - name: Generate version JSON
+        id: generate_version
         run: |
           VALID_COUNT=0
           for COMMIT in $(git rev-list --reverse --since="2025-07-18" HEAD); do
@@ -58,19 +59,49 @@ jobs:
           echo "  \"branch\": \"main\"" >> parallax-version.json
           echo "}" >> parallax-version.json
 
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
       - name: Configure Git
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
 
       - name: Commit and push version file
+        id: commit_version
         run: |
           git add -f parallax-version.json
 
           if git diff --cached --quiet; then
             echo "No changes to version file. Skipping commit."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
           git commit -m "[skip ci] [ci version bump] Update parallax-version.json"
           git push
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Create and push tag
+        if: steps.commit_version.outputs.changed == 'true'
+        id: tag_version
+        run: |
+          TAG="v${{ steps.generate_version.outputs.version }}"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
+          git fetch --tags --force
+
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "Tag $TAG already exists. Skipping tag creation."
+            exit 0
+          fi
+
+          git tag -a "$TAG" -m "Parallax $TAG"
+          git push origin "$TAG"
+
+      - name: Create GitHub release
+        if: steps.commit_version.outputs.changed == 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag_version.outputs.tag }}
+          name: Parallax ${{ steps.tag_version.outputs.tag }}
+          generate_release_notes: true
