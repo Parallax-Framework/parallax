@@ -118,6 +118,8 @@ spawnmenu.AddContentType("axitem", function(container, obj)
 
     -- if we have an image, hide the spawn icon
     if ( !obj.material or obj.material == "" ) then
+        spawnIcon:SetVisible(true)
+    else
         spawnIcon:SetVisible(false)
     end
 
