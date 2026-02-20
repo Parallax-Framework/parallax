@@ -123,3 +123,40 @@ cvars.AddChangeCallback("gmod_language", function(convar, oldValue, newValue)
 end, "ax_localization_change")
 
 ax.localisation = ax.localization
+
+if ( CLIENT ) then
+    local languageConVar = GetConVar("gmod_language")
+
+    concommand.Add("ax_localization_missing_keys", function()
+        local localizationLangs = ax.localization.langs
+        local defaultLang = localizationLangs.en
+        if ( !istable(defaultLang) ) then
+            ax.util:PrintWarning("ax.localization: Unable to check missing keys because \"en\" localization is not loaded.")
+            return
+        end
+
+        local langCode = languageConVar and languageConVar:GetString() or "en"
+        local currentLang = localizationLangs[langCode]
+        if ( !istable(currentLang) ) then
+            ax.util:PrintWarning("ax.localization: Localization \"" .. langCode .. "\" is not loaded.")
+            return
+        end
+
+        ax.util:Print("ax.localization: Missing keys for \"" .. langCode .. "\" (using \"en\" as reference):")
+
+        local missingCount = 0
+        for key in SortedPairs(defaultLang) do
+            if ( currentLang[key] == nil ) then
+                missingCount = missingCount + 1
+                ax.util:Print(" - " .. tostring(key))
+            end
+        end
+
+        if ( missingCount == 0 ) then
+            ax.util:PrintSuccess("ax.localization: No missing keys found for \"" .. langCode .. "\".")
+            return
+        end
+
+        ax.util:Print("ax.localization: Total missing keys: " .. missingCount)
+    end)
+end
