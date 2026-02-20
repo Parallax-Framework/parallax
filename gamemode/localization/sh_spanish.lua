@@ -31,6 +31,7 @@ ax.localization:Register("es", {
     ["category.chat"] = "Chat",
     ["category.gameplay"] = "Gameplay",
     ["category.general"] = "General",
+    ["category.audio"] = "Audio",
     ["category.interface"] = "Interfaz",
     ["category.modules"] = "Módulos",
     ["category.schema"] = "Schema",
@@ -101,6 +102,14 @@ ax.localization:Register("es", {
     ---- Characters
     ["config.autosave.interval"] = "Intervalo de Guardado Automático de Personajes",
     ["config.characters.max"] = "Máximo de Personajes",
+
+    -- Audio
+    ["config.proximity"] = "Habilitar sistema de voz por proximidad",
+    ["config.proximityMaxDistance"] = "Distancia Máxima de Proximidad",
+    ["config.proximityMaxTraces"] = "Máximo de Trazas de Proximidad",
+    ["config.proximityMaxVolume"] = "Volumen Máximo de Proximidad",
+    ["config.proximityMuteVolume"] = "Volumen al Silenciar Proximidad",
+    ["config.proximityUnMutedDistance"] = "Distancia para Restaurar Volumen",
 
     -- Options Translations
     --- Chat
