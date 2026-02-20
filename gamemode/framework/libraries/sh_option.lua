@@ -44,6 +44,13 @@
 -- Create the option store (preserve existing store during hot-reload)
 local optionSpec = {
     name = "option",
+    data = {
+        key = "parallax_options",
+        options = {
+            scope = "global",
+            human = true
+        }
+    },
     path = function()
         return ax.util:BuildDataPath("parallax_options", { scope = "global" })
     end,

@@ -31,6 +31,13 @@
 -- Create the config store (preserve existing store during hot-reload)
 local configSpec = {
     name = "config",
+    data = {
+        key = "config",
+        options = {
+            scope = "project",
+            human = true
+        }
+    },
     path = function()
         return ax.util:BuildDataPath("config", { scope = "project" })
     end,
