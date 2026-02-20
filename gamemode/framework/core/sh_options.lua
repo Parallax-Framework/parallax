@@ -118,6 +118,60 @@ ax.option:Add("inventory.columns", ax.type.number, 4, {
     bNoNetworking = true
 })
 
+ax.option:Add("inventory.sort.categories", ax.type.array, "alphabetical", {
+    category = "interface",
+    subCategory = "inventory",
+    description = "inventory.sort.categories.help",
+    choices = {
+        ["alphabetical"] = "inventory.sort.alphabetical",
+        ["manual"] = "inventory.sort.manual"
+    },
+    bNoNetworking = true
+})
+
+ax.option:Add("inventory.sort.items", ax.type.array, "alphabetical", {
+    category = "interface",
+    subCategory = "inventory",
+    description = "inventory.sort.items.help",
+    choices = {
+        ["alphabetical"] = "inventory.sort.alphabetical",
+        ["weight"] = "inventory.sort.weight",
+        ["class"] = "inventory.sort.class"
+    },
+    bNoNetworking = true
+})
+
+ax.option:Add("inventory.search.live", ax.type.bool, true, {
+    category = "interface",
+    subCategory = "inventory",
+    description = "inventory.search.live.help",
+    bNoNetworking = true
+})
+
+ax.option:Add("inventory.categories.collapsible", ax.type.bool, false, {
+    category = "interface",
+    subCategory = "inventory",
+    description = "inventory.categories.collapsible.help",
+    bNoNetworking = true
+})
+
+ax.option:Add("inventory.pagination.page_size", ax.type.number, 24, {
+    category = "interface",
+    subCategory = "inventory",
+    description = "inventory.pagination.page_size.help",
+    min = 1,
+    max = 128,
+    decimals = 0,
+    bNoNetworking = true
+})
+
+ax.option:Add("inventory.actions.confirm_bulk_drop", ax.type.bool, true, {
+    category = "interface",
+    subCategory = "inventory",
+    description = "inventory.actions.confirm_bulk_drop.help",
+    bNoNetworking = true
+})
+
 ax.option:Add("button.delay.click", ax.type.number, 0.1, {
     category = "interface",
     subCategory = "buttons",

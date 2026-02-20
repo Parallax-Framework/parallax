@@ -374,6 +374,7 @@ ax.net:Hook("inventory.sync", function(inventoryID, inventoryItems, inventoryMax
     }, ax.inventory.meta)
 
     if ( IsValid(ax.gui.inventory) and ax.gui.inventory.inventory and ax.gui.inventory.inventory.id == inventoryID ) then
+        ax.gui.inventory.inventory = ax.inventory.instances[inventoryID]
         ax.gui.inventory:PopulateItems()
 
         if ( ax.gui.inventory.stack ) then

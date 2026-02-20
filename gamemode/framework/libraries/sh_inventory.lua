@@ -73,6 +73,29 @@ if ( SERVER ) then
         query:Execute()
     end
 
+    local function SyncInventoryNow(self, inventory)
+        local items = {}
+        if ( istable(inventory.items) ) then
+            for _, v in pairs(inventory.items) do
+                items[#items + 1] = {
+                    id = v.id,
+                    class = v.class,
+                    data = v.data or {},
+                    inventoryID = v.invID
+                }
+            end
+        end
+
+        ax.net:Start(inventory:GetReceivers(), "inventory.sync", inventory.id, items, inventory.maxWeight, inventory.receivers or {})
+
+        self._syncState = self._syncState or {}
+        local state = self._syncState[inventory.id] or {}
+        state.lastSync = CurTime()
+        self._syncState[inventory.id] = state
+
+        ax.util:PrintDebug(string.format("Synchronized inventory %d with %d receivers.", inventory.id, #inventory:GetReceivers()))
+    end
+
     --- Synchronizes the specified inventory with all clients.
     -- @realm server
     -- @param inventory table|number The inventory table or inventory ID to sync.
@@ -91,21 +114,39 @@ if ( SERVER ) then
             return
         end
 
-        local items = {}
-        if ( istable(inventory.items) ) then
-            for k, v in pairs(inventory.items) do
-                items[#items + 1] = {
-                    id = v.id,
-                    class = v.class,
-                    data = v.data or {},
-                    inventoryID = v.invID
-                }
-            end
+        local useSyncScheduling = tobool(ax.config:Get("inventory.sync.delta", false))
+        local debounce = math.max(tonumber(ax.config:Get("inventory.sync.debounce", 0.0)) or 0.0, 0)
+        local minRefreshInterval = math.max(tonumber(ax.config:Get("inventory.sync.full_refresh_interval", 0.0)) or 0.0, 0)
+
+        if ( !useSyncScheduling ) then
+            SyncInventoryNow(self, inventory)
+            return
         end
 
-        ax.net:Start(inventory:GetReceivers(), "inventory.sync", inventory.id, items, inventory.maxWeight, inventory.receivers or {})
+        self._syncState = self._syncState or {}
+        local inventoryID = inventory.id
+        local state = self._syncState[inventoryID] or {lastSync = 0}
+        self._syncState[inventoryID] = state
 
-        ax.util:PrintDebug(string.format("Synchronized inventory %d with %d receivers.", inventory.id, #inventory:GetReceivers()))
+        local now = CurTime()
+        local nextSyncTime = math.max(now + debounce, (state.lastSync or 0) + minRefreshInterval)
+        local delay = math.max(nextSyncTime - now, 0)
+        local timerName = "ax.inventory.sync." .. tostring(inventoryID)
+
+        if ( delay <= 0 ) then
+            timer.Remove(timerName)
+            SyncInventoryNow(self, inventory)
+            return
+        end
+
+        timer.Create(timerName, delay, 1, function()
+            local liveInventory = self.instances[inventoryID]
+            if ( getmetatable(liveInventory) != ax.inventory.meta ) then
+                return
+            end
+
+            SyncInventoryNow(self, liveInventory)
+        end)
     end
 
     --- Restores all inventories associated with the client's characters from the database.
@@ -123,11 +164,30 @@ if ( SERVER ) then
         ax.util:PrintDebug(string.format("Found %d character IDs for %s", #characterIDs, client:SteamID64()))
 
         -- Sync all world items (inventory_id = 0) to the client
+        local worldItems = {}
         for itemID, item in pairs(ax.item.instances) do
             if ( item.invID == 0 or item:GetInventoryID() == 0 ) then
-                ax.net:Start(client, "item.spawn", itemID, item.class, item.data or {})
+                worldItems[#worldItems + 1] = {
+                    id = itemID,
+                    class = item.class,
+                    data = item.data or {}
+                }
             end
         end
+
+        local restoreBatchSize = math.max(math.floor(tonumber(ax.config:Get("inventory.restore.batch_size", 32)) or 32), 1)
+        for i = 1, #worldItems do
+            local batchIndex = math.floor((i - 1) / restoreBatchSize)
+            local delay = batchIndex * 0.02
+            local worldItem = worldItems[i]
+
+            timer.Simple(delay, function()
+                if ( !ax.util:IsValidPlayer(client) ) then return end
+
+                ax.net:Start(client, "item.spawn", worldItem.id, worldItem.class, worldItem.data)
+            end)
+        end
+
         ax.util:PrintDebug(string.format("Synced world items to %s", client:SteamID64()))
 
         -- TODO: Find a way to optimize this to use fewer pyramids

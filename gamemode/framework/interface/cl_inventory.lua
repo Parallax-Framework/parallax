@@ -9,8 +9,8 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
--- TODO: Rewrite entire inventory interface, this is complete chaos. split into multiple files like "cl_inventory.lua" for main panel, "cl_inventory_item.lua" for item rows, "cl_inventory_info.lua" for info panel, etc.
-
+-- TODO: Rewrite entire inventory interface, this is complete chaos.
+-- TODO: Split into multiple files like "cl_inventory.lua" for main panel, "cl_inventory_item.lua" for item rows, "cl_inventory_info.lua" for info panel, etc.
 -- TODO: Make this into a util function in case we want to use it for other things like weapon inspection or character preview in character menu, etc.
 local function GetDesiredFov()
     local conVar = GetConVar("fov_desired")
@@ -71,11 +71,12 @@ function PANEL:Init()
 
     local maxWeight = inventory:GetMaxWeight()
     local weight = inventory:GetWeight()
+    local safeMaxWeight = math.max(maxWeight, 0.001)
 
     self.infoExpandedHeight = INVENTORY_INFO_HEIGHT
 
     self.weightProgress = self.listing:Add("DProgress")
-    self.weightProgress:SetFraction(weight / maxWeight)
+    self.weightProgress:SetFraction(weight / safeMaxWeight)
     self.weightProgress:SetTall(ax.util:ScreenScale(12))
     self.weightProgress:Dock(TOP)
     self.weightProgress:DockMargin(0, 0, 0, ax.util:ScreenScaleH(8))
@@ -98,8 +99,61 @@ function PANEL:Init()
     self.weightCounter:SetContentAlignment(5)
     self.weightCounter:Dock(FILL)
 
+    self.searchQuery = ""
+    self.inventoryPage = 1
+    self.collapsedCategories = {}
+
+    self.searchEntry = self.listing:Add("ax.text.entry")
+    self.searchEntry:Dock(TOP)
+    self.searchEntry:SetZPos(-10)
+    self.searchEntry:DockMargin(0, 0, 0, ax.util:ScreenScaleH(6))
+    self.searchEntry:SetPlaceholderText("Search inventory...")
+    self.searchEntry.OnValueChange = function(entry, value)
+        if ( !ax.option:Get("inventory.search.live", true) ) then return end
+
+        self.searchQuery = string.Trim(entry:GetValue() or value or "")
+        self.inventoryPage = 1
+        self:PopulateItems()
+    end
+    self.searchEntry.OnEnter = function(entry)
+        self.searchQuery = string.Trim(entry:GetValue() or "")
+        self.inventoryPage = 1
+        self:PopulateItems()
+    end
+
+    self.pagination = self.listing:Add("EditablePanel")
+    self.pagination:Dock(TOP)
+    self.pagination:SetZPos(-9)
+    self.pagination:SetTall(ax.util:ScreenScaleH(20))
+    self.pagination:DockMargin(0, 0, 0, ax.util:ScreenScaleH(6))
+    self.pagination.Paint = nil
+
+    self.pagePrev = self.pagination:Add("ax.button")
+    self.pagePrev:Dock(LEFT)
+    self.pagePrev:SetWide(ax.util:ScreenScale(24))
+    self.pagePrev:SetText("<", true)
+    self.pagePrev.DoClick = function()
+        self.inventoryPage = math.max((self.inventoryPage or 1) - 1, 1)
+        self:PopulateItems()
+    end
+
+    self.pageNext = self.pagination:Add("ax.button")
+    self.pageNext:Dock(RIGHT)
+    self.pageNext:SetWide(ax.util:ScreenScale(24))
+    self.pageNext:SetText(">", true)
+    self.pageNext.DoClick = function()
+        self.inventoryPage = (self.inventoryPage or 1) + 1
+        self:PopulateItems()
+    end
+
+    self.pageCounter = self.pagination:Add("ax.text")
+    self.pageCounter:Dock(FILL)
+    self.pageCounter:SetFont("ax.small")
+    self.pageCounter:SetContentAlignment(5)
+
     self.container = self.listing:Add("ax.scroller.vertical")
     self.container:Dock(FILL)
+    self.container:SetZPos(0)
     self.container:GetVBar():SetWide(0)
     self.container.Paint = nil
 
@@ -262,73 +316,133 @@ function PANEL:InfoClose()
     })
 end
 
-function PANEL:PopulateItems()
-    local character = self.character
-    local inventory = self.inventory
+function PANEL:GetLiveStackItems(stack)
+    if ( !istable(stack) ) then return {} end
+    if ( !istable(self.inventory) ) then return {} end
 
-    if ( !character or !inventory ) then return end
+    local inventoryItems = self.inventory:GetItems() or {}
+    local inventoryLookup = {}
+    for _, invItem in pairs(inventoryItems) do
+        if ( istable(invItem) and isnumber(invItem.id) ) then
+            inventoryLookup[invItem.id] = invItem
+        end
+    end
 
-    -- Check if current info panel should be closed due to inventory changes
-    if ( self.stack and istable(self.stack) ) then
-        local stackStillExists = false
-        for _, stackedItem in pairs(self.stack.stackedItems or {}) do
-            for itemId, invItem in pairs(inventory:GetItems()) do
-                if ( invItem.id == stackedItem.id ) then
-                    stackStillExists = true
+    local liveItems = {}
+    local seen = {}
+    for _, stackedItem in ipairs(stack.stackedItems or {}) do
+        local liveItem = istable(stackedItem) and inventoryLookup[stackedItem.id] or nil
+        if ( istable(liveItem) and !seen[liveItem.id] ) then
+            liveItems[#liveItems + 1] = liveItem
+            seen[liveItem.id] = true
+        end
+    end
+
+    if ( liveItems[1] == nil and isstring(stack.class) and stack.class != "" ) then
+        for _, invItem in pairs(inventoryItems) do
+            if ( istable(invItem) and invItem.class == stack.class and !seen[invItem.id] ) then
+                liveItems[#liveItems + 1] = invItem
+                seen[invItem.id] = true
+
+                if ( isnumber(stack.maxStack) and #liveItems >= stack.maxStack ) then
                     break
                 end
             end
-            if ( stackStillExists ) then break end
         end
+    end
 
-        if ( !stackStillExists ) then
+    return liveItems
+end
+
+function PANEL:ResolveLiveStack(stack)
+    if ( !istable(stack) ) then return nil end
+
+    local liveItems = self:GetLiveStackItems(stack)
+    if ( liveItems[1] == nil ) then
+        return nil
+    end
+
+    local representativeItem = liveItems[1]
+    local itemTemplate = ax.item.stored[representativeItem.class] or {}
+
+    return {
+        class = representativeItem.class,
+        category = tostring(representativeItem.category or stack.category or "Miscellaneous"),
+        stackCount = #liveItems,
+        stackedItems = liveItems,
+        representativeItem = representativeItem,
+        shouldStack = stack.shouldStack == nil and (itemTemplate.shouldStack or false) or stack.shouldStack,
+        maxStack = stack.maxStack or itemTemplate.maxStack or 1
+    }
+end
+
+function PANEL:PopulateItems()
+    local character = self.character
+    local inventory = character and character:GetInventory() or self.inventory
+
+    if ( !character or !inventory ) then return end
+    self.inventory = inventory
+
+    -- Check if current info panel should be closed due to inventory changes
+    if ( self.stack and istable(self.stack) ) then
+        local liveStack = self:ResolveLiveStack(self.stack)
+        if ( !istable(liveStack) ) then
             self:InfoClose()
             self.stack = nil
+        else
+            self.stack = liveStack
         end
     end
 
     self.container:Clear()
 
     local weightText = ax.localization:GetPhrase("inventory.weight.abbreviation")
-    self.weightProgress:SetFraction(inventory:GetWeight() / inventory:GetMaxWeight())
+    local maxWeight = math.max(inventory:GetMaxWeight(), 0.001)
+    self.weightProgress:SetFraction(inventory:GetWeight() / maxWeight)
     self.weightCounter:SetText(math.Round(inventory:GetWeight(), 2) .. weightText .. " / " .. inventory:GetMaxWeight() .. weightText, true)
 
-    -- TODO: Sort categories alphabetically
-    -- TODO: Sort items within categories alphabetically
-    -- TODO: Allow pressing categories to collapse/expand them
-    -- TODO: Implement search/filter functionality
-    -- TODO: Support drag-and-drop for item management (e.g., moving to hotbar, equipping)
-    -- TODO: Add support for inventory tabs which would be used for things like bags/backpacks or different storage containers, etc. Drag and drop items between tabs to move them. This would also be used for things like crafting where you have a separate crafting tab that you can move items into to craft with, etc. or if you want to move things from your inventory to a container in the world, etc. Though storage containers still need to be implemented in the framework before we can do that, but it would be a good idea to design the inventory interface with that in mind from the start.
-    -- TODO: Add pagination for large inventories
-    -- TODO: Replace the representative item feature with a more robust system that can handle cases where items in the same stack have different appearances or actions (e.g., partially used items, items with durability, etc.)
+    if ( IsValid(self.searchEntry) and ax.option:Get("inventory.search.live", true) ) then
+        self.searchQuery = string.Trim(self.searchEntry:GetValue() or "")
+    end
 
-    -- Organize items by category first, with stacking support
+    local categorySortMode = ax.option:Get("inventory.sort.categories", "alphabetical")
+    local itemSortMode = ax.option:Get("inventory.sort.items", "alphabetical")
+    local collapsibleCategories = ax.option:Get("inventory.categories.collapsible", true)
+
+    local maxPageSize = math.max(math.floor(tonumber(ax.config:Get("inventory.pagination.max_page_size", 64)) or 64), 1)
+    local defaultPageSize = math.Clamp(math.floor(tonumber(ax.config:Get("inventory.pagination.default_page_size", 24)) or 24), 1, maxPageSize)
+    local pageSize = math.Clamp(math.floor(tonumber(ax.option:Get("inventory.pagination.page_size", defaultPageSize)) or defaultPageSize), 1, maxPageSize)
+    local searchQuery = utf8.lower(string.Trim(self.searchQuery or ""))
+
+    -- Organize items by category first, with stacking support.
     local categorizedItems = {}
-    for k, v in pairs(inventory:GetItems()) do
+    local categoryOrder = {}
+    for _, v in pairs(inventory:GetItems()) do
         if ( !ax.item.stored[v.class] ) then
             ax.util:PrintDebug("Item class '" .. tostring(v.class) .. "' not found in registry, skipping...")
             continue
         end
 
-        -- Ensure category is a string and normalize it
+        -- Ensure category is a string and normalize it.
         local category = tostring(v.category or "Miscellaneous")
 
         if ( !categorizedItems[category] ) then
             categorizedItems[category] = {}
+            categoryOrder[#categoryOrder + 1] = category
         end
 
-        -- Check if item should stack with existing items
+        -- Check if item should stack with existing items.
         local itemClass = v.class
         local itemTemplate = ax.item.stored[itemClass]
         local shouldStack = itemTemplate.shouldStack or false
         local maxStack = itemTemplate.maxStack or 1
 
         if ( shouldStack ) then
-            -- Look for existing stack of the same class
+            -- Look for existing stack of the same class.
             local foundStack = false
             for i, existingStack in ipairs(categorizedItems[category]) do
                 if ( existingStack.class == itemClass and existingStack.stackCount < maxStack ) then
-                    -- Add to existing stack
+                    -- Add to existing stack.
                     existingStack.stackCount = existingStack.stackCount + 1
                     existingStack.stackedItems[ #existingStack.stackedItems + 1 ] = v
                     foundStack = true
@@ -337,7 +451,7 @@ function PANEL:PopulateItems()
             end
 
             if ( !foundStack ) then
-                -- Create new stack
+                -- Create new stack.
                 categorizedItems[category][ #categorizedItems[category] + 1 ] = {
                     class = itemClass,
                     category = category,
@@ -349,7 +463,7 @@ function PANEL:PopulateItems()
                 }
             end
         else
-            -- Non-stackable item, add individually
+            -- Non-stackable item, add individually.
             categorizedItems[category][ #categorizedItems[category] + 1 ] = {
                 class = itemClass,
                 category = category,
@@ -362,70 +476,195 @@ function PANEL:PopulateItems()
         end
     end
 
-    -- Sort categories alphabetically with more robust sorting
     local sortedCategories = {}
-    for categoryName, stacks in pairs(categorizedItems) do
-        sortedCategories[ #sortedCategories + 1 ] = categoryName
+    if ( categorySortMode == "manual" ) then
+        for i = 1, #categoryOrder do
+            sortedCategories[#sortedCategories + 1] = categoryOrder[i]
+        end
+    else
+        for categoryName in pairs(categorizedItems) do
+            sortedCategories[ #sortedCategories + 1 ] = categoryName
+        end
+
+        table.sort(sortedCategories, function(a, b)
+            return utf8.lower(tostring(a)) < utf8.lower(tostring(b))
+        end)
     end
 
-    -- Use case-insensitive sorting for consistency
-    table.sort(sortedCategories, function(a, b)
-        return utf8.lower(tostring(a)) < utf8.lower(tostring(b))
-    end)
-
-    -- Create grid layout for each category in sorted order
     for i = 1, #sortedCategories do
         local categoryName = sortedCategories[i]
-        local stacks = categorizedItems[categoryName]
-        -- Add category header
+        local stacks = categorizedItems[categoryName] or {}
+
+        table.sort(stacks, function(a, b)
+            local representativeA = a.representativeItem
+            local representativeB = b.representativeItem
+
+            local nameA = utf8.lower(tostring((istable(representativeA) and representativeA:GetName()) or a.class or ""))
+            local nameB = utf8.lower(tostring((istable(representativeB) and representativeB:GetName()) or b.class or ""))
+
+            if ( itemSortMode == "weight" ) then
+                local weightA = (istable(representativeA) and tonumber(representativeA:GetWeight())) or 0
+                local weightB = (istable(representativeB) and tonumber(representativeB:GetWeight())) or 0
+                if ( weightA == weightB ) then
+                    return nameA < nameB
+                end
+
+                return weightA < weightB
+            elseif ( itemSortMode == "class" ) then
+                local classA = utf8.lower(tostring(a.class or ""))
+                local classB = utf8.lower(tostring(b.class or ""))
+                if ( classA == classB ) then
+                    return nameA < nameB
+                end
+
+                return classA < classB
+            end
+
+            return nameA < nameB
+        end)
+    end
+
+    local filteredStacks = {}
+    for i = 1, #sortedCategories do
+        local categoryName = sortedCategories[i]
+        local stacks = categorizedItems[categoryName] or {}
+
+        for _, stack in ipairs(stacks) do
+            local representativeItem = stack.representativeItem
+            if ( !istable(representativeItem) ) then
+                continue
+            end
+
+            local displayName = utf8.lower(tostring(representativeItem:GetName() or ""))
+            local className = utf8.lower(tostring(stack.class or ""))
+            local category = utf8.lower(tostring(categoryName or ""))
+            local description = utf8.lower(tostring(representativeItem:GetDescription() or ""))
+
+            if (
+                searchQuery == ""
+                or string.find(displayName, searchQuery, 1, true)
+            ) then
+                filteredStacks[#filteredStacks + 1] = {
+                    category = categoryName,
+                    stack = stack
+                }
+            end
+        end
+    end
+
+    local totalStacks = #filteredStacks
+    local pageCount = math.max(math.ceil(math.max(totalStacks, 1) / pageSize), 1)
+    self.inventoryPage = math.Clamp(tonumber(self.inventoryPage) or 1, 1, pageCount)
+
+    local startIndex = ((self.inventoryPage - 1) * pageSize) + 1
+    local endIndex = math.min(startIndex + pageSize - 1, totalStacks)
+
+    if ( IsValid(self.pageCounter) ) then
+        local shownStacks = totalStacks > 0 and (endIndex - startIndex + 1) or 0
+        self.pageCounter:SetText("Page " .. self.inventoryPage .. " / " .. pageCount .. " (" .. shownStacks .. " of " .. totalStacks .. ")", true)
+    end
+
+    if ( IsValid(self.pagePrev) ) then
+        self.pagePrev:SetEnabled(self.inventoryPage > 1)
+    end
+
+    if ( IsValid(self.pageNext) ) then
+        self.pageNext:SetEnabled(self.inventoryPage < pageCount)
+    end
+
+    if ( IsValid(self.pagination) ) then
+        self.pagination:SetVisible(totalStacks > 0)
+    end
+
+    if ( totalStacks < 1 ) then
+        local emptyText = self.container:Add("ax.text")
+        emptyText:Dock(TOP)
+        emptyText:SetFont("ax.regular.italic")
+        emptyText:SetText(searchQuery != "" and "No inventory items match your search." or "No items in inventory.", true)
+        emptyText:SetContentAlignment(4)
+        return
+    end
+
+    local pageCategories = {}
+    local pageCategoryStacks = {}
+    for i = startIndex, endIndex do
+        local pageEntry = filteredStacks[i]
+        if ( !istable(pageEntry) ) then
+            continue
+        end
+
+        local categoryName = pageEntry.category
+        if ( !pageCategoryStacks[categoryName] ) then
+            pageCategoryStacks[categoryName] = {}
+            pageCategories[#pageCategories + 1] = categoryName
+        end
+
+        pageCategoryStacks[categoryName][#pageCategoryStacks[categoryName] + 1] = pageEntry.stack
+    end
+
+    for i = 1, #pageCategories do
+        local categoryName = pageCategories[i]
+        local stacks = pageCategoryStacks[categoryName] or {}
+        local isCollapsed = collapsibleCategories and self.collapsedCategories[categoryName] == true
+
         local categoryPanel = self.container:Add("ax.text")
 
-        -- Use user preference for italic styling
         local useItalic = ax.option:Get("inventory.categories.italic", false)
         local categoryFont = useItalic and "ax.huge.bold.italic" or "ax.huge.bold"
 
         categoryPanel:SetFont(categoryFont)
-        categoryPanel:SetText(utf8.upper(categoryName), true)
+        local collapsePrefix = collapsibleCategories and (isCollapsed and "[+] " or "[-] ") or ""
+        categoryPanel:SetText(collapsePrefix .. utf8.upper(categoryName), true)
         categoryPanel:Dock(TOP)
         categoryPanel:DockMargin(0, 0, 0, ax.util:ScreenScaleH(4))
 
-        for _, stack in ipairs(stacks) do
-            local representativeItem = stack.representativeItem
-
-            local item = self.container:Add("ax.button")
-            item:SetFont("ax.small")
-            item:SetFontDefault("ax.small")
-            item:SetFontHovered("ax.small.bold")
-            item:Dock(TOP)
-            item:DockMargin(0, 0, 0, ax.util:ScreenScaleH(4))
-            item.isInventoryRow = true
-
-            -- Display stack count in item name if stacked
-            local displayName = representativeItem:GetName() or tostring(representativeItem)
-            item:SetText(displayName, true)
-            item:SetContentAlignment(4)
-            item:SetTextInset(item:GetTall() + ax.util:ScreenScale(8), 0)
-
-            item.DoClick = function()
-                self:InfoOpen()
-                self.info:Clear()
-                self:PopulateInfo(stack)
+        if ( collapsibleCategories ) then
+            categoryPanel:SetMouseInputEnabled(true)
+            categoryPanel:SetCursor("hand")
+            categoryPanel.OnMousePressed = function()
+                self.collapsedCategories[categoryName] = !isCollapsed
+                self:PopulateItems()
             end
+        end
 
-            local icon = item:Add("SpawnIcon")
-            icon:SetWide(item:GetTall() - 16)
-            icon:DockMargin(8, 8, 8, 8)
-            icon:SetModel(representativeItem:GetModel() or "models/props_junk/wood_crate001a.mdl")
-            icon:SetMouseInputEnabled(false)
-            icon:Dock(LEFT)
+        if ( !isCollapsed ) then
+            for _, stack in ipairs(stacks) do
+                local representativeItem = stack.representativeItem
 
-            if ( stack.stackCount > 1 ) then
-                local stackLabel = item:Add("ax.text")
-                stackLabel:Dock(RIGHT)
-                stackLabel:DockMargin(0, 0, ax.util:ScreenScale(8), 0)
-                stackLabel:SetFont("ax.small.italic")
-                stackLabel:SetText("x" .. stack.stackCount, true)
-                stackLabel:SetContentAlignment(6)
+                local item = self.container:Add("ax.button")
+                item:SetFont("ax.small")
+                item:SetFontDefault("ax.small")
+                item:SetFontHovered("ax.small.bold")
+                item:Dock(TOP)
+                item:DockMargin(0, 0, 0, ax.util:ScreenScaleH(4))
+                item.isInventoryRow = true
+
+                local displayName = representativeItem:GetName() or tostring(representativeItem)
+                item:SetText(displayName, true)
+                item:SetContentAlignment(4)
+                item:SetTextInset(item:GetTall() + ax.util:ScreenScale(8), 0)
+
+                item.DoClick = function()
+                    self:InfoOpen()
+                    self.info:Clear()
+                    self:PopulateInfo(stack)
+                end
+
+                local icon = item:Add("SpawnIcon")
+                icon:SetWide(item:GetTall() - 16)
+                icon:DockMargin(8, 8, 8, 8)
+                icon:SetModel(representativeItem:GetModel() or "models/props_junk/wood_crate001a.mdl")
+                icon:SetMouseInputEnabled(false)
+                icon:Dock(LEFT)
+
+                if ( stack.stackCount > 1 ) then
+                    local stackLabel = item:Add("ax.text")
+                    stackLabel:Dock(RIGHT)
+                    stackLabel:DockMargin(0, 0, ax.util:ScreenScale(8), 0)
+                    stackLabel:SetFont("ax.small.italic")
+                    stackLabel:SetText("x" .. stack.stackCount, true)
+                    stackLabel:SetContentAlignment(6)
+                end
             end
         end
 
@@ -536,10 +775,17 @@ function PANEL:PopulateInfo(stack)
         actionButton:SetIcon(v.icon)
 
         actionButton.DoClick = function()
+            local liveStack = self:ResolveLiveStack(stack)
+            if ( !istable(liveStack) ) then
+                ax.util:PrintError("No valid items in this stack remain.")
+                self:InfoClose()
+                return
+            end
+
             -- Use a random item from the stack for the action
             local itemToUse
             -- Iterate through stacked items to find one that can perform the action and if we have it in the inventory still
-            for _, stackedItem in pairs(stack.stackedItems) do
+            for _, stackedItem in ipairs(liveStack.stackedItems or {}) do
                 -- Get the item template to check for actions
                 local itemTemplate = ax.item.stored[stackedItem.class]
                 if ( itemTemplate and itemTemplate:GetActions()[k] ) then
@@ -571,30 +817,45 @@ function PANEL:PopulateInfo(stack)
         end
 
         if ( k == "drop" and stack.stackCount > 1 ) then
+            local function DropStackQuantity(quantity)
+                local liveStack = self:ResolveLiveStack(stack)
+                if ( !istable(liveStack) ) then
+                    ax.util:PrintError("No valid items in this stack remain.")
+                    self:InfoClose()
+                    return
+                end
+
+                quantity = math.floor(tonumber(quantity) or 1)
+                quantity = math.Clamp(quantity, 1, liveStack.stackCount)
+
+                for i = 1, quantity do
+                    timer.Simple(i * 0.1, function()
+                        if ( !IsValid(self) ) then return end
+                        if ( !istable(liveStack) or #liveStack.stackedItems < i ) then return end
+                        local item = liveStack.stackedItems[i]
+                        if ( !istable(item) ) then return end
+
+                        ax.net:Start("inventory.item.action", item.id, "drop")
+                    end)
+                end
+
+                -- Close info panel immediately for user feedback.
+                -- Server will handle the actual inventory updates.
+                self:InfoClose()
+            end
+
             actionButton.DoRightClick = function()
+                if ( !ax.option:Get("inventory.actions.confirm_bulk_drop", true) ) then
+                    DropStackQuantity(stack.stackCount)
+                    return
+                end
+
                 Derma_StringRequest(
                     "Drop Item",
                     "Enter the quantity to drop (max " .. stack.stackCount .. "):",
                     tostring(stack.stackCount),
                     function(text)
-                        local quantity = tonumber(text) or 1
-                        quantity = math.Clamp(quantity, 1, stack.stackCount)
-
-                        for i = 1, quantity do
-                            print(" Dropping item " .. i .. " of " .. quantity )
-                            timer.Simple(i * 0.1, function()
-                                if ( !IsValid(self) ) then return end
-                                if ( !istable(stack) or #stack.stackedItems < i ) then return end
-                                local item = stack.stackedItems[i]
-                                if ( !istable(item) ) then return end
-
-                                ax.net:Start("inventory.item.action", item.id, "drop")
-                            end)
-                        end
-
-                        -- Close info panel immediately for user feedback
-                        -- Server will handle the actual inventory updates
-                        self:InfoClose()
+                        DropStackQuantity(text)
                     end,
                     nil
                 )

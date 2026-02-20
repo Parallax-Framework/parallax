@@ -177,6 +177,75 @@ ax.config:Add("inventory.weight.max", ax.type.number, 30.0, {
     subCategory = "inventory"
 })
 
+ax.config:Add("inventory.sync.delta", ax.type.bool, false, {
+    description = "inventory.sync.delta.help",
+    category = "gameplay",
+    subCategory = "inventory"
+})
+
+ax.config:Add("inventory.sync.debounce", ax.type.number, 0.0, {
+    description = "inventory.sync.debounce.help",
+    min = 0.0,
+    max = 2.0,
+    decimals = 2,
+    category = "gameplay",
+    subCategory = "inventory"
+})
+
+ax.config:Add("inventory.sync.full_refresh_interval", ax.type.number, 0.0, {
+    description = "inventory.sync.full_refresh_interval.help",
+    min = 0.0,
+    max = 30.0,
+    decimals = 2,
+    category = "gameplay",
+    subCategory = "inventory"
+})
+
+ax.config:Add("inventory.action.rate_limit", ax.type.number, 0.1, {
+    description = "inventory.action.rate_limit.help",
+    min = 0.0,
+    max = 2.0,
+    decimals = 2,
+    category = "gameplay",
+    subCategory = "inventory"
+})
+
+ax.config:Add("inventory.transfer.rate_limit", ax.type.number, 0.1, {
+    description = "inventory.transfer.rate_limit.help",
+    min = 0.0,
+    max = 2.0,
+    decimals = 2,
+    category = "gameplay",
+    subCategory = "inventory"
+})
+
+ax.config:Add("inventory.pagination.default_page_size", ax.type.number, 24, {
+    description = "inventory.pagination.default_page_size.help",
+    min = 1,
+    max = 200,
+    decimals = 0,
+    category = "gameplay",
+    subCategory = "inventory"
+})
+
+ax.config:Add("inventory.pagination.max_page_size", ax.type.number, 64, {
+    description = "inventory.pagination.max_page_size.help",
+    min = 1,
+    max = 500,
+    decimals = 0,
+    category = "gameplay",
+    subCategory = "inventory"
+})
+
+ax.config:Add("inventory.restore.batch_size", ax.type.number, 32, {
+    description = "inventory.restore.batch_size.help",
+    min = 1,
+    max = 256,
+    decimals = 0,
+    category = "gameplay",
+    subCategory = "inventory"
+})
+
 ax.config:Add("speed.walk", ax.type.number, 90, {
     description = "speed.walk.help",
     min = 50,

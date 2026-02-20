@@ -68,7 +68,8 @@ ax.net:Hook("item.transfer", function(client, itemID, targetInventoryID)
     local character = client:GetCharacter()
     if ( !character ) then return end
 
-    if ( !client:RateLimit("item.transfer", 0.1) ) then return end
+    local transferRateLimit = math.max(tonumber(ax.config:Get("inventory.transfer.rate_limit", 0.1)) or 0.1, 0)
+    if ( !client:RateLimit("item.transfer", transferRateLimit) ) then return end
 
     if ( !isnumber(itemID) or itemID < 1 ) then
         ax.util:Error("Invalid payload received for item transfer.")
@@ -102,7 +103,8 @@ ax.net:Hook("item.transfer", function(client, itemID, targetInventoryID)
 end)
 
 ax.net:Hook("inventory.item.action", function(client, itemID, action)
-    if ( !client:RateLimit("inventory.action", 0.1) ) then return end
+    local actionRateLimit = math.max(tonumber(ax.config:Get("inventory.action.rate_limit", 0.1)) or 0.1, 0)
+    if ( !client:RateLimit("inventory.action", actionRateLimit) ) then return end
 
     if ( !isnumber(itemID) or itemID < 1 or !isstring(action) or #action < 1 ) then
         ax.util:Error("Invalid payload received for item action.")
@@ -252,9 +254,9 @@ ax.net:Hook("character.create", function(client, payload)
 
         client:Notify("You have successfully created a new character!", "success")
 
-        local faction = ax.faction:Get( character:GetFaction() )
-        if ( istable( faction ) and isfunction( faction.OnCharacterCreated ) ) then
-            faction:OnCharacterCreated( client, character )
+        local faction = ax.faction:Get(character:GetFaction())
+        if ( istable(faction) and isfunction(faction.OnCharacterCreated) ) then
+            faction:OnCharacterCreated(client, character)
         end
 
         hook.Run("PlayerCreatedCharacter", client, character)
