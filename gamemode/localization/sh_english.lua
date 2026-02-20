@@ -31,6 +31,7 @@ ax.localization:Register("en", {
     ["category.chat"] = "Chat",
     ["category.gameplay"] = "Gameplay",
     ["category.general"] = "General",
+    ["category.audio"] = "Audio",
     ["category.interface"] = "Interface",
     ["category.modules"] = "Modules",
     ["category.schema"] = "Schema",

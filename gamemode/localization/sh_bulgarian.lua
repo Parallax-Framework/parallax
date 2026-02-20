@@ -21,6 +21,7 @@ ax.localization:Register("bg", {
     ["category.chat"] = "Чат",
     ["category.gameplay"] = "Геймплей",
     ["category.general"] = "Общи",
+    ["category.audio"] = "Аудио",
     ["category.interface"] = "Интерфейс",
     ["category.modules"] = "Модули",
 

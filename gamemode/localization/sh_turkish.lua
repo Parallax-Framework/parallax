@@ -21,6 +21,7 @@ ax.localization:Register("tr", {
     ["category.chat"] = "Sohbet",
     ["category.gameplay"] = "Oynanış",
     ["category.general"] = "Genel",
+    ["category.audio"] = "Ses",
     ["category.interface"] = "Arayüz",
     ["category.modules"] = "Modüller",
 

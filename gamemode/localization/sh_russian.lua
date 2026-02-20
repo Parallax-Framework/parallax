@@ -22,6 +22,7 @@ ax.localization:Register("ru", {
     ["category.chat"] = "Чат",
     ["category.gameplay"] = "Игра",
     ["category.general"] = "Основное",
+    ["category.audio"] = "Аудио",
     ["category.interface"] = "Интерфейс",
     ["category.modules"] = "Модули",
 
