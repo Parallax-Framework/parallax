@@ -103,6 +103,14 @@ ax.localization:Register("en", {
     ["config.autosave.interval"] = "Character Autosave Interval",
     ["config.characters.max"] = "Max Characters",
 
+    -- Audio
+    ["config.proximity"] = "Enable Proximity Voice",
+    ["config.proximityMaxDistance"] = "Proximity Max Distance",
+    ["config.proximityMaxTraces"] = "Proximity Max Traces",
+    ["config.proximityMaxVolume"] = "Proximity Max Volume",
+    ["config.proximityMuteVolume"] = "Proximity Mute Volume",
+    ["config.proximityUnMutedDistance"] = "Proximity Unmute Distance",
+
     -- Options Translations
     --- Chat
     ---- Basic
