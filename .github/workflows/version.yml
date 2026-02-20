@@ -52,12 +52,12 @@ jobs:
           PATCH_PADDED=$(printf "%02d" $PATCH)
           VERSION="$MAJOR.$MINOR.$PATCH_PADDED"
 
-          echo "{" > parallax-version.json
-          echo "  \"version\": \"$VERSION\"," >> parallax-version.json
-          echo "  \"commitCount\": $VALID_COUNT," >> parallax-version.json
-          echo "  \"commitHash\": \"$(git rev-parse --short HEAD)\"," >> parallax-version.json
-          echo "  \"branch\": \"main\"" >> parallax-version.json
-          echo "}" >> parallax-version.json
+          echo "{" > version.json
+          echo "  \"version\": \"$VERSION\"," >> version.json
+          echo "  \"commitCount\": $VALID_COUNT," >> version.json
+          echo "  \"commitHash\": \"$(git rev-parse --short HEAD)\"," >> version.json
+          echo "  \"branch\": \"main\"" >> version.json
+          echo "}" >> version.json
 
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
@@ -69,7 +69,7 @@ jobs:
       - name: Commit and push version file
         id: commit_version
         run: |
-          git add -f parallax-version.json
+          git add -f version.json
 
           if git diff --cached --quiet; then
             echo "No changes to version file. Skipping commit."
@@ -77,7 +77,7 @@ jobs:
             exit 0
           fi
 
-          git commit -m "[skip ci] [ci version bump] Update parallax-version.json"
+          git commit -m "[skip ci] [ci version bump] Update version.json"
           git push
           echo "changed=true" >> "$GITHUB_OUTPUT"
 
