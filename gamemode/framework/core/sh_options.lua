@@ -33,7 +33,8 @@ ax.option:Add("interface.theme", ax.type.array, "dark", {
         ["blue"] = "theme.blue",
         ["purple"] = "theme.purple",
         ["green"] = "theme.green",
-        ["red"] = "theme.red"
+        ["red"] = "theme.red",
+        ["orange"] = "theme.orange"
     },
     bNoNetworking = true,
     OnChanged = function(self, oldValue, value)

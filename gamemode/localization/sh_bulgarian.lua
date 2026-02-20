@@ -179,6 +179,7 @@ ax.localization:Register("bg", {
     ["theme.purple"] = "Лилава",
     ["theme.green"] = "Зелена",
     ["theme.red"] = "Червена",
+    ["theme.orange"] = "Оранжева",
 
     ---- Fonts
     ["option.fontScaleGeneral"] = "Общ Мащаб на Шрифта",

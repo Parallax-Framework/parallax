@@ -180,6 +180,7 @@ ax.localization:Register("ru", {
     ["theme.purple"] = "Фиолетовая",
     ["theme.green"] = "Зелёная",
     ["theme.red"] = "Красная",
+    ["theme.orange"] = "Оранжевая",
 
     ---- Fonts
     ["option.fontScaleGeneral"] = "Размер основного шрифта",

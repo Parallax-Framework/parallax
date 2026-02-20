@@ -186,6 +186,35 @@ ax.theme.themes.red = {
     }
 }
 
+ax.theme.themes.orange = {
+    glass = {
+        panel = Color(30, 20, 12, 180),
+        panelBorder = Color(205, 140, 80, 85),
+        header = Color(42, 28, 16, 210),
+        button = Color(42, 28, 16, 170),
+        buttonHover = Color(62, 40, 22, 210),
+        buttonActive = Color(88, 56, 30, 230),
+        buttonBorder = Color(225, 160, 95, 100),
+        input = Color(34, 22, 14, 180),
+        inputBorder = Color(205, 140, 80, 90),
+        menu = Color(36, 24, 15, 200),
+        menuBorder = Color(205, 140, 80, 90),
+        overlay = Color(20, 12, 8, 100),
+        overlayStrong = Color(20, 12, 8, 160),
+        progress = Color(255, 170, 90, 220),
+        highlight = Color(240, 150, 70, 140),
+        gradientTop = Color(95, 55, 25, 50),
+        gradientBottom = Color(30, 16, 8, 70),
+        gradientLeft = Color(75, 40, 18, 35),
+        gradientRight = Color(75, 40, 18, 35),
+        tabBackdrop = Color(20, 12, 8, 40),
+        text = Color(255, 234, 214, 255),
+        textHover = Color(255, 245, 230, 255),
+        textMuted = Color(220, 185, 150, 255),
+        comboboxHoveredArrow = Color(255, 234, 214, 200)
+    }
+}
+
 local function ScaleAlpha(color, scale)
     if ( !color ) then return nil end
     scale = scale or 1

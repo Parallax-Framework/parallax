@@ -179,6 +179,7 @@ ax.localization:Register("es", {
     ["theme.purple"] = "Morado",
     ["theme.green"] = "Verde",
     ["theme.red"] = "Rojo",
+    ["theme.orange"] = "Naranja",
 
     ---- Fonts
     ["option.fontScaleGeneral"] = "Escala de Fuente General",

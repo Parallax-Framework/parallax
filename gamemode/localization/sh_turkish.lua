@@ -179,6 +179,7 @@ ax.localization:Register("tr", {
     ["theme.purple"] = "Mor",
     ["theme.green"] = "Yeşil",
     ["theme.red"] = "Kırmızı",
+    ["theme.orange"] = "Turuncu",
 
     ---- Fonts
     ["option.fontScaleGeneral"] = "Genel Yazı Tipi Ölçeği",
