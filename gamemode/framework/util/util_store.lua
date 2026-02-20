@@ -62,6 +62,8 @@ function ax.util:CreateStore(spec, oldStore)
 
     -- Server-side per-player cache for options (networked keys only)
     local SERVER_CACHE = {}
+    local PERSISTED_CACHE = nil
+    local PERSISTED_CACHE_LOADED = false
 
     local function ResolvePath(pathSpec)
         if ( isfunction(pathSpec) ) then
@@ -80,7 +82,30 @@ function ax.util:CreateStore(spec, oldStore)
         return nil
     end
 
+    local function GetDataSpec()
+        if ( !istable(spec.data) ) then
+            return nil, nil
+        end
+
+        local dataKey = spec.data.key
+        if ( !isstring(dataKey) or dataKey == "" ) then
+            return nil, nil
+        end
+
+        local dataOptions = {}
+        if ( istable(spec.data.options) ) then
+            dataOptions = table.Copy(spec.data.options)
+        end
+
+        return dataKey, dataOptions
+    end
+
     local function GetPrimaryPath()
+        local dataKey, dataOptions = GetDataSpec()
+        if ( dataKey ) then
+            return ax.util:BuildDataPath(dataKey, dataOptions)
+        end
+
         return ResolvePath(spec.path)
     end
 
@@ -106,8 +131,17 @@ function ax.util:CreateStore(spec, oldStore)
             return nil, nil
         end
 
-        local data = ax.util:ReadJSON(primaryPath)
-        if ( data ) then
+        local data = nil
+        local dataKey, dataOptions = GetDataSpec()
+        if ( dataKey and istable(ax.data) and isfunction(ax.data.Get) ) then
+            local readOptions = table.Copy(dataOptions or {})
+            readOptions.force = true
+            data = ax.data:Get(dataKey, nil, readOptions)
+        else
+            data = ax.util:ReadJSON(primaryPath)
+        end
+
+        if ( istable(data) ) then
             return data, primaryPath
         end
 
@@ -118,7 +152,14 @@ function ax.util:CreateStore(spec, oldStore)
 
             local legacyData = ax.util:ReadJSON(legacyPath)
             if ( legacyData ) then
-                if ( ax.util:WriteJSON(primaryPath, legacyData) ) then
+                local writeSuccess = false
+                if ( dataKey and istable(ax.data) and isfunction(ax.data.Set) ) then
+                    writeSuccess = ax.data:Set(dataKey, legacyData, dataOptions or {})
+                else
+                    writeSuccess = ax.util:WriteJSON(primaryPath, legacyData)
+                end
+
+                if ( writeSuccess ) then
                     ax.util:PrintDebug(spec.name, " Migrated store data from ", legacyPath, " to ", primaryPath)
                 else
                     ax.util:PrintWarning(spec.name, " Failed to migrate store data from ", legacyPath, " to ", primaryPath)
@@ -129,6 +170,20 @@ function ax.util:CreateStore(spec, oldStore)
         end
 
         return nil, primaryPath
+    end
+
+    local function InvalidatePersistedCache()
+        PERSISTED_CACHE = nil
+        PERSISTED_CACHE_LOADED = false
+    end
+
+    local function GetPersistedDataCached()
+        if ( !PERSISTED_CACHE_LOADED ) then
+            PERSISTED_CACHE = LoadPersistedData()
+            PERSISTED_CACHE_LOADED = true
+        end
+
+        return PERSISTED_CACHE
     end
 
     --- Add a new setting definition to the store.
@@ -160,7 +215,7 @@ function ax.util:CreateStore(spec, oldStore)
         end
 
         if ( (spec.authority == "client" and CLIENT) or (spec.authority == "server" and SERVER) ) then
-            local storedValues = LoadPersistedData() or {}
+            local storedValues = GetPersistedDataCached() or {}
             if ( storedValues[key] != nil ) then
                 local coerced, err = ax.type:Sanitise(type, storedValues[key])
                 if ( coerced != nil ) then
@@ -248,6 +303,57 @@ function ax.util:CreateStore(spec, oldStore)
         return store.defaults[key]
     end
 
+    local function ValidateArrayChoice(key, regEntry, value)
+        local data = regEntry.data or {}
+        local choices = nil
+
+        if ( istable(data.choices) ) then
+            choices = data.choices
+        elseif ( isfunction(data.populate) ) then
+            local ok, populated = ax.util:SafeCall(data.populate)
+            if ( ok and istable(populated) ) then
+                choices = populated
+            end
+        end
+
+        if ( istable(choices) and next(choices) != nil and choices[value] == nil ) then
+            return false, "invalid choice"
+        end
+
+        return true
+    end
+
+    local function CoerceStoreValue(key, regEntry, value)
+        local coerced, err = ax.type:Sanitise(regEntry.type, value)
+        if ( coerced == nil ) then
+            return nil, err
+        end
+
+        local data = regEntry.data or {}
+        if ( regEntry.type == ax.type.number ) then
+            coerced = ax.util:ClampRound(coerced, data.min, data.max, data.decimals)
+        elseif ( regEntry.type == ax.type.array ) then
+            local validChoice, choiceErr = ValidateArrayChoice(key, regEntry, coerced)
+            if ( !validChoice ) then
+                return nil, choiceErr
+            end
+        end
+
+        return coerced
+    end
+
+    local function ValuesEqual(oldValue, newValue)
+        if ( oldValue == newValue ) then
+            return true
+        end
+
+        if ( istable(oldValue) and istable(newValue) ) then
+            return table.EqualValues(oldValue, newValue)
+        end
+
+        return false
+    end
+
     --- Set a value in the store.
     -- Coerces to the registered type, clamps numbers, validates array choices,
     -- triggers OnChanged and global hooks, persists, and handles networking.
@@ -269,37 +375,27 @@ function ax.util:CreateStore(spec, oldStore)
             return false
         end
 
-        local coerced, err = ax.type:Sanitise(regEntry.type, value)
+        local coerced, err = CoerceStoreValue(key, regEntry, value)
         if ( coerced == nil ) then
             ax.util:PrintDebug(spec.name, " Set: Invalid value for ", key, ": ", err)
             return false
-        end
-
-        if ( regEntry.type == ax.type.number ) then
-            local data = regEntry.data
-            coerced = ax.util:ClampRound(coerced, data.min, data.max, data.decimals)
-        end
-
-        if ( regEntry.type == ax.type.array and isfunction(regEntry.data.populate) ) then
-            local ok, choices = ax.util:SafeCall(regEntry.data.populate)
-            if ( ok and istable(choices) and !choices[coerced] ) then
-                ax.util:PrintDebug(spec.name, "Set: Invalid choice for ", key, ":", coerced)
-                return false
-            end
         end
 
         -- For configs on client, check CONFIG_CACHE for current value, not store.values
         local oldValue
         if ( CLIENT and spec.name == "config" ) then
             oldValue = CONFIG_CACHE[key]
+            if ( oldValue == nil ) then
+                oldValue = store.values[key]
+            end
         else
             oldValue = store.values[key]
         end
 
-        -- if ( oldValue == coerced ) then
-        --     ax.util:PrintDebug(spec.name, " Set: ", key, " = ", coerced, " (no change)")
-        --     return false
-        -- end
+        if ( ValuesEqual(oldValue, coerced) ) then
+            ax.util:PrintDebug(spec.name, " Set: ", key, " = ", coerced, " (no change)")
+            return false
+        end
 
         store.values[key] = coerced
 
@@ -445,6 +541,8 @@ function ax.util:CreateStore(spec, oldStore)
             return false
         end
 
+        InvalidatePersistedCache()
+
         local data, dataPath = LoadPersistedData()
         if ( !data ) then
             ax.util:PrintDebug(spec.name, " Load: No data file found at ", dataPath or "<invalid path>")
@@ -466,6 +564,9 @@ function ax.util:CreateStore(spec, oldStore)
         end
 
         ax.util:PrintDebug(spec.name, " Loaded ", loaded, " settings from ", dataPath or "<invalid path>")
+
+        PERSISTED_CACHE = table.Copy(data)
+        PERSISTED_CACHE_LOADED = true
 
         if ( spec.name == "config" ) then
             hook.Run("OnConfigsLoaded")
@@ -496,9 +597,18 @@ function ax.util:CreateStore(spec, oldStore)
             return false
         end
 
-        local success = ax.util:WriteJSON(dataPath, data)
+        local success = false
+        local dataKey, dataOptions = GetDataSpec()
+        if ( dataKey and istable(ax.data) and isfunction(ax.data.Set) ) then
+            success = ax.data:Set(dataKey, data, dataOptions or {})
+        else
+            success = ax.util:WriteJSON(dataPath, data)
+        end
+
         if ( success ) then
             ax.util:PrintDebug(spec.name, " Saved ", table.Count(data), " settings to ", dataPath)
+            PERSISTED_CACHE = table.Copy(data)
+            PERSISTED_CACHE_LOADED = true
         else
             ax.util:PrintWarning(spec.name, " Failed to save settings to ", dataPath)
         end
@@ -615,7 +725,18 @@ function ax.util:CreateStore(spec, oldStore)
 
                     SERVER_CACHE[client] = SERVER_CACHE[client] or {}
                     for key, value in pairs(data) do
-                        SERVER_CACHE[client][key] = value
+                        if ( !store.networkedKeys[key] ) then continue end
+
+                        local regEntry = store.registry[key]
+                        if ( !regEntry ) then continue end
+
+                        local coerced, err = CoerceStoreValue(key, regEntry, value)
+                        if ( coerced == nil ) then
+                            ax.util:PrintDebug(spec.name, " Sync: rejected invalid value from ", client:Nick(), " for ", key, ": ", err)
+                            continue
+                        end
+
+                        SERVER_CACHE[client][key] = coerced
                     end
 
                     ax.util:PrintDebug(spec.name, " Received option sync from ", client:Nick(), ": ", table.Count(data), " keys")
@@ -624,10 +745,21 @@ function ax.util:CreateStore(spec, oldStore)
                 ax.net:Hook(spec.net.set, function(client, key, value)
                     if ( !ax.util:IsValidPlayer(client) ) then return end
 
-                    SERVER_CACHE[client] = SERVER_CACHE[client] or {}
-                    SERVER_CACHE[client][key] = value
+                    if ( !store.networkedKeys[key] ) then return end
 
-                    ax.util:PrintDebug(spec.name, " Received option update from ", client:Nick(), ": ", key, " = ", value)
+                    local regEntry = store.registry[key]
+                    if ( !regEntry ) then return end
+
+                    local coerced, err = CoerceStoreValue(key, regEntry, value)
+                    if ( coerced == nil ) then
+                        ax.util:PrintDebug(spec.name, " Set: rejected invalid value from ", client:Nick(), " for ", key, ": ", err)
+                        return
+                    end
+
+                    SERVER_CACHE[client] = SERVER_CACHE[client] or {}
+                    SERVER_CACHE[client][key] = coerced
+
+                    ax.util:PrintDebug(spec.name, " Received option update from ", client:Nick(), ": ", key, " = ", coerced)
                 end)
 
                 hook.Add("PlayerDisconnected", "ax.option.Cleanup", function(client)
