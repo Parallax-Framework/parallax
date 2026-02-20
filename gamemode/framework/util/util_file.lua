@@ -204,15 +204,26 @@ function ax.util:WriteJSON(path, tbl)
     if ( !isstring(path) or !istable(tbl) ) then return false end
 
     local success, json = pcall(util.TableToJSON, tbl)
-    if ( !success ) then return false end
+    if ( !success or !isstring(json) or json == "" ) then
+        ax.util:PrintWarning("WriteJSON: failed to encode table for path '" .. tostring(path) .. "'")
+        return false
+    end
 
     -- Ensure directory exists
     local dir = string.GetPathFromFilename(path)
     if ( dir and dir != "" ) then
-        file.CreateDir(dir)
+        local okDir, errDir = pcall(file.CreateDir, dir)
+        if ( !okDir ) then
+            ax.util:PrintWarning("WriteJSON: failed to create directory '" .. tostring(dir) .. "' for path '" .. tostring(path) .. "': " .. tostring(errDir))
+            return false
+        end
     end
 
-    file.Write(path, json)
+    local okWrite, errWrite = pcall(file.Write, path, json)
+    if ( !okWrite ) then
+        ax.util:PrintWarning("WriteJSON: failed to write path '" .. tostring(path) .. "': " .. tostring(errWrite))
+        return false
+    end
 
     return true
 end
