@@ -11,14 +11,14 @@
 
 local function ReadVersionFile()
     -- Attempt to read from the gamemode root (installed with gamemode files)
-    local content = file.Read("gamemodes/parallax/parallax-version.json", "GAME")
+    local content = file.Read("gamemodes/parallax/version.json", "GAME")
     if ( !content ) then
-        ax.util:PrintWarning("parallax-version.json not found in gamemode folder")
+        ax.util:PrintWarning("version.json not found in gamemode folder")
         return nil
     end
 
     if ( !content ) then
-        ax.util:PrintWarning("parallax-version.json not found; ax.version will be empty")
+        ax.util:PrintWarning("version.json not found; ax.version will be empty")
         return nil
     end
 
@@ -27,7 +27,7 @@ local function ReadVersionFile()
         return data
     end
 
-    ax.util:PrintWarning("Failed to parse parallax-version.json; ax.version will be empty")
+    ax.util:PrintWarning("Failed to parse version.json; ax.version will be empty")
     return nil
 end
 

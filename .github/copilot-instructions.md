@@ -30,7 +30,7 @@ This file gives an immediate, actionable orientation for an AI coding agent work
 - **Developer mode**: Set `developer 1` ConVar to enable `ax.util:PrintDebug` output and detailed framework logging.
 - **Linting**: Use `.glualint.json` configuration. Follow `STYLE.md` conventions (4 spaces, colon methods, K&R formatting).
 - **Documentation**: LDoc generates docs to `public/` via `config.ld`. Use LDOC comments with `@realm`, `@param`, `@return`, `@usage`.
-- **Version tracking**: `parallax-version.json` contains version/build info, updated by CI workflows.
+- **Version tracking**: `version.json` contains version/build info, updated by CI workflows.
 
 ## 6) Project-specific patterns and gotchas
 - **Include helpers**: Prefer `ax.util:Include(path)` and `ax.util:IncludeDirectory(dir)` over raw `include`/`AddCSLuaFile` - they handle realm detection and path normalization.
