@@ -137,6 +137,33 @@ ax.localization:Register("en", {
     ["option.thirdperson.desired.lerp.fov.help"] = "Interpolation speed for the third-person camera desired FOV. Lower values will be more smooth but also more slower to respond. Set to 0 to disable interpolation."
 })
 
+ax.localization:Register("tr", {
+    ["category.camera"] = "Kamera",
+    ["subcategory.thirdperson"] = "Üçüncü Şahıs",
+    ["config.thirdperson"] = "Üçüncü Şahsı Etkinleştir",
+    ["config.thirdperson.help"] = "Sunucunun üçüncü şahıs kamera işlevine izin verip vermeyeceği.",
+    ["option.thirdperson"] = "Üçüncü Şahsı Etkinleştir",
+    ["option.thirdperson.help"] = "Üçüncü şahıs kamera modunu aç/kapat.",
+    ["option.thirdperson.x"] = "X Ofset",
+    ["option.thirdperson.x.help"] = "Üçüncü şahıs kamera için X ofseti.",
+    ["option.thirdperson.y"] = "Y Ofset",
+    ["option.thirdperson.y.help"] = "Üçüncü şahıs kamera için Y ofseti.",
+    ["option.thirdperson.z"] = "Z Ofset",
+    ["option.thirdperson.z.help"] = "Üçüncü şahıs kamera için Z ofseti.",
+    ["option.thirdperson.follow.head"] = "Kafayı Takip Et",
+    ["option.thirdperson.follow.head.help"] = "Üçüncü şahıs kameranın oyuncu modelinin kafa hareketlerini takip etmesini sağlar.",
+    ["option.thirdperson.follow.angles"] = "Açıları Takip Et",
+    ["option.thirdperson.follow.angles.help"] = "Üçüncü şahıs kameranın bakış açıları yerine oyuncunun nişan yönünü takip etmesini sağlar.",
+    ["option.thirdperson.follow.fov"] = "Görüş Açısını Takip Et",
+    ["option.thirdperson.follow.fov.help"] = "Üçüncü şahıs kamera FOV değerini, iz son noktası ile oyuncu arasındaki mesafeye göre hesaplar.",
+    ["option.thirdperson.desired.lerp.pos"] = "Hedef Konum Geçiş Hızı",
+    ["option.thirdperson.desired.lerp.pos.help"] = "Üçüncü şahıs kameranın hedef konumu için geçiş hızı. Daha düşük değerler daha akıcıdır ancak tepkiyi yavaşlatır. Geçişi devre dışı bırakmak için 0 yapın.",
+    ["option.thirdperson.desired.lerp.angle"] = "Hedef Açı Geçiş Hızı",
+    ["option.thirdperson.desired.lerp.angle.help"] = "Üçüncü şahıs kameranın hedef açısı için geçiş hızı. Daha düşük değerler daha akıcıdır ancak tepkiyi yavaşlatır. Geçişi devre dışı bırakmak için 0 yapın.",
+    ["option.thirdperson.desired.lerp.fov"] = "Hedef FOV Geçiş Hızı",
+    ["option.thirdperson.desired.lerp.fov.help"] = "Üçüncü şahıs kameranın hedef FOV değeri için geçiş hızı. Daha düşük değerler daha akıcıdır ancak tepkiyi yavaşlatır. Geçişi devre dışı bırakmak için 0 yapın."
+})
+
 ax.localization:Register("de", {
     ["category.camera"] = "Kamera",
     ["subcategory.thirdperson"] = "Dritte Person",

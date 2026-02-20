@@ -187,6 +187,47 @@ ax.localization:Register("en", {
     ["option.intro.sound.path.help"] = "Sound path used for the typewriter effect."
 })
 
+ax.localization:Register("tr", {
+    ["category.interface"] = "Arayüz",
+    ["subcategory.intro"] = "Giriş",
+    ["config.intro.enabled"] = "Girişi Etkinleştir",
+    ["config.intro.enabled.help"] = "Karşılama girişinin istemcilerde oynatılmasına izin verir.",
+    ["config.intro.location.show"] = "Konum Satırını Göster",
+    ["config.intro.location.show.help"] = "Girişte ana konum satırını göster.",
+    ["config.intro.location.text"] = "Konum Metni",
+    ["config.intro.location.text.help"] = "Ana konum satırı için metin.",
+    ["config.intro.framework.show"] = "Framework Kredilerini Göster",
+    ["config.intro.framework.show.help"] = "Framework kredi satırını göster.",
+    ["config.intro.framework.template"] = "Framework Kredi Şablonu",
+    ["config.intro.framework.template.help"] = "Framework kredileri için şablon. {author} ve {framework} kullanın.",
+    ["config.intro.schema.show"] = "Şema Kredilerini Göster",
+    ["config.intro.schema.show.help"] = "Şema kredi satırını göster.",
+    ["config.intro.schema.template"] = "Şema Kredi Şablonu",
+    ["config.intro.schema.template.help"] = "Şema kredileri için şablon. {schema} ve {schema_author} kullanın.",
+    ["config.intro.text.color"] = "Giriş Metin Rengi",
+    ["config.intro.text.color.help"] = "Giriş satırları için temel metin rengi.",
+    ["config.intro.font.title"] = "Başlık Yazı Tipi",
+    ["config.intro.font.title.help"] = "Ana giriş satırı için yazı tipi.",
+    ["config.intro.font.credits"] = "Kredi Yazı Tipi",
+    ["config.intro.font.credits.help"] = "Kredi satırları için yazı tipi.",
+    ["option.intro.enabled"] = "Girişi Göster",
+    ["option.intro.enabled.help"] = "İstemcinde karşılama girişini göster.",
+    ["option.intro.hold.time"] = "Satır Bekleme Süresi",
+    ["option.intro.hold.time.help"] = "Her giriş satırının ekranda kalma süresi.",
+    ["option.intro.fade.speed"] = "Solma Hızı",
+    ["option.intro.fade.speed.help"] = "Giriş satırları için solma hızı (daha yüksek = daha hızlı).",
+    ["option.intro.fade.out.delay"] = "Solma Gecikmesi",
+    ["option.intro.fade.out.delay.help"] = "Bitişten önce solmanın başlaması için saniye.",
+    ["option.intro.typewriter.enabled"] = "Daktilo Efekti",
+    ["option.intro.typewriter.enabled.help"] = "Daktilo efektini etkinleştir.",
+    ["option.intro.typewriter.delay"] = "Daktilo Gecikmesi",
+    ["option.intro.typewriter.delay.help"] = "Yazılan her karakter arasındaki gecikme.",
+    ["option.intro.sound.enabled"] = "Daktilo Sesi",
+    ["option.intro.sound.enabled.help"] = "Yazılan her karakter için bir ses çal.",
+    ["option.intro.sound.path"] = "Daktilo Ses Yolu",
+    ["option.intro.sound.path.help"] = "Daktilo efekti için kullanılan ses yolu."
+})
+
 local function FormatTemplate(template, data)
     if ( !isstring(template) ) then return "" end
 

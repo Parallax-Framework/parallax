@@ -47,6 +47,14 @@ ax.localization:Register("en", {
     ["option.curvy.edge_fade"] = "Edge Fade"
 })
 
+ax.localization:Register("tr", {
+    ["category.visual"] = "Görsel",
+    ["subcategory.curvy"] = "Kavis",
+    ["option.curvy"] = "Kavisli HUD",
+    ["option.curvy.intensity"] = "Kavis",
+    ["option.curvy.edge_fade"] = "Kenar Solması"
+})
+
 ax.localization:Register("ru", {
     ["category.visual"] = "Визуал",
     ["subcategory.curvy"] = "Изогнутость",
