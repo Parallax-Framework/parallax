@@ -8,10 +8,12 @@ local surface = surface
 local Color = Color
 local draw = draw
 
-ax.util:AddSound("ax.gui.menu.return", "parallax/ui/pano_menu_return.ogg", 0.25, 100, CHAN_STATIC)
-ax.util:AddSound("ax.gui.menu.close", "parallax/ui/pano_menu_close.ogg", 0.25, 100, CHAN_STATIC)
+ax.util:AddSound("ax.gui.menu.switch", "parallax/ui/pano_sub_menu.ogg", 0.1, 100, CHAN_STATIC)
+ax.util:AddSound("ax.gui.menu.return", "parallax/ui/pano_menu_return.ogg", 0.2, 100, CHAN_STATIC)
+ax.util:AddSound("ax.gui.menu.close", "parallax/ui/pano_menu_close.ogg", 0.2, 100, CHAN_STATIC)
 
-ax.util:AddSound("ax.gui.button.enter", "parallax/ui/pano_rollover.ogg", 0.25, 100, CHAN_STATIC)
+ax.util:AddSound("ax.gui.button.enter", "parallax/ui/pano_rollover.ogg", 0.2, 100, CHAN_STATIC)
+ax.util:AddSound("ax.gui.button.toggle", "parallax/ui/pano_toggle.ogg", 1, 100, CHAN_STATIC)
 ax.util:AddSound("ax.gui.button.click", "parallax/ui/pano_select.ogg", 1, 100, CHAN_STATIC)
 
 SKIN = {}
