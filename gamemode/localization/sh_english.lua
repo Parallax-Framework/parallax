@@ -23,6 +23,7 @@ ax.localization:Register("en", {
     -- Tab Menu Translations
     ["tab.config"] = "Config",
     ["tab.help"] = "Help",
+    ["tab.help.modules"] = "Modules",
     ["tab.inventory"] = "Inventory",
     ["tab.scoreboard"] = "Scoreboard",
     ["tab.settings"] = "Settings",

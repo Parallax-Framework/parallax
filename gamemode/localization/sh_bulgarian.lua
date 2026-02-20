@@ -23,6 +23,7 @@ ax.localization:Register("bg", {
     -- Tab Menu Translations
     ["tab.config"] = "Конфигурация",
     ["tab.help"] = "Помощ",
+    ["tab.help.modules"] = "Модули",
     ["tab.inventory"] = "Инвентар",
     ["tab.scoreboard"] = "Табло",
     ["tab.settings"] = "Настройки",
