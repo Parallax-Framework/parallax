@@ -50,6 +50,7 @@ function PANEL:Init()
 
     self.alpha = 0
     self:SetAlpha(0)
+    self.opening = true
     self.closing = false
 
     self.backgroundBlur = 0
@@ -101,6 +102,7 @@ function PANEL:Init()
     characters:SetText("tab.characters")
     characters:SetWide(characters:GetWide() * 1.25)
     characters.DoClick = function()
+        ax.client:EmitSound("ax.gui.menu.close")
         self:Close(function()
             ax.gui.main = vgui.Create("ax.main")
         end)
@@ -116,6 +118,9 @@ function PANEL:Open()
         Easing = "OutQuad",
         Think = function(this)
             self:SetAlpha(this.alpha)
+        end,
+        OnComplete = function()
+            self.opening = false
         end
     })
 
@@ -257,6 +262,10 @@ function PANEL:PopulateTabs()
         end
 
         button.DoClick = function()
+            if ( !self.opening ) then
+                ax.client:EmitSound("ax.gui.menu.switch")
+            end
+
             ax.gui.tabLast = k
 
             -- call OnOpen and OnClose hooks
@@ -303,6 +312,10 @@ function PANEL:PopulateTabs()
                     -- end
 
                     subbutton.DoClick = function()
+                        if ( !self.opening ) then
+                            ax.client:EmitSound("ax.gui.menu.switch")
+                        end
+
                         ax.gui.tabLast = sectionKey
                         self:TransitionToPage(self.tabs[sectionKey].index, ax.option:Get("tabFadeTime", 0.25))
                     end
