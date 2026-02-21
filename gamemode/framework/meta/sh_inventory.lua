@@ -23,8 +23,18 @@ end
 function inventory:GetWeight()
     local weight = 0
     for k, v in pairs(self.items) do
-        if ( istable(v) and isnumber(v.weight) ) then
-            weight = weight + v.weight
+        if ( istable(v) ) then
+            local itemWeight
+
+            if ( isfunction(v.GetWeight) ) then
+                itemWeight = tonumber(v:GetWeight())
+            else
+                itemWeight = tonumber(v.weight)
+            end
+
+            if ( isnumber(itemWeight) and itemWeight > 0 ) then
+                weight = weight + itemWeight
+            end
         end
     end
 
@@ -218,14 +228,47 @@ function inventory:RemoveReceivers()
     return true
 end
 
+function inventory:CanStoreWeight(weight)
+    local currentWeight = self:GetWeight()
+    local maxWeight = self:GetMaxWeight()
+
+    if ( currentWeight + weight > maxWeight ) then
+        return false, "This inventory cannot hold that much weight."
+    end
+
+    return true
+end
+
+function inventory:CanStoreItem(itemClass)
+    local itemData = ax.item.stored[itemClass]
+    if ( !istable(itemData) ) then
+        return false, "Invalid item class."
+    end
+
+    if ( itemData.weight and self:GetWeight() + itemData.weight > self:GetMaxWeight() ) then
+        return false, "This inventory cannot hold that much weight."
+    end
+
+    if ( isfunction(itemData.CanAddToInventory) and itemData:CanAddToInventory(self) == false ) then
+        return false, "This inventory cannot store that item."
+    end
+
+    return true
+end
+
 if ( SERVER ) then
-    function inventory:AddItem(class, data)
+    function inventory:AddItem(class, data, callback)
         if ( !istable(self.items) ) then self.items = {} end
 
         local item = ax.item.stored[class]
         if ( !istable(item) ) then
             ax.util:PrintError("Invalid item provided to ax.inventory:AddItem() (" .. tostring(class) .. ")")
-            return false
+            return false, "Invalid item class."
+        end
+
+        local canStore, reason = self:CanStoreItem(class)
+        if ( !canStore ) then
+            return false, reason or "This inventory cannot store that item."
         end
 
         data = data or {}
@@ -237,7 +280,7 @@ if ( SERVER ) then
             query:Callback(function(result, status, lastID)
                 if ( result == false ) then
                     ax.util:PrintError("Failed to insert item into database for inventory " .. self.id)
-                    return false
+                    return false, "Failed to add item to inventory, DB error."
                 end
 
                 local itemObject = ax.item:Instance(lastID, class)
@@ -250,7 +293,11 @@ if ( SERVER ) then
 
                 ax.net:Start(self:GetReceivers(), "inventory.item.add", self.id, itemObject.id, itemObject.class, itemObject.data)
 
-                return true
+                if ( isfunction(callback) ) then
+                    callback(itemObject)
+                end
+
+                return true, "Item added to inventory."
             end)
         query:Execute()
     end
@@ -280,7 +327,7 @@ if ( SERVER ) then
                     query:Callback(function(result, status)
                         if ( result == false ) then
                             ax.util:PrintError("Failed to remove item from database for inventory " .. self.id)
-                            return false
+                            return false, "Failed to remove item from inventory, DB error."
                         end
 
                         self.items[item_id] = nil
@@ -290,7 +337,7 @@ if ( SERVER ) then
 
                         ax.util:PrintDebug("Removed item ID " .. itemID .. " from inventory " .. self.id)
 
-                        return true
+                        return true, "Item removed from inventory."
                     end)
                 query:Execute()
 
