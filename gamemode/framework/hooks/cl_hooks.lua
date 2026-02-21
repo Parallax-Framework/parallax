@@ -64,7 +64,7 @@ function GM:PlayerBindPress(client, bind, pressed, code)
             client.axMenuPressCount = 0
         else
             timer.Simple(2, function()
-                if ( IsValid(client) and CurTime() - client.axMenuPressTime >= 2 ) then
+                if ( ax.util:IsValidPlayer(client) and CurTime() - client.axMenuPressTime >= 2 ) then
                     client.axMenuPressCount = 0
                 end
             end)
@@ -270,10 +270,7 @@ function GM:HUDPaint()
 
     local target = trace.Entity
     targetData[target:EntIndex()] = targetData[target:EntIndex()] or { lastSeen = 0, alpha = 0 }
-
-    if ( ax.util:IsValidPlayer(target) and target != client ) then
-        targetData[target:EntIndex()].lastSeen = CurTime()
-    end
+    targetData[target:EntIndex()].lastSeen = CurTime()
 
     local ft = FrameTime()
     for entIndex, data in pairs(targetData) do
