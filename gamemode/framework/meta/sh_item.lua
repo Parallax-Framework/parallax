@@ -124,7 +124,7 @@ function item:CanInteract(client, action, silent)
             client:Notify(catch, "error")
         end
 
-        return false
+        return false, catch
     end
 
     local actions = self:GetActions()
@@ -136,7 +136,7 @@ function item:CanInteract(client, action, silent)
                 client:Notify(reason, "error")
             end
 
-            return false
+            return false, reason
         end
     end
 
