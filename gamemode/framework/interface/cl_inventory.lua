@@ -760,7 +760,9 @@ function PANEL:PopulateInfo(stack)
     end
 
     for k, v in pairs(actions) do
-        if ( representativeItem:CanInteract(ax.client, k, true) == false ) then
+        local can, reason = representativeItem:CanInteract(ax.client, k, true)
+        if ( can == false ) then
+            ax.util:PrintDebug("Cannot perform action '" .. k .. "' on item '" .. tostring(representativeItem) .. "': " .. tostring(reason))
             continue
         end
 
