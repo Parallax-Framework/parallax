@@ -215,3 +215,24 @@ function ax.class:IsValid(class)
 
     return false
 end
+
+--- Check if a class matches any in a list of classes.
+-- Used for validating if a class belongs to a set of allowed classes.
+-- @realm shared
+-- @param class string|number The class identifier to check
+-- @param classes table Array of class identifiers to compare against
+-- @return boolean True if the class matches any in the list, false otherwise
+-- @usage if ax.class:HasAny(playerClass, {CLASS_SECURITY, CLASS_SCIENTIST}) then print("Player is security or scientist") end
+function ax.class:HasAny(class, classes)
+    if ( !isstring(class) and !isnumber(class) ) then return false end
+    if ( !istable(classes) ) then return false end
+
+    for i = 1, #classes do
+        if ( class == classes[i] ) then
+            return true
+        end
+    end
+
+    return false
+end
+    

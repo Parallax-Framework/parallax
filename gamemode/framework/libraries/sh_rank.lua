@@ -215,3 +215,23 @@ function ax.rank:IsValid(rank)
 
     return false
 end
+
+--- Check if a rank matches any in a list of ranks.
+-- Used for validating if a rank belongs to a set of allowed ranks.
+-- @realm shared
+-- @param rank string|number The rank identifier to check
+-- @param ranks table Array of rank identifiers to compare against
+-- @return boolean True if the rank matches any in the list, false otherwise
+-- @usage if ax.rank:HasAny(playerRank, {RANK_SECURITY, RANK_SCIENTIST}) then print("Player is security or scientist") end
+function ax.rank:HasAny(rank, ranks)
+    if ( !isstring(rank) and !isnumber(rank) ) then return false end
+    if ( !istable(ranks) ) then return false end
+
+    for i = 1, #ranks do
+        if ( rank == ranks[i] ) then
+            return true
+        end
+    end
+
+    return false
+end
