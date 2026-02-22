@@ -331,6 +331,17 @@ function PANEL:PopulateTabs()
                     end
                 end
 
+                -- Auto-select the first section when clicking a tab with sections
+                local firstSectionKey = nil
+                for sectionKey, _ in SortedPairs(v.Sections) do
+                    firstSectionKey = sectionKey
+                    break
+                end
+
+                if ( firstSectionKey and self.subbuttons.buttons and IsValid(self.subbuttons.buttons[firstSectionKey]) ) then
+                    self.subbuttons.buttons[firstSectionKey]:DoClick()
+                end
+
                 -- Motion below the main buttons
                 self.subbuttons:Motion(ax.option:Get("tabFadeTime", 0.25), {
                     Target = {y = ax.util:ScreenScaleH(28) + self.buttons:GetTall(), alpha = 255},
