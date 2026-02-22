@@ -338,8 +338,14 @@ function PANEL:PopulateTabs()
                     break
                 end
 
-                if ( firstSectionKey and self.subbuttons.buttons and IsValid(self.subbuttons.buttons[firstSectionKey]) ) then
-                    self.subbuttons.buttons[firstSectionKey]:DoClick()
+                if ( firstSectionKey ) then
+                    ax.gui.tabLast = firstSectionKey
+
+                    local firstTab = self.tabs and self.tabs[firstSectionKey]
+
+                    if ( firstTab and firstTab.index ) then
+                        self:TransitionToPage(firstTab.index, ax.option:Get("tabFadeTime", 0.25))
+                    end
                 end
 
                 -- Motion below the main buttons
