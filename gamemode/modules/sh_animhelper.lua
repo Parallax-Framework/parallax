@@ -4,6 +4,14 @@ MODULE.name = "Animation Helper"
 MODULE.author = "BLOODYCOP"
 MODULE.description = "Includes a little pop-up menu for you to select different animation sets to apply to your model."
 
+if ( type(CAMI) == "table" ) then
+    CAMI.RegisterPrivilege({
+        Name = "Parallax - Animation Helper",
+        Description = "Allows users to change their animation set.",
+        MinAccess = "admin"
+    })
+end
+
 function MODULE:ApplyModel(strModel, strAnimClass)
     if ( strAnimClass == "null" ) then
         ax.animations.translations[strModel] = nil
@@ -28,7 +36,12 @@ function MODULE:InitPostEntity()
     self.MODELS = ax.data:Get("anim_helper_models", {}, { scope = "schema", human = true })
 
     for strModel, strAnimClass in pairs(self.MODELS) do
-        self:ApplyModel(strModel, strAnimClass)
+        if ( !util.IsValidModel(strModel) ) then
+            ax.util:PrintWarning("Invalid model in anim_helper_models data, removing from file\t" .. strModel)
+            self.MODELS[strModel] = nil
+        else
+            self:ApplyModel(strModel, strAnimClass)
+        end
     end
 end
 
@@ -38,6 +51,11 @@ if ( CLIENT ) then
     end)
 
     concommand.Add("ax_animhelper", function()
+        if ( !CAMI.PlayerHasAccess(ax.client, "Parallax - Animation Helper", nil) ) then
+            ax.client:Notify("You do not have permission to use this command.")
+            return
+        end
+
         local vDermaMenu = DermaMenu()
         
         for k, _ in pairs(ax.animations.stored) do
@@ -54,9 +72,19 @@ if ( CLIENT ) then
     end)
 else
     ax.net:Hook("ax.animhelper", function(client, strAnim)
+        if ( !CAMI.PlayerHasAccess(client, "Parallax - Animation Helper", nil) ) then
+            client:Notify("You do not have permission to use this command. cheeky one you are")
+            return
+        end
+
         local mAnims = ax.module.stored.animations
 
         local strModel = client:GetModel()
+        if ( !util.IsValidModel(strModel) ) then
+            client:Notify("Invalid model.")
+            return
+        end
+
         if ( strAnim == "null" ) then
             MODULE.MODELS[strModel] = nil
             ax.data:Set("anim_helper_models", MODULE.MODELS, { scope = "schema", human = true })
