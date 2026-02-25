@@ -366,10 +366,6 @@ function MODULE:InitializeIntro(bStart)
     ResetEntry(self.stored[1], startTime)
 end
 
-function MODULE:OnSchemaLoaded()
-    self:InitializeIntro(true)
-end
-
 function MODULE:PlayerLoadedCharacter(client, character, currentChar)
     if ( client != ax.client ) then return end
 
