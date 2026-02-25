@@ -37,11 +37,63 @@ ax.command:Add("PM", {
             return "You cannot PM yourself."
         end
 
+        local check, reason = hook.Run("CanPlayerReceivePM", target, client)
+        if ( check == false ) then
+            return reason or "The target player cannot receive PMs from you."
+        end
+
         target:ChatPrint(Color(125, 150, 75), "[PM from " .. client:Nick() .. "] " .. message)
         client:ChatPrint(Color(125, 150, 75), "[PM to " .. target:Nick() .. "] " .. message)
 
         target:SendLua([[ax.client:EmitSound("hl1/fvox/bell.wav", 75, 100, 0.25)]])
         client:SendLua([[ax.client:EmitSound("hl1/fvox/bell.wav", 75, 100, 0.25)]])
+
+        target:SetRelay("pm.last", client:SteamID64())
+        target:SetRelay("pm.last_since", os.time())
+        client:SetRelay("pm.last", target:SteamID64())
+        client:SetRelay("pm.last_since", os.time())
+
+        return ""
+    end
+})
+
+ax.command:Add("Reply", {
+    description = "Reply to the last player who PMed you.",
+    arguments = {
+        { name = "message", type = ax.type.text }
+    },
+    OnRun = function(def, client, message)
+        local lastPMerID = client:GetRelay("pm.last")
+        local lastPMSince = client:GetRelay("pm.last_since")
+
+        if ( !lastPMerID or !lastPMSince ) then
+            return "You have not received any PMs to reply to."
+        end
+
+        if ( os.time() - lastPMSince > 300 ) then
+            return "The last PM you received was too long ago to reply to."
+        end
+
+        local target = player.GetBySteamID64(lastPMerID)
+        if ( !ax.util:IsValidPlayer(target) ) then
+            return "The player you are trying to reply to is no longer online."
+        end
+
+        local check, reason = hook.Run("CanPlayerReceivePM", target, client)
+        if ( check == false ) then
+            return reason or "The target player cannot receive PMs from you."
+        end
+
+        target:ChatPrint(Color(125, 150, 75), "[PM from " .. client:Nick() .. "] " .. message)
+        client:ChatPrint(Color(125, 150, 75), "[PM to " .. target:Nick() .. "] " .. message)
+
+        target:SendLua([[ax.client:EmitSound("hl1/fvox/bell.wav", 75, 100, 0.25)]])
+        client:SendLua([[ax.client:EmitSound("hl1/fvox/bell.wav", 75, 100, 0.25)]])
+
+        target:SetRelay("pm.last", client:SteamID64())
+        target:SetRelay("pm.last_since", os.time())
+        client:SetRelay("pm.last", target:SteamID64())
+        client:SetRelay("pm.last_since", os.time())
 
         return ""
     end
