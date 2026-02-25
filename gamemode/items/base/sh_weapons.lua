@@ -51,7 +51,7 @@ ITEM:AddAction("unequip", {
         client:StripWeapon(item.weaponClass)
         client:EmitSound(item.unequipSound or "items/ammo_pickup.wav")
 
-        item:SetData("equipped", nil)
+        item:SetData("equipped", false)
 
         return false
     end,
@@ -74,7 +74,7 @@ function ITEM:OnPlayerLoadedCharacter(client, character) -- Called when a charac
                 client:SelectWeapon(self.weaponClass)
             end)
         else
-            self:SetData("equipped", nil)
+            self:SetData("equipped", false)
         end
     end
 end
@@ -82,7 +82,7 @@ end
 hook.Add("OnPlayerItemAction", "ax.weapon_unequip_cleanup", function(client, item, action)
     if ( item.isWeapon and action == "drop" and item:GetData("equipped") ) then
         client:StripWeapon(item.weaponClass)
-        item:SetData("equipped", nil)
+        item:SetData("equipped", false)
     end
 end)
 
@@ -95,7 +95,7 @@ hook.Add("PlayerDeath", "ax.weapon_unequip_on_death", function(client)
 
     for _, item in pairs(inventory:GetItems()) do
         if ( item.isWeapon and item:GetData("equipped") ) then
-            item:SetData("equipped", nil)
+            item:SetData("equipped", false)
         end
     end
 end)
