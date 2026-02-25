@@ -171,6 +171,75 @@ ax.command:Add("CharSetName", {
     end
 })
 
+ax.command:Add("CharGiveItem", {
+    description = "Give an item to a character.",
+    adminOnly = true,
+    arguments = {
+        { name = "target", type = ax.type.character },
+        { name = "item", type = ax.type.string },
+        { name = "amount", type = ax.type.number, min = 1, optional = true }
+    },
+    OnRun = function(def, client, target, identifier, amount)
+        if ( !target ) then
+            return "Invalid character."
+        end
+
+        local inventory = target:GetInventory()
+        if ( !istable(inventory) ) then
+            return "Target character inventory is not available."
+        end
+
+        local itemClass, itemDataOrErr = ax.item:FindByIdentifier(identifier)
+        if ( !itemClass ) then
+            return itemDataOrErr or "Invalid item identifier."
+        end
+
+        local itemData = itemDataOrErr
+        local requestedAmount = math.max(1, math.floor(amount or 1))
+        local addedAmount = 0
+        local targetName = target:GetName() or ("Character #" .. tostring(target:GetID()))
+        local itemName = itemData.name or itemClass
+
+        local function notifyResult(message)
+            if ( ax.util:IsValidPlayer(client) and isstring(message) and message != "" ) then
+                client:Notify(message)
+            end
+        end
+
+        local function giveNext()
+            if ( addedAmount >= requestedAmount ) then
+                notifyResult(string.format("Gave %d x %s (%s) to %s.", addedAmount, itemName, itemClass, targetName))
+                return
+            end
+
+            local ok, reason = inventory:AddItem(itemClass, nil, function()
+                addedAmount = addedAmount + 1
+                giveNext()
+            end)
+
+            if ( ok == false ) then
+                if ( addedAmount > 0 ) then
+                    notifyResult(string.format(
+                        "Gave %d/%d x %s (%s) to %s. Stopped: %s",
+                        addedAmount,
+                        requestedAmount,
+                        itemName,
+                        itemClass,
+                        targetName,
+                        reason or "unknown error"
+                    ))
+                else
+                    notifyResult("Failed to give item: " .. (reason or "unknown error"))
+                end
+            end
+        end
+
+        giveNext()
+
+        return ""
+    end
+})
+
 ax.command:Add("CharGiveFlags", {
     description = "Give flags to a character.",
     adminOnly = true,
