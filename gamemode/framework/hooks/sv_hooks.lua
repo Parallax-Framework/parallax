@@ -525,11 +525,16 @@ function GM:ShutDown()
     for i = #items, 1, -1 do
         local item = items[i]
 
-        output[item:GetItemID()] = {
-            class = item:GetItemClass(),
+        local itemID = item:GetItemID()
+        local itemClass = item:GetItemClass()
+        local itemTable = item:GetItemTable()
+        local itemData = itemTable and itemTable:GetData() or {}
+
+        output[itemID] = {
+            class = itemClass,
             position = item:GetPos(),
             angles = item:GetAngles(),
-            data = item:GetItemTable():GetData() or {}
+            data = itemData
         }
     end
 
