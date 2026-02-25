@@ -158,7 +158,7 @@ end
 -- @return boolean, string|nil True if allowed, false if not. Error message if denied.
 -- @usage local canBecome, reason = ax.class:CanBecome("security", player)
 function ax.class:CanBecome(class, client)
-    local classTable = self:Get(faction)
+    local classTable = self:Get(class)
     local try, catch = hook.Run("CanPlayerBecomeClass", classTable, client)
     if ( try == false and isstring(catch) and #catch > 0 ) then
         client:Notify(catch, "error")
