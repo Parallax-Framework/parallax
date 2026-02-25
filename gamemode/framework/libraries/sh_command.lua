@@ -187,22 +187,22 @@ end
 -- @usage local canRun, reason = ax.command:HasAccess(client, def)
 function ax.command:HasAccess(caller, def)
     if ( !istable(def) ) then
-        return false, "Invalid command definition"
+        return false, "Invalid command definition!"
     end
 
     -- Console access check
     if ( !IsValid(caller) ) then
         if ( !def.bAllowConsole ) then
-            return false, "This command cannot be run from console"
+            return false, "This command cannot be run from console!"
         end
     else
         -- Player access checks
         if ( def.superAdminOnly and !caller:IsSuperAdmin() ) then
-            return false, "You must be a super administrator to use this command"
+            return false, "You must be a super administrator to use this command!"
         end
 
         if ( def.adminOnly and !caller:IsAdmin() ) then
-            return false, "You must be an administrator to use this command"
+            return false, "You must be an administrator to use this command!"
         end
     end
 
@@ -210,13 +210,19 @@ function ax.command:HasAccess(caller, def)
     if ( isfunction(def.CanRun) ) then
         local canRun, reason = def:CanRun(caller)
         if ( canRun == false ) then
-            return false, reason or "You do not have permission to use this command"
+            return false, reason or "You do not have permission to use this command!"
         end
     else
         local hasAccess, err = CAMI.PlayerHasAccess(caller, "Command - " .. def.name, nil)
         if ( hasAccess == false ) then
-            return false, err or "You do not have permission to use this command"
+            return false, err or "You do not have permission to use this command!"
         end
+    end
+
+    -- Hook for additional checks
+    local check, reason = hook.Run("CanPlayerRunCommand", caller, def)
+    if ( check == false ) then
+        return false, reason or "You do not have permission to use this command!"
     end
 
     return true
