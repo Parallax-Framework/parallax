@@ -43,6 +43,7 @@ end
 -- Automatically handles shared/client/server file prefixes.
 -- @realm shared
 -- @param directory string The directory path to search for class files
+-- @param[opt] timeFilter number Only include files modified within this many seconds
 -- @return boolean True if the operation completed successfully, false on error
 -- @usage ax.class:Include("parallax/gamemode/classes")
 function ax.class:Include(directory, timeFilter)
@@ -176,10 +177,13 @@ function ax.class:CanBecome(class, client)
 end
 
 --- Get all loaded class instances.
--- Returns the complete list of classes indexed by their ID.
+-- Returns the loaded class list, optionally filtered by faction or fuzzy name.
 -- @realm shared
+-- @param[opt] filter table Optional filter (`faction`, `name`)
 -- @return table Array of all class instances
 -- @usage local allClasses = ax.class:GetAll()
+-- @usage local cityClasses = ax.class:GetAll({ faction = FACTION_CITIZEN })
+-- @usage local securityMatches = ax.class:GetAll({ name = "security" })
 function ax.class:GetAll(filter)
     if ( filter and istable(filter) ) then
         local filtered = {}
@@ -235,4 +239,3 @@ function ax.class:HasAny(class, classes)
 
     return false
 end
-    

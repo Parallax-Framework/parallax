@@ -9,6 +9,11 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
+--- Client-side theme registry and glass UI rendering helpers.
+-- Provides theme palette lookups, user-configurable glass metrics, and shared
+-- drawing helpers used throughout the framework UI.
+-- @module ax.theme
+
 ax.theme = ax.theme or {}
 ax.theme.themes = ax.theme.themes or {}
 
@@ -215,12 +220,21 @@ ax.theme.themes.orange = {
     }
 }
 
+--- Clone a color with its alpha channel scaled.
+-- @local
+-- @param color Color Source color to scale
+-- @param[opt=1] scale number Alpha multiplier
+-- @return Color|nil scaledColor Scaled color copy, or `nil` when no color is given
 local function ScaleAlpha(color, scale)
     if ( !color ) then return nil end
     scale = scale or 1
     return Color(color.r, color.g, color.b, math.Clamp(color.a * scale, 0, 255))
 end
 
+--- Get the active theme identifier from client options.
+-- Falls back to `"dark"` when the options library is unavailable.
+-- @realm client
+-- @return string themeId
 function ax.theme:GetThemeId()
     if ( ax.option ) then
         return ax.option:Get("interface.theme", "dark")
@@ -229,12 +243,22 @@ function ax.theme:GetThemeId()
     return "dark"
 end
 
+--- Get a theme definition by id.
+-- Returns the active theme when no id is supplied, and falls back to the dark
+-- theme when the requested id does not exist.
+-- @realm client
+-- @param[opt] id string Theme identifier
+-- @return table theme Theme definition table
 function ax.theme:Get(id)
     id = id or self:GetThemeId()
 
     return self.themes[id] or self.themes.dark
 end
 
+--- Get user-configured glass UI metrics.
+-- Reads blur, roundness, and opacity scaling values from the options system.
+-- @realm client
+-- @return table metrics Resolved glass metrics
 function ax.theme:GetMetrics()
     local blur = ax.option and ax.option:Get("interface.glass.blur", 1.0) or 1.0
     local roundness = ax.option and ax.option:Get("interface.glass.roundness", 8) or 8
@@ -251,6 +275,9 @@ function ax.theme:GetMetrics()
     }
 end
 
+--- Get the active glass color palette with metric-based alpha scaling applied.
+-- @realm client
+-- @return table glass Resolved glass palette for the current theme
 function ax.theme:GetGlass()
     local theme = self:Get()
     local glass = theme.glass or {}
@@ -284,6 +311,13 @@ function ax.theme:GetGlass()
     }
 end
 
+--- Draw a rounded glass panel with optional blur and outline.
+-- @realm client
+-- @param x number Panel X position
+-- @param y number Panel Y position
+-- @param w number Panel width
+-- @param h number Panel height
+-- @param[opt] options table Override options (radius, blur, flags, fill, border)
 function ax.theme:DrawGlassPanel(x, y, w, h, options)
     options = options or {}
 
@@ -316,6 +350,14 @@ function ax.theme:DrawGlassPanel(x, y, w, h, options)
     end
 end
 
+--- Draw a glass-styled button surface.
+-- Uses button palette colors and a height-based default corner radius.
+-- @realm client
+-- @param x number Button X position
+-- @param y number Button Y position
+-- @param w number Button width
+-- @param h number Button height
+-- @param[opt] options table Override options (radius, blur, flags, fill, border)
 function ax.theme:DrawGlassButton(x, y, w, h, options)
     options = options or {}
 
@@ -344,6 +386,13 @@ function ax.theme:DrawGlassButton(x, y, w, h, options)
     end
 end
 
+--- Draw a glass backdrop layer used for overlays and modal dimming.
+-- @realm client
+-- @param x number Backdrop X position
+-- @param y number Backdrop Y position
+-- @param w number Backdrop width
+-- @param h number Backdrop height
+-- @param[opt] options table Override options (radius, blur, flags, fill, border)
 function ax.theme:DrawGlassBackdrop(x, y, w, h, options)
     options = options or {}
 
@@ -372,6 +421,14 @@ function ax.theme:DrawGlassBackdrop(x, y, w, h, options)
     end
 end
 
+--- Draw directional gradient overlays for the active glass theme.
+-- Any omitted direction uses the current theme gradient color for that side.
+-- @realm client
+-- @param x number Gradient X position
+-- @param y number Gradient Y position
+-- @param w number Gradient width
+-- @param h number Gradient height
+-- @param[opt] options table Override colors (`left`, `right`, `top`, `bottom`)
 function ax.theme:DrawGlassGradients(x, y, w, h, options)
     options = options or {}
     local glass = self:GetGlass()

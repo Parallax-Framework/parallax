@@ -42,12 +42,16 @@ end
 
 --- Get a character variable's value.
 -- Retrieves a character variable with fallback to default or provided fallback value.
+-- For `ax.type.data` variables, passing `fallback` reads a nested key and
+-- `dataFallback` is used when that nested key is absent.
 -- @realm shared
 -- @param char table The character instance
 -- @param name string The variable name to retrieve
--- @param fallback any Optional fallback value if variable is not set
+-- @param[opt] fallback any Optional fallback value, or nested data key for `ax.type.data` vars
+-- @param[opt] dataFallback any Fallback value for nested `ax.type.data` lookups
 -- @return any The variable value, default value, or fallback
 -- @usage local description = ax.character:GetVar(character, "description", "No description")
+-- @usage local flags = ax.character:GetVar(character, "data", "flags", "")
 function ax.character:GetVar(char, name, fallback, dataFallback)
     local varTable = ax.character.vars[name]
     if ( !istable(varTable) ) then
@@ -80,10 +84,15 @@ end
 
 --- Set a character variable's value.
 -- Updates a character variable and handles networking and change callbacks.
+-- For `ax.type.data` variables, pass the nested key as `value` and provide
+-- `opts.dataValue` for the stored value.
 -- @realm shared
 -- @param char table The character instance
 -- @param name string The variable name to set
---- @usage ax.character:SetVar(character, "data", "flags", {dataValue = "ab", bNoNetworking = true})
+-- @param value any New value, or nested data key for `ax.type.data` vars
+-- @param[opt] opts table Options (`dataValue`, `bNoNetworking`, `recipients`, `bNoDBUpdate`)
+-- @usage ax.character:SetVar(character, "name", "John Doe")
+-- @usage ax.character:SetVar(character, "data", "flags", {dataValue = "ab", bNoNetworking = true})
 function ax.character:SetVar(char, name, value, opts)
     local varTable = ax.character.vars[name]
     if ( !istable(varTable) ) then

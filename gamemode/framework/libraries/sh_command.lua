@@ -77,6 +77,16 @@ function ax.command:GetAll()
     return self.registry
 end
 
+--- Find a command definition by name or alias.
+-- Supports exact or partial matching and optional case sensitivity.
+-- Returns the first matching definition in the registry.
+-- @realm shared
+-- @param look string Text to search for (command name or alias)
+-- @param[opt=false] bCaseSensitive boolean Whether comparisons should be case-sensitive
+-- @param[opt=false] bExact boolean Whether to require an exact match
+-- @return table|nil Command definition if found
+-- @usage local def = ax.command:Find("pm")
+-- @usage local def = ax.command:Find("private", false, true)
 function ax.command:Find(look, bCaseSensitive, bExact)
     for name, def in pairs(self.registry) do
         if ( bExact ) then
@@ -212,13 +222,11 @@ function ax.command:HasAccess(caller, def)
     return true
 end
 
---[[
-    Convert and validate a single argument value.
-    @realm shared
-    @param string value The raw string value
-    @param table argDef The argument definition
-    @return any|nil, string Converted value or nil with error
-]]
+--- Convert and validate a single argument value.
+-- @realm shared
+-- @param string value The raw string value
+-- @param table argDef The argument definition
+-- @return any|nil, string Converted value or nil with error
 function ax.command:ConvertArgument(value, argDef)
     if ( argDef.type == ax.type.string or argDef.type == ax.type.text ) then
         if ( argDef.choices and !argDef.choices[value] ) then
@@ -329,13 +337,11 @@ function ax.command:ExtractArgs(def, raw)
     return values
 end
 
---[[
-    Parse command text into name and raw arguments.
-    @realm shared
-    @param string text The full command text
-    @return string|nil, string Command name and raw arguments
-    @usage local name, rawArgs = ax.command:Parse("/pm player1 hello")
-]]
+--- Parse command text into name and raw arguments.
+-- @realm shared
+-- @param string text The full command text
+-- @return string|nil, string Command name and raw arguments
+-- @usage local name, rawArgs = ax.command:Parse("/pm player1 hello")
 function ax.command:Parse(text)
     if ( !isstring(text) or text == "" ) then
         return nil, ""
@@ -387,15 +393,13 @@ function ax.command:Parse(text)
     return commandName, rawArgs
 end
 
---[[
-    Run a command with the given caller and arguments.
-    @realm server
-    @param Entity caller The player or console attempting to run the command
-    @param string name The command name
-    @param string rawArgs Raw argument string
-    @return bool, string Success status and result/error message
-    @usage local ok, result = ax.command:Run(client, "pm", "player1 hello")
-]]
+--- Run a command with the given caller and arguments.
+-- @realm server
+-- @param Entity caller The player or console attempting to run the command
+-- @param string name The command name
+-- @param string rawArgs Raw argument string
+-- @return bool string Success status and result/error message
+-- @usage local ok, result = ax.command:Run(client, "pm", "player1 hello")
 function ax.command:Run(caller, name, rawArgs)
     if ( !isstring(name) or name == "" ) then
         return false, "Invalid command name"
@@ -438,12 +442,10 @@ function ax.command:Run(caller, name, rawArgs)
     return true, result
 end
 
---[[
-    Send a command from client to server for execution.
-    @realm client
-    @param string text The full command text
-    @usage ax.command:Send("/pm player1 hello")
-]]
+--- Send a command from client to server for execution.
+-- @realm client
+-- @param string text The full command text
+-- @usage ax.command:Send("/pm player1 hello")
 function ax.command:Send(text)
     if ( SERVER ) then
         ax.util:PrintError("ax.command:Send - Cannot send from server")
@@ -467,13 +469,11 @@ function ax.command:Send(text)
     ax.net:Start("command.run", name, rawArgs)
 end
 
---[[
-    Generate a help string for a command.
-    @realm shared
-    @param string name The command name
-    @return string Help text
-    @usage local help = ax.command:Help("pm")
-]]
+--- Generate a help string for a command.
+-- @realm shared
+-- @param string name The command name
+-- @return string Help text
+-- @usage local help = ax.command:Help("pm")
 function ax.command:Help(name)
     if ( !isstring(name) ) then
         return "Invalid command name"
