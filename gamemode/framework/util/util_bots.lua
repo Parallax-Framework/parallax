@@ -97,12 +97,6 @@ end
 function ax.util:CreateBotCharacter(client)
     if ( !ax.util:IsValidPlayer(client) or !client:IsBot() ) then return false end
 
-    -- Check if bot support is enabled
-    if ( !ax.config:Get("bot.support", true) ) then
-        ax.util:PrintDebug("Bot support is disabled, skipping character creation for: " .. client:SteamName())
-        return false
-    end
-
     local faction = self:GetRandomBotFaction()
     if ( !faction ) then
         ax.util:PrintWarning("No valid factions available for bot: " .. client:SteamName())
@@ -143,7 +137,19 @@ function ax.util:CreateBotCharacter(client)
     character.vars.description = "An automatically generated character for testing purposes."
     character.vars.creationTime = os.time()
     character.vars.data = {}
-    character.vars.inventory = 0 -- No inventory for bots
+    local botInventory
+    if ( ax.inventory and isfunction(ax.inventory.CreateTemporary) ) then
+        botInventory = ax.inventory:CreateTemporary({
+            id = character.id
+        })
+    end
+
+    if ( istable(botInventory) ) then
+        character.vars.inventory = botInventory.id
+    else
+        character.vars.inventory = 0
+        ax.util:PrintWarning("Failed to create temporary inventory for bot: " .. botName)
+    end
 
     -- Add to character instances (but not to database)
     ax.character.instances[character.id] = character

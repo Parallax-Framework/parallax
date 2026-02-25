@@ -15,12 +15,6 @@ ax.config:Add("language", ax.type.string, "en", {
     subCategory = "basic"
 })
 
-ax.config:Add("bot.support", ax.type.bool, true, {
-    description = "Enable automatic character creation for bots.",
-    category = "general",
-    subCategory = "basic"
-})
-
 -- Chat system configurations
 ax.config:Add("chat.ic.distance", ax.type.number, 400, {
     description = "Maximum distance for IC (in-character) chat",

@@ -114,7 +114,6 @@ ax.localization:Register("en", {
 
     --- General
     ---- Basic
-    ["config.bot.support"] = "Bot Support",
     ["config.language"] = "Language",
 
     ---- Characters

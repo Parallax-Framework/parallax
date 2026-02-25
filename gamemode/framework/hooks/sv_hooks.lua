@@ -276,18 +276,14 @@ function GM:PlayerInitialSpawn(client)
 
     -- Handle bot character creation automatically
     if ( client:IsBot() ) then
-        if ( ax.config:Get("bot.support", true) ) then
-            ax.util:PrintDebug("Bot detected: " .. client:SteamName() .. ", creating character automatically...")
+        ax.util:PrintDebug("Bot detected: " .. client:SteamName() .. ", creating character automatically...")
 
-            -- Small delay to ensure faction system is ready
-            timer.Simple(0.1, function()
-                if ( ax.util:IsValidPlayer(client) ) then
-                    ax.util:CreateBotCharacter(client)
-                end
-            end)
-        else
-            ax.util:PrintDebug("Bot detected but bot support is disabled: " .. client:SteamName())
-        end
+        -- Small delay to ensure faction system is ready
+        timer.Simple(0.1, function()
+            if ( ax.util:IsValidPlayer(client) ) then
+                ax.util:CreateBotCharacter(client)
+            end
+        end)
 
         return -- Skip normal player initialization for bots
     end

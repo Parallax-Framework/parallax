@@ -114,7 +114,6 @@ ax.localization:Register("tr", {
 
     --- General
     ---- Basic
-    ["config.bot.support"] = "Bot Desteği",
     ["config.language"] = "Dil",
 
     ---- Characters
