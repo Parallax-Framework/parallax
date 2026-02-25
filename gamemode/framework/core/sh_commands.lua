@@ -537,3 +537,53 @@ ax.command:Add("PlyRespawn", {
         return "Player " .. target:Nick() .. " has been respawned."
     end
 })
+
+ax.command:Add("BecomeClass", {
+    description = "Become a specific class.",
+    adminOnly = false,
+    arguments = {
+        { name = "class", type = ax.type.string }
+    },
+    OnRun = function(def, client, class)
+        local classTable = ax.class:Get(class)
+        if ( !classTable ) then return "Invalid class." end
+
+        local classes = ax.class:GetAll({faction = client:GetFaction()})
+        if ( classes[1] == nil ) then return "You do not have any classes available to become." end
+
+        local selectedClass = nil
+        for i = 1, #classes do
+            local classTable = classes[i]
+            if ( ax.util:FindString(classTable.name, class) or ax.util:FindString(classTable.id, class) ) then
+                selectedClass = classTable
+                break
+            end
+        end
+
+        if ( !selectedClass ) then return "Invalid class." end
+
+        if ( !ax.class:CanBecome(selectedClass.id, client) ) then
+            return "You cannot become this class."
+        end
+
+        client:SetClass(selectedClass.id)
+
+        return "You have become the \"" .. selectedClass.name .. "\" class."
+    end
+})
+
+ax.command:Add("MapRestart", {
+    description = "Restart the current map.",
+    superAdminOnly = true,
+    arguments = {
+        { name = "delay", type = ax.type.number }
+    },
+    OnRun = function(def, client, delay)
+        delay = delay or 0
+        timer.Simple(delay, function()
+            RunConsoleCommand("changelevel", game.GetMap())
+        end)
+
+        return "Map restarting in " .. delay .. " seconds."
+    end
+})
