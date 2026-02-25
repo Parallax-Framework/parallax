@@ -122,7 +122,6 @@ function ax.item:Include(path, timeFilter)
 end
 
 -- Helper function to create default drop action for items
-local success, reason -- No idea why glualint is being weird about this
 function ax.item:CreateDefaultDropAction()
     return {
         name = "Drop",
@@ -145,8 +144,8 @@ function ax.item:CreateDefaultDropAction()
                 return false
             end
 
-            success, reason = ax.item:Transfer(item, inventoryID, 0, function(_)
-                if ( success ) then
+            local transferSuccess, transferReason = ax.item:Transfer(item, inventoryID, 0, function(asyncSuccess, asyncReason)
+                if ( asyncSuccess ) then
                     ax.util:PrintDebug(color_success, string.format(
                         "Player %s dropped item %s from inventory %s to world inventory.",
                         tostring(client),
@@ -159,13 +158,13 @@ function ax.item:CreateDefaultDropAction()
                         tostring(client),
                         tostring(item.id),
                         tostring(inventoryID),
-                        tostring(reason or "Unknown Reason")
+                        tostring(asyncReason or "Unknown Reason")
                     ))
                 end
             end)
 
-            if ( success == false ) then
-                client:Notify(string.format("Failed to drop item: %s", reason or "Unknown Reason"))
+            if ( transferSuccess == false ) then
+                client:Notify(string.format("Failed to drop item: %s", transferReason or "Unknown Reason"))
             end
 
             return false
@@ -471,9 +470,17 @@ if ( SERVER ) then
             query:Update("inventory_id", toInventoryID)
             query:Where("id", item.id)
             query:Callback(function(result, status)
+                local function finish(success, reason)
+                    if ( isfunction(callback) ) then
+                        callback(success, reason)
+                    end
+
+                    return success, reason
+                end
+
                 if ( result == false ) then
                     ax.util:PrintError("Failed to update item in database during transfer.")
-                    return false, "A database error occurred."
+                    return finish(false, "A database error occurred.")
                 end
 
                 if ( istable(toInventory) and toInventoryID != 0 ) then
@@ -495,7 +502,7 @@ if ( SERVER ) then
                     local itemEntity = ents.Create("ax_item")
                     if ( !IsValid(itemEntity) ) then
                         ax.util:PrintError("Failed to create item entity during transfer to world inventory.")
-                        return false, "Failed to create item entity."
+                        return finish(false, "Failed to create item entity.")
                     end
 
                     itemEntity:SetItemID(item.id)
@@ -514,11 +521,7 @@ if ( SERVER ) then
                     end
                 end
 
-                if ( isfunction(callback) ) then
-                    callback(true)
-                end
-
-                return true
+                return finish(true)
             end)
         query:Execute()
 
