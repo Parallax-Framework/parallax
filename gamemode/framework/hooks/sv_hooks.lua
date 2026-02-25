@@ -414,6 +414,79 @@ function GM:StartCommand(client, userCmd)
     end
 end
 
+function GM:Move(client, moveData)
+    local ragdoll = client:GetRelay("ragdoll.index", -1)
+    if ( ragdoll and ragdoll != -1 ) then
+        ragdoll = ents.GetByIndex(ragdoll)
+
+        if ( !IsValid(ragdoll) ) then
+            client:SetRagdolled(false)
+            return
+        end
+
+        local velocity = 0
+        if ( bit.band(moveData:GetButtons(), IN_FORWARD) != 0 ) then
+            velocity = 220
+        end
+
+        local sidewaysVelocity = 0
+        if ( bit.band(moveData:GetButtons(), IN_MOVELEFT) != 0 ) then
+            sidewaysVelocity = -220
+        elseif ( bit.band(moveData:GetButtons(), IN_MOVERIGHT) != 0 ) then
+            sidewaysVelocity = 220
+        end
+
+        local BONES = { "ValveBiped.Bip01_L_Hand", "ValveBiped.Bip01_R_Hand" }
+        local HEAD_BONE = "ValveBiped.Bip01_Head1"
+
+        local iBoneIDHead = ragdoll:LookupBone(HEAD_BONE)
+        if ( !iBoneIDHead or iBoneIDHead <= 0 ) then return end
+
+        local iPhysBoneHead = ragdoll:TranslateBoneToPhysBone(iBoneIDHead)
+        if ( !iPhysBoneHead or iPhysBoneHead <= 0 ) then return end
+
+        local physObjHead = ragdoll:GetPhysicsObjectNum(iPhysBoneHead)
+        if ( !IsValid(physObjHead) ) then return end
+
+        physObjHead:SetAngles(client:GetAimVector():Angle())
+
+        if ( bit.band(moveData:GetButtons(), IN_JUMP) != 0 ) then
+            SafeRemoveEntity(ragdoll)
+        elseif ( velocity != 0 ) then
+            for i = 1, #BONES do
+                if ( !IsValid(ragdoll) ) then break end
+
+                local iBoneID = ragdoll:LookupBone(BONES[i])
+                if ( !iBoneID or iBoneID <= 0 ) then continue end
+
+                local iPhysBone = ragdoll:TranslateBoneToPhysBone(iBoneID)
+                if ( !iPhysBone or iPhysBone <= 0 ) then continue end
+
+                local physObj = ragdoll:GetPhysicsObjectNum(iPhysBone)
+                if ( !IsValid(physObj) ) then continue end
+
+                physObj:ApplyForceCenter(client:GetAimVector() * velocity)
+            end
+        end
+    
+        -- TODO: Make the guy's waist turn
+        --[[
+        if ( sidewaysVelocity != 0 ) then
+            local pelvisBone = ragdoll:LookupBone("ValveBiped.Bip01_Spine")
+            if ( !pelvisBone or pelvisBone <= 0 ) then return end
+
+            local iPhysBone = ragdoll:TranslateBoneToPhysBone(pelvisBone)
+            if ( !iPhysBone or iPhysBone <= 0 ) then return end
+
+            local physObj = ragdoll:GetPhysicsObjectNum(iPhysBone)
+            if ( !IsValid(physObj) ) then return end
+
+            physObj:AddAngleVelocity(Vector(0, sidewaysVelocity, 0))
+        end
+        ]]
+    end
+end
+
 function GM:PlayerReady(client)
     client:SyncRelay()
 

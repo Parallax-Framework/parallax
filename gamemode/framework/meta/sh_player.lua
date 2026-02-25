@@ -125,6 +125,62 @@ function ax.player.meta:HasFactionWhitelist(iFactionID)
 end
 
 if ( SERVER ) then
+    function ax.player.meta:SetRagdolled(bRagdolled)
+        if ( bRagdolled == nil ) then bRagdolled = true end
+
+        self:SetRelay("ragdolled", bRagdolled)
+
+        if ( bRagdolled == false ) then
+            SafeRemoveEntity(Entity(self:GetRelay("ragdoll.index", -1)))
+            
+            self:SetRelay("ragdoll.index", -1)
+            self:RemoveTimer("ragdoll.think")
+            return
+        end
+
+        local ragdollDummy = ents.Create("prop_ragdoll")
+        if ( !IsValid(ragdollDummy) ) then return nil end
+
+        ragdollDummy:SetModel(self:GetModel())
+        ragdollDummy:SetSkin(self:GetSkin())
+        ragdollDummy:SetPos(self:GetPos())
+
+        for i = 0, self:GetNumBodyGroups() - 1 do
+            ragdollDummy:SetBodygroup(i, self:GetBodygroup(i))
+        end
+
+        ragdollDummy:Spawn()
+        ragdollDummy:Activate()
+
+        ragdollDummy:SetAngles(self:EyeAngles())
+        ragdollDummy:SetCollisionGroup(COLLISION_GROUP_WEAPON)
+
+        local velocity = self:GetVelocity()
+        for i = 0, ragdollDummy:GetPhysicsObjectCount() - 1 do
+            local physObj = ragdollDummy:GetPhysicsObjectNum(i)
+            if ( !IsValid(physObj) ) then return end
+
+            physObj:SetVelocity(velocity)
+
+            local boneID = ragdollDummy:TranslatePhysBoneToBone(i)
+            if ( !boneID ) then continue end
+
+            local matrix = self:GetBoneMatrix(boneID)
+            local bonePos, boneAng = matrix:GetTranslation(), matrix:GetAngles()
+
+            physObj:SetPos(bonePos)
+            physObj:SetAngles(boneAng)
+        end
+
+        local materials = self:GetMaterials()
+        for i = 1, #materials do
+            ragdollDummy:SetSubMaterial(i - 1, materials[i])
+        end
+
+        self:SetRelay("ragdoll.index", ragdollDummy:EntIndex())
+        return ragdollDummy
+    end
+
     function ax.player.meta:SetFactionWhitelisted(iFactionID, bStatus)
         if ( !isnumber(iFactionID) ) then
             ax.util:PrintError("Invalid faction ID provided to Player:SetFactionWhitelisted()")

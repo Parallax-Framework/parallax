@@ -394,7 +394,7 @@ ax.viewstack:RegisterModifier("ragdoll", function(client, patch)
 
     local ragdollIndex = client:GetRelay("ragdoll.index", -1)
     local ragdoll = Entity(ragdollIndex)
-    if ( !IsValid(ragdoll) or client:Alive() ) then return end
+    if ( !IsValid(ragdoll) ) then return end
 
     local boneId = ragdoll:LookupBone("ValveBiped.Bip01_Head1")
     if ( !isnumber(boneId) ) then
@@ -414,7 +414,7 @@ ax.viewstack:RegisterModifier("ragdoll", function(client, patch)
     ang:RotateAroundAxis(ang:Up(), 270)
     ang:RotateAroundAxis(ang:Forward(), 270)
 
-    return { origin = pos + ang:Forward() * 10, angles = ang, fov = patch.fov }
+    --return { origin = pos + ang:Forward() * 10, angles = ang, fov = patch.fov }
 end, 1)
 
 local cameraFOV = CreateConVar("ax_camera_fov", "90", {FCVAR_ARCHIVE, FCVAR_REPLICATED}, "Set the camera FOV when using a view entity.")
