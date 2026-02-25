@@ -13,7 +13,7 @@ local inventory = ax.inventory.meta or {}
 inventory.__index = inventory
 
 function inventory:__tostring()
-    return string.format("Inventory [%d]", self.id or 0)
+    return string.format("Inventory [%s]", tostring(self.id or 0))
 end
 
 function inventory:GetMaxWeight()
@@ -114,7 +114,8 @@ end
 
 function inventory:GetOwner()
     for k, v in pairs(ax.character.instances) do
-        if ( v:GetInventoryID() == self.id ) then
+        local characterInventoryID = v and v.vars and v.vars.inventory
+        if ( characterInventoryID != nil and tostring(characterInventoryID) == tostring(self.id) ) then
             return v
         end
     end
@@ -273,6 +274,36 @@ if ( SERVER ) then
 
         data = data or {}
 
+        if ( self.isTemporary or self.noSave ) then
+            ax.item._nextTemporaryID = ax.item._nextTemporaryID or -1
+
+            while ( ax.item.instances[ax.item._nextTemporaryID] != nil ) do
+                ax.item._nextTemporaryID = ax.item._nextTemporaryID - 1
+            end
+
+            local temporaryItemID = ax.item._nextTemporaryID
+            ax.item._nextTemporaryID = temporaryItemID - 1
+
+            local itemObject = ax.item:Instance(temporaryItemID, class)
+            if ( !istable(itemObject) ) then
+                return false, "Failed to create temporary item instance."
+            end
+
+            itemObject.data = istable(data) and table.Copy(data) or {}
+            itemObject.invID = self.id
+            itemObject.isTemporary = true
+            itemObject.noSave = true
+
+            ax.item.instances[temporaryItemID] = itemObject
+            self.items[temporaryItemID] = itemObject
+
+            if ( isfunction(callback) ) then
+                callback(itemObject)
+            end
+
+            return true, "Item added to inventory."
+        end
+
         local query = mysql:Insert("ax_items")
             query:Insert("class", class)
             query:Insert("inventory_id", self.id)
@@ -322,6 +353,15 @@ if ( SERVER ) then
 
         for item_id, item_data in pairs(self.items) do
             if ( item_id == itemID ) then
+                if ( self.isTemporary or self.noSave or ( istable(item_data) and (item_data.isTemporary or item_data.noSave) ) ) then
+                    self.items[item_id] = nil
+                    ax.item.instances[itemID] = nil
+
+                    ax.util:PrintDebug("Removed temporary item ID " .. tostring(itemID) .. " from inventory " .. tostring(self.id))
+
+                    return true
+                end
+
                 local query = mysql:Delete("ax_items")
                     query:Where("id", itemID)
                     query:Callback(function(result, status)

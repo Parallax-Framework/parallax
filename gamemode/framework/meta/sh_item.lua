@@ -67,6 +67,16 @@ function item:SetData(key, value)
 
     self.data[key] = value
     if ( SERVER ) then
+        local inventoryID = self.invID
+        if ( inventoryID == nil ) then
+            inventoryID = self:GetInventoryID()
+        end
+
+        local inventory = inventoryID != nil and ax.inventory.instances[inventoryID] or nil
+        if ( self.isTemporary or self.noSave or ( istable(inventory) and (inventory.isTemporary or inventory.noSave) ) ) then
+            return
+        end
+
         -- Persist changes to database
         local query = mysql:Update("ax_items")
             query:Update("data", util.TableToJSON(self.data))
@@ -82,9 +92,8 @@ function item:SetData(key, value)
         query:Execute()
 
         -- Sync changes to relevant receivers
-        local inventoryID = self:GetInventoryID()
-        if ( inventoryID and inventoryID > 0 ) then
-            ax.inventory:Sync(inventoryID)
+        if ( istable(inventory) and inventoryID != 0 ) then
+            ax.inventory:Sync(inventory)
         end
     end
 end

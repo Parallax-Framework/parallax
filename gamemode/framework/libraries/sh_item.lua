@@ -364,8 +364,65 @@ function ax.item:Get(identifier)
     return nil
 end
 
+function ax.item:FindByIdentifier(identifier)
+    if ( !isstring(identifier) ) then
+        return nil, "Invalid item identifier"
+    end
+
+    identifier = string.Trim(identifier)
+    if ( identifier == "" ) then
+        return nil, "Invalid item identifier"
+    end
+
+    local exact = self:Get(identifier)
+    if ( istable(exact) and rawget(exact, "isBase") != true ) then
+        return exact.class, exact
+    end
+
+    local lower = ( utf8 and utf8.lower ) or string.lower
+    local loweredIdentifier = lower(identifier)
+
+    for class, item in pairs(self.stored) do
+        if ( !istable(item) or rawget(item, "isBase") == true ) then continue end
+
+        if ( lower(class) == loweredIdentifier ) then
+            return class, item
+        end
+    end
+
+    for class, item in pairs(self.stored) do
+        if ( !istable(item) or rawget(item, "isBase") == true ) then continue end
+
+        local itemName = item.name or class
+        if ( isstring(itemName) and lower(itemName) == loweredIdentifier ) then
+            return class, item
+        end
+    end
+
+    local matches = {}
+    for class, item in pairs(self.stored) do
+        if ( !istable(item) or rawget(item, "isBase") == true ) then continue end
+
+        local itemName = item.name or class
+        if ( ax.util:FindString(class, identifier) or ( isstring(itemName) and ax.util:FindString(itemName, identifier) ) ) then
+            matches[#matches + 1] = {
+                class = class,
+                item = item
+            }
+        end
+    end
+
+    if ( #matches == 1 ) then
+        return matches[1].class, matches[1].item
+    elseif ( #matches > 1 ) then
+        return nil, "Multiple items matched that identifier"
+    end
+
+    return nil, "Item not found"
+end
+
 function ax.item:Instance(id, class)
-    if ( !isnumber(id) or id <= 0 ) then
+    if ( !isnumber(id) or id == 0 ) then
         return nil
     end
 
@@ -440,6 +497,33 @@ if ( SERVER ) then
             end
 
             return false, message
+        end
+
+        local fromIsTemporary = istable(fromInventory) and (fromInventory.isTemporary or fromInventory.noSave)
+        local toIsTemporary = istable(toInventory) and (toInventory.isTemporary or toInventory.noSave)
+        local itemIsTemporary = item.isTemporary or item.noSave
+
+        if ( itemIsTemporary or fromIsTemporary or toIsTemporary ) then
+            if ( fromInventoryID == 0 or toInventoryID == 0 ) then
+                return false, "Temporary items cannot be transferred to or from the world inventory."
+            end
+
+            if ( !fromIsTemporary or !toIsTemporary ) then
+                return false, "Temporary inventory transfers are only supported between temporary inventories."
+            end
+
+            toInventory.items[item.id] = item
+            item.invID = toInventoryID
+
+            if ( istable(fromInventory) ) then
+                fromInventory.items[item.id] = nil
+            end
+
+            if ( isfunction(callback) ) then
+                callback(true)
+            end
+
+            return true
         end
 
         if ( istable(fromInventory) ) then

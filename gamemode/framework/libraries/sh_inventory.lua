@@ -36,6 +36,54 @@ ax.inventory.instances[0] = setmetatable({
 
 
 if ( SERVER ) then
+    --- Creates a temporary in-memory inventory instance (no database persistence).
+    -- @realm server
+    -- @param data table Optional data table containing inventory properties (`id`, `maxWeight`).
+    -- @param callback function|nil Optional callback function called with the created inventory.
+    function ax.inventory:CreateTemporary(data, callback)
+        data = data or {}
+
+        local inventoryID = data.id
+        if ( inventoryID == nil ) then
+            self._nextTemporaryID = self._nextTemporaryID or -1
+            inventoryID = self._nextTemporaryID
+
+            while ( self.instances[inventoryID] != nil ) do
+                inventoryID = inventoryID - 1
+            end
+
+            self._nextTemporaryID = inventoryID - 1
+        end
+
+        local existing = self.instances[inventoryID]
+        if ( istable(existing) and existing.isTemporary and istable(existing.items) and istable(ax.item) and istable(ax.item.instances) ) then
+            for itemID in pairs(existing.items) do
+                ax.item.instances[itemID] = nil
+            end
+        end
+
+        local defaultWeight = 30.0
+        if ( ax.config and isfunction(ax.config.Get) ) then
+            defaultWeight = tonumber(ax.config:Get("inventory.weight.max", defaultWeight)) or defaultWeight
+        end
+
+        local inventory = setmetatable({}, ax.inventory.meta)
+        inventory.id = inventoryID
+        inventory.items = {}
+        inventory.maxWeight = tonumber(data.maxWeight) or defaultWeight
+        inventory.receivers = {}
+        inventory.isTemporary = true
+        inventory.noSave = true
+
+        self.instances[inventoryID] = inventory
+
+        if ( isfunction(callback) ) then
+            callback(inventory)
+        end
+
+        return inventory
+    end
+
     --- Creates a new inventory in the database and returns the inventory object via callback.
     -- @realm server
     -- @param data table Optional data table containing inventory properties.
@@ -93,7 +141,7 @@ if ( SERVER ) then
         state.lastSync = CurTime()
         self._syncState[inventory.id] = state
 
-        ax.util:PrintDebug(string.format("Synchronized inventory %d with %d receivers.", inventory.id, #inventory:GetReceivers()))
+        ax.util:PrintDebug(string.format("Synchronized inventory %s with %d receivers.", tostring(inventory.id), #inventory:GetReceivers()))
     end
 
     --- Synchronizes the specified inventory with all clients.
