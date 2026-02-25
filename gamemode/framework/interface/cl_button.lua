@@ -283,8 +283,8 @@ end
 
 function PANEL:Paint(width, height)
     local glass = ax.theme:GetGlass()
-    self.textColor = glass.text
-    self.textColorHovered = glass.textHover
+    self.textColor = self.textColor or glass.text
+    self.textColorHovered = self.textColorHovered or glass.textHover 
     self.backgroundColorUnHovered = glass.button
     self.backgroundColorHovered = glass.buttonHover
     self.backgroundColorActive = glass.buttonActive
