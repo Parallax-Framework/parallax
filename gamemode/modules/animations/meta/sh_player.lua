@@ -48,25 +48,30 @@ if ( SERVER ) then
         ax.net:Start(nil, "sequence.reset", self)
 
         local callback = ax.animations.forcedSequenceCallbacks[self:SteamID64()]
-        ax.animations.forcedSequenceCallbacks[self:SteamID64()] = nil
 
         self:SetRelay("sequence.forced", nil)
+        self:SetRelay("sequence.identifier", nil)
         self:SetMoveType(MOVETYPE_WALK)
 
         if ( isfunction(callback) ) then
             callback(self)
         end
 
+        ax.animations.forcedSequenceCallbacks[self:SteamID64()] = nil
+
         hook.Run("PostPlayerLeaveSequence", self)
     end
 
     function ax.player.meta:ForceSequence(sequence, callback, time, noFreeze)
         local prevent = hook.Run("PrePlayerForceSequence", self, sequence, callback, time, noFreeze)
-        if ( prevent != nil and prevent == false ) then return end
+        if ( prevent != nil and prevent == false ) then
+            ax.util:PrintDebug("ForceSequence was prevented by a hook for player " .. self:Name() .. "!")
+            return
+        end
 
         if ( sequence == nil ) then
             ax.net:Start(nil, "sequence.reset", self)
-
+            ax.util:PrintDebug("ForceSequence called with nil sequence for player " .. self:Name() .. ", treating as reset.")
             return
         end
 
@@ -81,17 +86,24 @@ if ( SERVER ) then
         self:SetCycle(0)
         self:SetPlaybackRate(1)
         self:SetRelay("sequence.forced", sequenceID)
+        self:SetRelay("sequence.identifier", sequence)
 
         ax.animations.forcedSequenceCallbacks[self:SteamID64()] = callback or nil
 
         if ( !noFreeze ) then
+            self:SetVelocity(Vector(0, 0, 0))
             self:SetMoveType(MOVETYPE_NONE)
+            ax.util:PrintDebug("Player " .. self:Name() .. " is now frozen due to ForceSequence.")
         end
 
         if ( sequenceTime > 0 ) then
             timer.Create("ax.sequence." .. self:SteamID64(), sequenceTime, 1, function()
                 self:LeaveSequence()
+
+                ax.util:PrintDebug("Player " .. self:Name() .. " has been automatically removed from forced sequence \"" .. sequence .. "\" after " .. string.NiceTime(sequenceTime) .. ".")
             end)
+
+            ax.util:PrintDebug("Player " .. self:Name() .. " will be forced into sequence \"" .. sequence .. "\" for " .. string.NiceTime(sequenceTime) .. ".")
 
             return sequenceTime
         end
