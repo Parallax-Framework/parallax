@@ -545,10 +545,13 @@ ax.command:Add("BecomeClass", {
         { name = "class", type = ax.type.string }
     },
     OnRun = function(def, client, class)
+        local character = client:GetCharacter()
+        if ( !character ) then return end
+
         local classTable = ax.class:Get(class)
         if ( !classTable ) then return "Invalid class." end
 
-        local classes = ax.class:GetAll({faction = client:GetFaction()})
+        local classes = ax.class:GetAll({faction = character:GetFaction()})
         if ( classes[1] == nil ) then return "You do not have any classes available to become." end
 
         local selectedClass = nil
@@ -566,7 +569,7 @@ ax.command:Add("BecomeClass", {
             return "You cannot become this class."
         end
 
-        client:SetClass(selectedClass.id)
+        character:SetClass(selectedClass.id)
 
         return "You have become the \"" .. selectedClass.name .. "\" class."
     end
