@@ -112,6 +112,10 @@ ax.localization:Register("tr", {
     ["command.executionfailed"] = "Komut çalıştırılamadı. Tekrar dene.",
     ["command.unknownerror"] = "Bir şeyler ters gitti. Lütfen tekrar dene.",
 
+    ["buildmenu.name.spawn"] = "spawn",
+    ["buildmenu.name.context"] = "context",
+    ["buildmenu.requires_tools"] = "You need building tools to access the %s menu.",
+
     --- General
     ---- Basic
     ["config.language"] = "Dil",
@@ -237,6 +241,13 @@ ax.localization:Register("tr", {
 
     ["config.interface.vignette.enabled"] = "Vinyet Efektini Etkinleştir",
     ["config.interface.vignette.enabled.help"] = "Ekran kenarlarındaki vinyet efektini açıp kapatır.",
+
+    ["config.interface.buildmenu.requires_tools"] = "Require Building Tools for Spawn/Context Menus",
+    ["config.interface.buildmenu.requires_tools.help"] = "Block the spawn and context menus unless the player is holding a building tool.",
+    ["config.interface.buildmenu.notify_attempts"] = "Blocked Menu Notify Attempts",
+    ["config.interface.buildmenu.notify_attempts.help"] = "How many blocked menu presses are required before showing a notification.",
+    ["config.interface.buildmenu.notify_reset_delay"] = "Blocked Menu Notify Reset Delay",
+    ["config.interface.buildmenu.notify_reset_delay.help"] = "Seconds before the blocked menu press counter resets.",
 
     -- Chatbox
     ["chatbox.entry.placeholder"] = "Bir şey söyle...",

@@ -48,6 +48,10 @@ local buildingBinds = {
 
 function GM:PlayerBindPress(client, bind, pressed, code)
     if ( pressed and buildingBinds[bind] ) then
+        if ( ax.config:Get("interface.buildmenu.requires_tools", true) == false ) then
+            return false
+        end
+
         local weapon = client:GetActiveWeapon()
         if ( IsValid(weapon) ) then
             local class = weapon:GetClass()
@@ -56,18 +60,25 @@ function GM:PlayerBindPress(client, bind, pressed, code)
             end
         end
 
+        local notifyAttempts = math.max(math.floor(tonumber(ax.config:Get("interface.buildmenu.notify_attempts", 3)) or 3), 1)
+        local resetDelay = math.max(tonumber(ax.config:Get("interface.buildmenu.notify_reset_delay", 2)) or 2, 0)
+
         client.axMenuPressCount = (client.axMenuPressCount or 0) + 1
         client.axMenuPressTime = CurTime()
 
-        if ( client.axMenuPressCount >= 3 ) then
-            client:Notify("You need building tools to access the " .. (bind == "+menu" and "spawn" or "context") .. " menu.")
+        if ( client.axMenuPressCount >= notifyAttempts ) then
+            local menuName = ax.localization:GetPhrase(bind == "+menu" and "buildmenu.name.spawn" or "buildmenu.name.context")
+            client:Notify(ax.localization:GetPhrase("buildmenu.requires_tools", menuName))
             client.axMenuPressCount = 0
-        else
-            timer.Simple(2, function()
-                if ( ax.util:IsValidPlayer(client) and CurTime() - client.axMenuPressTime >= 2 ) then
+        elseif ( resetDelay > 0 ) then
+            local pressTime = client.axMenuPressTime
+            timer.Simple(resetDelay, function()
+                if ( ax.util:IsValidPlayer(client) and client.axMenuPressTime == pressTime ) then
                     client.axMenuPressCount = 0
                 end
             end)
+        else
+            client.axMenuPressCount = 0
         end
 
         return true
