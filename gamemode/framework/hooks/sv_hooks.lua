@@ -22,8 +22,14 @@ function GM:PlayerDeathThink(client)
 end
 
 function GM:DoPlayerDeath(client, attacker, damageInfo)
+    local respawnSound = hook.Run("GetPlayerRespawnSound", client, attacker, damageInfo)
+    if ( respawnSound ) then
+        client:SendLua([[sound.PlayFile("]] .. respawnSound .. [[", "", function() end)]])
+    else
+        client:SendLua([[sound.PlayFile("sound/ambient/levels/gman/gman_sgnature_shrt.wav", "", function() end)]])
+    end
+
     client:SetDSP(31)
-    client:SendLua([[sound.PlayFile("sound/ambient/levels/gman/gman_sgnature_shrt.wav", "", function() end)]])
 
     client:ResetRateLimit("respawn")
     client:RateLimit("respawn", 30)
@@ -168,7 +174,13 @@ end
 
 function GM:PlayerSpawn(client)
     if ( client.axDeathRespawnSound ) then
-        client:SendLua([[sound.PlayFile("sound/ambient/levels/gman/gman_seg_00_21_05.wav", "", function() end)]])
+        local deathRespawnSound = hook.Run("GetPlayerDeathRespawnSound", client)
+        if ( deathRespawnSound ) then
+            client:SendLua([[sound.PlayFile("]] .. deathRespawnSound .. [[", "", function() end)]])
+        else
+            client:SendLua([[sound.PlayFile("sound/ambient/levels/gman/gman_seg_00_21_05.wav", "", function() end)]])
+        end
+
         client:PerformAction()
         client.axDeathRespawnSound = nil
     end
