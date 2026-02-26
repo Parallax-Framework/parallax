@@ -414,7 +414,9 @@ ax.viewstack:RegisterModifier("ragdoll", function(client, patch)
     ang:RotateAroundAxis(ang:Up(), 270)
     ang:RotateAroundAxis(ang:Forward(), 270)
 
-    --return { origin = pos + ang:Forward() * 10, angles = ang, fov = patch.fov }
+    ang = client:Alive() and patch.angles or ang
+
+    return { origin = pos + ang:Forward() * 10, angles = ang, fov = patch.fov }
 end, 1)
 
 local cameraFOV = CreateConVar("ax_camera_fov", "90", {FCVAR_ARCHIVE, FCVAR_REPLICATED}, "Set the camera FOV when using a view entity.")
