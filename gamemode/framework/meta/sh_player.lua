@@ -124,22 +124,54 @@ function ax.player.meta:HasFactionWhitelist(iFactionID)
     return whitelists[iFactionID] == true
 end
 
+function ax.player.meta:IsRagdolled()
+    return self:GetRelay("ragdolled", false) == true
+end
+
 if ( SERVER ) then
     function ax.player.meta:SetRagdolled(bRagdolled)
-        if ( bRagdolled == nil ) then bRagdolled = true end
-
-        self:SetRelay("ragdolled", bRagdolled)
-
-        if ( bRagdolled == false ) then
+        if ( bRagdolled != true and !self:GetRelay("ragdolled", false) ) then
             SafeRemoveEntity(Entity(self:GetRelay("ragdoll.index", -1)))
-            
+
             self:SetRelay("ragdoll.index", -1)
             self:RemoveTimer("ragdoll.think")
+
+            self:SetMoveType(MOVETYPE_WALK)
+            self:SetNoDraw(false)
+            self:SetNotSolid(false)
+            self:DrawShadow(true)
+            self:SetNoTarget(false)
+            self:DrawWorldModel(true)
+
+            return
+        elseif ( bRagdolled != true and self:GetRelay("ragdolled", false) ) then
+            self:SetRelay("ragdolled", false)
             return
         end
 
         local ragdollDummy = ents.Create("prop_ragdoll")
         if ( !IsValid(ragdollDummy) ) then return nil end
+
+        self:Timer("ragdoll.think", 0.1, 0, function()
+            if ( !IsValid(self) ) then return end
+            if ( !self:GetRelay("ragdolled", false) ) then return end
+
+            -- Set our eye pos to the center of the ragdoll for better corpse visibility
+            local eyeOffset = self:GetPos() - self:EyePos()
+            self:SetPos(ragdollDummy:WorldSpaceCenter() + eyeOffset)
+            self:SetAngles(ragdollDummy:GetAngles())
+
+            debugoverlay.Axis(ragdollDummy:WorldSpaceCenter(), ragdollDummy:GetAngles(), 16, 0.1, true)
+        end)
+
+        self:SetRelay("ragdoll.index", -1)
+        self:SetRelay("ragdolled", bRagdolled)
+
+        self:SetMoveType(MOVETYPE_NONE)
+        self:SetNoDraw(true)
+        self:SetNotSolid(true)
+        self:DrawShadow(false)
+        self:DrawWorldModel(false)
 
         ragdollDummy:SetModel(self:GetModel())
         ragdollDummy:SetSkin(self:GetSkin())
@@ -178,7 +210,12 @@ if ( SERVER ) then
         end
 
         self:SetRelay("ragdoll.index", ragdollDummy:EntIndex())
+
         return ragdollDummy
+    end
+
+    function ax.player.meta:ToggleRagdoll()
+        self:SetRagdolled( !self:GetRelay("ragdolled", false) )
     end
 
     function ax.player.meta:SetFactionWhitelisted(iFactionID, bStatus)
