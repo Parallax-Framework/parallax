@@ -112,9 +112,9 @@ ax.localization:Register("bg", {
     ["command.executionfailed"] = "Командата не се изпълни. Опитай пак.",
     ["command.unknownerror"] = "Нещо се обърка. Моля, опитай пак.",
 
-    ["buildmenu.name.spawn"] = "spawn",
-    ["buildmenu.name.context"] = "context",
-    ["buildmenu.requires_tools"] = "You need building tools to access the %s menu.",
+    ["buildmenu.name.spawn"] = "Създаване",
+    ["buildmenu.name.context"] = "Контекст",
+    ["buildmenu.requires_tools"] = "Трябват ви инструменти за изграждане, за да достъпите менюто %s.",
 
     --- General
     ---- Basic
@@ -242,12 +242,12 @@ ax.localization:Register("bg", {
     ["config.interface.vignette.enabled"] = "Включи Ефект Винетка",
     ["config.interface.vignette.enabled.help"] = "Превключва ефекта винетка около ръбовете на екрана.",
 
-    ["config.interface.buildmenu.requires_tools"] = "Require Building Tools for Spawn/Context Menus",
-    ["config.interface.buildmenu.requires_tools.help"] = "Block the spawn and context menus unless the player is holding a building tool.",
-    ["config.interface.buildmenu.notify_attempts"] = "Blocked Menu Notify Attempts",
-    ["config.interface.buildmenu.notify_attempts.help"] = "How many blocked menu presses are required before showing a notification.",
-    ["config.interface.buildmenu.notify_reset_delay"] = "Blocked Menu Notify Reset Delay",
-    ["config.interface.buildmenu.notify_reset_delay.help"] = "Seconds before the blocked menu press counter resets.",
+    ["config.interface.buildmenu.requires_tools"] = "Изисква Инструменти за Изграждане за Менюта на Създаване/Контекст",
+    ["config.interface.buildmenu.requires_tools.help"] = "Блокира менютата за създаване и контекст, освен ако играчът не държи инструмент за изграждане.",
+    ["config.interface.buildmenu.notify_attempts"] = "Брой Потвърждения на Блокирани Менюта",
+    ["config.interface.buildmenu.notify_attempts.help"] = "Колко пъти трябва да се блокира натискането на меню, преди да се покаже известие.",
+    ["config.interface.buildmenu.notify_reset_delay"] = "Забавяне на Нулирането на Блокирани Менюта",
+    ["config.interface.buildmenu.notify_reset_delay.help"] = "Секунди преди да се нулира броячът на блокирани натискания на меню.",
 
     -- Chatbox
     ["chatbox.entry.placeholder"] = "Кажи нещо...",
