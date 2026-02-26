@@ -468,22 +468,19 @@ function GM:Move(client, moveData)
                 physObj:ApplyForceCenter(client:GetAimVector() * velocity)
             end
         end
-    
-        -- TODO: Make the guy's waist turn
-        --[[
+
         if ( sidewaysVelocity != 0 ) then
-            local pelvisBone = ragdoll:LookupBone("ValveBiped.Bip01_Spine")
-            if ( !pelvisBone or pelvisBone <= 0 ) then return end
-
-            local iPhysBone = ragdoll:TranslateBoneToPhysBone(pelvisBone)
-            if ( !iPhysBone or iPhysBone <= 0 ) then return end
-
-            local physObj = ragdoll:GetPhysicsObjectNum(iPhysBone)
-            if ( !IsValid(physObj) ) then return end
-
-            physObj:AddAngleVelocity(Vector(0, sidewaysVelocity, 0))
+            local iBoneID = ragdoll:LookupBone("ValveBiped.Bip01_Spine1")
+            if ( iBoneID and iBoneID > 0 ) then
+                local iPhysBone = ragdoll:TranslateBoneToPhysBone(iBoneID)
+                if ( iPhysBone and iPhysBone > 0 ) then
+                    local physObj = ragdoll:GetPhysicsObjectNum(iPhysBone)
+                    if ( IsValid(physObj) ) then
+                        physObj:AddAngleVelocity(Vector(0, sidewaysVelocity, 0))
+                    end
+                end
+            end
         end
-        ]]
     end
 end
 
