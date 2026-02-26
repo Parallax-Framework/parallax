@@ -113,6 +113,10 @@ ax.localization:Register("ru", {
     ["command.executionfailed"] = "Команда не выполнилась. Попробуйте ещё раз.",
     ["command.unknownerror"] = "Что-то пошло не так. Попробуйте ещё раз.",
 
+    ["buildmenu.name.spawn"] = "spawn",
+    ["buildmenu.name.context"] = "context",
+    ["buildmenu.requires_tools"] = "You need building tools to access the %s menu.",
+
     --- General
     ---- Basic
     ["config.language"] = "Язык",
@@ -238,6 +242,13 @@ ax.localization:Register("ru", {
 
     ["config.interface.vignette.enabled"] = "Включить эффект виньетки",
     ["config.interface.vignette.enabled.help"] = "Переключите эффект виньетки по краям экрана.",
+
+    ["config.interface.buildmenu.requires_tools"] = "Require Building Tools for Spawn/Context Menus",
+    ["config.interface.buildmenu.requires_tools.help"] = "Block the spawn and context menus unless the player is holding a building tool.",
+    ["config.interface.buildmenu.notify_attempts"] = "Blocked Menu Notify Attempts",
+    ["config.interface.buildmenu.notify_attempts.help"] = "How many blocked menu presses are required before showing a notification.",
+    ["config.interface.buildmenu.notify_reset_delay"] = "Blocked Menu Notify Reset Delay",
+    ["config.interface.buildmenu.notify_reset_delay.help"] = "Seconds before the blocked menu press counter resets.",
 
     -- Chatbox
     ["chatbox.entry.placeholder"] = "Скажите что-нибудь...",

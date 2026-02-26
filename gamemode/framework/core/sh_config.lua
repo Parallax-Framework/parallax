@@ -351,3 +351,27 @@ ax.config:Add("interface.vignette.enabled", ax.type.bool, true, {
     category = "interface",
     subCategory = "display"
 })
+
+ax.config:Add("interface.buildmenu.requires_tools", ax.type.bool, true, {
+    description = "interface.buildmenu.requires_tools.help",
+    category = "interface",
+    subCategory = "interaction"
+})
+
+ax.config:Add("interface.buildmenu.notify_attempts", ax.type.number, 3, {
+    description = "interface.buildmenu.notify_attempts.help",
+    min = 1,
+    max = 10,
+    decimals = 0,
+    category = "interface",
+    subCategory = "interaction"
+})
+
+ax.config:Add("interface.buildmenu.notify_reset_delay", ax.type.number, 2, {
+    description = "interface.buildmenu.notify_reset_delay.help",
+    min = 0,
+    max = 10,
+    decimals = 1,
+    category = "interface",
+    subCategory = "interaction"
+})
