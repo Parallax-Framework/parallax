@@ -267,6 +267,24 @@ function MODULE:ShouldDrawLocalPlayer(client)
     end
 end
 
+local function RetrieveHeadParameters(client)
+    if ( !IsValid(client) ) then return end
+
+    local headBone = client:LookupBone("ValveBiped.Bip01_Head1")
+    local eyeAttachment = client:LookupAttachment("eyes")
+
+    if ( headBone ) then
+        return client:GetBonePosition(headBone)
+    elseif ( eyeAttachment ) then
+        local eyeData = client:GetAttachment(eyeAttachment)
+        if ( eyeData and eyeData.Pos ) then
+            return eyeData.Pos, eyeData.Ang
+        end
+    end
+
+    return nil
+end
+
 ax.viewstack:RegisterModifier("thirdperson", function(client, patch)
     if ( hook.Run("ShouldUseThirdPerson", client) == false ) then return end
 
@@ -283,21 +301,20 @@ ax.viewstack:RegisterModifier("thirdperson", function(client, patch)
     end
 
     -- start from the player's eye position
+    local ragdoll = Entity(client:GetRelay("ragdoll.index", -1))
     local startPos = client:EyePos()
-    local headBone = client:LookupBone("ValveBiped.Bip01_Head1")
-    local eyeAttachment = client:LookupAttachment("eyes")
     if ( ax.option:Get("thirdperson.follow.head") ) then
-        if ( headBone ) then
-            local headPos, _ = client:GetBonePosition(headBone)
-            if ( headPos ) then
-                startPos = headPos
-            end
+        local headPos, headAng = RetrieveHeadParameters(ragdoll or client)
+        if ( headPos ) then
+            startPos = headPos
+        end
 
-        elseif ( eyeAttachment ) then
-            local eyeData = client:GetAttachment(eyeAttachment)
-            if ( eyeData and eyeData.Pos ) then
-                startPos = eyeData.Pos
-            end
+        if ( headAng ) then
+            patch.angles = headAng
+        end
+    else
+        if ( ragdoll ) then
+            startPos = RetrieveHeadParameters(ragdoll) or startPos
         end
     end
 
@@ -311,7 +328,12 @@ ax.viewstack:RegisterModifier("thirdperson", function(client, patch)
         endpos = desiredPos,
         mins = Vector(-FIXED_RADIUS, -FIXED_RADIUS, -FIXED_RADIUS),
         maxs = Vector(FIXED_RADIUS, FIXED_RADIUS, FIXED_RADIUS),
-        filter = client,
+        filter = function(ent)
+            if ( ent == client ) then return false end
+            if ( ent:IsPlayer() and ent:Alive() ) then return false end
+            if ( IsValid(ragdoll) and ent == ragdoll ) then return false end
+            return true
+        end,
         mask = MASK_SOLID
     })
 
@@ -322,7 +344,12 @@ ax.viewstack:RegisterModifier("thirdperson", function(client, patch)
     local trace = util.TraceLine({
         start = client:GetShootPos(),
         endpos = client:GetShootPos() + client:GetAimVector() * 2048,
-        filter = client,
+        filter = function(ent)
+            if ( ent == client ) then return false end
+            if ( ent:IsPlayer() and ent:Alive() ) then return false end
+            if ( IsValid(ragdoll) and ent == ragdoll ) then return false end
+            return true
+        end,
         mask = MASK_SOLID
     })
 
