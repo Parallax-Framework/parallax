@@ -156,9 +156,7 @@ if ( SERVER ) then
             if ( !IsValid(self) ) then return end
             if ( !self:GetRelay("ragdolled", false) ) then return end
 
-            -- Set our eye pos to the center of the ragdoll for better corpse visibility
-            local eyeOffset = self:GetPos() - self:EyePos()
-            self:SetPos(ragdollDummy:WorldSpaceCenter() + eyeOffset)
+            self:SetPos(ragdollDummy:WorldSpaceCenter())
             self:SetAngles(ragdollDummy:GetAngles())
 
             debugoverlay.Axis(ragdollDummy:WorldSpaceCenter(), ragdollDummy:GetAngles(), 16, 0.1, true)
