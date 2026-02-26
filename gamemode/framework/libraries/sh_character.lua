@@ -104,6 +104,11 @@ function ax.character:SetVar(char, name, value, opts)
         char.vars = {}
     end
 
+    if ( varTable.fieldType != ax.type:Detect(value) ) then
+        ax.util:PrintError("Invalid value type for character variable '" .. name .. "', expected " .. ax.type:Format(varTable.fieldType) .. ", got " .. ax.type:Format(ax.type:Detect(value)))
+        return
+    end
+
     local options = istable(opts) and opts or {}
     local rawOpts = opts
     local bNoNet = options.bNoNetworking == true
