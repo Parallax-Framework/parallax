@@ -451,7 +451,9 @@ function GM:Move(client, moveData)
         physObjHead:SetAngles(client:GetAimVector():Angle())
 
         if ( bit.band(moveData:GetButtons(), IN_JUMP) != 0 ) then
-            SafeRemoveEntity(ragdoll)
+            client:PerformAction("Getting up...", 5, function()
+                SafeRemoveEntity(ragdoll)
+            end)
         elseif ( velocity != 0 ) then
             for i = 1, #BONES do
                 if ( !IsValid(ragdoll) ) then break end

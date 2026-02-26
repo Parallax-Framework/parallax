@@ -143,6 +143,8 @@ if ( SERVER ) then
             self:SetNoTarget(false)
             self:DrawWorldModel(true)
 
+            self:SetPos(self:GetPos() + Vector(0, 0, 8)) -- Nudge the player up slightly to prevent getting stuck in the ground
+
             return
         elseif ( bRagdolled != true and self:GetRelay("ragdolled", false) ) then
             self:SetRelay("ragdolled", false)
