@@ -569,7 +569,7 @@ ax.command:Add("BecomeClass", {
             return "You cannot become this class."
         end
 
-        character:SetClass(selectedClass.id)
+        character:SetClass(selectedClass.index)
 
         return "You have become the \"" .. selectedClass.name .. "\" class."
     end
