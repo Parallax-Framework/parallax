@@ -15,6 +15,44 @@
 --- User and character finder utilities.
 -- @section find_utilities
 
+--- Normalize a string for case-insensitive search comparisons.
+-- @param value any Value to normalize
+-- @return string Lowercased trimmed string, or `""` when empty
+-- @usage local query = ax.util:NormalizeSearchString("  Hello  ") -- "hello"
+function ax.util:NormalizeSearchString(value)
+    value = string.Trim(tostring(value or ""))
+    if ( value == "" ) then
+        return ""
+    end
+
+    if ( utf8 and utf8.lower ) then
+        return utf8.lower(value)
+    end
+
+    return string.lower(value)
+end
+
+--- Check whether a search query matches any provided values.
+-- @param query string Search text
+-- @param ... any Candidate values to compare against
+-- @return boolean True if query is empty or any candidate contains it
+-- @usage if ax.util:SearchMatches("cit", "Citizen", "Police") then print("matched") end
+function ax.util:SearchMatches(query, ...)
+    query = self:NormalizeSearchString(query)
+    if ( query == "" ) then
+        return true
+    end
+
+    for i = 1, select("#", ...) do
+        local value = self:NormalizeSearchString(select(i, ...))
+        if ( value != "" and string.find(value, query, 1, true) ) then
+            return true
+        end
+    end
+
+    return false
+end
+
 --- Find a specific piece of text within a larger body of text (case-insensitive).
 -- @param str string The string to search in
 -- @param find string The substring to search for
