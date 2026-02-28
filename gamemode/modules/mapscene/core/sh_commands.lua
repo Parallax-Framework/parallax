@@ -27,7 +27,7 @@ end
 
 ax.command:Add("MapSceneAdd", {
     description = "Add a map scene at your eye position.",
-    adminOnly = true,
+    superAdminOnly = true,
     arguments = {
         { name = "name", type = ax.type.string, optional = true },
         { name = "pair", type = ax.type.bool, optional = true },
@@ -50,7 +50,7 @@ ax.command:Add("MapSceneAdd", {
 
 ax.command:Add("MapSceneRemove", {
     description = "Remove map scenes near your position.",
-    adminOnly = true,
+    superAdminOnly = true,
     arguments = {
         { name = "radius", type = ax.type.number, optional = true },
     },
@@ -64,7 +64,7 @@ ax.command:Add("MapSceneRemove", {
 
 ax.command:Add("MapScenePreview", {
     description = "Preview a specific scene by index or name (use \"off\" to clear).",
-    adminOnly = true,
+    superAdminOnly = true,
     arguments = {
         { name = "identifier", type = ax.type.string, optional = true },
     },
@@ -93,7 +93,7 @@ ax.command:Add("MapScenePreview", {
 
 ax.command:Add("MapSceneExport", {
     description = "Export map scenes as JSON.",
-    adminOnly = true,
+    superAdminOnly = true,
     OnRun = function(def, client)
         local json = ax.mapscene:ExportToJSON()
         if ( !json ) then
@@ -112,7 +112,7 @@ ax.command:Add("MapSceneExport", {
 
 ax.command:Add("MapSceneImport", {
     description = "Import map scenes from JSON (replaces existing scenes).",
-    adminOnly = true,
+    superAdminOnly = true,
     arguments = {
         { name = "json", type = ax.type.text },
     },

@@ -24,6 +24,7 @@ end
 ]]
 ax.command:Add("ZoneBox", {
     description = "Create a box zone at your look position",
+    superAdminOnly = true,
     arguments = {
         { name = "name", type = ax.type.string },
         { name = "priority", type = ax.type.number },
@@ -61,6 +62,7 @@ ax.command:Add("ZoneBox", {
 local boxCorners = {}
 ax.command:Add("ZoneBoxCustom", {
     description = "Create a box zone with custom corners (use twice)",
+    superAdminOnly = true,
     arguments = {
         { name = "name", type = ax.type.string, optional = true },
         { name = "priority", type = ax.type.number, optional = true },
@@ -123,6 +125,7 @@ ax.command:Add("ZoneBoxCustom", {
 ]]
 ax.command:Add("ZoneSphere", {
     description = "Create a sphere zone at your look position",
+    superAdminOnly = true,
     arguments = {
         { name = "name", type = ax.type.string },
         { name = "priority", type = ax.type.number },
@@ -162,6 +165,7 @@ ax.command:Add("ZoneSphere", {
 ]]
 ax.command:Add("ZonePVS", {
     description = "Create a PVS zone at your look position",
+    superAdminOnly = true,
     arguments = {
         { name = "name", type = ax.type.string },
         { name = "priority", type = ax.type.number },
@@ -201,6 +205,7 @@ ax.command:Add("ZonePVS", {
 ]]
 ax.command:Add("ZoneTrace", {
     description = "Create a trace zone at your look position",
+    superAdminOnly = true,
     arguments = {
         { name = "name", type = ax.type.string },
         { name = "priority", type = ax.type.number },
@@ -240,6 +245,7 @@ ax.command:Add("ZoneTrace", {
 ]]
 ax.command:Add("ZoneRemove", {
     description = "Remove a zone by ID or name",
+    superAdminOnly = true,
     arguments = {
         { name = "identifier", type = ax.type.string },
     },
@@ -269,6 +275,7 @@ ax.command:Add("ZoneRemove", {
 ]]
 ax.command:Add("ZoneList", {
     description = "List all zones to console",
+    adminOnly = true,
     OnRun = function(def, client)
         ax.zones:List()
         return "Zone list printed to console."
@@ -282,6 +289,7 @@ ax.command:Add("ZoneList", {
 ]]
 ax.command:Add("ZoneInfo", {
     description = "Show detailed information about a zone",
+    adminOnly = true,
     arguments = {
         { name = "identifier", type = ax.type.string },
     },
@@ -329,6 +337,7 @@ ax.command:Add("ZoneInfo", {
 local debugPlayers = {}
 ax.command:Add("ZoneDebug", {
     description = "Toggle zone debug visualization",
+    adminOnly = true,
     OnRun = function(def, client)
         local steamID = client:SteamID()
 
@@ -351,6 +360,7 @@ ax.command:Add("ZoneDebug", {
 ]]
 ax.command:Add("ZonePriority", {
     description = "Update a zone's priority",
+    superAdminOnly = true,
     arguments = {
         { name = "identifier", type = ax.type.string },
         { name = "priority", type = ax.type.number },
@@ -378,6 +388,7 @@ ax.command:Add("ZonePriority", {
 ]]
 ax.command:Add("ZoneTp", {
     description = "Teleport to a zone's center",
+    adminOnly = true,
     arguments = {
         { name = "identifier", type = ax.type.string },
     },
@@ -415,6 +426,7 @@ ax.command:Add("ZoneTp", {
 local clearConfirm = {}
 ax.command:Add("ZoneClear", {
     description = "Clear all runtime zones (use twice to confirm)",
+    superAdminOnly = true,
     OnRun = function(def, client)
         local steamID = client:SteamID()
 
