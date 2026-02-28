@@ -13,6 +13,35 @@ DEFINE_BASECLASS("EditablePanel")
 
 local PANEL = {}
 
+local function GetSortedSectionKeys(sections)
+    local keys = table.GetKeys(sections or {})
+
+    table.sort(keys, function(a, b)
+        local dataA = sections[a]
+        local dataB = sections[b]
+        local sortA = (istable(dataA) and isnumber(dataA.sort)) and dataA.sort or math.huge
+        local sortB = (istable(dataB) and isnumber(dataB.sort)) and dataB.sort or math.huge
+
+        if ( sortA != sortB ) then
+            return sortA < sortB
+        end
+
+        local nameA = istable(dataA) and dataA.name or a
+        local nameB = istable(dataB) and dataB.name or b
+
+        nameA = string.lower(tostring(nameA or a))
+        nameB = string.lower(tostring(nameB or b))
+
+        if ( nameA == nameB ) then
+            return tostring(a) < tostring(b)
+        end
+
+        return nameA < nameB
+    end)
+
+    return keys
+end
+
 AccessorFunc(PANEL, "backgroundBlur", "BackgroundBlur", FORCE_NUMBER)
 AccessorFunc(PANEL, "backgroundAlpha", "BackgroundAlpha", FORCE_NUMBER)
 AccessorFunc(PANEL, "gradientLeft", "GradientLeft", FORCE_NUMBER)
@@ -289,7 +318,11 @@ function PANEL:PopulateTabs()
                 end
 
                 -- Add buttons for each section
-                for sectionKey, sectionData in pairs(v.Sections) do
+                local sortedSectionKeys = GetSortedSectionKeys(v.Sections)
+
+                for i = 1, #sortedSectionKeys do
+                    local sectionKey = sortedSectionKeys[i]
+                    local sectionData = v.Sections[sectionKey]
                     local subbutton = self.subbuttons:Add("ax.button")
                     subbutton:Dock(LEFT)
                     subbutton:DockMargin(0, 0, ax.util:ScreenScale(4), 0)
@@ -325,18 +358,19 @@ function PANEL:PopulateTabs()
                 end
 
                 -- Populate each sub tab
-                for sectionKey, section in pairs(v.Sections) do
-                    if ( isfunction(section.Populate) ) then
-                        section:Populate(self.tabs[sectionKey])
+                for i = 1, #sortedSectionKeys do
+                    local sectionKey = sortedSectionKeys[i]
+                    local section = v.Sections[sectionKey]
+                    local subTab = self.tabs[sectionKey]
+
+                    if ( IsValid(subTab) and !subTab.bPopulated and isfunction(section.Populate) ) then
+                        section:Populate(subTab)
+                        subTab.bPopulated = true
                     end
                 end
 
                 -- Auto-select the first section when clicking a tab with sections
-                local firstSectionKey = nil
-                for sectionKey, _ in SortedPairs(v.Sections) do
-                    firstSectionKey = sectionKey
-                    break
-                end
+                local firstSectionKey = sortedSectionKeys[1]
 
                 if ( firstSectionKey ) then
                     ax.gui.tabLast = firstSectionKey
