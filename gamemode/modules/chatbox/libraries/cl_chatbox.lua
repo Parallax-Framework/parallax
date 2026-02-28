@@ -160,8 +160,10 @@ function ax.chatbox:OverrideChatAddText()
 
         -- Add timestamp
         if ( ax.option:Get("chat.timestamps", true) ) then
+            local b_24HFormat = ax.option:Get("chat.timestamps.24hour", false)
             local ts = Color(150, 150, 150)
-            text = string.format("<font=ax.small.shadow><color=%d,%d,%d>[%s] </color></font>", ts.r, ts.g, ts.b, os.date("%H:%M"))
+            local format = b_24HFormat and "%H:%M" or "%I:%M %p"
+            text = string.format("<font=ax.small.shadow><color=%d,%d,%d>[%s] </color></font>", ts.r, ts.g, ts.b, os.date(format))
         end
         -- Build markup from arguments
         for _, v in ipairs(arguments) do
