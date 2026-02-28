@@ -62,19 +62,13 @@ function PANEL:RebuildScoreboard()
         if ( !members or #members == 0 ) then continue end
 
         -- Team header
+        local teamName = team.GetName(tid) or "Unknown Team"
+        local teamColor = team.GetColor(tid) or Color(80, 80, 80)
+
         local header = self.container:Add("EditablePanel")
         header:Dock(TOP)
         header.Paint = function(_, width, height)
-            local col = team.GetColor(tid) or Color(80, 80, 80)
-            local glass = ax.theme:GetGlass()
-            ax.theme:DrawGlassPanel(0, 0, width, height, {
-                radius = 8,
-                blur = 0.8,
-                flags = ax.render.SHAPE_IOS,
-                fill = glass.panel
-            })
-            ax.render.Draw(8, 0, 0, width, height, ColorAlpha(col, 90), ax.render.SHAPE_IOS)
-            ax.render.Draw(8, 0, 0, width, height, glass.highlight, ax.render.SHAPE_IOS)
+            ax.render.Draw(8, 0, 0, width, height, teamColor, ax.render.SHAPE_IOS)
         end
 
         local darkTheme = ax.theme:Get("dark")
@@ -83,9 +77,9 @@ function PANEL:RebuildScoreboard()
         local title = header:Add("ax.text")
         title:Dock(FILL)
         title:SetFont("ax.large.bold.italic")
-        title:SetText(team.GetName(tid) or ("Team " .. tostring(tid)), true)
+        title:SetText(teamName, true)
         title:SetTextInset(ax.util:ScreenScale(2), -ax.util:ScreenScaleH(1))
-        title:SetTextColor(!team.GetColor(tid):IsDark() and lightTheme.glass.text or darkTheme.glass.text)
+        title:SetTextColor(!teamColor:IsDark() and lightTheme.glass.text or darkTheme.glass.text)
         title:SetExpensiveShadow(2, Color(0, 0, 0, 200))
 
         header:SetTall(title:GetTall())
