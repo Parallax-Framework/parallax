@@ -119,6 +119,39 @@ function ax.util:UniqueIDToName(id)
     return name
 end
 
+--- Convert a map into a sorted array of `{ key = ..., value = ... }` entries.
+-- @param entries table Source key/value table
+-- @param[opt] comparator function Optional comparator receiving two entry tables
+-- @return table Sorted array of entry tables
+-- @usage local sorted = ax.util:GetSortedEntries(myMap)
+function ax.util:GetSortedEntries(entries, comparator)
+    local sorted = {}
+
+    if ( !istable(entries) ) then
+        return sorted
+    end
+
+    for key, value in pairs(entries) do
+        sorted[#sorted + 1] = {
+            key = key,
+            value = value
+        }
+    end
+
+    table.sort(sorted, comparator or function(a, b)
+        local keyA = string.lower(tostring(a.key))
+        local keyB = string.lower(tostring(b.key))
+
+        if ( keyA == keyB ) then
+            return tostring(a.key) < tostring(b.key)
+        end
+
+        return keyA < keyB
+    end)
+
+    return sorted
+end
+
 local stored = {}
 
 --- Returns a material from the cache or creates a new one.
