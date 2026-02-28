@@ -15,6 +15,7 @@
 
 ax.bind = ax.bind or {}
 ax.bind.stored = ax.bind.stored or {}
+ax.bind.byKey = {}
 
 ax.bind.translations = {
     [KEY_NONE] = "NONE",
@@ -169,6 +170,50 @@ function ax.bind:Translate(...)
     return table.concat(parts, " + ")
 end
 
+local function RemoveBindingFromIndexes(binding)
+    if ( !istable(binding) or !istable(binding.keys) ) then
+        return
+    end
+
+    for i = 1, #binding.keys do
+        local key = binding.keys[i]
+        local bindings = ax.bind.byKey[key]
+        if ( !istable(bindings) ) then
+            continue
+        end
+
+        for j = #bindings, 1, -1 do
+            if ( bindings[j] == binding ) then
+                table.remove(bindings, j)
+            end
+        end
+
+        if ( #bindings < 1 ) then
+            ax.bind.byKey[key] = nil
+        end
+    end
+end
+
+local function AddBindingToIndexes(binding)
+    if ( !istable(binding) or !istable(binding.keys) ) then
+        return
+    end
+
+    for i = 1, #binding.keys do
+        local key = binding.keys[i]
+
+        ax.bind.byKey[key] = ax.bind.byKey[key] or {}
+        ax.bind.byKey[key][#ax.bind.byKey[key] + 1] = binding
+    end
+end
+
+for _, binding in pairs(ax.bind.stored) do
+    if ( istable(binding) and istable(binding.keys) ) then
+        binding.keyCount = #binding.keys
+        AddBindingToIndexes(binding)
+    end
+end
+
 --- Register a key combination with press and release callbacks.
 -- @param keys table table of KEY_* constants representing the key combination.
 -- @param onPress function function to call when the key combination is pressed.
@@ -188,43 +233,59 @@ function ax.bind:Register(keys, onPress, onRelease)
         error("ax.bind:Register: 'keys' table must contain at least one key", 2)
     end
 
+    local normalizedKeys = {}
+    local seenKeys = {}
+
     for i = 1, #keys do
         local key = keys[i]
         if ( !isnumber(key) or !self.translations[key] ) then
             error("ax.bind:Register: 'keys' table must only contain KEY_* constants", 2)
         end
+
+        if ( !seenKeys[key] ) then
+            normalizedKeys[#normalizedKeys + 1] = key
+            seenKeys[key] = true
+        end
     end
 
-    local keyString = self:Translate( unpack(keys) )
+    local keyString = self:Translate( unpack(normalizedKeys) )
+    local existingBinding = self.stored[keyString]
+    if ( istable(existingBinding) ) then
+        RemoveBindingFromIndexes(existingBinding)
+    end
 
-    self.stored[keyString] = {
-        keys = keys,
+    local binding = {
+        keys = normalizedKeys,
+        keyCount = #normalizedKeys,
         onPress = isfunction(onPress) and onPress or function() end,
         onRelease = isfunction(onRelease) and onRelease or function() end,
         isActive = false,
     }
+
+    self.stored[keyString] = binding
+    AddBindingToIndexes(binding)
 end
 
 hook.Add("PlayerButtonDown", "ax.bind", function(client, key)
-    -- Check all registered bindings to see if they should activate
-    for keyString, binding in pairs(ax.bind.stored) do
-        if ( binding.isActive ) then continue end
+    local isKeyDown = input.IsKeyDown
+    local bindings = ax.bind.byKey[key]
+    if ( !istable(bindings) ) then
+        return
+    end
 
-        -- Only check bindings that contain the pressed key
-        local containsKey = false
-        for j = 1, #binding.keys do
-            if ( binding.keys[j] == key ) then
-                containsKey = true
-                break
-            end
+    for i = 1, #bindings do
+        local binding = bindings[i]
+        if ( !istable(binding) ) then
+            continue
         end
-        if ( !containsKey ) then continue end
+
+        if ( binding.isActive ) then continue end
 
         -- Check if all keys in this binding are pressed
         local allPressed = true
-        for j = 1, #binding.keys do
+        for j = 1, binding.keyCount do
             local bindKey = binding.keys[j]
-            if ( !input.IsKeyDown(bindKey) ) then
+            if ( !isKeyDown(bindKey) ) then
                 allPressed = false
                 break
             end
@@ -238,26 +299,25 @@ hook.Add("PlayerButtonDown", "ax.bind", function(client, key)
 end)
 
 hook.Add("PlayerButtonUp", "ax.bind", function(client, key)
-    -- Check all active bindings to see if they should deactivate
-    for keyString, binding in pairs(ax.bind.stored) do
-        if ( !binding.isActive ) then continue end
+    local isKeyDown = input.IsKeyDown
+    local bindings = ax.bind.byKey[key]
+    if ( !istable(bindings) ) then
+        return
+    end
 
-        -- Only check bindings that contain the released key
-        local containsKey = false
-        for j = 1, #binding.keys do
-            if ( binding.keys[j] == key ) then
-                containsKey = true
-                break
-            end
+    for i = 1, #bindings do
+        local binding = bindings[i]
+        if ( !istable(binding) ) then
+            continue
         end
 
-        if ( !containsKey ) then continue end
+        if ( !binding.isActive ) then continue end
 
         -- Check if any key in this binding was released
         local anyReleased = false
-        for j = 1, #binding.keys do
+        for j = 1, binding.keyCount do
             local bindKey = binding.keys[j]
-            if ( !input.IsKeyDown(bindKey) ) then
+            if ( !isKeyDown(bindKey) ) then
                 anyReleased = true
                 break
             end
@@ -269,15 +329,3 @@ hook.Add("PlayerButtonUp", "ax.bind", function(client, key)
         end
     end
 end)
-
-ax.bind:Register( {KEY_J, KEY_G }, function()
-    print("You pressed J + G")
-end, function()
-    print("You released J + G")
-end )
-
-ax.bind:Register( {KEY_O, KEY_P }, function()
-    print("You pressed O + P")
-end, function()
-    print("You released O + P")
-end )
