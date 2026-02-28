@@ -140,6 +140,7 @@ ax.localization:Register("en", {
     ---- Basic
     ["option.chat.sounds"] = "Enable Chat Sounds",
     ["option.chat.timestamps"] = "Show Timestamps in Chat",
+    ["option.chat.timestamps.24hour"] = "Use 24-Hour Timestamp Format",
     ["option.chat.randomized.verbs"] = "Use Randomized Chat Verbs",
     ["option.chat.randomized.verbs.help"] = "When enabled, chat messages use varied verbs (exclaims, mutters, shouts). When disabled, they use the default verbs (says, whispers, yells).",
 

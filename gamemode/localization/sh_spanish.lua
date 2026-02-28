@@ -140,6 +140,7 @@ ax.localization:Register("es", {
     ---- Basic
     ["option.chat.sounds"] = "Habilitar Sonidos del Chat",
     ["option.chat.timestamps"] = "Mostrar Tiempos en el Chat",
+    ["option.chat.timestamps.24hour"] = "Usar Formato de 24 Horas para las Marcas de Tiempo",
     ["option.chat.randomized.verbs"] = "Usar Verbos Aleatorios en el Chat",
     ["option.chat.randomized.verbs.help"] = "Cuando está habilitado, los mensajes del chat usarán verbos variados (exclama, murmura, grita). Cuando está deshabilitado, usa los verbos predeterminados (dice, susurra, grita).",
 

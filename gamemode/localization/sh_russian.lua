@@ -141,6 +141,7 @@ ax.localization:Register("ru", {
     ---- Basic
     ["option.chat.sounds"] = "Включить звуки чата",
     ["option.chat.timestamps"] = "Время в чате",
+    ["option.chat.timestamps.24hour"] = "Использовать 24-часовой формат времени",
     ["option.chat.randomized.verbs"] = "Использование Случайных Эмоутов",
     ["option.chat.randomized.verbs.help"] = "Если включено, в сообщениях чата будут использоваться разные глаголы (восклицает, бормочет, кричит). Если отключено, используются глаголы по умолчанию (говорит, шепчет, кричит).",
 
