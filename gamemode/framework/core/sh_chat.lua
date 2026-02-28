@@ -308,7 +308,7 @@ ax.chat:Add("it", {
 
 ax.chat:Add("event", {
     description = "Announce a global event",
-    prefix = {"/globalevent"},
+    prefix = {"/GlobalEvent"},
     adminOnly = true,
     OnRun = function(this, client, message)
         local eventColor = ax.config:Get("chat.event.color", Color(200, 100, 50))
