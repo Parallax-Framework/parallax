@@ -207,6 +207,14 @@ ax.option:Add("chat.timestamps", ax.type.bool, false, {
     bNoNetworking = true
 })
 
+-- whether or not to use 0-24 hours or the PM/AM system
+ax.option:Add("chat.timestamps.24hour", ax.type.bool, false, {
+    category = "chat",
+    subCategory = "basic",
+    description = "chat.timestamps.24hour.help",
+    bNoNetworking = true
+})
+
 ax.option:Add("chat.sounds", ax.type.bool, true, {
     category = "chat",
     subCategory = "basic",

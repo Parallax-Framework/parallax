@@ -140,6 +140,7 @@ ax.localization:Register("tr", {
     ---- Basic
     ["option.chat.sounds"] = "Sohbet Seslerini Etkinleştir",
     ["option.chat.timestamps"] = "Sohbette Zaman Damgalarını Göster",
+    ["option.chat.timestamps.24hour"] = "24 Saatlik Zaman Damgası Formatını Kullan",
     ["option.chat.randomized.verbs"] = "Rastgele Sohbet Fiillerini Kullan",
     ["option.chat.randomized.verbs.help"] = "Açık olduğunda, sohbet mesajları farklı fiiller kullanır (bağırır, homurdanır, haykırır). Kapalı olduğunda varsayılan fiilleri kullanır (der, fısıldar, bağırır).",
 
