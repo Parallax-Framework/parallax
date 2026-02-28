@@ -49,6 +49,53 @@ local function validateAndDrop(client, amount, currencyID)
     return "You dropped " .. ax.currencies:Format(amount, currencyID) .. "."
 end
 
+local function validateAndGive(client, amount, currencyID)
+    if ( !ax.util:IsValidPlayer(client) ) then
+        return "Couldn't identify you as a valid player."
+    end
+
+    currencyID = currencyID or "dollars"
+    amount = normalizeAmount(amount)
+
+    if ( amount <= 0 ) then
+        return "Please enter a positive amount."
+    end
+
+    if ( !ax.currencies:IsValid(currencyID) ) then
+        return "That currency doesn't exist: " .. tostring(currencyID)
+    end
+
+    if ( !ax.currencies:IsPhysical(currencyID) ) then
+        return "That currency isn't physical and can't be given directly."
+    end
+
+    local clientCharacter = client:GetCharacter()
+    if ( !clientCharacter ) then
+        return "You don't have a character loaded right now."
+    end
+
+    local trace = client:GetEyeTrace()
+    local target = trace and trace.Entity or nil
+    if ( !ax.util:IsValidPlayer(target) ) then
+        return "You need to be looking at a valid player."
+    end
+
+    if ( target == client ) then
+        return "You can't give currency to yourself."
+    end
+
+    local targetCharacter, errMsg = requireCharacter(target)
+    if ( !targetCharacter ) then return errMsg end
+
+    if ( !clientCharacter:TakeCurrency(amount, currencyID) ) then
+        return "You don't have enough " .. (ax.currencies:Get(currencyID).plural or "funds") .. "."
+    end
+
+    targetCharacter:AddCurrency(amount, currencyID)
+
+    return string.format("You gave %s to %s.", ax.currencies:Format(amount, currencyID), target:Nick())
+end
+
 ax.command:Add("DropCurrency", {
     description = "Drop an amount of a currency as a world item",
     arguments = {
@@ -92,45 +139,18 @@ ax.command:Add("GiveMoney", {
         { name = "amount", type = ax.type.number, min = 1 }
     },
     OnRun = function(def, client, amount)
-        if ( !ax.util:IsValidPlayer(client) ) then
-            return "Couldn't identify you as a valid player."
-        end
+        return validateAndGive(client, amount, "dollars")
+    end
+})
 
-        if ( !ax.currencies:IsPhysical("dollars") ) then
-            return "That currency isn't physical and can't be given directly."
-        end
-
-        amount = normalizeAmount(amount)
-        if ( amount <= 0 ) then
-            return "Please enter a positive amount."
-        end
-
-        local clientCharacter = client:GetCharacter()
-        if ( !clientCharacter ) then
-            return "You don't have a character loaded right now."
-        end
-
-        local trace = client:GetEyeTrace()
-        local target = trace and trace.Entity or nil
-        if ( !ax.util:IsValidPlayer(target) ) then
-            return "You need to be looking at a valid player."
-        end
-
-        if ( target == client ) then
-            return "You can't give money to yourself."
-        end
-
-        local targetCharacter, errMsg = requireCharacter(target)
-        if ( !targetCharacter ) then return errMsg end
-
-        if ( !clientCharacter:TakeCurrency(amount, "dollars") ) then
-            return "You don't have enough dollars."
-        end
-
-        local delta = ax.currencies:Format(amount, "dollars")
-        targetCharacter:AddCurrency(amount, "dollars")
-
-        return string.format("You gave %s to %s.", delta, target:Nick())
+ax.command:Add("GiveCurrency", {
+    description = "Give a physical currency to the player you're looking at",
+    arguments = {
+        { name = "amount", type = ax.type.number, min = 1 },
+        { name = "currencyID", type = ax.type.string, optional = true }
+    },
+    OnRun = function(def, client, amount, currencyID)
+        return validateAndGive(client, amount, currencyID)
     end
 })
 

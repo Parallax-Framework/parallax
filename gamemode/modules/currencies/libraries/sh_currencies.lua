@@ -28,6 +28,10 @@ ax.currencies.registry = ax.currencies.registry or {}
 --   - default (number): Default starting amount (defaults to 0)
 --   - singular (string): Singular form of currency name (e.g., "dollar")
 --   - plural (string): Plural form of currency name (e.g., "dollars")
+--   - symbolPosition (string): "prefix" or "suffix" for how the symbol is placed in formatted text
+--   - symbolSpacing (boolean): Whether to add a space between the symbol and amount in formatted text
+--   - model (string): Inventory/world preview model used for this currency
+--   - description (string): Description shown in UI panels
 --   - physical (boolean): Whether the currency can exist as a world entity or be directly handed over
 --   - format (function): Optional custom formatting function(amount) -> string
 -- @return bool True if registration succeeded, false otherwise
@@ -55,19 +59,38 @@ function ax.currencies:Register(uniqueID, data)
     data.default = tonumber(data.default) or 0
     data.singular = data.singular or data.name
     data.plural = data.plural or (data.name .. "s")
+    data.symbolPosition = data.symbolPosition or "prefix"
+    data.symbolSpacing = data.symbolSpacing != false
+    data.model = data.model or "models/props_lab/box01a.mdl"
     data.physical = data.physical != false
+    data.description = data.description or (data.physical
+        and ("A physical currency balance made up of " .. data.plural .. ".")
+        or ("A non-physical currency balance of " .. data.plural .. " that cannot be dropped or handed over directly."))
 
     -- Create default format function if not provided
     if ( !isfunction(data.format) ) then
         data.format = function(amount)
             amount = tonumber(amount) or 0
 
-            local formatted = string.Comma(math.floor(amount))
-            if ( amount == 1 ) then
-                return formatted .. " " .. data.singular
-            else
-                return formatted .. " " .. data.plural
+            local wholeAmount = math.floor(amount)
+            local formattedAmount = string.Comma(wholeAmount)
+            local label = math.abs(wholeAmount) == 1 and data.singular or data.plural
+            local symbol = tostring(data.symbol or "")
+            local separator = data.symbolSpacing and " " or ""
+
+            if ( symbol != "" ) then
+                if ( data.symbolPosition == "suffix" ) then
+                    formattedAmount = formattedAmount .. separator .. symbol
+                else
+                    formattedAmount = symbol .. separator .. formattedAmount
+                end
             end
+
+            if ( label == "" ) then
+                return formattedAmount
+            end
+
+            return formattedAmount .. " " .. label
         end
     end
 
@@ -137,9 +160,9 @@ end
 -- @realm shared
 -- @param amount number The amount to format
 -- @param uniqueID string The unique identifier of the currency
--- @return string Formatted currency string (e.g., "1,234 dollars")
+-- @return string Formatted currency string (e.g., "$ 1,234 Dollars")
 -- @usage local formatted = ax.currencies:Format("dollars", 1000)
--- -- Returns: "1,000 dollars"
+-- -- Returns: "$ 1,000 Dollars"
 function ax.currencies:Format(amount, uniqueID)
     amount = tonumber(amount) or 0
     uniqueID = uniqueID or "dollars"
@@ -159,11 +182,6 @@ function ax.currencies:Format(amount, uniqueID)
         end
     end
 
-    -- Special condition if we are using dollars
-    if ( uniqueID == "dollars" ) then
-        return string.Comma(math.floor(amount))
-    end
-
     -- Fallback formatting
     return string.Comma(math.floor(amount)) .. " " .. currencyData.plural
 end
@@ -174,9 +192,9 @@ end
 -- @param uniqueID string The unique identifier of the currency
 -- @param useSymbol boolean Whether to include the currency symbol (default: false)
 -- @param symbolPosition string "prefix" or "suffix" to position the symbol (default: "prefix")
--- @return string Formatted currency string with symbol (e.g., "$1,000" or "1,000$")
+-- @return string Formatted currency string with symbol (e.g., "$ 1,000 Dollars" or "1,000$ Dollars")
 -- @usage local formatted = ax.currencies:FormatWithSymbol(1000, "dollars", true, "prefix")
--- -- Returns: "$1,000"
+-- -- Returns: "$ 1,000 Dollars"
 function ax.currencies:FormatWithSymbol(amount, uniqueID, useSymbol, symbolPosition)
     amount = tonumber(amount) or 0
     uniqueID = uniqueID or "dollars"
@@ -190,8 +208,8 @@ function ax.currencies:FormatWithSymbol(amount, uniqueID, useSymbol, symbolPosit
     end
 
     local formattedAmount = self:Format(amount, uniqueID)
-    if ( uniqueID == "dollars" ) then
-        return currencyData.symbol .. formattedAmount
+    if ( string.StartWith(formattedAmount, currencyData.symbol) ) then
+        return formattedAmount
     end
 
     if ( useSymbol ) then
@@ -274,6 +292,8 @@ ax.currencies:Register("dollars", {
     name = "Dollars",
     symbol = "$",
     default = 0,
-    singular = "dollar",
-    plural = "dollars"
+    singular = "Dollar",
+    plural = "Dollars",
+    symbolPosition = "prefix",
+    symbolSpacing = true
 })

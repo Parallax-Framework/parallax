@@ -30,6 +30,96 @@ local INVENTORY_CATEGORY_SPACING = ax.util:ScreenScaleH(4)
 local INVENTORY_ACTIONS_WIDTH = ax.util:ScreenScale(128)
 local INVENTORY_PREVIEW_TRANSITION_TIME = ax.option:Get("tabFadeTime", 0.25)
 local INVENTORY_PREVIEW_TARGET_FOV = 45
+local CURRENCY_CATEGORY_NAME = "Currencies"
+
+local currencyEntry = {}
+currencyEntry.__index = currencyEntry
+
+function currencyEntry:GetCurrencyID()
+    return self.currencyID
+end
+
+function currencyEntry:GetAmount()
+    return math.max(math.floor(tonumber(self.amount) or 0), 0)
+end
+
+function currencyEntry:GetName()
+    return self.name or ax.util:UniqueIDToName(self.currencyID or "currency")
+end
+
+function currencyEntry:GetDescription()
+    return self.description or "No description available."
+end
+
+function currencyEntry:GetModel()
+    return self.model or "models/props_lab/box01a.mdl"
+end
+
+function currencyEntry:GetWeight()
+    return 0
+end
+
+function currencyEntry:GetFormattedAmount()
+    if ( self:GetCurrencyID() == "dollars" ) then
+        return ax.currencies:FormatWithSymbol(self:GetAmount(), self:GetCurrencyID(), true)
+    end
+
+    return ax.currencies:Format(self:GetAmount(), self:GetCurrencyID())
+end
+
+function currencyEntry:IsPhysical()
+    return self.physical == true
+end
+
+function currencyEntry:GetActions()
+    return self.actions or {}
+end
+
+function currencyEntry:CanInteract(client, action, silent)
+    local actionData = self:GetActions()[action]
+    if ( !istable(actionData) ) then
+        return false, "No action available."
+    end
+
+    if ( isfunction(actionData.CanUse) ) then
+        local canUse, reason = actionData:CanUse(self, client)
+        if ( canUse == false ) then
+            if ( isstring(reason) and #reason > 0 and !silent and ax.util:IsValidPlayer(client) ) then
+                client:Notify(reason, "error")
+            end
+
+            return false, reason
+        end
+    end
+
+    return true
+end
+
+local function GetSortedActionEntries(actions)
+    local sortedActions = {}
+
+    for actionID, actionData in pairs(actions or {}) do
+        sortedActions[#sortedActions + 1] = {
+            id = actionID,
+            data = actionData
+        }
+    end
+
+    table.sort(sortedActions, function(a, b)
+        local orderA = tonumber(a.data and a.data.order) or math.huge
+        local orderB = tonumber(b.data and b.data.order) or math.huge
+        if ( orderA != orderB ) then
+            return orderA < orderB
+        end
+
+        local nameA = utf8.lower(tostring((a.data and a.data.name) or a.id or ""))
+        local nameB = utf8.lower(tostring((b.data and b.data.name) or b.id or ""))
+
+        return nameA < nameB
+    end)
+
+    return sortedActions
+end
 
 local function DrawGlassPanel(x, y, w, h, radius, blur)
     ax.theme:DrawGlassPanel(x, y, w, h, {
@@ -354,8 +444,151 @@ function PANEL:GetLiveStackItems(stack)
     return liveItems
 end
 
+function PANEL:PromptCurrencyAmount(options)
+    if ( !istable(options) ) then return end
+
+    local title = tostring(options.title or "Currency")
+    local subtitle = tostring(options.subtitle or "Enter an amount:")
+    local default = tostring(options.default or "1")
+    local maxAmount = math.max(math.floor(tonumber(options.maxAmount) or 0), 0)
+
+    Derma_StringRequest(title, subtitle, default, function(text)
+        local amount = math.floor(math.abs(tonumber(string.Trim(text or "")) or 0))
+        if ( amount <= 0 ) then
+            ax.client:Notify("Please enter a valid positive amount.", "error")
+            return
+        end
+
+        if ( maxAmount > 0 and amount > maxAmount ) then
+            ax.client:Notify("You don't have that much currency available.", "error")
+            return
+        end
+
+        if ( isfunction(options.onConfirm) ) then
+            options.onConfirm(amount)
+        end
+    end)
+end
+
+function PANEL:BuildCurrencyEntry(currencyID)
+    local currencyData = ax.currencies:Get(currencyID)
+    if ( !istable(currencyData) ) then
+        return nil
+    end
+
+    local amount = 0
+    if ( istable(self.character) ) then
+        amount = self.character:GetCurrency(currencyID)
+    end
+
+    if ( amount <= 0 ) then
+        return nil
+    end
+
+    local entry = setmetatable({
+        currencyID = currencyID,
+        amount = amount,
+        name = tostring(currencyData.name or ax.util:UniqueIDToName(currencyID)),
+        model = currencyData.model,
+        description = currencyData.description,
+        physical = currencyData.physical == true,
+        actions = {}
+    }, currencyEntry)
+
+    if ( entry:IsPhysical() ) then
+        entry.actions.drop = {
+            name = "Drop",
+            icon = "parallax/icons/caret-down-circle.png",
+            order = 1,
+            CanUse = function(action, currency, client)
+                if ( currency:GetAmount() <= 0 ) then
+                    return false, "You don't have any " .. string.lower(currency:GetName()) .. " to drop."
+                end
+
+                return true
+            end,
+            OnClick = function(action, currency, panel, stack)
+                local liveStack = panel:ResolveLiveStack(stack)
+                if ( !istable(liveStack) or !istable(liveStack.representativeItem) ) then
+                    ax.client:Notify("That currency balance is no longer available.", "error")
+                    panel:InfoClose()
+                    return
+                end
+
+                local liveCurrency = liveStack.representativeItem
+                panel:PromptCurrencyAmount({
+                    title = "Drop " .. liveCurrency:GetName(),
+                    subtitle = "Enter how much to drop:",
+                    default = tostring(liveCurrency:GetAmount()),
+                    maxAmount = liveCurrency:GetAmount(),
+                    onConfirm = function(quantity)
+                        ax.command:Send(string.format("/DropCurrency %d %s", quantity, liveCurrency:GetCurrencyID()))
+                    end
+                })
+            end
+        }
+
+        entry.actions.give = {
+            name = "Give",
+            icon = "parallax/icons/share.png",
+            order = 2,
+            CanUse = function(action, currency, client)
+                if ( currency:GetAmount() <= 0 ) then
+                    return false, "You don't have any " .. string.lower(currency:GetName()) .. " to give."
+                end
+
+                return true
+            end,
+            OnClick = function(action, currency, panel, stack)
+                local liveStack = panel:ResolveLiveStack(stack)
+                if ( !istable(liveStack) or !istable(liveStack.representativeItem) ) then
+                    ax.client:Notify("That currency balance is no longer available.", "error")
+                    panel:InfoClose()
+                    return
+                end
+
+                local liveCurrency = liveStack.representativeItem
+                panel:PromptCurrencyAmount({
+                    title = "Give " .. liveCurrency:GetName(),
+                    subtitle = "Enter how much to give to the player you're looking at:",
+                    default = tostring(liveCurrency:GetAmount()),
+                    maxAmount = liveCurrency:GetAmount(),
+                    onConfirm = function(quantity)
+                        ax.command:Send(string.format("/GiveCurrency %d %s", quantity, liveCurrency:GetCurrencyID()))
+                    end
+                })
+            end
+        }
+    end
+
+    return entry
+end
+
+function PANEL:BuildCurrencyStack(currencyID)
+    local entry = self:BuildCurrencyEntry(currencyID)
+    if ( !istable(entry) ) then
+        return nil
+    end
+
+    return {
+        class = "currency_" .. currencyID,
+        category = CURRENCY_CATEGORY_NAME,
+        stackCount = 1,
+        stackedItems = {},
+        representativeItem = entry,
+        shouldStack = false,
+        maxStack = 1,
+        isCurrencyStack = true,
+        currencyID = currencyID
+    }
+end
+
 function PANEL:ResolveLiveStack(stack)
     if ( !istable(stack) ) then return nil end
+
+    if ( stack.isCurrencyStack ) then
+        return self:BuildCurrencyStack(stack.currencyID)
+    end
 
     local liveItems = self:GetLiveStackItems(stack)
     if ( liveItems[1] == nil ) then
@@ -417,6 +650,22 @@ function PANEL:PopulateItems()
     -- Organize items by category first, with stacking support.
     local categorizedItems = {}
     local categoryOrder = {}
+
+    local currencyStacks = {}
+    for currencyID, currencyData in pairs(ax.currencies:GetAll() or {}) do
+        if ( istable(currencyData) ) then
+            local currencyStack = self:BuildCurrencyStack(currencyID)
+            if ( istable(currencyStack) ) then
+                currencyStacks[#currencyStacks + 1] = currencyStack
+            end
+        end
+    end
+
+    if ( currencyStacks[1] != nil ) then
+        categorizedItems[CURRENCY_CATEGORY_NAME] = currencyStacks
+        categoryOrder[#categoryOrder + 1] = CURRENCY_CATEGORY_NAME
+    end
+
     for _, v in pairs(inventory:GetItems()) do
         if ( !ax.item.stored[v.class] ) then
             ax.util:PrintDebug("Item class '" .. tostring(v.class) .. "' not found in registry, skipping...")
@@ -543,6 +792,9 @@ function PANEL:PopulateItems()
             if (
                 searchQuery == ""
                 or string.find(displayName, searchQuery, 1, true)
+                or string.find(className, searchQuery, 1, true)
+                or string.find(category, searchQuery, 1, true)
+                or string.find(description, searchQuery, 1, true)
             ) then
                 filteredStacks[#filteredStacks + 1] = {
                     category = categoryName,
@@ -657,7 +909,14 @@ function PANEL:PopulateItems()
                 icon:SetMouseInputEnabled(false)
                 icon:Dock(LEFT)
 
-                if ( stack.stackCount > 1 ) then
+                if ( stack.isCurrencyStack ) then
+                    local balanceLabel = item:Add("ax.text")
+                    balanceLabel:Dock(RIGHT)
+                    balanceLabel:DockMargin(0, 0, ax.util:ScreenScale(8), 0)
+                    balanceLabel:SetFont("ax.small.italic")
+                    balanceLabel:SetText(representativeItem:GetFormattedAmount(), true)
+                    balanceLabel:SetContentAlignment(6)
+                elseif ( stack.stackCount > 1 ) then
                     local stackLabel = item:Add("ax.text")
                     stackLabel:Dock(RIGHT)
                     stackLabel:DockMargin(0, 0, ax.util:ScreenScale(8), 0)
@@ -690,14 +949,23 @@ function PANEL:PopulateInfo(stack)
     title:Dock(TOP)
     title:SetFont("ax.large.bold")
     local titleText = representativeItem:GetName() or "Unknown Item"
-    if ( stack.stackCount > 1 ) then
+    if ( stack.isCurrencyStack ) then
+        titleText = representativeItem:GetFormattedAmount()
+    elseif ( stack.stackCount > 1 ) then
         titleText = titleText .. " x" .. stack.stackCount
     end
     title:SetText(titleText, true)
     title:SetContentAlignment(4)
 
-    -- Add stack information
-    if ( stack.shouldStack ) then
+    if ( stack.isCurrencyStack ) then
+        local currencyState = header:Add("ax.text")
+        currencyState:Dock(TOP)
+        currencyState:SetFont("ax.small.italic")
+        currencyState:SetText(representativeItem:IsPhysical() and "Physical currency" or "Non-physical currency", true)
+        currencyState:SetContentAlignment(4)
+
+        header:SetTall(title:GetTall() + currencyState:GetTall() + ax.util:ScreenScaleH(4))
+    elseif ( stack.shouldStack ) then
         local stackInfo = header:Add("ax.text")
         stackInfo:Dock(TOP)
         stackInfo:SetFont("ax.small.italic")
@@ -759,7 +1027,10 @@ function PANEL:PopulateInfo(stack)
         return
     end
 
-    for k, v in pairs(actions) do
+    local addedActions = 0
+    for _, actionEntry in ipairs(GetSortedActionEntries(actions)) do
+        local k = actionEntry.id
+        local v = actionEntry.data
         local can, reason = representativeItem:CanInteract(ax.client, k, true)
         if ( can == false ) then
             ax.util:PrintDebug("Cannot perform action '" .. k .. "' on item '" .. tostring(representativeItem) .. "': " .. tostring(reason))
@@ -775,8 +1046,17 @@ function PANEL:PopulateInfo(stack)
         actionButton:SetText(v.name or k, true)
         actionButton:SetContentAlignment(4)
         actionButton:SetIcon(v.icon)
+        addedActions = addedActions + 1
 
         actionButton.DoClick = function()
+            if ( stack.isCurrencyStack ) then
+                if ( isfunction(v.OnClick) ) then
+                    v:OnClick(representativeItem, self, stack)
+                end
+
+                return
+            end
+
             local liveStack = self:ResolveLiveStack(stack)
             if ( !istable(liveStack) ) then
                 ax.util:PrintError("No valid items in this stack remain.")
@@ -864,6 +1144,15 @@ function PANEL:PopulateInfo(stack)
             end
         end
     end
+
+    if ( addedActions < 1 ) then
+        local noActions = actionsPanel:Add("ax.text")
+        noActions:Dock(TOP)
+        noActions:SetFont("ax.regular.italic")
+        noActions:SetText("No actions available for this item.", true)
+        noActions:DockMargin(0, 0, 0, ax.util:ScreenScaleH(4))
+        noActions:SetContentAlignment(4)
+    end
 end
 
 vgui.Register("ax.tab.inventory", PANEL, "EditablePanel")
@@ -915,5 +1204,19 @@ hook.Add("OnTabMenuOpened", "ax.tab.inventory.applygradients", function(activeTa
             if ( !IsValid(ax.gui.inventory) ) then return end
             ax.gui.inventory:ApplyInventoryGradients(true)
         end)
+    end
+end)
+
+hook.Add("OnCharacterVarChanged", "ax.tab.inventory.currencysync", function(character, name, value)
+    if ( !IsValid(ax.gui.inventory) ) then return end
+    if ( !istable(character) or !isstring(name) ) then return end
+    if ( !string.StartWith(name, "currency_") ) then return end
+    if ( !istable(ax.gui.inventory.character) or ax.gui.inventory.character.id != character.id ) then return end
+
+    ax.gui.inventory:PopulateItems()
+
+    if ( ax.gui.inventory.stack ) then
+        ax.gui.inventory.info:Clear()
+        ax.gui.inventory:PopulateInfo(ax.gui.inventory.stack)
     end
 end)
