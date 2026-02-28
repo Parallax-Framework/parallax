@@ -51,7 +51,7 @@ if ( SERVER ) then
         local amount = self:GetAmount()
         local currencyID = self:GetCurrencyID()
 
-        if ( !ax.currencies:IsValid(currencyID) or amount <= 0 ) then
+        if ( !ax.currencies:IsValid(currencyID) or !ax.currencies:IsPhysical(currencyID) or amount <= 0 ) then
             self:Remove()
             return
         end
@@ -59,7 +59,7 @@ if ( SERVER ) then
         -- Add currency to character and remove the entity
         character:AddCurrency(amount, currencyID)
 
-        activator:Notify("You picked up " .. ax.currencies:Format(currencyID, amount))
+        activator:Notify("You picked up " .. ax.currencies:Format(amount, currencyID))
 
         hook.Run("PlayerPickedUpCurrency", activator, character, amount, currencyID)
 

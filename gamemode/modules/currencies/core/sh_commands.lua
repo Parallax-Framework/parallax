@@ -27,6 +27,10 @@ local function validateAndDrop(client, amount, currencyID)
         return "That currency doesn't exist: " .. tostring(currencyID)
     end
 
+    if ( !ax.currencies:IsPhysical(currencyID) ) then
+        return "That currency isn't physical and can't be dropped."
+    end
+
     local character = client:GetCharacter()
     if ( !character ) then
         return "You don't have a character loaded right now."
@@ -42,7 +46,7 @@ local function validateAndDrop(client, amount, currencyID)
         ax.currencies:Spawn(amount, currencyID, client)
     end
 
-    return "You dropped " .. ax.currencies:Format(currencyID, amount) .. "."
+    return "You dropped " .. ax.currencies:Format(amount, currencyID) .. "."
 end
 
 ax.command:Add("DropCurrency", {
@@ -92,9 +96,18 @@ ax.command:Add("GiveMoney", {
             return "Couldn't identify you as a valid player."
         end
 
+        if ( !ax.currencies:IsPhysical("dollars") ) then
+            return "That currency isn't physical and can't be given directly."
+        end
+
         amount = normalizeAmount(amount)
         if ( amount <= 0 ) then
             return "Please enter a positive amount."
+        end
+
+        local clientCharacter = client:GetCharacter()
+        if ( !clientCharacter ) then
+            return "You don't have a character loaded right now."
         end
 
         local trace = client:GetEyeTrace()
@@ -103,11 +116,19 @@ ax.command:Add("GiveMoney", {
             return "You need to be looking at a valid player."
         end
 
-        local character, errMsg = requireCharacter(target)
-        if ( !character ) then return errMsg end
+        if ( target == client ) then
+            return "You can't give money to yourself."
+        end
+
+        local targetCharacter, errMsg = requireCharacter(target)
+        if ( !targetCharacter ) then return errMsg end
+
+        if ( !clientCharacter:TakeCurrency(amount, "dollars") ) then
+            return "You don't have enough dollars."
+        end
 
         local delta = ax.currencies:Format(amount, "dollars")
-        character:AddCurrency(amount, "dollars")
+        targetCharacter:AddCurrency(amount, "dollars")
 
         return string.format("You gave %s to %s.", delta, target:Nick())
     end

@@ -28,10 +28,11 @@ ax.currencies.registry = ax.currencies.registry or {}
 --   - default (number): Default starting amount (defaults to 0)
 --   - singular (string): Singular form of currency name (e.g., "dollar")
 --   - plural (string): Plural form of currency name (e.g., "dollars")
+--   - physical (boolean): Whether the currency can exist as a world entity or be directly handed over
 --   - format (function): Optional custom formatting function(amount) -> string
 -- @return bool True if registration succeeded, false otherwise
 -- @usage ax.currencies:Register("dollars", {
---     name = "Credits",
+--     name = "Dollars",
 --     symbol = "$",
 --     default = 100,
 --     singular = "dollar",
@@ -54,6 +55,7 @@ function ax.currencies:Register(uniqueID, data)
     data.default = tonumber(data.default) or 0
     data.singular = data.singular or data.name
     data.plural = data.plural or (data.name .. "s")
+    data.physical = data.physical != false
 
     -- Create default format function if not provided
     if ( !isfunction(data.format) ) then
@@ -114,10 +116,20 @@ end
 -- @param uniqueID string The unique identifier to check
 -- @return bool True if the currency exists, false otherwise
 -- @usage if (ax.currencies:IsValid("dollars")) then
---     print("Credits currency is registered")
+--     print("Dollars currency is registered")
 -- end
 function ax.currencies:IsValid(uniqueID)
     return self.registry[uniqueID] != nil
+end
+
+--- Check if a currency supports physical interactions like dropping or direct handoffs.
+-- @realm shared
+-- @param uniqueID string The unique identifier to check
+-- @return bool True if the currency is physical, false otherwise
+function ax.currencies:IsPhysical(uniqueID)
+    uniqueID = uniqueID or "dollars"
+
+    return self.registry[uniqueID] != nil and self.registry[uniqueID].physical == true
 end
 
 --- Format a currency amount using the currency's formatter.
@@ -219,6 +231,11 @@ function ax.currencies:Spawn(amount, uniqueID, position, angle)
         return nil
     end
 
+    if ( !self:IsPhysical(uniqueID) ) then
+        ax.util:PrintWarning("Attempted to spawn non-physical currency: " .. tostring(uniqueID))
+        return nil
+    end
+
     -- Handle player position
     if ( ax.util:IsValidPlayer(position) ) then
         position = position:GetPos() + position:GetForward() * 32 + Vector(0, 0, 16)
@@ -254,7 +271,7 @@ end
 
 -- Register default currency on initialization
 ax.currencies:Register("dollars", {
-    name = "Credits",
+    name = "Dollars",
     symbol = "$",
     default = 0,
     singular = "dollar",
