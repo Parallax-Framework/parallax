@@ -77,6 +77,29 @@ function ax.command:GetAll()
     return self.registry
 end
 
+--- Get all commands that regular players can use.
+-- Returns canonical commands only, excluding admin-only and super-admin-only entries.
+-- @realm shared
+-- @return table Map of command name -> definition
+-- @usage local publicCommands = ax.command:GetPublic()
+function ax.command:GetPublic()
+    local publicCommands = {}
+
+    for _, def in pairs(self.registry) do
+        if ( !istable(def) or !isstring(def.name) or def.name == "" ) then
+            continue
+        end
+
+        if ( def.adminOnly or def.superAdminOnly ) then
+            continue
+        end
+
+        publicCommands[def.name] = def
+    end
+
+    return publicCommands
+end
+
 --- Find a command definition by name or alias.
 -- Supports exact or partial matching and optional case sensitivity.
 -- Returns the first matching definition in the registry.
