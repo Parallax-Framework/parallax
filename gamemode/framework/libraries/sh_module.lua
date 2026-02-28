@@ -163,6 +163,35 @@ function ax.module:Get(name)
     return module
 end
 
+--- Get all loaded modules.
+-- @realm shared
+-- @return table Map of unique id -> module table
+-- @usage local modules = ax.module:GetAll()
+function ax.module:GetAll()
+    return self.stored
+end
+
+--- Get modules filtered by scope.
+-- @realm shared
+-- @param scope string Scope to filter by (`"framework"` or `"schema"`)
+-- @return table Map of unique id -> module table
+-- @usage local schemaModules = ax.module:GetByScope("schema")
+function ax.module:GetByScope(scope)
+    local modules = {}
+
+    if ( !isstring(scope) or scope == "" ) then
+        return modules
+    end
+
+    for key, value in pairs(self.stored) do
+        if ( istable(value) and value.scope == scope ) then
+            modules[key] = value
+        end
+    end
+
+    return modules
+end
+
 --- Check if a module is loaded.
 -- Tests whether a module with the given name has been successfully loaded.
 -- @realm shared
