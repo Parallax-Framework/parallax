@@ -24,6 +24,9 @@ ax.localization:Register("ru", {
     -- Tab Menu Translations
     ["tab.config"] = "Настройки",
     ["tab.help"] = "Помощь",
+    ["tab.help.overview"] = "Обзор",
+    ["tab.help.commands"] = "Команды",
+    ["tab.help.factions"] = "Фракции",
     ["tab.help.modules"] = "Модули",
     ["tab.inventory"] = "Инвентарь",
     ["tab.scoreboard"] = "Таблица",

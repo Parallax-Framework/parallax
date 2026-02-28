@@ -23,6 +23,9 @@ ax.localization:Register("bg", {
     -- Tab Menu Translations
     ["tab.config"] = "Конфигурация",
     ["tab.help"] = "Помощ",
+    ["tab.help.overview"] = "Преглед",
+    ["tab.help.commands"] = "Команди",
+    ["tab.help.factions"] = "Фракции",
     ["tab.help.modules"] = "Модули",
     ["tab.inventory"] = "Инвентар",
     ["tab.scoreboard"] = "Табло",

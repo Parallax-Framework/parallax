@@ -23,6 +23,9 @@ ax.localization:Register("es", {
     -- Tab Menu Translations
     ["tab.config"] = "Configuración",
     ["tab.help"] = "Ayuda",
+    ["tab.help.overview"] = "Resumen",
+    ["tab.help.commands"] = "Comandos",
+    ["tab.help.factions"] = "Facciones",
     ["tab.help.modules"] = "Módulos",
     ["tab.inventory"] = "Inventario",
     ["tab.scoreboard"] = "Marcador",

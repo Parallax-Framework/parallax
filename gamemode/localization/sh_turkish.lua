@@ -23,6 +23,9 @@ ax.localization:Register("tr", {
     -- Tab Menu Translations
     ["tab.config"] = "Yapılandırma",
     ["tab.help"] = "Yardım",
+    ["tab.help.overview"] = "Genel Bakış",
+    ["tab.help.commands"] = "Komutlar",
+    ["tab.help.factions"] = "Fraksiyonlar",
     ["tab.help.modules"] = "Modüller",
     ["tab.inventory"] = "Envanter",
     ["tab.scoreboard"] = "Skorbord",
