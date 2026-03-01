@@ -119,33 +119,64 @@ jobs:
               --jq '.body' > release_notes.txt
           fi
           
-          # Create JSON payload for OpenAI
-          jq -n \
-            --arg notes "$(cat release_notes.txt)" \
-            '{
-              "model": "gpt-4o-mini",
-              "messages": [
-                {
-                  "role": "system",
-                  "content": "You are a helpful assistant that creates concise, engaging release summaries for game development projects."
-                },
-                {
-                  "role": "user",
-                  "content": ("Please generate a concise, professional summary of the following release notes for the Parallax gamemode for Garry'\''s Mod. Focus on the key features, improvements, and bug fixes. Keep it engaging and user-friendly:\n\n" + $notes)
-                }
-              ],
-              "temperature": 0.7,
-              "max_tokens": 500
-            }' > openai_payload.json
+          echo "Release notes generated. Checking API key..."
           
-          # Call OpenAI API to generate summary
-          curl -s https://api.openai.com/v1/chat/completions \
-            -H "Content-Type: application/json" \
-            -H "Authorization: Bearer $OPENAI_API_KEY" \
-            -d @openai_payload.json > openai_response.json
-          
-          # Extract AI summary
-          AI_SUMMARY=$(jq -r '.choices[0].message.content // "AI summary generation failed"' openai_response.json)
+          # Check if API key is set
+          if [ -z "$OPENAI_API_KEY" ]; then
+            echo "Error: OPENAI_WEBHOOK secret is not set"
+            AI_SUMMARY="⚠️ AI Summary unavailable (API key not configured)"
+          else
+            echo "API key is set. Calling OpenAI API..."
+            
+            # Create JSON payload for OpenAI
+            jq -n \
+              --arg notes "$(cat release_notes.txt)" \
+              '{
+                "model": "gpt-4o-mini",
+                "messages": [
+                  {
+                    "role": "system",
+                    "content": "You are a helpful assistant that creates concise, engaging release summaries for game development projects."
+                  },
+                  {
+                    "role": "user",
+                    "content": ("Please generate a concise, professional summary of the following release notes for the Parallax gamemode for Garry'\''s Mod. Focus on the key features, improvements, and bug fixes. Keep it engaging and user-friendly:\n\n" + $notes)
+                  }
+                ],
+                "temperature": 0.7,
+                "max_tokens": 500
+              }' > openai_payload.json
+            
+            # Call OpenAI API to generate summary
+            HTTP_CODE=$(curl -s -w "%{http_code}" -o openai_response.json \
+              https://api.openai.com/v1/chat/completions \
+              -H "Content-Type: application/json" \
+              -H "Authorization: Bearer $OPENAI_API_KEY" \
+              -d @openai_payload.json)
+            
+            echo "OpenAI API response code: $HTTP_CODE"
+            
+            if [ "$HTTP_CODE" = "200" ]; then
+              # Extract AI summary
+              AI_SUMMARY=$(jq -r '.choices[0].message.content // empty' openai_response.json)
+              
+              if [ -z "$AI_SUMMARY" ]; then
+                echo "Error: Empty response from OpenAI"
+                echo "Response: $(cat openai_response.json)"
+                AI_SUMMARY="AI Summary generation failed (empty response)"
+              else
+                echo "AI summary generated successfully"
+              fi
+            else
+              echo "Error: OpenAI API request failed with code $HTTP_CODE"
+              echo "Response: $(cat openai_response.json)"
+              ERROR_MSG=$(jq -r '.error.message // "Unknown error"' openai_response.json)
+              AI_SUMMARY="⚠️ AI Summary generation failed: $ERROR_MSG"
+            fi
+            
+            # Clean up temporary files
+            rm -f openai_payload.json openai_response.json
+          fi
           
           # Create the release notes file with AI summary and full changelog
           {
@@ -158,8 +189,8 @@ jobs:
             cat release_notes.txt
           } > ai_notes.md
           
-          # Clean up temporary files
-          rm -f release_notes.txt openai_payload.json openai_response.json
+          # Clean up
+          rm -f release_notes.txt
 
       - name: Create GitHub release
         if: steps.commit_version.outputs.changed == 'true'
