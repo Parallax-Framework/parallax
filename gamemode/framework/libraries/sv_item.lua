@@ -188,8 +188,6 @@ function ax.item:Transfer(item, fromInventory, toInventory, callback)
             ax.util:PrintDebug(string.format("Transferred item %s from inventory %s to inventory %s", item.id, tostring(fromInventoryID), tostring(toInventoryID)))
 
             if ( toInventoryID == 0 ) then
-                ax.net:Start(nil, "item.transfer", item.id, fromInventoryID, toInventoryID)
-
                 local itemEntity = ents.Create("ax_item")
                 if ( !IsValid(itemEntity) ) then
                     ax.util:PrintError("Failed to create item entity during transfer to world inventory.")
@@ -201,6 +199,11 @@ function ax.item:Transfer(item, fromInventory, toInventory, callback)
                 itemEntity:SetPos(dropPos or vector_origin)
                 itemEntity:Spawn()
                 itemEntity:Activate()
+
+                -- Clients outside the source inventory never had this instance clientside,
+                -- so seed the world item before broadcasting the transfer.
+                ax.net:Start(nil, "item.spawn", item.id, item.class, item.data or {})
+                ax.net:Start(nil, "item.transfer", item.id, fromInventoryID, toInventoryID)
 
                 ax.util:PrintDebug("Broadcasting to all clients (world inventory)")
             else

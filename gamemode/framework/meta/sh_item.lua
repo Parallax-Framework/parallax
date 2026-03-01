@@ -66,6 +66,34 @@ function item:GetData(key, default)
     return self.data[key] == nil and default or self.data[key]
 end
 
+function item:Call(method, client, entity, ...)
+    if ( !isstring(method) or method == "" ) then
+        return
+    end
+
+    local fn = self[method]
+    if ( !isfunction(fn) ) then
+        return
+    end
+
+    local oldPlayer, oldEntity = self.player, self.entity
+
+    if ( client != nil ) then
+        self.player = client
+    end
+
+    if ( entity != nil ) then
+        self.entity = entity
+    end
+
+    local results = {fn(self, ...)}
+
+    self.player = oldPlayer
+    self.entity = oldEntity
+
+    return unpack(results)
+end
+
 function item:SetData(key, value)
     if ( !istable(self.data) ) then self.data = {} end
 
