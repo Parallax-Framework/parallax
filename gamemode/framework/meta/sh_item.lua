@@ -43,6 +43,10 @@ function item:GetModel()
 end
 
 function item:GetInventoryID()
+    if ( self.invID != nil ) then
+        return self.invID
+    end
+
     local inventoryID
     for _, v in pairs(ax.inventory.instances) do
         for id, item in pairs(v.items) do
@@ -126,8 +130,8 @@ function item:AddAction(name, actionData)
     ax.item.actions[self.class] = actions
 end
 
-function item:CanInteract(client, action, silent)
-    local try, catch = hook.Run("CanPlayerInteractItem", client, self, action)
+function item:CanInteract(client, action, silent, context)
+    local try, catch = hook.Run("CanPlayerInteractItem", client, self, action, context)
     if ( try == false ) then
         if ( isstring(catch) and #catch > 0 and !silent ) then
             client:Notify(catch, "error")
@@ -139,7 +143,7 @@ function item:CanInteract(client, action, silent)
     local actions = self:GetActions()
     local actionTable = actions[action]
     if ( istable(actionTable) and isfunction(actionTable.CanUse) ) then
-        local canRun, reason = actionTable:CanUse(self, client)
+        local canRun, reason = actionTable:CanUse(self, client, context)
         if ( canRun == false ) then
             if ( isstring(reason) and #reason > 0 and !silent ) then
                 client:Notify(reason, "error")

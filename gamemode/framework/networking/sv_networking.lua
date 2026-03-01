@@ -133,34 +133,17 @@ ax.net:Hook("inventory.item.action", function(client, itemID, action)
         return
     end
 
-    local actions = item:GetActions()
-    local actionTable = actions[action]
-    if ( !istable(actionTable) ) then
-        ax.util:PrintError("Item with ID " .. itemID .. " does not have action '" .. action .. "'.")
-        return
-    end
-
-    if ( !item:CanInteract(client, action) ) then return end
-
-    local bRemoveAfter = actionTable:OnRun(item, client)
-    if ( bRemoveAfter == true ) then
-        local inventory = ax.inventory.instances[item.invID]
-        if ( istable(inventory) ) then
-            inventory:RemoveItem(item.id)
-        else
-            ax.util:PrintError("Failed to remove item ID " .. item.id .. " after action '" .. action .. "' because its inventory does not exist.")
-        end
-    end
-
-    local soundVar = "sound_" .. utf8.lower(action)
-    if ( actionTable[soundVar] ) then
-        client:EmitSound(Sound(actionTable[soundVar]))
-    end
-
-    hook.Run("OnPlayerItemAction", client, item, action)
-
-    if ( item.invID and item.invID > 0 ) then
-        ax.inventory:Sync(item.invID)
+    local ok, reason = ax.item:RunAction(client, item, action, {
+        source = "network"
+    })
+    if ( ok == false and reason ) then
+        ax.util:PrintDebug(string.format(
+            "Player %s failed to run item action '%s' on item %s: %s",
+            tostring(client),
+            tostring(action),
+            tostring(itemID),
+            tostring(reason)
+        ))
     end
 end)
 

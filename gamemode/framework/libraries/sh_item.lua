@@ -20,10 +20,104 @@ ax.item.instances = ax.item.instances or {}
 ax.item.actions = ax.item.actions or {}
 ax.item.meta = ax.item.meta or {}
 
---- Get a merged action table for a class, including inherited base actions.
--- @realm shared
--- @param class string The item class identifier
--- @return table actions
+local function ShouldSkipItemFile(filePath, fileName, timeFilter, label)
+    if ( !isnumber(timeFilter) or timeFilter <= 0 ) then
+        return false
+    end
+
+    local fileTime = file.Time(filePath, "LUA")
+    local currentTime = os.time()
+    if ( fileTime and (currentTime - fileTime) > timeFilter ) then
+        ax.util:PrintDebug("Skipping unchanged " .. label .. " (modified " .. (currentTime - fileTime) .. "s ago): " .. fileName)
+        return true
+    end
+
+    return false
+end
+
+local function CreateItemDefinition(className, options)
+    options = options or {}
+
+    if ( istable(options.baseItem) ) then
+        local baseItem = options.baseItem
+
+        return setmetatable({
+            class = className,
+            base = options.baseName
+        }, {
+            __index = function(t, k)
+                local value = rawget(t, k)
+                if ( value != nil ) then return value end
+
+                value = baseItem[k]
+                if ( value != nil ) then return value end
+
+                return ax.item.meta[k]
+            end
+        })
+    end
+
+    return setmetatable({
+        class = className,
+        isBase = options.isBase == true or nil
+    }, ax.item.meta)
+end
+
+local function AddDefaultItemActions(itemTable)
+    itemTable:AddAction("take", ax.item:CreateDefaultTakeAction())
+    itemTable:AddAction("drop", ax.item:CreateDefaultDropAction())
+end
+
+local function RegisterLoadedItem(self, className, filePath, options)
+    options = options or {}
+
+    ITEM = CreateItemDefinition(className, options)
+        if ( options.addDefaultActions != false ) then
+            AddDefaultItemActions(ITEM)
+        end
+
+        ax.util:Include(filePath, "shared")
+
+        local label = options.label or "Item"
+        local annotation = options.annotation or ""
+        ax.util:PrintSuccess(string.format(
+            "%s \"%s\"%s initialized successfully.",
+            label,
+            tostring(ITEM.name or className),
+            annotation
+        ))
+
+        self.stored[className] = ITEM
+    ITEM = nil
+end
+
+local function LoadItemDefinitionsFromDirectory(self, directory, timeFilter, options, buildDefinition)
+    local files = file.Find(directory .. "/*.lua", "LUA")
+    if ( !files or #files == 0 ) then
+        if ( isstring(options.emptyMessagePrefix) and options.emptyMessagePrefix != "" ) then
+            ax.util:PrintDebug(options.emptyMessagePrefix .. directory)
+        end
+
+        return false
+    end
+
+    for i = 1, #files do
+        local fileName = files[i]
+        local filePath = directory .. "/" .. fileName
+
+        if ( ShouldSkipItemFile(filePath, fileName, timeFilter, options.skipLabel or "item file") ) then
+            continue
+        end
+
+        local className, definitionOptions = buildDefinition(fileName, filePath)
+        if ( isstring(className) and className != "" ) then
+            RegisterLoadedItem(self, className, filePath, definitionOptions)
+        end
+    end
+
+    return true
+end
+
 function ax.item:GetActionsForClass(class)
     if ( !isstring(class) or class == "" ) then return {} end
 
@@ -48,30 +142,18 @@ function ax.item:GetActionsForClass(class)
     return merged
 end
 
---- Initialize the item system by loading all item files.
--- Automatically includes items from framework, schema, and modules directories.
--- Called during framework boot to set up all available items and refresh instances.
--- @realm shared
--- @usage ax.item:Initialize()
 function ax.item:Initialize()
     self:Include("parallax/gamemode/items")
     self:Include(engine.ActiveGamemode() .. "/gamemode/items")
 
-    -- Look through modules for items
     local _, modules = file.Find("parallax/gamemode/modules/*", "LUA")
     for i = 1, #modules do
         self:Include("parallax/gamemode/modules/" .. modules[i] .. "/items")
     end
 
-    -- Refresh item instances to update any changes made to item definitions
     self:RefreshItemInstances()
 end
 
---- Refresh all existing item instances to reflect updated item definitions.
--- Updates metatables of existing item instances to use the latest stored item definitions.
--- Called automatically during initialization to ensure consistency after hot-reloading.
--- @realm shared
--- @usage ax.item:RefreshItemInstances()
 function ax.item:RefreshItemInstances()
     local refreshedCount = 0
     local errorCount = 0
@@ -80,16 +162,15 @@ function ax.item:RefreshItemInstances()
         if ( istable(itemInstance) and itemInstance.class ) then
             local storedItem = self.stored[itemInstance.class]
             if ( istable(storedItem) ) then
-                -- Clear instance-local actions so instances inherit updated actions from stored definitions
                 if ( rawget(itemInstance, "actions") ) then
                     itemInstance.actions = nil
                 end
 
-                -- Update the metatable to point to the refreshed stored item
                 setmetatable(itemInstance, {
                     __index = storedItem,
                     __tostring = storedItem.__tostring
                 })
+
                 refreshedCount = refreshedCount + 1
                 ax.util:PrintDebug("Refreshed item instance ID " .. instanceID .. " (class: " .. itemInstance.class .. ")")
             else
@@ -113,15 +194,15 @@ function ax.item:RefreshItemInstances()
 end
 
 function ax.item:Include(path, timeFilter)
-    -- Load in three passes: bases first, then regular items, then directory-based items with inheritance
     self:LoadBasesFromDirectory(path .. "/base", timeFilter)
     self:LoadItemsFromDirectory(path, timeFilter)
     self:LoadItemsWithInheritance(path, timeFilter)
-    -- Ensure any existing item instances pick up the refreshed stored definitions
-    pcall(function() self:RefreshItemInstances() end)
+
+    pcall(function()
+        self:RefreshItemInstances()
+    end)
 end
 
--- Helper function to create default drop action for items
 function ax.item:CreateDefaultDropAction()
     return {
         name = "Drop",
@@ -132,9 +213,9 @@ function ax.item:CreateDefaultDropAction()
         end,
         OnRun = function(action, item, client)
             local inventoryID = 0
-            for k, v in pairs(ax.character.instances) do
-                if ( v:GetInventoryID() == item:GetInventoryID() ) then
-                    inventoryID = v:GetInventoryID()
+            for _, character in pairs(ax.character.instances) do
+                if ( character:GetInventoryID() == item:GetInventoryID() ) then
+                    inventoryID = character:GetInventoryID()
                     break
                 end
             end
@@ -172,96 +253,129 @@ function ax.item:CreateDefaultDropAction()
     }
 end
 
---- Load base items from a specific directory.
--- First pass of item loading that sets up base items with the isBase flag.
--- Base items serve as parent classes for other items to inherit from.
--- @realm shared
--- @param basePath string The directory path containing base item files
--- @usage ax.item:LoadBasesFromDirectory("parallax/gamemode/items/base")
-function ax.item:LoadBasesFromDirectory(basePath, timeFilter)
-    local baseFiles, _ = file.Find(basePath .. "/*.lua", "LUA")
-    if ( !baseFiles or #baseFiles == 0 ) then
-        ax.util:PrintDebug("No base items found in " .. basePath)
-        return
-    end
-
-    for i = 1, #baseFiles do
-        local fileName = baseFiles[i]
-        local filePath = basePath .. "/" .. fileName
-
-        -- Check file modification time if timeFilter is provided
-        if ( isnumber(timeFilter) and timeFilter > 0 ) then
-            local fileTime = file.Time(filePath, "LUA")
-            local currentTime = os.time()
-
-            if ( fileTime and (currentTime - fileTime) > timeFilter ) then
-                ax.util:PrintDebug("Skipping unchanged item base file (modified " .. (currentTime - fileTime) .. "s ago): " .. fileName)
-                continue
+function ax.item:CreateDefaultTakeAction()
+    return {
+        name = "Take",
+        icon = "parallax/icons/hand-up.png",
+        order = 0,
+        CanUse = function(action, item, client, context)
+            if ( !ax.util:IsValidPlayer(client) ) then
+                return false, "Invalid player."
             end
+
+            local inventoryID = item:GetInventoryID()
+            if ( inventoryID == nil and istable(context) and IsValid(context.entity) ) then
+                inventoryID = 0
+            end
+
+            if ( inventoryID != 0 ) then
+                return false, "This item is not in the world."
+            end
+
+            local entity = istable(context) and context.entity or nil
+            if ( !IsValid(entity) or entity:GetClass() != "ax_item" or entity:GetItemID() != item:GetID() ) then
+                return false, "You cannot pick up this item right now."
+            end
+
+            if ( entity:GetTable().axTakeInProgress ) then
+                return false, "This item is already being picked up."
+            end
+
+            local character = client:GetCharacter()
+            if ( !istable(character) ) then
+                return false, "You need an active character to pick this up."
+            end
+
+            local inventory = character:GetInventory()
+            if ( !istable(inventory) ) then
+                return false, "You do not have a valid inventory."
+            end
+
+            if ( math.Round(inventory:GetWeight() + item:GetWeight(), 2) > inventory:GetMaxWeight() ) then
+                return false, "Your inventory cannot hold this item."
+            end
+
+            return true
+        end,
+        OnRun = function(action, item, client, context)
+            local entity = context.entity or nil
+            local character = client:GetCharacter()
+            local inventory = character:GetInventory()
+            entity:GetTable().axTakeInProgress = true
+
+            local transferOk, transferReason = ax.item:Transfer(item, 0, inventory, function(didTransfer, asyncReason)
+                if ( didTransfer ) then
+                    ax.util:PrintDebug(color_success, string.format(
+                        "Player %s picked up item %s from world inventory to inventory %s.",
+                        tostring(client),
+                        tostring(item.id),
+                        tostring(inventory.id)
+                    ))
+
+                    if ( IsValid(entity) ) then
+                        entity:GetTable().axBeingPickedUp = true
+                    end
+
+                    if ( IsValid(entity) ) then
+                        hook.Run("OnPlayerItemTake", client, entity, item)
+                        SafeRemoveEntity(entity)
+                    else
+                        hook.Run("OnPlayerItemTake", client, nil, item)
+                    end
+                else
+                    ax.util:PrintWarning(string.format(
+                        "Player %s failed to pick up item %s from world inventory to inventory %s, due to %s.",
+                        tostring(client),
+                        tostring(item.id),
+                        tostring(inventory.id),
+                        tostring(asyncReason or "Unknown Reason")
+                    ))
+
+                    if ( IsValid(entity) ) then
+                        entity:GetTable().axTakeInProgress = nil
+                    end
+                end
+            end)
+
+            if ( transferOk == false ) then
+                entity:GetTable().axTakeInProgress = nil
+                client:Notify(transferReason or "You cannot pick up this item.")
+            end
+
+            return false
         end
-
-        local itemName = self:ExtractItemName(fileName)
-
-        ITEM = setmetatable({ class = itemName, isBase = true }, ax.item.meta)
-            ITEM:AddAction("drop", self:CreateDefaultDropAction())
-            ax.util:Include(filePath, "shared")
-
-            ax.util:PrintSuccess("Item base \"" .. tostring(ITEM.name or itemName) .. "\" initialized successfully.")
-            ax.item.stored[itemName] = ITEM
-        ITEM = nil
-    end
+    }
 end
 
---- Load regular items from a directory.
--- Second pass of item loading that sets up regular items without inheritance.
--- Items loaded here get default drop actions and are stored in the item registry.
--- @realm shared
--- @param path string The directory path containing item files
--- @param prefix string Optional prefix to add to item class names (e.g., "ammo_" or "weapon_")
--- @usage ax.item:LoadItemsFromDirectory("parallax/gamemode/items")
+function ax.item:LoadBasesFromDirectory(basePath, timeFilter)
+    return LoadItemDefinitionsFromDirectory(self, basePath, timeFilter, {
+        emptyMessagePrefix = "No base items found in ",
+        skipLabel = "item base file"
+    }, function(fileName)
+        return self:ExtractItemName(fileName), {
+            isBase = true,
+            addDefaultActions = true,
+            label = "Item base"
+        }
+    end)
+end
+
 function ax.item:LoadItemsFromDirectory(path, timeFilter, prefix)
-    local files, _ = file.Find(path .. "/*.lua", "LUA")
-    if ( !files or #files == 0 ) then
-        return
-    end
-
-    for i = 1, #files do
-        local fileName = files[i]
-        local filePath = path .. "/" .. fileName
-
-        -- Check file modification time if timeFilter is provided
-        if ( isnumber(timeFilter) and timeFilter > 0 ) then
-            local fileTime = file.Time(filePath, "LUA")
-            local currentTime = os.time()
-
-            if ( fileTime and (currentTime - fileTime) > timeFilter ) then
-                ax.util:PrintDebug("Skipping unchanged item file (modified " .. (currentTime - fileTime) .. "s ago): " .. fileName)
-                continue
-            end
-        end
-
+    return LoadItemDefinitionsFromDirectory(self, path, timeFilter, {
+        skipLabel = "item file"
+    }, function(fileName)
         local itemName = self:ExtractItemName(fileName)
-        -- Add prefix if provided to avoid naming conflicts
         if ( isstring(prefix) and prefix != "" ) then
             itemName = prefix .. itemName
         end
 
-        ITEM = setmetatable({ class = itemName }, ax.item.meta)
-            ITEM:AddAction("drop", self:CreateDefaultDropAction())
-            ax.util:Include(filePath, "shared")
-
-            ax.util:PrintSuccess("Item \"" .. tostring(ITEM.name or itemName) .. "\" initialized successfully.")
-            ax.item.stored[itemName] = ITEM
-        ITEM = nil
-    end
+        return itemName, {
+            addDefaultActions = true,
+            label = "Item"
+        }
+    end)
 end
 
---- Load items from subdirectories with inheritance from base items.
--- Third pass that loads items from subdirectories, checking for corresponding base items.
--- If a base item exists, items inherit from it; otherwise they're loaded as regular items.
--- @realm shared
--- @param path string The root directory path to search for subdirectories
--- @usage ax.item:LoadItemsWithInheritance("parallax/gamemode/items")
 function ax.item:LoadItemsWithInheritance(path, timeFilter)
     local _, directories = file.Find(path .. "/*", "LUA")
     if ( !directories or #directories == 0 ) then
@@ -270,80 +384,34 @@ function ax.item:LoadItemsWithInheritance(path, timeFilter)
 
     for i = 1, #directories do
         local dirName = directories[i]
-
-        -- Skip the base directory as it's already processed
         if ( dirName == "base" ) then continue end
 
-        -- Check if there's a corresponding base item
-        local baseItem = ax.item.stored[dirName]
+        local baseItem = self.stored[dirName]
         if ( !istable(baseItem) or !baseItem.isBase ) then
-            -- No base found, use directory name as prefix to avoid naming conflicts
             self:LoadItemsFromDirectory(path .. "/" .. dirName, timeFilter, dirName .. "_")
             continue
         end
 
-        -- Load items in this directory with the base item as parent
         self:LoadItemsWithBase(path .. "/" .. dirName, dirName, baseItem, timeFilter)
     end
 end
 
---- Load items from a directory with inheritance from a specific base item.
--- Loads items that inherit properties and methods from a specified base item.
--- Items maintain their own identity while gaining base functionality.
--- @realm shared
--- @param dirPath string The directory path containing items to inherit from base
--- @param baseName string The name of the base item for reference
--- @param baseItem table The base item table to inherit from
--- @usage ax.item:LoadItemsWithBase("parallax/gamemode/items/weapon", "weapon", weaponBase)
 function ax.item:LoadItemsWithBase(dirPath, baseName, baseItem, timeFilter)
-    local subFiles, _ = file.Find(dirPath .. "/*.lua", "LUA")
-    if ( !subFiles or #subFiles == 0 ) then
-        return
-    end
+    return LoadItemDefinitionsFromDirectory(self, dirPath, timeFilter, {
+        skipLabel = "item file"
+    }, function(fileName)
+        local fullItemName = baseName .. "_" .. self:ExtractItemName(fileName)
 
-    for j = 1, #subFiles do
-        local fileName = subFiles[j]
-        local filePath = dirPath .. "/" .. fileName
-
-        -- Check file modification time if timeFilter is provided
-        if ( isnumber(timeFilter) and timeFilter > 0 ) then
-            local fileTime = file.Time(filePath, "LUA")
-            local currentTime = os.time()
-
-            if ( fileTime and (currentTime - fileTime) > timeFilter ) then
-                ax.util:PrintDebug("Skipping unchanged item file (modified " .. (currentTime - fileTime) .. "s ago): " .. fileName)
-                continue
-            end
-        end
-
-        local itemName = self:ExtractItemName(fileName)
-        -- Prefix with base name to avoid collisions between different base types
-        local fullItemName = baseName .. "_" .. itemName
-
-        -- Create item with base item inheritance
-        ITEM = setmetatable({ class = fullItemName, base = baseName }, {
-            __index = function(t, k)
-                -- First check the item itself
-                local val = rawget(t, k)
-                if ( val != nil ) then return val end
-
-                -- Then check the base item
-                if ( baseItem[k] != nil ) then return baseItem[k] end
-
-                -- Finally check the item meta
-                return ax.item.meta[k]
-            end
-        })
-
-        ax.util:Include(dirPath .. "/" .. fileName, "shared")
-
-        ax.util:PrintSuccess("Item \"" .. tostring(ITEM.name or fullItemName) .. "\" (base: " .. baseName .. ") initialized successfully.")
-        ax.item.stored[fullItemName] = ITEM
-        ITEM = nil
-    end
+        return fullItemName, {
+            baseName = baseName,
+            baseItem = baseItem,
+            addDefaultActions = false,
+            label = "Item",
+            annotation = " (base: " .. baseName .. ")"
+        }
+    end)
 end
 
--- Helper function to extract clean item name from filename
 function ax.item:ExtractItemName(fileName)
     local itemName = string.StripExtension(fileName)
     local prefix = string.sub(itemName, 1, 3)
@@ -451,284 +519,3 @@ function ax.item:Instance(id, class)
 
     return itemObject
 end
-
-if ( SERVER ) then
-    function ax.item:Transfer(item, fromInventory, toInventory, callback)
-        if ( !istable(item) ) then
-            return false, "Invalid item provided."
-        end
-
-        ax.util:PrintDebug(string.format("Transferring item %s from inventory %s to inventory %s", item.id, tostring(fromInventory), tostring(toInventory)))
-
-        local fromInventoryID = 0
-        if ( istable(fromInventory) ) then
-            fromInventoryID = fromInventory.id
-        elseif ( isnumber(fromInventory) and fromInventory > 0 ) then
-            fromInventoryID = fromInventory
-            fromInventory = ax.inventory.instances[fromInventoryID]
-
-            if ( !istable(fromInventory) ) then
-                return false, "From inventory with ID " .. fromInventoryID .. " does not exist."
-            end
-        end
-
-        local toInventoryID = 0
-        if ( istable(toInventory) ) then
-            toInventoryID = toInventory.id
-        elseif ( isnumber(toInventory) and toInventory > 0 ) then
-            toInventoryID = toInventory
-            toInventory = ax.inventory.instances[toInventoryID]
-
-            if ( !istable(toInventory) ) then
-                return false, "To inventory with ID " .. toInventoryID .. " does not exist."
-            end
-        end
-
-        if ( fromInventory == toInventory ) then
-            return false, "Source and destination inventories cannot be the same."
-        end
-
-        -- TODO: Turn this check into a hook so inventories can have custom rules in terms of what they can accept. That way we can also handle weight checks there too.
-        if ( toInventory != 0 and math.Round(toInventory:GetWeight() + item:GetWeight(), 2) > toInventory:GetMaxWeight() ) then
-            local message = "The destination inventory cannot hold this item."
-            local owner = toInventory:GetOwner()
-            if ( istable(owner) and IsValid(owner:GetOwner()) ) then
-                message = "Your inventory cannot hold this item."
-            end
-
-            return false, message
-        end
-
-        local fromIsTemporary = istable(fromInventory) and (fromInventory.isTemporary or fromInventory.noSave)
-        local toIsTemporary = istable(toInventory) and (toInventory.isTemporary or toInventory.noSave)
-        local itemIsTemporary = item.isTemporary or item.noSave
-
-        if ( itemIsTemporary or fromIsTemporary or toIsTemporary ) then
-            if ( fromInventoryID == 0 or toInventoryID == 0 ) then
-                return false, "Temporary items cannot be transferred to or from the world inventory."
-            end
-
-            if ( !fromIsTemporary or !toIsTemporary ) then
-                return false, "Temporary inventory transfers are only supported between temporary inventories."
-            end
-
-            toInventory.items[item.id] = item
-            item.invID = toInventoryID
-
-            if ( istable(fromInventory) ) then
-                fromInventory.items[item.id] = nil
-            end
-
-            if ( isfunction(callback) ) then
-                callback(true)
-            end
-
-            return true
-        end
-
-        if ( istable(fromInventory) ) then
-            fromInventoryID = fromInventory.id
-        elseif ( fromInventory == 0 or fromInventory == nil ) then
-            fromInventoryID = 0
-        end
-
-        local dropPos
-        if ( fromInventoryID != 0 and toInventoryID == 0 ) then
-            local owner = fromInventory:GetOwner()
-            if ( istable(owner) and IsValid(owner:GetOwner()) ) then
-                local trace = {}
-                trace.start = owner:GetOwner():GetShootPos()
-                trace.endpos = trace.start + (owner:GetOwner():GetAimVector() * 96)
-                trace.filter = owner:GetOwner()
-                trace = util.TraceLine(trace)
-
-                dropPos = trace.HitPos + trace.HitNormal * 16
-            end
-
-            if ( !isvector(dropPos) ) then
-                return false, "Failed to determine drop position."
-            end
-        end
-
-        local query = mysql:Update("ax_items")
-            query:Update("inventory_id", toInventoryID)
-            query:Where("id", item.id)
-            query:Callback(function(result, status)
-                local function finish(success, reason)
-                    if ( isfunction(callback) ) then
-                        callback(success, reason)
-                    end
-
-                    return success, reason
-                end
-
-                if ( result == false ) then
-                    ax.util:PrintError("Failed to update item in database during transfer.")
-                    return finish(false, "A database error occurred.")
-                end
-
-                if ( istable(toInventory) and toInventoryID != 0 ) then
-                    toInventory.items[item.id] = item
-                    item.invID = toInventoryID  -- Update the item's inventory reference
-                elseif ( toInventoryID == 0 ) then
-                    item.invID = 0  -- Item is now in world inventory
-                end
-
-                if ( fromInventory != 0 ) then
-                    fromInventory.items[item.id] = nil
-                end
-
-                ax.util:PrintDebug(string.format("Transferred item %s from inventory %s to inventory %s", item.id, tostring(fromInventoryID), tostring(toInventoryID)))
-
-                if ( toInventoryID == 0 ) then
-                    ax.net:Start(nil, "item.transfer", item.id, fromInventoryID, toInventoryID)
-
-                    local itemEntity = ents.Create("ax_item")
-                    if ( !IsValid(itemEntity) ) then
-                        ax.util:PrintError("Failed to create item entity during transfer to world inventory.")
-                        return finish(false, "Failed to create item entity.")
-                    end
-
-                    itemEntity:SetItemID(item.id)
-                    itemEntity:SetItemClass(item.class)
-                    itemEntity:SetPos(dropPos or vector_origin)
-                    itemEntity:Spawn()
-                    itemEntity:Activate()
-
-                    ax.util:PrintDebug("Broadcasting to all clients (world inventory)")
-                else
-                    ax.net:Start(toInventory:GetReceivers(), "item.transfer", item.id, fromInventoryID, toInventoryID)
-
-                    ax.util:PrintDebug("Sending to inventory receivers only")
-                    for k, v in pairs(toInventory:GetReceivers()) do
-                        ax.util:PrintDebug(" - Sent to: " .. tostring(v))
-                    end
-                end
-
-                return finish(true)
-            end)
-        query:Execute()
-
-        return true
-    end
-
-    function ax.item:Spawn(class, pos, ang, callback, data)
-        local item = ax.item.stored[class]
-        if ( !istable(item) ) then
-            ax.util:PrintError("Invalid item provided to ax.item:Spawn() (" .. tostring(class) .. ")")
-            return false
-        end
-
-        data = data or {}
-
-        local query = mysql:Insert("ax_items")
-            query:Insert("class", class)
-            query:Insert("inventory_id", 0)
-            query:Insert("data", util.TableToJSON(data))
-            query:Callback(function(result, status, lastID)
-                if ( result == false ) then
-                    ax.util:PrintError("Failed to insert item into database for world spawn.")
-                    return false
-                end
-
-                local itemObject = ax.item:Instance(lastID, class)
-
-                local entity = ents.Create("ax_item")
-                entity:SetItemID(lastID)
-                entity:SetItemClass(class)
-                entity:SetPos(pos)
-                entity:SetAngles(ang)
-                entity:Spawn()
-                entity:Activate()
-
-                ax.net:Start(nil, "item.spawn", lastID, class, data or {})
-
-                if ( isfunction(callback) ) then
-                    callback(entity, itemObject)
-                end
-
-                return true
-            end)
-        query:Execute()
-    end
-end
-
--- TODO: Turn these into chat commands? Idk
-concommand.Add("ax_item_create", function(client, command, args, argStr)
-    if ( ax.util:IsValidPlayer(client) and !client:IsSuperAdmin() ) then
-        ax.util:PrintError("You do not have permission to use this command!")
-        return
-    end
-
-    local class = args[1]
-    local inventoryID = tonumber(args[2]) or 0
-
-    if ( !class or class == "" ) then
-        ax.util:PrintError("You must provide an item class.")
-
-        ax.util:Print(Color(0, 255, 0), "Available item classes:")
-        for k, v in pairs(ax.item.stored) do
-            ax.util:Print(Color(0, 255, 0), "- " .. k)
-        end
-
-        return
-    end
-
-    if ( inventoryID <= 0 ) then
-        ax.util:PrintError("You must provide a valid inventory ID.")
-
-        ax.util:Print(Color(0, 255, 0), "Available inventory IDs:")
-        for k, v in pairs(ax.inventory.instances) do
-            ax.util:Print(Color(0, 255, 0), "- " .. k)
-        end
-
-        return
-    end
-
-    local inventory = ax.inventory.instances[inventoryID]
-    if ( !istable(inventory) ) then
-        ax.util:PrintError("Inventory with ID " .. inventoryID .. " does not exist.")
-        return
-    end
-
-    local item = ax.item.stored[class]
-    if ( !istable(item) ) then
-        ax.util:PrintError("Item with class " .. class .. " does not exist.")
-        return
-    end
-
-    inventory:AddItem(class)
-end)
-
-concommand.Add("ax_item_list", function(client, command, args, argStr)
-    if ( ax.util:IsValidPlayer(client) and !client:IsSuperAdmin() ) then
-        ax.util:PrintError("You do not have permission to use this command!")
-        return
-    end
-
-    ax.util:Print(Color(0, 255, 0), "Available item classes:")
-    for k, v in pairs(ax.item.stored) do
-        ax.util:Print(Color(0, 255, 0), "- " .. k)
-    end
-end)
-
-concommand.Add("ax_item_spawn", function(client, command, args, argStr)
-    if ( ax.util:IsValidPlayer(client) and !client:IsSuperAdmin() ) then
-        ax.util:PrintError("You do not have permission to use this command!")
-        return
-    end
-
-    if ( CLIENT ) then return end
-
-    local class = args[1]
-    if ( !class or class == "" ) then
-        ax.util:PrintError("You must provide an item class.")
-        return
-    end
-
-    local trace = client:GetEyeTrace()
-    local pos = trace.HitPos + trace.HitNormal * 16
-    local ang = trace.HitNormal:Angle()
-
-    ax.item:Spawn(class, pos, ang)
-end)
