@@ -98,6 +98,61 @@ jobs:
           git tag -a "$TAG" -m "Parallax $TAG"
           git push origin "$TAG"
 
+      - name: Generate AI Release Summary
+        if: steps.commit_version.outputs.changed == 'true'
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_WEBHOOK }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # Get the previous tag
+          PREVIOUS_TAG=$(git tag --sort=-creatordate | grep -v "${{ steps.tag_version.outputs.tag }}" | head -n 1)
+          
+          # Generate release notes using GitHub CLI
+          if [ -z "$PREVIOUS_TAG" ]; then
+            RELEASE_NOTES=$(gh api repos/${{ github.repository }}/releases/generate-notes \
+              -f tag_name="${{ steps.tag_version.outputs.tag }}" \
+              --jq '.body')
+          else
+            RELEASE_NOTES=$(gh api repos/${{ github.repository }}/releases/generate-notes \
+              -f tag_name="${{ steps.tag_version.outputs.tag }}" \
+              -f previous_tag_name="$PREVIOUS_TAG" \
+              --jq '.body')
+          fi
+          
+          # Prepare the prompt for OpenAI
+          PROMPT="Please generate a concise, professional summary of the following release notes for the Parallax gamemode for Garry's Mod. Focus on the key features, improvements, and bug fixes. Keep it engaging and user-friendly:\n\n$RELEASE_NOTES"
+          
+          # Call OpenAI API to generate summary
+          AI_SUMMARY=$(curl -s https://api.openai.com/v1/chat/completions \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer $OPENAI_API_KEY" \
+            -d '{
+              "model": "gpt-4o-mini",
+              "messages": [
+                {
+                  "role": "system",
+                  "content": "You are a helpful assistant that creates concise, engaging release summaries for game development projects."
+                },
+                {
+                  "role": "user",
+                  "content": "'"$(echo "$PROMPT" | jq -Rs .)"'"
+                }
+              ],
+              "temperature": 0.7,
+              "max_tokens": 500
+            }' | jq -r '.choices[0].message.content')
+          
+          # Create the release notes file with AI summary and full changelog
+          {
+            echo "$AI_SUMMARY"
+            echo ""
+            echo "---"
+            echo ""
+            echo "## Full Changelog"
+            echo ""
+            echo "$RELEASE_NOTES"
+          } > ai_notes.md
+
       - name: Create GitHub release
         if: steps.commit_version.outputs.changed == 'true'
         uses: softprops/action-gh-release@v2
@@ -106,14 +161,3 @@ jobs:
           name: Parallax ${{ steps.tag_version.outputs.tag }}
           body_path: ai_notes.md
           generate_release_notes: true
-  anno:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: constantincerdan/anno@v7.4.1
-        with:
-          mode: release-summary
-          ai_provider: "openai"
-          ai_api_key: ${{ secrets.OPENAI_WEBHOOK }}
-          ai_model: "gpt-4o"
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          slack_webhook_url: ""
