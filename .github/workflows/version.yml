@@ -98,33 +98,6 @@ jobs:
           git tag -a "$TAG" -m "Parallax $TAG"
           git push origin "$TAG"
 
-      - name: Generate AI Summary
-        if: steps.commit_version.outputs.changed == 'true'
-        id: ai_summary
-        env:
-          WEBHOOK_URL: ${{ secrets.OPENAI_WEBHOOK }}
-        run: |
-          # 1. Get logs since the previous tag
-          PREV_TAG=$(git tag --sort=-v:refname | sed -n '2p')
-          if [ -z "$PREV_TAG" ]; then
-            LOGS=$(git log --pretty=format:"- %s" -n 20)
-          else
-            LOGS=$(git log $PREV_TAG..HEAD --pretty=format:"- %s")
-          fi
-
-          # 2. Call the Webhook
-          # Note: We escape newlines for the JSON payload
-          ESCAPED_LOGS=$(echo "$LOGS" | python3 -c "import json, sys; print(json.dumps(sys.stdin.read()))")
-          
-          RESPONSE=$(curl -s -X POST "$WEBHOOK_URL" \
-            -H "Content-Type: application/json" \
-            -d "{\"text\": \"Summarize these changes into bullet points for version ${{ steps.generate_version.outputs.version }}: $ESCAPED_LOGS\"}")
-
-          # 3. Save summary (Handle cases where webhook might return raw text or JSON)
-          echo "### AI Change Summary" > ai_notes.md
-          echo "$RESPONSE" >> ai_notes.md
-          echo -e "\n---\n" >> ai_notes.md
-
       - name: Create GitHub release
         if: steps.commit_version.outputs.changed == 'true'
         uses: softprops/action-gh-release@v2
@@ -133,3 +106,14 @@ jobs:
           name: Parallax ${{ steps.tag_version.outputs.tag }}
           body_path: ai_notes.md
           generate_release_notes: true
+  anno:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: constantincerdan/anno@v7.4.1
+        with:
+          mode: release-summary
+          ai_provider: "openai"
+          ai_api_key: ${{ secrets.OPENAI_WEBHOOK }}
+          ai_model: "gpt-4o"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          slack_webhook_url: ""
