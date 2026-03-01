@@ -19,6 +19,8 @@ function GM:Think()
     end
 end
 
+-- print("i'm such a cool debug print!")
+
 function GM:ScoreboardShow()
     if ( hook.Run("ShouldShowTab") == false ) then return end
 
