@@ -109,24 +109,20 @@ jobs:
           
           # Generate release notes using GitHub CLI
           if [ -z "$PREVIOUS_TAG" ]; then
-            RELEASE_NOTES=$(gh api repos/${{ github.repository }}/releases/generate-notes \
+            gh api repos/${{ github.repository }}/releases/generate-notes \
               -f tag_name="${{ steps.tag_version.outputs.tag }}" \
-              --jq '.body')
+              --jq '.body' > release_notes.txt
           else
-            RELEASE_NOTES=$(gh api repos/${{ github.repository }}/releases/generate-notes \
+            gh api repos/${{ github.repository }}/releases/generate-notes \
               -f tag_name="${{ steps.tag_version.outputs.tag }}" \
               -f previous_tag_name="$PREVIOUS_TAG" \
-              --jq '.body')
+              --jq '.body' > release_notes.txt
           fi
           
-          # Prepare the prompt for OpenAI
-          PROMPT="Please generate a concise, professional summary of the following release notes for the Parallax gamemode for Garry's Mod. Focus on the key features, improvements, and bug fixes. Keep it engaging and user-friendly:\n\n$RELEASE_NOTES"
-          
-          # Call OpenAI API to generate summary
-          AI_SUMMARY=$(curl -s https://api.openai.com/v1/chat/completions \
-            -H "Content-Type: application/json" \
-            -H "Authorization: Bearer $OPENAI_API_KEY" \
-            -d '{
+          # Create JSON payload for OpenAI
+          jq -n \
+            --arg notes "$(cat release_notes.txt)" \
+            '{
               "model": "gpt-4o-mini",
               "messages": [
                 {
@@ -135,12 +131,21 @@ jobs:
                 },
                 {
                   "role": "user",
-                  "content": "'"$(echo "$PROMPT" | jq -Rs .)"'"
+                  "content": ("Please generate a concise, professional summary of the following release notes for the Parallax gamemode for Garry'\''s Mod. Focus on the key features, improvements, and bug fixes. Keep it engaging and user-friendly:\n\n" + $notes)
                 }
               ],
               "temperature": 0.7,
               "max_tokens": 500
-            }' | jq -r '.choices[0].message.content')
+            }' > openai_payload.json
+          
+          # Call OpenAI API to generate summary
+          curl -s https://api.openai.com/v1/chat/completions \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer $OPENAI_API_KEY" \
+            -d @openai_payload.json > openai_response.json
+          
+          # Extract AI summary
+          AI_SUMMARY=$(jq -r '.choices[0].message.content // "AI summary generation failed"' openai_response.json)
           
           # Create the release notes file with AI summary and full changelog
           {
@@ -150,8 +155,11 @@ jobs:
             echo ""
             echo "## Full Changelog"
             echo ""
-            echo "$RELEASE_NOTES"
+            cat release_notes.txt
           } > ai_notes.md
+          
+          # Clean up temporary files
+          rm -f release_notes.txt openai_payload.json openai_response.json
 
       - name: Create GitHub release
         if: steps.commit_version.outputs.changed == 'true'
