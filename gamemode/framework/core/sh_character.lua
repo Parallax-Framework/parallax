@@ -31,8 +31,6 @@ ax.character:RegisterVar("inventory", {
     hide = true
 })
 
-// AI Summary test, please king
-
 ax.character:RegisterVar("faction", {
     field = "faction",
     fieldType = ax.type.number,
