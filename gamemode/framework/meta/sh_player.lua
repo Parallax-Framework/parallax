@@ -74,13 +74,21 @@ end
 ax.player.gestureCache = ax.player.gestureCache or {}
 
 function ax.player.meta:PlayGesture(slot, sequence)
+    local character = self:GetCharacter()
+    if ( !character ) then
+        ax.util:PrintDebug("Player:PlayGesture() called but player has no character.")
+        return nil
+    end
+
     if ( !isnumber(slot) or slot < 0 or slot > 6 ) then
         ax.util:PrintError("Invalid gesture slot provided to Player:PlayGesture()")
         return nil
     end
 
-    if ( isstring(sequence) ) then
-        local modelPath = self:GetModel()
+    if ( isstring(sequence) and sequence != "" ) then
+        sequence = utf8.lower(sequence)
+
+        local modelPath = utf8.lower(self:GetModel())
         local cacheKey = modelPath .. ":" .. sequence
 
         -- Check cache first
