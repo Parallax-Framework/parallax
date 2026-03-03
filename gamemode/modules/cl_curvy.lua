@@ -47,6 +47,14 @@ ax.localization:Register("en", {
     ["option.curvy.edge_fade"] = "Edge Fade"
 })
 
+ax.localization:Register("de", {
+    ["category.visual"] = "Visuell",
+    ["subcategory.curvy"] = "Gebogen",
+    ["option.curvy"] = "Gebogenes HUD",
+    ["option.curvy.intensity"] = "Krümmung",
+    ["option.curvy.edge_fade"] = "Rand-Ausblendung"
+})
+
 ax.localization:Register("tr", {
     ["category.visual"] = "Görsel",
     ["subcategory.curvy"] = "Kavis",

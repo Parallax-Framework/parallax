@@ -187,6 +187,47 @@ ax.localization:Register("en", {
     ["option.intro.sound.path.help"] = "Sound path used for the typewriter effect."
 })
 
+ax.localization:Register("de", {
+    ["category.interface"] = "Oberfläche",
+    ["subcategory.intro"] = "Intro",
+    ["config.intro.enabled"] = "Intro aktivieren",
+    ["config.intro.enabled.help"] = "Erlaubt, dass das Willkommens-Intro für Clients abgespielt wird.",
+    ["config.intro.location.show"] = "Standortzeile anzeigen",
+    ["config.intro.location.show.help"] = "Zeigt die Haupt-Standortzeile im Intro an.",
+    ["config.intro.location.text"] = "Standorttext",
+    ["config.intro.location.text.help"] = "Text für die Haupt-Standortzeile.",
+    ["config.intro.framework.show"] = "Framework-Credits anzeigen",
+    ["config.intro.framework.show.help"] = "Zeigt die Credits-Zeile des Frameworks an.",
+    ["config.intro.framework.template"] = "Framework-Credits-Vorlage",
+    ["config.intro.framework.template.help"] = "Vorlage für Framework-Credits. Verwende {author} und {framework}.",
+    ["config.intro.schema.show"] = "Schema-Credits anzeigen",
+    ["config.intro.schema.show.help"] = "Zeigt die Credits-Zeile des Schemas an.",
+    ["config.intro.schema.template"] = "Schema-Credits-Vorlage",
+    ["config.intro.schema.template.help"] = "Vorlage für Schema-Credits. Verwende {schema} und {schema_author}.",
+    ["config.intro.text.color"] = "Intro-Textfarbe",
+    ["config.intro.text.color.help"] = "Grundfarbe für die Intro-Zeilen.",
+    ["config.intro.font.title"] = "Titelschrift",
+    ["config.intro.font.title.help"] = "Schriftart für die Hauptzeile des Intros.",
+    ["config.intro.font.credits"] = "Credits-Schrift",
+    ["config.intro.font.credits.help"] = "Schriftart für die Credits-Zeilen.",
+    ["option.intro.enabled"] = "Intro anzeigen",
+    ["option.intro.enabled.help"] = "Zeigt das Willkommens-Intro auf deinem Client an.",
+    ["option.intro.hold.time"] = "Haltezeit pro Zeile",
+    ["option.intro.hold.time.help"] = "Wie lange jede Intro-Zeile sichtbar bleibt.",
+    ["option.intro.fade.speed"] = "Ausblendgeschwindigkeit",
+    ["option.intro.fade.speed.help"] = "Ausblendgeschwindigkeit für Intro-Zeilen (hoeher = schneller).",
+    ["option.intro.fade.out.delay"] = "Verzoegerung vor Ausblendung",
+    ["option.intro.fade.out.delay.help"] = "Sekunden vor dem Ende, bis das Ausblenden beginnt.",
+    ["option.intro.typewriter.enabled"] = "Schreibmaschinen-Effekt",
+    ["option.intro.typewriter.enabled.help"] = "Aktiviert den Schreibmaschinen-Effekt.",
+    ["option.intro.typewriter.delay"] = "Schreibmaschinen-Verzoegerung",
+    ["option.intro.typewriter.delay.help"] = "Verzoegerung zwischen den einzelnen Zeichen.",
+    ["option.intro.sound.enabled"] = "Schreibmaschinen-Sound",
+    ["option.intro.sound.enabled.help"] = "Spielt für jedes geschriebene Zeichen einen Sound ab.",
+    ["option.intro.sound.path"] = "Pfad für Schreibmaschinen-Sound",
+    ["option.intro.sound.path.help"] = "Soundpfad für den Schreibmaschinen-Effekt."
+})
+
 ax.localization:Register("tr", {
     ["category.interface"] = "Arayüz",
     ["subcategory.intro"] = "Giriş",

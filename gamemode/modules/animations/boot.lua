@@ -36,12 +36,20 @@ LANG["category.animations"] = "Animasyonlar"
 ax.localization:Register("tr", LANG)
 
 LANG = {}
-LANG["config.animations.ik"] = "Обратная Кинематика (ОК)"
-LANG["config.animations.ik.help"] = "Если включено, ноги игрока будут приспосабливаться к неровностям местности для более реалистичного передвижения."
+LANG["config.animations.ik"] = "Inverse Kinematik (IK)"
+LANG["config.animations.ik.help"] = "Wenn aktiviert, passen sich die Füße des Spielers für realistischere Bewegung an unebenes Gelände an."
+LANG["category.animations"] = "Animationen"
+
+ax.localization:Register("de", LANG)
+
+LANG = {}
+LANG["config.animations.ik"] = "Кинематика (IK)"
+LANG["config.animations.ik.help"] = "При включении ноги игрока будут адаптироваться к неровной поверхности для более реалистичного движения."
 LANG["category.animations"] = "Анимации"
 
 ax.localization:Register("ru", LANG)
 
+LANG = {}
 LANG["config.animations.ik"] = "Cinemática Inversa (IK)"
 LANG["config.animations.ik.help"] = "Cuando está habilitado, los pies del jugador se ajustarán al terreno irregular para un movimiento más realista."
 LANG["category.animations"] = "Animaciones"
