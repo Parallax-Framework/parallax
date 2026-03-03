@@ -13,6 +13,46 @@
 
 ax.zones = ax.zones or {}
 
+local function IsClientWorldPoint(pos)
+    if ( !isvector(pos) ) then
+        return false
+    end
+
+    if ( SERVER ) then
+        return util.IsInWorld(pos)
+    end
+
+    local contents = util.PointContents(pos)
+    return bit.band(contents, CONTENTS_SOLID) != CONTENTS_SOLID
+end
+
+local function GetVisibilityOrigin(ent, fallback)
+    if ( IsValid(ent) and ent.EyePos ) then
+        return ent:EyePos()
+    end
+
+    return fallback
+end
+
+local function HasLineOfSight(ent, startPos, endPos, mask)
+    if ( !IsValid(ent) or !isvector(startPos) or !isvector(endPos) ) then
+        return false
+    end
+
+    local trace = util.TraceLine({
+        start = startPos,
+        endpos = endPos,
+        filter = ent,
+        mask = mask or MASK_VISIBLE,
+    })
+
+    if ( !trace.Hit ) then
+        return true
+    end
+
+    return trace.HitPos:DistToSqr(endPos) <= 25
+end
+
 -- Box zone type
 ax.zones:RegisterType("box", {
     --- Validate a box zone specification.
@@ -133,24 +173,31 @@ ax.zones:RegisterType("pvs", {
         -- If entity can't see the zone origin, weight is 0
         if ( !ent or !IsValid(ent) ) then return 0 end
 
-        -- Check PVS visibility
+        -- Apply distance falloff first so we can cheaply reject out-of-range points.
+        if ( spec.radius ) then
+            local dist = pos:Distance(spec.origin)
+            if ( dist >= spec.radius ) then return 0 end
+        end
+
+        -- PVS is used as a coarse reject on the server.
         if ( SERVER ) then
-            -- Use TestPVS for performance
             local pvs = ent:TestPVS(spec.origin)
             if ( !pvs ) then return 0 end
         else
-            -- Client can use simpler check
-            local visible = util.IsInWorld(spec.origin)
+            local visible = IsClientWorldPoint(spec.origin)
             if ( !visible ) then return 0 end
+        end
+
+        -- PVS zones should still require the point to be actually visible.
+        local visibilityOrigin = GetVisibilityOrigin(ent, pos)
+        if ( !HasLineOfSight(ent, visibilityOrigin, spec.origin, MASK_VISIBLE) ) then
+            return 0
         end
 
         -- If no radius specified, full weight when visible
         if ( !spec.radius ) then return 1.0 end
 
-        -- Apply distance falloff
         local dist = pos:Distance(spec.origin)
-        if ( dist >= spec.radius ) then return 0 end
-
         return 1.0 - (dist / spec.radius)
     end,
 })

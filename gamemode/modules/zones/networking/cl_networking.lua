@@ -27,4 +27,5 @@ ax.net:Hook("zones.sync", function(payload)
     end
 
     ax.util:PrintDebug("Received " .. tostring(#zones) .. " zones from server")
+    hook.Run("ax.zones.synced", zones)
 end)

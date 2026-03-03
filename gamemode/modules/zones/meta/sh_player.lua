@@ -32,7 +32,16 @@ end
 -- @treturn table Blend state with physical, visible, and dominant fields
 -- @usage local blend = client:GetZoneBlend()
 function ax.player.meta:GetZoneBlend()
-    return ax.zones:BlendFor(self)
+    local blend = ax.zones:BlendFor(self)
+
+    if ( !blend.dominant and ax.config:Get("zones.tracking.use_last_dominant", true) != false ) then
+        local tracking = self:GetZoneTracking()
+        if ( tracking and tracking.dominant ) then
+            blend.dominant = tracking.dominant
+        end
+    end
+
+    return blend
 end
 
 --- Get the dominant zone for the player.
@@ -40,7 +49,19 @@ end
 -- @treturn table|nil The dominant zone spec or nil
 -- @usage local zone = client:GetDominantZone()
 function ax.player.meta:GetDominantZone()
-    return ax.zones:GetDominant(self)
+    local dominant = ax.zones:GetDominant(self)
+    if ( dominant ) then
+        return dominant
+    end
+
+    if ( ax.config:Get("zones.tracking.use_last_dominant", true) != false ) then
+        local tracking = self:GetZoneTracking()
+        if ( tracking and tracking.dominant ) then
+            return tracking.dominant
+        end
+    end
+
+    return nil
 end
 
 --- Check if the player is in a specific zone.
@@ -281,12 +302,13 @@ function ax.player.meta:GetDistanceToZone(identifier)
     return pos:Distance(zonePos)
 end
 
---- Returns the player's most highest priority zone's name.
+--- Returns the player's dominant zone name.
 -- @realm shared
+-- Includes physical zones and visible PVS/trace zones.
 -- @treturn string|nil Zone name or nil
 -- @usage local zoneName = client:GetCurrentZoneName()
 function ax.player.meta:GetCurrentZoneName()
-    local zone = self:GetHighestPriorityZone()
+    local zone = self:GetDominantZone()
     if ( zone ) then
         return zone.name
     end

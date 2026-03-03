@@ -18,6 +18,21 @@ local function GetTargetPosition(client)
 end
 
 --[[
+    Zone Editor Command
+    Usage: /ZoneEditor
+    Toggles the in-world admin zone editor
+]]
+ax.command:Add("ZoneEditor", {
+    description = "Open the admin zone editor",
+    adminOnly = true,
+    bAllowConsole = false,
+    OnRun = function(def, client)
+        local enabled, message = ax.zones.editor:ToggleSession(client)
+        return message or (enabled and "Zone editor enabled." or "Zone editor disabled.")
+    end,
+})
+
+--[[
     Zone Box Command
     Usage: /ZoneBox <name> <priority> [size]
     Creates a box zone centered at the player's look position
@@ -326,30 +341,6 @@ ax.command:Add("ZoneInfo", {
         print("==================\n")
 
         return "Zone info printed to console."
-    end,
-})
-
---[[
-    Zone Debug Command
-    Usage: /ZoneDebug
-    Toggles zone debug visualization
-]]
-local debugPlayers = {}
-ax.command:Add("ZoneDebug", {
-    description = "Toggle zone debug visualization",
-    adminOnly = true,
-    OnRun = function(def, client)
-        local steamID = client:SteamID()
-
-        if ( debugPlayers[steamID] ) then
-            ax.zones:StopDrawDebug(client)
-            debugPlayers[steamID] = nil
-            return "Zone debug visualization disabled."
-        else
-            ax.zones:DrawDebug(client)
-            debugPlayers[steamID] = true
-            return "Zone debug visualization enabled."
-        end
     end,
 })
 

@@ -21,13 +21,28 @@ ax.zones.clientTracking = ax.zones.clientTracking or {
     lastCheck = 0,
 }
 
--- Hysteresis parameters (same as server)
-local HYSTERESIS_TIME = 0.5
-local HYSTERESIS_MARGIN = 5
 local hysteresis = {
     candidate = nil,
     since = 0,
 }
+
+local function GetTrackingNumber(key, fallback, minValue, maxValue)
+    local value = tonumber(fallback) or 0
+
+    if ( ax and ax.config and ax.config.Get ) then
+        value = tonumber(ax.config:Get(key, fallback)) or value
+    end
+
+    if ( minValue != nil ) then
+        value = math.max(value, minValue)
+    end
+
+    if ( maxValue != nil ) then
+        value = math.min(value, maxValue)
+    end
+
+    return value
+end
 
 --- Get the client's zone tracking state.
 -- @realm client
@@ -104,11 +119,22 @@ local function UpdateClientTracking()
 
     -- Handle dominant zone with hysteresis
     local oldDominant = state.dominant
+    local hysteresisTime = GetTrackingNumber("zones.tracking.hysteresis_time", 0.5, 0, 5)
+    local hysteresisMargin = GetTrackingNumber("zones.tracking.hysteresis_margin", 5, 0, 100)
+    local useLastDominant = ax.config:Get("zones.tracking.use_last_dominant", true) != false
+    local nextDominant = newDominant
 
-    if ( newDominant != oldDominant ) then
+    if ( useLastDominant and !nextDominant and oldDominant ) then
+        nextDominant = oldDominant
+    end
+
+    if ( nextDominant != oldDominant ) then
         -- If no candidate or candidate changed, start timer
-        if ( !hysteresis.candidate or (newDominant and hysteresis.candidate.id != newDominant.id) ) then
-            hysteresis.candidate = newDominant
+        local candidateId = hysteresis.candidate and hysteresis.candidate.id or false
+        local nextDominantId = nextDominant and nextDominant.id or false
+
+        if ( candidateId != nextDominantId ) then
+            hysteresis.candidate = nextDominant
             hysteresis.since = now
         end
 
@@ -116,17 +142,17 @@ local function UpdateClientTracking()
         local elapsed = now - hysteresis.since
         local priorityDiff = 0
 
-        if ( newDominant and oldDominant ) then
-            priorityDiff = math.abs(newDominant.priority - oldDominant.priority)
+        if ( nextDominant and oldDominant ) then
+            priorityDiff = math.abs(nextDominant.priority - oldDominant.priority)
         end
 
-        if ( elapsed >= HYSTERESIS_TIME or priorityDiff >= HYSTERESIS_MARGIN ) then
+        if ( elapsed >= hysteresisTime or priorityDiff >= hysteresisMargin ) then
             -- Switch dominant
-            state.dominant = newDominant
+            state.dominant = nextDominant
             hysteresis.candidate = nil
             hysteresis.since = 0
 
-            hook.Run("OnZoneChanged", client, oldDominant, newDominant)
+            hook.Run("OnZoneChanged", client, oldDominant, nextDominant)
         end
     else
         -- Same dominant, reset hysteresis
@@ -145,7 +171,8 @@ hook.Add("Think", "ax.zones.clientTracking", function()
 
     -- Update at a reasonable rate (not every frame)
     local state = ax.zones.clientTracking
-    if ( CurTime() - state.lastCheck < 0.1 ) then return end
+    local interval = GetTrackingNumber("zones.tracking.client_interval", 0.1, 0, 1)
+    if ( CurTime() - state.lastCheck < interval ) then return end
 
     UpdateClientTracking()
 end)

@@ -48,7 +48,7 @@ end
 --- Get all PVS and trace zones visible to an entity.
 -- @realm shared
 -- @tparam Entity ent Entity to test visibility from
--- @treturn table Array of zone specs with weight field, sorted by weight desc
+-- @treturn table Array of zone specs with weight field, sorted by priority desc
 function ax.zones:VisibleZones(ent)
     if ( !IsValid(ent) ) then return {} end
 
@@ -70,15 +70,18 @@ function ax.zones:VisibleZones(ent)
         end
     end
 
-    -- Sort by weight desc, then priority desc, then id asc
+    -- Sort by priority desc, then weight desc, then id asc.
+    -- Weight is still used as a relevance tiebreaker, but priority decides dominance.
     table.sort(result, function(a, b)
-        if ( a._weight == b._weight ) then
-            if ( a.priority == b.priority ) then
+        if ( a.priority == b.priority ) then
+            if ( a._weight == b._weight ) then
                 return a.id < b.id
             end
-            return a.priority > b.priority
+
+            return a._weight > b._weight
         end
-        return a._weight > b._weight
+
+        return a.priority > b.priority
     end)
 
     return result
@@ -104,7 +107,7 @@ function ax.zones:BlendFor(ent)
     if ( #physical > 0 ) then
         dominant = physical[1]
     else
-        -- Otherwise, pick highest weighted visible zone
+        -- Otherwise, pick highest priority visible zone
         if ( #visible > 0 ) then
             dominant = visible[1]
         end

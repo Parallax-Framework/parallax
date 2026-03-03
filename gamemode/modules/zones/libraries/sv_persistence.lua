@@ -23,7 +23,9 @@ function ax.zones:Load()
     self.stored = {}
     self.nextId = 1
 
-    local data = ax.data:Get(dataKey, nil)
+    local data = ax.data:Get(dataKey, nil, {
+        scope = "map"
+    })
 
     if ( !data ) then
         ax.util:PrintDebug("No zone data found for map " .. mapName .. ", starting fresh.")
