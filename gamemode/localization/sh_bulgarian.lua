@@ -58,7 +58,7 @@ ax.localization:Register("bg", {
     ["subcategory.size"] = "Размер",
     ["subcategory.general"] = "Общи",
     ["subcategory.ooc"] = "OOC",
-    ["subcategory.tools"] = "Инструменты",
+    ["subcategory.tools"] = "Инструменти",
 
     -- Store Translations
     ["store.enabled"] = "Включено",
