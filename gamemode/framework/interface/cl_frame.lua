@@ -179,8 +179,8 @@ function PANEL:OnMouseReleased()
 end
 
 function PANEL:PerformLayout()
-    self.btnClose:SetPos(self:GetWide() - 48 - 12, 12)
-    self.btnClose:SetSize(48, 48)
+    self.btnClose:SetSize(40, 40)
+    self.btnClose:SetPos(self:GetWide() - self.btnClose:GetWide() - 8, 8)
 
     self.lblTitle:SetPos(16, 10)
     self.lblTitle:SetSize(self:GetWide() - 32, 40)
