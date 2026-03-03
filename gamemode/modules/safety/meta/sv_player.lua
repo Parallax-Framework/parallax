@@ -15,7 +15,7 @@ function ax.player.meta:SetWeaponRaised(bRaised)
     self:SetRelay("ax.weapon.raised", bRaised)
 
     local weapon = self:GetActiveWeapon()
-    if ( IsValid(weapon) and weapon:IsWeapon() and isfunction(weapon.SetWeaponRaised) ) then
+    if ( type(weapon) == "Weapon" and weapon:IsWeapon() and isfunction(weapon.SetWeaponRaised) ) then
         weapon:SetWeaponRaised(bRaised)
     end
 

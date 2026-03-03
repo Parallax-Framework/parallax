@@ -18,7 +18,7 @@ ax.net:Hook("hands.reset", function(client)
     if ( !client:RateLimit("hands", 0.5) ) then return end
 
     local weapon = client:GetActiveWeapon()
-    if ( !IsValid(weapon) ) then return end
+    if ( type(weapon) != "Weapon" ) then return end
 
     if ( weapon:GetClass() == "ax_hands" ) then
         weapon:Reset()

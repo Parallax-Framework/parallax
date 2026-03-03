@@ -44,7 +44,7 @@ function MODULE:HUDPaintCurvy()
     if ( shouldDraw == false ) then return end
 
     local weapon = client:GetActiveWeapon()
-    if ( !IsValid(weapon) ) then
+    if ( type(weapon) != "Weapon" ) then
         ammoAlpha = Lerp(FrameTime() * 8, ammoAlpha, 0)
         return
     end

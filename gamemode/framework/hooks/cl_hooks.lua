@@ -49,13 +49,18 @@ local buildingBinds = {
 }
 
 function GM:PlayerBindPress(client, bind, pressed, code)
+    local override = hook.Run("OverrideBuildMenuBind", client, bind, pressed, code)
+    if ( override != nil ) then
+        return override
+    end
+
     if ( pressed and buildingBinds[bind] ) then
         if ( ax.config:Get("interface.buildmenu.requires_tools", true) == false ) then
             return false
         end
 
         local weapon = client:GetActiveWeapon()
-        if ( IsValid(weapon) ) then
+        if ( type(weapon) == "Weapon" ) then
             local class = weapon:GetClass()
             if ( buildingTools[class] ) then
                 return false
@@ -192,7 +197,7 @@ function GM:HUDShouldDraw(name)
     if ( viewEntity and viewEntity:GetClass():find("camera") and cameraShow[name] != true ) then return false end
 
     local weapon = ax.client:GetActiveWeapon()
-    if ( IsValid(weapon) and weapon:GetClass() == "gmod_camera" and cameraShow[name] != true ) then return false end
+    if ( type(weapon) == "Weapon" and weapon:GetClass() == "gmod_camera" and cameraShow[name] != true ) then return false end
 
     return true
 end
@@ -447,7 +452,7 @@ end, 99)
 
 ax.viewstack:RegisterModifier("swep", function(client, patch)
     local weapon = client:GetActiveWeapon()
-    if ( !IsValid(weapon) or !weapon.TranslateFOV ) then return end
+    if ( type(weapon) != "Weapon" or !weapon.TranslateFOV ) then return end
 
     local fov = weapon:TranslateFOV(patch.fov)
 
@@ -455,7 +460,7 @@ ax.viewstack:RegisterModifier("swep", function(client, patch)
 end, 1)
 
 ax.viewstack:RegisterViewModelModifier("swep", function(weapon, patch)
-    if ( !IsValid(weapon) or !weapon.GetViewModelPosition ) then return end
+    if ( type(weapon) != "Weapon" or !weapon.GetViewModelPosition ) then return end
 
     local pos, ang = weapon:GetViewModelPosition(patch.pos, patch.ang)
 

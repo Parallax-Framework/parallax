@@ -133,7 +133,7 @@ function MODULE:DrawPlayers()
         end
 
         local weapon = target:GetActiveWeapon()
-        if ( IsValid(weapon) ) then
+        if ( type(weapon) == "Weapon" ) then
             local wepName = weapon:GetPrintName() or "Unknown"
             draw.SimpleTextOutlined(wepName, "ax.regular.admin", scr.x, scr.y + yOffset, Color(255, 255, 0), TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM, 1, Color(0, 0, 0))
             yOffset = yOffset + ySpacing

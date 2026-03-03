@@ -19,7 +19,7 @@ function ax.player.meta:IsWeaponRaised()
     if ( ax.config:Get("weapon.raise.alwaysraised", false) ) then return true end
 
     local weapon = self:GetActiveWeapon()
-    if ( IsValid(weapon) and ( AX_ALWAYS_RAISED[weapon:GetClass()] or weapon.AlwaysRaised ) ) then return true end
+    if ( type(weapon) == "Weapon" and ( AX_ALWAYS_RAISED[weapon:GetClass()] or weapon.AlwaysRaised ) ) then return true end
 
     return self:GetRelay("ax.weapon.raised", false)
 end

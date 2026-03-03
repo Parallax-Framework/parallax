@@ -215,7 +215,7 @@ end
 
 if ( CLIENT ) then
     ax.net:Hook("weapon.primary", function(weapon)
-        if ( !IsValid(weapon) ) then return end
+        if ( type(weapon) != "Weapon" ) then return end
 
         local client = weapon:GetOwner()
         if ( !ax.util:IsValidPlayer(client) or client == ax.client ) then return end

@@ -270,7 +270,7 @@ hook.Add("CalcView", "ax.viewstack.CalcView", function(client, origin, angles, f
     end
 
     local weapon = client:GetActiveWeapon()
-    if ( IsValid(weapon) and string.find(weapon:GetClass(), "camera") ) then
+    if ( type(weapon) == "Weapon" and string.find(weapon:GetClass(), "camera") ) then
         ax.viewstack.inCalc = false
         return
     end
@@ -299,7 +299,7 @@ end)
 hook.Add("CalcViewModelView", "ax.viewstack.CalcViewModelView", function(weapon, viewmodel, oldPos, oldAng, newPos, newAng)
     if ( !ax.viewstack.enabled ) then return end
 
-    if ( !IsValid(weapon) or !IsValid(viewmodel) ) then return end
+    if ( type(weapon) != "Weapon" or !IsValid(viewmodel) ) then return end
 
     local client = weapon:GetOwner()
     if ( !ax.util:IsValidPlayer(client) or client != LocalPlayer() or client:InVehicle() or !client:Alive() ) then return end

@@ -19,7 +19,7 @@ ax.viewstack:RegisterViewModelModifier("safety", function(weapon, patch)
 
     local targetPos = LOWERED_POS
     local targetAngles = LOWERED_ANGLES
-    if ( IsValid(weapon) and weapon:IsWeapon() ) then
+    if ( type(weapon) == "Weapon" and weapon:IsWeapon() ) then
         if ( weapon.LoweredPos ) then
             targetPos = weapon.LoweredPos
         end
@@ -29,7 +29,7 @@ ax.viewstack:RegisterViewModelModifier("safety", function(weapon, patch)
         end
     end
 
-    if ( IsValid(weapon) and !client:IsWeaponRaised() ) then
+    if ( type(weapon) == "Weapon" and !client:IsWeaponRaised() ) then
         LOWERED_LERP.pos = Lerp(FrameTime() * 4, LOWERED_LERP.pos, targetPos)
         LOWERED_LERP.angles = LerpAngle(FrameTime() * 4, LOWERED_LERP.angles, targetAngles)
     else

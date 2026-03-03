@@ -201,7 +201,7 @@ ax.command:Add("PlyGiveAmmo", {
     OnRun = function(def, client, target, amount, ammoType)
         local weapon = target:GetActiveWeapon()
 
-        if ( !IsValid(weapon) ) then
+        if ( type(weapon) != "Weapon" ) then
             return target:Nick() .. " has no active weapon"
         end
 
