@@ -9,7 +9,7 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
-ax.config:Add("language", ax.type.string, "en", {
+ax.config:Add("language", ax.type.string, "", {
     description = "Server language",
     category = "general",
     subCategory = "basic"
