@@ -28,7 +28,21 @@ function MODULE:UpdateClientAnimations(client)
         clientTable.axAnimations = {}
     end
 
+    clientTable.axHoldType = holdType
+
     ax.net:Start(nil, "animations.update", client, clientTable.axAnimations, holdType)
+end
+
+function MODULE:HandleHoldTypeChanged(client)
+    if ( !ax.util:IsValidPlayer(client) ) then return end
+
+    local clientTable = client:GetTable()
+    if ( !clientTable ) then return end
+
+    local holdType = client:GetHoldType()
+    if ( clientTable.axHoldType == holdType ) then return end
+
+    self:UpdateClientAnimations(client)
 end
 
 function MODULE:PostEntitySetModel(ent, model)
@@ -67,6 +81,10 @@ function MODULE:PlayerWeaponRaised(client, bRaised)
     if ( !ax.util:IsValidPlayer(client) ) then return end
 
     self:UpdateClientAnimations(client)
+end
+
+function MODULE:PlayerPostThink(client)
+    self:HandleHoldTypeChanged(client)
 end
 
 function MODULE:PlayerReady(client)

@@ -418,8 +418,7 @@ function MODULE:TranslateActivity(client, act)
 
         if ( animTable ) then
             if ( istable(animTable) ) then
-                local preferred = animTable[client:IsWeaponRaised() and 2 or 1]
-                newAct = preferred
+                newAct = ax.animations:ResolveWeaponActivity(client, act, animTable)
             else
                 newAct = animTable
             end
@@ -573,7 +572,7 @@ if ( !tobool(ARC9) ) then return end
 
 -- attempt to get the correct holdtype for arc9 weapons with holster stances
 function MODULE:GetPlayerHoldType(client, weapon, holdType)
-    if ( IsValid(weapon) and weapon.ARC9 == true ) then
+    if ( type(weapon) == "Weapon" and weapon.ARC9 == true ) then
         if ( client:IsWeaponRaised() == false or weapon:GetSafe() == true ) then
             weapon:SetHoldType(weapon.HoldTypeHolstered)
             return weapon.HoldTypeHolstered
@@ -586,8 +585,12 @@ end
 
 -- attempt to run a hook when a player toggles their safetymode on arc9 weapons
 function MODULE:PlayerPostThink(client)
+    if ( SERVER ) then
+        self:HandleHoldTypeChanged(client)
+    end
+
     local weapon = client:GetActiveWeapon()
-    if ( !IsValid(weapon) or weapon.ARC9 != true ) then return end
+    if ( type(weapon) != "Weapon" or weapon.ARC9 != true ) then return end
 
     client.axLastSafetyMode = client.axLastSafetyMode or false
 

@@ -890,6 +890,42 @@ function ax.animations:GetModelClass(model)
     return "citizen_male"
 end
 
+--- Resolves an activity entry for the player's current raised state.
+-- Weapons can override raised animations by implementing:
+-- function SWEP:GetWeaponRaisedActivity(client, act, loweredActivity, raisedActivity, activityData, holdType)
+function ax.animations:ResolveWeaponActivity(client, act, activityData)
+    if ( !istable(activityData) ) then
+        return activityData
+    end
+
+    local loweredActivity = activityData[1]
+    local raisedActivity = activityData[2] or loweredActivity
+    if ( !client:IsWeaponRaised() ) then
+        return loweredActivity
+    end
+
+    local weapon = client:GetActiveWeapon()
+    if ( type(weapon) != "Weapon" ) then
+        return raisedActivity
+    end
+
+    local holdType = client:GetHoldType()
+
+    if ( isfunction(weapon.GetWeaponRaisedActivity) ) then
+        local override = weapon:GetWeaponRaisedActivity(client, act, loweredActivity, raisedActivity, activityData, holdType)
+        if ( override != nil ) then
+            return override
+        end
+    end
+
+    local override = hook.Run("GetWeaponRaisedActivity", client, weapon, act, loweredActivity, raisedActivity, activityData, holdType)
+    if ( override != nil ) then
+        return override
+    end
+
+    return raisedActivity
+end
+
 -- Default model classes
 ax.animations:SetModelClass(Model("models/combine_soldier.mdl"), "overwatch")
 ax.animations:SetModelClass(Model("models/combine_soldier_prisonguard.mdl"), "overwatch")

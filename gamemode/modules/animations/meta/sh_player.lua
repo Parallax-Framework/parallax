@@ -24,10 +24,18 @@ function ax.player.meta:GetHoldType()
     if ( !ax.util:IsValidPlayer(self) ) then return "normal" end
 
     local weapon = self:GetActiveWeapon()
-    if ( !IsValid(weapon) ) then return "normal" end
+    if ( type(weapon) != "Weapon" ) then return "normal" end
 
     local holdType = weapon:GetHoldType()
     if ( !holdType ) then return "normal" end
+
+    -- Check for the weapon defining a custom hold type through a method
+    if ( isfunction(weapon.GetCustomHoldType) ) then
+        local customHoldType = weapon:GetCustomHoldType(self)
+        if ( isstring(customHoldType) ) then
+            return customHoldType
+        end
+    end
 
     -- Check for hooks that may modify the hold type
     local hookedHoldType = hook.Run("GetPlayerHoldType", self, weapon, holdType)
