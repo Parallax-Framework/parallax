@@ -285,7 +285,7 @@ function PANEL:Init()
 end
 
 function PANEL:HandleError(message)
-    self:SetText("unknown")
+    self:SetText("unknown", true)
     self.type = "unknown"
     ax.util:PrintError(string.format("ax.store.%s: %s for key '%s'", self.elementType or "base", message, tostring(self.key)))
 end
@@ -303,7 +303,7 @@ function PANEL:SetType(type)
     end
 
     self.type = type
-    self:SetText( "just type set ahadhahdawdhuahduahd" )
+    self:SetText("just type set ahadhahdawdhuahduahd", true)
 
     if ( self.UpdateDisplay ) then
         self:UpdateDisplay()
