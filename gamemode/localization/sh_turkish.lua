@@ -8,6 +8,7 @@ ax.localization:Register("tr", {
     ["close"] = "Kapat",
     ["back"] = "Geri",
     ["next"] = "İleri",
+    ["unknown"] = "Bilinmeyen",
 
     -- Main Menu Translations
     ["mainmenu.category.00_faction"] = "Fraksiyonlar",
@@ -57,6 +58,7 @@ ax.localization:Register("tr", {
     ["subcategory.size"] = "Boyut",
     ["subcategory.general"] = "Genel",
     ["subcategory.ooc"] = "OOC",
+    ["subcategory.tools"] = "Araçlar",
 
     -- Store Translations
     ["store.enabled"] = "Etkin",

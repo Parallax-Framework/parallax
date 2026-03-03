@@ -9,6 +9,7 @@ ax.localization:Register("ru", {
     ["close"] = "Закрыть",
     ["back"] = "Назад",
     ["next"] = "Далее",
+    ["unknown"] = "Неизвестно",
 
     -- Main Menu Translations
     ["mainmenu.category.00_faction"] = "Фракции",
@@ -58,6 +59,7 @@ ax.localization:Register("ru", {
     ["subcategory.size"] = "Размер",
     ["subcategory.general"] = "Основное",
     ["subcategory.ooc"] = "OOC",
+    ["subcategory.tools"] = "Инструменты",
 
     -- Store Translations
     ["store.enabled"] = "Вкл",

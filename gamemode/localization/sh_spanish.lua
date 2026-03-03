@@ -8,6 +8,7 @@ ax.localization:Register("es", {
     ["close"] = "Cerrar",
     ["back"] = "Atrás",
     ["next"] = "Siguiente",
+    ["unknown"] = "Desconocido",
 
     -- Main Menu Translations
     ["mainmenu.category.00_faction"] = "Facciones",
@@ -57,6 +58,7 @@ ax.localization:Register("es", {
     ["subcategory.size"] = "Tamaño",
     ["subcategory.general"] = "General",
     ["subcategory.ooc"] = "OOC",
+    ["subcategory.tools"] = "Herramientas",
 
     -- Store Translations
     ["store.enabled"] = "Habilitado",

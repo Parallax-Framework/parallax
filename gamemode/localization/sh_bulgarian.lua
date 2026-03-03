@@ -8,6 +8,7 @@ ax.localization:Register("bg", {
     ["close"] = "Затвори",
     ["back"] = "Назад",
     ["next"] = "Напред",
+    ["unknown"] = "Неизвестно",
 
     -- Main Menu Translations
     ["mainmenu.category.00_faction"] = "Фракции",
@@ -57,6 +58,7 @@ ax.localization:Register("bg", {
     ["subcategory.size"] = "Размер",
     ["subcategory.general"] = "Общи",
     ["subcategory.ooc"] = "OOC",
+    ["subcategory.tools"] = "Инструменты",
 
     -- Store Translations
     ["store.enabled"] = "Включено",
