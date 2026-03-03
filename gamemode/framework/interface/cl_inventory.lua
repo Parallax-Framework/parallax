@@ -965,14 +965,14 @@ function PANEL:PopulateInfo(stack)
         currencyState:SetContentAlignment(4)
 
         header:SetTall(title:GetTall() + currencyState:GetTall() + ax.util:ScreenScaleH(4))
-    elseif ( stack.shouldStack ) then
-        local stackInfo = header:Add("ax.text")
-        stackInfo:Dock(TOP)
-        stackInfo:SetFont("ax.small.italic")
-        stackInfo:SetText("Stack: " .. stack.stackCount .. " / " .. stack.maxStack, true)
-        stackInfo:SetContentAlignment(4)
+    elseif ( representativeItem.GetWeight and isfunction(representativeItem.GetWeight) ) then
+        local weightInfo = header:Add("ax.text")
+        weightInfo:Dock(TOP)
+        weightInfo:SetFont("ax.small.italic")
+        weightInfo:SetText("Weight: " .. representativeItem:GetWeight() .. "kg", true)
+        weightInfo:SetContentAlignment(4)
 
-        header:SetTall(title:GetTall() + stackInfo:GetTall() + ax.util:ScreenScaleH(4))
+        header:SetTall(title:GetTall() + weightInfo:GetTall() + ax.util:ScreenScaleH(4))
     else
         header:SetTall(title:GetTall())
     end
