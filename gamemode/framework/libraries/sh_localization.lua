@@ -66,6 +66,44 @@ function ax.localization:AddPhrase(lang, phrase, translation)
     ax.util:PrintDebug("Phrase \"" .. phrase .. "\" added/updated for localization \"" .. lang .. "\".")
 end
 
+local langCodeTranslations = {
+    ["es-ES"] = "es"
+}
+
+--- Gets the current language code for the client.
+-- Checks the configuration and console variable to determine the active language.
+-- @realm shared
+-- @return string The current language code (e.g., "en", "es", "fr")
+function ax.localization:GetCurrentLanguage()
+    local langCode
+
+    if ( CLIENT ) then
+        if ( istable(ax) and ax.config ) then
+            local cfg = ax.config:Get("language")
+            if ( isstring(cfg) and cfg != "" ) then
+                langCode = cfg
+            else
+                local cvar = GetConVar("gmod_language")
+                langCode = (cvar and cvar:GetString()) or "en"
+            end
+        else
+            local cvar = GetConVar("gmod_language")
+            langCode = (cvar and cvar:GetString()) or "en"
+        end
+    else
+        if ( istable(ax) and ax.config ) then
+            local cfg = ax.config:Get("language")
+            langCode = (isstring(cfg) and cfg != "") and cfg or "en"
+        else
+            langCode = "en"
+        end
+    end
+
+    langCode = langCodeTranslations[langCode] or langCode
+
+    return langCode
+end
+
 --- Get a localized phrase in the client's language.
 -- Looks up a phrase key and returns the translation for the current language.
 -- Falls back to the phrase key if no translation is found.
@@ -81,24 +119,7 @@ function ax.localization:GetPhrase(phrase, ...)
         return ""
     end
 
-    local langCode
-    if ( CLIENT ) then
-        if ( istable(ax) and ax.config ) then
-            local cfg = ax.config:Get("language")
-            if ( isstring(cfg) and cfg ~= "" ) then
-                langCode = cfg
-            else
-                local cvar = GetConVar("gmod_language")
-                langCode = (cvar and cvar:GetString()) or "en"
-            end
-        else
-            local cvar = GetConVar("gmod_language")
-            langCode = (cvar and cvar:GetString()) or "en"
-        end
-    else
-        langCode = "en"
-    end
-
+    local langCode = self:GetCurrentLanguage()
     local lang = ax.localization.langs[langCode]
     if ( !istable(lang) ) then
         lang = ax.localization.langs.en
