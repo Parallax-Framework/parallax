@@ -17,7 +17,7 @@ ax.zones = ax.zones or {}
 -- @realm server
 function ax.zones:Load()
     local mapName = game.GetMap()
-    local dataKey = "zones_" .. mapName
+    local dataKey = "zones"
 
     -- Reset state
     self.stored = {}
@@ -53,7 +53,7 @@ end
 -- @realm server
 function ax.zones:Save()
     local mapName = game.GetMap()
-    local dataKey = "zones_" .. mapName
+    local dataKey = "zones"
 
     -- Collect only runtime zones for current map
     local items = {}
