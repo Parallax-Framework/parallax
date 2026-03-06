@@ -46,6 +46,8 @@ function ax.player.meta:GetHoldType()
     return HOLDTYPE_TRANSLATOR[holdType] or holdType
 end
 
+local LOOP_CANCEL_BUTTONS = bit.bor(IN_JUMP, IN_FORWARD, IN_BACK, IN_MOVELEFT, IN_MOVERIGHT)
+
 if ( SERVER ) then
     ax.animations.forcedSequenceCallbacks = ax.animations.forcedSequenceCallbacks or {}
 
@@ -57,9 +59,13 @@ if ( SERVER ) then
 
         local callback = ax.animations.forcedSequenceCallbacks[self:SteamID64()]
 
-        self:SetRelay("sequence.forced", nil)
+        timer.Remove("ax.sequence." .. self:SteamID64())
+
+        self:SetRelay("sequence.id", nil)
         self:SetRelay("sequence.identifier", nil)
-        self:SetMoveType(MOVETYPE_WALK)
+        self:SetRelay("sequence.looping", nil)
+        self:SetRelay("sequence.frozen", nil)
+        self.axSequenceCancelPrimed = nil
 
         if ( isfunction(callback) ) then
             callback(self)
@@ -89,20 +95,20 @@ if ( SERVER ) then
             return
         end
 
-        local sequenceTime = isnumber(time) and time or self:SequenceDuration(sequenceID)
+        local sequenceTime = isnumber(time) and math.max(time, 0) or self:SequenceDuration(sequenceID)
+        local isLooping = sequenceTime == 0
+
+        timer.Remove("ax.sequence." .. self:SteamID64())
 
         self:SetCycle(0)
         self:SetPlaybackRate(1)
-        self:SetRelay("sequence.forced", sequenceID)
+        self:SetRelay("sequence.frozen", noFreeze and true or nil)
+        self:SetRelay("sequence.id", sequenceID)
         self:SetRelay("sequence.identifier", sequence)
+        self:SetRelay("sequence.looping", isLooping and true or nil)
+        self.axSequenceCancelPrimed = isLooping and false or nil
 
         ax.animations.forcedSequenceCallbacks[self:SteamID64()] = callback or nil
-
-        if ( !noFreeze ) then
-            self:SetVelocity(Vector(0, 0, 0))
-            self:SetMoveType(MOVETYPE_NONE)
-            ax.util:PrintDebug("Player " .. self:Name() .. " is now frozen due to ForceSequence.")
-        end
 
         if ( sequenceTime > 0 ) then
             timer.Create("ax.sequence." .. self:SteamID64(), sequenceTime, 1, function()
@@ -116,6 +122,38 @@ if ( SERVER ) then
             return sequenceTime
         end
 
+        ax.util:PrintDebug("Player " .. self:Name() .. " will remain in forced sequence \"" .. sequence .. "\" until they cancel it.")
+
         hook.Run("PostPlayerForceSequence", self, sequence, callback, time, noFreeze)
+
+        return sequenceTime
     end
 end
+
+hook.Add("StartCommand", "ax.animations.preventMovementDuringSequence", function(client, userCmd)
+    if ( !ax.util:IsValidPlayer(client) ) then return end
+    if ( !client:GetRelay("sequence.id") ) then return end
+
+    -- Prevent movement and actions during a forced sequence
+    userCmd:ClearMovement()
+    userCmd:RemoveKey(IN_JUMP)
+end)
+
+hook.Add("StartCommand", "ax.animations.cancelLoopSequence", function(client, userCmd)
+    if ( !ax.util:IsValidPlayer(client) ) then return end
+    local buttons = bit.band(userCmd:GetButtons(), LOOP_CANCEL_BUTTONS)
+    if ( !client:GetRelay("sequence.looping") or !client:GetRelay("sequence.id") ) then return end
+
+    local isTryingToCancel = buttons != 0 or userCmd:GetForwardMove() != 0 or userCmd:GetSideMove() != 0
+
+    if ( !client.axSequenceCancelPrimed ) then
+        if ( isTryingToCancel ) then return end
+
+        client.axSequenceCancelPrimed = true
+        return
+    end
+
+    if ( !isTryingToCancel or CLIENT ) then return end
+
+    client:LeaveSequence()
+end)
