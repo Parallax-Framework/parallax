@@ -288,7 +288,7 @@ function ax.currencies:Spawn(amount, uniqueID, position, angle)
 end
 
 -- Register default currency on initialization
-ax.currencies:Register("dollars", {
+ax.currencies:Register("default", {
     name = "Dollars",
     symbol = "$",
     default = 0,
