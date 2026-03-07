@@ -220,6 +220,33 @@ function ax.character:SetVar(char, name, value, opts)
     end
 end
 
+--- Verifies the input based on the character variable's validate function, if it exists.
+-- @realm shared
+-- @param varName string The variable name to validate
+-- @param value any The value to validate
+-- @return boolean, string|nil True if valid, false if not. Error message if invalid.
+-- @usage local isValid, errorMsg = ax.character:ValidateVar("detailedDescription", inputValue)
+function ax.character:ValidateVar(varName, value)
+    local varTable = self.vars[varName]
+    if ( !istable(varTable) ) then
+        return false, "Invalid character variable name for validation"
+    end
+
+    if ( isfunction(varTable.validate) ) then
+        local success, result = pcall(function()
+            return varTable:validate(value)
+        end)
+
+        if ( !success ) then
+            return false, "Validation function error: " .. tostring(result)
+        end
+
+        return result, result == false and "Validation failed for variable '" .. varName .. "'" or nil
+    else
+        return true, nil
+    end
+end
+
 --- Sync a bot character to all clients for variable updates.
 -- Sends bot character data to clients so they can receive variable changes.
 -- @realm server

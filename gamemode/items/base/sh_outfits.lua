@@ -23,11 +23,11 @@ ITEM:AddAction("equip", {
     name = "Equip",
     description = "Equip this outfit.",
     icon = "parallax/icons/check-circle.png",
-    OnRun = function(action, item, client)
+    OnRun = function(action, client, item)
         client:Notify("You have equipped the item: " .. item:GetName(), "info")
         return false -- Returning false prevents the item from being removed after use
     end,
-    CanUse = function(action, item, client)
+    CanUse = function(action, client, item)
         return true -- TODO: Add checks to see if the player can equip the outfit (e.g., not already wearing an outfit of the same type)
     end
 })
@@ -36,11 +36,11 @@ ITEM:AddAction("unequip", {
     name = "Unequip",
     description = "Unequip this outfit.",
     icon = "parallax/icons/minus-circle.png",
-    OnRun = function(action, item, client)
+    OnRun = function(action, client, item)
         client:Notify("You have unequipped the item: " .. item:GetName(), "info")
         return false -- Returning false prevents the item from being removed after use
     end,
-    CanUse = function(action, item, client)
+    CanUse = function(action, client, item)
         return true -- TODO: Add checks to see if the player can unequip the outfit (e.g., is currently wearing this outfit)
     end
 })

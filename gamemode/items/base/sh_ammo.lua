@@ -16,7 +16,7 @@ ITEM:AddAction("use", {
     name = "Use",
     description = "Use this item to gain ammo.",
     icon = "parallax/icons/check-circle.png",
-    OnRun = function(action, item, client)
+    OnRun = function(action, client, item)
         local ammoType = item.ammoType
         local ammoAmount = item.ammoAmount
 
@@ -30,7 +30,7 @@ ITEM:AddAction("use", {
 
         return true -- Returning true removes the item after use
     end,
-    CanUse = function(action, item, client)
+    CanUse = function(action, client, item)
         return true
     end
 })

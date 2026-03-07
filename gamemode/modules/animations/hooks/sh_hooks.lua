@@ -554,6 +554,8 @@ function MODULE:DoAnimationEvent(client, event, data)
     end
 end
 
+--- wOS SUPPORT ---
+
 function MODULE:TranslateEvent(client, event, data, desired)
     if ( !wOS or !wOS.DynaBase ) then return end
 

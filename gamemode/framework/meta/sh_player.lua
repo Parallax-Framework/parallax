@@ -219,11 +219,13 @@ if ( SERVER ) then
 
         self:SetRelay("ragdoll.index", ragdollDummy:EntIndex())
 
+        hook.Run("OnPlayerRagdollCreated", self, ragdollDummy)
+
         return ragdollDummy
     end
 
     function ax.player.meta:ToggleRagdoll()
-        self:SetRagdolled( !self:GetRelay("ragdolled", false) )
+        self:SetRagdolled(!self:GetRelay("ragdolled", false))
     end
 
     function ax.player.meta:SetFactionWhitelisted(iFactionID, bStatus)

@@ -397,8 +397,8 @@ ax.character:RegisterVar("description", {
     sortOrder = 20,
     category = "01_identity",
     hints = {
-        "Describe your character's appearance, personality, background, or other distinctive features.",
-        "Write in detail to help other players understand who your character is."
+        "Character description is a brief summary that helps others visualize your character. It can include details about their physical appearance, clothing style, or any notable traits.",
+        "Write a short description of your physical appearance, clothing style, or any notable traits that help others visualize your character."
     },
     validate = function(this, value, payload, client)
         if ( !isstring(value) or value == "" ) then

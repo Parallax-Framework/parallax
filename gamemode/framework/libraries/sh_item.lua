@@ -208,10 +208,10 @@ function ax.item:CreateDefaultDropAction()
         name = "Drop",
         icon = "parallax/icons/caret-down-circle.png",
         order = 1,
-        CanUse = function(this, client)
+        CanUse = function(action, client, item)
             return true
         end,
-        OnRun = function(action, item, client)
+        OnRun = function(action, client, item)
             local inventoryID = 0
             for _, character in pairs(ax.character.instances) do
                 if ( character:GetInventoryID() == item:GetInventoryID() ) then
@@ -258,7 +258,7 @@ function ax.item:CreateDefaultTakeAction()
         name = "Take",
         icon = "parallax/icons/hand-up.png",
         order = 0,
-        CanUse = function(action, item, client, context)
+        CanUse = function(action, client, item, context)
             if ( !ax.util:IsValidPlayer(client) ) then
                 return false, "Invalid player."
             end
@@ -297,7 +297,7 @@ function ax.item:CreateDefaultTakeAction()
 
             return true
         end,
-        OnRun = function(action, item, client, context)
+        OnRun = function(action, client, item, context)
             local entity = context.entity or nil
             local character = client:GetCharacter()
             local inventory = character:GetInventory()

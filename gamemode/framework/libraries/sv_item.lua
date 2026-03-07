@@ -35,7 +35,7 @@ function ax.item:RunAction(client, item, action, context)
         return false, reason
     end
 
-    local bRemoveAfter = actionTable:OnRun(item, client, context)
+    local bRemoveAfter = actionTable:OnRun(client, item, context)
     if ( bRemoveAfter == true ) then
         local inventory = ax.inventory.instances[item:GetInventoryID()]
         if ( istable(inventory) ) then

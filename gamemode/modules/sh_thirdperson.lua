@@ -303,6 +303,7 @@ ax.viewstack:RegisterModifier("thirdperson", function(client, patch)
     -- start from the player's eye position
     local ragdoll = Entity(client:GetRelay("ragdoll.index", -1))
     local startPos = client:EyePos()
+    local startAng = client:EyeAngles()
     if ( ax.option:Get("thirdperson.follow.head") ) then
         local headPos, headAng = RetrieveHeadParameters(ragdoll or client)
         if ( headPos ) then
@@ -310,7 +311,7 @@ ax.viewstack:RegisterModifier("thirdperson", function(client, patch)
         end
 
         if ( headAng ) then
-            patch.angles = headAng
+            startAng = headAng
         end
     else
         if ( ragdoll ) then
@@ -318,7 +319,7 @@ ax.viewstack:RegisterModifier("thirdperson", function(client, patch)
         end
     end
 
-    local ang = patch.angles
+    local ang = startAng
 
     -- desired camera offset relative to view angles
     local desiredPos = startPos + ang:Forward() * ax.option:Get("thirdperson.z") + ang:Right() * ax.option:Get("thirdperson.x") + ang:Up() * ax.option:Get("thirdperson.y")

@@ -171,7 +171,7 @@ function item:CanInteract(client, action, silent, context)
     local actions = self:GetActions()
     local actionTable = actions[action]
     if ( istable(actionTable) and isfunction(actionTable.CanUse) ) then
-        local canRun, reason = actionTable:CanUse(self, client, context)
+        local canRun, reason = actionTable:CanUse(client, self, context)
         if ( canRun == false ) then
             if ( isstring(reason) and #reason > 0 and !silent ) then
                 client:Notify(reason, "error")

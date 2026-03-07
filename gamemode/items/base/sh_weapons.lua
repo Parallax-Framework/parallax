@@ -18,7 +18,7 @@ ITEM:AddAction("equip", {
     name = "Equip",
     description = "Equip this item.",
     icon = "parallax/icons/check-circle.png",
-    OnRun = function(action, item, client)
+    OnRun = function(action, client, item)
         client:Give(item.weaponClass)
         client:SelectWeapon(item.weaponClass)
         client:EmitSound(item.equipSound or "items/ammo_pickup.wav")
@@ -27,7 +27,7 @@ ITEM:AddAction("equip", {
 
         return false
     end,
-    CanUse = function(action, item, client)
+    CanUse = function(action, client, item)
         if ( item:GetData("equipped") ) then
             return false, "Item is already equipped."
         end
@@ -47,7 +47,7 @@ ITEM:AddAction("unequip", {
     name = "Unequip",
     description = "Unequip this item.",
     icon = "parallax/icons/minus-circle.png",
-    OnRun = function(action, item, client)
+    OnRun = function(action, client, item)
         client:StripWeapon(item.weaponClass)
         client:EmitSound(item.unequipSound or "items/ammo_pickup.wav")
 
@@ -55,7 +55,7 @@ ITEM:AddAction("unequip", {
 
         return false
     end,
-    CanUse = function(action, item, client)
+    CanUse = function(action, client, item)
         if ( !item:GetData("equipped") ) then
             return false, "Item is not equipped."
         end
