@@ -44,7 +44,7 @@ end
 --- Stop the current action bar
 -- @realm client
 -- @param cancelled bool Whether the action was cancelled (triggers onCancel callback)
-function ax.actionBar:Stop(cancelled)
+function ax.actionBar:Stop(cancelled, suppressNetwork)
     if ( !self:IsActive() ) then return end
 
     if ( cancelled == true and isfunction(self.onCancel) ) then
@@ -53,7 +53,9 @@ function ax.actionBar:Stop(cancelled)
         self.onComplete()
     end
 
-    ax.net:Start("player.actionbar.stop", cancelled == true)
+    if ( suppressNetwork != true ) then
+        ax.net:Start("player.actionbar.stop", cancelled == true)
+    end
 
     self.active = false
 end

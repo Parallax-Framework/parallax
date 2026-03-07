@@ -11,7 +11,7 @@
 
 DeriveGamemode("sandbox")
 
-ax = ax or {util = {}, config = {}, options = {}, character = {}, inventory = {}, item = {}, gui = {storeLastConfig = nil, storeLastOption = nil}}
+ax = ax or {util = {}, config = {}, options = {}, character = {}, inventory = {}, item = {}, gui = {storeLastConfig = nil, storeLastOption = nil}, version = {}}
 ax._reload = ax._reload or { pingAt = 0, armed = false, frame = -1 }
 
 include("framework/util/boot.lua")
