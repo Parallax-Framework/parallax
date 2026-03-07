@@ -21,14 +21,14 @@ function PANEL:Init()
 
     self.title = self:Add("ax.text")
     self.title:SetFont("ax.huge.bold")
-    self.title:SetText(SCHEMA.name or "Parallax Framework", SCHEMA.menuNoTranslate)
+    self.title:SetText(!SCHEMA.menuNoTranslate and "mainmenu.title" or ( SCHEMA.name or "Parallax Framework" ), SCHEMA.menuNoTranslate)
     self.title:SetTextColor(ax.theme:GetGlass().text)
     self.title.Paint = function(s, w, h)
         ax.render.DrawShadows(h, 0, h / 4, w, h / 2, ax.theme:GetGlass().overlay, nil, nil, ax.render.BLUR)
     end
 
     self.subtitle = self:Add("ax.text")
-    self.subtitle:SetText(SCHEMA.description or "A new dimension of roleplay, built for you.", SCHEMA.menuNoTranslate)
+    self.subtitle:SetText(!SCHEMA.menuNoTranslate and "mainmenu.subtitle" or ( SCHEMA.description or "A new dimension of roleplay, built for you." ), SCHEMA.menuNoTranslate)
     self.subtitle:SetTextColor(ax.theme:GetGlass().text)
     self.subtitle.Paint = function(s, w, h)
         ax.render.DrawShadows(h, 0, h / 4, w, h / 2, ax.theme:GetGlass().overlay, nil, nil, ax.render.BLUR)
