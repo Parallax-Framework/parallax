@@ -613,7 +613,7 @@ ax.net:Hook("player.actionbar.start", function(label, duration)
 end)
 
 ax.net:Hook("player.actionbar.stop", function(cancelled)
-    ax.actionBar:Stop(cancelled)
+    ax.actionBar:Stop(cancelled, true)
 end)
 
 ax.net:Hook("player.dermaStringRequest", function(title, subtitle, default, confirmText, cancelText)
@@ -629,4 +629,17 @@ ax.net:Hook("player.dermaMessage", function(title, text, buttonName)
     window.OnRemove = function()
         ax.net:Start("player.dermaMessage")
     end
+end)
+
+ax.net:Hook("version.init", function(data)
+    if ( !istable(data) ) then
+        ax.util:PrintWarning("Received invalid parallax version payload from server")
+        ax.version = {}
+        ax.version.data = {}
+        return
+    end
+
+    ax.version = {}
+    ax.version.data = data
+    ax.util:PrintDebug("Received parallax version: " .. (ax.version.data.version or "<unknown>"))
 end)
