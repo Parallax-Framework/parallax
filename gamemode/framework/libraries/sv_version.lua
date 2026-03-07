@@ -9,7 +9,9 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
-local function ReadVersionFile()
+ax.version = ax.version or {}
+
+function ax.version:ReadVersionFile()
     -- Attempt to read from the gamemode root (installed with gamemode files)
     local content = file.Read("gamemodes/parallax/version.json", "GAME")
     if ( !content ) then
@@ -31,7 +33,7 @@ local function ReadVersionFile()
     return nil
 end
 
-local function BroadcastVersion(data, recipients)
+function ax.version:BroadcastVersion(data, recipients)
     if ( !data ) then return end
 
     if ( recipients ) then
@@ -41,34 +43,29 @@ local function BroadcastVersion(data, recipients)
     end
 end
 
-local function SetupVersion()
-    local data = ReadVersionFile()
+function ax.version:SetupVersion()
+    local data = self:ReadVersionFile()
 
     -- Set server-side global for other server code
-    ax.version = data or {}
+    ax.version.data = data or {}
 
     -- Broadcast to all connected clients
-    BroadcastVersion(ax.version)
+    self:BroadcastVersion(ax.version.data)
 end
-
--- Clean up existing hooks to prevent duplicates on reload
-hook.Remove("Initialize", "ax.version.setup")
-hook.Remove("OnReloaded", "ax.version.reload")
-hook.Remove("PlayerInitialSpawn", "ax.version.send_on_join")
 
 -- Initialize on server start
 hook.Add("Initialize", "ax.version.setup", function()
-    SetupVersion()
+    ax.version:SetupVersion()
 end)
 
 -- Re-setup on gamemode reload so clients get updated info
 hook.Add("OnReloaded", "ax.version.reload", function()
-    SetupVersion()
+    ax.version:SetupVersion()
 end)
 
 -- When a player joins, send them the current version
 hook.Add("PlayerInitialSpawn", "ax.version.send_on_join", function(client)
     if ( !ax.util:IsValidPlayer(client) ) then return end
 
-    BroadcastVersion(ax.version, client)
+    ax.version:BroadcastVersion(ax.version.data, client)
 end)

@@ -9,13 +9,15 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
+ax.version = ax.version or {}
+
 ax.net:Hook("version.init", function(data)
     if ( !istable(data) ) then
         ax.util:PrintWarning("Received invalid parallax version payload from server")
-        ax.version = {}
+        ax.version.data = {}
         return
     end
 
-    ax.version = data
-    ax.util:PrintDebug("Received parallax version: " .. (ax.version.version or "<unknown>"))
+    ax.version.data = data
+    ax.util:PrintDebug("Received parallax version: " .. (ax.version.data.version or "<unknown>"))
 end)

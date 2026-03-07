@@ -160,10 +160,10 @@ function GM:PostRenderCurvy()
     ax.notification:Render()
 
     local shouldDraw = hook.Run("ShouldDrawVersionWatermark")
-    if ( shouldDraw != false and ax.version and ax.version.version ) then
-        local versionText = string.format("Parallax v%s", ax.version.version)
-        if ( ax.version.commitHash ) then
-            versionText = versionText .. " (" .. ax.version.commitHash .. ")"
+    if ( shouldDraw != false and ax.version.data and ax.version.data.version ) then
+        local versionText = string.format("Parallax v%s", ax.version.data.version)
+        if ( ax.version.data.commitHash ) then
+            versionText = versionText .. " (" .. ax.version.data.commitHash .. ")"
         end
 
         draw.SimpleText(versionText, "ax.small.bold", ax.util:ScreenScale(4), height - ax.util:ScreenScaleH(4), Color(255, 255, 255, 50), TEXT_ALIGN_LEFT, TEXT_ALIGN_BOTTOM)
