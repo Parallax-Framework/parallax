@@ -106,18 +106,21 @@ function HELP:AddPaintCard(parent, height, accentColor, paintFunc)
 
     card.Paint = function(this, width, panelHeight)
         local glass = ax.theme:GetGlass()
+        local metrics = ax.theme:GetMetrics()
 
         ax.theme:DrawGlassPanel(0, 0, width, panelHeight, {
             radius = HELP_CARD_RADIUS,
             blur = 0.75
         })
 
+        local scaledGradTop = ax.theme:ScaleAlpha(glass.gradientTop, metrics.gradientOpacity)
+        local scaledGradBottom = ax.theme:ScaleAlpha(glass.gradientBottom, metrics.gradientOpacity)
         ax.theme:DrawGlassGradients(0, 0, width, panelHeight, {
-            top = ColorAlpha(glass.gradientTop, math.min(glass.gradientTop.a, 26)),
-            bottom = ColorAlpha(glass.gradientBottom, math.min(glass.gradientBottom.a, 34))
+            top = ColorAlpha(scaledGradTop, math.min(scaledGradTop.a, 26)),
+            bottom = ColorAlpha(scaledGradBottom, math.min(scaledGradBottom.a, 34))
         })
 
-        surface.SetDrawColor(accentColor or glass.progress)
+        surface.SetDrawColor(accentColor or ax.theme:ScaleAlpha(glass.progress, metrics.opacity))
         surface.DrawRect(0, 0, HELP_CARD_ACCENT, panelHeight)
 
         if ( isfunction(paintFunc) ) then
@@ -231,7 +234,9 @@ function HELP:AddStatsCard(parent, title, rows, accentColor)
             y = y + rowHeight + ax.util:ScreenScaleH(2)
 
             if ( i < #rows ) then
-                surface.SetDrawColor(ColorAlpha(glass.panelBorder, math.min(glass.panelBorder.a, 65)))
+                local metrics = ax.theme:GetMetrics()
+                local scaledBorder = ax.theme:ScaleAlpha(glass.panelBorder, metrics.borderOpacity)
+                surface.SetDrawColor(ColorAlpha(scaledBorder, math.min(scaledBorder.a, 65)))
                 surface.DrawRect(x, y, right - x, 1)
                 y = y + ax.util:ScreenScaleH(3)
             end
@@ -242,7 +247,7 @@ end
 function HELP:AddEmptyState(parent, width, title, body, accentColor)
     self:AddCompactCard(parent, width, {
         title = title,
-        accentColor = accentColor or ax.theme:GetGlass().highlight,
+        accentColor = accentColor or ax.theme:ScaleAlpha(ax.theme:GetGlass().highlight, ax.theme:GetMetrics().opacity),
         lines = {
             {
                 text = body,

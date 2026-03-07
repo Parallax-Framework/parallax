@@ -281,9 +281,18 @@ function PANEL:Paint(width, height)
     if ( alpha <= 0 ) then return end
 
     local glass = ax.theme:GetGlass()
-    local accent = self.payload.accentColor or glass.highlight or glass.progress
-    local fill = ScaleAlpha(glass.menu or glass.panel, alpha)
-    local border = ScaleAlpha(glass.menuBorder or glass.panelBorder, alpha)
+    local metrics = ax.theme:GetMetrics()
+    
+    -- Apply user's opacity preferences first
+    local scaledHighlight = ax.theme:ScaleAlpha(glass.highlight, metrics.opacity)
+    local scaledProgress = ax.theme:ScaleAlpha(glass.progress, metrics.opacity)
+    local scaledMenu = ax.theme:ScaleAlpha(glass.menu or glass.panel, metrics.opacity)
+    local scaledMenuBorder = ax.theme:ScaleAlpha(glass.menuBorder or glass.panelBorder, metrics.borderOpacity)
+    
+    -- Then apply animation alpha on top of user settings
+    local accent = self.payload.accentColor or scaledHighlight or scaledProgress
+    local fill = ScaleAlpha(scaledMenu, alpha)
+    local border = ScaleAlpha(scaledMenuBorder, alpha)
     local textColor = ScaleAlpha(glass.text, alpha)
     local mutedColor = ScaleAlpha(glass.textMuted, alpha)
     local accentSoft = ScaleAlpha(accent, alpha * 0.35)

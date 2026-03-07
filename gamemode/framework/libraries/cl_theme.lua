@@ -275,40 +275,21 @@ function ax.theme:GetMetrics()
     }
 end
 
---- Get the active glass color palette with metric-based alpha scaling applied.
+--- Get the active glass color palette.
 -- @realm client
--- @return table glass Resolved glass palette for the current theme
+-- @return table glass Raw glass palette for the current theme
 function ax.theme:GetGlass()
     local theme = self:Get()
-    local glass = theme.glass or {}
-    local metrics = self:GetMetrics()
+    return theme.glass or {}
+end
 
-    return {
-        panel = ScaleAlpha(glass.panel, metrics.opacity),
-        panelBorder = ScaleAlpha(glass.panelBorder, metrics.borderOpacity),
-        header = ScaleAlpha(glass.header, metrics.opacity),
-        button = ScaleAlpha(glass.button, metrics.opacity),
-        buttonHover = ScaleAlpha(glass.buttonHover, metrics.opacity),
-        buttonActive = ScaleAlpha(glass.buttonActive, metrics.opacity),
-        buttonBorder = ScaleAlpha(glass.buttonBorder or glass.panelBorder, metrics.borderOpacity),
-        input = ScaleAlpha(glass.input, metrics.opacity),
-        inputBorder = ScaleAlpha(glass.inputBorder, metrics.borderOpacity),
-        menu = ScaleAlpha(glass.menu, metrics.opacity),
-        menuBorder = ScaleAlpha(glass.menuBorder, metrics.borderOpacity),
-        overlay = ScaleAlpha(glass.overlay, metrics.opacity),
-        overlayStrong = ScaleAlpha(glass.overlayStrong or glass.overlay, metrics.opacity),
-        progress = ScaleAlpha(glass.progress, metrics.opacity),
-        highlight = ScaleAlpha(glass.highlight, metrics.opacity),
-        gradientTop = ScaleAlpha(glass.gradientTop, metrics.gradientOpacity),
-        gradientBottom = ScaleAlpha(glass.gradientBottom, metrics.gradientOpacity),
-        gradientLeft = ScaleAlpha(glass.gradientLeft, metrics.gradientOpacity),
-        gradientRight = ScaleAlpha(glass.gradientRight, metrics.gradientOpacity),
-        tabBackdrop = ScaleAlpha(glass.tabBackdrop or glass.overlay, metrics.opacity),
-        text = glass.text or color_white,
-        textHover = glass.textHover or color_white,
-        textMuted = glass.textMuted or color_white,
-        comboboxHoveredArrow = glass.comboboxHoveredArrow or color_white
-    }
+--- Scale a color's alpha channel.
+-- @realm client
+-- @param color Color Source color to scale
+-- @param scale number Alpha multiplier
+-- @return Color|nil scaledColor Scaled color copy, or `nil` when no color is given
+function ax.theme:ScaleAlpha(color, scale)
+    return ScaleAlpha(color, scale)
 end
 
 --- Draw a rounded glass panel with optional blur and outline.
@@ -330,8 +311,8 @@ function ax.theme:DrawGlassPanel(x, y, w, h, options)
 
     local blur = (options.blur == nil and 1 or options.blur) * metrics.blur
     local flags = options.flags or ax.render.SHAPE_IOS
-    local fill = options.fill or glass.panel
-    local border = options.border or glass.panelBorder
+    local fill = options.fill or ScaleAlpha(glass.panel, metrics.opacity)
+    local border = options.border or ScaleAlpha(glass.panelBorder, metrics.borderOpacity)
 
     if ( blur > 0 ) then
         ax.render().Rect(x, y, w, h)
@@ -366,8 +347,8 @@ function ax.theme:DrawGlassButton(x, y, w, h, options)
     local radius = options.radius or math.max(4, math.min(12, h * 0.35))
     local blur = (options.blur == nil and 0.85 or options.blur) * metrics.blur
     local flags = options.flags or ax.render.SHAPE_IOS
-    local fill = options.fill or glass.button
-    local border = options.border or glass.buttonBorder
+    local fill = options.fill or ScaleAlpha(glass.button, metrics.opacity)
+    local border = options.border or ScaleAlpha(glass.buttonBorder, metrics.borderOpacity)
 
     if ( blur > 0 ) then
         ax.render().Rect(x, y, w, h)
@@ -401,7 +382,7 @@ function ax.theme:DrawGlassBackdrop(x, y, w, h, options)
     local radius = options.radius or 0
     local blur = (options.blur == nil and 1.1 or options.blur) * metrics.blur
     local flags = options.flags or ax.render.SHAPE_IOS
-    local fill = options.fill or glass.overlay
+    local fill = options.fill or ScaleAlpha(glass.overlay, metrics.opacity)
     local border = options.border
 
     if ( blur > 0 ) then
@@ -432,11 +413,12 @@ end
 function ax.theme:DrawGlassGradients(x, y, w, h, options)
     options = options or {}
     local glass = self:GetGlass()
+    local metrics = self:GetMetrics()
 
-    local left = options.left or glass.gradientLeft
-    local right = options.right or glass.gradientRight
-    local top = options.top or glass.gradientTop
-    local bottom = options.bottom or glass.gradientBottom
+    local left = options.left or ScaleAlpha(glass.gradientLeft, metrics.gradientOpacity)
+    local right = options.right or ScaleAlpha(glass.gradientRight, metrics.gradientOpacity)
+    local top = options.top or ScaleAlpha(glass.gradientTop, metrics.gradientOpacity)
+    local bottom = options.bottom or ScaleAlpha(glass.gradientBottom, metrics.gradientOpacity)
 
     if ( left ) then
         ax.util:DrawGradient(0, "left", x, y, w, h, left)

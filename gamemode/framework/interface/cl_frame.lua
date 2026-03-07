@@ -192,18 +192,19 @@ function PANEL:Paint(width, height)
     end
 
     local glass = ax.theme:GetGlass()
+    local metrics = ax.theme:GetMetrics()
     ax.theme:DrawGlassPanel(0, 0, width, height, {
         radius = 12,
         blur = 1.1,
         flags = GLASS_FLAGS,
-        fill = glass.panel
+        fill = ax.theme:ScaleAlpha(glass.panel, metrics.opacity)
     })
 
     ax.theme:DrawGlassPanel(0, 0, width, 58, {
         radius = 12,
         blur = 1.4,
         flags = GLASS_HEADER_FLAGS,
-        fill = glass.header
+        fill = ax.theme:ScaleAlpha(glass.header, metrics.opacity)
     })
 
     return true

@@ -175,7 +175,8 @@ function PANEL:Init()
 
         local fraction = this:GetFraction()
         local glass = ax.theme:GetGlass()
-        ax.render.Draw(GLASS_PANEL_RADIUS, 0, 0, width * fraction, height, glass.progress, ax.render.SHAPE_IOS)
+        local metrics = ax.theme:GetMetrics()
+        ax.render.Draw(GLASS_PANEL_RADIUS, 0, 0, width * fraction, height, ax.theme:ScaleAlpha(glass.progress, metrics.opacity), ax.render.SHAPE_IOS)
     end
 
     local totalWeight = maxWeight * self.weightProgress:GetFraction()

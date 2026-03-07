@@ -40,12 +40,13 @@ function PANEL:Init()
     self.fontDefault = "ax.regular"
     self.fontHovered = "ax.regular.bold"
     local glass = ax.theme:GetGlass()
+    local metrics = ax.theme:GetMetrics()
     self.textColor = glass.text
     self.textColorMotion = glass.text
     self.textColorHovered = glass.textHover
-    self.backgroundColorUnHovered = glass.button
-    self.backgroundColorHovered = glass.buttonHover
-    self.backgroundColorActive = glass.buttonActive
+    self.backgroundColorUnHovered = ax.theme:ScaleAlpha(glass.button, metrics.opacity)
+    self.backgroundColorHovered = ax.theme:ScaleAlpha(glass.buttonHover, metrics.opacity)
+    self.backgroundColorActive = ax.theme:ScaleAlpha(glass.buttonActive, metrics.opacity)
     self.inertia = 0
     self.easing = "OutQuint"
     self.updateSizeOnHover = false
@@ -221,11 +222,12 @@ end
 
 function PANEL:Paint(width, height)
     local glass = ax.theme:GetGlass()
+    local metrics = ax.theme:GetMetrics()
     self.textColor = glass.text
     self.textColorHovered = glass.textHover
-    self.backgroundColorUnHovered = glass.button
-    self.backgroundColorHovered = glass.buttonHover
-    self.backgroundColorActive = glass.buttonActive
+    self.backgroundColorUnHovered = ax.theme:ScaleAlpha(glass.button, metrics.opacity)
+    self.backgroundColorHovered = ax.theme:ScaleAlpha(glass.buttonHover, metrics.opacity)
+    self.backgroundColorActive = ax.theme:ScaleAlpha(glass.buttonActive, metrics.opacity)
 
     local color = self.backgroundColorUnHovered
     if ( self.inertia > 0.8 ) then
@@ -283,11 +285,12 @@ end
 
 function PANEL:Paint(width, height)
     local glass = ax.theme:GetGlass()
+    local metrics = ax.theme:GetMetrics()
     self.textColor = self.textColor or glass.text
     self.textColorHovered = self.textColorHovered or glass.textHover 
-    self.backgroundColorUnHovered = glass.button
-    self.backgroundColorHovered = glass.buttonHover
-    self.backgroundColorActive = glass.buttonActive
+    self.backgroundColorUnHovered = ax.theme:ScaleAlpha(glass.button, metrics.opacity)
+    self.backgroundColorHovered = ax.theme:ScaleAlpha(glass.buttonHover, metrics.opacity)
+    self.backgroundColorActive = ax.theme:ScaleAlpha(glass.buttonActive, metrics.opacity)
 
     local color = self.backgroundColorUnHovered
     if ( self.inertia > 0.8 ) then

@@ -92,10 +92,11 @@ function ax.actionBar:Render()
     end
 
     local glass = ax.theme and ax.theme:GetGlass()
-    local ringColor = glass and (glass.highlight or glass.progress) or self.bgColor
-    local progressColor = glass and (glass.panel or glass.button) or self.progressColor
-    local outlineColor = glass and (glass.panelBorder or glass.buttonBorder) or Color(255, 255, 255, 90)
-    local innerFillColor = glass and (glass.overlayStrong or glass.overlay) or Color(0, 0, 0, 160)
+    local metrics = ax.theme and ax.theme:GetMetrics()
+    local ringColor = glass and ax.theme:ScaleAlpha(glass.highlight or glass.progress, metrics.opacity) or self.bgColor
+    local progressColor = glass and ax.theme:ScaleAlpha(glass.panel or glass.button, metrics.opacity) or self.progressColor
+    local outlineColor = glass and ax.theme:ScaleAlpha(glass.panelBorder or glass.buttonBorder, metrics.borderOpacity) or Color(255, 255, 255, 90)
+    local innerFillColor = glass and ax.theme:ScaleAlpha(glass.overlayStrong or glass.overlay, metrics.opacity) or Color(0, 0, 0, 160)
     local ringGlowColor = ColorAlpha(ringColor, math.Clamp((ringColor.a or 255) + 80, 0, 255))
     local textColor = glass and (glass.text or self.textColor) or self.textColor
     local labelColor = glass and (glass.textMuted or self.labelColor) or self.labelColor

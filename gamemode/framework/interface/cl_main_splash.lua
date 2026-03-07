@@ -24,14 +24,18 @@ function PANEL:Init()
     self.title:SetText(SCHEMA.menuTranslate and "mainmenu.title" or ( SCHEMA.name or "Parallax Framework" ), !SCHEMA.menuTranslate)
     self.title:SetTextColor(ax.theme:GetGlass().text)
     self.title.Paint = function(s, w, h)
-        ax.render.DrawShadows(h, 0, h / 4, w, h / 2, ax.theme:GetGlass().overlay, nil, nil, ax.render.BLUR)
+        local glass = ax.theme:GetGlass()
+        local metrics = ax.theme:GetMetrics()
+        ax.render.DrawShadows(h, 0, h / 4, w, h / 2, ax.theme:ScaleAlpha(glass.overlay, metrics.opacity), nil, nil, ax.render.BLUR)
     end
 
     self.subtitle = self:Add("ax.text")
     self.subtitle:SetText(SCHEMA.menuTranslate and "mainmenu.subtitle" or ( SCHEMA.description or "A new dimension of roleplay, built for you." ), !SCHEMA.menuTranslate)
     self.subtitle:SetTextColor(ax.theme:GetGlass().text)
     self.subtitle.Paint = function(s, w, h)
-        ax.render.DrawShadows(h, 0, h / 4, w, h / 2, ax.theme:GetGlass().overlay, nil, nil, ax.render.BLUR)
+        local glass = ax.theme:GetGlass()
+        local metrics = ax.theme:GetMetrics()
+        ax.render.DrawShadows(h, 0, h / 4, w, h / 2, ax.theme:ScaleAlpha(glass.overlay, metrics.opacity), nil, nil, ax.render.BLUR)
     end
 
     self.buttons = self:Add("EditablePanel")

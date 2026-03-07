@@ -37,11 +37,13 @@ function Derma_DrawBackgroundBlur(panel, starttime)
     end
 
     local glass = ax.theme:GetGlass()
+    local metrics = ax.theme:GetMetrics()
+    local scaledOverlay = ax.theme:ScaleAlpha(glass.overlay, metrics.opacity)
     ax.theme:DrawGlassBackdrop(x * -1, y * -1, ScrW(), ScrH(), {
         radius = 0,
         blur = 1.1,
         flags = ax.render.SHAPE_IOS,
-        fill = ColorAlpha(glass.overlay, math.Clamp((glass.overlay.a or 0) * fraction, 0, 255))
+        fill = ColorAlpha(scaledOverlay, math.Clamp((scaledOverlay.a or 0) * fraction, 0, 255))
     })
 
     DisableClipping(wasEnabled)
@@ -62,12 +64,13 @@ function Derma_Message(text, title, buttonText)
     frame.Paint = function(this, w, h)
         Derma_DrawBackgroundBlur(this, this.starttime)
         local glass = ax.theme:GetGlass()
+        local metrics = ax.theme:GetMetrics()
         ax.theme:DrawGlassPanel(0, 0, w, h, {
             radius = 12,
             blur = 1.1,
             flags = ax.render.SHAPE_IOS,
-            fill = glass.panel,
-            border = glass.panelBorder
+            fill = ax.theme:ScaleAlpha(glass.panel, metrics.opacity),
+            border = ax.theme:ScaleAlpha(glass.panelBorder, metrics.borderOpacity)
         })
     end
     frame.Close = function(this)
@@ -214,12 +217,13 @@ function Derma_StringRequest(title, text, defaultText, onEnter, onCancel, okText
     frame.Paint = function(this, width, height)
         Derma_DrawBackgroundBlur(this, this.starttime)
         local glass = ax.theme:GetGlass()
+        local metrics = ax.theme:GetMetrics()
         ax.theme:DrawGlassPanel(0, 0, width, height, {
             radius = 12,
             blur = 1.1,
             flags = ax.render.SHAPE_IOS,
-            fill = glass.panel,
-            border = glass.panelBorder
+            fill = ax.theme:ScaleAlpha(glass.panel, metrics.opacity),
+            border = ax.theme:ScaleAlpha(glass.panelBorder, metrics.borderOpacity)
         })
     end
     frame.Close = function(this)

@@ -54,8 +54,8 @@ local function AddCommandCard(parent, width, def)
 
     ax.help:AddCompactCard(parent, width, {
         title = "/" .. (def.name or "command"),
-        accentColor = ax.theme:GetGlass().progress,
-        badgeColor = ax.theme:GetGlass().progress,
+        accentColor = ax.theme:ScaleAlpha(ax.theme:GetGlass().progress, ax.theme:GetMetrics().opacity),
+        badgeColor = ax.theme:ScaleAlpha(ax.theme:GetGlass().progress, ax.theme:GetMetrics().opacity),
         lines = lines
     })
 end
@@ -75,9 +75,12 @@ local function PopulateCommands(this, panel)
         end
 
         if ( query == "" ) then
+            local glass = ax.theme:GetGlass()
+            local metrics = ax.theme:GetMetrics()
+            local progressColor = ax.theme:ScaleAlpha(glass.progress, metrics.opacity)
             ax.help:AddCompactCard(scroller, width, {
                 title = "Player Commands",
-                accentColor = ax.theme:GetGlass().progress,
+                accentColor = progressColor,
                 lines = {
                     {text = "These are the public commands available to ordinary players on this server.", font = "ax.small", strong = true},
                     {text = "Search by command name, alias, or description.", font = "ax.small"}
@@ -85,12 +88,13 @@ local function PopulateCommands(this, panel)
             })
 
             ax.help:AddStatsCard(scroller, "Available", {
-                {label = "Public commands", value = #matches, color = ax.theme:GetGlass().progress}
-            }, ax.theme:GetGlass().progress)
+                {label = "Public commands", value = #matches, color = progressColor}
+            }, progressColor)
         end
 
         if ( matches[1] == nil ) then
-            ax.help:AddEmptyState(scroller, width, "No Matching Commands", "Try a different word or clear the search field.", ax.theme:GetGlass().progress)
+            local progressColor = ax.theme:ScaleAlpha(ax.theme:GetGlass().progress, ax.theme:GetMetrics().opacity)
+            ax.help:AddEmptyState(scroller, width, "No Matching Commands", "Try a different word or clear the search field.", progressColor)
             return
         end
 

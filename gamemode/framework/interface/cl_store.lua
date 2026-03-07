@@ -169,12 +169,13 @@ end
 
 local function GetStoreAccentColor(storeType)
     local glass = ax.theme:GetGlass()
+    local metrics = ax.theme:GetMetrics()
 
     if ( storeType == "config" ) then
-        return glass.progress or glass.highlight
+        return ax.theme:ScaleAlpha(glass.progress or glass.highlight, metrics.opacity)
     end
 
-    return glass.highlight or glass.progress
+    return ax.theme:ScaleAlpha(glass.highlight or glass.progress, metrics.opacity)
 end
 
 function PANEL:Init()

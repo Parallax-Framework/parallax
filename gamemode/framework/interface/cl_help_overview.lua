@@ -29,12 +29,18 @@ local function PopulateOverview(this, panel)
     local serverModules = ax.module:GetByScope("schema")
     local width = ax.help:GetContentWidth(panel)
 
+    local glass = ax.theme:GetGlass()
+    local metrics = ax.theme:GetMetrics()
+    local progressColor = ax.theme:ScaleAlpha(glass.progress, metrics.opacity)
+    local highlightColor = ax.theme:ScaleAlpha(glass.highlight, metrics.opacity)
+    local borderColor = ax.theme:ScaleAlpha(glass.panelBorder, metrics.borderOpacity)
+
     ax.help:AddCompactCard(scroller, width, {
         title = "Help",
         titleFont = "ax.large.bold.italic",
         badge = "Player Guide",
-        accentColor = ax.theme:GetGlass().progress,
-        badgeColor = ax.theme:GetGlass().progress,
+        accentColor = progressColor,
+        badgeColor = progressColor,
         lines = {
             {
                 text = "This help menu is for regular players. Use Commands for public chat commands, Factions for character groups, and Modules for the systems running on this server.",
@@ -49,16 +55,16 @@ local function PopulateOverview(this, panel)
     })
 
     ax.help:AddStatsCard(scroller, "At A Glance", {
-        {label = "Public commands", value = CountEntries(publicCommands), color = ax.theme:GetGlass().progress},
+        {label = "Public commands", value = CountEntries(publicCommands), color = progressColor},
         {label = "Factions", value = CountEntries(ax.faction:GetAll())},
         {label = "Core systems", value = CountEntries(coreModules)},
         {label = "Server features", value = CountEntries(serverModules)}
-    }, ax.theme:GetGlass().progress)
+    }, progressColor)
 
     if ( character ) then
         ax.help:AddCompactCard(scroller, width, {
             title = "Current Character",
-            accentColor = ax.theme:GetGlass().highlight,
+            accentColor = highlightColor,
             lines = {
                 {text = "Name: " .. ax.util:CapTextWord(character:GetName() or "Unknown", 32), font = "ax.small", strong = true},
                 {text = "Faction: " .. ((factionData and factionData.name) or "Unassigned"), font = "ax.small"},
@@ -69,7 +75,7 @@ local function PopulateOverview(this, panel)
     else
         ax.help:AddCompactCard(scroller, width, {
             title = "No Active Character",
-            accentColor = ax.theme:GetGlass().highlight,
+            accentColor = highlightColor,
             lines = {
                 {
                     text = "Character-specific information appears here after you load into the server.",
@@ -81,7 +87,7 @@ local function PopulateOverview(this, panel)
 
     ax.help:AddCompactCard(scroller, width, {
         title = "Quick Tips",
-        accentColor = ax.theme:GetGlass().panelBorder,
+        accentColor = borderColor,
         lines = {
             {text = "Commands: browse only the commands regular players can use.", font = "ax.small"},
             {text = "Factions: check which groups are open and which usually need staff approval.", font = "ax.small"},

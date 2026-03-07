@@ -22,7 +22,9 @@ end
 
 local function AddModuleCard(parent, width, module)
     local isCore = module.scope == "framework"
-    local accentColor = isCore and ax.theme:GetGlass().panelBorder or ax.theme:GetGlass().highlight
+    local glass = ax.theme:GetGlass()
+    local metrics = ax.theme:GetMetrics()
+    local accentColor = isCore and ax.theme:ScaleAlpha(glass.panelBorder, metrics.borderOpacity) or ax.theme:ScaleAlpha(glass.highlight, metrics.opacity)
     local summary = module.description or "No public description is available for this system yet."
 
     ax.help:AddCompactCard(parent, width, {
@@ -65,9 +67,13 @@ local function PopulateModules(this, panel)
         end
 
         if ( query == "" ) then
+            local glass = ax.theme:GetGlass()
+            local metrics = ax.theme:GetMetrics()
+            local borderColor = ax.theme:ScaleAlpha(glass.panelBorder, metrics.borderOpacity)
+            local highlightColor = ax.theme:ScaleAlpha(glass.highlight, metrics.opacity)
             ax.help:AddCompactCard(scroller, width, {
                 title = "Active Systems",
-                accentColor = ax.theme:GetGlass().panelBorder,
+                accentColor = borderColor,
                 lines = {
                     {text = "This page shows the gameplay systems currently loaded on the server.", font = "ax.small", strong = true},
                     {text = "Core systems come with Parallax. Server features are added by the active schema.", font = "ax.small"}
@@ -75,13 +81,14 @@ local function PopulateModules(this, panel)
             })
 
             ax.help:AddStatsCard(scroller, "Loaded", {
-                {label = "Core systems", value = #matchedCore, color = ax.theme:GetGlass().panelBorder},
-                {label = "Server features", value = #matchedServer, color = ax.theme:GetGlass().highlight}
-            }, ax.theme:GetGlass().panelBorder)
+                {label = "Core systems", value = #matchedCore, color = borderColor},
+                {label = "Server features", value = #matchedServer, color = highlightColor}
+            }, borderColor)
         end
 
         if ( matchedCore[1] == nil and matchedServer[1] == nil ) then
-            ax.help:AddEmptyState(scroller, width, "No Matching Systems", "Try another search or clear the filter.", ax.theme:GetGlass().panelBorder)
+            local borderColor = ax.theme:ScaleAlpha(ax.theme:GetGlass().panelBorder, ax.theme:GetMetrics().borderOpacity)
+            ax.help:AddEmptyState(scroller, width, "No Matching Systems", "Try another search or clear the filter.", borderColor)
             return
         end
 

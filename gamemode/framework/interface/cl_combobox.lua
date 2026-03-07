@@ -165,12 +165,14 @@ function PANEL:Paint( w, h )
 
 	--derma.SkinHook( "Paint", "Menu", self, w, h )
 
+	local glass = ax.theme:GetGlass()
+	local metrics = ax.theme:GetMetrics()
 	ax.theme:DrawGlassPanel(0, 0, w, h, {
 		radius = 8,
 		blur = 0.9,
 		flags = ax.render.SHAPE_IOS,
-		fill = ax.theme:GetGlass().menu,
-		border = ax.theme:GetGlass().menuBorder
+		fill = ax.theme:ScaleAlpha(glass.menu, metrics.opacity),
+		border = ax.theme:ScaleAlpha(glass.menuBorder, metrics.borderOpacity)
 	})
 	return true
 
@@ -638,12 +640,13 @@ end
 
 function PANEL:Paint(width, height)
 	local glass = ax.theme:GetGlass()
+	local metrics = ax.theme:GetMetrics()
 	ax.theme:DrawGlassPanel(0, 0, width, height, {
 		radius = math.max(4, math.min(8, height * 0.35)),
 		blur = 0.7,
 		flags = ax.render.SHAPE_IOS,
-		fill = glass.input,
-		border = glass.inputBorder
+		fill = ax.theme:ScaleAlpha(glass.input, metrics.opacity),
+		border = ax.theme:ScaleAlpha(glass.inputBorder, metrics.borderOpacity)
 	})
 end
 

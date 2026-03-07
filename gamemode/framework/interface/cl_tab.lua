@@ -554,18 +554,24 @@ function PANEL:Paint(width, height)
     end
 
     local glass = ax.theme:GetGlass()
-    ax.render.Draw(0, 0, 0, width, height, ColorAlpha(glass.tabBackdrop, 50 * self:GetBackgroundAlpha()))
+    local metrics = ax.theme:GetMetrics()
+    local scaledTabBackdrop = ax.theme:ScaleAlpha(glass.tabBackdrop, metrics.opacity)
+    ax.render.Draw(0, 0, 0, width, height, ColorAlpha(scaledTabBackdrop, 50 * self:GetBackgroundAlpha()))
 
     self:SetGradientLeft(Lerp(time, self:GetGradientLeft(), self:GetGradientLeftTarget()))
     self:SetGradientRight(Lerp(time, self:GetGradientRight(), self:GetGradientRightTarget()))
     self:SetGradientTop(Lerp(time, self:GetGradientTop(), self:GetGradientTopTarget()))
     self:SetGradientBottom(Lerp(time, self:GetGradientBottom(), self:GetGradientBottomTarget()))
 
+    local scaledGradLeft = ax.theme:ScaleAlpha(glass.gradientLeft, metrics.gradientOpacity)
+    local scaledGradRight = ax.theme:ScaleAlpha(glass.gradientRight, metrics.gradientOpacity)
+    local scaledGradTop = ax.theme:ScaleAlpha(glass.gradientTop, metrics.gradientOpacity)
+    local scaledGradBottom = ax.theme:ScaleAlpha(glass.gradientBottom, metrics.gradientOpacity)
     ax.theme:DrawGlassGradients(0, 0, width, height, {
-        left = ColorAlpha(glass.gradientLeft, 50 * self:GetGradientLeft()),
-        right = ColorAlpha(glass.gradientRight, 50 * self:GetGradientRight()),
-        top = ColorAlpha(glass.gradientTop, 50 * self:GetGradientTop()),
-        bottom = ColorAlpha(glass.gradientBottom, 50 * self:GetGradientBottom())
+        left = ColorAlpha(scaledGradLeft, 50 * self:GetGradientLeft()),
+        right = ColorAlpha(scaledGradRight, 50 * self:GetGradientRight()),
+        top = ColorAlpha(scaledGradTop, 50 * self:GetGradientTop()),
+        bottom = ColorAlpha(scaledGradBottom, 50 * self:GetGradientBottom())
     })
 end
 

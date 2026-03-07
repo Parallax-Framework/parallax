@@ -58,7 +58,9 @@ local function AddFactionCard(parent, width, faction, currentFaction)
     local classCount = istable(faction.Classes) and table.Count(faction.Classes) or 0
     local rankCount = istable(faction.Ranks) and table.Count(faction.Ranks) or 0
     local isCurrent = currentFaction == faction.index
-    local accentColor = isCurrent and ax.theme:GetGlass().progress or ax.theme:GetGlass().highlight
+    local glass = ax.theme:GetGlass()
+    local metrics = ax.theme:GetMetrics()
+    local accentColor = isCurrent and ax.theme:ScaleAlpha(glass.progress, metrics.opacity) or ax.theme:ScaleAlpha(glass.highlight, metrics.opacity)
     local accessText = faction.isDefault and "Open" or "Whitelist"
     local description = faction.description or "No description available."
     local lines = {
@@ -113,9 +115,10 @@ local function PopulateFactions(this, panel)
         end
 
         if ( query == "" ) then
+            local highlightColor = ax.theme:ScaleAlpha(ax.theme:GetGlass().highlight, ax.theme:GetMetrics().opacity)
             ax.help:AddCompactCard(scroller, width, {
                 title = "Factions",
-                accentColor = ax.theme:GetGlass().highlight,
+                accentColor = highlightColor,
                 lines = {
                     {text = "Browse the character groups loaded by this schema.", font = "ax.small", strong = true},
                     {text = "Search by faction name, description, class, or rank.", font = "ax.small"}
@@ -124,7 +127,8 @@ local function PopulateFactions(this, panel)
         end
 
         if ( matches[1] == nil ) then
-            ax.help:AddEmptyState(scroller, width, "No Matching Factions", "Try a different search or clear the filter.", ax.theme:GetGlass().highlight)
+            local highlightColor = ax.theme:ScaleAlpha(ax.theme:GetGlass().highlight, ax.theme:GetMetrics().opacity)
+            ax.help:AddEmptyState(scroller, width, "No Matching Factions", "Try a different search or clear the filter.", highlightColor)
             return
         end
 
