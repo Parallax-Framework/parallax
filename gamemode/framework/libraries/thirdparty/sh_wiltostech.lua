@@ -9,6 +9,12 @@ hook.Add("InitLoadAnimations", "wOS.DynaBase.CustomMount", function()
     })
 
     hook.Add("PreLoadAnimations", "wOS.DynaBase.MountCustom", function(gender)
+        RunConsoleCommand("wos_dynabase_restrict_client_content", "1")
+        RunConsoleCommand("wos_dynabase_restrict_client_reanimation", "1")
+        RunConsoleCommand("wos_dynabase_restrict_client_extension", "1")
+        RunConsoleCommand("wos_dynabase_restrict_server_loadorder", "1")
+        RunConsoleCommand("wos_dynabase_mountorder", "Parallax")
+
         if ( gender == WOS_DYNABASE.SHARED ) then return end
 
         if ( gender == WOS_DYNABASE.FEMALE ) then
