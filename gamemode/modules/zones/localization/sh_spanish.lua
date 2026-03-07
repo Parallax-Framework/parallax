@@ -42,6 +42,8 @@ ax.localization:Register("es", {
     ["zones.common.unnamed"] = "Sin nombre",
     ["zones.common.none"] = "ninguna",
     ["zones.common.unsaved"] = "sin guardar",
+    ["zones.common.corner_a_name"] = "Esquina A",
+    ["zones.common.corner_b_name"] = "Esquina B",
     ["zones.common.type_priority"] = "%s  |  prioridad %d",
 
     ["zones.source.runtime"] = "runtime",

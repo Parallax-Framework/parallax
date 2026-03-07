@@ -1173,6 +1173,23 @@ local function DrawZoneLabel(zone, color)
     draw.SimpleText(lineTwo, "ax.small", screen.x, screen.y + 15, Color(240, 240, 240, math.min(color.a + 20, 255)), TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
 end
 
+local function DrawBoxCornerLabel(position, text, color)
+    if ( !isvector(position) ) then return end
+
+    local screen = position:ToScreen()
+    if ( !screen.visible ) then return end
+
+    draw.SimpleText(text, "ax.small.bold", screen.x + 1, screen.y + 1, COLOR_TEXT_SHADOW, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+    draw.SimpleText(text, "ax.small.bold", screen.x, screen.y, color, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+end
+
+local function DrawBoxCornerLabels(zone, color)
+    if ( zone.type != "box" ) then return end
+
+    DrawBoxCornerLabel(zone.cornerA or zone.mins, Phrase("zones.common.corner_a_name"), color)
+    DrawBoxCornerLabel(zone.cornerB or zone.maxs, Phrase("zones.common.corner_b_name"), color)
+end
+
 local function DrawZoneGeometry(zone, color, outlineAlpha)
     if ( zone.type == "box" and isvector(zone.mins) and isvector(zone.maxs) ) then
         local center = (zone.mins + zone.maxs) / 2
@@ -1251,11 +1268,13 @@ hook.Add("HUDPaint", "ax.zones.editor.hud", function()
     local draft = editor:BuildPreviewZone()
     if ( draft ) then
         DrawZoneLabel(draft, COLOR_DRAFT)
+        DrawBoxCornerLabels(draft, COLOR_DRAFT)
     end
 
     local selectedZone = editor:GetSelectedZone()
     if ( selectedZone and (!draft or draft.id != selectedZone.id) ) then
         DrawZoneLabel(selectedZone, COLOR_SELECTED)
+        DrawBoxCornerLabels(selectedZone, COLOR_SELECTED)
     end
 
     local width = 420

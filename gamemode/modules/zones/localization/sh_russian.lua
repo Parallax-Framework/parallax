@@ -42,6 +42,8 @@ ax.localization:Register("ru", {
     ["zones.common.unnamed"] = "Без названия",
     ["zones.common.none"] = "нет",
     ["zones.common.unsaved"] = "не сохранено",
+    ["zones.common.corner_a_name"] = "Угол A",
+    ["zones.common.corner_b_name"] = "Угол B",
     ["zones.common.type_priority"] = "%s  |  приоритет %d",
 
     ["zones.source.runtime"] = "runtime",

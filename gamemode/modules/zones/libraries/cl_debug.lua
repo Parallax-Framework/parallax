@@ -225,6 +225,23 @@ local function DrawZoneLabel(zone, color)
     draw.SimpleText(lineTwo, "ax.small", screen.x, screen.y + 15, Color(238, 242, 247, math.min(color.a + 20, 255)), TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
 end
 
+local function DrawBoxCornerLabel(position, text, color)
+    if ( !isvector(position) ) then return end
+
+    local screen = position:ToScreen()
+    if ( !screen.visible ) then return end
+
+    draw.SimpleText(text, "ax.small.bold", screen.x + 1, screen.y + 1, COLOR_TEXT_SHADOW, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+    draw.SimpleText(text, "ax.small.bold", screen.x, screen.y, color, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+end
+
+local function DrawBoxCornerLabels(zone, color)
+    if ( zone.type != "box" ) then return end
+
+    DrawBoxCornerLabel(zone.cornerA or zone.mins, Phrase("zones.common.corner_a_name"), color)
+    DrawBoxCornerLabel(zone.cornerB or zone.maxs, Phrase("zones.common.corner_b_name"), color)
+end
+
 local function GetEffectiveDrawDistance()
     local configDistance = GetConfigNumber("zones.debug.draw_distance", 3500, 256, 20000)
     local optionDistance = GetOptionNumber("zones.debug.distance", 2500, 256, 20000)
@@ -499,7 +516,9 @@ hook.Add("HUDPaint", "ax.zones.debug.hud", function()
                 continue
             end
 
-            DrawZoneLabel(zone, GetZoneColor(zone, snapshot))
+            local zoneColor = GetZoneColor(zone, snapshot)
+            DrawZoneLabel(zone, zoneColor)
+            DrawBoxCornerLabels(zone, zoneColor)
         end
     end
 

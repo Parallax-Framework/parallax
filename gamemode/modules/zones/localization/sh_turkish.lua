@@ -42,6 +42,8 @@ ax.localization:Register("tr", {
     ["zones.common.unnamed"] = "Isimsiz",
     ["zones.common.none"] = "yok",
     ["zones.common.unsaved"] = "kaydedilmedi",
+    ["zones.common.corner_a_name"] = "Kose A",
+    ["zones.common.corner_b_name"] = "Kose B",
     ["zones.common.type_priority"] = "%s  |  oncelik %d",
 
     ["zones.source.runtime"] = "runtime",

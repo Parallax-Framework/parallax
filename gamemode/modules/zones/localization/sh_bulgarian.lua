@@ -42,6 +42,8 @@ ax.localization:Register("bg", {
     ["zones.common.unnamed"] = "Без име",
     ["zones.common.none"] = "няма",
     ["zones.common.unsaved"] = "незаписано",
+    ["zones.common.corner_a_name"] = "Ъгъл A",
+    ["zones.common.corner_b_name"] = "Ъгъл B",
     ["zones.common.type_priority"] = "%s  |  приоритет %d",
 
     ["zones.source.runtime"] = "runtime",
