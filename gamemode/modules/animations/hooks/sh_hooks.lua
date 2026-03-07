@@ -296,7 +296,7 @@ function MODULE:MouthMoveAnimation(client)
 end
 
 function MODULE:CalcMainActivity(client, velocity)
-    local forcedSequence = client:GetRelay("sequence.id")
+    local forcedSequence = client:ResolveForcedSequence()
     if ( forcedSequence ) then
         if ( client:GetSequence() != forcedSequence ) then
             client:SetCycle(0)

@@ -37,11 +37,24 @@ end)
 ax.net:Hook("sequence.reset", function(client)
     if ( !ax.util:IsValidPlayer(client) ) then return end
 
+    client:SetRelay("sequence.identifier", nil, true)
+    client:SetRelay("sequence.serial", nil, true)
+    client:SetRelay("sequence.looping", nil, true)
+    client:SetRelay("sequence.frozen", nil, true)
+    client:ClearForcedSequenceResolution()
     hook.Run("PostPlayerLeaveSequence", client)
 end)
 
-ax.net:Hook("sequence.set", function(client)
+ax.net:Hook("sequence.set", function(client, sequence, serial)
     if ( !ax.util:IsValidPlayer(client) ) then return end
+
+    client:SetRelay("sequence.identifier", sequence, true)
+    client:SetRelay("sequence.serial", serial, true)
+
+    local sequenceID, duration = client:ResolveForcedSequence(sequence)
+    if ( client == LocalPlayer() ) then
+        ax.net:Start("sequence.resolved", serial, sequence, sequenceID or -1, duration or 0)
+    end
 
     hook.Run("PostPlayerForceSequence", client)
 end)

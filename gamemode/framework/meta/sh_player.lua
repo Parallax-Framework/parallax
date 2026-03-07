@@ -85,6 +85,11 @@ function ax.player.meta:PlayGesture(slot, sequence)
         return nil
     end
 
+    if ( SERVER ) then
+        ax.net:StartPVS(self:GetPos(), "player.playGesture", self, slot, sequence)
+        return
+    end
+
     if ( isstring(sequence) and sequence != "" ) then
         sequence = utf8.lower(sequence)
 
@@ -110,11 +115,7 @@ function ax.player.meta:PlayGesture(slot, sequence)
         return nil
     end
 
-    if ( CLIENT ) then
-        self:AddVCDSequenceToGestureSlot(slot, sequence, 0, true)
-    else
-        ax.net:StartPVS(self:GetPos(), "player.playGesture", self, slot, sequence)
-    end
+    self:AddVCDSequenceToGestureSlot(slot, sequence, 0, true)
 end
 
 function ax.player.meta:HasFactionWhitelist(iFactionID)
@@ -379,10 +380,7 @@ function ax.player.meta:GetSessionPlayTime()
     return os.difftime(os.time(), joinTime)
 end
 
-if ( SERVER ) then
-    util.AddNetworkString( "ax.player.chatPrint" )
-    util.AddNetworkString( "ax.player.playGesture" )
-else
+if ( CLIENT ) then
     ax.net:Hook("player.chatPrint", function(messages)
         chat.AddText(unpack(messages))
     end)
