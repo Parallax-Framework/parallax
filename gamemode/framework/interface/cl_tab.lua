@@ -42,6 +42,15 @@ local function GetSortedSectionKeys(sections)
     return keys
 end
 
+local function PopulateTabButtonTable()
+    local buttons = {}
+
+    hook.Run("PopulateTabButtons", buttons)
+    hook.Run("PostPopulateTabButtons", buttons)
+
+    return buttons
+end
+
 AccessorFunc(PANEL, "backgroundBlur", "BackgroundBlur", FORCE_NUMBER)
 AccessorFunc(PANEL, "backgroundAlpha", "BackgroundAlpha", FORCE_NUMBER)
 AccessorFunc(PANEL, "gradientLeft", "GradientLeft", FORCE_NUMBER)
@@ -180,8 +189,7 @@ function PANEL:Open()
                 tabKey = self.sectionParentMap[tabKey]
             end
 
-            local buttons = {}
-            hook.Run("PopulateTabButtons", buttons)
+            local buttons = PopulateTabButtonTable()
             local tabData = buttons[tabKey]
             if ( istable(tabData) and istable(tabData.Sections) and table.Count(tabData.Sections) > 0 ) then
                 hasSubbuttons = true
@@ -213,6 +221,63 @@ function PANEL:Open()
     })
 end
 
+function PANEL:GetTabButtonData(key)
+    if ( !istable(self.tabButtons) or !key ) then
+        return nil
+    end
+
+    local tabData = self.tabButtons[key]
+    if ( tabData != nil ) then
+        return tabData
+    end
+
+    local parentKey = self.sectionParentMap and self.sectionParentMap[key]
+    local parentData = parentKey and self.tabButtons[parentKey]
+    if ( istable(parentData) and istable(parentData.Sections) ) then
+        return parentData.Sections[key]
+    end
+
+    return nil
+end
+
+function PANEL:GetTabButtonPanel(key)
+    local parentKey = self.sectionParentMap and self.sectionParentMap[key]
+    if ( parentKey ) then
+        return self.subbuttons.buttons and self.subbuttons.buttons[key]
+    end
+
+    return self.buttonMap and self.buttonMap[key]
+end
+
+function PANEL:CloseActiveTab()
+    local activeKey = self.activeTabKey
+    if ( !activeKey ) then
+        return
+    end
+
+    local tabData = self:GetTabButtonData(activeKey)
+    if ( istable(tabData) and isfunction(tabData.OnClose) ) then
+        tabData:OnClose(self.tabs[activeKey], self:GetTabButtonPanel(activeKey))
+    end
+
+    self.activeTabKey = nil
+end
+
+function PANEL:SetActiveTab(key, button)
+    if ( !key or self.activeTabKey == key ) then
+        return
+    end
+
+    self:CloseActiveTab()
+
+    self.activeTabKey = key
+
+    local tabData = self:GetTabButtonData(key)
+    if ( istable(tabData) and isfunction(tabData.OnOpen) ) then
+        tabData:OnOpen(self.tabs[key], button or self:GetTabButtonPanel(key))
+    end
+end
+
 function PANEL:PopulateTabs()
     self.buttonMap = {}
     self.sectionParentMap = {}
@@ -220,8 +285,8 @@ function PANEL:PopulateTabs()
     local pendingSectionKey
     local pendingParentButton
 
-    local buttons = {}
-    hook.Run("PopulateTabButtons", buttons)
+    local buttons = PopulateTabButtonTable()
+    self.tabButtons = buttons
     for k, v in SortedPairs(buttons) do
         local button = self.buttons:Add("ax.button")
         button:Dock(LEFT)
@@ -297,25 +362,13 @@ function PANEL:PopulateTabs()
 
             ax.gui.tabLast = k
 
-            -- call OnOpen and OnClose hooks
-            for tabKey, tabData in pairs(buttons) do
-                if ( tabKey == k ) then
-                    if ( isfunction(tabData.OnOpen) ) then
-                        tabData:OnOpen(self.tabs[tabKey], button)
-                    end
-                else
-                    if ( isfunction(tabData.OnClose) ) then
-                        tabData:OnClose(self.tabs[tabKey], self.buttonMap[tabKey])
-                    end
-                end
-            end
-
-            self:TransitionToPage(button.tab.index, ax.option:Get("tabFadeTime", 0.25))
-
             if ( istable(v) and istable(v.Sections) and table.Count(v.Sections) > 0 ) then
+                self:CloseActiveTab()
+
                 for _, subbutton in pairs(self.subbuttons.buttons or {}) do
                     subbutton:Remove()
                 end
+                self.subbuttons.buttons = {}
 
                 -- Add buttons for each section
                 local sortedSectionKeys = GetSortedSectionKeys(v.Sections)
@@ -350,10 +403,10 @@ function PANEL:PopulateTabs()
                         end
 
                         ax.gui.tabLast = sectionKey
+                        self:SetActiveTab(sectionKey, subbutton)
                         self:TransitionToPage(self.tabs[sectionKey].index, ax.option:Get("tabFadeTime", 0.25))
                     end
 
-                    self.subbuttons.buttons = self.subbuttons.buttons or {}
                     self.subbuttons.buttons[sectionKey] = subbutton
                 end
 
@@ -376,10 +429,15 @@ function PANEL:PopulateTabs()
                     ax.gui.tabLast = firstSectionKey
 
                     local firstTab = self.tabs and self.tabs[firstSectionKey]
+                    local firstSubbutton = self.subbuttons.buttons and self.subbuttons.buttons[firstSectionKey]
 
                     if ( firstTab and firstTab.index ) then
+                        self:SetActiveTab(firstSectionKey, firstSubbutton)
                         self:TransitionToPage(firstTab.index, ax.option:Get("tabFadeTime", 0.25))
                     end
+                else
+                    self:SetActiveTab(k, button)
+                    self:TransitionToPage(button.tab.index, ax.option:Get("tabFadeTime", 0.25))
                 end
 
                 -- Motion below the main buttons
@@ -392,6 +450,9 @@ function PANEL:PopulateTabs()
                     end
                 })
             else
+                self:SetActiveTab(k, button)
+                self:TransitionToPage(button.tab.index, ax.option:Get("tabFadeTime", 0.25))
+
                 -- Hide subbuttons
                 self.subbuttons:Motion(ax.option:Get("tabFadeTime", 0.25), {
                     Target = {y = self.buttons:GetY(), alpha = 0},

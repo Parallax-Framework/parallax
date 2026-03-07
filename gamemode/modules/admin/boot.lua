@@ -6,6 +6,13 @@ MODULE.author = "Riggs"
 
 ax.admin = MODULE
 
+for lang, phrases in pairs(ax.localization.langs or {}) do
+    local configLabel = istable(phrases) and phrases["tab.config"]
+    if ( isstring(configLabel) and configLabel != "" ) then
+        ax.localisation:AddPhrase(lang, "tab.admin.config", configLabel)
+    end
+end
+
 concommand.Add("ax_player_set_usergroup", function(client, command, arguments, argumentsString)
     if ( ax.util:IsValidPlayer(client) and !client:IsAdmin() ) then
         client:Notify("You do not have permission to use this command.")

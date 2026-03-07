@@ -36,3 +36,15 @@ hook.Add("PopulateTabButtons", "ax.tab.admin", function(buttons)
         }
     }
 end)
+
+hook.Add("PostPopulateTabButtons", "ax.tab.admin.config", function(buttons)
+    local admin = buttons["admin"]
+    local config = buttons["config"]
+
+    if ( !istable(admin) or !istable(admin.Sections) or !istable(config) ) then
+        return
+    end
+
+    admin.Sections["config"] = admin.Sections["config"] or config
+    buttons["config"] = nil
+end)
