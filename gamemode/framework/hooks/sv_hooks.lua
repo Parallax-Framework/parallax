@@ -185,6 +185,7 @@ function GM:PlayerSpawn(client)
         client.axDeathRespawnSound = nil
     end
 
+    client:ClearRagdollWeapons()
     client:RemoveAllItems()
 
     client:SetRelay("ragdoll.index", -1)

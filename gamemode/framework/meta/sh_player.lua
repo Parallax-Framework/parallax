@@ -138,12 +138,165 @@ function ax.player.meta:IsRagdolled()
 end
 
 if ( SERVER ) then
-    function ax.player.meta:SetRagdolled(bRagdolled)
-        if ( bRagdolled != true and !self:GetRelay("ragdolled", false) ) then
-            SafeRemoveEntity(Entity(self:GetRelay("ragdoll.index", -1)))
+    local function GetWeaponInventoryItem(weapon, inventory)
+        if ( !IsValid(weapon) ) then
+            return nil
+        end
 
+        if ( istable(weapon.axItem) ) then
+            return weapon.axItem
+        end
+
+        if ( !istable(inventory) ) then
+            return nil
+        end
+
+        local class = weapon:GetClass()
+        for _, item in pairs(inventory:GetItems()) do
+            if ( !istable(item) ) then
+                continue
+            end
+
+            if ( item.weaponClass == class and item:GetData("equipped") ) then
+                return item
+            end
+
+            if ( item.class == class and item:GetData("equip") ) then
+                return item
+            end
+        end
+
+        return nil
+    end
+
+    function ax.player.meta:ClearRagdollWeapons()
+        self.axRagdollWeapons = nil
+        self.axRagdollActiveWeapon = nil
+    end
+
+    function ax.player.meta:StripWeaponsForRagdoll()
+        local character = self:GetCharacter()
+        local inventory = character and character:GetInventory() or nil
+        local activeWeapon = self:GetActiveWeapon()
+        local weapons = {}
+
+        self.axRagdollActiveWeapon = IsValid(activeWeapon) and activeWeapon:GetClass() or nil
+
+        for _, weapon in ipairs(self:GetWeapons()) do
+            if ( !IsValid(weapon) ) then
+                continue
+            end
+
+            local primaryAmmoType = weapon:GetPrimaryAmmoType()
+            local secondaryAmmoType = weapon:GetSecondaryAmmoType()
+            local item = GetWeaponInventoryItem(weapon, inventory)
+
+            weapons[#weapons + 1] = {
+                ammo = primaryAmmoType >= 0 and self:GetAmmoCount(primaryAmmoType) or nil,
+                ammo2 = secondaryAmmoType >= 0 and self:GetAmmoCount(secondaryAmmoType) or nil,
+                class = weapon:GetClass(),
+                clip1 = weapon:Clip1(),
+                clip2 = weapon:Clip2(),
+                invID = istable(item) and item.invID or nil,
+                item = item
+            }
+
+            if ( istable(item) ) then
+                if ( isfunction(item.Unequip) ) then
+                    item:Unequip(self, false, false)
+                elseif ( item:GetData("equipped") ) then
+                    item:SetData("equipped", false)
+                elseif ( item:GetData("equip") ) then
+                    item:SetData("equip", false)
+                end
+            end
+        end
+
+        self.axRagdollWeapons = weapons
+        self:StripWeapons()
+    end
+
+    function ax.player.meta:RestoreRagdollWeapons()
+        local weaponData = self.axRagdollWeapons
+        if ( !istable(weaponData) ) then
+            self:ClearRagdollWeapons()
+            return
+        end
+
+        for _, data in ipairs(weaponData) do
+            local weapon
+            local item = data.item
+
+            if ( istable(item) and item.invID == data.invID ) then
+                if ( isfunction(item.Equip) ) then
+                    item:Equip(self, true, true)
+
+                    if ( istable(self.carryWeapons) and isstring(item.weaponCategory) ) then
+                        weapon = self.carryWeapons[item.weaponCategory]
+                    end
+
+                    if ( !IsValid(weapon) and isstring(data.class) and data.class != "" ) then
+                        weapon = self:GetWeapon(data.class)
+                    end
+                elseif ( isstring(item.weaponClass) and item.weaponClass == data.class ) then
+                    weapon = self:Give(item.weaponClass)
+                    item:SetData("equipped", true)
+                end
+            elseif ( isstring(data.class) and data.class != "" ) then
+                weapon = self:Give(data.class)
+            end
+
+            if ( !IsValid(weapon) ) then
+                continue
+            end
+
+            local primaryAmmoType = weapon:GetPrimaryAmmoType()
+            local secondaryAmmoType = weapon:GetSecondaryAmmoType()
+
+            if ( isnumber(data.ammo) and primaryAmmoType >= 0 ) then
+                self:SetAmmo(data.ammo, primaryAmmoType)
+            end
+
+            if ( isnumber(data.ammo2) and secondaryAmmoType >= 0 ) then
+                self:SetAmmo(data.ammo2, secondaryAmmoType)
+            end
+
+            if ( isnumber(data.clip1) and data.clip1 >= 0 ) then
+                weapon:SetClip1(data.clip1)
+            end
+
+            if ( isnumber(data.clip2) and data.clip2 >= 0 ) then
+                weapon:SetClip2(data.clip2)
+            end
+        end
+
+        if ( isstring(self.axRagdollActiveWeapon) and self.axRagdollActiveWeapon != "" and self:HasWeapon(self.axRagdollActiveWeapon) ) then
+            self:SelectWeapon(self.axRagdollActiveWeapon)
+        elseif ( self:HasWeapon("ax_hands") ) then
+            self:SelectWeapon("ax_hands")
+        end
+
+        self:ClearRagdollWeapons()
+    end
+
+    function ax.player.meta:SetRagdolled(bRagdolled, bForced)
+        local ragdoll = Entity(self:GetRelay("ragdoll.index", -1))
+        local bHasRagdollState = self:GetRelay("ragdolled", false) or IsValid(ragdoll) or istable(self.axRagdollWeapons)
+
+        if ( bRagdolled != true ) then
+            if ( !bHasRagdollState ) then
+                self:SetRelay("ragdoll.index", -1)
+                self:RemoveTimer("ragdoll.think")
+                return
+            end
+
+            local restorePosition = IsValid(ragdoll) and ragdoll:WorldSpaceCenter() or self:GetPos()
+
+            self:SetRelay("ragdolled", false)
             self:SetRelay("ragdoll.index", -1)
             self:RemoveTimer("ragdoll.think")
+
+            SafeRemoveEntity(ragdoll)
 
             self:SetMoveType(MOVETYPE_WALK)
             self:SetNoDraw(false)
@@ -151,13 +304,19 @@ if ( SERVER ) then
             self:DrawShadow(true)
             self:SetNoTarget(false)
             self:DrawWorldModel(true)
+            self:SetPos(restorePosition + Vector(0, 0, 8)) -- Nudge the player up slightly to prevent getting stuck in the ground
 
-            self:SetPos(self:GetPos() + Vector(0, 0, 8)) -- Nudge the player up slightly to prevent getting stuck in the ground
+            self:RestoreRagdollWeapons()
 
             return
-        elseif ( bRagdolled != true and self:GetRelay("ragdolled", false) ) then
-            self:SetRelay("ragdolled", false)
-            return
+        end
+
+        if ( self:GetRelay("ragdolled", false) ) then
+            return IsValid(ragdoll) and ragdoll or nil
+        end
+
+        if ( bForced != true and hook.Run("CanPlayerRagdoll", self, true) == false ) then
+            return false
         end
 
         local ragdollDummy = ents.Create("prop_ragdoll")
@@ -166,6 +325,10 @@ if ( SERVER ) then
         self:Timer("ragdoll.think", 0.1, 0, function()
             if ( !IsValid(self) ) then return end
             if ( !self:GetRelay("ragdolled", false) ) then return end
+            if ( !IsValid(ragdollDummy) ) then
+                self:SetRagdolled(false, true)
+                return
+            end
 
             self:SetPos(ragdollDummy:WorldSpaceCenter())
             self:SetAngles(ragdollDummy:GetAngles())
@@ -173,6 +336,7 @@ if ( SERVER ) then
             debugoverlay.Axis(ragdollDummy:WorldSpaceCenter(), ragdollDummy:GetAngles(), 16, 0.1, true)
         end)
 
+        self:StripWeaponsForRagdoll()
         self:SetRelay("ragdoll.index", -1)
         self:SetRelay("ragdolled", bRagdolled)
 
@@ -225,8 +389,8 @@ if ( SERVER ) then
         return ragdollDummy
     end
 
-    function ax.player.meta:ToggleRagdoll()
-        self:SetRagdolled(!self:GetRelay("ragdolled", false))
+    function ax.player.meta:ToggleRagdoll(bForced)
+        self:SetRagdolled(!self:GetRelay("ragdolled", false), bForced)
     end
 
     function ax.player.meta:SetFactionWhitelisted(iFactionID, bStatus)
