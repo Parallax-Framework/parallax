@@ -63,6 +63,13 @@ ax.localization:Register("de", {
     -- Store Translations
     ["store.enabled"] = "Aktiviert",
     ["store.disabled"] = "Deaktiviert",
+    ["store.default"] = "Standard",
+    ["store.type.bool"] = "Schalter",
+    ["store.type.number"] = "Zahl",
+    ["store.type.string"] = "Text",
+    ["store.type.color"] = "Farbe",
+    ["store.type.array"] = "Auswahl",
+    ["store.type.keybind"] = "Tastenbindung",
 
     -- Config Translations
 

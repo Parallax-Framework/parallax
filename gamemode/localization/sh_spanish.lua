@@ -63,6 +63,13 @@ ax.localization:Register("es", {
     -- Store Translations
     ["store.enabled"] = "Habilitado",
     ["store.disabled"] = "Deshabilitado",
+    ["store.default"] = "Predeterminado",
+    ["store.type.bool"] = "Interruptor",
+    ["store.type.number"] = "Número",
+    ["store.type.string"] = "Texto",
+    ["store.type.color"] = "Color",
+    ["store.type.array"] = "Selección",
+    ["store.type.keybind"] = "Tecla",
 
     -- Config Translations
 

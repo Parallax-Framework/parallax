@@ -64,6 +64,14 @@ ax.localization:Register("bg", {
     ["store.enabled"] = "Включено",
     ["store.disabled"] = "Изключено",
 
+    ["store.default"] = "По подразбиране",
+    ["store.type.bool"] = "Превключвател",
+    ["store.type.number"] = "Число",
+    ["store.type.string"] = "Текст",
+    ["store.type.color"] = "Цвят",
+    ["store.type.array"] = "Избор",
+    ["store.type.keybind"] = "Клавиш",
+
     -- Config Translations
 
     --- Chat

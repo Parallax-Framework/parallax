@@ -65,6 +65,14 @@ ax.localization:Register("ru", {
     ["store.enabled"] = "Вкл",
     ["store.disabled"] = "Выкл",
 
+    ["store.default"] = "По умолчанию",
+    ["store.type.bool"] = "Переключатель",
+    ["store.type.number"] = "Число",
+    ["store.type.string"] = "Текст",
+    ["store.type.color"] = "Цвет",
+    ["store.type.array"] = "Выбор",
+    ["store.type.keybind"] = "Клавиша",
+
     -- Config Translations
 
     --- Chat

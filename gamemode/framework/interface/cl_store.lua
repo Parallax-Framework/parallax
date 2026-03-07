@@ -21,6 +21,162 @@ local function GetStoreByType(storeType)
     return nil
 end
 
+local STORE_TYPE_LABELS = {
+    [ax.type.bool] = "store.type.bool",
+    [ax.type.number] = "store.type.number",
+    [ax.type.string] = "store.type.string",
+    [ax.type.text] = "store.type.string",
+    [ax.type.color] = "store.type.color",
+    [ax.type.array] = "store.type.array"
+}
+
+local function GetLocalizedPhraseOrNil(phrase)
+    if ( !isstring(phrase) or phrase == "" ) then
+        return nil
+    end
+
+    local language = ax.localization and ax.localization.langs and ax.localization.langs[ax.localization:GetCurrentLanguage()]
+    local fallback = ax.localization and ax.localization.langs and ax.localization.langs.en
+
+    if ( istable(language) and isstring(language[phrase]) and language[phrase] != "" ) then
+        return language[phrase]
+    end
+
+    if ( istable(fallback) and isstring(fallback[phrase]) and fallback[phrase] != "" ) then
+        return fallback[phrase]
+    end
+
+    return nil
+end
+
+local function LooksLikePhraseKey(value)
+    if ( !isstring(value) or value == "" ) then
+        return false
+    end
+
+    return string.find(value, ".", 1, true) != nil and string.find(value, " ", 1, true) == nil
+end
+
+local function ResolveStoreString(value)
+    if ( !isstring(value) or value == "" ) then
+        return nil
+    end
+
+    local translated = GetLocalizedPhraseOrNil(value)
+    if ( translated ) then
+        return translated
+    end
+
+    if ( !LooksLikePhraseKey(value) ) then
+        return value
+    end
+
+    return nil
+end
+
+local function ResolveStoreTitle(storeType, key)
+    return GetLocalizedPhraseOrNil(storeType .. "." .. key) or tostring(key or ax.localization:GetPhrase("unknown"))
+end
+
+local function ResolveStoreDescription(storeType, key, data)
+    local description = ResolveStoreString(data and data.description)
+    if ( description and description != "" ) then
+        return description
+    end
+
+    return GetLocalizedPhraseOrNil(storeType .. "." .. key .. ".help")
+end
+
+local function ResolveStoreTypeLabel(typeID, data)
+    if ( data and data.keybind ) then
+        return GetLocalizedPhraseOrNil("store.type.keybind") or "Keybind"
+    end
+
+    local phrase = STORE_TYPE_LABELS[typeID]
+    if ( phrase ) then
+        return GetLocalizedPhraseOrNil(phrase) or ax.type:Format(typeID)
+    end
+
+    return ax.type:Format(typeID)
+end
+
+local function FormatStoreValue(store, key, value)
+    if ( !store or !store.registry ) then
+        return ax.localization:GetPhrase("unknown")
+    end
+
+    local entry = store.registry[key]
+    if ( !entry ) then
+        return ax.localization:GetPhrase("unknown")
+    end
+
+    local data = entry.data or {}
+
+    if ( data.keybind ) then
+        local selected = tonumber(value) or (KEY_NONE or 0)
+        if ( selected == (KEY_NONE or 0) ) then
+            return ax.localization:GetPhrase("unknown")
+        end
+
+        local keyName = input.GetKeyName(selected)
+        return isstring(keyName) and string.upper(keyName) or ax.localization:GetPhrase("unknown")
+    end
+
+    if ( entry.type == ax.type.bool ) then
+        return tobool(value) and ax.localization:GetPhrase("store.enabled") or ax.localization:GetPhrase("store.disabled")
+    elseif ( entry.type == ax.type.number ) then
+        local numberValue = tonumber(value) or 0
+        local decimals = math.max(tonumber(data.decimals) or 0, 0)
+
+        if ( decimals > 0 ) then
+            return string.format("%." .. decimals .. "f", numberValue)
+        end
+
+        return tostring(math.Round(numberValue))
+    elseif ( entry.type == ax.type.string or entry.type == ax.type.text ) then
+        local text = tostring(value or "")
+        if ( text == "" ) then
+            return ax.localization:GetPhrase("unknown")
+        end
+
+        return ax.util:CapTextWord(text, 48)
+    elseif ( entry.type == ax.type.color ) then
+        if ( !(IsColor(value) or (istable(value) and isnumber(value.r) and isnumber(value.g) and isnumber(value.b))) ) then
+            return ax.localization:GetPhrase("unknown")
+        end
+
+        local alpha = tonumber(value.a) or 255
+        if ( alpha < 255 ) then
+            return string.format("#%02X%02X%02X / %d", value.r, value.g, value.b, alpha)
+        end
+
+        return string.format("#%02X%02X%02X", value.r, value.g, value.b)
+    elseif ( entry.type == ax.type.array ) then
+        local choices = data.choices
+        if ( !istable(choices) and isfunction(data.populate) ) then
+            local ok, populated = ax.util:SafeCall(data.populate)
+            if ( ok and istable(populated) ) then
+                choices = populated
+            end
+        end
+
+        local choiceLabel = istable(choices) and choices[value] or nil
+        return ResolveStoreString(choiceLabel) or tostring(value or ax.localization:GetPhrase("unknown"))
+    end
+
+    return tostring(value or ax.localization:GetPhrase("unknown"))
+end
+
+local function GetStoreAccentColor(storeType)
+    local glass = ax.theme:GetGlass()
+
+    if ( storeType == "config" ) then
+        return glass.progress or glass.highlight
+    end
+
+    return glass.highlight or glass.progress
+end
+
 function PANEL:Init()
     self:Dock(FILL)
     self:InvalidateParent(true)
@@ -257,10 +413,15 @@ function PANEL:Init()
     self.type = "unknown"
     self.key = "unknown"
     self.bInitializing = true
+    self.bTooltipVisible = false
+    self.tooltipTargets = {}
 
     self:SetContentAlignment(4)
     self:SetText("unknown")
     self:SetTextInset(ax.util:ScreenScale(8), 0)
+    self:SetAxTooltip(function(panel)
+        return panel:GetTooltipPayload()
+    end)
 
     self.reset = self:Add("ax.button.icon")
     self.reset:SetIcon("parallax/icons/chevron-right.png")
@@ -282,10 +443,12 @@ function PANEL:Init()
             self:UpdateDisplay()
         end
     end
+
+    self:RegisterTooltipTarget(self.reset)
 end
 
 function PANEL:HandleError(message)
-    self:SetText("unknown", true)
+    self:SetText(ax.localization:GetPhrase("unknown"), true)
     self.type = "unknown"
     ax.util:PrintError(string.format("ax.store.%s: %s for key '%s'", self.elementType or "base", message, tostring(self.key)))
 end
@@ -303,7 +466,7 @@ function PANEL:SetType(type)
     end
 
     self.type = type
-    self:SetText("just type set ahadhahdawdhuahduahd", true)
+    self:SetText(ax.localization:GetPhrase("unknown"), true)
 
     if ( self.UpdateDisplay ) then
         self:UpdateDisplay()
@@ -339,7 +502,17 @@ end
 function PANEL:PerformLayout(width, height)
     self.reset:SetSize(height / 1.5, height / 1.5)
     local textWidth = ax.util:GetTextWidth(self:GetFont(), self:GetText())
-    self.reset:SetPos(textWidth + ax.util:ScreenScale(16), (height - self.reset:GetTall()) / 2)
+    local resetX = textWidth + ax.util:ScreenScale(16)
+
+    for i = 1, #self:GetChildren() do
+        local child = self:GetChildren()[i]
+        if ( !IsValid(child) or child == self.reset or !child:IsVisible() ) then continue end
+
+        resetX = math.min(resetX, child:GetX() - self.reset:GetWide() - ax.util:Scale(6))
+    end
+
+    resetX = math.Clamp(resetX, ax.util:Scale(8), width - self.reset:GetWide() - ax.util:Scale(8))
+    self.reset:SetPos(resetX, (height - self.reset:GetTall()) / 2)
 
     local store = self:GetStore()
     if ( store and isfunction(store.GetDefault) and isfunction(store.Get) ) then
@@ -359,6 +532,69 @@ function PANEL:PaintAdditional(width, height)
 
     if ( value == default ) then return end
     ax.util:DrawGradient(8, "left", 0, 0, width / 3, height, ColorAlpha(self:GetTextColor(), 100))
+end
+
+function PANEL:RegisterTooltipTarget(panel)
+    if ( !IsValid(panel) ) then return end
+
+    self.tooltipTargets[#self.tooltipTargets + 1] = panel
+end
+
+function PANEL:IsTooltipHot()
+    if ( self:IsHovered() ) then
+        return true
+    end
+
+    for i = 1, #self.tooltipTargets do
+        local panel = self.tooltipTargets[i]
+        if ( IsValid(panel) and panel:IsHovered() ) then
+            return true
+        end
+    end
+
+    return false
+end
+
+function PANEL:GetTooltipPayload()
+    local store = self:GetStore()
+    if ( !store or !store.registry ) then
+        return false
+    end
+
+    local entry = store.registry[self.key]
+    if ( !entry ) then
+        return false
+    end
+
+    local defaultValue = FormatStoreValue(store, self.key, store:GetDefault(self.key))
+
+    return {
+        title = ResolveStoreTitle(self.type, self.key),
+        description = ResolveStoreDescription(self.type, self.key, entry.data or {}),
+        badge = ResolveStoreTypeLabel(entry.type, entry.data or {}),
+        meta = string.format("%s %s", GetLocalizedPhraseOrNil("store.default") or "Default", defaultValue),
+        footer = self.type .. "." .. self.key,
+        accentColor = GetStoreAccentColor(self.type)
+    }
+end
+
+function PANEL:OnThink()
+    local tooltipData = self.GetAxTooltip and self:GetAxTooltip() or nil
+    if ( tooltipData == nil ) then return end
+
+    local active = self:IsTooltipHot()
+    if ( active and !self.bTooltipVisible ) then
+        self.bTooltipVisible = true
+        self:ShowAxTooltip()
+    elseif ( !active and self.bTooltipVisible ) then
+        self.bTooltipVisible = false
+        self:HideAxTooltip()
+    end
+end
+
+function PANEL:OnRemove()
+    self.bTooltipVisible = false
+    self:HideAxTooltip(true)
 end
 
 function PANEL:UpdateDisplay()
@@ -490,6 +726,14 @@ function PANEL:Init()
             self.pendingTime = nil
         end
     end
+
+    self:RegisterTooltipTarget(self.slider)
+    if ( IsValid(self.slider.TextArea) ) then
+        self:RegisterTooltipTarget(self.slider.TextArea)
+    end
+    if ( IsValid(self.slider.Slider) ) then
+        self:RegisterTooltipTarget(self.slider.Slider)
+    end
 end
 
 function PANEL:SetKey(key)
@@ -528,6 +772,8 @@ function PANEL:UpdateDisplay()
 end
 
 function PANEL:OnRemove()
+    BaseClass.OnRemove(self)
+
     if ( self.bInitializing ) then return end
 
     local store = self:GetStore()
@@ -569,6 +815,8 @@ function PANEL:Init()
             store:Set(self.key, value)
         end
     end
+
+    self:RegisterTooltipTarget(self.binder)
 end
 
 function PANEL:SetBinderValue(value)
@@ -633,6 +881,8 @@ function PANEL:Init()
     self.entry.OnLoseFocus = function(this)
         self:CommitCurrentText()
     end
+
+    self:RegisterTooltipTarget(self.entry)
 end
 
 function PANEL:CommitCurrentText()
@@ -660,6 +910,7 @@ function PANEL:SetKey(key)
 end
 
 function PANEL:OnRemove()
+    BaseClass.OnRemove(self)
     self:CommitCurrentText()
 end
 
@@ -720,14 +971,24 @@ function PANEL:Init()
             end
         end
 
+        self.removeColorPicker = removePicker
         self.colorPanel.OnRemoved = removePicker
-        self.OnRemove = removePicker
     end
+
+    self:RegisterTooltipTarget(self.colorPanel)
 end
 
 function PANEL:SetKey(key)
     BaseClass.SetKey(self, key)
     self.bInitializing = false
+end
+
+function PANEL:OnRemove()
+    if ( isfunction(self.removeColorPicker) ) then
+        self.removeColorPicker()
+    end
+
+    BaseClass.OnRemove(self)
 end
 
 vgui.Register("ax.store.color", PANEL, "ax.store.base")
@@ -752,6 +1013,8 @@ function PANEL:Init()
             store:Set(self.key, data)
         end
     end
+
+    self:RegisterTooltipTarget(self.combo)
 end
 
 function PANEL:SetKey(key)

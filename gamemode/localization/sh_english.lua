@@ -63,6 +63,13 @@ ax.localization:Register("en", {
     -- Store Translations
     ["store.enabled"] = "Enabled",
     ["store.disabled"] = "Disabled",
+    ["store.default"] = "Default",
+    ["store.type.bool"] = "Toggle",
+    ["store.type.number"] = "Number",
+    ["store.type.string"] = "Text",
+    ["store.type.color"] = "Color",
+    ["store.type.array"] = "Choice",
+    ["store.type.keybind"] = "Keybind",
 
     -- Config Translations
 

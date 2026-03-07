@@ -64,6 +64,14 @@ ax.localization:Register("tr", {
     ["store.enabled"] = "Etkin",
     ["store.disabled"] = "Devre Dışı",
 
+    ["store.default"] = "Varsayılan",
+    ["store.type.bool"] = "Geçiş",
+    ["store.type.number"] = "Sayı",
+    ["store.type.string"] = "Metin",
+    ["store.type.color"] = "Renk",
+    ["store.type.array"] = "Seçim",
+    ["store.type.keybind"] = "Tuş",
+
     -- Config Translations
 
     --- Chat
