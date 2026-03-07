@@ -431,6 +431,18 @@ end
 function ax.player.meta:PerformAction(label, duration, onComplete, onCancel)
     if ( SERVER ) then
         if ( label == nil ) then
+            local selfTable = self:GetTable()
+            if ( istable(selfTable.axActionBar) ) then
+                if ( isfunction(selfTable.axActionBar.onCancel) ) then
+                    selfTable.axActionBar.onCancel()
+                    selfTable.axActionBar.onCancel = nil
+                end
+
+                selfTable.axActionBar.onComplete = nil
+                selfTable.axActionBar = nil
+            end
+
+            timer.Remove("ax.player." .. self:SteamID64() .. ".entityAction")
             ax.net:Start(self, "player.actionbar.stop", true)
             return
         end
@@ -451,7 +463,37 @@ function ax.player.meta:PerformAction(label, duration, onComplete, onCancel)
     end
 end
 
-function ax.player.meta:PerformEntityAction(entity, label, duration, onComplete, onCancel)
+function ax.player.meta:CanMaintainEntityAction(entity, allowEyeTrace, maxDistance)
+    if ( !ax.util:IsValidPlayer(self) or !IsValid(entity) ) then
+        return false
+    end
+
+    local entityTrace = self:GetUseEntity()
+    if ( IsValid(entityTrace) and entityTrace == entity ) then
+        return true
+    end
+
+    if ( allowEyeTrace != true ) then
+        return false
+    end
+
+    local trace = self:GetEyeTrace()
+    local traceEntity = trace and trace.Entity or nil
+    if ( !IsValid(traceEntity) or traceEntity != entity ) then
+        return false
+    end
+
+    if ( isnumber(maxDistance) and maxDistance > 0 ) then
+        local hitPosition = isvector(trace.HitPos) and trace.HitPos or entity:WorldSpaceCenter()
+        if ( self:GetShootPos():DistToSqr(hitPosition) > (maxDistance * maxDistance) ) then
+            return false
+        end
+    end
+
+    return true
+end
+
+function ax.player.meta:PerformEntityAction(entity, label, duration, onComplete, onCancel, allowEyeTrace, maxDistance)
     local timerName = "ax.player." .. self:SteamID64() .. ".entityAction"
     timer.Create(timerName, 0.1, 0, function()
         if ( !IsValid(entity) or !ax.util:IsValidPlayer(self) ) then
@@ -461,8 +503,7 @@ function ax.player.meta:PerformEntityAction(entity, label, duration, onComplete,
             return
         end
 
-        local entityTrace = self:GetUseEntity()
-        if ( !IsValid(entityTrace) or entityTrace != entity ) then
+        if ( !self:CanMaintainEntityAction(entity, allowEyeTrace, maxDistance) ) then
             timer.Remove(timerName)
             self:PerformAction()
 
