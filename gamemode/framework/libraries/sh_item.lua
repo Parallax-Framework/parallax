@@ -519,3 +519,186 @@ function ax.item:Instance(id, class)
 
     return itemObject
 end
+
+function ax.item:NormalizeColor(value)
+    if ( IsColor(value) ) then
+        return value
+    end
+
+    if ( istable(value) ) then
+        return Color(
+            math.Clamp(math.floor(tonumber(value.r or value[1]) or 255), 0, 255),
+            math.Clamp(math.floor(tonumber(value.g or value[2]) or 255), 0, 255),
+            math.Clamp(math.floor(tonumber(value.b or value[3]) or 255), 0, 255),
+            math.Clamp(math.floor(tonumber(value.a or value[4]) or 255), 0, 255)
+        )
+    end
+
+    return Color(255, 255, 255, 255)
+end
+
+function ax.item:ResolveBodygroupIndex(entity, groupID)
+    if ( isnumber(groupID) ) then
+        return math.max(math.floor(groupID), 0)
+    end
+
+    if ( !isstring(groupID) or groupID == "" ) then
+        return nil
+    end
+
+    local numericIndex = tonumber(groupID)
+    if ( numericIndex != nil ) then
+        return math.max(math.floor(numericIndex), 0)
+    end
+
+    if ( isfunction(entity.FindBodygroupByName) ) then
+        local bodygroupIndex = entity:FindBodygroupByName(groupID)
+        if ( isnumber(bodygroupIndex) and bodygroupIndex >= 0 ) then
+            return bodygroupIndex
+        end
+    end
+
+    return nil
+end
+
+if ( CLIENT ) then
+    function ax.item:HasContentIconMaterial(materialPath)
+        if ( !isstring(materialPath) or materialPath == "" ) then
+            return false
+        end
+
+        self.contentIconMaterialCache = self.contentIconMaterialCache or {}
+        if ( self.contentIconMaterialCache[materialPath] != nil ) then
+            return self.contentIconMaterialCache[materialPath]
+        end
+
+        local material = Material(materialPath)
+        local isValid = material != nil and !material:IsError()
+
+        if ( !isValid ) then
+            local fallbackPath = string.Replace(materialPath, "entities/", "VGUI/entities/")
+            fallbackPath = string.Replace(fallbackPath, ".png", "")
+
+            local fallbackMaterial = Material(fallbackPath)
+            isValid = fallbackMaterial != nil and !fallbackMaterial:IsError()
+        end
+
+        self.contentIconMaterialCache[materialPath] = isValid
+
+        return isValid
+    end
+
+    function ax.item:GetSpawnIconBodygroupString(itemTable)
+        local bodygroups = istable(itemTable) and isfunction(itemTable.GetBodygroups) and itemTable:GetBodygroups() or nil
+        if ( !istable(bodygroups) ) then
+            return "000000000"
+        end
+
+        local digits = {"0", "0", "0", "0", "0", "0", "0", "0", "0"}
+        for groupID, value in pairs(bodygroups) do
+            local numericIndex = tonumber(groupID)
+            if ( numericIndex == nil ) then
+                continue
+            end
+
+            numericIndex = math.floor(numericIndex)
+            if ( numericIndex < 0 or numericIndex >= #digits ) then
+                continue
+            end
+
+            digits[numericIndex + 1] = tostring(math.Clamp(math.floor(tonumber(value) or 0), 0, 9))
+        end
+
+        return table.concat(digits)
+    end
+
+    function ax.item:NeedsSpawnIconRebuild(itemTable)
+        if ( !istable(itemTable) or !isfunction(itemTable.HasAppearanceOverrides) ) then
+            return false
+        end
+
+        if ( !itemTable:HasAppearanceOverrides() ) then
+            return false
+        end
+
+        if ( isfunction(itemTable.GetMaterial) and itemTable:GetMaterial() != "" ) then
+            return true
+        end
+
+        if ( isfunction(itemTable.GetColor) ) then
+            local color = itemTable:GetColor()
+            if ( color.r != 255 or color.g != 255 or color.b != 255 or color.a != 255 ) then
+                return true
+            end
+        end
+
+        local bodygroups = isfunction(itemTable.GetBodygroups) and itemTable:GetBodygroups() or nil
+        if ( istable(bodygroups) ) then
+            for groupID in pairs(bodygroups) do
+                if ( tonumber(groupID) == nil ) then
+                    return true
+                end
+            end
+        end
+
+        return false
+    end
+
+    function ax.item:ApplyAppearanceToIcon(itemTable, icon, model)
+        if ( !istable(itemTable) or !IsValid(icon) ) then
+            return false
+        end
+
+        if ( !isfunction(icon.SetModel) ) then
+            return false
+        end
+
+        model = model or (isfunction(itemTable.GetModel) and itemTable:GetModel()) or "models/props_junk/wood_crate001a.mdl"
+        icon:SetModel(model, itemTable.GetSkin and itemTable:GetSkin() or 0, self:GetSpawnIconBodygroupString(itemTable))
+
+        return true
+    end
+
+    function ax.item:ApplyAppearanceToModelPanel(itemTable, panel, model)
+        if ( !istable(itemTable) or !IsValid(panel) ) then
+            return false
+        end
+
+        if ( !isfunction(panel.SetModel) or !isfunction(panel.GetEntity) ) then
+            return false
+        end
+
+        model = model or (isfunction(itemTable.GetModel) and itemTable:GetModel()) or "models/props_junk/wood_crate001a.mdl"
+        panel:SetModel(model)
+
+        local entity = panel:GetEntity()
+        if ( !IsValid(entity) ) then
+            return false
+        end
+
+        entity:SetIK(false)
+
+        if ( isfunction(itemTable.ApplyAppearance) ) then
+            itemTable:ApplyAppearance(entity)
+        end
+
+        local color = isfunction(itemTable.GetColor) and itemTable:GetColor() or color_white
+        local mins, maxs = entity:GetRenderBounds()
+        local center = (mins + maxs) * 0.5
+        local extents = maxs - mins
+        local radius = math.max(extents.x, extents.y, extents.z, 1)
+
+        panel:SetAmbientLight(Color(255, 255, 255))
+        panel:SetDirectionalLight(BOX_FRONT, Color(255, 255, 255))
+        panel:SetDirectionalLight(BOX_TOP, Color(255, 255, 255))
+        panel:SetColor(color)
+        panel:SetFOV(35)
+        panel:SetCamPos(center + Vector(radius * 1.6, radius * 1.6, radius * 0.8))
+        panel:SetLookAt(center)
+        panel.LayoutEntity = function(this, previewEntity)
+            previewEntity:SetAngles(Angle(0, 35, 0))
+        end
+
+        return true
+    end
+end

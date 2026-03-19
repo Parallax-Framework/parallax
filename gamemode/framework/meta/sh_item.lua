@@ -42,6 +42,66 @@ function item:GetModel()
     return self.model or Model("models/props_junk/wood_crate001a.mdl")
 end
 
+function item:GetSkin()
+    return math.max(math.floor(tonumber(self.skin) or 0), 0)
+end
+
+function item:GetColor()
+    return ax.item:NormalizeColor(self.color)
+end
+
+function item:GetMaterial()
+    return isstring(self.material) and self.material or ""
+end
+
+--[[
+    ITEM.bodygroups = {
+        ["groupID"] = groupValue,
+    }
+]]
+function item:GetBodygroups()
+    return istable(self.bodygroups) and self.bodygroups or {}
+end
+
+function item:HasAppearanceOverrides()
+    local color = self:GetColor()
+    if ( self:GetSkin() > 0 ) then
+        return true
+    end
+
+    if ( self:GetMaterial() != "" ) then
+        return true
+    end
+
+    if ( color.r != 255 or color.g != 255 or color.b != 255 or color.a != 255 ) then
+        return true
+    end
+
+    return next(self:GetBodygroups()) != nil
+end
+
+function item:ApplyAppearance(entity)
+    if ( !IsValid(entity) ) then
+        return false
+    end
+
+    local color = self:GetColor()
+    entity:SetSkin(self:GetSkin())
+    entity:SetMaterial(self:GetMaterial())
+    entity:SetColor(color)
+
+    for groupID, value in pairs(self:GetBodygroups()) do
+        local bodygroupIndex = ax.item:ResolveBodygroupIndex(entity, groupID)
+        if ( bodygroupIndex == nil ) then
+            continue
+        end
+
+        entity:SetBodygroup(bodygroupIndex, math.max(math.floor(tonumber(value) or 0), 0))
+    end
+
+    return true
+end
+
 function item:GetInventoryID()
     if ( self.invID != nil ) then
         return self.invID
