@@ -18,11 +18,6 @@ function ENTITY:RateLimit(name, delay)
         return false
     end
 
-    if ( !isnumber(delay) or delay <= 0 ) then
-        ax.util:PrintError("Invalid rate limit delay provided to ENTITY:RateLimit()")
-        return false
-    end
-
     local data = self:GetTable()
     if ( !data.axRateLimits ) then data.axRateLimits = {} end
 
@@ -32,7 +27,11 @@ function ENTITY:RateLimit(name, delay)
         return false, data.axRateLimits[name] - curTime -- Rate limit exceeded.
     end
 
-    data.axRateLimits[name] = curTime + delay
+    if ( isnumber(delay) and delay > 0 ) then
+        data.axRateLimits[name] = curTime + delay
+    else
+        -- No delay means we just want to check the rate limit without setting it.
+    end
 
     return true -- Rate limit passed.
 end
