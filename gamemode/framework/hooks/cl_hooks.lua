@@ -343,6 +343,8 @@ function GM:GetEntityDisplayText(entity)
         if ( itemTable ) then
             return itemTable:GetName()
         end
+    elseif ( entity.GetDisplayName ) then
+        return entity:GetDisplayName()
     end
 end
 
@@ -354,6 +356,8 @@ function GM:HUDPaintTargetIDExtra(entity, x, y, alpha)
         desc = itemTable:GetDescription()
     elseif ( entity.GetCharacter and entity:GetCharacter() ) then
         desc = entity:GetCharacter():GetDescription()
+    elseif ( entity.GetDisplayDescription ) then
+        desc = entity:GetDisplayDescription()
     end
 
     if ( desc ) then
