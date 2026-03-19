@@ -903,12 +903,17 @@ function PANEL:PopulateItems()
                     self:PopulateInfo(stack)
                 end
 
-                local icon = item:Add("SpawnIcon")
+                local useModelPanel = istable(representativeItem) and ax.item:NeedsSpawnIconRebuild(representativeItem)
+                local icon = item:Add(useModelPanel and "DModelPanel" or "SpawnIcon")
                 icon:SetWide(item:GetTall() - 16)
                 icon:DockMargin(8, 8, 8, 8)
-                icon:SetModel(representativeItem:GetModel() or "models/props_junk/wood_crate001a.mdl")
                 icon:SetMouseInputEnabled(false)
                 icon:Dock(LEFT)
+                if ( useModelPanel ) then
+                    ax.item:ApplyAppearanceToModelPanel(representativeItem, icon)
+                else
+                    ax.item:ApplyAppearanceToIcon(representativeItem, icon)
+                end
 
                 if ( stack.isCurrencyStack ) then
                     local balanceLabel = item:Add("ax.text")
