@@ -136,9 +136,9 @@ function MODULE:OnPlayerHitGround(client, inWater, onFloater, speed)
     end
 
     if ( isstring(land) ) then
-        land = client:LookupSequence(land)
+        land = land
     elseif ( istable(land) ) then
-        land = client:LookupSequence(land[math.random(#land)])
+        land = land[math.random(#land)]
     end
 
     client:PlayGesture(GESTURE_SLOT_JUMP, land)
@@ -466,10 +466,9 @@ function MODULE:TranslateActivity(client, act)
 
             if ( absDiff >= 45 ) then
                 local gesture = diff > 0 and "gesture_turn_right_90" or "gesture_turn_left_90"
+                client:PlayGesture(GESTURE_SLOT_FLINCH, gesture)
+
                 local gestureSeq = client:LookupSequence(gesture)
-
-                client:PlayGesture(GESTURE_SLOT_FLINCH, gestureSeq)
-
                 local duration = client:SequenceDuration(gestureSeq)
                 if ( duration <= 0 ) then
                     duration = 0.5
@@ -502,9 +501,9 @@ function MODULE:DoAnimationEvent(client, event, data)
         end
 
         if ( isstring(desired) ) then
-            desired = client:LookupSequence(desired)
+            desired = desired
         elseif ( istable(desired) ) then
-            desired = client:LookupSequence(desired[math.random(#desired)])
+            desired = desired[math.random(#desired)]
         end
 
         local translated = hook.Run("TranslateEvent", client, event, data, desired)
@@ -526,9 +525,9 @@ function MODULE:DoAnimationEvent(client, event, data)
         end
 
         if ( isstring(desired) ) then
-            desired = client:LookupSequence(desired)
+            desired = desired
         elseif ( istable(desired) ) then
-            desired = client:LookupSequence(desired[math.random(#desired)])
+            desired = desired[math.random(#desired)]
         end
 
         local translated = hook.Run("TranslateEvent", client, event, data, desired)
