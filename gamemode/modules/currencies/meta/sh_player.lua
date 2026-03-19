@@ -15,7 +15,7 @@
 
 local player = ax.player.meta
 
--- @param uniqueID string|nil The unique identifier of the currency (defaults to "dollars")
+-- @param uniqueID string|nil The unique identifier of the currency (defaults to "default")
 function player:GetCurrency(amount, uniqueID)
     if ( isstring(amount) ) then
         uniqueID = amount
@@ -30,8 +30,8 @@ function player:GetCurrency(amount, uniqueID)
     return character:GetCurrency(uniqueID)
 end
 
--- @param uniqueID string The unique identifier of the currency (defaults to "dollars")
--- @usage client:SetCurrency(1000, "dollars")
+-- @param uniqueID string The unique identifier of the currency (defaults to "default")
+-- @usage client:SetCurrency(1000, "default")
 function player:SetCurrency(amount, uniqueID, bNoNetworking, recipients)
     local character = self:GetCharacter()
     if ( !character ) then
@@ -42,8 +42,8 @@ function player:SetCurrency(amount, uniqueID, bNoNetworking, recipients)
     character:SetCurrency(amount, uniqueID, bNoNetworking, recipients)
 end
 
--- @param uniqueID string The unique identifier of the currency (defaults to "dollars")
--- @usage client:AddCurrency(500, "dollars")
+-- @param uniqueID string The unique identifier of the currency (defaults to "default")
+-- @usage client:AddCurrency(500, "default")
 function player:AddCurrency(amount, uniqueID, bNoNetworking, recipients)
     local character = self:GetCharacter()
     if ( !character ) then
@@ -54,8 +54,8 @@ function player:AddCurrency(amount, uniqueID, bNoNetworking, recipients)
     return character:AddCurrency(amount, uniqueID, bNoNetworking, recipients)
 end
 
--- @param uniqueID string The unique identifier of the currency (defaults to "dollars")
--- @usage if (client:TakeCurrency(100, "dollars")) then
+-- @param uniqueID string The unique identifier of the currency (defaults to "default")
+-- @usage if (client:TakeCurrency(100, "default")) then
 --     print("Purchase successful")
 -- end
 function player:TakeCurrency(amount, uniqueID)
@@ -68,8 +68,8 @@ function player:TakeCurrency(amount, uniqueID)
     return character:TakeCurrency(amount, uniqueID)
 end
 
--- @param uniqueID string The unique identifier of the currency (defaults to "dollars")
--- @usage if (client:HasCurrency(1000, "dollars")) then
+-- @param uniqueID string The unique identifier of the currency (defaults to "default")
+-- @usage if (client:HasCurrency(1000, "default")) then
 --     print("Player can afford this")
 -- end
 function player:HasCurrency(amount, uniqueID)
@@ -79,13 +79,13 @@ function player:HasCurrency(amount, uniqueID)
     return character:HasCurrency(amount, uniqueID)
 end
 
---- Convenience aliases for the default "dollars" currency
+--- Convenience aliases for the default "default" currency
 -- These methods forward to the character's money methods
 
---- Get dollars amount (alias for GetCurrency with "dollars").
+--- Get default amount (alias for GetCurrency with "default").
 -- @realm shared
--- @return number The amount of dollars, or 0 if no character
--- @usage local dollars = client:GetMoney()
+-- @return number The amount of default, or 0 if no character
+-- @usage local default = client:GetMoney()
 function player:GetMoney(uniqueID)
     local character = self:GetCharacter()
     if ( !character ) then
@@ -95,7 +95,7 @@ function player:GetMoney(uniqueID)
     return character:GetMoney(uniqueID)
 end
 
---- Set dollars amount (alias for SetCurrency with "dollars").
+--- Set default amount (alias for SetCurrency with "default").
 -- @realm shared
 -- @param amount number The amount to set
 -- @param bNoNetworking bool Optional flag to disable networking (server only)
@@ -111,12 +111,12 @@ function player:SetMoney(amount, uniqueID, bNoNetworking, recipients)
     character:SetMoney(amount, uniqueID, bNoNetworking, recipients)
 end
 
---- Add dollars (alias for AddCurrency with "dollars").
+--- Add default (alias for AddCurrency with "default").
 -- @realm shared
 -- @param amount number The amount to add
 -- @param bNoNetworking bool Optional flag to disable networking (server only)
 -- @param recipients table Optional specific recipients for networking (server only)
--- @return number The new total amount of dollars, or 0 if no character
+-- @return number The new total amount of default, or 0 if no character
 -- @usage client:AddMoney(500)
 function player:AddMoney(amount, uniqueID, bNoNetworking, recipients)
     local character = self:GetCharacter()
@@ -128,7 +128,7 @@ function player:AddMoney(amount, uniqueID, bNoNetworking, recipients)
     return character:AddMoney(amount, uniqueID, bNoNetworking, recipients)
 end
 
---- Remove dollars (alias for TakeCurrency with "dollars").
+--- Remove default (alias for TakeCurrency with "default").
 -- @realm shared
 -- @param amount number The amount to remove
 -- @return bool True if successful, false if no character or insufficient funds
@@ -145,7 +145,7 @@ function player:TakeMoney(amount, uniqueID)
     return character:TakeMoney(amount, uniqueID)
 end
 
---- Check if player's character has dollars (alias for HasCurrency with "dollars").
+--- Check if player's character has default (alias for HasCurrency with "default").
 -- @realm shared
 -- @param amount number The amount to check
 -- @return bool True if the character has at least this amount, false otherwise

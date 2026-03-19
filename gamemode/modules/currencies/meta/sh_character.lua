@@ -13,11 +13,11 @@ local character = ax.character.meta
 
 --- Get the amount of a specific currency this character has.
 -- @realm shared
--- @param uniqueID string|nil The unique identifier of the currency (defaults to "dollars")
+-- @param uniqueID string|nil The unique identifier of the currency (defaults to "default")
 -- @return number The amount of currency, or 0 if invalid currency or character
--- @usage local money = character:GetCurrency("dollars")
+-- @usage local money = character:GetCurrency("default")
 function character:GetCurrency(uniqueID)
-    uniqueID = uniqueID or "dollars"
+    uniqueID = uniqueID or "default"
 
     if ( !ax.currencies:IsValid(uniqueID) ) then
         ax.util:PrintError("Attempted to get invalid currency: " .. tostring(uniqueID))
@@ -31,13 +31,13 @@ end
 -- Clamps the value to be non-negative. Use AddCurrency or TakeCurrency for modifications.
 -- @realm shared
 -- @param amount number The amount to set
--- @param uniqueID string The unique identifier of the currency (defaults to "dollars")
+-- @param uniqueID string The unique identifier of the currency (defaults to "default")
 -- @param bNoNetworking bool Optional flag to disable networking (server only)
 -- @param recipients table Optional specific recipients for networking (server only)
--- @usage character:SetCurrency(1000, "dollars")
+-- @usage character:SetCurrency(1000, "default")
 function character:SetCurrency(amount, uniqueID, bNoNetworking, recipients)
     amount = tonumber(amount) or 0
-    uniqueID = uniqueID or "dollars"
+    uniqueID = uniqueID or "default"
 
     if ( !ax.currencies:IsValid(uniqueID) ) then
         ax.util:PrintError("Attempted to set invalid currency: " .. tostring(uniqueID))
@@ -57,14 +57,14 @@ end
 -- Clamps the result to be non-negative.
 -- @realm shared
 -- @param amount number The amount to add (can be negative to subtract)
--- @param uniqueID string The unique identifier of the currency (defaults to "dollars")
+-- @param uniqueID string The unique identifier of the currency (defaults to "default")
 -- @param bNoNetworking bool Optional flag to disable networking (server only)
 -- @param recipients table Optional specific recipients for networking (server only)
 -- @return number The new total amount of currency
--- @usage character:AddCurrency(500, "dollars")
+-- @usage character:AddCurrency(500, "default")
 function character:AddCurrency(amount, uniqueID, bNoNetworking, recipients)
     amount = tonumber(amount) or 0
-    uniqueID = uniqueID or "dollars"
+    uniqueID = uniqueID or "default"
 
     if ( !ax.currencies:IsValid(uniqueID) ) then
         ax.util:PrintError("Attempted to add invalid currency: " .. tostring(uniqueID))
@@ -83,16 +83,16 @@ end
 -- Will not go below zero. Returns false if the character doesn't have enough.
 -- @realm shared
 -- @param amount number The amount to remove (must be positive)
--- @param uniqueID string The unique identifier of the currency (defaults to "dollars")
+-- @param uniqueID string The unique identifier of the currency (defaults to "default")
 -- @return bool True if the full amount was taken, false if insufficient funds
--- @usage if (character:TakeCurrency(100, "dollars")) then
+-- @usage if (character:TakeCurrency(100, "default")) then
 --     print("Purchased item")
 -- else
---     print("Not enough dollars")
+--     print("Not enough default")
 -- end
 function character:TakeCurrency(amount, uniqueID)
     amount = math.abs(tonumber(amount) or 0)
-    uniqueID = uniqueID or "dollars"
+    uniqueID = uniqueID or "default"
 
     if ( !ax.currencies:IsValid(uniqueID) ) then
         ax.util:PrintError("Attempted to take invalid currency: " .. tostring(uniqueID))
@@ -111,14 +111,14 @@ end
 --- Check if this character has at least the specified amount of currency.
 -- @realm shared
 -- @param amount number The amount to check
--- @param uniqueID string The unique identifier of the currency (defaults to "dollars")
+-- @param uniqueID string The unique identifier of the currency (defaults to "default")
 -- @return bool True if the character has at least this amount, false otherwise
--- @usage if (character:HasCurrency(1000, "dollars")) then
+-- @usage if (character:HasCurrency(1000, "default")) then
 --     print("Character is wealthy")
 -- end
 function character:HasCurrency(amount, uniqueID)
     amount = tonumber(amount) or 0
-    uniqueID = uniqueID or "dollars"
+    uniqueID = uniqueID or "default"
 
     if ( !ax.currencies:IsValid(uniqueID) ) then
         ax.util:PrintError("Attempted to check invalid currency: " .. tostring(uniqueID))
@@ -128,39 +128,39 @@ function character:HasCurrency(amount, uniqueID)
     return self:GetCurrency(uniqueID) >= amount
 end
 
---- Convenience aliases for the default "dollars" currency
--- These methods use "dollars" as the default currency ID
+--- Convenience aliases for the default "default" currency
+-- These methods use "default" as the default currency ID
 
---- Get dollars amount (alias for GetCurrency with "dollars").
+--- Get default amount (alias for GetCurrency with "default").
 -- @realm shared
--- @return number The amount of dollars
--- @usage local dollars = character:GetMoney()
+-- @return number The amount of default
+-- @usage local default = character:GetMoney()
 function character:GetMoney(uniqueID)
-    return self:GetCurrency(uniqueID or "dollars")
+    return self:GetCurrency(uniqueID or "default")
 end
 
---- Set dollars amount (alias for SetCurrency with "dollars").
+--- Set default amount (alias for SetCurrency with "default").
 -- @realm shared
 -- @param amount number The amount to set
 -- @param bNoNetworking bool Optional flag to disable networking (server only)
 -- @param recipients table Optional specific recipients for networking (server only)
 -- @usage character:SetMoney(1000)
 function character:SetMoney(amount, uniqueID, bNoNetworking, recipients)
-    self:SetCurrency(amount, uniqueID or "dollars", bNoNetworking, recipients)
+    self:SetCurrency(amount, uniqueID or "default", bNoNetworking, recipients)
 end
 
---- Add dollars (alias for AddCurrency with "dollars").
+--- Add default (alias for AddCurrency with "default").
 -- @realm shared
 -- @param amount number The amount to add
 -- @param bNoNetworking bool Optional flag to disable networking (server only)
 -- @param recipients table Optional specific recipients for networking (server only)
--- @return number The new total amount of dollars
+-- @return number The new total amount of default
 -- @usage character:AddMoney(500)
 function character:AddMoney(amount, uniqueID, bNoNetworking, recipients)
-    return self:AddCurrency(amount, uniqueID or "dollars", bNoNetworking, recipients)
+    return self:AddCurrency(amount, uniqueID or "default", bNoNetworking, recipients)
 end
 
---- Remove dollars (alias for TakeCurrency with "dollars").
+--- Remove default (alias for TakeCurrency with "default").
 -- @realm shared
 -- @param amount number The amount to remove
 -- @return bool True if successful, false if insufficient funds
@@ -168,10 +168,10 @@ end
 --     print("Purchase successful")
 -- end
 function character:TakeMoney(amount, uniqueID)
-    return self:TakeCurrency(amount, uniqueID or "dollars")
+    return self:TakeCurrency(amount, uniqueID or "default")
 end
 
---- Check if character has dollars (alias for HasCurrency with "dollars").
+--- Check if character has default (alias for HasCurrency with "default").
 -- @realm shared
 -- @param amount number The amount to check
 -- @return bool True if the character has at least this amount
@@ -179,5 +179,5 @@ end
 --     print("Can afford purchase")
 -- end
 function character:HasMoney(amount, uniqueID)
-    return self:HasCurrency(amount, uniqueID or "dollars")
+    return self:HasCurrency(amount, uniqueID or "default")
 end

@@ -60,7 +60,7 @@ function currencyEntry:GetWeight()
 end
 
 function currencyEntry:GetFormattedAmount()
-    if ( self:GetCurrencyID() == "dollars" ) then
+    if ( self:GetCurrencyID() == "default" ) then
         return ax.currencies:FormatWithSymbol(self:GetAmount(), self:GetCurrencyID(), true)
     end
 

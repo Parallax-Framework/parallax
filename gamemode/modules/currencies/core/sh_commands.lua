@@ -15,8 +15,12 @@ local function normalizeAmount(value)
     return n
 end
 
-local function validateAndDrop(client, amount, currencyID)
-    currencyID = currencyID or "dollars"
+local function validateAndDrop(client, amount, identifier)
+    identifier = identifier or "default"
+
+    local currency = ax.currencies:Find(identifier)
+    local currencyID = currency and currency.uniqueID or nil
+
     amount = normalizeAmount(amount)
 
     if ( amount <= 0 ) then
@@ -54,7 +58,7 @@ local function validateAndGive(client, amount, currencyID)
         return "Couldn't identify you as a valid player."
     end
 
-    currencyID = currencyID or "dollars"
+    currencyID = currencyID or "default"
     amount = normalizeAmount(amount)
 
     if ( amount <= 0 ) then
@@ -108,17 +112,17 @@ ax.command:Add("DropCurrency", {
 })
 
 ax.command:Add("DropMoney", {
-    description = "Drop dollars (default currency) as a world item",
+    description = "Drop default (default currency) as a world item",
     arguments = {
         { name = "amount", type = ax.type.number }
     },
     OnRun = function(def, client, amount)
-        return validateAndDrop(client, amount, "dollars")
+        return validateAndDrop(client, amount, "default")
     end
 })
 
 local function validateCurrencyID(currencyID)
-    currencyID = currencyID or "dollars"
+    currencyID = currencyID or "default"
     if ( !ax.currencies:IsValid(currencyID) ) then
         return nil, "That currency doesn't exist: " .. tostring(currencyID)
     end
@@ -139,7 +143,7 @@ ax.command:Add("GiveMoney", {
         { name = "amount", type = ax.type.number, min = 1 }
     },
     OnRun = function(def, client, amount)
-        return validateAndGive(client, amount, "dollars")
+        return validateAndGive(client, amount, "default")
     end
 })
 
@@ -312,7 +316,7 @@ ax.command:Add("CharSetMoney", {
         { name = "amount", type = ax.type.number, min = 0 }
     },
     OnRun = function(def, client, target, amount)
-        return ax.command.registry["CharSetCurrency"]:OnRun(client, target, amount, "dollars")
+        return ax.command.registry["CharSetCurrency"]:OnRun(client, target, amount, "default")
     end
 })
 
@@ -325,7 +329,7 @@ ax.command:Add("CharAddMoney", {
     },
     prefix = {"MoneyAdd"},
     OnRun = function(def, client, target, amount)
-        return ax.command.registry["CharAddCurrency"]:OnRun(client, target, amount, "dollars")
+        return ax.command.registry["CharAddCurrency"]:OnRun(client, target, amount, "default")
     end
 })
 
@@ -338,7 +342,7 @@ ax.command:Add("CharTakeMoney", {
     },
     alias = {"RemoveMoney"},
     OnRun = function(def, client, target, amount)
-        return ax.command.registry["CharTakeCurrency"]:OnRun(client, target, amount, "dollars")
+        return ax.command.registry["CharTakeCurrency"]:OnRun(client, target, amount, "default")
     end
 })
 
@@ -350,6 +354,6 @@ ax.command:Add("CharGetMoney", {
     },
     alias = {"MoneyGet", "BalanceMoney"},
     OnRun = function(def, client, target)
-        return ax.command.registry["CharGetCurrency"]:OnRun(client, target, "dollars")
+        return ax.command.registry["CharGetCurrency"]:OnRun(client, target, "default")
     end
 })

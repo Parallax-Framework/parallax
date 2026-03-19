@@ -21,13 +21,13 @@ ax.currencies.registry = ax.currencies.registry or {}
 -- Creates a currency definition that can be used for character money management.
 -- Automatically registers a character variable for storing the currency value.
 -- @realm shared
--- @param uniqueID string The unique identifier for the currency (e.g., "dollars", "tokens")
+-- @param uniqueID string The unique identifier for the currency (e.g., "default", "tokens")
 -- @param data table Currency configuration table with the following fields:
 --   - name (string): Display name of the currency
 --   - symbol (string): Currency symbol (e.g., "$", "¥", "₹")
 --   - default (number): Default starting amount (defaults to 0)
 --   - singular (string): Singular form of currency name (e.g., "dollar")
---   - plural (string): Plural form of currency name (e.g., "dollars")
+--   - plural (string): Plural form of currency name (e.g., "default")
 --   - symbolPosition (string): "prefix" or "suffix" for how the symbol is placed in formatted text
 --   - symbolSpacing (boolean): Whether to add a space between the symbol and amount in formatted text
 --   - model (string): Inventory/world preview model used for this currency
@@ -35,12 +35,12 @@ ax.currencies.registry = ax.currencies.registry or {}
 --   - physical (boolean): Whether the currency can exist as a world entity or be directly handed over
 --   - format (function): Optional custom formatting function(amount) -> string
 -- @return bool True if registration succeeded, false otherwise
--- @usage ax.currencies:Register("dollars", {
+-- @usage ax.currencies:Register("default", {
 --     name = "Dollars",
 --     symbol = "$",
 --     default = 100,
 --     singular = "dollar",
---     plural = "dollars"
+--     plural = "default"
 -- })
 function ax.currencies:Register(uniqueID, data)
     if ( !isstring(uniqueID) or !istable(data) ) then
@@ -114,7 +114,7 @@ end
 -- @realm shared
 -- @param uniqueID string The unique identifier of the currency
 -- @return table|nil The currency data table if found, nil otherwise
--- @usage local dollars = ax.currencies:Get("dollars")
+-- @usage local default = ax.currencies:Get("default")
 function ax.currencies:Get(uniqueID)
     if ( !isstring(uniqueID) ) then
         ax.util:PrintError("Invalid currency ID provided to ax.currencies:Get()")
@@ -122,6 +122,28 @@ function ax.currencies:Get(uniqueID)
     end
 
     return self.registry[uniqueID]
+end
+
+--- Find a currency by its name or symbol.
+-- Performs a case-insensitive search through registered currencies to find a match.
+-- @realm shared
+-- @param query string The name or symbol to search for
+-- @return table|nil The currency data table if a match is found, nil otherwise
+-- @usage local currency = ax.currencies:Find("default") -- Finds by name
+-- @usage local currency = ax.currencies:Find("$") -- Finds by symbol
+function ax.currencies:Find(query)
+    if ( !isstring(query) or query == "" ) then
+        return nil
+    end
+
+    local lowerQuery = string.lower(query)
+    for _, currency in pairs(self.registry) do
+        if ( string.lower(currency.name) == lowerQuery or string.lower(currency.symbol) == lowerQuery ) then
+            return currency
+        end
+    end
+
+    return nil
 end
 
 --- Get all registered currencies.
@@ -138,7 +160,7 @@ end
 -- @realm shared
 -- @param uniqueID string The unique identifier to check
 -- @return bool True if the currency exists, false otherwise
--- @usage if (ax.currencies:IsValid("dollars")) then
+-- @usage if (ax.currencies:IsValid("default")) then
 --     print("Dollars currency is registered")
 -- end
 function ax.currencies:IsValid(uniqueID)
@@ -150,7 +172,7 @@ end
 -- @param uniqueID string The unique identifier to check
 -- @return bool True if the currency is physical, false otherwise
 function ax.currencies:IsPhysical(uniqueID)
-    uniqueID = uniqueID or "dollars"
+    uniqueID = uniqueID or "default"
 
     return self.registry[uniqueID] != nil and self.registry[uniqueID].physical == true
 end
@@ -161,11 +183,11 @@ end
 -- @param amount number The amount to format
 -- @param uniqueID string The unique identifier of the currency
 -- @return string Formatted currency string (e.g., "$ 1,234 Dollars")
--- @usage local formatted = ax.currencies:Format("dollars", 1000)
+-- @usage local formatted = ax.currencies:Format("default", 1000)
 -- -- Returns: "$ 1,000 Dollars"
 function ax.currencies:Format(amount, uniqueID)
     amount = tonumber(amount) or 0
-    uniqueID = uniqueID or "dollars"
+    uniqueID = uniqueID or "default"
 
     local currencyData = self:Get(uniqueID)
     if ( !currencyData ) then
@@ -193,11 +215,11 @@ end
 -- @param useSymbol boolean Whether to include the currency symbol (default: false)
 -- @param symbolPosition string "prefix" or "suffix" to position the symbol (default: "prefix")
 -- @return string Formatted currency string with symbol (e.g., "$ 1,000 Dollars" or "1,000$ Dollars")
--- @usage local formatted = ax.currencies:FormatWithSymbol(1000, "dollars", true, "prefix")
+-- @usage local formatted = ax.currencies:FormatWithSymbol(1000, "default", true, "prefix")
 -- -- Returns: "$ 1,000 Dollars"
 function ax.currencies:FormatWithSymbol(amount, uniqueID, useSymbol, symbolPosition)
     amount = tonumber(amount) or 0
-    uniqueID = uniqueID or "dollars"
+    uniqueID = uniqueID or "default"
     useSymbol = useSymbol or false
     symbolPosition = symbolPosition or "prefix"
 
@@ -228,16 +250,16 @@ end
 -- Creates a physical entity representing dropped currency that players can pick up.
 -- @realm server
 -- @param amount number The amount of currency to spawn
--- @param uniqueID string The unique identifier of the currency (defaults to "dollars")
+-- @param uniqueID string The unique identifier of the currency (defaults to "default")
 -- @param position vector|Player The position to spawn at, or a player (spawns at their drop position)
 -- @param angle Angle Optional angle for the entity (defaults to random)
 -- @return Entity|nil The spawned currency entity, or nil if invalid parameters
--- @usage local money = ax.currencies:Spawn(500, "dollars", player:GetPos() + Vector(0, 0, 32))
+-- @usage local money = ax.currencies:Spawn(500, "default", player:GetPos() + Vector(0, 0, 32))
 function ax.currencies:Spawn(amount, uniqueID, position, angle)
     if ( CLIENT ) then return nil end
 
     amount = math.abs(tonumber(amount) or 0)
-    uniqueID = uniqueID or "dollars"
+    uniqueID = uniqueID or "default"
 
     if ( amount <= 0 ) then
         ax.util:PrintError("Invalid amount for currency spawn: " .. tostring(amount))
