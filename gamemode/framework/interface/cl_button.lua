@@ -223,8 +223,6 @@ end
 function PANEL:Paint(width, height)
     local glass = ax.theme:GetGlass()
     local metrics = ax.theme:GetMetrics()
-    self.textColor = glass.text
-    self.textColorHovered = glass.textHover
     self.backgroundColorUnHovered = ax.theme:ScaleAlpha(glass.button, metrics.opacity)
     self.backgroundColorHovered = ax.theme:ScaleAlpha(glass.buttonHover, metrics.opacity)
     self.backgroundColorActive = ax.theme:ScaleAlpha(glass.buttonActive, metrics.opacity)
