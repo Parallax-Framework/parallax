@@ -316,7 +316,7 @@ function PANEL:Populate(tab, scroller, type, category)
     local hasSubCategories = false
 
     for key, entry in pairs(rows) do
-        local subCat = entry.data.subCategory or ax.localization:GetPhrase("subcategory.general")
+        local subCat = entry.data.subCategory or "general"
         if ( entry.data.subCategory ) then
             hasSubCategories = true
         end
