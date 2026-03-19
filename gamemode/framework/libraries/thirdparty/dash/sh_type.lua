@@ -53,7 +53,7 @@ function ismaterial(v)
 end
 
 function isnumber(v)
-    return getmetatable(v) == nil and v != nil and v == tonumber(v)
+    return type(v) == "number"
 end
 
 function isbool(v)
