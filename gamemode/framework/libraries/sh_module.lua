@@ -95,7 +95,12 @@ function ax.module:Include(path, timeFilter)
                 if ( !shouldSkip ) then
                     MODULE = MODULE or { uniqueID = dirName, scope = scope }
 
-                    ax.util:Include(bootFile, "shared")
+                    local shouldLoad = ax.util:Include(bootFile, "shared")
+                    if ( shouldLoad == false ) then
+                        ax.util:PrintDebug("Module \"" .. tostring(MODULE.name) .. "\" returned false on boot, skipping load.")
+                        MODULE = nil
+                        continue
+                    end
 
                     ax.util:IncludeDirectory(path .. "/" .. dirName .. "/libraries", true, nil, timeFilter)
                     ax.util:IncludeDirectory(path .. "/" .. dirName .. "/meta", true, nil, timeFilter)

@@ -46,10 +46,12 @@ function ax.util:DetectFileRealm(file)
 end
 
 local function SafeInclude(path)
-    local success, err = pcall(include, path)
+    local success, result = pcall(include, path)
     if ( !success ) then
-        ax.util:PrintWarning("Failed to include file: " .. path .. " - Error: " .. err)
+        ax.util:PrintWarning("Failed to include file: " .. path .. " - Error: " .. result)
+        return nil
     end
+    return result
 end
 
 local function SafeIncludeCS(path)
@@ -88,20 +90,19 @@ function ax.util:Include(path, realm)
     if ( realm == "client" ) then
         if ( SERVER ) then
             SafeIncludeCS(path)
+            return true
         else
-            SafeInclude(path)
+            return SafeInclude(path)
         end
     elseif ( SERVER and realm == "server" ) then
-        SafeInclude(path)
+        return SafeInclude(path)
     else
         if ( SERVER ) then
             SafeIncludeCS(path)
         end
 
-        SafeInclude(path)
+        return SafeInclude(path)
     end
-
-    return true
 end
 
 --- Recursively includes all Lua files found under a directory.
