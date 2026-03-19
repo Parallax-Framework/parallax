@@ -23,6 +23,7 @@ if ( SERVER ) then
         if ( !istable(item) ) then return end
 
         self:SetModel(item:GetModel() or Model("models/props_junk/gnome.mdl"))
+        item:ApplyAppearance(self)
         self:PhysicsInit(SOLID_VPHYSICS)
         self:SetSolid(SOLID_VPHYSICS)
         self:SetUseType(SIMPLE_USE)
