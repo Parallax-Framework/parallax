@@ -75,11 +75,22 @@ end, "icon16/box.png", 30)
 spawnmenu.AddContentType("axitem", function(container, obj)
     if ( !obj.spawnname ) then return end
 
+    local itemTable = ax.item.stored[obj.spawnname]
+    local materialPath = obj.material or "entities/" .. obj.spawnname .. ".png"
+    local useModelPreview = !ax.item:HasContentIconMaterial(materialPath)
+    if ( istable(itemTable) and isfunction(itemTable.HasAppearanceOverrides) ) then
+        useModelPreview = useModelPreview or itemTable:HasAppearanceOverrides()
+    end
+
     local icon = vgui.Create("ContentIcon", container)
     icon:SetContentType("axitem")
     icon:SetSpawnName(obj.spawnname)
     icon:SetName(obj.nicename or obj.spawnname)
-    icon:SetMaterial(obj.material or "entities/" .. obj.spawnname .. ".png")
+    if ( useModelPreview ) then
+        icon.m_MaterialName = materialPath
+    else
+        icon:SetMaterial(materialPath)
+    end
     icon:SetAdminOnly(obj.admin or false)
     icon:SetColor(Color(255, 255, 255, 255))
 
@@ -96,6 +107,10 @@ spawnmenu.AddContentType("axitem", function(container, obj)
             SetClipboardText(obj.spawnname)
         end):SetIcon("icon16/page_copy.png")
 
+        menu:AddOption("Give to Self", function()
+            ax.command:Run("/CharGiveItem", ax.client:SteamID64(), obj.spawnname)
+        end):SetIcon("icon16/brick_go.png")
+
         menu:Open()
     end
 
@@ -103,25 +118,28 @@ spawnmenu.AddContentType("axitem", function(container, obj)
     icon.Paint = nil
 
     local model = "models/props_junk/garbage_metalcan001a.mdl"
-    if ax.item.stored[obj.spawnname] and ax.item.stored[obj.spawnname].model then
-        model = ax.item.stored[obj.spawnname].model
+    if ( istable(itemTable) and isfunction(itemTable.GetModel) ) then
+        model = itemTable:GetModel()
+    elseif ( istable(itemTable) and itemTable.model ) then
+        model = itemTable.model
     end
 
     local size = icon:GetTall() / 1.25
 
-    local spawnIcon = icon:Add("SpawnIcon")
-    spawnIcon:SetModel(model)
-    spawnIcon:SetSize(size, size)
-    spawnIcon:Center()
-    spawnIcon:SetMouseInputEnabled(false)
-    spawnIcon:SetZPos(1)
+    local useModelPanel = useModelPreview or (istable(itemTable) and ax.item:NeedsSpawnIconRebuild(itemTable))
+    local preview = icon:Add(useModelPanel and "DModelPanel" or "SpawnIcon")
+    preview:SetSize(size, size)
+    preview:Center()
+    preview:SetMouseInputEnabled(false)
+    preview:SetZPos(1)
 
-    -- if we have an image, hide the spawn icon
-    if ( !obj.material or obj.material == "" ) then
-        spawnIcon:SetVisible(true)
+    if ( useModelPanel ) then
+        ax.item:ApplyAppearanceToModelPanel(itemTable, preview, model)
     else
-        spawnIcon:SetVisible(false)
+        ax.item:ApplyAppearanceToIcon(itemTable, preview, model)
     end
+
+    preview:SetVisible(useModelPreview)
 
     if ( IsValid(container) ) then
         container:Add(icon)
