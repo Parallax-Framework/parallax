@@ -337,7 +337,19 @@ end
 
 function GM:GetEntityDisplayText(entity)
     if ( ax.util:IsValidPlayer(entity) ) then
-        return entity:Nick(), team.GetColor(entity:Team())
+        local name = entity:Nick()
+        local color = team.GetColor(entity:Team())
+
+        local returnName, returnColor = hook.Run("GetPlayerDisplayName", entity, name)
+        if ( returnName != nil and isstring(returnName) ) then
+            name = returnName
+        end
+
+        if ( returnColor != nil and IsColor(returnColor) ) then
+            color = returnColor
+        end
+
+        return name, color
     elseif ( entity:GetClass() == "ax_item" ) then
         local itemTable = entity:GetItemTable()
         if ( itemTable ) then
