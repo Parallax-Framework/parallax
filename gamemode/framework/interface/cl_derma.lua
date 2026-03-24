@@ -50,8 +50,8 @@ function Derma_DrawBackgroundBlur(panel, starttime)
 end
 
 function Derma_Message(text, title, buttonText)
-    title = title or "Notice"
-    text = text or "Message Text"
+    title = ax.localization:GetPhrase(title) or "Notice"
+    text = ax.localization:GetPhrase(text) or "Message Text"
     buttonText = buttonText or "OK"
 
     local frame = vgui.Create("EditablePanel")
@@ -115,8 +115,8 @@ function Derma_Message(text, title, buttonText)
 end
 
 function Derma_Query(text, title, ...)
-    title = title or "Query"
-    text = text or "Are you sure?"
+    title = ax.localization:GetPhrase(title) or "Query"
+    text = ax.localization:GetPhrase(text) or "Are you sure?"
 
     local frame = vgui.Create("EditablePanel")
     frame:SetSize(ScrW() / 2, ScrH() / 4)
@@ -203,9 +203,9 @@ function Derma_Query(text, title, ...)
 end
 
 function Derma_StringRequest(title, text, defaultText, onEnter, onCancel, okText, cancelText)
-    title = title or "String Request"
-    text = text or "Please enter a value:"
-    defaultText = defaultText or ""
+    title = ax.localization:GetPhrase(title) or "String Request"
+    text = ax.localization:GetPhrase(text) or "Please enter a value:"
+    defaultText = ax.localization:GetPhrase(defaultText) or ""
 
     local frame = vgui.Create("EditablePanel")
     frame:SetSize(ScrW() / 2, ScrH() / 4)
