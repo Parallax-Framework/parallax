@@ -93,7 +93,7 @@ function ax.module:Include(path, timeFilter)
                 end
 
                 if ( !shouldSkip ) then
-                    MODULE = MODULE or { uniqueID = dirName, scope = scope, folder = path }
+                    MODULE = MODULE or { uniqueID = dirName, scope = scope, folder = path .. "/" .. dirName }
 
                     local shouldLoad = ax.util:Include(bootFile, "shared")
                     if ( shouldLoad == false ) then
