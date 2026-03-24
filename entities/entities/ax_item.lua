@@ -18,6 +18,10 @@ function ENT:GetItemTable()
 end
 
 if ( SERVER ) then
+    function ENT:UpdateTransmitState()
+        return TRANSMIT_ALWAYS
+    end
+
     function ENT:Initialize()
         local item = self:GetItemTable()
         if ( !istable(item) ) then return end
