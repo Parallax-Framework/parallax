@@ -360,11 +360,34 @@ function GM:HUDPaintTargetIDExtra(entity, x, y, alpha)
         desc = entity:GetDisplayDescription()
     end
 
+    local lineCount = 0
+
     if ( desc ) then
-        local wrapped = ax.util:GetWrappedText(desc, "ax.small", ax.util:ScreenScale(128))
-        for i, line in ipairs(wrapped) do
-            draw.SimpleText(line, "ax.small", x + 1, y + ax.util:ScreenScaleH(6) * i + 1, Color(0, 0, 0, alpha / 4), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-            draw.SimpleText(line, "ax.small", x, y + ax.util:ScreenScaleH(6) * i, Color(255, 255, 255, alpha / 2), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+        local maxWidth = ax.util:ScreenScale(128)
+        for _, segment in ipairs(string.Explode("\n", desc)) do
+            local wrapped = ax.util:GetWrappedText(segment, "ax.small", maxWidth)
+            for _, line in ipairs(wrapped) do
+                lineCount = lineCount + 1
+                draw.SimpleText(line, "ax.small", x + 1, y + ax.util:ScreenScaleH(6) * lineCount + 1, Color(0, 0, 0, alpha / 4), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+                draw.SimpleText(line, "ax.small", x, y + ax.util:ScreenScaleH(6) * lineCount, Color(255, 255, 255, alpha / 2), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+            end
+        end
+    end
+
+    if ( entity.GetDisplayDescriptionExtras ) then
+        local extras = entity:GetDisplayDescriptionExtras()
+        if ( istable(extras) ) then
+            for _, extra in ipairs(extras) do
+                if ( !isstring(extra.text) or extra.text == "" ) then continue end
+
+                local color = IsColor(extra.color) and extra.color or Color(255, 255, 255)
+                local wrapped = ax.util:GetWrappedText(extra.text, "ax.small", ax.util:ScreenScale(128))
+                for _, line in ipairs(wrapped) do
+                    lineCount = lineCount + 1
+                    draw.SimpleText(line, "ax.small", x + 1, y + ax.util:ScreenScaleH(6) * lineCount + 1, Color(0, 0, 0, alpha / 4), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+                    draw.SimpleText(line, "ax.small", x, y + ax.util:ScreenScaleH(6) * lineCount, ColorAlpha(color, alpha / 2), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+                end
+            end
         end
     end
 end
