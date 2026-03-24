@@ -153,7 +153,7 @@ function ax.recognition:Introduce(client, targetClient, alias)
 
     alias = isstring(alias) and string.Trim(alias) or ""
     if ( #alias < 1 or #alias > 48 ) then
-        client:Notify("recognition.notify.alias_invalid_length")
+        client:Notify(ax.localization:GetPhrase("recognition.notify.alias_invalid_length"), "error")
         return
     end
 
@@ -170,7 +170,7 @@ function ax.recognition:Introduce(client, targetClient, alias)
     local targetFamiliarity = ax.character:GetVar(targetChar, "familiarity")
     if ( !istable(targetFamiliarity) ) then targetFamiliarity = {} end
 
-    local record = targetFamiliarity[clientID]
+    local record = targetFamiliarity[tostring(clientID)] or targetFamiliarity[clientID]
     if ( !istable(record) ) then
         record = { score = 0, alias = nil, lastSeen = 0 }
     end
@@ -210,7 +210,7 @@ function ax.recognition:AdminSetFamiliarity(admin, charID, targetID, score)
 
     CAMI.PlayerHasAccess(admin, "Parallax - Recognition", function(bHasAccess)
         if ( !bHasAccess ) then
-            admin:Notify("recognition.notify.no_permission")
+            admin:Notify(ax.localization:GetPhrase("recognition.notify.no_permission"), "error")
             return
         end
 

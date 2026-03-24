@@ -191,7 +191,7 @@ local function HandleIntroduceKey(client, bind, pressed)
     local target = trace and trace.Entity or nil
 
     if ( !IsValid(target) or !ax.util:IsValidPlayer(target) or target == ax.client ) then
-        ax.notification:Add("recognition.notify.no_target")
+        ax.notification:Add(ax.localization:GetPhrase("recognition.notify.no_target"))
         return
     end
 
@@ -201,19 +201,19 @@ local function HandleIntroduceKey(client, bind, pressed)
 
     local targetChar = target:GetCharacter()
     if ( !targetChar ) then
-        ax.notification:Add("recognition.notify.no_character")
+        ax.notification:Add(ax.localization:GetPhrase("recognition.notify.no_character"))
         return
     end
 
     local name = hook.Run("GetEntityDisplayText", target)
     ax.gui.recognitionIntroduce = Derma_StringRequest(ax.localization:GetPhrase("recognition.introduce.title"), ax.localization:GetPhrase("recognition.introduce.prompt", name), char:GetName(), function(text)
         if ( text == "" ) then
-            ax.notification:Add("recognition.notify.alias_empty")
+            ax.notification:Add(ax.localization:GetPhrase("recognition.notify.alias_empty"), "error")
             return
         end
 
         if ( #text > 48 ) then
-            ax.notification:Add("recognition.notify.alias_too_long")
+            ax.notification:Add(ax.localization:GetPhrase("recognition.notify.alias_too_long"), "error")
             return
         end
 
