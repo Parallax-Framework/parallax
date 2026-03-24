@@ -17,7 +17,6 @@ ax._reload = ax._reload or { pingAt = 0, armed = false, frame = -1 }
 include("framework/util/boot.lua")
 include("framework/boot.lua")
 
-hook.Remove("PostDrawEffects", "RenderHalos")
 hook.Remove("OnEntityCreated", "CreateWidgets")
 hook.Remove("PlayerTick", "TickWidgets")
 hook.Remove("PostDrawEffects", "RenderWidgets")
