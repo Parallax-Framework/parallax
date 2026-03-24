@@ -124,21 +124,48 @@ function ax.currencies:Get(uniqueID)
     return self.registry[uniqueID]
 end
 
---- Find a currency by its name or symbol.
--- Performs a case-insensitive search through registered currencies to find a match.
+--- Find a currency by its uniqueID, name, symbol, singular, or plural form.
+-- Performs a case-insensitive search with fallback from exact match → prefix match → substring match.
 -- @realm shared
--- @param query string The name or symbol to search for
+-- @param query string The uniqueID, name, symbol, singular, or plural to search for
 -- @return table|nil The currency data table if a match is found, nil otherwise
--- @usage local currency = ax.currencies:Find("default") -- Finds by name
--- @usage local currency = ax.currencies:Find("$") -- Finds by symbol
+-- @usage local currency = ax.currencies:Find("default") -- Finds by uniqueID
+-- @usage local currency = ax.currencies:Find("req")     -- Finds "requisition" by prefix
+-- @usage local currency = ax.currencies:Find("$")       -- Finds by symbol
 function ax.currencies:Find(query)
     if ( !isstring(query) or query == "" ) then
         return nil
     end
 
     local lowerQuery = string.lower(query)
+
+    -- Pass 1: exact match on uniqueID, name, symbol, singular, or plural
     for _, currency in pairs(self.registry) do
-        if ( string.lower(currency.name) == lowerQuery or string.lower(currency.symbol) == lowerQuery ) then
+        if ( string.lower(currency.uniqueID) == lowerQuery
+            or string.lower(currency.name) == lowerQuery
+            or string.lower(currency.symbol) == lowerQuery
+            or string.lower(currency.singular or "") == lowerQuery
+            or string.lower(currency.plural or "") == lowerQuery ) then
+            return currency
+        end
+    end
+
+    -- Pass 2: prefix match on uniqueID, name, singular, or plural
+    for _, currency in pairs(self.registry) do
+        if ( string.sub(string.lower(currency.uniqueID), 1, #lowerQuery) == lowerQuery
+            or string.sub(string.lower(currency.name), 1, #lowerQuery) == lowerQuery
+            or string.sub(string.lower(currency.singular or ""), 1, #lowerQuery) == lowerQuery
+            or string.sub(string.lower(currency.plural or ""), 1, #lowerQuery) == lowerQuery ) then
+            return currency
+        end
+    end
+
+    -- Pass 3: substring match on uniqueID, name, singular, or plural
+    for _, currency in pairs(self.registry) do
+        if ( string.find(string.lower(currency.uniqueID), lowerQuery, 1, true)
+            or string.find(string.lower(currency.name), lowerQuery, 1, true)
+            or string.find(string.lower(currency.singular or ""), lowerQuery, 1, true)
+            or string.find(string.lower(currency.plural or ""), lowerQuery, 1, true) ) then
             return currency
         end
     end

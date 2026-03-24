@@ -58,15 +58,16 @@ local function validateAndGive(client, amount, currencyID)
         return "Couldn't identify you as a valid player."
     end
 
-    currencyID = currencyID or "default"
+    local resolvedCurrency = ax.currencies:Find(currencyID or "default")
+    if ( !resolvedCurrency ) then
+        return "That currency doesn't exist: " .. tostring(currencyID)
+    end
+    currencyID = resolvedCurrency.uniqueID
+
     amount = normalizeAmount(amount)
 
     if ( amount <= 0 ) then
         return "Please enter a positive amount."
-    end
-
-    if ( !ax.currencies:IsValid(currencyID) ) then
-        return "That currency doesn't exist: " .. tostring(currencyID)
     end
 
     if ( !ax.currencies:IsPhysical(currencyID) ) then
@@ -122,11 +123,11 @@ ax.command:Add("DropMoney", {
 })
 
 local function validateCurrencyID(currencyID)
-    currencyID = currencyID or "default"
-    if ( !ax.currencies:IsValid(currencyID) ) then
+    local currency = ax.currencies:Find(currencyID or "default")
+    if ( !currency ) then
         return nil, "That currency doesn't exist: " .. tostring(currencyID)
     end
-    return currencyID
+    return currency.uniqueID
 end
 
 local function requireCharacter(client)
