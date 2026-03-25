@@ -33,6 +33,83 @@ ax.recognition.TIERS = {
 -- @realm shared
 ax.recognition.THRESHOLDS = { 0, 250, 500, 1000, 1500 }
 
+--- Normalize a familiarity table to canonical string keys and sanitized records.
+-- This prevents JSON/network round-trips from collapsing mixed numeric/string keys
+-- (e.g. `123` and `"123"`) into duplicate object keys, which can silently discard
+-- aliases after reconnects.
+-- @realm shared
+-- @param familiarity table Familiarity map keyed by target character ID
+-- @return boolean True when the table was modified in-place
+function ax.recognition:NormalizeFamiliarity(familiarity)
+    if ( !istable(familiarity) ) then return false end
+
+    local normalized = {}
+    local bChanged = false
+
+    for rawID, rawRecord in pairs(familiarity) do
+        local numID = tonumber(rawID)
+        if ( !numID or !istable(rawRecord) ) then
+            bChanged = true
+            continue
+        end
+
+        local alias = isstring(rawRecord.alias) and string.Trim(rawRecord.alias) or nil
+        if ( alias == "" ) then
+            alias = nil
+        end
+
+        local key = tostring(numID)
+        local record = {
+            score = tonumber(rawRecord.score) or 0,
+            alias = alias,
+            lastSeen = tonumber(rawRecord.lastSeen) or 0,
+        }
+
+        local existing = normalized[key]
+        if ( !existing ) then
+            normalized[key] = record
+        else
+            if ( record.score > existing.score ) then
+                existing.score = record.score
+            end
+
+            if ( !isstring(existing.alias) and isstring(record.alias) ) then
+                existing.alias = record.alias
+            end
+
+            if ( record.lastSeen > existing.lastSeen ) then
+                existing.lastSeen = record.lastSeen
+            end
+
+            bChanged = true
+        end
+
+        if ( rawID != key ) then
+            bChanged = true
+        end
+
+        if (
+            rawRecord.score != record.score or
+            rawRecord.alias != record.alias or
+            rawRecord.lastSeen != record.lastSeen
+        ) then
+            bChanged = true
+        end
+    end
+
+    if ( !bChanged ) then
+        return false
+    end
+
+    table.Empty(familiarity)
+
+    for key, record in pairs(normalized) do
+        familiarity[key] = record
+    end
+
+    return true
+end
+
 --- Derive the familiarity tier for a given raw score.
 -- @realm shared
 -- @param score number Raw familiarity score (0–200+)
@@ -61,36 +138,15 @@ end
 function ax.recognition:GetRecord(char, targetID)
     if ( !istable(char) ) then return nil end
 
-    -- Normalise to number for the canonical in-memory key, but also accept
-    -- strings so callers that pass GetID() results are always handled correctly.
     local numID = tonumber(targetID)
     if ( !numID ) then return nil end
 
     local familiarity = ax.character:GetVar(char, "familiarity")
     if ( !istable(familiarity) ) then return nil end
 
-    local strKey = tostring(numID)
-    local strRecord = familiarity[strKey]
-    local numRecord = familiarity[numID]
+    self:NormalizeFamiliarity(familiarity)
 
-    -- Lazily collapse any duplicate left from before string keys were enforced.
-    -- Merge into the string-keyed entry (canonical post-fix form) and drop the number key.
-    if ( strRecord and numRecord ) then
-        if ( (numRecord.score or 0) > (strRecord.score or 0) ) then strRecord.score = numRecord.score end
-        if ( isstring(numRecord.alias) and !isstring(strRecord.alias) ) then strRecord.alias = numRecord.alias end
-        if ( (numRecord.lastSeen or 0) > (strRecord.lastSeen or 0) ) then strRecord.lastSeen = numRecord.lastSeen end
-        familiarity[numID] = nil
-        return strRecord
-    end
-
-    -- Migrate an orphaned number-keyed record to the string key.
-    if ( numRecord ) then
-        familiarity[strKey] = numRecord
-        familiarity[numID] = nil
-        return numRecord
-    end
-
-    return strRecord
+    return familiarity[tostring(numID)]
 end
 
 --- Resolve the display name that `char` uses for the character with ID `targetID`.
@@ -114,15 +170,8 @@ function ax.recognition:GetAlias(char, targetID)
 
     local tier = self:GetTier(record.score or 0)
 
-    -- Both parties must have introduced themselves to advance past ACQUAINTED.
-    -- record.alias = target introduced to char; reverseRecord.alias = char introduced to target.
     if ( tier >= self.TIERS.ACQUAINTED and isstring(record.alias) ) then
-        local reverseRecord = istable(targetChar) and self:GetRecord(targetChar, char:GetID()) or nil
-        local bMutual = istable(reverseRecord) and isstring(reverseRecord.alias)
-
-        if ( bMutual ) then
-            return record.alias
-        end
+        return record.alias
     end
 
     if ( tier >= self.TIERS.SEEN ) then

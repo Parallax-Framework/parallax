@@ -18,6 +18,50 @@ CAMI.RegisterPrivilege({
     Description = "Allows management of character familiarity records.",
 })
 
+--- Persist a character's familiarity blob after in-place normalization/mutation.
+-- @realm server
+-- @param char table Character whose familiarity should be saved
+local function SaveFamiliarity(char)
+    if ( !istable(char) ) then return end
+
+    local familiarity = ax.character:GetVar(char, "familiarity")
+    if ( !istable(familiarity) ) then
+        familiarity = {}
+        char.vars.familiarity = familiarity
+    end
+
+    local query = mysql:Update("ax_characters")
+        query:Where("id", char:GetID())
+        query:Update("familiarity", util.TableToJSON(familiarity))
+        query:Callback(function(result)
+            if ( result == false ) then
+                ax.util:PrintError("[Recognition] Failed to persist familiarity for char " .. char:GetID())
+            end
+        end)
+    query:Execute()
+end
+
+--- Normalize a loaded character's familiarity data and resync it to the owner.
+-- This repairs legacy mixed-key entries before a later save/relog can drop aliases.
+-- @realm server
+-- @param client Player Character owner
+-- @param char table Loaded character
+local function NormalizeLoadedFamiliarity(client, char)
+    if ( !istable(char) ) then return end
+
+    local familiarity = ax.character:GetVar(char, "familiarity")
+    if ( !istable(familiarity) ) then return end
+    if ( !ax.recognition:NormalizeFamiliarity(familiarity) ) then return end
+
+    SaveFamiliarity(char)
+
+    if ( ax.util:IsValidPlayer(client) ) then
+        ax.net:Start(client, "character.var", char:GetID(), "familiarity", familiarity)
+    end
+end
+
+hook.Add("PlayerLoadedCharacter", "ax.recognition.NormalizeLoadedFamiliarity", NormalizeLoadedFamiliarity)
+
 --- Award familiarity score from `client`'s character toward `targetClient`'s character, and vice versa.
 -- Fires tier-crossing hooks when the score crosses a threshold boundary.
 -- Networking is sent only to the respective character owners.
@@ -37,6 +81,8 @@ local function AwardScore(client, char, targetClient, targetChar, amount)
     local function ApplyGain(owner, ownerChar, otherClient, otherCharID, delta)
         local familiarity = ax.character:GetVar(ownerChar, "familiarity")
         if ( !istable(familiarity) ) then familiarity = {} end
+
+        ax.recognition:NormalizeFamiliarity(familiarity)
 
         -- Keys are stored as strings after the JSON-round-trip fix; try both forms.
         local record = familiarity[tostring(otherCharID)] or familiarity[otherCharID]
@@ -170,6 +216,8 @@ function ax.recognition:Introduce(client, targetClient, alias)
     local targetFamiliarity = ax.character:GetVar(targetChar, "familiarity")
     if ( !istable(targetFamiliarity) ) then targetFamiliarity = {} end
 
+    ax.recognition:NormalizeFamiliarity(targetFamiliarity)
+
     local record = targetFamiliarity[tostring(clientID)] or targetFamiliarity[clientID]
     if ( !istable(record) ) then
         record = { score = 0, alias = nil, lastSeen = 0 }
@@ -224,6 +272,8 @@ function ax.recognition:AdminSetFamiliarity(admin, charID, targetID, score)
 
         local familiarity = ax.character:GetVar(char, "familiarity")
         if ( !istable(familiarity) ) then familiarity = {} end
+
+        ax.recognition:NormalizeFamiliarity(familiarity)
 
         local record = familiarity[tostring(targetID)] or familiarity[targetID]
         if ( !istable(record) ) then
@@ -285,7 +335,7 @@ local function RunDecay()
         if ( !istable(familiarity) ) then continue end
 
         local owner = char.player
-        local bDirty = false
+        local bDirty = ax.recognition:NormalizeFamiliarity(familiarity)
 
         for targetID, record in pairs(familiarity) do
             if ( !istable(record) ) then continue end

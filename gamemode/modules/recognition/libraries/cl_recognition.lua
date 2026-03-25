@@ -38,12 +38,8 @@ local function GetLocalTier(localChar, targetChar)
 
     local tier = ax.recognition:GetTier(record.score or 0)
 
-    -- Both parties must have introduced themselves to advance past ACQUAINTED.
-    local reverseRecord = ax.recognition:GetRecord(targetChar, localChar:GetID())
-    local bMutual = isstring(record.alias) and istable(reverseRecord) and isstring(reverseRecord.alias)
-
-    if ( !bMutual ) then
-        tier = math.min(tier, ax.recognition.TIERS.ACQUAINTED)
+    if ( !isstring(record.alias) ) then
+        tier = math.min(tier, ax.recognition.TIERS.SEEN)
     end
 
     return tier
@@ -423,9 +419,7 @@ end)
 
 --- Refresh the journal panel when a new character var update is received.
 -- This keeps the list current after familiarity changes are synced.
-hook.Add("CharacterDataChanged", "ax.recognition.JournalRefresh", function(char, name, key, value)
-    if ( name != "familiarity" ) then return end
-
+local function RefreshJournal(char)
     local localChar = ax.client:GetCharacter()
     if ( !istable(localChar) or localChar:GetID() != char:GetID() ) then return end
 
@@ -435,4 +429,16 @@ hook.Add("CharacterDataChanged", "ax.recognition.JournalRefresh", function(char,
             ax.gui.journal:Refresh()
         end
     end)
+end
+
+hook.Add("CharacterDataChanged", "ax.recognition.JournalRefresh", function(char, name, key, value)
+    if ( name != "familiarity" ) then return end
+
+    RefreshJournal(char)
+end)
+
+hook.Add("OnCharacterVarChanged", "ax.recognition.JournalRefreshVar", function(char, name, value)
+    if ( name != "familiarity" ) then return end
+
+    RefreshJournal(char)
 end)

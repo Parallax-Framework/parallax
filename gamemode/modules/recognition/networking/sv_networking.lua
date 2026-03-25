@@ -60,6 +60,8 @@ ax.net:Hook("recognition.forget_request", function(client, targetID)
     local familiarity = ax.character:GetVar(char, "familiarity")
     if ( !istable(familiarity) ) then return end
 
+    ax.recognition:NormalizeFamiliarity(familiarity)
+
     -- Remove both key forms to handle pre-migration data.
     local numKey = tonumber(strKey)
     if ( !familiarity[strKey] and !familiarity[numKey] ) then return end
