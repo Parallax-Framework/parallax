@@ -515,7 +515,7 @@ function PANEL:BuildCurrencyEntry(currencyID)
         entry.actions.drop = {
             name = "Drop",
             icon = "parallax/icons/caret-down-circle.png",
-            order = 1000,
+            order = 0,
             CanUse = function(action, currency, client)
                 if ( currency:GetAmount() <= 0 ) then
                     return false, "You don't have any " .. string.lower(currency:GetName()) .. " to drop."
@@ -547,7 +547,7 @@ function PANEL:BuildCurrencyEntry(currencyID)
         entry.actions.give = {
             name = "Give",
             icon = "parallax/icons/share.png",
-            order = 2,
+            order = 1,
             CanUse = function(action, currency, client)
                 if ( currency:GetAmount() <= 0 ) then
                     return false, "You don't have any " .. string.lower(currency:GetName()) .. " to give."
