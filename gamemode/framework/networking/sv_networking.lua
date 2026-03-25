@@ -82,7 +82,13 @@ ax.net:Hook("item.transfer", function(client, itemID, targetInventoryID)
         return
     end
 
-    local itemInventory = ax.inventory.instances[item:GetInventoryID()]
+    local sourceInventoryID = item:GetInventoryID()
+    if ( !isnumber(sourceInventoryID) or sourceInventoryID < 1 ) then
+        ax.util:PrintError("Item with ID " .. itemID .. " does not have a valid source inventory.")
+        return
+    end
+
+    local itemInventory = ax.inventory.instances[sourceInventoryID]
     if ( !istable(itemInventory) or !itemInventory:IsReceiver( client ) ) then
         ax.util:PrintError("Player " .. client:SteamID() .. " attempted to transfer item ID " .. itemID .. " which they do not possess.")
         return
@@ -99,7 +105,7 @@ ax.net:Hook("item.transfer", function(client, itemID, targetInventoryID)
         return
     end
 
-    ax.item:Transfer(item, client:GetCharacter():GetInventory():GetID(), targetInventoryID, function() print("Item transferred") end)
+    ax.item:Transfer(item, sourceInventoryID, targetInventoryID, function() print("Item transferred") end)
 end)
 
 ax.net:Hook("inventory.item.action", function(client, itemID, action)

@@ -415,18 +415,10 @@ end)
 ax.net:Hook("inventory.receiver.remove", function(inventoryID, receiver)
     local inventory = ax.inventory.instances[inventoryID]
     if ( !istable(inventory) ) then
-        ax.util:PrintError("Invalid inventory ID received for receiver removal: " .. tostring(inventoryID))
         return
     end
 
-    if ( table.Count(inventory.items) != 0 ) then
-        for itemID in pairs(inventory.items) do
-            ax.item.instances[itemID] = nil
-        end
-    end
-
     inventory:RemoveReceiver(receiver)
-    ax.inventory.instances[inventoryID] = nil
 end)
 
 ax.net:Hook("inventory.item.add", function(inventoryID, itemID, itemClass, itemData)
