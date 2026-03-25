@@ -115,7 +115,7 @@ local function GetSortedActionEntries(actions)
         local orderA = tonumber(a.data and a.data.order) or math.huge
         local orderB = tonumber(b.data and b.data.order) or math.huge
         if ( orderA != orderB ) then
-            return orderA < orderB
+            return orderA > orderB
         end
 
         local nameA = utf8.lower(tostring((a.data and a.data.name) or a.id or ""))
