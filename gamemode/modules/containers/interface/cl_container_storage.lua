@@ -296,7 +296,7 @@ function INVENTORY_PANE:SetDropActive(state)
 	})
 end
 
-function INVENTORY_PANE:Populate(inventory, selectedItemID)
+function INVENTORY_PANE:Populate(inventory, selectedItemID, filterName)
 	self.scroller:Clear()
 	self.selectedItemID = selectedItemID
 
@@ -310,6 +310,12 @@ function INVENTORY_PANE:Populate(inventory, selectedItemID)
 	for _, item in pairs(inventory:GetItems() or {}) do
 		if ( !istable(item) ) then
 			continue
+		end
+
+		if ( filterName and #filterName > 0 and filterName != "") then
+			if ( !string.find(string.lower(item:GetName()), string.lower(filterName), 1, true) ) then
+				continue
+			end
 		end
 
 		entries[#entries + 1] = item
@@ -430,6 +436,22 @@ function PANEL:Init()
 	self.content = self:Add("EditablePanel")
 	self.content:Dock(FILL)
 	self.content.Paint = nil
+
+	self.playerPaneSearch = self.content:Add("ax.text.entry")
+	self.playerPaneSearch:Dock(TOP)
+	self.playerPaneSearch:SetPlaceholderText(ax.localization:GetPhrase("container.search_your_inventory"))
+	self.playerPaneSearch:DockMargin(0, 0, width / 2 * 1.5, 0)
+	self.playerPaneSearch:SetTall(44)
+	self.playerPaneSearch:SetUpdateOnType(true)
+	self.playerPaneSearch.OnTextChanged = function(this)
+		local plyInv = self:GetPlayerInventory()
+		if ( !plyInv ) then return end
+
+		local val = this:GetValue()
+
+		self.playerPane:Populate(plyInv, self.selectedPlayerItemID, val)
+		self.playerPane:SetStatus(string.format("%d", table.Count(plyInv:GetItems() or {})))
+	end
 
 	self.playerPane = self.content:Add("ax.container.inventorypane")
 	self.playerPane:Dock(LEFT)
@@ -683,7 +705,7 @@ function PANEL:RefreshInventories(force)
 
 	if ( force or playerSignature != self.lastPlayerSignature ) then
 		self.lastPlayerSignature = playerSignature
-		self.playerPane:Populate(playerInventory, self.selectedPlayerItemID)
+		self.playerPane:Populate(playerInventory, self.selectedPlayerItemID, self.playerPaneSearch:GetText())
 		self.playerPane:SetStatus(string.format("%d", table.Count(playerInventory:GetItems() or {})))
 	end
 
