@@ -226,6 +226,11 @@ if ( CLIENT ) then
 		end
 	end
 
+	function ENT:GetDisplayDescription()
+		local definition = self:GetDefinition()
+		return definition and definition.description or ""
+	end
+
 	function ENT:OnPopulateEntityInfo(tooltip)
 		if ( !tooltip or !isfunction(tooltip.AddRow) ) then
 			return
