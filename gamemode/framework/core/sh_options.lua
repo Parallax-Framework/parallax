@@ -112,11 +112,16 @@ ax.option:Add("interface.scale", ax.type.number, 1.0, {
 ax.option:Add("inventory.columns", ax.type.number, 4, {
     category = "interface",
     subCategory = "inventory",
-    description = "inventories.columns.help",
+    description = "inventory.columns.help",
     min = 2,
     max = 8,
     decimals = 0,
-    bNoNetworking = true
+    bNoNetworking = true,
+    OnChanged = function(self, oldValue, value)
+        if ( CLIENT and IsValid(ax.gui.inventory) ) then
+            ax.gui.inventory:PopulateItems()
+        end
+    end
 })
 
 ax.option:Add("inventory.sort.categories", ax.type.array, "alphabetical", {
