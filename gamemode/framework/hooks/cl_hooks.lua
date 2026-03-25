@@ -306,7 +306,7 @@ function GM:HUDPaint()
         end
 
         if ( data.alpha > 1 ) then
-            local displayText, displayColor, bUnknown = hook.Run("GetEntityDisplayText", ent)
+            local displayText, displayColor, bShouldFlash = hook.Run("GetEntityDisplayText", ent)
             if ( isstring(displayText) ) then
                 local pos = ent:LocalToWorld(ent:OBBCenter())
                 if ( ax.util:IsValidPlayer(ent) ) then
@@ -324,12 +324,19 @@ function GM:HUDPaint()
                 end
 
                 local nameAlpha = data.alpha
-                if ( bUnknown ) then
-                    nameAlpha = nameAlpha * (0.25 + 0.75 * math.abs(math.sin(CurTime() * 0.75)))
+                local nameColor = displayColor
+
+                if ( bShouldFlash ) then
+                    local flashFraction = 0.5 + 0.5 * math.sin(CurTime() * 0.75)
+                    nameColor = Color(
+                        Lerp(flashFraction, displayColor.r, 255),
+                        Lerp(flashFraction, displayColor.g, 255),
+                        Lerp(flashFraction, displayColor.b, 255)
+                    )
                 end
 
                 draw.SimpleText(displayText, "ax.small.bold", data.x + 2, data.y + 2, Color(0, 0, 0, nameAlpha / 2), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-                draw.SimpleText(displayText, "ax.small.bold", data.x, data.y, ColorAlpha(displayColor, nameAlpha), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+                draw.SimpleText(displayText, "ax.small.bold", data.x, data.y, ColorAlpha(nameColor, nameAlpha), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 
                 hook.Run("HUDPaintTargetIDExtra", ent, data.x, data.y, data.alpha)
             end
@@ -344,9 +351,9 @@ function GM:GetEntityDisplayText(entity)
     if ( ax.util:IsValidPlayer(entity) ) then
         local name = entity:Nick()
         local color = team.GetColor(entity:Team())
-        local bUnknown = false
+        local bShouldFlash = false
 
-        local returnName, returnColor, returnUnknown = hook.Run("GetPlayerDisplayName", entity, name)
+        local returnName, returnColor, returnShouldFlash = hook.Run("GetPlayerDisplayName", entity, name)
         if ( returnName != nil and isstring(returnName) ) then
             name = returnName
         end
@@ -355,11 +362,11 @@ function GM:GetEntityDisplayText(entity)
             color = returnColor
         end
 
-        if ( returnUnknown == true ) then
-            bUnknown = true
+        if ( returnShouldFlash == true ) then
+            bShouldFlash = true
         end
 
-        return name, color, bUnknown
+        return name, color, bShouldFlash
     elseif ( entity:GetClass() == "ax_item" ) then
         local itemTable = entity:GetItemTable()
         if ( itemTable ) then
