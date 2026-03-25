@@ -247,8 +247,7 @@ ax.chat:Add("looc", {
         if ( SERVER and !CheckOOCAllowed(client) ) then return end
 
         local oocColor = ax.config:Get("chat.ooc.color", Color(225, 50, 50))
-        local nameColor = hook.Run("GetChatNameColor", client) or color_white
-        return oocColor, "[LOOC] ", nameColor, client:SteamName() .. ": " .. message
+        return oocColor, "[LOOC] ", color_white, client:SteamName() .. ": " .. message
     end,
     CanHear = function(this, speaker, listener)
         local distance = ax.config:Get("chat.ooc.distance", 600)
@@ -265,8 +264,7 @@ ax.chat:Add("ooc", {
         if ( SERVER and !CheckOOCAllowed(client) ) then return end
 
         local oocColor = ax.config:Get("chat.ooc.color", Color(225, 50, 50))
-        local nameColor = hook.Run("GetChatNameColor", client) or color_white
-        return oocColor, "[OOC] ", nameColor, client:SteamName() .. ": " .. message
+        return oocColor, "[OOC] ", color_white, client:SteamName() .. ": " .. message
     end,
     CanHear = function(this, speaker, listener)
         return true
