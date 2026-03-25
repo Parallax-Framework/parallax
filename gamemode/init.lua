@@ -22,8 +22,15 @@ include("framework/util/boot.lua")
 AddCSLuaFile("framework/boot.lua")
 include("framework/boot.lua")
 
+function widgets.PlayerTick()
+end
+
+function widgets.RenderMe()
+end
+
 hook.Remove("OnEntityCreated", "CreateWidgets")
 hook.Remove("PlayerTick", "TickWidgets")
+hook.Remove( "EntityRemoved", "RemoveWidgets" )
 
 resource.AddWorkshop(3479969076) -- Parallax Content
 
