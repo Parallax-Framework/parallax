@@ -100,6 +100,7 @@ end
 
 local developer = GetConVar("developer")
 local debugRealm = CreateConVar("ax_debug_realm", "0", {FCVAR_ARCHIVE, FCVAR_REPLICATED}, "Set to 1 to enable debug messages on the client, 2 for server, 3 for both.")
+local debugFilter = CreateConVar("ax_debug_filter", "", {FCVAR_ARCHIVE, FCVAR_REPLICATED}, "Optional comma-separated filter for debug messages. Only messages containing any of the specified keywords will be printed.")
 
 --- Print a debug message
 -- @param ... any Values to print for debugging
@@ -114,6 +115,25 @@ function ax.util:PrintDebug(...)
 
     local args = self:PreparePackage(...)
     local debugColor = color_debug
+
+    local filterText = debugFilter:GetString()
+    if ( filterText != "" ) then
+        local filters = string.Split(filterText, ",")
+        local messageString = string.lower(tostring(unpack(args)))
+        local matchesFilter = false
+
+        for _, filter in ipairs(filters) do
+            filter = string.Trim(filter)
+            if ( filter != "" and string.find(messageString, string.lower(filter), 1, true) ) then
+                matchesFilter = true
+                break
+            end
+        end
+
+        if ( !matchesFilter ) then
+            return
+        end
+    end
 
     MsgC(debugColor, "[PARALLAX] [DEBUG] ", unpack(args))
 
