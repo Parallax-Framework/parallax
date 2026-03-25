@@ -234,6 +234,12 @@ function PANEL:Paint(width, height)
         color = self.backgroundColorHovered
     end
 
+    if ( !self:IsEnabled() ) then
+        color.r = color.r * 0.5
+        color.g = color.g * 0.5
+        color.b = color.b * 0.5
+    end
+
     ax.theme:DrawGlassButton(0, 0, width, height, {
         fill = color,
         blur = self:GetBlur(),
@@ -253,7 +259,6 @@ DEFINE_BASECLASS("ax.button.core")
 
 AccessorFunc(PANEL, "icon", "Icon")
 AccessorFunc(PANEL, "iconSize", "IconSize", FORCE_NUMBER)
-AccessorFunc(PANEL, "iconColor", "IconColor")
 AccessorFunc(PANEL, "iconSpacing", "IconSpacing", FORCE_NUMBER)
 AccessorFunc(PANEL, "iconAlign", "IconAlign", FORCE_STRING)
 
@@ -281,11 +286,19 @@ function PANEL:SetIcon(iconPath)
     self:SetTextInset(self:GetTall() + self.iconSpacing * 2, textInsetY)
 end
 
+function PANEL:SetIconColor(color)
+    self.iconColor = color
+end
+
+function PANEL:GetIconColor()
+    return self.iconColor
+end
+
 function PANEL:Paint(width, height)
     local glass = ax.theme:GetGlass()
     local metrics = ax.theme:GetMetrics()
     self.textColor = self.textColor or glass.text
-    self.textColorHovered = self.textColorHovered or glass.textHover 
+    self.textColorHovered = self.textColorHovered or glass.textHover
     self.backgroundColorUnHovered = ax.theme:ScaleAlpha(glass.button, metrics.opacity)
     self.backgroundColorHovered = ax.theme:ScaleAlpha(glass.buttonHover, metrics.opacity)
     self.backgroundColorActive = ax.theme:ScaleAlpha(glass.buttonActive, metrics.opacity)
@@ -295,6 +308,12 @@ function PANEL:Paint(width, height)
         color = self.backgroundColorActive
     elseif ( self.inertia > 0.25 ) then
         color = self.backgroundColorHovered
+    end
+
+    if ( !self:IsEnabled() ) then
+        color.r = color.r * 0.5
+        color.g = color.g * 0.5
+        color.b = color.b * 0.5
     end
 
     ax.theme:DrawGlassButton(0, 0, width, height, {
