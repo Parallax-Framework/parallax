@@ -207,6 +207,19 @@ function ax.item:Transfer(item, fromInventory, toInventory, callback)
 
                 ax.util:PrintDebug("Broadcasting to all clients (world inventory)")
             else
+                local targetReceivers = toInventory:GetReceivers() or {}
+                for i = 1, #targetReceivers do
+                    local receiver = targetReceivers[i]
+                    if ( !ax.util:IsValidPlayer(receiver) ) then
+                        continue
+                    end
+
+                    local alreadyKnowsItem = ax.util:IsValidPlayer(receiver) and istable(fromInventory) and fromInventory:IsReceiver(receiver)
+                    if ( !alreadyKnowsItem ) then
+                        ax.net:Start(receiver, "inventory.item.add", toInventoryID, item.id, item.class, item.data or {})
+                    end
+                end
+
                 ax.net:Start(toInventory:GetReceivers(), "item.transfer", item.id, fromInventoryID, toInventoryID)
 
                 ax.util:PrintDebug("Sending to inventory receivers only")
