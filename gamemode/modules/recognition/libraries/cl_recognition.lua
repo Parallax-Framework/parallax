@@ -165,11 +165,12 @@ local function HandleGetPlayerDisplayName(entity, name)
     local alias = ax.recognition:GetAlias(localChar, targetChar:GetID())
     local tier  = GetLocalTier(localChar, targetChar)
 
-    local nameColor = tier >= ax.recognition.TIERS.ACQUAINTED
-        and team.GetColor(entity:Team())
-        or GetUnknownColor()
+    local bUnknown = tier < ax.recognition.TIERS.ACQUAINTED
+    local nameColor = bUnknown
+        and GetUnknownColor()
+        or team.GetColor(entity:Team())
 
-    return alias, nameColor
+    return alias, nameColor, bUnknown
 end
 
 hook.Add("GetPlayerDisplayName", "ax.recognition.Nameplate", HandleGetPlayerDisplayName)
