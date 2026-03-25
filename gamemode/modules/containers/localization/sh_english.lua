@@ -33,6 +33,7 @@ ax.localization:Register("en", {
     ["container.password.incorrect"] = "That password was incorrect.",
     ["container.password.limit"] = "You have reached the password attempt limit.",
     ["container.not_ready"] = "This container is not ready yet.",
+    ["container.search_your_inventory"] = "Search Your Inventory",
 
     ["container.property.set_password"] = "Set Password",
     ["container.property.set_password.prompt"] = "Enter a new password. Leave blank to clear it:",

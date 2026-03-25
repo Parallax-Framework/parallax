@@ -437,22 +437,6 @@ function PANEL:Init()
 	self.content:Dock(FILL)
 	self.content.Paint = nil
 
-	self.playerPaneSearch = self.content:Add("ax.text.entry")
-	self.playerPaneSearch:Dock(TOP)
-	self.playerPaneSearch:SetPlaceholderText(ax.localization:GetPhrase("container.search_your_inventory"))
-	self.playerPaneSearch:DockMargin(0, 0, width / 2 * 1.5, 0)
-	self.playerPaneSearch:SetTall(44)
-	self.playerPaneSearch:SetUpdateOnType(true)
-	self.playerPaneSearch.OnTextChanged = function(this)
-		local plyInv = self:GetPlayerInventory()
-		if ( !plyInv ) then return end
-
-		local val = this:GetValue()
-
-		self.playerPane:Populate(plyInv, self.selectedPlayerItemID, val)
-		self.playerPane:SetStatus(string.format("%d", table.Count(plyInv:GetItems() or {})))
-	end
-
 	self.playerPane = self.content:Add("ax.container.inventorypane")
 	self.playerPane:Dock(LEFT)
 	self.playerPane:DockMargin(0, 0, 12, 0)
@@ -469,6 +453,21 @@ function PANEL:Init()
 	self.playerPane.OnDropReceived = function(_, itemPanel)
 		self.selectedContainerItemID = itemPanel.itemID
 		self:TakeSelected()
+	end
+
+	self.playerPaneSearch = self.playerPane.header:Add("ax.text.entry")
+	self.playerPaneSearch:SetPlaceholderText(ax.localization:GetPhrase("container.search_your_inventory"))
+	self.playerPaneSearch:Dock(FILL)
+	self.playerPaneSearch:DockMargin(12, 18, 0, 16)
+	self.playerPaneSearch:SetUpdateOnType(true)
+	self.playerPaneSearch.OnTextChanged = function(this)
+		local plyInv = self:GetPlayerInventory()
+		if ( !plyInv ) then return end
+
+		local val = this:GetValue()
+
+		self.playerPane:Populate(plyInv, self.selectedPlayerItemID, val)
+		self.playerPane:SetStatus(string.format("%d", table.Count(plyInv:GetItems() or {})))
 	end
 
 	self.actionRail = self.content:Add("EditablePanel")
