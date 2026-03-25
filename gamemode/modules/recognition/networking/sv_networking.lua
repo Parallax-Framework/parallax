@@ -69,6 +69,9 @@ ax.net:Hook("recognition.forget_request", function(client, targetID)
     familiarity[strKey] = nil
     familiarity[numKey] = nil
 
+    -- Update the character object in-memory and persist to database
+    ax.character:SetVar(char, "familiarity", familiarity)
+
     -- Persist the removal and notify the client to refresh.
     local query = mysql:Update("ax_characters")
         query:Where("id", char:GetID())

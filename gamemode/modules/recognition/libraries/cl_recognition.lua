@@ -170,7 +170,12 @@ local function HandleGetPlayerDisplayName(entity, name)
         and GetUnknownColor()
         or team.GetColor(entity:Team())
 
-    return alias, nameColor, bUnknown
+    -- Flash if they don't know us (don't have our alias)
+    local bShouldFlash = false
+    local remoteRecord = ax.recognition:GetRecord(targetChar, localChar:GetID())
+    bShouldFlash = !istable(remoteRecord) or !isstring(remoteRecord.alias)
+
+    return alias, nameColor, bShouldFlash
 end
 
 hook.Add("GetPlayerDisplayName", "ax.recognition.Nameplate", HandleGetPlayerDisplayName)

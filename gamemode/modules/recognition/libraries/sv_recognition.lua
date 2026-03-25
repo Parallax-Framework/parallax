@@ -98,7 +98,7 @@ local function AwardScore(client, char, targetClient, targetChar, amount)
 
         ax.character:SetVar(ownerChar, "familiarity", tostring(otherCharID), {
             dataValue  = record,
-            recipients = owner,
+            recipients = { owner, otherClient },
         })
 
         local newTier = ax.recognition:GetTier(record.score)
@@ -234,7 +234,7 @@ function ax.recognition:Introduce(client, targetClient, alias)
 
     ax.character:SetVar(targetChar, "familiarity", tostring(clientID), {
         dataValue  = record,
-        recipients = targetClient,
+        recipients = { targetClient, client },
     })
 
     -- Notify the target using only the alias — never the introducer's real name.
@@ -285,15 +285,20 @@ function ax.recognition:AdminSetFamiliarity(admin, charID, targetID, score)
         record.lastSeen = os.time()
 
         local owner = char.player
+        local targetChar = ax.character:Get(targetID)
+        local targetOwner = istable(targetChar) and targetChar.player or nil
+
+        local recipients = {}
+        if ( ax.util:IsValidPlayer(owner) ) then table.insert(recipients, owner) end
+        if ( ax.util:IsValidPlayer(targetOwner) ) then table.insert(recipients, targetOwner) end
+
         ax.character:SetVar(char, "familiarity", tostring(targetID), {
             dataValue  = record,
-            recipients = ax.util:IsValidPlayer(owner) and owner or nil,
+            recipients = #recipients > 0 and recipients or nil,
         })
 
         local newTier = ax.recognition:GetTier(score)
         if ( newTier != oldTier and ax.util:IsValidPlayer(owner) ) then
-            local targetChar = ax.character:Get(targetID)
-            local targetOwner = istable(targetChar) and targetChar.player or nil
             hook.Run("OnFamiliarityChanged", owner, targetOwner, oldTier, newTier)
         end
 

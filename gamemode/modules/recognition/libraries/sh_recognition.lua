@@ -196,18 +196,7 @@ function ax.recognition:GetDisplayDescription(char, targetID)
     local targetChar = ax.character:Get(targetID)
     if ( !istable(targetChar) ) then return nil end
 
-    if ( self:IsGloballyRecognized(targetChar) ) then
-        return targetChar:GetDescription()
-    end
-
-    local record = self:GetRecord(char, targetID)
-    local tier = istable(record) and self:GetTier(record.score or 0) or self.TIERS.STRANGER
-
-    if ( tier >= self.TIERS.SEEN ) then
-        return targetChar:GetDescription()
-    end
-
-    return nil
+    return targetChar:GetDescription()
 end
 
 --- Check whether a character's faction grants global recognition.
