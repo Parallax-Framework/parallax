@@ -306,7 +306,7 @@ function GM:HUDPaint()
         end
 
         if ( data.alpha > 1 ) then
-            local displayText, displayColor = hook.Run("GetEntityDisplayText", ent)
+            local displayText, displayColor, bUnknown = hook.Run("GetEntityDisplayText", ent)
             if ( isstring(displayText) ) then
                 local pos = ent:LocalToWorld(ent:OBBCenter())
                 if ( ax.util:IsValidPlayer(ent) ) then
@@ -323,8 +323,13 @@ function GM:HUDPaint()
                     displayColor = Color(255, 255, 255)
                 end
 
-                draw.SimpleText(displayText, "ax.small.bold", data.x + 2, data.y + 2, Color(0, 0, 0, data.alpha / 2), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-                draw.SimpleText(displayText, "ax.small.bold", data.x, data.y, ColorAlpha(displayColor, data.alpha), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+                local nameAlpha = data.alpha
+                if ( bUnknown ) then
+                    nameAlpha = nameAlpha * (0.25 + 0.75 * math.abs(math.sin(CurTime() * 0.75)))
+                end
+
+                draw.SimpleText(displayText, "ax.small.bold", data.x + 2, data.y + 2, Color(0, 0, 0, nameAlpha / 2), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+                draw.SimpleText(displayText, "ax.small.bold", data.x, data.y, ColorAlpha(displayColor, nameAlpha), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 
                 hook.Run("HUDPaintTargetIDExtra", ent, data.x, data.y, data.alpha)
             end
@@ -339,8 +344,9 @@ function GM:GetEntityDisplayText(entity)
     if ( ax.util:IsValidPlayer(entity) ) then
         local name = entity:Nick()
         local color = team.GetColor(entity:Team())
+        local bUnknown = false
 
-        local returnName, returnColor = hook.Run("GetPlayerDisplayName", entity, name)
+        local returnName, returnColor, returnUnknown = hook.Run("GetPlayerDisplayName", entity, name)
         if ( returnName != nil and isstring(returnName) ) then
             name = returnName
         end
@@ -349,7 +355,11 @@ function GM:GetEntityDisplayText(entity)
             color = returnColor
         end
 
-        return name, color
+        if ( returnUnknown == true ) then
+            bUnknown = true
+        end
+
+        return name, color, bUnknown
     elseif ( entity:GetClass() == "ax_item" ) then
         local itemTable = entity:GetItemTable()
         if ( itemTable ) then
