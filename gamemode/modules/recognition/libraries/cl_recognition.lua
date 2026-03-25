@@ -178,6 +178,10 @@ local function HandleIntroduceKey(client, bind, pressed)
     if ( !string.find(bind, "use", 1, true) ) then return end
     if ( !input.IsKeyDown(KEY_LALT) and !input.IsKeyDown(KEY_RALT) ) then return end
 
+    local override = hook.Run("CanUseRecognitionIntroduce", client, bind, pressed)
+    if ( override == false ) then return end
+    if ( override == true ) then return true end
+
     if ( !ax.util:IsValidPlayer(ax.client) ) then return end
 
     local char = ax.client:GetCharacter()
