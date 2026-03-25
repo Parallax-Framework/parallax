@@ -57,10 +57,18 @@ function ax.module:Include(path, timeFilter)
                 scope = "framework"
             end
 
-            MODULE = MODULE or { uniqueID = moduleName, scope = scope }
-                ax.util:Include(filePath)
-                ax.util:PrintSuccess("Module \"" .. tostring(MODULE.name) .. "\" initialized successfully.")
-                ax.module.stored[moduleName] = MODULE
+            if ( self.stored[moduleName] ) then
+                MODULE = self.stored[moduleName]
+                ax.util:PrintSuccess("Reloading module \"" .. tostring(MODULE.name) .. "\" from file: " .. fileName)
+            else
+                MODULE = MODULE or { uniqueID = moduleName, scope = scope }
+            end
+
+            ax.util:Include(filePath)
+            ax.module.stored[moduleName] = MODULE
+
+            ax.util:PrintSuccess("Module \"" .. tostring(MODULE.name) .. "\" initialized successfully.")
+
             MODULE = nil
         end
     end
@@ -93,7 +101,12 @@ function ax.module:Include(path, timeFilter)
                 end
 
                 if ( !shouldSkip ) then
-                    MODULE = MODULE or { uniqueID = dirName, scope = scope }
+                    if ( self.stored[moduleName] ) then
+                        MODULE = self.stored[moduleName]
+                        ax.util:PrintSuccess("Reloading module \"" .. tostring(MODULE.name) .. "\" from directory: " .. dirName)
+                    else
+                        MODULE = MODULE or { uniqueID = dirName, scope = scope }
+                    end
 
                     local shouldLoad = ax.util:Include(bootFile, "shared")
                     if ( shouldLoad == false ) then
