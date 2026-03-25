@@ -178,6 +178,19 @@ local function GetStoreAccentColor(storeType)
     return ax.theme:ScaleAlpha(glass.highlight or glass.progress, metrics.opacity)
 end
 
+local STORE_GRID_ITEM_HEIGHT = ax.util:ScreenScaleH(16)
+local STORE_GRID_SPACING_X = ax.util:ScreenScale(2)
+local STORE_GRID_SPACING_Y = ax.util:ScreenScaleH(4)
+
+local function GetStoreColumnCount()
+    return math.max(math.floor(tonumber(ax.option:Get("store.columns", 3)) or 3), 1)
+end
+
+local function CalculateStoreGridHeight(itemCount, columnCount)
+    local rowCount = math.max(math.ceil(math.max(itemCount, 1) / columnCount), 1)
+    return (rowCount * STORE_GRID_ITEM_HEIGHT) + (math.max(rowCount - 1, 0) * STORE_GRID_SPACING_Y)
+end
+
 function PANEL:Init()
     self:Dock(FILL)
     self:InvalidateParent(true)
@@ -354,7 +367,10 @@ function PANEL:Populate(tab, scroller, type, category)
             subCategoryLabel:Dock(TOP)
         end
 
-        -- Add entries for this subcategory
+        -- Separate valid entries from unsupported ones
+        local validEntries = {}
+        local unsupportedEntries = {}
+
         for key, entry in SortedPairs(entries) do
             local panelName = nil
 
@@ -367,23 +383,64 @@ function PANEL:Populate(tab, scroller, type, category)
             elseif ( entry.type == ax.type.color ) then
                 panelName = "ax.store.color"
             elseif ( entry.type == ax.type.array ) then
-                panelName = "ax.store.array"
+                panelName = entry.data.segmented and "ax.store.segmented" or "ax.store.array"
             end
 
             if ( panelName ) then
-                local btn = scroller:Add(panelName)
-                btn:Dock(TOP)
-                btn:DockMargin(0, 0, 0, ax.util:ScreenScaleH(4))
-                btn:SetType(type)
-                btn:SetKey(key)
-                continue
+                validEntries[#validEntries + 1] = {key = key, panelName = panelName}
+            else
+                unsupportedEntries[#unsupportedEntries + 1] = {key = key, entry = entry}
+            end
+        end
+
+        -- Build grid for valid entries
+        if ( #validEntries > 0 ) then
+            local columnCount = GetStoreColumnCount()
+            local entryCount = #validEntries
+
+            local grid = scroller:Add("DIconLayout")
+            grid:Dock(TOP)
+            grid:DockMargin(0, 0, 0, ax.util:ScreenScaleH(4))
+            grid:SetSpaceX(STORE_GRID_SPACING_X)
+            grid:SetSpaceY(STORE_GRID_SPACING_Y)
+            grid:SetTall(CalculateStoreGridHeight(entryCount, columnCount))
+            grid.Paint = nil
+
+            grid.PerformLayout = function(this, w, h)
+                local cols = math.max(columnCount, 1)
+                local totalSpacing = math.max(cols - 1, 0) * STORE_GRID_SPACING_X
+                local itemW = math.max(math.floor((w - totalSpacing) / cols), 1)
+                this:SetTall(CalculateStoreGridHeight(entryCount, cols))
+
+                local col = 0
+                local row = 0
+                for _, child in ipairs(this:GetChildren()) do
+                    if ( !IsValid(child) ) then continue end
+                    child:SetPos(col * (itemW + STORE_GRID_SPACING_X), row * (STORE_GRID_ITEM_HEIGHT + STORE_GRID_SPACING_Y))
+                    child:SetSize(itemW, STORE_GRID_ITEM_HEIGHT)
+                    col = col + 1
+                    if ( col >= cols ) then
+                        col = 0
+                        row = row + 1
+                    end
+                end
             end
 
+            for _, e in ipairs(validEntries) do
+                local btn = grid:Add(e.panelName)
+                btn:SetSize(64, STORE_GRID_ITEM_HEIGHT)
+                btn:SetType(type)
+                btn:SetKey(e.key)
+            end
+        end
+
+        -- Add unsupported-type labels directly below the grid
+        for _, u in ipairs(unsupportedEntries) do
             local label = scroller:Add("ax.text")
             label:Dock(TOP)
             label:DockMargin(0, 0, 0, ax.util:ScreenScaleH(4))
             label:SetFont("ax.large.italic")
-            label:SetText(string.format("Unsupported type '%s' for key: %s", ax.type:Format(entry.type), tostring(key)), true)
+            label:SetText(string.format("Unsupported type '%s' for key: %s", ax.type:Format(u.entry.type), tostring(u.key)), true)
             label:SetContentAlignment(5)
             label:SetTextColor(Color(200, 200, 200))
         end
@@ -423,29 +480,18 @@ function PANEL:Init()
     self:SetAxTooltip(function(panel)
         return panel:GetTooltipPayload()
     end)
+end
 
-    self.reset = self:Add("ax.button.icon")
-    self.reset:SetIcon("parallax/icons/chevron-right.png")
-    self.reset:SetIconAlign("center")
-    self.reset:SetIconColor(color_white)
-    self.reset:Dock(RIGHT)
-    self.reset.DoClick = function()
-        local store = self:GetStore()
-        if ( !store ) then
-            self:HandleError("Unknown type")
-            return
-        end
+function PANEL:DoRightClick()
+    local store = self:GetStore()
+    if ( !store ) then return end
 
-        local default = store:GetDefault(self.key)
+    local default = store:GetDefault(self.key)
+    store:Set(self.key, default)
 
-        store:Set(self.key, default)
-
-        if ( self.UpdateDisplay ) then
-            self:UpdateDisplay()
-        end
+    if ( self.UpdateDisplay ) then
+        self:UpdateDisplay()
     end
-
-    self:RegisterTooltipTarget(self.reset)
 end
 
 function PANEL:HandleError(message)
@@ -501,26 +547,10 @@ function PANEL:SetKey(key)
 end
 
 function PANEL:PerformLayout(width, height)
-    self.reset:SetSize(height / 1.5, height / 1.5)
-    local textWidth = ax.util:GetTextWidth(self:GetFont(), self:GetText())
-    local resetX = textWidth + ax.util:ScreenScale(16)
-
-    for i = 1, #self:GetChildren() do
-        local child = self:GetChildren()[i]
-        if ( !IsValid(child) or child == self.reset or !child:IsVisible() ) then continue end
-
-        resetX = math.min(resetX, child:GetX() - self.reset:GetWide() - ax.util:Scale(6))
-    end
-
-    resetX = math.Clamp(resetX, ax.util:Scale(8), width - self.reset:GetWide() - ax.util:Scale(8))
-    self.reset:SetPos(resetX, (height - self.reset:GetTall()) / 2)
-
-    local store = self:GetStore()
-    if ( store and isfunction(store.GetDefault) and isfunction(store.Get) ) then
-        local default = store:GetDefault(self.key)
-        local value = store:Get(self.key)
-
-        self.reset:SetVisible(value != default)
+    for _, child in ipairs(self:GetChildren()) do
+        if ( IsValid(child) and child:GetDock() == RIGHT ) then
+            child:SetWide(math.Round(width * 0.33))
+        end
     end
 end
 
@@ -602,6 +632,36 @@ function PANEL:UpdateDisplay()
     -- Override in child panels
 end
 
+function PANEL:Paint(width, height)
+    local glass = ax.theme:GetGlass()
+    local metrics = ax.theme:GetMetrics()
+    local radius = height * 0.45
+
+    local color = ax.theme:ScaleAlpha(glass.button, metrics.opacity)
+    if ( self.inertia > 0.8 ) then
+        color = ax.theme:ScaleAlpha(glass.buttonActive, metrics.opacity)
+    elseif ( self.inertia > 0.25 ) then
+        color = ax.theme:ScaleAlpha(glass.buttonHover, metrics.opacity)
+    end
+
+    if ( !self:IsEnabled() ) then
+        color = Color(color.r * 0.5, color.g * 0.5, color.b * 0.5, color.a)
+    end
+
+    ax.render().Rect(0, 0, width, height)
+        :Rad(radius)
+        :Color(color)
+        :Flags(ax.render.SHAPE_IOS)
+        :Draw()
+
+    ax.render.DrawOutlined(radius, 0, 0, width, height,
+        ax.theme:ScaleAlpha(glass.buttonBorder, metrics.borderOpacity), 1, ax.render.SHAPE_IOS)
+
+    if ( self.PaintAdditional ) then
+        self:PaintAdditional(width, height)
+    end
+end
+
 vgui.Register("ax.store.base", PANEL, "ax.button")
 
 -- Boolean store element
@@ -611,31 +671,52 @@ DEFINE_BASECLASS("ax.store.base")
 
 function PANEL:Init()
     self.elementType = "bool"
-
-    self.value = self:Add("ax.text")
-    self.value:Dock(RIGHT)
-    self.value:DockMargin(0, 0, ax.util:ScreenScale(8), 0)
-    self.value:SetText("unknown")
-    self.value:SetFont("ax.large")
-    self.value:SetWide(ax.util:ScreenScale(192))
-    self.value:SetContentAlignment(6)
-    self.value.Think = function(this)
-        this:SetTextColor(self:GetTextColor())
-        this:SetFont(self:GetFont())
-    end
+    self.toggleBlend = 0
 end
 
-function PANEL:UpdateDisplay()
+function PANEL:Think()
     local store = self:GetStore()
-    if ( !store ) then
-        self.value:SetText("unknown")
-        return
-    end
-
-    local value = store:Get(self.key)
-    value = value == true and ax.localization:GetPhrase("store.enabled") or ax.localization:GetPhrase("store.disabled")
-    self.value:SetText(string.format("<%s>", value), true)
+    local target = (store and store:Get(self.key) == true) and 1 or 0
+    self.toggleBlend = Lerp(FrameTime() * 10, self.toggleBlend or 0, target)
 end
+
+function PANEL:Paint(width, height)
+    BaseClass.Paint(self, width, height)
+
+    local glass = ax.theme:GetGlass()
+    local metrics = ax.theme:GetMetrics()
+    local blend = self.toggleBlend or 0
+
+    local pad = ax.util:ScreenScale(8)
+    local toggleH = math.Round(height * 0.52)
+    local toggleW = math.Round(toggleH * 1.85)
+    local toggleX = width - toggleW - pad
+    local toggleY = math.Round((height - toggleH) * 0.5)
+    local r = toggleH * 0.5
+
+    local offColor = ax.theme:ScaleAlpha(glass.button, metrics.opacity)
+    local onColor = ax.theme:ScaleAlpha(glass.progress, metrics.opacity)
+    local trackColor = Color(
+        Lerp(blend, offColor.r, onColor.r),
+        Lerp(blend, offColor.g, onColor.g),
+        Lerp(blend, offColor.b, onColor.b),
+        Lerp(blend, offColor.a, onColor.a)
+    )
+
+    ax.render.Draw(r, toggleX, toggleY, toggleW, toggleH, trackColor, ax.render.SHAPE_IOS)
+    ax.render.DrawOutlined(r, toggleX, toggleY, toggleW, toggleH,
+        ax.theme:ScaleAlpha(glass.buttonBorder, metrics.borderOpacity), 1, ax.render.SHAPE_IOS)
+
+    local knobPad = math.max(math.Round(toggleH * 0.1), 2)
+    local knobSize = toggleH - knobPad * 2
+    local knobOffX = toggleX + knobPad
+    local knobOnX = toggleX + toggleW - knobSize - knobPad
+
+    ax.render.Draw(knobSize * 0.5, Lerp(blend, knobOffX, knobOnX), toggleY + knobPad,
+        knobSize, knobSize, color_white, ax.render.SHAPE_IOS)
+end
+
+function PANEL:UpdateDisplay() end
 
 function PANEL:DoClick()
     self:Toggle()
@@ -655,15 +736,187 @@ function PANEL:Toggle()
     end
 
     store:Set(self.key, !current)
-    self:UpdateDisplay()
 end
 
 function PANEL:SetKey(key)
     BaseClass.SetKey(self, key)
+
+    local store = self:GetStore()
+    if ( store ) then
+        self.toggleBlend = store:Get(key) == true and 1 or 0
+    end
+
     self.bInitializing = false
 end
 
 vgui.Register("ax.store.bool", PANEL, "ax.store.base")
+
+-- Custom slider widget (replaces DNumSlider)
+local SLIDER = {}
+
+function SLIDER:Init()
+    self.minVal = 0
+    self.maxVal = 100
+    self.decimals = 0
+    self.value = 0
+    self.dragging = false
+    self.ValueChangedDeferred = nil
+
+    -- Compat stubs so the number panel's Think can call Label/TextArea methods
+    -- without needing to know whether we are a DNumSlider or this custom panel.
+    self.Label = {SetTextColor = function() end}
+    self.TextArea = {
+        _textColor = nil,
+        _font = nil,
+        SetFont = function(this, font) this._font = font end,
+        SetTextColor = function(this, col) this._textColor = col end,
+        IsEditing = function() return false end,
+    }
+
+    self:SetMouseInputEnabled(true)
+    self:SetCursor("hand")
+end
+
+function SLIDER:SetMinMax(min, max)
+    self.minVal = tonumber(min) or 0
+    self.maxVal = tonumber(max) or 100
+end
+
+function SLIDER:SetDecimals(d)
+    self.decimals = tonumber(d) or 0
+end
+
+function SLIDER:RoundToDecimals(val)
+    if ( self.decimals > 0 ) then return math.Round(val, self.decimals) end
+    return math.Round(val)
+end
+
+function SLIDER:SetValue(val)
+    self.value = self:RoundToDecimals(math.Clamp(tonumber(val) or 0, self.minVal, self.maxVal))
+end
+
+function SLIDER:GetValue()
+    return self.value
+end
+
+function SLIDER:IsEditing()
+    return false
+end
+
+function SLIDER:GetFraction()
+    local range = self.maxVal - self.minVal
+    if ( range == 0 ) then return 0 end
+    return math.Clamp((self.value - self.minVal) / range, 0, 1)
+end
+
+function SLIDER:GetTrackBounds()
+    local h = self:GetTall()
+    local knobR = math.max(math.Round(h * 0.3), 4)
+
+    -- Measure the widest possible value string so the text column never clips
+    local decimals = self.decimals or 0
+    local worstCase = decimals > 0
+        and string.format("%." .. decimals .. "f", self.maxVal)
+        or tostring(math.Round(self.maxVal))
+    surface.SetFont("ax.small")
+    local measuredW = select(1, surface.GetTextSize(worstCase))
+    local valueTextW = measuredW + ax.util:ScreenScale(3)
+
+    local gapAfterTrack = ax.util:ScreenScale(3)
+    local trackX = knobR
+    local trackW = math.max(self:GetWide() - valueTextW - gapAfterTrack - knobR * 2, 4)
+    return trackX, trackW, knobR, valueTextW, gapAfterTrack
+end
+
+function SLIDER:ValueFromCursor()
+    local mx = self:CursorPos()
+    local trackX, trackW, knobR = self:GetTrackBounds()
+    local frac = math.Clamp((mx - trackX) / trackW, 0, 1)
+    return self:RoundToDecimals(self.minVal + frac * (self.maxVal - self.minVal))
+end
+
+function SLIDER:OnMousePressed(mouseCode)
+    if ( mouseCode != MOUSE_LEFT ) then return end
+    self.dragging = true
+    self:MouseCapture(true)
+    local newVal = self:ValueFromCursor()
+    if ( newVal != self.value ) then
+        self:SetValue(newVal)
+        if ( self.OnValueChanged ) then self:OnValueChanged(newVal) end
+    end
+end
+
+function SLIDER:OnMouseReleased(mouseCode)
+    if ( mouseCode != MOUSE_LEFT ) then return end
+    self.dragging = false
+    self:MouseCapture(false)
+end
+
+function SLIDER:OnCursorMoved()
+    if ( !self.dragging ) then return end
+    local newVal = self:ValueFromCursor()
+    if ( newVal != self.value ) then
+        self:SetValue(newVal)
+        if ( self.OnValueChanged ) then self:OnValueChanged(newVal) end
+    end
+end
+
+function SLIDER:Paint(w, h)
+    local glass = ax.theme:GetGlass()
+    local metrics = ax.theme:GetMetrics()
+
+    local trackX, trackW, knobR, valueTextW, gapAfterTrack = self:GetTrackBounds()
+    local trackH = math.max(math.Round(h * 0.22), 3)
+    local cy = math.Round(h * 0.5)
+    local trackY = cy - math.Round(trackH * 0.5)
+    local trackR = trackH * 0.5
+    local frac = self:GetFraction()
+    local knobX = math.Round(trackX + frac * trackW)
+    local knobSize = knobR * 2
+    local glowR = math.Round(knobR * 1.65)
+    local progressColor = ax.theme:ScaleAlpha(glass.progress, metrics.opacity)
+
+    -- Background track — clearly visible groove
+    local bgTrack = glass.panel or glass.button
+    ax.render.Draw(trackR, trackX, trackY, trackW, trackH,
+        Color(bgTrack.r, bgTrack.g, bgTrack.b, 180), ax.render.SHAPE_IOS)
+
+    -- Track border so the full extent is obvious
+    ax.render.DrawOutlined(trackR, trackX, trackY, trackW, trackH,
+        ax.theme:ScaleAlpha(glass.buttonBorder, metrics.borderOpacity), 1, ax.render.SHAPE_IOS)
+
+    -- Filled / progress portion
+    if ( frac > 0 ) then
+        local fillW = math.max(math.Round(frac * trackW), trackH)
+        ax.render.Draw(trackR, trackX, trackY, fillW, trackH,
+            progressColor, ax.render.SHAPE_IOS)
+    end
+
+    -- Glow halo around knob
+    ax.render.Draw(glowR, knobX - glowR, cy - glowR, glowR * 2, glowR * 2,
+        Color(progressColor.r, progressColor.g, progressColor.b, 50), ax.render.SHAPE_IOS)
+
+    -- Knob
+    ax.render.Draw(knobR, knobX - knobR, cy - knobR, knobSize, knobSize,
+        color_white, ax.render.SHAPE_IOS)
+
+    -- Knob border
+    ax.render.DrawOutlined(knobR, knobX - knobR, cy - knobR, knobSize, knobSize,
+        Color(progressColor.r, progressColor.g, progressColor.b, 160), 1, ax.render.SHAPE_IOS)
+
+    -- Value label (right of track)
+    local decimals = self.decimals or 0
+    local valStr = decimals > 0
+        and string.format("%." .. decimals .. "f", self.value)
+        or tostring(math.Round(self.value))
+
+    local textColor = (self.TextArea and self.TextArea._textColor) or glass.textMuted or glass.text
+    local font = (self.TextArea and self.TextArea._font) or "ax.small"
+    local textX = math.Round(trackX + trackW + knobR + gapAfterTrack + valueTextW * 0.5)
+    draw.SimpleText(valStr, font, textX, cy, textColor, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+end
+
+vgui.Register("ax.store.slider", SLIDER, "EditablePanel")
 
 -- Number store element
 PANEL = {}
@@ -673,10 +926,10 @@ DEFINE_BASECLASS("ax.store.base")
 function PANEL:Init()
     self.elementType = "number"
 
-    self.slider = self:Add("DNumSlider")
+    self.slider = self:Add("ax.store.slider")
     self.slider:Dock(RIGHT)
     self.slider:DockMargin(0, 0, ax.util:ScreenScale(8), 0)
-    self.slider:SetWide(ax.util:ScreenScale(192))
+    self.slider:SetWide(ax.util:ScreenScale(128))
     self.slider:SetMinMax(0, 100)
     self.slider:SetDecimals(0)
     self.slider:SetValue(0)
@@ -729,12 +982,6 @@ function PANEL:Init()
     end
 
     self:RegisterTooltipTarget(self.slider)
-    if ( IsValid(self.slider.TextArea) ) then
-        self:RegisterTooltipTarget(self.slider.TextArea)
-    end
-    if ( IsValid(self.slider.Slider) ) then
-        self:RegisterTooltipTarget(self.slider.Slider)
-    end
 end
 
 function PANEL:SetKey(key)
@@ -806,7 +1053,7 @@ function PANEL:Init()
     self.binder = self:Add("DBinder")
     self.binder:Dock(RIGHT)
     self.binder:DockMargin(0, ax.util:ScreenScale(4), ax.util:ScreenScale(8), ax.util:ScreenScale(4))
-    self.binder:SetWide(ax.util:ScreenScale(192))
+    self.binder:SetWide(ax.util:ScreenScale(128))
     self.binder:SetSelectedNumber(KEY_NONE or 0)
     self.binder.OnChange = function(this, value)
         if ( self.bInitializing or self.bSuppressOnChange ) then return end
@@ -868,7 +1115,7 @@ function PANEL:Init()
     self.entry = self:Add("ax.text.entry")
     self.entry:Dock(RIGHT)
     self.entry:DockMargin(0, ax.util:ScreenScale(4), ax.util:ScreenScale(8), ax.util:ScreenScale(4))
-    self.entry:SetWide(ax.util:ScreenScale(192))
+    self.entry:SetWide(ax.util:ScreenScale(128))
     self.entry:SetText("unknown")
     self.entry:SetUpdateOnType(false)
     self.entry.OnValueChange = function(this, value)
@@ -932,14 +1179,20 @@ function PANEL:Init()
     self.colorPanel:DockMargin(0, ax.util:ScreenScale(4), ax.util:ScreenScale(8), ax.util:ScreenScale(4))
     self.colorPanel:SetWide(ax.util:ScreenScale(64))
     self.colorPanel.Paint = function(this, width, height)
+        local glass = ax.theme:GetGlass()
+        local metrics = ax.theme:GetMetrics()
+        local r = height * 0.45
         local store = self:GetStore()
-        if ( !store ) then
-            ax.render.Draw(4, 0, 0, width, height, STORE_FALLBACK_COLOR)
-            return
-        end
+        local color = (store and store:Get(self.key)) or STORE_FALLBACK_COLOR
 
-        local color = store:Get(self.key) or color_white
-        ax.render.Draw(4, 0, 0, width, height, color)
+        ax.render.Draw(r, 0, 0, width, height, color, ax.render.SHAPE_IOS)
+        ax.render.DrawOutlined(r, 0, 0, width, height,
+            ax.theme:ScaleAlpha(glass.buttonBorder, metrics.borderOpacity), 1, ax.render.SHAPE_IOS)
+
+        -- Inner shadow for very light colors so the pill edge is readable
+        if ( IsColor(color) and (color.r + color.g + color.b) > 600 ) then
+            ax.render.DrawOutlined(r, 1, 1, width - 2, height - 2, Color(0, 0, 0, 50), 1, ax.render.SHAPE_IOS)
+        end
     end
 
     self.colorPanel.DoClick = function(this)
@@ -994,7 +1247,7 @@ end
 
 vgui.Register("ax.store.color", PANEL, "ax.store.base")
 
--- Array store element
+-- Array store element (combobox dropdown — use ax.store.segmented for pill UI)
 PANEL = {}
 
 DEFINE_BASECLASS("ax.store.base")
@@ -1005,7 +1258,7 @@ function PANEL:Init()
     self.combo = self:Add("ax.combobox")
     self.combo:Dock(RIGHT)
     self.combo:DockMargin(0, ax.util:ScreenScale(3), ax.util:ScreenScale(8), ax.util:ScreenScale(3))
-    self.combo:SetWide(ax.util:ScreenScale(192))
+    self.combo:SetWide(ax.util:ScreenScale(128))
     self.combo:SetSortItems(true)
     self.combo.OnSelect = function(this, index, value, data)
         if ( self.bInitializing ) then return end
@@ -1033,9 +1286,8 @@ function PANEL:SetKey(key)
         end
     end
 
-    local data = store.registry[key]
-
-    self.combo:SetValue( data.data.choices[ store:Get(key) ] or "unknown" )
+    local entry = store.registry[key]
+    self.combo:SetValue(entry.data.choices[store:Get(key)] or "unknown")
     self.bInitializing = false
 end
 
@@ -1047,12 +1299,131 @@ function PANEL:UpdateDisplay()
     end
 
     local value = store:Get(self.key)
-    local data = store.registry[self.key]
-    if ( data ) then
-        self.combo:SetValue( data.data.choices[ value ] or "unknown" )
-    else
-        self.combo:SetValue("unknown")
-    end
+    local entry = store.registry[self.key]
+    self.combo:SetValue((entry and entry.data.choices[value]) or "unknown")
 end
 
 vgui.Register("ax.store.array", PANEL, "ax.store.base")
+
+-- Segmented store element (pill segmented button — declare with data.segmented = true on an array option/config)
+PANEL = {}
+
+DEFINE_BASECLASS("ax.store.base")
+
+function PANEL:Init()
+    self.elementType = "segmented"
+    self.selectedKey = nil
+    self.segmentChoices = {}
+
+    self.segmentPanel = self:Add("EditablePanel")
+    self.segmentPanel:Dock(RIGHT)
+    self.segmentPanel:DockMargin(0, ax.util:ScreenScale(3), ax.util:ScreenScale(8), ax.util:ScreenScale(3))
+    self.segmentPanel:SetWide(ax.util:ScreenScale(128))
+    self.segmentPanel.PLACEHOLDER = true -- real width set in SetKey once choices are known
+    self.segmentPanel.Paint = function(this, w, h)
+        local glass = ax.theme:GetGlass()
+        local metrics = ax.theme:GetMetrics()
+        local r = h * 0.45
+        ax.render().Rect(0, 0, w, h)
+            :Rad(r)
+            :Color(ax.theme:ScaleAlpha(glass.panel, metrics.opacity))
+            :Flags(ax.render.SHAPE_IOS)
+            :Draw()
+        ax.render.DrawOutlined(r, 0, 0, w, h,
+            ax.theme:ScaleAlpha(glass.buttonBorder, metrics.borderOpacity), 1, ax.render.SHAPE_IOS)
+    end
+
+    self:RegisterTooltipTarget(self.segmentPanel)
+end
+
+function PANEL:RebuildSegments()
+    self.segmentPanel:Clear()
+
+    local choices = self.segmentChoices
+    local count = #choices
+    if ( count == 0 ) then return end
+
+    local segPad = 2
+
+    for _, choice in ipairs(choices) do
+        local seg = self.segmentPanel:Add("ax.button")
+        seg:SetText(ResolveStoreString(choice.label) or tostring(choice.label), true)
+        seg:SetFont("ax.small")
+        seg:SetFontDefault("ax.small")
+        seg:SetFontHovered("ax.small.bold")
+        seg:SetContentAlignment(5)
+        seg.choiceKey = choice.key
+
+        seg.Paint = function(this, w, h)
+            if ( self.selectedKey == this.choiceKey ) then
+                local glass = ax.theme:GetGlass()
+                local metrics = ax.theme:GetMetrics()
+                ax.render.Draw(h * 0.4, 0, 0, w, h,
+                    ax.theme:ScaleAlpha(glass.progress, metrics.opacity), ax.render.SHAPE_IOS)
+            end
+        end
+
+        seg.DoClick = function()
+            if ( self.bInitializing ) then return end
+            self.selectedKey = choice.key
+            local store = self:GetStore()
+            if ( store ) then
+                store:Set(self.key, choice.key)
+            end
+        end
+    end
+
+    function self.segmentPanel:PerformLayout(w, h)
+        local children = self:GetChildren()
+        local n = #children
+        if ( n == 0 ) then return end
+        local segW = math.floor((w - segPad * (n + 1)) / n)
+        for i, child in ipairs(children) do
+            if ( IsValid(child) ) then
+                child:SetPos(segPad + (i - 1) * (segW + segPad), segPad)
+                child:SetSize(segW, h - segPad * 2)
+            end
+        end
+    end
+end
+
+function PANEL:SetKey(key)
+    BaseClass.SetKey(self, key)
+
+    local store = self:GetStore()
+    if ( !store or store:Get(key) == nil ) then return end
+
+    local data = store:GetData(key)
+    self.selectedKey = store:Get(key)
+    self.segmentChoices = {}
+
+    local choices = data.choices
+    if ( !istable(choices) and isfunction(data.populate) ) then
+        local ok, populated = ax.util:SafeCall(data.populate)
+        if ( ok and istable(populated) ) then
+            choices = populated
+        end
+    end
+
+    if ( istable(choices) ) then
+        for choiceKey, choiceLabel in SortedPairs(choices) do
+            self.segmentChoices[#self.segmentChoices + 1] = {key = choiceKey, label = choiceLabel}
+        end
+    end
+
+    local count = #self.segmentChoices
+    if ( count > 0 ) then
+        self.segmentPanel:SetWide(ax.util:ScreenScale(math.Clamp(count * 52, 64, 240)))
+    end
+
+    self:RebuildSegments()
+    self.bInitializing = false
+end
+
+function PANEL:UpdateDisplay()
+    local store = self:GetStore()
+    if ( !store ) then return end
+    self.selectedKey = store:Get(self.key)
+end
+
+vgui.Register("ax.store.segmented", PANEL, "ax.store.base")
