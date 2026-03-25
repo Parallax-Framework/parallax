@@ -207,7 +207,7 @@ function ax.item:CreateDefaultDropAction()
     return {
         name = "Drop",
         icon = "parallax/icons/caret-down-circle.png",
-        order = 1,
+        order = 1000,
         CanUse = function(action, client, item)
             return true
         end,
