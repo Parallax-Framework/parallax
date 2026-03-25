@@ -238,7 +238,7 @@ function INVENTORY_PANE:Init()
 
 	self.status = self.header:Add("ax.text")
 	self.status:Dock(RIGHT)
-	self.status:SetFont("ax.small")
+	self.status:SetFont("ax.small.bold")
 	self.status:SetContentAlignment(6)
 
 	self.body = self:Add("EditablePanel")
