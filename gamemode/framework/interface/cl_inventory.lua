@@ -26,10 +26,16 @@ local PANEL = {}
 local GLASS_PANEL_RADIUS = 10
 local INVENTORY_PREVIEW_WIDTH = ax.util:ScreenScale(256)
 local INVENTORY_INFO_HEIGHT = ax.util:ScreenScaleH(128)
-local INVENTORY_CATEGORY_SPACING = ax.util:ScreenScaleH(4)
+local INVENTORY_CATEGORY_SPACING = ax.util:ScreenScaleH(2)
 local INVENTORY_ACTIONS_WIDTH = ax.util:ScreenScale(128)
+local INVENTORY_GRID_SPACING_X = ax.util:ScreenScale(2)
+local INVENTORY_GRID_SPACING_Y = ax.util:ScreenScaleH(2)
+local INVENTORY_GRID_ITEM_HEIGHT = ax.util:ScreenScaleH(16)
 local INVENTORY_PREVIEW_TRANSITION_TIME = ax.option:Get("tabFadeTime", 0.25)
 local INVENTORY_PREVIEW_TARGET_FOV = 45
+local INVENTORY_ACTIONS_IGNORE = {
+    take = true
+}
 local CURRENCY_CATEGORY_NAME = "Currencies"
 
 local currencyEntry = {}
@@ -127,6 +133,15 @@ local function DrawGlassPanel(x, y, w, h, radius, blur)
         blur = blur,
         flags = ax.render.SHAPE_IOS
     })
+end
+
+local function GetInventoryColumnCount()
+    return math.max(math.floor(tonumber(ax.option:Get("inventory.columns", 4)) or 4), 1)
+end
+
+local function CalculateGridHeight(itemCount, columnCount)
+    local rowCount = math.max(math.ceil(math.max(itemCount, 1) / columnCount), 1)
+    return (rowCount * INVENTORY_GRID_ITEM_HEIGHT) + (math.max(rowCount - 1, 0) * INVENTORY_GRID_SPACING_Y)
 end
 
 function PANEL:Init()
@@ -500,7 +515,7 @@ function PANEL:BuildCurrencyEntry(currencyID)
         entry.actions.drop = {
             name = "Drop",
             icon = "parallax/icons/caret-down-circle.png",
-            order = 1,
+            order = 1000,
             CanUse = function(action, currency, client)
                 if ( currency:GetAmount() <= 0 ) then
                     return false, "You don't have any " .. string.lower(currency:GetName()) .. " to drop."
@@ -840,6 +855,8 @@ function PANEL:PopulateItems()
 
     local pageCategories = {}
     local pageCategoryStacks = {}
+    local availableWidth = math.max(self.container:GetWide(), self.listing:GetWide(), self:GetWide() - INVENTORY_PREVIEW_WIDTH)
+
     for i = startIndex, endIndex do
         local pageEntry = filteredStacks[i]
         if ( !istable(pageEntry) ) then
@@ -859,17 +876,19 @@ function PANEL:PopulateItems()
         local categoryName = pageCategories[i]
         local stacks = pageCategoryStacks[categoryName] or {}
         local isCollapsed = collapsibleCategories and self.collapsedCategories[categoryName] == true
+        local columnCount = GetInventoryColumnCount()
+        local gridHeight = CalculateGridHeight(#stacks, columnCount)
 
         local categoryPanel = self.container:Add("ax.text")
 
         local useItalic = ax.option:Get("inventory.categories.italic", false)
-        local categoryFont = useItalic and "ax.huge.bold.italic" or "ax.huge.bold"
+        local categoryFont = useItalic and "ax.large.bold.italic" or "ax.large.bold"
 
         categoryPanel:SetFont(categoryFont)
         local collapsePrefix = collapsibleCategories and (isCollapsed and "[+] " or "[-] ") or ""
         categoryPanel:SetText(collapsePrefix .. utf8.upper(categoryName), true)
         categoryPanel:Dock(TOP)
-        categoryPanel:DockMargin(0, 0, 0, ax.util:ScreenScaleH(4))
+        categoryPanel:DockMargin(0, 0, 0, ax.util:ScreenScaleH(2))
 
         if ( collapsibleCategories ) then
             categoryPanel:SetMouseInputEnabled(true)
@@ -881,21 +900,54 @@ function PANEL:PopulateItems()
         end
 
         if ( !isCollapsed ) then
+            local stackCount = #stacks
+            local grid = self.container:Add("DIconLayout")
+            grid:Dock(TOP)
+            grid:DockMargin(0, 0, 0, ax.util:ScreenScaleH(4))
+            grid:SetSpaceX(INVENTORY_GRID_SPACING_X)
+            grid:SetSpaceY(INVENTORY_GRID_SPACING_Y)
+            grid:SetTall(gridHeight)
+            grid.Paint = nil
+
+            -- Override PerformLayout so items always fill the actual rendered width evenly.
+            grid.PerformLayout = function(this, w, h)
+                local cols = math.max(columnCount, 1)
+                local spacingX = INVENTORY_GRID_SPACING_X
+                local totalSpacing = math.max(cols - 1, 0) * spacingX
+                local itemW = math.max(math.floor((w - totalSpacing) / cols), 1)
+                local newHeight = CalculateGridHeight(stackCount, cols)
+                this:SetTall(newHeight)
+
+                local col = 0
+                local row = 0
+                for _, child in ipairs(this:GetChildren()) do
+                    if ( !IsValid(child) ) then continue end
+                    local x = col * (itemW + spacingX)
+                    local y = row * (INVENTORY_GRID_ITEM_HEIGHT + INVENTORY_GRID_SPACING_Y)
+                    child:SetPos(x, y)
+                    child:SetSize(itemW, INVENTORY_GRID_ITEM_HEIGHT)
+                    col = col + 1
+                    if ( col >= cols ) then
+                        col = 0
+                        row = row + 1
+                    end
+                end
+            end
+
             for _, stack in ipairs(stacks) do
                 local representativeItem = stack.representativeItem
 
-                local item = self.container:Add("ax.button")
+                local item = grid:Add("ax.button")
                 item:SetFont("ax.small")
                 item:SetFontDefault("ax.small")
                 item:SetFontHovered("ax.small.bold")
-                item:Dock(TOP)
-                item:DockMargin(0, 0, 0, ax.util:ScreenScaleH(4))
+                item:SetSize(64, INVENTORY_GRID_ITEM_HEIGHT) -- placeholder; PerformLayout will resize
                 item.isInventoryRow = true
 
                 local displayName = representativeItem:GetName() or tostring(representativeItem)
                 item:SetText(displayName, true)
                 item:SetContentAlignment(4)
-                item:SetTextInset(item:GetTall() + ax.util:ScreenScale(8), 0)
+                item:SetTextInset(INVENTORY_GRID_ITEM_HEIGHT + ax.util:ScreenScale(8), 0)
 
                 item.DoClick = function()
                     self:InfoOpen()
@@ -905,7 +957,7 @@ function PANEL:PopulateItems()
 
                 local useModelPanel = istable(representativeItem) and ax.item:NeedsSpawnIconRebuild(representativeItem)
                 local icon = item:Add(useModelPanel and "DModelPanel" or "SpawnIcon")
-                icon:SetWide(item:GetTall() - 16)
+                icon:SetWide(INVENTORY_GRID_ITEM_HEIGHT - 16)
                 icon:DockMargin(8, 8, 8, 8)
                 icon:SetMouseInputEnabled(false)
                 icon:Dock(LEFT)
@@ -949,7 +1001,7 @@ function PANEL:PopulateInfo(stack)
 
     local header = self.info:Add("EditablePanel")
     header:Dock(TOP)
-    header:DockMargin(ax.util:ScreenScale(16), ax.util:ScreenScaleH(16), ax.util:ScreenScale(8), 0)
+    header:DockMargin(ax.util:ScreenScale(8), ax.util:ScreenScaleH(8), ax.util:ScreenScale(4), 0)
 
     local title = header:Add("ax.text")
     title:Dock(TOP)
@@ -985,7 +1037,7 @@ function PANEL:PopulateInfo(stack)
 
     local content = self.info:Add("EditablePanel")
     content:Dock(FILL)
-    content:DockMargin(ax.util:ScreenScale(16), 0, ax.util:ScreenScale(8), ax.util:ScreenScaleH(8))
+    content:DockMargin(ax.util:ScreenScale(8), 0, ax.util:ScreenScale(4), ax.util:ScreenScaleH(4))
     content.Paint = nil
 
     local body = content:Add("ax.scroller.vertical")
@@ -1037,15 +1089,14 @@ function PANEL:PopulateInfo(stack)
     for _, actionEntry in ipairs(GetSortedActionEntries(actions)) do
         local k = actionEntry.id
         local v = actionEntry.data
-        local can, reason = representativeItem:CanInteract(ax.client, k, true)
-        if ( can == false ) then
-            ax.util:PrintDebug("Cannot perform action '" .. k .. "' on item '" .. tostring(representativeItem) .. "': " .. tostring(reason))
+
+        if ( INVENTORY_ACTIONS_IGNORE[k] ) then
             continue
         end
 
         local actionButton = actionsPanel:Add("ax.button.icon")
         actionButton:Dock(TOP)
-        actionButton:DockMargin(0, 0, 0, ax.util:ScreenScaleH(4))
+        actionButton:DockMargin(0, 0, 0, ax.util:ScreenScaleH(2))
         actionButton:SetFont("ax.small")
         actionButton:SetFontDefault("ax.small")
         actionButton:SetFontHovered("ax.small.italic")
@@ -1053,6 +1104,17 @@ function PANEL:PopulateInfo(stack)
         actionButton:SetContentAlignment(4)
         actionButton:SetIcon(v.icon)
         addedActions = addedActions + 1
+
+        local can, reason = representativeItem:CanInteract(ax.client, k, true)
+        if ( can == false ) then
+            ax.util:PrintDebug("Cannot perform action '" .. k .. "' on item '" .. tostring(representativeItem) .. "': " .. tostring(reason))
+            actionButton:SetEnabled(false)
+            actionButton:SetTooltip(reason or "You cannot perform this action.")
+            actionButton:SetTextColor(ax.theme:Get().glass.textMuted)
+            actionButton:SetTextColorHovered(ax.theme:Get().glass.textMuted)
+            actionButton:SetIconColor(ax.theme:Get().glass.textMuted)
+            continue
+        end
 
         actionButton.DoClick = function()
             if ( stack.isCurrencyStack ) then
