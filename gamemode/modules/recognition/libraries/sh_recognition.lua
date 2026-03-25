@@ -150,14 +150,17 @@ function ax.recognition:GetRecord(char, targetID)
 end
 
 --- Resolve the display name that `char` uses for the character with ID `targetID`.
--- Returns the stored alias at ACQUAINTED or above. At SEEN returns the target's description.
--- At STRANGER returns "Unknown". Globally recognised faction members always show their real name.
+-- Returns the stored alias at ACQUAINTED or above, otherwise "Unknown".
+-- Globally recognised faction members always show their real name.
 -- @realm shared
 -- @param char table The perceiver's character instance
 -- @param targetID number The target character's ID
 -- @return string Display name or fallback string
 function ax.recognition:GetAlias(char, targetID)
-    if ( !istable(char) or !isnumber(targetID) ) then return ax.localization:GetPhrase("unknown") end
+    if ( !istable(char) ) then return ax.localization:GetPhrase("unknown") end
+
+    targetID = tonumber(targetID)
+    if ( !targetID ) then return ax.localization:GetPhrase("unknown") end
 
     local targetChar = ax.character:Get(targetID)
 
@@ -174,12 +177,37 @@ function ax.recognition:GetAlias(char, targetID)
         return record.alias
     end
 
-    if ( tier >= self.TIERS.SEEN ) then
-        local desc = istable(targetChar) and targetChar:GetDescription() or nil
-        return (isstring(desc) and desc != "") and desc or ax.localization:GetPhrase("unknown")
+    return ax.localization:GetPhrase("unknown")
+end
+
+--- Resolve the description that `char` should see for the character with ID `targetID`.
+-- Returns nil for strangers (description hidden). Returns the real description at SEEN or above.
+-- Globally recognised faction members always show their real description.
+-- @realm shared
+-- @param char table The perceiver's character instance
+-- @param targetID number The target character's ID
+-- @return string|nil Description string, or nil when the perceiver shouldn't see one yet
+function ax.recognition:GetDisplayDescription(char, targetID)
+    if ( !istable(char) ) then return nil end
+
+    targetID = tonumber(targetID)
+    if ( !targetID ) then return nil end
+
+    local targetChar = ax.character:Get(targetID)
+    if ( !istable(targetChar) ) then return nil end
+
+    if ( self:IsGloballyRecognized(targetChar) ) then
+        return targetChar:GetDescription()
     end
 
-    return ax.localization:GetPhrase("unknown")
+    local record = self:GetRecord(char, targetID)
+    local tier = istable(record) and self:GetTier(record.score or 0) or self.TIERS.STRANGER
+
+    if ( tier >= self.TIERS.SEEN ) then
+        return targetChar:GetDescription()
+    end
+
+    return nil
 end
 
 --- Check whether a character's faction grants global recognition.

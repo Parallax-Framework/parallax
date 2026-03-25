@@ -367,7 +367,11 @@ function GM:HUDPaintTargetIDExtra(entity, x, y, alpha)
     if ( itemTable and itemTable:GetDescription() ) then
         desc = itemTable:GetDescription()
     elseif ( entity.GetCharacter and entity:GetCharacter() ) then
-        desc = entity:GetCharacter():GetDescription()
+        local targetChar = entity:GetCharacter()
+        local localChar = ax.util:IsValidPlayer(ax.client) and ax.client:GetCharacter() or nil
+        if ( istable(localChar) and ax.recognition ) then
+            desc = ax.recognition:GetDisplayDescription(localChar, targetChar:GetID())
+        end
     elseif ( entity.GetDisplayDescription ) then
         desc = entity:GetDisplayDescription()
     end

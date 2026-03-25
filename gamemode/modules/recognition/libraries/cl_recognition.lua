@@ -60,6 +60,89 @@ local function FormatRelativeTime(timestamp)
     return ax.localization:GetPhrase("recognition.time.weeks_ago", math.floor(diff / 604800))
 end
 
+--- Mirror the chat targeting lookup used by the core chat formatter.
+-- @realm client
+-- @param speaker Player
+-- @return Player|nil
+local function GetLookTarget(speaker)
+    if ( !ax.util:IsValidPlayer(speaker) ) then return nil end
+
+    local trace = speaker:GetEyeTrace()
+    if ( !IsValid(trace.Entity) or !ax.util:IsValidPlayer(trace.Entity) ) then return nil end
+
+    return trace.Entity
+end
+
+--- Resolve the display name a viewer should see for a given player.
+-- @realm client
+-- @param viewer Player The client receiving the message
+-- @param subject Player The player whose name should be resolved
+-- @return string
+local function GetRecognizedChatName(viewer, subject)
+    if ( !ax.util:IsValidPlayer(subject) ) then return "" end
+
+    local displayName = hook.Run("GetEntityDisplayText", subject)
+    if ( isstring(displayName) and displayName != "" ) then
+        return displayName
+    end
+
+    return subject:Nick()
+end
+
+--- Replace the leading speaker name inside a formatted chat string.
+-- Supports plain strings and strings wrapped in a leading font tag.
+-- @realm client
+-- @param formatted string
+-- @param oldName string
+-- @param newName string
+-- @return string
+local function ReplaceLeadingName(formatted, oldName, newName)
+    if ( !isstring(formatted) or !isstring(oldName) or !isstring(newName) ) then return formatted end
+    if ( oldName == "" or oldName == newName ) then return formatted end
+
+    if ( string.StartWith(formatted, oldName) ) then
+        return newName .. string.sub(formatted, #oldName + 1)
+    end
+
+    local fontTag = string.match(formatted, "^(<font=[^>]+>)")
+    if ( isstring(fontTag) and string.StartWith(string.sub(formatted, #fontTag + 1), oldName) ) then
+        return fontTag .. newName .. string.sub(formatted, #fontTag + #oldName + 1)
+    end
+
+    return formatted
+end
+
+--- Apply recognition-based speaker/target name substitutions to a formatted IC string.
+-- @realm client
+-- @param viewer Player The client receiving the message
+-- @param speaker Player The speaking player
+-- @param formatted string The already formatted chat line
+-- @return string
+local function ApplyRecognizedChatNames(viewer, speaker, formatted)
+    if ( !ax.util:IsValidPlayer(viewer) or !ax.util:IsValidPlayer(speaker) ) then return formatted end
+    if ( !isstring(formatted) or formatted == "" ) then return formatted end
+
+    local speakerName = GetRecognizedChatName(viewer, speaker)
+    local realSpeakerName = speaker:Nick()
+
+    formatted = ReplaceLeadingName(formatted, realSpeakerName, speakerName)
+
+    local target = GetLookTarget(speaker)
+    if ( !ax.util:IsValidPlayer(target) or target == viewer ) then
+        return formatted
+    end
+
+    local realTargetName = target:Nick()
+    local targetName = GetRecognizedChatName(viewer, target)
+    if ( !isstring(realTargetName) or realTargetName == "" or realTargetName == targetName ) then
+        return formatted
+    end
+
+    formatted = string.gsub(formatted, " to " .. string.PatternSafe(realTargetName) .. ",", " to " .. targetName .. ",", 1)
+
+    return formatted
+end
+
 -- ─────────────────────────────────────────────────────────────────────────────
 -- Nameplate override
 -- ─────────────────────────────────────────────────────────────────────────────
@@ -126,34 +209,35 @@ hook.Add("GetChatNameColor", "ax.recognition.ChatColor", HandleGetChatNameColor)
 -- @param chatType string Chat type key (e.g. "ic", "yell", "whisper")
 local function WrapChatTypeListener(chatType)
     local chatClass = ax.chat.registry[chatType]
-    if ( !istable(chatClass) or !isfunction(chatClass.OnFormatForListener) ) then return end
+    if ( !istable(chatClass) ) then return end
     if ( chatClass.__recognitionWrapped ) then return end
 
     chatClass.__recognitionWrapped = true
 
-    local original = chatClass.OnFormatForListener
-    chatClass.OnFormatForListener = function(this, speaker, listener, message, data)
-        local results = { original(this, speaker, listener, message, data) }
+    local originalRun = chatClass.OnRun
+    if ( isfunction(originalRun) ) then
+        chatClass.OnRun = function(this, speaker, message, data)
+            local results = { originalRun(this, speaker, message, data) }
 
-        if ( !isstring(results[2]) or !ax.util:IsValidPlayer(speaker) ) then
+            if ( ax.util:IsValidPlayer(ax.client) and ax.util:IsValidPlayer(speaker) and isstring(results[2]) ) then
+                results[2] = ApplyRecognizedChatNames(ax.client, speaker, results[2])
+            end
+
             return unpack(results)
         end
+    end
 
-        local localChar = listener.GetCharacter and listener:GetCharacter() or nil
-        local speakerChar = speaker.GetCharacter and speaker:GetCharacter() or nil
+    local originalListener = chatClass.OnFormatForListener
+    if ( isfunction(originalListener) ) then
+        chatClass.OnFormatForListener = function(this, speaker, listener, message, data)
+            local results = { originalListener(this, speaker, listener, message, data) }
 
-        if ( !istable(localChar) or !istable(speakerChar) ) then
+            if ( ax.util:IsValidPlayer(listener) and ax.util:IsValidPlayer(speaker) and isstring(results[2]) ) then
+                results[2] = ApplyRecognizedChatNames(listener, speaker, results[2])
+            end
+
             return unpack(results)
         end
-
-        local alias = ax.recognition:GetAlias(localChar, speakerChar:GetID())
-        local realName = speaker:Nick()
-
-        if ( isstring(realName) and realName != "" and alias != realName ) then
-            results[2] = string.gsub(results[2], string.PatternSafe(realName), alias, 1)
-        end
-
-        return unpack(results)
     end
 end
 
@@ -162,9 +246,10 @@ local function WrapChatTypes()
     WrapChatTypeListener("ic")
     WrapChatTypeListener("yell")
     WrapChatTypeListener("whisper")
+    WrapChatTypeListener("me")
 end
 
-hook.Add("InitPostEntity", "ax.recognition.WrapChatTypes", WrapChatTypes)
+hook.Add("OnSchemaLoaded", "ax.recognition.WrapChatTypes", WrapChatTypes)
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- Alias introduction panel
