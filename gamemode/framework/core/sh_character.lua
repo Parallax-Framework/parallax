@@ -364,7 +364,7 @@ ax.character:RegisterVar("name", {
             end
 
             payload.name = name
-            entry:SetText(name)
+            entry:SetText(name, true)
         end
 
         if ( this.hints ) then
