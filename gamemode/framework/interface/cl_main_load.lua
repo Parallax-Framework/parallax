@@ -131,7 +131,7 @@ function PANEL:PopulateCharacterList()
         local name = button:Add("ax.text")
         name:Dock(TOP)
         name:SetFont("ax.giant.bold")
-        name:SetText(v:GetName():upper())
+        name:SetText(v:GetName():upper(), true)
         name.Think = function(this)
             this:SetTextColor(button:GetTextColor())
         end
