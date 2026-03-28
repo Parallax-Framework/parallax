@@ -119,7 +119,7 @@ end
 
 hook.Add("ShouldCreateLoadButton", "ax.main.splash", function()
     local clientTable = ax.client:GetTable()
-    return clientTable.axCharacters and clientTable.axCharacters[1] != nil
+    return tobool(clientTable and clientTable.axCharacters and clientTable.axCharacters[1] != nil)
 end)
 
 function PANEL:PerformLayout()
