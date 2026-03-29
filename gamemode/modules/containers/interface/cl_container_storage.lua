@@ -405,70 +405,11 @@ function PANEL:Init()
 	self.nextRefresh = 0
 	self.lastPlayerSignature = ""
 	self.lastContainerSignature = ""
-	self.selectedPlayerItemID = nil
-	self.selectedContainerItemID = nil
+	self.selectedPlayerItemIDs = {}
+	self.selectedContainerItemIDs = {}
 	self.openedBlend = 0
-	self.weightFraction = 0
 
 	self:DockPadding(16, 70, 16, 16)
-
-	if ( IsValid(self.lblTitle) ) then
-		self.lblTitle:SetVisible(false)
-	end
-
-	self.header = self:Add("EditablePanel")
-	self.header:Dock(TOP)
-	self.header:SetTall(GetHeaderHeight())
-	self.header:DockMargin(0, 0, 0, 12)
-	self.header.Paint = function(this, width, height)
-		ax.theme:DrawGlassPanel(0, 0, width, height, {
-			radius = PANEL_RADIUS,
-			blur = 1.15,
-		})
-	end
-
-	self.headerTitle = self.header:Add("ax.text")
-	self.headerTitle:Dock(TOP)
-	self.headerTitle:DockMargin(16, 14, 16, 0)
-	self.headerTitle:SetFont("ax.huge.bold")
-
-	self.headerSubtitle = self.header:Add("ax.text")
-	self.headerSubtitle:Dock(TOP)
-	self.headerSubtitle:DockMargin(16, 0, 16, 0)
-	self.headerSubtitle:SetFont("ax.regular")
-
-	self.metaStrip = self.header:Add("EditablePanel")
-	self.metaStrip:Dock(BOTTOM)
-	self.metaStrip:SetTall(44)
-	self.metaStrip:DockMargin(12, 0, 12, 12)
-	self.metaStrip.Paint = nil
-
-	self.weightProgress = self.metaStrip:Add("EditablePanel")
-	self.weightProgress:Dock(FILL)
-	self.weightProgress.Paint = function(this, width, height)
-		local glass = ax.theme:GetGlass()
-		ax.theme:DrawGlassPanel(0, 0, width, height, {
-			radius = PANEL_RADIUS - 2,
-			blur = 0.65,
-			fill = ax.theme:ScaleAlpha(glass.input, ax.theme:GetMetrics().opacity),
-		})
-
-		local fraction = math.Clamp(GetAnimatedValue(self, "weightFraction", 0), 0, 1)
-		if ( fraction > 0 ) then
-			ax.render.Draw(PANEL_RADIUS - 2, 0, 0, width * fraction, height, ax.theme:ScaleAlpha(glass.progress, 0.9), ax.render.SHAPE_IOS)
-		end
-	end
-
-	self.weightText = self.weightProgress:Add("ax.text")
-	self.weightText:Dock(FILL)
-	self.weightText:SetFont("ax.regular.bold")
-	self.weightText:SetContentAlignment(5)
-
-	self.moneyText = self.metaStrip:Add("ax.text")
-	self.moneyText:Dock(RIGHT)
-	self.moneyText:SetFont("ax.regular.bold")
-	self.moneyText:SetContentAlignment(6)
-	self.moneyText:DockMargin(12, 0, 12, 0)
 
 	self.content = self:Add("EditablePanel")
 	self.content:Dock(FILL)
@@ -597,14 +538,15 @@ function PANEL:SetContainer(entity, inventoryID, displayName, searchTime, money,
 	self.money = math.max(tonumber(money) or 0, 0)
 	self.maxWeight = math.max(tonumber(maxWeight) or 0, 0)
 
-	self.headerTitle:SetText(self.displayName, true)
+	-- Too much clutter?
+	-- self:SetTitle(self.displayName, true)
 	self:RefreshInventories(true)
 end
 
 function PANEL:PerformLayout(width, height)
 	self.BaseClass.PerformLayout(self, width, height)
 
-	if ( !IsValid(self.content) or !IsValid(self.header) or !IsValid(self.actionRail) or !IsValid(self.playerPane) ) then
+	if ( !IsValid(self.content) or !IsValid(self.actionRail) or !IsValid(self.playerPane) ) then
 		return
 	end
 
@@ -613,19 +555,8 @@ function PANEL:PerformLayout(width, height)
 	local paneSpacing = 24
 	local paneWidth = math.max(math.floor((contentWidth - actionRailWidth - paneSpacing) * 0.5), ax.util:ScreenScale(180))
 
-	self.header:SetTall(GetHeaderHeight())
 	self.actionRail:SetWide(actionRailWidth)
 	self.playerPane:SetWide(paneWidth)
-
-	if ( IsValid(self.headerTitle) ) then
-		self.headerTitle:SetWrap(true)
-		self.headerTitle:SetAutoStretchVertical(true)
-	end
-
-	if ( IsValid(self.headerSubtitle) ) then
-		self.headerSubtitle:SetWrap(true)
-		self.headerSubtitle:SetAutoStretchVertical(true)
-	end
 end
 
 function PANEL:GetPlayerInventory()
@@ -686,43 +617,41 @@ function PANEL:HandleDroppedItem(itemPanel, targetInventoryID)
 			return
 		end
 
-		self.selectedContainerItemID = item.id
-		self.selectedPlayerItemID = nil
+		self.selectedContainerItemIDs = { [item.id] = true }
+		self.selectedPlayerItemIDs = {}
 		self:TakeSelected()
 	end
 end
 
 function PANEL:UpdateHeader(containerInventory)
-	local details = {}
-
-	if ( self.searchTime > 0 ) then
-		details[#details + 1] = ax.localization:GetPhrase("container.open_time", self.searchTime)
+	local playerInventory = self:GetPlayerInventory()
+	if ( istable(playerInventory) ) then
+		self.playerPane:SetWeight(playerInventory:GetWeight(), playerInventory:GetMaxWeight())
 	end
 
-	if ( self.money > 0 ) then
-		details[#details + 1] = ax.localization:GetPhrase("container.money", self.money)
+	if ( istable(containerInventory) ) then
+		self.containerPane:SetWeight(containerInventory:GetWeight(), self.maxWeight)
 	end
-
-	self.headerSubtitle:SetText(#details > 0 and table.concat(details, "    •    ") or ax.localization:GetPhrase("container.move_items"), true)
-
-	local currentWeight = istable(containerInventory) and containerInventory:GetWeight() or 0
-	local weightSuffix = ax.localization:GetPhrase("inventory.weight.abbreviation")
-	local safeMaxWeight = math.max(self.maxWeight, 0.001)
-
-	self.weightText:SetText(ax.localization:GetPhrase("container.capacity", math.Round(currentWeight, 2), weightSuffix, math.Round(self.maxWeight, 2), weightSuffix), true)
-	self.moneyText:SetText(self.money > 0 and ax.localization:GetPhrase("container.money", self.money) or "", true)
-
-	self:Motion(0.18, {
-		Target = {
-			weightFraction = math.Clamp(currentWeight / safeMaxWeight, 0, 1),
-		},
-		Easing = "OutQuad",
-	})
 end
 
 function PANEL:UpdateButtons()
-	self.takeButton:SetEnabled(isnumber(self.selectedContainerItemID) and self.selectedContainerItemID > 0)
-	self.storeButton:SetEnabled(isnumber(self.selectedPlayerItemID) and self.selectedPlayerItemID > 0)
+	local takeCount = table.Count(self.selectedContainerItemIDs)
+	local storeCount = table.Count(self.selectedPlayerItemIDs)
+
+	self.takeButton:SetEnabled(takeCount > 0)
+	self.storeButton:SetEnabled(storeCount > 0)
+
+	if ( takeCount > 1 ) then
+		self.takeButton:SetText(ax.localization:GetPhrase("container.take_button") .. " (" .. takeCount .. ")", true)
+	else
+		self.takeButton:SetText(ax.localization:GetPhrase("container.take_button"), true)
+	end
+
+	if ( storeCount > 1 ) then
+		self.storeButton:SetText(ax.localization:GetPhrase("container.store_button") .. " (" .. storeCount .. ")", true)
+	else
+		self.storeButton:SetText(ax.localization:GetPhrase("container.store_button"), true)
+	end
 end
 
 function PANEL:RefreshInventories(force)
