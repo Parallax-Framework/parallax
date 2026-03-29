@@ -108,6 +108,46 @@ ax.net:Hook("item.transfer", function(client, itemID, targetInventoryID)
     ax.item:Transfer(item, sourceInventoryID, targetInventoryID, function() print("Item transferred") end)
 end)
 
+ax.net:Hook("item.transfer.batch", function(client, itemIDs, targetInventoryID)
+    local character = client:GetCharacter()
+    if ( !character ) then return end
+
+    if ( !istable(itemIDs) or !isnumber(targetInventoryID) or targetInventoryID < 1 ) then
+        ax.util:Error("Invalid payload received for item.transfer.batch.")
+        return
+    end
+
+    local targetInventory = ax.inventory.instances[targetInventoryID]
+    if ( !istable(targetInventory) ) then
+        ax.util:PrintError("Target inventory with ID " .. targetInventoryID .. " does not exist.")
+        return
+    end
+
+    for _, itemID in ipairs(itemIDs) do
+        if ( !isnumber(itemID) or itemID < 1 ) then
+            continue
+        end
+
+        local item = ax.item.instances[itemID]
+        if ( !istable(item) ) then
+            continue
+        end
+
+        local sourceInventoryID = item:GetInventoryID()
+        if ( !isnumber(sourceInventoryID) or sourceInventoryID < 1 ) then
+            continue
+        end
+
+        local itemInventory = ax.inventory.instances[sourceInventoryID]
+        if ( !istable(itemInventory) or !itemInventory:IsReceiver(client) ) then
+            ax.util:PrintError("Player " .. client:SteamID() .. " attempted to batch transfer item ID " .. itemID .. " which they do not possess.")
+            continue
+        end
+
+        ax.item:Transfer(item, sourceInventoryID, targetInventoryID, function() end)
+    end
+end)
+
 ax.net:Hook("inventory.item.action", function(client, itemID, action)
     local actionRateLimit = math.max(tonumber(ax.config:Get("inventory.action.rate_limit", 0.1)) or 0.1, 0)
     if ( !client:RateLimit("inventory.action", actionRateLimit) ) then return end
