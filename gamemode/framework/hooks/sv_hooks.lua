@@ -99,13 +99,13 @@ function GM:DoPlayerDeath(client, attacker, damageInfo)
         classData:OnDeath(client, attacker, damageInfo)
     end
 
-    client.axDeathRespawnSound = true
+    client:GetTable().axDeathRespawnSound = true
 end
 
 function GM:PlayerDeathSound(client)
     local deathSound = hook.Run("GetPlayerDeathSound", client)
     if ( deathSound ) then
-        client:EmitSound(deathSound, 80, 100, 1, CHAN_STATIC)
+        client:EmitSound(deathSound, 80, 100, 1, CHAN_VOICE)
     end
 
     return true
@@ -116,7 +116,7 @@ function GM:PlayerHurt(client, attacker, healthRemaining, damageInfo)
 
     local painSound = hook.Run("GetPlayerPainSound", client, attacker, healthRemaining, damageInfo)
     if ( painSound ) then
-        client:EmitSound(painSound, 80, 100, 1, CHAN_STATIC)
+        client:EmitSound(painSound, 80, 100, 1, CHAN_VOICE)
     end
 end
 
@@ -173,7 +173,8 @@ function GM:GetPlayerPainSound(client, attacker, healthRemaining, damageInfo)
 end
 
 function GM:PlayerSpawn(client)
-    if ( client.axDeathRespawnSound ) then
+    local clientTable = client:GetTable()
+    if ( clientTable.axDeathRespawnSound ) then
         local deathRespawnSound = hook.Run("GetPlayerDeathRespawnSound", client)
         if ( deathRespawnSound ) then
             client:SendLua([[sound.PlayFile("]] .. deathRespawnSound .. [[", "", function() end)]])
@@ -182,7 +183,7 @@ function GM:PlayerSpawn(client)
         end
 
         client:PerformAction()
-        client.axDeathRespawnSound = nil
+        clientTable.axDeathRespawnSound = nil
     end
 
     client:ClearRagdollWeapons()
