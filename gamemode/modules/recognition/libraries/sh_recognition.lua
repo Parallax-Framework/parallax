@@ -218,14 +218,14 @@ function ax.recognition:IsGloballyRecognized(targetChar)
 end
 
 --- Config keys used by this module.
-ax.config:Add("recognition_tick_interval",    ax.type.number, 3,                      { category = "recognition", description = "Seconds between passive proximity familiarity ticks.", min = 1, max = 60, decimals = 0 })
-ax.config:Add("recognition_passive_gain",     ax.type.number, 1,                      { category = "recognition", description = "Score gained per proximity tick.", min = 0, max = 10, decimals = 0 })
-ax.config:Add("recognition_ic_bonus",         ax.type.number, 3,                      { category = "recognition", description = "Bonus score per IC chat message heard.", min = 0, max = 20, decimals = 0 })
-ax.config:Add("recognition_whisper_bonus",    ax.type.number, 5,                      { category = "recognition", description = "Bonus score per whisper heard.", min = 0, max = 20, decimals = 0 })
-ax.config:Add("recognition_yell_bonus",       ax.type.number, 1,                      { category = "recognition", description = "Bonus score per yell heard.", min = 0, max = 20, decimals = 0 })
-ax.config:Add("recognition_decay_days",       ax.type.number, 7,                      { category = "recognition", description = "Days of inactivity before score decay begins. Set to 0 to disable.", min = 0, max = 365, decimals = 0 })
-ax.config:Add("recognition_decay_amount",     ax.type.number, 10,                     { category = "recognition", description = "Score lost per daily decay cycle.", min = 1, max = 100, decimals = 0 })
-ax.config:Add("recognition_unknown_colour",   ax.type.color,  Color(150, 150, 150),   { category = "recognition", description = "Colour used on nameplates and in chat for unrecognised characters." })
+ax.config:Add("recognition_tick_interval",    ax.type.number, 3,                      { category = "recognition", description = "config.recognition_tick_interval.help", min = 1, max = 60, decimals = 0 })
+ax.config:Add("recognition_passive_gain",     ax.type.number, 1,                      { category = "recognition", description = "config.recognition_passive_gain.help", min = 0, max = 10, decimals = 0 })
+ax.config:Add("recognition_ic_bonus",         ax.type.number, 3,                      { category = "recognition", description = "config.recognition_ic_bonus.help", min = 0, max = 20, decimals = 0 })
+ax.config:Add("recognition_whisper_bonus",    ax.type.number, 5,                      { category = "recognition", description = "config.recognition_whisper_bonus.help", min = 0, max = 20, decimals = 0 })
+ax.config:Add("recognition_yell_bonus",       ax.type.number, 1,                      { category = "recognition", description = "config.recognition_yell_bonus.help", min = 0, max = 20, decimals = 0 })
+ax.config:Add("recognition_decay_days",       ax.type.number, 7,                      { category = "recognition", description = "config.recognition_decay_days.help", min = 0, max = 365, decimals = 0 })
+ax.config:Add("recognition_decay_amount",     ax.type.number, 10,                     { category = "recognition", description = "config.recognition_decay_amount.help", min = 1, max = 100, decimals = 0 })
+ax.config:Add("recognition_unknown_colour",   ax.type.color,  Color(150, 150, 150),   { category = "recognition", description = "config.recognition_unknown_colour.help" })
 
 --- Register the per-character familiarity data blob.
 -- Stored as a nested table keyed by target character ID:

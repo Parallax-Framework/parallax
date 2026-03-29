@@ -57,4 +57,43 @@ ax.localization:Register("en", {
     ["recognition.admin.view.true_name"] = "  True name : %s",
     ["recognition.admin.view.toward_you"] = "  Toward you: score=%d  tier=%s  alias=%s",
     ["recognition.admin.alias_none"] = "(none)",
+
+    /*
+    ax.config:Add("recognition_tick_interval",    ax.type.number, 3,                      { category = "recognition", description = "Seconds between passive proximity familiarity ticks.", min = 1, max = 60, decimals = 0 })
+    ax.config:Add("recognition_passive_gain",     ax.type.number, 1,                      { category = "recognition", description = "Score gained per proximity tick.", min = 0, max = 10, decimals = 0 })
+    ax.config:Add("recognition_ic_bonus",         ax.type.number, 3,                      { category = "recognition", description = "Bonus score per IC chat message heard.", min = 0, max = 20, decimals = 0 })
+    ax.config:Add("recognition_whisper_bonus",    ax.type.number, 5,                      { category = "recognition", description = "Bonus score per whisper heard.", min = 0, max = 20, decimals = 0 })
+    ax.config:Add("recognition_yell_bonus",       ax.type.number, 1,                      { category = "recognition", description = "Bonus score per yell heard.", min = 0, max = 20, decimals = 0 })
+    ax.config:Add("recognition_decay_days",       ax.type.number, 7,                      { category = "recognition", description = "Days of inactivity before score decay begins. Set to 0 to disable.", min = 0, max = 365, decimals = 0 })
+    ax.config:Add("recognition_decay_amount",     ax.type.number, 10,                     { category = "recognition", description = "Score lost per daily decay cycle.", min = 1, max = 100, decimals = 0 })
+    ax.config:Add("recognition_unknown_colour",   ax.type.color,  Color(150, 150, 150),   { category = "recognition", description = "Colour used on nameplates and in chat for unrecognised characters." })
+
+    */
+
+    ["config.recognition_tick_interval"] = "Tick Interval",
+    ["config.recognition_tick_interval.help"] = "Seconds between passive proximity familiarity ticks.",
+
+    ["config.recognition_passive_gain"] = "Passive Gain",
+    ["config.recognition_passive_gain.help"] = "Score gained per proximity tick.",
+
+    ["config.recognition_ic_bonus"] = "IC Bonus",
+    ["config.recognition_ic_bonus.help"] = "Bonus score per IC chat message heard.",
+
+    ["config.recognition_whisper_bonus"] = "Whisper Bonus",
+    ["config.recognition_whisper_bonus.help"] = "Bonus score per whisper heard.",
+
+    ["config.recognition_yell_bonus"] = "Yell Bonus",
+    ["config.recognition_yell_bonus.help"] = "Bonus score per yell heard.",
+
+    ["config.recognition_decay_days"] = "Decay Days",
+    ["config.recognition_decay_days.help"] = "Days of inactivity before score decay begins. Set to 0 to disable.",
+
+    ["config.recognition_decay_amount"] = "Decay Amount",
+    ["config.recognition_decay_amount.help"] = "Score lost per daily decay cycle.",
+
+    ["config.recognition_unknown_colour"] = "Unknown Colour",
+    ["config.recognition_unknown_colour.help"] = "Colour used on nameplates and in chat for unrecognised characters."
+
+
+
 })
