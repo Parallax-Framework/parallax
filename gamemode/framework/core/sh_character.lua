@@ -151,7 +151,7 @@ ax.character:RegisterVar("faction", {
                 if ( v.Font ) then
                     font = v.Font
                 elseif ( name:len() > 22 ) then
-                    font = "ax.massive"
+                    font = "ax.large"
                 end
 
                 if ( hovered ) then
