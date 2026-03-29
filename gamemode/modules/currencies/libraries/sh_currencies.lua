@@ -67,33 +67,6 @@ function ax.currencies:Register(uniqueID, data)
         and ("A physical currency balance made up of " .. data.plural .. ".")
         or ("A non-physical currency balance of " .. data.plural .. " that cannot be dropped or handed over directly."))
 
-    -- Create default format function if not provided
-    if ( !isfunction(data.format) ) then
-        data.format = function(amount)
-            amount = tonumber(amount) or 0
-
-            local wholeAmount = math.floor(amount)
-            local formattedAmount = string.Comma(wholeAmount)
-            local label = math.abs(wholeAmount) == 1 and data.singular or data.plural
-            local symbol = tostring(data.symbol or "")
-            local separator = data.symbolSpacing and " " or ""
-
-            if ( symbol != "" ) then
-                if ( data.symbolPosition == "suffix" ) then
-                    formattedAmount = formattedAmount .. separator .. symbol
-                else
-                    formattedAmount = symbol .. separator .. formattedAmount
-                end
-            end
-
-            if ( label == "" ) then
-                return formattedAmount
-            end
-
-            return formattedAmount .. " " .. label
-        end
-    end
-
     self.registry[uniqueID] = data
 
     -- Register character variable for this currency
@@ -233,7 +206,7 @@ function ax.currencies:Format(amount, uniqueID, useText)
     end
 
     -- Fallback formatting
-    return string.Comma(math.floor(amount)) .. " " .. ( useText and currencyData.plural or "" )
+    return string.Comma(math.floor(amount)) .. ( useText == true and " " .. currencyData.plural or "" )
 end
 
 --- Format a currency amount with symbol prefix or suffix.
