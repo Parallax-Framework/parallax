@@ -516,6 +516,8 @@ function PANEL:Init()
 	self.containerPane = self.content:Add("ax.container.inventorypane")
 	self.containerPane:Dock(FILL)
 	self.containerPane:SetTitle(ax.localization:GetPhrase("container.contents_title"))
+	self.containerPane.title:Dock(RIGHT)
+	self.containerPane.status:Dock(LEFT)
 	self.containerPane.OnItemSelected = function(_, itemID)
 		self.selectedContainerItemID = itemID
 		self.selectedPlayerItemID = nil
