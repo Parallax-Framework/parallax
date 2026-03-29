@@ -128,14 +128,16 @@ function PANEL:PerformLayout()
 
     self.buttons:SetWide(ScrW() / 2)
 
-    for _, button in pairs(self.buttons:GetChildren()) do
+    local children = self.buttons:GetChildren()
+
+    for _, button in pairs(children) do
         self.buttons:SetTall(math.max(self.buttons:GetTall(), button:GetTall()))
     end
 
     self.buttons:SetPos(ScrW() / 2 - self.buttons:GetWide() / 2, ScrH() - self.buttons:GetTall() - ax.util:ScreenScaleH(48))
 
-    for _, button in pairs(self.buttons:GetChildren()) do
-        button:SetWide(self.buttons:GetWide() / #self.buttons:GetChildren() - ax.util:ScreenScale(8))
+    for _, button in pairs(children) do
+        button:SetWide(self.buttons:GetWide() / #children - ax.util:ScreenScale(8))
         button:DockMargin(ax.util:ScreenScale(4), 0, ax.util:ScreenScale(4), 0)
     end
 end
