@@ -493,7 +493,7 @@ if ( CLIENT ) then
     -- @return number The ScreenScaleH'd and UI-scaled value
     -- @usage local scaledHeight = ax.util:ScreenScaleH(32)
     function ax.util:ScreenScaleH(value)
-        return self:Scale(ScreenScaleH(value))
+        return self:Scale(ax.font:Scale(value))
     end
 end
 
