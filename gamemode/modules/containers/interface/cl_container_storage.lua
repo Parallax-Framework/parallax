@@ -333,9 +333,9 @@ function INVENTORY_PANE:SetDropActive(state)
 	})
 end
 
-function INVENTORY_PANE:Populate(inventory, selectedItemID, filterName)
+function INVENTORY_PANE:Populate(inventory, selectedIDs, filterName)
 	self.scroller:Clear()
-	self.selectedItemID = selectedItemID
+	selectedIDs = selectedIDs or {}
 
 	if ( !istable(inventory) ) then
 		self.empty:SetText(ax.localization:GetPhrase("container.empty_inventory"), true)
@@ -369,23 +369,85 @@ function INVENTORY_PANE:Populate(inventory, selectedItemID, filterName)
 		return nameA < nameB
 	end)
 
-	self.empty:SetVisible(entries[1] == nil)
+	local stacks = {}
+	for i = 1, #entries do
+		local item = entries[i]
+		local itemClass = item.class
+		local itemTemplate = ax.item.stored and ax.item.stored[itemClass]
+		local shouldStack = itemTemplate and itemTemplate.shouldStack or false
+		local maxStack = itemTemplate and itemTemplate.maxStack or 1
+
+		if ( shouldStack ) then
+			local foundStack = false
+			for _, existingStack in ipairs(stacks) do
+				if ( existingStack.class == itemClass and existingStack.stackCount < maxStack ) then
+					existingStack.stackCount = existingStack.stackCount + 1
+					existingStack.stackedItems[#existingStack.stackedItems + 1] = item
+					foundStack = true
+					break
+				end
+			end
+
+			if ( !foundStack ) then
+				stacks[#stacks + 1] = {
+					class = itemClass,
+					stackCount = 1,
+					stackedItems = { item },
+					representativeItem = item,
+				}
+			end
+		else
+			stacks[#stacks + 1] = {
+				class = itemClass,
+				stackCount = 1,
+				stackedItems = { item },
+				representativeItem = item,
+			}
+		end
+	end
+
+	self.empty:SetVisible(stacks[1] == nil)
 	self.empty:SetText(ax.localization:GetPhrase("container.empty_inventory"), true)
 
-	for i = 1, #entries do
+	for i = 1, #stacks do
+		local stack = stacks[i]
+
+		local stackedItemIDs = {}
+		for _, stackedItem in ipairs(stack.stackedItems) do
+			stackedItemIDs[#stackedItemIDs + 1] = stackedItem.id
+		end
+
+		local allSelected = true
+		for _, id in ipairs(stackedItemIDs) do
+			if ( !selectedIDs[id] ) then
+				allSelected = false
+				break
+			end
+		end
+
 		local itemPanel = self.scroller:Add("ax.container.item")
 		itemPanel:Dock(TOP)
 		itemPanel:DockMargin(0, 0, 0, 6)
-		itemPanel:SetItem(entries[i])
-		itemPanel:SetSelected(selectedItemID == entries[i].id)
-		itemPanel:GetParent().OnItemPressed = function(_, pressedItem)
+		itemPanel:SetItem(stack.representativeItem)
+		itemPanel:SetSelected(allSelected)
+
+		if ( stack.stackCount > 1 ) then
+			local badge = itemPanel:Add("ax.text")
+			badge:Dock(LEFT)
+			badge:SetFont("ax.small.italic")
+			badge:SetText("x" .. stack.stackCount, true)
+			badge:SetContentAlignment(4)
+			badge:SetMouseInputEnabled(false)
+		end
+
+		itemPanel.DoClick = function()
 			if ( isfunction(self.OnItemSelected) ) then
-				self:OnItemSelected(pressedItem.itemID)
+				self:OnItemSelected(stackedItemIDs)
 			end
 		end
-		itemPanel:GetParent().OnItemDoubleClicked = function(_, pressedItem)
+		itemPanel.DoDoubleClick = function()
 			if ( isfunction(self.OnItemActivated) ) then
-				self:OnItemActivated(pressedItem.itemID)
+				self:OnItemActivated(stackedItemIDs)
 			end
 		end
 	end
@@ -419,17 +481,39 @@ function PANEL:Init()
 	self.playerPane:Dock(LEFT)
 	self.playerPane:DockMargin(0, 0, 12, 0)
 	self.playerPane:SetTitle(ax.localization:GetPhrase("container.your_inventory"))
-	self.playerPane.OnItemSelected = function(_, itemID)
-		self.selectedPlayerItemID = itemID
-		self.selectedContainerItemID = nil
+	self.playerPane.OnItemSelected = function(_, stackedItemIDs)
+		local allSelected = true
+		for _, id in ipairs(stackedItemIDs) do
+			if ( !self.selectedPlayerItemIDs[id] ) then
+				allSelected = false
+				break
+			end
+		end
+
+		if ( allSelected ) then
+			for _, id in ipairs(stackedItemIDs) do
+				self.selectedPlayerItemIDs[id] = nil
+			end
+		else
+			for _, id in ipairs(stackedItemIDs) do
+				self.selectedPlayerItemIDs[id] = true
+			end
+			self.selectedContainerItemIDs = {}
+		end
+
 		self:RefreshInventories(true)
 	end
-	self.playerPane.OnItemActivated = function(_, itemID)
-		self.selectedPlayerItemID = itemID
+	self.playerPane.OnItemActivated = function(_, stackedItemIDs)
+		self.selectedPlayerItemIDs = {}
+		for _, id in ipairs(stackedItemIDs) do
+			self.selectedPlayerItemIDs[id] = true
+		end
+		self.selectedContainerItemIDs = {}
 		self:StoreSelected()
 	end
 	self.playerPane.OnDropReceived = function(_, itemPanel)
-		self.selectedContainerItemID = itemPanel.itemID
+		self.selectedContainerItemIDs = { [itemPanel.itemID] = true }
+		self.selectedPlayerItemIDs = {}
 		self:TakeSelected()
 	end
 
@@ -444,7 +528,7 @@ function PANEL:Init()
 
 		local val = this:GetValue()
 
-		self.playerPane:Populate(plyInv, self.selectedPlayerItemID, val)
+		self.playerPane:Populate(plyInv, self.selectedPlayerItemIDs, val)
 		self.playerPane:SetStatus(string.format("%d", table.Count(plyInv:GetItems() or {})))
 	end
 
@@ -496,18 +580,56 @@ function PANEL:Init()
 	self.containerPane:SetTitle(ax.localization:GetPhrase("container.contents_title"))
 	self.containerPane.title:Dock(RIGHT)
 	self.containerPane.status:Dock(LEFT)
-	self.containerPane.OnItemSelected = function(_, itemID)
-		self.selectedContainerItemID = itemID
-		self.selectedPlayerItemID = nil
+	self.containerPane.status:SetContentAlignment(4)
+	self.containerPane.OnItemSelected = function(_, stackedItemIDs)
+		local allSelected = true
+		for _, id in ipairs(stackedItemIDs) do
+			if ( !self.selectedContainerItemIDs[id] ) then
+				allSelected = false
+				break
+			end
+		end
+
+		if ( allSelected ) then
+			for _, id in ipairs(stackedItemIDs) do
+				self.selectedContainerItemIDs[id] = nil
+			end
+		else
+			for _, id in ipairs(stackedItemIDs) do
+				self.selectedContainerItemIDs[id] = true
+			end
+			self.selectedPlayerItemIDs = {}
+		end
+
 		self:RefreshInventories(true)
 	end
-	self.containerPane.OnItemActivated = function(_, itemID)
-		self.selectedContainerItemID = itemID
+	self.containerPane.OnItemActivated = function(_, stackedItemIDs)
+		self.selectedContainerItemIDs = {}
+		for _, id in ipairs(stackedItemIDs) do
+			self.selectedContainerItemIDs[id] = true
+		end
+		self.selectedPlayerItemIDs = {}
 		self:TakeSelected()
 	end
 	self.containerPane.OnDropReceived = function(_, itemPanel)
-		self.selectedPlayerItemID = itemPanel.itemID
+		self.selectedPlayerItemIDs = { [itemPanel.itemID] = true }
+		self.selectedContainerItemIDs = {}
 		self:StoreSelected()
+	end
+
+	self.containerPaneSearch = self.containerPane.header:Add("ax.text.entry")
+	self.containerPaneSearch:SetPlaceholderText(ax.localization:GetPhrase("container.search_container_inventory"))
+	self.containerPaneSearch:Dock(FILL)
+	self.containerPaneSearch:DockMargin(0, 18, 12, 16)
+	self.containerPaneSearch:SetUpdateOnType(true)
+	self.containerPaneSearch.OnTextChanged = function(this)
+		local containerInv = self:GetContainerInventory()
+		if ( !containerInv ) then return end
+
+		local val = this:GetValue()
+
+		self.containerPane:Populate(containerInv, self.selectedContainerItemIDs, val)
+		self.containerPane:SetStatus(string.format("%d", table.Count(containerInv:GetItems() or {})))
 	end
 
 	self:PlayIntro()
@@ -606,8 +728,8 @@ function PANEL:HandleDroppedItem(itemPanel, targetInventoryID)
 			return
 		end
 
-		self.selectedPlayerItemID = item.id
-		self.selectedContainerItemID = nil
+		self.selectedPlayerItemIDs = { [item.id] = true }
+		self.selectedContainerItemIDs = {}
 		self:StoreSelected()
 		return
 	end
@@ -672,13 +794,13 @@ function PANEL:RefreshInventories(force)
 
 	if ( force or playerSignature != self.lastPlayerSignature ) then
 		self.lastPlayerSignature = playerSignature
-		self.playerPane:Populate(playerInventory, self.selectedPlayerItemID, self.playerPaneSearch:GetText())
+		self.playerPane:Populate(playerInventory, self.selectedPlayerItemIDs, self.playerPaneSearch:GetText())
 		self.playerPane:SetStatus(string.format("%d", table.Count(playerInventory:GetItems() or {})))
 	end
 
 	if ( force or containerSignature != self.lastContainerSignature ) then
 		self.lastContainerSignature = containerSignature
-		self.containerPane:Populate(containerInventory, self.selectedContainerItemID)
+		self.containerPane:Populate(containerInventory, self.selectedContainerItemIDs, self.containerPaneSearch:GetText())
 		self.containerPane:SetStatus(string.format("%d", table.Count(containerInventory:GetItems() or {})))
 	end
 
@@ -703,16 +825,21 @@ function PANEL:RefreshInventories(force)
 end
 
 function PANEL:StoreSelected()
-	if ( !self.selectedPlayerItemID ) then
+	if ( !next(self.selectedPlayerItemIDs) ) then
 		return
 	end
 
-	ax.net:Start("item.transfer", self.selectedPlayerItemID, self.inventoryID)
-	self.selectedContainerItemID = nil
+	local itemIDs = {}
+	for itemID in pairs(self.selectedPlayerItemIDs) do
+		itemIDs[#itemIDs + 1] = itemID
+	end
+
+	ax.net:Start("item.transfer.batch", itemIDs, self.inventoryID)
+	self.selectedPlayerItemIDs = {}
 end
 
 function PANEL:TakeSelected()
-	if ( !self.selectedContainerItemID ) then
+	if ( !next(self.selectedContainerItemIDs) ) then
 		return
 	end
 
@@ -721,8 +848,13 @@ function PANEL:TakeSelected()
 		return
 	end
 
-	ax.net:Start("item.transfer", self.selectedContainerItemID, playerInventory:GetID())
-	self.selectedPlayerItemID = nil
+	local itemIDs = {}
+	for itemID in pairs(self.selectedContainerItemIDs) do
+		itemIDs[#itemIDs + 1] = itemID
+	end
+
+	ax.net:Start("item.transfer.batch", itemIDs, playerInventory:GetID())
+	self.selectedContainerItemIDs = {}
 end
 
 function PANEL:Think()
