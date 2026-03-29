@@ -117,7 +117,7 @@ local basicTypeMap = {
 
 local checkTypeMap = {
     [ax.type.color] = function(val)
-        return IsColor(val) or ( istable(val) and isnumber(val.r) and isnumber(val.g) and isnumber(val.b) and isnumber(val.a) )
+        return IsColor(val) or ( istable(val) and table.Count(val) == 4 and isnumber(val.r) and isnumber(val.g) and isnumber(val.b) and isnumber(val.a) )
     end,
     [ax.type.character] = function(val) return getmetatable(val) == ax.character.meta end,
     [ax.type.steamid] = function(val) return isstring(val) and #val == 19 and string.match(val, "STEAM_%d:%d:%d+") != nil end,
@@ -136,7 +136,13 @@ function ax.type:Detect(value)
     local luaType = type(value)
     local mapped = basicTypeMap[luaType]
 
-    if ( mapped ) then return mapped end
+    if ( mapped ) then
+        if ( mapped == ax.type.table and iscolor(value) ) then
+            return ax.type.color
+        end
+
+        return mapped
+    end
 
     for typeID, validator in pairs(checkTypeMap) do
         if ( validator(value) ) then
@@ -205,7 +211,7 @@ function isstring(val)
 end
 
 function iscolor(val)
-    return IsColor(val)
+    return IsColor(val) or ( istable(val) and table.Count(val) == 4 and isnumber(val.r) and isnumber(val.g) and isnumber(val.b) and isnumber(val.a) )
 end
 
 function istable(val)

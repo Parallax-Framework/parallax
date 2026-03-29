@@ -343,12 +343,14 @@ function ax.util:CreateStore(spec, oldStore)
     end
 
     local function ValuesEqual(oldValue, newValue)
-        if ( oldValue == newValue ) then
-            return true
+        if ( ax.type:Detect(oldValue) == ax.type.color and ax.type:Detect(newValue) == ax.type.color ) then
+            if ( oldValue.r == newValue.r and oldValue.g == newValue.g and oldValue.b == newValue.b and oldValue.a == newValue.a ) then
+                return true
+            end
         end
 
-        if ( istable(oldValue) and istable(newValue) ) then
-            return table.EqualValues(oldValue, newValue)
+        if ( oldValue == newValue ) then
+            return true
         end
 
         return false

@@ -127,7 +127,7 @@ function ax.font:CreateFamily(name, font, size, fontData)
 
         local data = {
             font = black and (font .. " Black") or (bold and (font .. " Bold") or font),
-            size = size,
+            size = self:Scale(size),
             italic = italic and true or false,
             shadow = shadow and true or false,
             antialias = true,
@@ -141,10 +141,14 @@ function ax.font:CreateFamily(name, font, size, fontData)
     ax.util:Print("Font family '" .. name .. "' created with " .. #combinations .. " variations.")
 end
 
+function ax.font:Scale(value)
+    return math.max(value * (ScrH() / 1080), 1)
+end
+
 function ax.font:Load()
-    local generalScale = ax.option:Get("fontScaleGeneral", 1)
-    local smallScale = ax.option:Get("fontScaleSmall", 1)
-    local bigScale = ax.option:Get("fontScaleBig", 1)
+    local generalScale = ax.font:Scale(ax.option:Get("fontScaleGeneral", 1))
+    local smallScale = ax.font:Scale(ax.option:Get("fontScaleSmall", 1))
+    local bigScale = ax.font:Scale(ax.option:Get("fontScaleBig", 1))
 
     local baseSizes = {
         tiny = 5,

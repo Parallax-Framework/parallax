@@ -147,7 +147,7 @@ local function FormatStoreValue(store, key, value)
 
         local alpha = tonumber(value.a) or 255
         if ( alpha < 255 ) then
-            return string.format("#%02X%02X%02X / %d", value.r, value.g, value.b, alpha)
+            return string.format("#%02X%02X%02X%02X / %d", value.r, value.g, value.b, alpha, alpha)
         end
 
         return string.format("#%02X%02X%02X", value.r, value.g, value.b)
