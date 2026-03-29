@@ -61,7 +61,7 @@ function ax.module:Include(path, timeFilter)
                 MODULE = self.stored[moduleName]
                 ax.util:PrintSuccess("Reloading module \"" .. tostring(MODULE.name) .. "\" from file: " .. fileName)
             else
-                MODULE = MODULE or { uniqueID = moduleName, scope = scope }
+                MODULE = MODULE or { uniqueID = moduleName, scope = scope, folder = moduleName }
             end
 
             ax.util:Include(filePath)
@@ -105,7 +105,7 @@ function ax.module:Include(path, timeFilter)
                         MODULE = self.stored[moduleName]
                         ax.util:PrintSuccess("Reloading module \"" .. tostring(MODULE.name) .. "\" from directory: " .. dirName)
                     else
-                        MODULE = MODULE or { uniqueID = dirName, scope = scope }
+                        MODULE = MODULE or { uniqueID = dirName, scope = scope, folder = dirName }
                     end
 
                     local shouldLoad = ax.util:Include(bootFile, "shared")
