@@ -70,7 +70,10 @@ function ax.type:Sanitise(typeID, value)
     elseif ( typeID == ax.type.angle ) then
         return isangle(value) and value
     elseif ( typeID == ax.type.color ) then
-        return ( IsColor(value) or ( istable(value) and isnumber(value.r) and isnumber(value.g) and isnumber(value.b) and isnumber(value.a) ) ) and value
+        if ( IsColor(value) ) then return value end
+        if ( istable(value) and isnumber(value.r) and isnumber(value.g) and isnumber(value.b) ) then
+            return Color(value.r, value.g, value.b, isnumber(value.a) and value.a or 255)
+        end
     elseif ( typeID == ax.type.player ) then
         return ax.util:FindPlayer(value)
     elseif ( typeID == ax.type.character ) then
