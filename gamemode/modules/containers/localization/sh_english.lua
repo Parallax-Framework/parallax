@@ -17,7 +17,7 @@ ax.localization:Register("en", {
     ["container.take_button"] = "<< Take",
     ["container.store_button"] = "Store >>",
     ["container.title"] = "Storage Container",
-    ["container.contents_title"] = "Container Contents",
+    ["container.contents_title"] = "Container",
     ["container.transfer_actions"] = "TRANSFER",
     ["container.drag_hint"] = "Drag items between panes or use the transfer buttons.",
     ["container.empty_inventory"] = "Nothing is stored here yet.",
