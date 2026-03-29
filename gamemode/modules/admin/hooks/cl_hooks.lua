@@ -4,11 +4,11 @@ function MODULE:GetChatNameColor(client)
 end
 
 function MODULE:LoadFonts()
-    ax.font:CreateFamily("small.admin", "Courier New", ax.util:ScreenScaleH(5))
-    ax.font:CreateFamily("regular.admin", "Courier New", ax.util:ScreenScaleH(6))
-    ax.font:CreateFamily("large.admin", "Courier New", ax.util:ScreenScaleH(12))
-    ax.font:CreateFamily("huge.admin", "Courier New", ax.util:ScreenScaleH(24))
-    ax.font:CreateFamily("massive.admin", "Courier New", ax.util:ScreenScaleH(32))
+    ax.font:CreateFamily("small.admin", "Courier New", 11)
+    ax.font:CreateFamily("regular.admin", "Courier New", 13)
+    ax.font:CreateFamily("large.admin", "Courier New", 17)
+    ax.font:CreateFamily("huge.admin", "Courier New", 21)
+    ax.font:CreateFamily("massive.admin", "Courier New", 25)
 end
 
 function MODULE:HUDPaint()
@@ -144,6 +144,7 @@ end
 -- Search for Parallax Entities and draw their name
 local blacklist = {
     ["ax_item"] = true,
+    ["ax_hands"] = true,
 }
 
 function MODULE:DrawEntities()
