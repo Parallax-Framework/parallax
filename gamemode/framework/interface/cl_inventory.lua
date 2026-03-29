@@ -199,7 +199,7 @@ function PANEL:Init()
     self.weightCounter = self.weightProgress:Add("ax.text")
     self.weightCounter:SetFont("ax.regular")
 
-    local weightText = ax.localization:GetPhrase("invWeight")
+    local weightText = ax.localization:GetPhrase("inventory.weight.abbreviation")
 
     self.weightCounter:SetText(totalWeight .. weightText .. " / " .. maxWeight .. weightText, true)
     self.weightCounter:SetContentAlignment(5)
