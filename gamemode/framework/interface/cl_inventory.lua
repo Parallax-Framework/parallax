@@ -67,10 +67,10 @@ end
 
 function currencyEntry:GetFormattedAmount()
     if ( self:GetCurrencyID() == "default" ) then
-        return ax.currencies:FormatWithSymbol(self:GetAmount(), self:GetCurrencyID(), true)
+        return ax.currencies:FormatWithSymbol(self:GetAmount(), self:GetCurrencyID(), true, "prefix", false)
     end
 
-    return ax.currencies:Format(self:GetAmount(), self:GetCurrencyID())
+    return ax.currencies:Format(self:GetAmount(), self:GetCurrencyID(), false)
 end
 
 function currencyEntry:IsPhysical()

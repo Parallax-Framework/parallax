@@ -212,9 +212,10 @@ end
 -- @return string Formatted currency string (e.g., "$ 1,234 Dollars")
 -- @usage local formatted = ax.currencies:Format("default", 1000)
 -- -- Returns: "$ 1,000 Dollars"
-function ax.currencies:Format(amount, uniqueID)
+function ax.currencies:Format(amount, uniqueID, useText)
     amount = tonumber(amount) or 0
     uniqueID = uniqueID or "default"
+    if ( useText == nil ) then useText = true end
 
     local currencyData = self:Get(uniqueID)
     if ( !currencyData ) then
@@ -232,7 +233,7 @@ function ax.currencies:Format(amount, uniqueID)
     end
 
     -- Fallback formatting
-    return string.Comma(math.floor(amount)) .. " " .. currencyData.plural
+    return string.Comma(math.floor(amount)) .. " " .. ( useText and currencyData.plural or "" )
 end
 
 --- Format a currency amount with symbol prefix or suffix.
@@ -244,11 +245,12 @@ end
 -- @return string Formatted currency string with symbol (e.g., "$ 1,000 Dollars" or "1,000$ Dollars")
 -- @usage local formatted = ax.currencies:FormatWithSymbol(1000, "default", true, "prefix")
 -- -- Returns: "$ 1,000 Dollars"
-function ax.currencies:FormatWithSymbol(amount, uniqueID, useSymbol, symbolPosition)
+function ax.currencies:FormatWithSymbol(amount, uniqueID, useSymbol, symbolPosition, useText)
     amount = tonumber(amount) or 0
     uniqueID = uniqueID or "default"
     useSymbol = useSymbol or false
     symbolPosition = symbolPosition or "prefix"
+    if ( useText == nil ) then useText = true end
 
     local currencyData = self:Get(uniqueID)
     if ( !currencyData ) then
@@ -256,7 +258,7 @@ function ax.currencies:FormatWithSymbol(amount, uniqueID, useSymbol, symbolPosit
         return tostring(amount)
     end
 
-    local formattedAmount = self:Format(amount, uniqueID)
+    local formattedAmount = self:Format(amount, uniqueID, useText)
     if ( string.StartWith(formattedAmount, currencyData.symbol) ) then
         return formattedAmount
     end
