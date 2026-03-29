@@ -34,6 +34,7 @@ ax.localization:Register("de", {
     ["container.password.limit"] = "Du hast das Limit für Passwortversuche erreicht.",
     ["container.not_ready"] = "Dieser Container ist noch nicht bereit.",
     ["container.search_your_inventory"] = "Inventar durchsuchen",
+    ["container.search_container_inventory"] = "Container durchsuchen",
 
     ["container.property.set_password"] = "Passwort setzen",
     ["container.property.set_password.prompt"] = "Gib ein neues Passwort ein. Leer lassen, um es zu entfernen:",

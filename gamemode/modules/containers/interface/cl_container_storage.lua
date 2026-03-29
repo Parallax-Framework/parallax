@@ -90,13 +90,13 @@ function ITEM:Init()
 	self.icon:SetMouseInputEnabled(false)
 
 	self.name = self:Add("ax.text")
-	self.name:Dock(FILL)
-	self.name:SetFont("ax.regular")
+	self.name:Dock(LEFT)
+	self.name:SetFont("ax.small")
 	self.name:SetContentAlignment(4)
 
 	self.meta = self:Add("ax.text")
 	self.meta:Dock(RIGHT)
-	self.meta:SetFont("ax.small")
+	self.meta:SetFont("ax.tiny")
 	self.meta:SetContentAlignment(6)
 	self.meta:DockMargin(8, 0, 8, 0)
 
@@ -224,8 +224,8 @@ local INVENTORY_PANE = {}
 
 function INVENTORY_PANE:Init()
 	self.titleText = ""
-	self.selectedItemID = nil
 	self.dropHighlight = 0
+	self.weightFraction = 0
 
 	self.header = self:Add("EditablePanel")
 	self.header:Dock(TOP)
@@ -240,6 +240,29 @@ function INVENTORY_PANE:Init()
 	self.status:Dock(RIGHT)
 	self.status:SetFont("ax.small.bold")
 	self.status:SetContentAlignment(6)
+
+	self.weightProgress = self:Add("EditablePanel")
+	self.weightProgress:Dock(BOTTOM)
+	self.weightProgress:SetTall(ax.util:ScreenScaleH(16))
+	self.weightProgress:DockMargin(0, 8, 0, 0)
+	self.weightProgress.Paint = function(this, width, height)
+		local glass = ax.theme:GetGlass()
+		ax.theme:DrawGlassPanel(0, 0, width, height, {
+			radius = PANEL_RADIUS - 2,
+			blur = 0.65,
+			fill = ax.theme:ScaleAlpha(glass.input, ax.theme:GetMetrics().opacity),
+		})
+
+		local fraction = math.Clamp(GetAnimatedValue(self, "weightFraction", 0), 0, 1)
+		if ( fraction > 0 ) then
+			ax.render.Draw(PANEL_RADIUS - 2, 0, 0, width * fraction, height, ax.theme:ScaleAlpha(glass.progress, 0.9), ax.render.SHAPE_IOS)
+		end
+	end
+
+	self.weightText = self.weightProgress:Add("ax.text")
+	self.weightText:Dock(FILL)
+	self.weightText:SetFont("ax.small.bold")
+	self.weightText:SetContentAlignment(5)
 
 	self.body = self:Add("EditablePanel")
 	self.body:Dock(FILL)
@@ -284,7 +307,21 @@ function INVENTORY_PANE:SetTitle(text)
 end
 
 function INVENTORY_PANE:SetStatus(text)
-	self.status:SetText(text or "", true)
+	self.status:SetText("Total: " .. text, true)
+end
+
+function INVENTORY_PANE:SetWeight(current, max)
+	local weightSuffix = ax.localization:GetPhrase("inventory.weight.abbreviation")
+	local safeMax = math.max(tonumber(max) or 0, 0.001)
+	current = tonumber(current) or 0
+
+	self.weightText:SetText(math.Round(current, 2) .. weightSuffix .. " / " .. math.Round(max, 2) .. weightSuffix, true)
+	self:Motion(0.18, {
+		Target = {
+			weightFraction = math.Clamp(current / safeMax, 0, 1),
+		},
+		Easing = "OutQuad",
+	})
 end
 
 function INVENTORY_PANE:SetDropActive(state)
@@ -296,9 +333,9 @@ function INVENTORY_PANE:SetDropActive(state)
 	})
 end
 
-function INVENTORY_PANE:Populate(inventory, selectedItemID, filterName)
+function INVENTORY_PANE:Populate(inventory, selectedIDs, filterName)
 	self.scroller:Clear()
-	self.selectedItemID = selectedItemID
+	selectedIDs = selectedIDs or {}
 
 	if ( !istable(inventory) ) then
 		self.empty:SetText(ax.localization:GetPhrase("container.empty_inventory"), true)
@@ -332,23 +369,85 @@ function INVENTORY_PANE:Populate(inventory, selectedItemID, filterName)
 		return nameA < nameB
 	end)
 
-	self.empty:SetVisible(entries[1] == nil)
+	local stacks = {}
+	for i = 1, #entries do
+		local item = entries[i]
+		local itemClass = item.class
+		local itemTemplate = ax.item.stored and ax.item.stored[itemClass]
+		local shouldStack = itemTemplate and itemTemplate.shouldStack or false
+		local maxStack = itemTemplate and itemTemplate.maxStack or 1
+
+		if ( shouldStack ) then
+			local foundStack = false
+			for _, existingStack in ipairs(stacks) do
+				if ( existingStack.class == itemClass and existingStack.stackCount < maxStack ) then
+					existingStack.stackCount = existingStack.stackCount + 1
+					existingStack.stackedItems[#existingStack.stackedItems + 1] = item
+					foundStack = true
+					break
+				end
+			end
+
+			if ( !foundStack ) then
+				stacks[#stacks + 1] = {
+					class = itemClass,
+					stackCount = 1,
+					stackedItems = { item },
+					representativeItem = item,
+				}
+			end
+		else
+			stacks[#stacks + 1] = {
+				class = itemClass,
+				stackCount = 1,
+				stackedItems = { item },
+				representativeItem = item,
+			}
+		end
+	end
+
+	self.empty:SetVisible(stacks[1] == nil)
 	self.empty:SetText(ax.localization:GetPhrase("container.empty_inventory"), true)
 
-	for i = 1, #entries do
+	for i = 1, #stacks do
+		local stack = stacks[i]
+
+		local stackedItemIDs = {}
+		for _, stackedItem in ipairs(stack.stackedItems) do
+			stackedItemIDs[#stackedItemIDs + 1] = stackedItem.id
+		end
+
+		local allSelected = true
+		for _, id in ipairs(stackedItemIDs) do
+			if ( !selectedIDs[id] ) then
+				allSelected = false
+				break
+			end
+		end
+
 		local itemPanel = self.scroller:Add("ax.container.item")
 		itemPanel:Dock(TOP)
 		itemPanel:DockMargin(0, 0, 0, 6)
-		itemPanel:SetItem(entries[i])
-		itemPanel:SetSelected(selectedItemID == entries[i].id)
-		itemPanel:GetParent().OnItemPressed = function(_, pressedItem)
+		itemPanel:SetItem(stack.representativeItem)
+		itemPanel:SetSelected(allSelected)
+
+		if ( stack.stackCount > 1 ) then
+			local badge = itemPanel:Add("ax.text")
+			badge:Dock(LEFT)
+			badge:SetFont("ax.small.italic")
+			badge:SetText("x" .. stack.stackCount, true)
+			badge:SetContentAlignment(4)
+			badge:SetMouseInputEnabled(false)
+		end
+
+		itemPanel.DoClick = function()
 			if ( isfunction(self.OnItemSelected) ) then
-				self:OnItemSelected(pressedItem.itemID)
+				self:OnItemSelected(stackedItemIDs)
 			end
 		end
-		itemPanel:GetParent().OnItemDoubleClicked = function(_, pressedItem)
+		itemPanel.DoDoubleClick = function()
 			if ( isfunction(self.OnItemActivated) ) then
-				self:OnItemActivated(pressedItem.itemID)
+				self:OnItemActivated(stackedItemIDs)
 			end
 		end
 	end
@@ -368,70 +467,11 @@ function PANEL:Init()
 	self.nextRefresh = 0
 	self.lastPlayerSignature = ""
 	self.lastContainerSignature = ""
-	self.selectedPlayerItemID = nil
-	self.selectedContainerItemID = nil
+	self.selectedPlayerItemIDs = {}
+	self.selectedContainerItemIDs = {}
 	self.openedBlend = 0
-	self.weightFraction = 0
 
 	self:DockPadding(16, 70, 16, 16)
-
-	if ( IsValid(self.lblTitle) ) then
-		self.lblTitle:SetVisible(false)
-	end
-
-	self.header = self:Add("EditablePanel")
-	self.header:Dock(TOP)
-	self.header:SetTall(GetHeaderHeight())
-	self.header:DockMargin(0, 0, 0, 12)
-	self.header.Paint = function(this, width, height)
-		ax.theme:DrawGlassPanel(0, 0, width, height, {
-			radius = PANEL_RADIUS,
-			blur = 1.15,
-		})
-	end
-
-	self.headerTitle = self.header:Add("ax.text")
-	self.headerTitle:Dock(TOP)
-	self.headerTitle:DockMargin(16, 14, 16, 0)
-	self.headerTitle:SetFont("ax.huge.bold")
-
-	self.headerSubtitle = self.header:Add("ax.text")
-	self.headerSubtitle:Dock(TOP)
-	self.headerSubtitle:DockMargin(16, 0, 16, 0)
-	self.headerSubtitle:SetFont("ax.regular")
-
-	self.metaStrip = self.header:Add("EditablePanel")
-	self.metaStrip:Dock(BOTTOM)
-	self.metaStrip:SetTall(44)
-	self.metaStrip:DockMargin(12, 0, 12, 12)
-	self.metaStrip.Paint = nil
-
-	self.weightProgress = self.metaStrip:Add("EditablePanel")
-	self.weightProgress:Dock(FILL)
-	self.weightProgress.Paint = function(this, width, height)
-		local glass = ax.theme:GetGlass()
-		ax.theme:DrawGlassPanel(0, 0, width, height, {
-			radius = PANEL_RADIUS - 2,
-			blur = 0.65,
-			fill = ax.theme:ScaleAlpha(glass.input, ax.theme:GetMetrics().opacity),
-		})
-
-		local fraction = math.Clamp(GetAnimatedValue(self, "weightFraction", 0), 0, 1)
-		if ( fraction > 0 ) then
-			ax.render.Draw(PANEL_RADIUS - 2, 0, 0, width * fraction, height, ax.theme:ScaleAlpha(glass.progress, 0.9), ax.render.SHAPE_IOS)
-		end
-	end
-
-	self.weightText = self.weightProgress:Add("ax.text")
-	self.weightText:Dock(FILL)
-	self.weightText:SetFont("ax.regular.bold")
-	self.weightText:SetContentAlignment(5)
-
-	self.moneyText = self.metaStrip:Add("ax.text")
-	self.moneyText:Dock(RIGHT)
-	self.moneyText:SetFont("ax.regular.bold")
-	self.moneyText:SetContentAlignment(6)
-	self.moneyText:DockMargin(12, 0, 12, 0)
 
 	self.content = self:Add("EditablePanel")
 	self.content:Dock(FILL)
@@ -441,17 +481,39 @@ function PANEL:Init()
 	self.playerPane:Dock(LEFT)
 	self.playerPane:DockMargin(0, 0, 12, 0)
 	self.playerPane:SetTitle(ax.localization:GetPhrase("container.your_inventory"))
-	self.playerPane.OnItemSelected = function(_, itemID)
-		self.selectedPlayerItemID = itemID
-		self.selectedContainerItemID = nil
+	self.playerPane.OnItemSelected = function(_, stackedItemIDs)
+		local allSelected = true
+		for _, id in ipairs(stackedItemIDs) do
+			if ( !self.selectedPlayerItemIDs[id] ) then
+				allSelected = false
+				break
+			end
+		end
+
+		if ( allSelected ) then
+			for _, id in ipairs(stackedItemIDs) do
+				self.selectedPlayerItemIDs[id] = nil
+			end
+		else
+			for _, id in ipairs(stackedItemIDs) do
+				self.selectedPlayerItemIDs[id] = true
+			end
+			self.selectedContainerItemIDs = {}
+		end
+
 		self:RefreshInventories(true)
 	end
-	self.playerPane.OnItemActivated = function(_, itemID)
-		self.selectedPlayerItemID = itemID
+	self.playerPane.OnItemActivated = function(_, stackedItemIDs)
+		self.selectedPlayerItemIDs = {}
+		for _, id in ipairs(stackedItemIDs) do
+			self.selectedPlayerItemIDs[id] = true
+		end
+		self.selectedContainerItemIDs = {}
 		self:StoreSelected()
 	end
 	self.playerPane.OnDropReceived = function(_, itemPanel)
-		self.selectedContainerItemID = itemPanel.itemID
+		self.selectedContainerItemIDs = { [itemPanel.itemID] = true }
+		self.selectedPlayerItemIDs = {}
 		self:TakeSelected()
 	end
 
@@ -466,7 +528,7 @@ function PANEL:Init()
 
 		local val = this:GetValue()
 
-		self.playerPane:Populate(plyInv, self.selectedPlayerItemID, val)
+		self.playerPane:Populate(plyInv, self.selectedPlayerItemIDs, val)
 		self.playerPane:SetStatus(string.format("%d", table.Count(plyInv:GetItems() or {})))
 	end
 
@@ -518,18 +580,56 @@ function PANEL:Init()
 	self.containerPane:SetTitle(ax.localization:GetPhrase("container.contents_title"))
 	self.containerPane.title:Dock(RIGHT)
 	self.containerPane.status:Dock(LEFT)
-	self.containerPane.OnItemSelected = function(_, itemID)
-		self.selectedContainerItemID = itemID
-		self.selectedPlayerItemID = nil
+	self.containerPane.status:SetContentAlignment(4)
+	self.containerPane.OnItemSelected = function(_, stackedItemIDs)
+		local allSelected = true
+		for _, id in ipairs(stackedItemIDs) do
+			if ( !self.selectedContainerItemIDs[id] ) then
+				allSelected = false
+				break
+			end
+		end
+
+		if ( allSelected ) then
+			for _, id in ipairs(stackedItemIDs) do
+				self.selectedContainerItemIDs[id] = nil
+			end
+		else
+			for _, id in ipairs(stackedItemIDs) do
+				self.selectedContainerItemIDs[id] = true
+			end
+			self.selectedPlayerItemIDs = {}
+		end
+
 		self:RefreshInventories(true)
 	end
-	self.containerPane.OnItemActivated = function(_, itemID)
-		self.selectedContainerItemID = itemID
+	self.containerPane.OnItemActivated = function(_, stackedItemIDs)
+		self.selectedContainerItemIDs = {}
+		for _, id in ipairs(stackedItemIDs) do
+			self.selectedContainerItemIDs[id] = true
+		end
+		self.selectedPlayerItemIDs = {}
 		self:TakeSelected()
 	end
 	self.containerPane.OnDropReceived = function(_, itemPanel)
-		self.selectedPlayerItemID = itemPanel.itemID
+		self.selectedPlayerItemIDs = { [itemPanel.itemID] = true }
+		self.selectedContainerItemIDs = {}
 		self:StoreSelected()
+	end
+
+	self.containerPaneSearch = self.containerPane.header:Add("ax.text.entry")
+	self.containerPaneSearch:SetPlaceholderText(ax.localization:GetPhrase("container.search_container_inventory"))
+	self.containerPaneSearch:Dock(FILL)
+	self.containerPaneSearch:DockMargin(0, 18, 12, 16)
+	self.containerPaneSearch:SetUpdateOnType(true)
+	self.containerPaneSearch.OnTextChanged = function(this)
+		local containerInv = self:GetContainerInventory()
+		if ( !containerInv ) then return end
+
+		local val = this:GetValue()
+
+		self.containerPane:Populate(containerInv, self.selectedContainerItemIDs, val)
+		self.containerPane:SetStatus(string.format("%d", table.Count(containerInv:GetItems() or {})))
 	end
 
 	self:PlayIntro()
@@ -560,14 +660,15 @@ function PANEL:SetContainer(entity, inventoryID, displayName, searchTime, money,
 	self.money = math.max(tonumber(money) or 0, 0)
 	self.maxWeight = math.max(tonumber(maxWeight) or 0, 0)
 
-	self.headerTitle:SetText(self.displayName, true)
+	-- Too much clutter?
+	-- self:SetTitle(self.displayName, true)
 	self:RefreshInventories(true)
 end
 
 function PANEL:PerformLayout(width, height)
 	self.BaseClass.PerformLayout(self, width, height)
 
-	if ( !IsValid(self.content) or !IsValid(self.header) or !IsValid(self.actionRail) or !IsValid(self.playerPane) ) then
+	if ( !IsValid(self.content) or !IsValid(self.actionRail) or !IsValid(self.playerPane) ) then
 		return
 	end
 
@@ -576,19 +677,8 @@ function PANEL:PerformLayout(width, height)
 	local paneSpacing = 24
 	local paneWidth = math.max(math.floor((contentWidth - actionRailWidth - paneSpacing) * 0.5), ax.util:ScreenScale(180))
 
-	self.header:SetTall(GetHeaderHeight())
 	self.actionRail:SetWide(actionRailWidth)
 	self.playerPane:SetWide(paneWidth)
-
-	if ( IsValid(self.headerTitle) ) then
-		self.headerTitle:SetWrap(true)
-		self.headerTitle:SetAutoStretchVertical(true)
-	end
-
-	if ( IsValid(self.headerSubtitle) ) then
-		self.headerSubtitle:SetWrap(true)
-		self.headerSubtitle:SetAutoStretchVertical(true)
-	end
 end
 
 function PANEL:GetPlayerInventory()
@@ -638,8 +728,8 @@ function PANEL:HandleDroppedItem(itemPanel, targetInventoryID)
 			return
 		end
 
-		self.selectedPlayerItemID = item.id
-		self.selectedContainerItemID = nil
+		self.selectedPlayerItemIDs = { [item.id] = true }
+		self.selectedContainerItemIDs = {}
 		self:StoreSelected()
 		return
 	end
@@ -649,43 +739,41 @@ function PANEL:HandleDroppedItem(itemPanel, targetInventoryID)
 			return
 		end
 
-		self.selectedContainerItemID = item.id
-		self.selectedPlayerItemID = nil
+		self.selectedContainerItemIDs = { [item.id] = true }
+		self.selectedPlayerItemIDs = {}
 		self:TakeSelected()
 	end
 end
 
 function PANEL:UpdateHeader(containerInventory)
-	local details = {}
-
-	if ( self.searchTime > 0 ) then
-		details[#details + 1] = ax.localization:GetPhrase("container.open_time", self.searchTime)
+	local playerInventory = self:GetPlayerInventory()
+	if ( istable(playerInventory) ) then
+		self.playerPane:SetWeight(playerInventory:GetWeight(), playerInventory:GetMaxWeight())
 	end
 
-	if ( self.money > 0 ) then
-		details[#details + 1] = ax.localization:GetPhrase("container.money", self.money)
+	if ( istable(containerInventory) ) then
+		self.containerPane:SetWeight(containerInventory:GetWeight(), self.maxWeight)
 	end
-
-	self.headerSubtitle:SetText(#details > 0 and table.concat(details, "    •    ") or ax.localization:GetPhrase("container.move_items"), true)
-
-	local currentWeight = istable(containerInventory) and containerInventory:GetWeight() or 0
-	local weightSuffix = ax.localization:GetPhrase("inventory.weight.abbreviation")
-	local safeMaxWeight = math.max(self.maxWeight, 0.001)
-
-	self.weightText:SetText(ax.localization:GetPhrase("container.capacity", math.Round(currentWeight, 2), weightSuffix, math.Round(self.maxWeight, 2), weightSuffix), true)
-	self.moneyText:SetText(self.money > 0 and ax.localization:GetPhrase("container.money", self.money) or "", true)
-
-	self:Motion(0.18, {
-		Target = {
-			weightFraction = math.Clamp(currentWeight / safeMaxWeight, 0, 1),
-		},
-		Easing = "OutQuad",
-	})
 end
 
 function PANEL:UpdateButtons()
-	self.takeButton:SetEnabled(isnumber(self.selectedContainerItemID) and self.selectedContainerItemID > 0)
-	self.storeButton:SetEnabled(isnumber(self.selectedPlayerItemID) and self.selectedPlayerItemID > 0)
+	local takeCount = table.Count(self.selectedContainerItemIDs)
+	local storeCount = table.Count(self.selectedPlayerItemIDs)
+
+	self.takeButton:SetEnabled(takeCount > 0)
+	self.storeButton:SetEnabled(storeCount > 0)
+
+	if ( takeCount > 1 ) then
+		self.takeButton:SetText(ax.localization:GetPhrase("container.take_button") .. " (" .. takeCount .. ")", true)
+	else
+		self.takeButton:SetText(ax.localization:GetPhrase("container.take_button"), true)
+	end
+
+	if ( storeCount > 1 ) then
+		self.storeButton:SetText(ax.localization:GetPhrase("container.store_button") .. " (" .. storeCount .. ")", true)
+	else
+		self.storeButton:SetText(ax.localization:GetPhrase("container.store_button"), true)
+	end
 end
 
 function PANEL:RefreshInventories(force)
@@ -706,13 +794,13 @@ function PANEL:RefreshInventories(force)
 
 	if ( force or playerSignature != self.lastPlayerSignature ) then
 		self.lastPlayerSignature = playerSignature
-		self.playerPane:Populate(playerInventory, self.selectedPlayerItemID, self.playerPaneSearch:GetText())
+		self.playerPane:Populate(playerInventory, self.selectedPlayerItemIDs, self.playerPaneSearch:GetText())
 		self.playerPane:SetStatus(string.format("%d", table.Count(playerInventory:GetItems() or {})))
 	end
 
 	if ( force or containerSignature != self.lastContainerSignature ) then
 		self.lastContainerSignature = containerSignature
-		self.containerPane:Populate(containerInventory, self.selectedContainerItemID)
+		self.containerPane:Populate(containerInventory, self.selectedContainerItemIDs, self.containerPaneSearch:GetText())
 		self.containerPane:SetStatus(string.format("%d", table.Count(containerInventory:GetItems() or {})))
 	end
 
@@ -737,16 +825,21 @@ function PANEL:RefreshInventories(force)
 end
 
 function PANEL:StoreSelected()
-	if ( !self.selectedPlayerItemID ) then
+	if ( !next(self.selectedPlayerItemIDs) ) then
 		return
 	end
 
-	ax.net:Start("item.transfer", self.selectedPlayerItemID, self.inventoryID)
-	self.selectedContainerItemID = nil
+	local itemIDs = {}
+	for itemID in pairs(self.selectedPlayerItemIDs) do
+		itemIDs[#itemIDs + 1] = itemID
+	end
+
+	ax.net:Start("item.transfer.batch", itemIDs, self.inventoryID)
+	self.selectedPlayerItemIDs = {}
 end
 
 function PANEL:TakeSelected()
-	if ( !self.selectedContainerItemID ) then
+	if ( !next(self.selectedContainerItemIDs) ) then
 		return
 	end
 
@@ -755,8 +848,13 @@ function PANEL:TakeSelected()
 		return
 	end
 
-	ax.net:Start("item.transfer", self.selectedContainerItemID, playerInventory:GetID())
-	self.selectedPlayerItemID = nil
+	local itemIDs = {}
+	for itemID in pairs(self.selectedContainerItemIDs) do
+		itemIDs[#itemIDs + 1] = itemID
+	end
+
+	ax.net:Start("item.transfer.batch", itemIDs, playerInventory:GetID())
+	self.selectedContainerItemIDs = {}
 end
 
 function PANEL:Think()
