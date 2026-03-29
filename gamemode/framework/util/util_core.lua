@@ -484,7 +484,7 @@ if ( CLIENT ) then
     -- @return number The ScreenScale'd and UI-scaled value
     -- @usage local scaledPadding = ax.util:ScreenScale(16)
     function ax.util:ScreenScale(value)
-        return self:Scale(ScreenScale(value) / ( ScrW() / ScrH() ) )
+        return self:Scale(ScreenScale(value))
     end
 
     --- Scale a ScreenScaleH value using the user's UI scale preference.
@@ -493,7 +493,7 @@ if ( CLIENT ) then
     -- @return number The ScreenScaleH'd and UI-scaled value
     -- @usage local scaledHeight = ax.util:ScreenScaleH(32)
     function ax.util:ScreenScaleH(value)
-        return self:Scale(ax.font:Scale(value) / ( ScrW() / ScrH() ))
+        return self:Scale(ScreenScaleH(value))
     end
 end
 
