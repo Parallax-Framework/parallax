@@ -90,13 +90,13 @@ function ITEM:Init()
 	self.icon:SetMouseInputEnabled(false)
 
 	self.name = self:Add("ax.text")
-	self.name:Dock(FILL)
-	self.name:SetFont("ax.regular")
+	self.name:Dock(LEFT)
+	self.name:SetFont("ax.small")
 	self.name:SetContentAlignment(4)
 
 	self.meta = self:Add("ax.text")
 	self.meta:Dock(RIGHT)
-	self.meta:SetFont("ax.small")
+	self.meta:SetFont("ax.tiny")
 	self.meta:SetContentAlignment(6)
 	self.meta:DockMargin(8, 0, 8, 0)
 
@@ -224,8 +224,8 @@ local INVENTORY_PANE = {}
 
 function INVENTORY_PANE:Init()
 	self.titleText = ""
-	self.selectedItemID = nil
 	self.dropHighlight = 0
+	self.weightFraction = 0
 
 	self.header = self:Add("EditablePanel")
 	self.header:Dock(TOP)
@@ -240,6 +240,29 @@ function INVENTORY_PANE:Init()
 	self.status:Dock(RIGHT)
 	self.status:SetFont("ax.small.bold")
 	self.status:SetContentAlignment(6)
+
+	self.weightProgress = self:Add("EditablePanel")
+	self.weightProgress:Dock(BOTTOM)
+	self.weightProgress:SetTall(ax.util:ScreenScaleH(16))
+	self.weightProgress:DockMargin(0, 8, 0, 0)
+	self.weightProgress.Paint = function(this, width, height)
+		local glass = ax.theme:GetGlass()
+		ax.theme:DrawGlassPanel(0, 0, width, height, {
+			radius = PANEL_RADIUS - 2,
+			blur = 0.65,
+			fill = ax.theme:ScaleAlpha(glass.input, ax.theme:GetMetrics().opacity),
+		})
+
+		local fraction = math.Clamp(GetAnimatedValue(self, "weightFraction", 0), 0, 1)
+		if ( fraction > 0 ) then
+			ax.render.Draw(PANEL_RADIUS - 2, 0, 0, width * fraction, height, ax.theme:ScaleAlpha(glass.progress, 0.9), ax.render.SHAPE_IOS)
+		end
+	end
+
+	self.weightText = self.weightProgress:Add("ax.text")
+	self.weightText:Dock(FILL)
+	self.weightText:SetFont("ax.small.bold")
+	self.weightText:SetContentAlignment(5)
 
 	self.body = self:Add("EditablePanel")
 	self.body:Dock(FILL)
@@ -284,7 +307,21 @@ function INVENTORY_PANE:SetTitle(text)
 end
 
 function INVENTORY_PANE:SetStatus(text)
-	self.status:SetText(text or "", true)
+	self.status:SetText("Total: " .. text, true)
+end
+
+function INVENTORY_PANE:SetWeight(current, max)
+	local weightSuffix = ax.localization:GetPhrase("inventory.weight.abbreviation")
+	local safeMax = math.max(tonumber(max) or 0, 0.001)
+	current = tonumber(current) or 0
+
+	self.weightText:SetText(math.Round(current, 2) .. weightSuffix .. " / " .. math.Round(max, 2) .. weightSuffix, true)
+	self:Motion(0.18, {
+		Target = {
+			weightFraction = math.Clamp(current / safeMax, 0, 1),
+		},
+		Easing = "OutQuad",
+	})
 end
 
 function INVENTORY_PANE:SetDropActive(state)
