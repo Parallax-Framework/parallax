@@ -80,7 +80,7 @@ local function RegisterLoadedItem(self, className, filePath, options)
 
         local label = options.label or "Item"
         local annotation = options.annotation or ""
-        ax.util:PrintSuccess(string.format(
+        ax.util:PrintDebug(string.format(
             "%s \"%s\"%s initialized successfully.",
             label,
             tostring(ITEM.name or className),
@@ -181,7 +181,7 @@ function ax.item:RefreshItemInstances()
     end
 
     if ( refreshedCount > 0 ) then
-        ax.util:PrintSuccess("Refreshed " .. refreshedCount .. " item instances with updated definitions")
+        ax.util:PrintDebug("Refreshed " .. refreshedCount .. " item instances with updated definitions")
     end
 
     if ( errorCount > 0 ) then

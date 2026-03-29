@@ -59,7 +59,7 @@ function ax.module:Include(path, timeFilter)
 
             if ( self.stored[moduleName] ) then
                 MODULE = self.stored[moduleName]
-                ax.util:PrintSuccess("Reloading module \"" .. tostring(MODULE.name) .. "\" from file: " .. fileName)
+                ax.util:PrintDebug("Reloading module \"" .. tostring(MODULE.name) .. "\" from file: " .. fileName)
             else
                 MODULE = MODULE or { uniqueID = moduleName, scope = scope, folder = moduleName }
             end
@@ -103,7 +103,7 @@ function ax.module:Include(path, timeFilter)
                 if ( !shouldSkip ) then
                     if ( self.stored[moduleName] ) then
                         MODULE = self.stored[moduleName]
-                        ax.util:PrintSuccess("Reloading module \"" .. tostring(MODULE.name) .. "\" from directory: " .. dirName)
+                        ax.util:PrintDebug("Reloading module \"" .. tostring(MODULE.name) .. "\" from directory: " .. dirName)
                     else
                         MODULE = MODULE or { uniqueID = dirName, scope = scope, folder = dirName }
                     end

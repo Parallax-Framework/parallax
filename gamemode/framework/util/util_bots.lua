@@ -164,7 +164,7 @@ function ax.util:CreateBotCharacter(client)
     -- Sync bot character to all clients so they can receive variable updates
     ax.character:SyncBotToClients(character)
 
-    ax.util:PrintSuccess("Bot character created and loaded: " .. botName)
+    ax.util:PrintDebug("Bot character created and loaded: " .. botName)
 
     return true
 end

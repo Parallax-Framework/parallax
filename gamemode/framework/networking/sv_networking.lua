@@ -279,7 +279,7 @@ ax.net:Hook("character.create", function(client, payload)
 
         ax.net:Start(client, "character.create", character.id, clientData.axCharacters)
 
-        ax.util:PrintSuccess("Character created for " .. client:SteamID64() .. ": " .. character:GetName())
+        ax.util:PrintDebug("Character created for " .. client:SteamID64() .. ": " .. character:GetName())
 
         client:Notify("You have successfully created a new character!", "success")
 
@@ -422,7 +422,7 @@ ax.net:Hook("spawnmenu.spawn.item", function(client, itemClass)
 
     ax.item:Spawn(itemClass, pos, ang, function(entity, itemInstance)
         if ( IsValid(entity) and istable(itemInstance) ) then
-            ax.util:PrintSuccess(string.format(
+            ax.util:PrintDebug(string.format(
                 "Player %s spawned item %s (class: %s) at %s",
                 tostring(client),
                 tostring(itemInstance.name or itemClass),
