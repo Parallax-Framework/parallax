@@ -350,6 +350,36 @@ function ax.util:IsValidPlayer(client)
     return type(client) == "Player"
 end
 
+--- Get the head transform (position and angle) for an entity.
+-- Prefers the "eyes" attachment when available, then falls back to the head bone.
+-- @param entity Entity Target entity (player or ragdoll)
+-- @return Vector|nil pos Head/world position when found
+-- @return Angle|nil ang Head/world angle when found
+-- @usage local headPos, headAng = ax.util:GetHeadTransform(entity)
+function ax.util:GetHeadTransform(entity)
+    if ( !IsValid(entity) ) then return end
+
+    local eyeAttachment = entity:LookupAttachment("eyes")
+    if ( isnumber(eyeAttachment) and eyeAttachment > 0 ) then
+        local eyeData = entity:GetAttachment(eyeAttachment)
+        if ( eyeData and eyeData.Pos ) then
+            debugoverlay.Axis(eyeData.Pos, eyeData.Ang, 16, 0.1, false)
+            return eyeData.Pos, eyeData.Ang
+        end
+    end
+
+    local headBone = entity:LookupBone("ValveBiped.Bip01_Head1")
+    if ( !isnumber(headBone) ) then return end
+
+    local bonePos, boneAng = entity:GetBonePosition(headBone)
+    if ( bonePos and boneAng ) then
+        debugoverlay.Axis(bonePos, boneAng, 16, 0.1, false)
+        return bonePos, boneAng
+    end
+
+    return nil
+end
+
 --- Tokenize a string into arguments, respecting quoted strings.
 -- @param str string Input command string
 -- @return table Array of token strings
