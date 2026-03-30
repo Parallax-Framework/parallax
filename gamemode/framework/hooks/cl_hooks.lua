@@ -273,6 +273,26 @@ function GM:HUDPaintCurvy()
 end
 
 local targetData = {}
+
+local function GetPlayerFromAttachedRagdoll(entity)
+    if ( !IsValid(entity) or entity:GetClass() != "prop_ragdoll" ) then
+        return nil
+    end
+
+    local entIndex = entity:EntIndex()
+    for _, client in ipairs(player.GetAll()) do
+        if ( !ax.util:IsValidPlayer(client) ) then
+            continue
+        end
+
+        if ( client:GetRelay("ragdoll.index", -1) == entIndex ) then
+            return client
+        end
+    end
+
+    return nil
+end
+
 function GM:HUDPaint()
     local client = ax.client
     if ( !ax.util:IsValidPlayer(client) or !client:Alive() ) then return end
@@ -306,10 +326,12 @@ function GM:HUDPaint()
         end
 
         if ( data.alpha > 1 ) then
-            local displayText, displayColor, bShouldFlash = hook.Run("GetEntityDisplayText", ent)
+            local displayEntity = GetPlayerFromAttachedRagdoll(ent) or ent
+            local displayText, displayColor, bShouldFlash = hook.Run("GetEntityDisplayText", displayEntity)
             if ( isstring(displayText) ) then
                 local pos = ent:LocalToWorld(ent:OBBCenter())
-                if ( ax.util:IsValidPlayer(ent) ) then
+                local ragdollOwner = GetPlayerFromAttachedRagdoll(ent)
+                if ( ax.util:IsValidPlayer(ent) or ax.util:IsValidPlayer(ragdollOwner) ) then
                     pos = pos + Vector(0, 0, 16)
                 end
 
@@ -338,7 +360,7 @@ function GM:HUDPaint()
                 draw.SimpleText(displayText, "ax.small.bold", data.x + 2, data.y + 2, Color(0, 0, 0, nameAlpha / 2), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
                 draw.SimpleText(displayText, "ax.small.bold", data.x, data.y, ColorAlpha(nameColor, nameAlpha), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 
-                hook.Run("HUDPaintTargetIDExtra", ent, data.x, data.y, data.alpha)
+                hook.Run("HUDPaintTargetIDExtra", displayEntity, data.x, data.y, data.alpha, ent)
             end
         else
             data.x = nil
@@ -348,12 +370,19 @@ function GM:HUDPaint()
 end
 
 function GM:GetEntityDisplayText(entity)
-    if ( ax.util:IsValidPlayer(entity) ) then
-        local name = entity:Nick()
-        local color = team.GetColor(entity:Team())
+    local target = entity
+
+    local ragdollOwner = GetPlayerFromAttachedRagdoll(entity)
+    if ( ax.util:IsValidPlayer(ragdollOwner) ) then
+        target = ragdollOwner
+    end
+
+    if ( ax.util:IsValidPlayer(target) ) then
+        local name = target:Nick()
+        local color = team.GetColor(target:Team())
         local bShouldFlash = false
 
-        local returnName, returnColor, returnShouldFlash = hook.Run("GetPlayerDisplayName", entity, name)
+        local returnName, returnColor, returnShouldFlash = hook.Run("GetPlayerDisplayName", target, name)
         if ( returnName != nil and isstring(returnName) ) then
             name = returnName
         end
@@ -378,19 +407,26 @@ function GM:GetEntityDisplayText(entity)
 end
 
 function GM:HUDPaintTargetIDExtra(entity, x, y, alpha)
+    local target = entity
+
+    local ragdollOwner = GetPlayerFromAttachedRagdoll(entity)
+    if ( ax.util:IsValidPlayer(ragdollOwner) ) then
+        target = ragdollOwner
+    end
+
     -- Draw descriptions for items and characters
     local desc
-    local itemTable = entity.GetItemTable and entity:GetItemTable() or nil
+    local itemTable = target.GetItemTable and target:GetItemTable() or nil
     if ( itemTable and itemTable:GetDescription() ) then
         desc = itemTable:GetDescription()
-    elseif ( entity.GetCharacter and entity:GetCharacter() ) then
-        local targetChar = entity:GetCharacter()
+    elseif ( target.GetCharacter and target:GetCharacter() ) then
+        local targetChar = target:GetCharacter()
         local localChar = ax.util:IsValidPlayer(ax.client) and ax.client:GetCharacter() or nil
         if ( istable(localChar) and ax.recognition ) then
             desc = ax.recognition:GetDisplayDescription(localChar, targetChar:GetID())
         end
-    elseif ( entity.GetDisplayDescription ) then
-        desc = entity:GetDisplayDescription()
+    elseif ( target.GetDisplayDescription ) then
+        desc = target:GetDisplayDescription()
     end
 
     local lineCount = 0
@@ -407,8 +443,8 @@ function GM:HUDPaintTargetIDExtra(entity, x, y, alpha)
         end
     end
 
-    if ( entity.GetDisplayDescriptionExtras ) then
-        local extras = entity:GetDisplayDescriptionExtras()
+    if ( target.GetDisplayDescriptionExtras ) then
+        local extras = target:GetDisplayDescriptionExtras()
         if ( istable(extras) ) then
             for _, extra in ipairs(extras) do
                 if ( !isstring(extra.text) or extra.text == "" ) then continue end
