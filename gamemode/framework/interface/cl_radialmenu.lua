@@ -16,9 +16,7 @@
 
 ax.radialmenu = ax.radialmenu or {}
 
-local radialmenu = ax.radialmenu
-
-function radialmenu.GetAnimationFraction(speed)
+function ax.radialmenu:GetAnimationFraction(speed)
     local animationsEnabled = true
 
     if ( ax.option ) then
@@ -32,8 +30,8 @@ function radialmenu.GetAnimationFraction(speed)
     return math.min(1, FrameTime() * speed)
 end
 
-function radialmenu.EaseNumber(current, target, speed, easing)
-    local fraction = radialmenu.GetAnimationFraction(speed)
+function ax.radialmenu:EaseNumber(current, target, speed, easing)
+    local fraction = ax.radialmenu:GetAnimationFraction(speed)
 
     if ( fraction >= 1 ) then
         return target
@@ -46,7 +44,7 @@ function radialmenu.EaseNumber(current, target, speed, easing)
     return Lerp(fraction, current, target)
 end
 
-function radialmenu.AlphaColor(color, alpha)
+function ax.radialmenu:AlphaColor(color, alpha)
     if ( !color ) then
         return Color(255, 255, 255, alpha or 255)
     end
@@ -54,7 +52,7 @@ function radialmenu.AlphaColor(color, alpha)
     return Color(color.r, color.g, color.b, alpha or color.a or 255)
 end
 
-function radialmenu.BlendColors(from, to, fraction)
+function ax.radialmenu:BlendColors(from, to, fraction)
     fraction = math.Clamp(fraction or 0, 0, 1)
     from = from or color_white
     to = to or color_white
@@ -67,7 +65,7 @@ function radialmenu.BlendColors(from, to, fraction)
     )
 end
 
-function radialmenu.GetTextWidth(font, text)
+function ax.radialmenu:GetTextWidth(font, text)
     surface.SetFont(font)
 
     local width = surface.GetTextSize(tostring(text or ""))
@@ -75,7 +73,7 @@ function radialmenu.GetTextWidth(font, text)
     return width
 end
 
-function radialmenu.GetTextHeight(font, sample)
+function ax.radialmenu:GetTextHeight(font, sample)
     surface.SetFont(font)
 
     local _, height = surface.GetTextSize(sample or "Hg")
@@ -83,7 +81,7 @@ function radialmenu.GetTextHeight(font, sample)
     return height
 end
 
-function radialmenu.FitTextToWidth(font, text, maxWidth)
+function ax.radialmenu:FitTextToWidth(font, text, maxWidth)
     text = tostring(text or "")
     maxWidth = math.max(1, maxWidth or 1)
 
@@ -114,7 +112,7 @@ function radialmenu.FitTextToWidth(font, text, maxWidth)
     return ellipsis
 end
 
-function radialmenu.LimitWrappedLines(lines, maxLines)
+function ax.radialmenu:LimitWrappedLines(lines, maxLines)
     if ( !istable(lines) or #lines == 0 ) then
         return { "" }
     end
@@ -136,7 +134,7 @@ function radialmenu.LimitWrappedLines(lines, maxLines)
     return limited
 end
 
-function radialmenu.NormalizeAngle(angle)
+function ax.radialmenu:NormalizeAngle(angle)
     angle = angle % 360
 
     if ( angle < 0 ) then
@@ -146,10 +144,10 @@ function radialmenu.NormalizeAngle(angle)
     return angle
 end
 
-function radialmenu.AngleWithin(angle, startAngle, endAngle)
-    angle = radialmenu.NormalizeAngle(angle)
-    startAngle = radialmenu.NormalizeAngle(startAngle)
-    endAngle = radialmenu.NormalizeAngle(endAngle)
+function ax.radialmenu:AngleWithin(angle, startAngle, endAngle)
+    angle = ax.radialmenu:NormalizeAngle(angle)
+    startAngle = ax.radialmenu:NormalizeAngle(startAngle)
+    endAngle = ax.radialmenu:NormalizeAngle(endAngle)
 
     if ( startAngle <= endAngle ) then
         return angle >= startAngle and angle <= endAngle
@@ -158,13 +156,13 @@ function radialmenu.AngleWithin(angle, startAngle, endAngle)
     return angle >= startAngle or angle <= endAngle
 end
 
-function radialmenu.PolarToScreen(centerX, centerY, radius, angle)
+function ax.radialmenu:PolarToScreen(centerX, centerY, radius, angle)
     local radians = math.rad(angle - 90)
 
     return centerX + math.cos(radians) * radius, centerY + math.sin(radians) * radius
 end
 
-function radialmenu.DrawRingSegment(centerX, centerY, innerRadius, outerRadius, startAngle, endAngle, color, segmentSteps)
+function ax.radialmenu:DrawRingSegment(centerX, centerY, innerRadius, outerRadius, startAngle, endAngle, color, segmentSteps)
     if ( !color or color.a <= 0 or endAngle <= startAngle ) then return end
 
     local steps = math.max(6, math.ceil((endAngle - startAngle) / (segmentSteps or 64)))
@@ -177,10 +175,10 @@ function radialmenu.DrawRingSegment(centerX, centerY, innerRadius, outerRadius, 
         local fractionB = (i + 1) / steps
         local angleA = Lerp(fractionA, startAngle, endAngle)
         local angleB = Lerp(fractionB, startAngle, endAngle)
-        local outerAX, outerAY = radialmenu.PolarToScreen(centerX, centerY, outerRadius, angleA)
-        local outerBX, outerBY = radialmenu.PolarToScreen(centerX, centerY, outerRadius, angleB)
-        local innerAX, innerAY = radialmenu.PolarToScreen(centerX, centerY, innerRadius, angleA)
-        local innerBX, innerBY = radialmenu.PolarToScreen(centerX, centerY, innerRadius, angleB)
+        local outerAX, outerAY = ax.radialmenu:PolarToScreen(centerX, centerY, outerRadius, angleA)
+        local outerBX, outerBY = ax.radialmenu:PolarToScreen(centerX, centerY, outerRadius, angleB)
+        local innerAX, innerAY = ax.radialmenu:PolarToScreen(centerX, centerY, innerRadius, angleA)
+        local innerBX, innerBY = ax.radialmenu:PolarToScreen(centerX, centerY, innerRadius, angleB)
 
         surface.DrawPoly({
             { x = outerAX, y = outerAY },
@@ -196,17 +194,17 @@ function radialmenu.DrawRingSegment(centerX, centerY, innerRadius, outerRadius, 
     end
 end
 
-function radialmenu.DrawDivider(centerX, centerY, innerRadius, outerRadius, angle, color)
+function ax.radialmenu:DrawDivider(centerX, centerY, innerRadius, outerRadius, angle, color)
     if ( !color or color.a <= 0 ) then return end
 
-    local startX, startY = radialmenu.PolarToScreen(centerX, centerY, innerRadius, angle)
-    local endX, endY = radialmenu.PolarToScreen(centerX, centerY, outerRadius, angle)
+    local startX, startY = ax.radialmenu:PolarToScreen(centerX, centerY, innerRadius, angle)
+    local endX, endY = ax.radialmenu:PolarToScreen(centerX, centerY, outerRadius, angle)
 
     surface.SetDrawColor(color)
     surface.DrawLine(startX, startY, endX, endY)
 end
 
-function radialmenu.SortEntries(a, b)
+function ax.radialmenu:SortEntries(a, b)
     local orderA = a.sort or (a.data and a.data.sort) or 100
     local orderB = b.sort or (b.data and b.data.sort) or 100
 
@@ -224,7 +222,7 @@ function radialmenu.SortEntries(a, b)
     return a.id < b.id
 end
 
-function radialmenu.CreateSectionBucket(sectionMap, sections, sectionId, meta, countKey)
+function ax.radialmenu:CreateSectionBucket(sectionMap, sections, sectionId, meta, countKey)
     local section = sectionMap[sectionId]
 
     if ( section ) then
@@ -247,7 +245,7 @@ function radialmenu.CreateSectionBucket(sectionMap, sections, sectionId, meta, c
     return section
 end
 
-function radialmenu.FinalizeWheelData(sections, context, options)
+function ax.radialmenu:FinalizeWheelData(sections, context, options)
     options = options or {}
 
     table.sort(sections, function(a, b)
@@ -261,7 +259,7 @@ function radialmenu.FinalizeWheelData(sections, context, options)
     local totalItems = 0
 
     for _, section in ipairs(sections) do
-        table.sort(section.items, options.sortEntries or radialmenu.SortEntries)
+        table.sort(section.items, options.sortEntries or ax.radialmenu.SortEntries)
         totalItems = totalItems + #section.items
     end
 
@@ -278,15 +276,16 @@ function radialmenu.FinalizeWheelData(sections, context, options)
     end
 
     local sectionGap = options.sectionGap or 8
+    local resolvedSectionGap = (#sections > 1) and sectionGap or 0
     local itemGap = options.itemGap or 1
     local minSegmentAngle = options.minSegmentAngle or 12
-    local totalGap = (#sections * sectionGap) + (totalItems * itemGap)
+    local totalGap = (#sections * resolvedSectionGap) + (totalItems * itemGap)
     local segmentAngle = math.max(minSegmentAngle, (360 - totalGap) / totalItems)
     local cursor = 0
     local flatItems = {}
 
     for _, section in ipairs(sections) do
-        cursor = cursor + sectionGap * 0.5
+        cursor = cursor + resolvedSectionGap * 0.5
         section.startAngle = cursor
 
         for _, item in ipairs(section.items) do
@@ -304,7 +303,7 @@ function radialmenu.FinalizeWheelData(sections, context, options)
 
         section.endAngle = cursor
         section.midAngle = (section.startAngle + section.endAngle) * 0.5
-        cursor = cursor + sectionGap * 0.5
+        cursor = cursor + resolvedSectionGap * 0.5
     end
 
     return {
@@ -383,7 +382,35 @@ function PANEL:OnRemove()
 end
 
 function PANEL:GetSegmentSteps()
-    return self:GetRadialMenuOption("segmentSteps", 64)
+    local configuredSteps = self:GetRadialMenuOption("segmentSteps", nil)
+
+    if ( isnumber(configuredSteps) and configuredSteps > 0 ) then
+        return configuredSteps
+    end
+
+    local itemCount = istable(self.wheelData) and tonumber(self.wheelData.count) or 0
+
+    if ( itemCount <= 4 ) then
+        return 3
+    end
+
+    if ( itemCount <= 6 ) then
+        return 4
+    end
+
+    if ( itemCount <= 8 ) then
+        return 5
+    end
+
+    if ( itemCount <= 12 ) then
+        return 6
+    end
+
+    if ( itemCount <= 18 ) then
+        return 8
+    end
+
+    return 10
 end
 
 function PANEL:GetItemGap()
@@ -449,17 +476,20 @@ function PANEL:GetLayoutMetrics(width, height)
     height = height or self:GetTall()
 
     local base = math.min(width, height)
+    local widthRatio = math.Clamp(width / 1920, 0.72, 1.5)
+    local heightRatio = math.Clamp(height / 1080, 0.72, 1.5)
+    local paddingScale = math.min(widthRatio, heightRatio)
     local reveal = 0.92 + self.openFraction * 0.08
-    local ringOuter = math.Clamp(base * 0.31, 220, 360) * reveal
-    local ringInner = math.Clamp(base * 0.18, 118, 190) * reveal
-    local previewSize = math.Clamp(base * 0.28, 186, 300)
-    local panelWidth = math.Clamp(base * 0.28, 236, 332)
-    local panelHeight = math.Clamp(base * 0.31, 220, 340)
-    local gap = math.max(24, base * 0.03)
+    local ringOuter = math.Clamp(base * (0.295 + widthRatio * 0.02), ax.util:ScreenScale(112), ax.util:ScreenScale(188)) * reveal
+    local ringInner = math.Clamp(base * (0.17 + widthRatio * 0.012), ax.util:ScreenScale(72), ax.util:ScreenScale(126)) * reveal
+    local previewSize = math.Clamp(base * 0.3, ax.util:ScreenScale(102), ax.util:ScreenScale(166))
+    local panelWidth = math.Clamp(base * 0.34, ax.util:ScreenScale(154), ax.util:ScreenScale(228))
+    local panelHeight = math.Clamp(base * 0.34, ax.util:ScreenScaleH(126), ax.util:ScreenScaleH(228))
+    local gap = math.max(ax.util:ScreenScale(12), base * 0.02)
     local centerX = width * 0.5
     local centerY = height * 0.5 - panelHeight * 0.03
-    local slide = (1 - self.openFraction) * math.max(16, base * 0.03)
-    local hintWidth = math.max(panelWidth * 1.45, 420)
+    local slide = (1 - self.openFraction) * math.max(ax.util:ScreenScale(8), base * 0.015)
+    local hintWidth = math.max(panelWidth * 1.5, ax.util:ScreenScale(240))
 
     return {
         centerX = centerX,
@@ -471,15 +501,15 @@ function PANEL:GetLayoutMetrics(width, height)
         previewY = centerY - previewSize * 0.5,
         leftX = centerX - ringOuter - gap - panelWidth - slide,
         rightX = centerX + ringOuter + gap + slide,
-        panelY = centerY - panelHeight * 0.5 + (1 - self.openFraction) * 12,
+        panelY = centerY - panelHeight * 0.5 + (1 - self.openFraction) * ax.util:ScreenScaleH(8),
         panelWidth = panelWidth,
         panelHeight = panelHeight,
         hintWidth = hintWidth,
-        hintHeight = 58,
+        hintHeight = ax.util:ScreenScaleH(32),
         hintX = centerX - hintWidth * 0.5,
-        hintY = height - math.max(86, base * 0.105),
-        deadzone = ringInner - 14,
-        edgePadding = 26,
+        hintY = height - math.max(ax.util:ScreenScaleH(42), base * (0.06 + (1 - paddingScale) * 0.05)),
+        deadzone = ringInner - ax.util:ScreenScale(8),
+        edgePadding = ax.util:ScreenScale(16),
     }
 end
 
@@ -524,7 +554,7 @@ function PANEL:UpdateHoverState(layout)
     local dx = mouseX - layout.centerX
     local dy = mouseY - layout.centerY
     local distance = math.sqrt(dx * dx + dy * dy)
-    local angle = radialmenu.NormalizeAngle(math.deg(math.atan2(dy, dx)) + 90)
+    local angle = ax.radialmenu:NormalizeAngle(math.deg(math.atan2(dy, dx)) + 90)
 
     self.mouseX = mouseX
     self.mouseY = mouseY
@@ -535,7 +565,7 @@ function PANEL:UpdateHoverState(layout)
 
     if ( distance >= layout.deadzone and distance <= layout.ringOuter + layout.edgePadding ) then
         for _, item in ipairs(self.wheelData.items) do
-            if ( radialmenu.AngleWithin(angle, item.startAngle, item.endAngle) ) then
+            if ( ax.radialmenu:AngleWithin(angle, item.startAngle, item.endAngle) ) then
                 hovered = item
                 break
             end
@@ -574,8 +604,8 @@ function PANEL:Think()
         self:SetSize(ScrW(), ScrH())
     end
 
-    self.openFraction = radialmenu.EaseNumber(self.openFraction, 1, 9, "OutCubic")
-    self.previewFraction = radialmenu.EaseNumber(self.previewFraction, self.hoveredItem and 1 or 0.45, 8, "OutQuad")
+    self.openFraction = ax.radialmenu:EaseNumber(self.openFraction, 1, 9, "OutCubic")
+    self.previewFraction = ax.radialmenu:EaseNumber(self.previewFraction, self.hoveredItem and 1 or 0.45, 8, "OutQuad")
 
     local layout = self:GetLayoutMetrics()
     self:UpdateHoverState(layout)
@@ -590,7 +620,7 @@ function PANEL:Think()
             target = 0.3
         end
 
-        self.itemAnimations[item.id] = radialmenu.EaseNumber(self.itemAnimations[item.id] or 0, target, 10, "OutQuad")
+        self.itemAnimations[item.id] = ax.radialmenu:EaseNumber(self.itemAnimations[item.id] or 0, target, 10, "OutQuad")
     end
 
     for _, section in ipairs(self.wheelData.sections or {}) do
@@ -602,7 +632,7 @@ function PANEL:Think()
             target = 0.45
         end
 
-        self.sectionAnimations[section.id] = radialmenu.EaseNumber(self.sectionAnimations[section.id] or 0, target, 9, "OutQuad")
+        self.sectionAnimations[section.id] = ax.radialmenu:EaseNumber(self.sectionAnimations[section.id] or 0, target, 9, "OutQuad")
     end
 end
 
@@ -610,14 +640,14 @@ function PANEL:PaintBackdrop(width, height, glass)
     ax.theme:DrawGlassBackdrop(0, 0, width, height, {
         radius = 0,
         blur = 1.15,
-        fill = radialmenu.AlphaColor(glass.overlayStrong or glass.overlay, math.max(70, 170 * self.openFraction)),
+        fill = ax.radialmenu:AlphaColor(glass.overlayStrong or glass.overlay, math.max(70, 170 * self.openFraction)),
     })
 
     ax.theme:DrawGlassGradients(0, 0, width, height, {
-        left = radialmenu.AlphaColor(glass.gradientLeft, math.min(70, 48 * self.openFraction)),
-        right = radialmenu.AlphaColor(glass.gradientRight, math.min(70, 48 * self.openFraction)),
-        top = radialmenu.AlphaColor(glass.gradientTop, math.min(80, 58 * self.openFraction)),
-        bottom = radialmenu.AlphaColor(glass.gradientBottom, math.min(90, 64 * self.openFraction)),
+        left = ax.radialmenu:AlphaColor(glass.gradientLeft, math.min(70, 48 * self.openFraction)),
+        right = ax.radialmenu:AlphaColor(glass.gradientRight, math.min(70, 48 * self.openFraction)),
+        top = ax.radialmenu:AlphaColor(glass.gradientTop, math.min(80, 58 * self.openFraction)),
+        bottom = ax.radialmenu:AlphaColor(glass.gradientBottom, math.min(90, 64 * self.openFraction)),
     })
 end
 
@@ -637,7 +667,7 @@ function PANEL:PaintWheelCenter(layout, glass)
     local centerX = layout.centerX
     local centerY = layout.centerY
     local activeItem = self:GetActiveWheelItem()
-    local titleColor = activeItem and radialmenu.AlphaColor(activeItem.section.color, 235) or glass.text
+    local titleColor = activeItem and ax.radialmenu:AlphaColor(activeItem.section.color, 235) or glass.text
 
     draw.SimpleText(self:GetWheelTitle(), "ax.large.bold", centerX, centerY - layout.previewSize * 0.66, titleColor, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
     draw.SimpleText(self:GetWheelSubtitle(), "ax.small", centerX, centerY - layout.previewSize * 0.56, glass.textMuted, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
@@ -647,52 +677,66 @@ function PANEL:PaintWheel(layout, glass)
     local centerX = layout.centerX
     local centerY = layout.centerY
     local ringWidth = layout.ringOuter - layout.ringInner
-    local ringDiameter = layout.ringOuter * 2 + 30
-    local outlineColor = radialmenu.AlphaColor(glass.panelBorder, 95)
+    local ringDiameter = layout.ringOuter * 2 + ax.util:ScreenScale(16)
+    local outlineColor = ax.radialmenu:AlphaColor(glass.panelBorder, 95)
+    local primaryLineHeight = ax.radialmenu:GetTextHeight("ax.small.bold")
 
     ax.render().Circle(centerX, centerY, ringDiameter)
         :Outline(ringWidth + 22)
         :Blur(1.15)
-        :Color(radialmenu.AlphaColor(glass.overlayStrong or glass.overlay, 220))
+        :Color(ax.radialmenu:AlphaColor(glass.overlayStrong or glass.overlay, 220))
         :Draw()
 
-    ax.render.DrawCircleOutlined(centerX, centerY, layout.ringOuter * 2 + 10, radialmenu.AlphaColor(glass.panelBorder, 70), 1.5)
-    ax.render.DrawCircleOutlined(centerX, centerY, layout.ringInner * 2 - 4, radialmenu.AlphaColor(glass.panelBorder, 55), 1)
+    ax.render.DrawCircleOutlined(centerX, centerY, layout.ringOuter * 2 + ax.util:ScreenScale(6), ax.radialmenu:AlphaColor(glass.panelBorder, 70), 1.5)
+    ax.render.DrawCircleOutlined(centerX, centerY, layout.ringInner * 2 - ax.util:ScreenScale(2), ax.radialmenu:AlphaColor(glass.panelBorder, 55), 1)
 
     for _, item in ipairs(self.wheelData.items or {}) do
         local itemFraction = self.itemAnimations[item.id] or 0
         local accent = item.section.color
-        local fillColor = radialmenu.BlendColors(
-            radialmenu.AlphaColor(glass.button, 92),
-            radialmenu.AlphaColor(accent, 185),
+        local fillColor = ax.radialmenu:BlendColors(
+            ax.radialmenu:AlphaColor(glass.button, 92),
+            ax.radialmenu:AlphaColor(accent, 185),
             math.min(1, 0.2 + itemFraction * 0.8)
         )
-        local borderColor = radialmenu.BlendColors(
-            radialmenu.AlphaColor(glass.buttonBorder or glass.panelBorder, 40),
-            radialmenu.AlphaColor(accent, 220),
+        local borderColor = ax.radialmenu:BlendColors(
+            ax.radialmenu:AlphaColor(glass.buttonBorder or glass.panelBorder, 40),
+            ax.radialmenu:AlphaColor(accent, 220),
             math.min(1, 0.25 + itemFraction * 0.75)
         )
-        local expandedOuter = layout.ringOuter + itemFraction * 10
+        local expandedOuter = layout.ringOuter + itemFraction * ax.util:ScreenScale(6)
 
-        radialmenu.DrawRingSegment(centerX, centerY, layout.ringInner, expandedOuter, item.drawStartAngle, item.drawEndAngle, fillColor, self:GetSegmentSteps())
-        radialmenu.DrawDivider(centerX, centerY, layout.ringInner + 4, expandedOuter, item.startAngle, radialmenu.AlphaColor(outlineColor, 90))
-        radialmenu.DrawDivider(centerX, centerY, layout.ringInner + 4, expandedOuter, item.endAngle, radialmenu.AlphaColor(outlineColor, 55))
+        ax.radialmenu:DrawRingSegment(centerX, centerY, layout.ringInner, expandedOuter, item.drawStartAngle, item.drawEndAngle, fillColor, self:GetSegmentSteps())
+        ax.radialmenu:DrawDivider(centerX, centerY, layout.ringInner + ax.util:ScreenScale(2), expandedOuter, item.startAngle, ax.radialmenu:AlphaColor(outlineColor, 90))
+        ax.radialmenu:DrawDivider(centerX, centerY, layout.ringInner + ax.util:ScreenScale(2), expandedOuter, item.endAngle, ax.radialmenu:AlphaColor(outlineColor, 55))
 
         if ( itemFraction > 0.01 ) then
-            radialmenu.DrawRingSegment(centerX, centerY, expandedOuter - 6, expandedOuter + 3, item.drawStartAngle, item.drawEndAngle, radialmenu.AlphaColor(borderColor, 190), self:GetSegmentSteps())
+            ax.radialmenu:DrawRingSegment(centerX, centerY, expandedOuter - ax.util:ScreenScale(4), expandedOuter + ax.util:ScreenScale(2), item.drawStartAngle, item.drawEndAngle, ax.radialmenu:AlphaColor(borderColor, 190), self:GetSegmentSteps())
         end
 
         local labelRadius = layout.ringInner + ringWidth * (0.52 + itemFraction * 0.08)
-        local labelX, labelY = radialmenu.PolarToScreen(centerX, centerY, labelRadius, item.midAngle)
+        local labelX, labelY = ax.radialmenu:PolarToScreen(centerX, centerY, labelRadius, item.midAngle)
+        local labelMaxWidth = math.max(ax.util:ScreenScale(42), ringWidth * 0.8)
+        local primaryLabel = tostring(item.data.name or item.id)
+        local primaryLines = ax.radialmenu:LimitWrappedLines(ax.util:GetWrappedText(primaryLabel, "ax.small.bold", labelMaxWidth) or {
+            ax.radialmenu:FitTextToWidth("ax.small.bold", primaryLabel, labelMaxWidth),
+        }, 2)
+        local showSecondary = itemFraction > 0.08 or self.hoveredItem == item
+        local secondaryAlpha = showSecondary and (140 + itemFraction * 80) or 0
+        local primaryStartY = labelY - ((#primaryLines - 1) * primaryLineHeight * 0.5)
 
-        draw.SimpleText(item.data.name or item.id, "ax.small.bold", labelX, labelY - 8,
-            itemFraction > 0.05 and glass.textHover or glass.text, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-        draw.SimpleText(self:GetWheelItemSecondaryLabel(item), "ax.tiny.bold", labelX, labelY + 9,
-            radialmenu.AlphaColor(item.section.color, 220), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+        for index, line in ipairs(primaryLines) do
+            draw.SimpleText(line, "ax.small.bold", labelX, primaryStartY + (index - 1) * primaryLineHeight - ax.util:ScreenScaleH(2),
+                itemFraction > 0.05 and glass.textHover or glass.text, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+        end
+
+        if ( secondaryAlpha > 0 ) then
+            draw.SimpleText(self:GetWheelItemSecondaryLabel(item), "ax.tiny.bold", labelX, primaryStartY + (#primaryLines * primaryLineHeight) + ax.util:ScreenScaleH(1),
+                ax.radialmenu:AlphaColor(item.section.color, secondaryAlpha), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+        end
     end
 
-    ax.render.DrawCircle(centerX, centerY, layout.ringInner * 2 - 18, radialmenu.AlphaColor(glass.panel, 185))
-    ax.render.DrawCircleOutlined(centerX, centerY, layout.ringInner * 2 - 18, radialmenu.AlphaColor(glass.panelBorder, 85), 1)
+    ax.render.DrawCircle(centerX, centerY, layout.ringInner * 2 - ax.util:ScreenScale(10), ax.radialmenu:AlphaColor(glass.panel, 185))
+    ax.render.DrawCircleOutlined(centerX, centerY, layout.ringInner * 2 - ax.util:ScreenScale(10), ax.radialmenu:AlphaColor(glass.panelBorder, 85), 1)
 
     self:PaintWheelCenter(layout, glass)
 end
@@ -716,23 +760,23 @@ end
 function PANEL:PaintSectionsPanel(layout, glass, metrics)
     local x, y = layout.leftX, layout.panelY
     local width, height = layout.panelWidth, layout.panelHeight
-    local padding = 18
+    local padding = ax.util:ScreenScale(10)
     local sections = self.wheelData.sections or {}
     local sectionCount = math.max(1, #sections)
-    local titleHeight = radialmenu.GetTextHeight("ax.large.bold")
-    local subtitleLineHeight = radialmenu.GetTextHeight("ax.small")
-    local rowTitleHeight = radialmenu.GetTextHeight("ax.regular.bold")
-    local rowDescriptionHeight = radialmenu.GetTextHeight("ax.small")
+    local titleHeight = ax.radialmenu:GetTextHeight("ax.large.bold")
+    local subtitleLineHeight = ax.radialmenu:GetTextHeight("ax.small")
+    local rowTitleHeight = ax.radialmenu:GetTextHeight("ax.regular.bold")
+    local rowDescriptionHeight = ax.radialmenu:GetTextHeight("ax.small")
     local subtitleText = self:GetSectionsPanelSubtitle()
-    local subtitleLines = radialmenu.LimitWrappedLines(ax.util:GetWrappedText(subtitleText, "ax.small", width - padding * 2) or { subtitleText }, 2)
-    local subtitleY = y + padding + titleHeight + 6
-    local rowGap = math.Clamp(math.floor(height * 0.022), 6, 10)
-    local headerHeight = titleHeight + 6 + (#subtitleLines * subtitleLineHeight)
-    local rowY = y + padding + headerHeight + 12
+    local subtitleLines = ax.radialmenu:LimitWrappedLines(ax.util:GetWrappedText(subtitleText, "ax.small", width - padding * 2) or { subtitleText }, width < ax.util:ScreenScale(174) and 1 or 2)
+    local subtitleY = y + padding + titleHeight + ax.util:ScreenScaleH(3)
+    local rowGap = math.Clamp(math.floor(height * 0.018), ax.util:ScreenScaleH(3), ax.util:ScreenScaleH(6))
+    local headerHeight = titleHeight + ax.util:ScreenScaleH(3) + (#subtitleLines * subtitleLineHeight)
+    local rowY = y + padding + headerHeight + ax.util:ScreenScaleH(8)
     local availableHeight = math.max(42, (y + height - padding) - rowY)
-    local rowHeight = math.Clamp(math.floor((availableHeight - rowGap * (sectionCount - 1)) / sectionCount), 42, 72)
+    local rowHeight = math.Clamp(math.floor((availableHeight - rowGap * (sectionCount - 1)) / sectionCount), ax.util:ScreenScaleH(24), ax.util:ScreenScaleH(42))
 
-    ax.render.DrawShadows(metrics.roundness + 2, x, y, width, height, radialmenu.AlphaColor(glass.highlight or glass.progress, 28), 18, 26, ax.render.SHAPE_IOS)
+    ax.render.DrawShadows(metrics.roundness + 2, x, y, width, height, ax.radialmenu:AlphaColor(glass.highlight or glass.progress, 28), 18, 26, ax.render.SHAPE_IOS)
     ax.theme:DrawGlassPanel(x, y, width, height, {
         radius = metrics.roundness + 2,
         blur = 1.05,
@@ -742,8 +786,8 @@ function PANEL:PaintSectionsPanel(layout, glass, metrics)
     })
 
     ax.theme:DrawGlassGradients(x, y, width, height, {
-        top = radialmenu.AlphaColor(glass.gradientTop, 40),
-        bottom = radialmenu.AlphaColor(glass.gradientBottom, 58),
+        top = ax.radialmenu:AlphaColor(glass.gradientTop, 40),
+        bottom = ax.radialmenu:AlphaColor(glass.gradientBottom, 58),
     })
 
     draw.SimpleText(self:GetSectionsPanelTitle(), "ax.large.bold", x + padding, y + padding, glass.text, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
@@ -754,31 +798,31 @@ function PANEL:PaintSectionsPanel(layout, glass, metrics)
 
     for _, section in ipairs(sections) do
         local fraction = self.sectionAnimations[section.id] or 0
-        local rowFill = radialmenu.BlendColors(
-            radialmenu.AlphaColor(glass.button, 98),
-            radialmenu.AlphaColor(section.color, 105 + fraction * 60),
+        local rowFill = ax.radialmenu:BlendColors(
+            ax.radialmenu:AlphaColor(glass.button, 98),
+            ax.radialmenu:AlphaColor(section.color, 105 + fraction * 60),
             math.min(1, 0.22 + fraction * 0.55)
         )
-        local rowBorder = radialmenu.BlendColors(
-            radialmenu.AlphaColor(glass.buttonBorder or glass.panelBorder, 50),
-            radialmenu.AlphaColor(section.color, 220),
+        local rowBorder = ax.radialmenu:BlendColors(
+            ax.radialmenu:AlphaColor(glass.buttonBorder or glass.panelBorder, 50),
+            ax.radialmenu:AlphaColor(section.color, 220),
             math.min(1, 0.3 + fraction * 0.7)
         )
         local rowX = x + padding
         local rowWidth = width - padding * 2
         local countLabel = self:GetSectionCountLabel(section)
-        local countWidth = radialmenu.GetTextWidth("ax.small.bold", countLabel) + 18
-        local descWidth = math.max(72, rowWidth - 42 - countWidth)
-        local maxDescriptionLines = math.max(1, math.floor((rowHeight - 16 - rowTitleHeight - 4) / rowDescriptionHeight))
+        local countWidth = ax.radialmenu:GetTextWidth("ax.small.bold", countLabel) + ax.util:ScreenScale(10)
+        local descWidth = math.max(ax.util:ScreenScale(42), rowWidth - ax.util:ScreenScale(24) - countWidth)
+        local maxDescriptionLines = math.max(1, math.floor((rowHeight - ax.util:ScreenScaleH(9) - rowTitleHeight - ax.util:ScreenScaleH(2)) / rowDescriptionHeight))
         local descriptionText = tostring(section.description or "")
         local descriptionLines
 
         if ( maxDescriptionLines <= 1 ) then
             descriptionLines = {
-                radialmenu.FitTextToWidth("ax.small", descriptionText, descWidth),
+                ax.radialmenu:FitTextToWidth("ax.tiny", descriptionText, descWidth),
             }
         else
-            descriptionLines = radialmenu.LimitWrappedLines(ax.util:GetWrappedText(descriptionText, "ax.small", descWidth) or { descriptionText }, maxDescriptionLines)
+            descriptionLines = ax.radialmenu:LimitWrappedLines(ax.util:GetWrappedText(descriptionText, "ax.tiny", descWidth) or { descriptionText }, maxDescriptionLines)
         end
 
         ax.theme:DrawGlassButton(rowX, rowY, rowWidth, rowHeight, {
@@ -788,14 +832,15 @@ function PANEL:PaintSectionsPanel(layout, glass, metrics)
             border = rowBorder,
         })
 
-        ax.render.Draw(6, rowX + 8, rowY + 8, 6, rowHeight - 16, radialmenu.AlphaColor(section.color, 220))
-        draw.SimpleText(section.name, "ax.regular.bold", rowX + 26, rowY + 10, fraction > 0.5 and glass.textHover or glass.text, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+        ax.render.Draw(ax.util:ScreenScale(3), rowX + ax.util:ScreenScale(4), rowY + ax.util:ScreenScaleH(4), ax.util:ScreenScale(3), rowHeight - ax.util:ScreenScaleH(8), ax.radialmenu:AlphaColor(section.color, 220))
+
+        draw.SimpleText(section.name, "ax.regular.bold", rowX + ax.util:ScreenScale(14), rowY + rowHeight / 2 + ax.util:ScreenScaleH(2), fraction > 0.5 and glass.textHover or glass.text, TEXT_ALIGN_LEFT, TEXT_ALIGN_BOTTOM)
 
         for index, line in ipairs(descriptionLines) do
-            draw.SimpleText(line, "ax.small", rowX + 26, rowY + 10 + rowTitleHeight + 3 + (index - 1) * rowDescriptionHeight, glass.textMuted, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+            draw.SimpleText(line, "ax.tiny", rowX + ax.util:ScreenScale(14), rowY + rowHeight / 2 + (index - 1) * rowDescriptionHeight, glass.textMuted, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
         end
 
-        draw.SimpleText(countLabel, "ax.small.bold", rowX + rowWidth - 14, rowY + 11, radialmenu.AlphaColor(section.color, 235), TEXT_ALIGN_RIGHT, TEXT_ALIGN_TOP)
+        draw.SimpleText(countLabel, "ax.small.bold", rowX + rowWidth - ax.util:ScreenScale(8), rowY + rowHeight / 2, ax.radialmenu:AlphaColor(section.color, 235), TEXT_ALIGN_RIGHT, TEXT_ALIGN_CENTER)
 
         rowY = rowY + rowHeight + rowGap
     end
@@ -852,7 +897,7 @@ end
 function PANEL:PaintInfoPanel(layout, glass, metrics)
     local x, y = layout.rightX, layout.panelY
     local width, height = layout.panelWidth, layout.panelHeight
-    local padding = 18
+    local padding = ax.util:ScreenScale(10)
     local item = self:GetInfoItem()
     local accent = item and item.section.color or (glass.progress or glass.highlight)
     local title = self:GetInfoTitle(item)
@@ -862,14 +907,14 @@ function PANEL:PaintInfoPanel(layout, glass, metrics)
     local metaLabel = self:GetInfoMetaLabel(item)
     local metaValue = self:GetInfoMetaValue(item)
     local wrapped = ax.util:GetWrappedText(description, "ax.regular", width - padding * 2) or { description }
-    local headerHeight = radialmenu.GetTextHeight("ax.large.bold")
-    local titleLineHeight = radialmenu.GetTextHeight("ax.medium.bold")
-    local regularLineHeight = radialmenu.GetTextHeight("ax.regular")
-    local smallLineHeight = radialmenu.GetTextHeight("ax.small")
-    local titleLines = radialmenu.LimitWrappedLines(ax.util:GetWrappedText(title, "ax.medium.bold", width - padding * 2) or { title }, 2)
-    local titleY = y + padding + headerHeight + 6
+    local headerHeight = ax.radialmenu:GetTextHeight("ax.large.bold")
+    local titleLineHeight = ax.radialmenu:GetTextHeight("ax.medium.bold")
+    local regularLineHeight = ax.radialmenu:GetTextHeight("ax.regular")
+    local smallLineHeight = ax.radialmenu:GetTextHeight("ax.small")
+    local titleLines = ax.radialmenu:LimitWrappedLines(ax.util:GetWrappedText(title, "ax.medium.bold", width - padding * 2) or { title }, 2)
+    local titleY = y + padding + headerHeight + ax.util:ScreenScaleH(3)
 
-    ax.render.DrawShadows(metrics.roundness + 2, x, y, width, height, radialmenu.AlphaColor(accent, 28), 18, 26, ax.render.SHAPE_IOS)
+    ax.render.DrawShadows(metrics.roundness + 2, x, y, width, height, ax.radialmenu:AlphaColor(accent, 28), 18, 26, ax.render.SHAPE_IOS)
     ax.theme:DrawGlassPanel(x, y, width, height, {
         radius = metrics.roundness + 2,
         blur = 1.05,
@@ -879,54 +924,56 @@ function PANEL:PaintInfoPanel(layout, glass, metrics)
     })
 
     ax.theme:DrawGlassGradients(x, y, width, height, {
-        top = radialmenu.AlphaColor(accent, 26),
-        bottom = radialmenu.AlphaColor(glass.gradientBottom, 52),
+        top = ax.radialmenu:AlphaColor(accent, 26),
+        bottom = ax.radialmenu:AlphaColor(glass.gradientBottom, 52),
     })
 
     draw.SimpleText("Selection", "ax.large.bold", x + padding, y + padding, glass.text, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
 
     for index, line in ipairs(titleLines) do
-        draw.SimpleText(line, "ax.medium.bold", x + padding, titleY + (index - 1) * titleLineHeight, radialmenu.AlphaColor(accent, 235), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+        draw.SimpleText(line, "ax.medium.bold", x + padding, titleY + (index - 1) * titleLineHeight, ax.radialmenu:AlphaColor(accent, 235), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
     end
 
     local tagY = titleY + (#titleLines * titleLineHeight) + 12
-    local tagSpacing = 8
-    local sectionTagWidth = math.Clamp(radialmenu.GetTextWidth("ax.tiny.bold", sectionLabel) + 26, 74, 150)
-    local typeTagWidth = math.Clamp(radialmenu.GetTextWidth("ax.tiny.bold", typeLabel) + 26, 74, 110)
+    local tagSpacing = ax.util:ScreenScale(4)
+    local sectionTagWidth = math.Clamp(ax.radialmenu:GetTextWidth("ax.tiny.bold", sectionLabel) + ax.util:ScreenScale(14), ax.util:ScreenScale(42), ax.util:ScreenScale(84))
+    local typeTagWidth = math.Clamp(ax.radialmenu:GetTextWidth("ax.tiny.bold", typeLabel) + ax.util:ScreenScale(14), ax.util:ScreenScale(42), ax.util:ScreenScale(60))
     local stackTags = sectionTagWidth + typeTagWidth + tagSpacing > (width - padding * 2)
 
     local function DrawTag(text, tagX, tagYPos, tagWidth, tagColor)
-        ax.theme:DrawGlassButton(tagX, tagYPos, tagWidth, 24, {
+        ax.theme:DrawGlassButton(tagX, tagYPos, tagWidth, ax.util:ScreenScaleH(14), {
             radius = 10,
             blur = 0.65,
-            fill = radialmenu.BlendColors(radialmenu.AlphaColor(glass.button, 92), radialmenu.AlphaColor(tagColor, 120), 0.45),
-            border = radialmenu.AlphaColor(tagColor, 220),
+            fill = ax.radialmenu:BlendColors(ax.radialmenu:AlphaColor(glass.button, 92), ax.radialmenu:AlphaColor(tagColor, 120), 0.45),
+            border = ax.radialmenu:AlphaColor(tagColor, 220),
         })
 
-        draw.SimpleText(radialmenu.FitTextToWidth("ax.tiny.bold", text, tagWidth - 12), "ax.tiny.bold", tagX + tagWidth * 0.5, tagYPos + 12, glass.text, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+        draw.SimpleText(ax.radialmenu:FitTextToWidth("ax.tiny.bold", text, tagWidth - ax.util:ScreenScale(7)), "ax.tiny.bold", tagX + tagWidth * 0.5, tagYPos + ax.util:ScreenScaleH(7), glass.text, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
     end
 
     DrawTag(sectionLabel, x + padding, tagY, sectionTagWidth, accent)
 
     if ( stackTags ) then
-        DrawTag(typeLabel, x + padding, tagY + 30, typeTagWidth, glass.progress or accent)
+        DrawTag(typeLabel, x + padding, tagY + ax.util:ScreenScaleH(18), typeTagWidth, glass.progress or accent)
     else
         DrawTag(typeLabel, x + padding + sectionTagWidth + tagSpacing, tagY, typeTagWidth, glass.progress or accent)
     end
 
-    local sequenceLabelY = tagY + (stackTags and 60 or 34)
+    local sequenceLabelY = tagY + (stackTags and ax.util:ScreenScaleH(35) or ax.util:ScreenScaleH(20))
     draw.SimpleText(metaLabel, "ax.small.bold", x + padding, sequenceLabelY, glass.textMuted, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
-    draw.SimpleText(metaValue, "ax.regular.bold", x + padding, sequenceLabelY + smallLineHeight + 2, glass.text, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+    draw.SimpleText(metaValue, "ax.regular.bold", x + padding, sequenceLabelY + smallLineHeight + ax.util:ScreenScaleH(1), glass.text, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
 
-    local textY = sequenceLabelY + smallLineHeight + regularLineHeight + 14
+    local textY = sequenceLabelY + smallLineHeight + regularLineHeight + ax.util:ScreenScaleH(8)
+    local maxDescriptionLines = math.max(2, math.floor((y + height - ax.util:ScreenScaleH(54) - textY) / regularLineHeight))
+    local limitedDescription = ax.radialmenu:LimitWrappedLines(wrapped, maxDescriptionLines)
 
-    for _, line in ipairs(wrapped) do
+    for _, line in ipairs(limitedDescription) do
         draw.SimpleText(line, "ax.regular", x + padding, textY, glass.textMuted, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
         textY = textY + regularLineHeight
     end
 
-    draw.SimpleText(self:GetInfoFooter(item), "ax.small", x + padding, y + height - 48, glass.textMuted, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
-    draw.SimpleText(self:GetInfoFooterHint(item), "ax.small.bold", x + padding, y + height - 32, glass.text, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+    draw.SimpleText(self:GetInfoFooter(item), "ax.small", x + padding, y + height - ax.util:ScreenScaleH(28), glass.textMuted, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+    draw.SimpleText(self:GetInfoFooterHint(item), "ax.small.bold", x + padding, y + height - ax.util:ScreenScaleH(18), glass.text, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
 end
 
 function PANEL:ShouldPaintHintPanel()
@@ -949,17 +996,17 @@ function PANEL:PaintHintPanel(layout, glass, metrics)
         radius = metrics.roundness + 2,
         blur = 0.95,
         flags = ax.render.SHAPE_IOS,
-        fill = radialmenu.AlphaColor(glass.panel, 170),
-        border = radialmenu.AlphaColor(glass.panelBorder, 90),
+        fill = ax.radialmenu:AlphaColor(glass.panel, 170),
+        border = ax.radialmenu:AlphaColor(glass.panelBorder, 90),
     })
 
     ax.theme:DrawGlassGradients(x, y, width, height, {
-        top = radialmenu.AlphaColor(glass.gradientTop, 28),
-        bottom = radialmenu.AlphaColor(glass.gradientBottom, 42),
+        top = ax.radialmenu:AlphaColor(glass.gradientTop, 28),
+        bottom = ax.radialmenu:AlphaColor(glass.gradientBottom, 42),
     })
 
-    draw.SimpleText(self:GetHintTitle(), "ax.small.bold", x + 18, y + 15, glass.text, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
-    draw.SimpleText(self:GetHintText(), "ax.small", x + 18, y + 33, glass.textMuted, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+    draw.SimpleText(self:GetHintTitle(), "ax.small.bold", x + ax.util:ScreenScale(10), y + ax.util:ScreenScaleH(7), glass.text, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+    draw.SimpleText(self:GetHintText(), "ax.small", x + ax.util:ScreenScale(10), y + ax.util:ScreenScaleH(17), glass.textMuted, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
 end
 
 function PANEL:ShouldPaintPointer()
@@ -972,12 +1019,12 @@ function PANEL:PaintPointer(layout, glass)
     if ( !self.mouseDistance or self.mouseDistance < layout.deadzone - 18 or self.mouseDistance > layout.ringOuter + layout.edgePadding ) then return end
 
     local pointerColor = self.hoveredItem.section.color or (self.previewItem and self.previewItem.section.color) or glass.progress
-    ax.render().Circle(self.mouseX, self.mouseY, 8)
+    ax.render().Circle(self.mouseX, self.mouseY, ax.util:ScreenScale(5))
         :Outline(2)
         :Blur(0.35)
-        :Color(radialmenu.AlphaColor(pointerColor, 130))
+        :Color(ax.radialmenu:AlphaColor(pointerColor, 130))
         :Draw()
-    ax.render.DrawCircle(self.mouseX, self.mouseY, 3, radialmenu.AlphaColor(pointerColor, 185))
+    ax.render.DrawCircle(self.mouseX, self.mouseY, ax.util:ScreenScale(2), ax.radialmenu:AlphaColor(pointerColor, 185))
 end
 
 function PANEL:ShouldPaintPreview()
@@ -993,8 +1040,8 @@ function PANEL:GetEmptyDescription()
 end
 
 function PANEL:PaintEmptyState(width, height, glass, metrics)
-    local panelWidth = 420
-    local panelHeight = 120
+    local panelWidth = math.max(ax.util:ScreenScale(230), width * 0.28)
+    local panelHeight = math.max(ax.util:ScreenScaleH(62), height * 0.11)
     local x = width * 0.5 - panelWidth * 0.5
     local y = height * 0.5 - panelHeight * 0.5
 
