@@ -9,410 +9,302 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
---- Half-Life Alyx style notifications displayed above all VGUI.
--- Renders at the bottom-center in GM:PostRender so it always draws on top.
--- Animations are driven by ax.motion for smooth slide/fade and stacking.
+--- Minimal stacked notifications rendered above all VGUI.
 -- @module ax.notification
 
 ax.notification = ax.notification or {}
 
--- Server-side networking and API
 if ( SERVER ) then
     --- Send a notification to one or more players.
     -- @realm server
     -- @tparam Player|Player[]|nil target Player entity, list of players, or nil for broadcast
     -- @tparam string text Message text
-    -- @tparam[opt="generic"] string type Type: generic|info|success|warning|error
+    -- @tparam[opt="info"] string type Type: error|warning|info|success
     -- @tparam[opt] number length Seconds to show (falls back to config default)
     function ax.notification:Send(target, text, type, length)
-        local msg = tostring(text or "")
-        if ( msg == "" ) then return end
+        local message = tostring(text or "")
+        if ( message == "" ) then return end
 
-        local plylist
+        local players
         if ( target == nil ) then
-            plylist = player.GetAll()
+            players = player.GetAll()
         elseif ( istable(target) ) then
-            plylist = {}
+            players = {}
             for i = 1, #target do
-                local p = target[i]
-                if ( ax.util:IsValidPlayer(p) ) then plylist[#plylist + 1] = p end
+                local client = target[i]
+                if ( ax.util:IsValidPlayer(client) ) then
+                    players[#players + 1] = client
+                end
             end
         elseif ( ax.util:IsValidPlayer(target) ) then
-            plylist = { target }
+            players = { target }
         else
             return
         end
 
-        local t = type or "generic"
-        local dur = tonumber(length) or (ax.config:Get("notification.length.default", 5) or 5)
+        local duration = tonumber(length) or (ax.config:Get("notification.length.default", 5) or 5)
+        ax.net:Start(players, "notification.push", message, type or "info", duration)
 
-        ax.net:Start(plylist, "notification.push", msg, t, dur)
-
-        ax.util:PrintDebug("Notification sent to", #plylist, "players:", msg)
+        ax.util:PrintDebug("Notification sent to", #players, "players:", message)
     end
 end
 
--- Client-side implementation
 if ( CLIENT ) then
-    ax.util:AddSound("ax.interface.notification.in", "parallax/ui/credits_names_in.ogg", 0.1, 100, CHAN_AUTO)
-    ax.util:AddSound("ax.interface.notification.out", "parallax/ui/credits_names_out.ogg", 0.1, 100, CHAN_AUTO)
+    ax.notification.active = ax.notification.active or {}
+    ax.notification.font = "ax.small.bold"
 
-    ax.notification.queue = {}
-    ax.notification.active = {}
+    ax.notification.style = {
+        width = 340,
+        minHeight = 44,
+        padding = 12,
+        accentWidth = 5,
+        accentGap = 10,
+        gap = 8,
+        lineSpacing = 3,
+        radius = 6,
+        marginTop = 24,
+        marginRight = 24,
+        maxVisible = 5,
+        enterTime = 0.22,
+        exitTime = 0.18,
+        slideDistance = 22,
+        reflowSpeed = 14,
+        backgroundColor = Color(18, 18, 22, 235),
+        textColor = Color(245, 245, 245, 255),
+    }
 
-    -- style defaults (can be overridden by config where noted)
-    ax.notification.maxVisible = math.max(1, math.floor(ScrH() / 64)) -- max toasts visible at once
-    ax.notification.font = "ax.regular.bold"
-    ax.notificationMaxWidthFraction = 0.5
-    ax.notificationInTime = 0.25
-    ax.notificationOutTime = 0.25
-    ax.notificationEasing = "OutCubic"
+    ax.notification.typeColors = {
+        error = Color(220, 70, 70),
+        warning = Color(230, 170, 60),
+        info = Color(80, 150, 230),
+        success = Color(70, 180, 110),
+    }
 
-    local function clamp(v, a, b) return math.min(math.max(v, a), b) end
-
-    -- Use util helpers for wrapped text measurement
-    local function getWrapped(text, font, maxW)
-        return ax.util:GetWrappedText(text, font, maxW) or { tostring(text or "") }
+    local function Clamp(value, minValue, maxValue)
+        return math.min(math.max(value, minValue), maxValue)
     end
 
-    -- easing helpers (cubic)
-    local function EaseOutCubic(t)
-        return 1 - math.pow(1 - t, 3)
+    local function LerpFrame(speed, current, target)
+        local fraction = Clamp(FrameTime() * speed, 0, 1)
+        return Lerp(fraction, current, target)
     end
 
-    local function EaseInCubic(t)
-        return t * t * t
+    local function EaseOutCubic(value)
+        return 1 - math.pow(1 - value, 3)
     end
 
-    --- Add a new notification to the queue.
+    local function EaseInCubic(value)
+        return value * value * value
+    end
+
+    local function NormalizeType(notificationType)
+        if ( notificationType == "error" ) then return "error" end
+        if ( notificationType == "warning" ) then return "warning" end
+        if ( notificationType == "success" ) then return "success" end
+        return "info"
+    end
+
+    local function BuildLayout(notification, scale)
+        local style = ax.notification.style
+        local width = math.floor(style.width * scale)
+        local minHeight = math.floor(style.minHeight * scale)
+        local padding = math.floor(style.padding * scale)
+        local accentWidth = math.max(1, math.floor(style.accentWidth * scale))
+        local accentGap = math.floor(style.accentGap * scale)
+        local lineSpacing = math.floor(style.lineSpacing * scale)
+
+        local contentWidth = width - (padding * 2) - accentWidth - accentGap
+        contentWidth = math.max(contentWidth, 60)
+
+        surface.SetFont(ax.notification.font)
+        local _, lineHeight = surface.GetTextSize("Hg")
+        local formattedMessage = ax.chat:Format(notification.message)
+        local lines = ax.util:GetWrappedText(formattedMessage, ax.notification.font, contentWidth) or { formattedMessage }
+
+        local textHeight = lineHeight * #lines
+        if ( #lines > 1 ) then
+            textHeight = textHeight + (lineSpacing * (#lines - 1))
+        end
+
+        local height = math.max(minHeight, textHeight + (padding * 2))
+
+        notification.lines = lines
+        notification.lineHeight = lineHeight
+        notification.textHeight = textHeight
+        notification.width = width
+        notification.height = height
+        notification.padding = padding
+        notification.accentWidth = accentWidth
+        notification.accentGap = accentGap
+        notification.lineSpacing = lineSpacing
+        notification.radius = math.max(0, math.floor(style.radius * scale))
+        notification.accentColor = ax.notification.typeColors[notification.type] or ax.notification.typeColors.info
+    end
+
+    local function StartExit(notification)
+        if ( notification.state == "exiting" ) then return end
+
+        notification.state = "exiting"
+        notification.exitStartTime = CurTime()
+    end
+
+    local function PruneOverflow()
+        local maxVisible = ax.notification.style.maxVisible
+        while ( #ax.notification.active > maxVisible ) do
+            table.remove(ax.notification.active, #ax.notification.active)
+        end
+    end
+
+    --- Add a new notification.
     -- @realm client
-    -- @tparam string text The message to display.
-    -- @tparam[opt="generic"] string type One of: generic, info, success, warning, error
-    -- @tparam[opt=5] number length Seconds to remain visible (excluding animation).
+    -- @tparam string text Message text
+    -- @tparam[opt="info"] string type Type: error|warning|info|success
+    -- @tparam[opt] number length Seconds to remain visible
     function ax.notification:Add(text, type, length)
         if ( !ax.option:Get("notification.enabled", true) ) then return end
 
-        ax.notification.paddingX = ax.util:ScreenScale(16)
-        ax.notification.paddingY = ax.util:ScreenScaleH(2)
-        ax.notification.spacing = ax.util:ScreenScaleH(2)
+        local message = tostring(text or "")
+        if ( message == "" ) then return end
 
-        table.insert(self.queue, {
-            text = tostring(text or ""),
-            type = type or "generic",
-            length = tonumber(length) or (ax.option:Get("notification.length.default", 5) or 5)
-        })
+        local duration = tonumber(length) or (ax.option:Get("notification.length.default", 5) or 5)
+        local now = CurTime()
 
-        self:Next()
-    end
-
-    --- Promote queued items into active list respecting maxVisible.
-    function ax.notification:Next()
-        local maxVisible = self.maxVisible
-        while ( #self.active < maxVisible ) and ( self.queue[ 1 ] != nil ) do
-            local data = table.remove(self.queue, 1)
-            self:Show(data)
-        end
-    end
-
-    --- Create and animate a toast into view.
-    -- @tparam table data
-    function ax.notification:Show(data)
-        local sw, sh = ScrW(), ScrH()
-        local maxWFrac = 0.42 -- Use hardcoded value as intended
-        local maxW = math.floor(sw * maxWFrac)
-
-        surface.SetFont(self.font)
-        local _, th = surface.GetTextSize("Hg")
-        local lines = getWrapped(ax.chat:Format(data.text), self.font, maxW - (self.paddingX * 2))
-
-        local maxLineW = 0
-        for i = 1, #lines do
-            local lw = surface.GetTextSize(lines[i])
-            if ( lw > maxLineW ) then maxLineW = lw end
-        end
-
-        local w = clamp(maxLineW + self.paddingX * 2, 64, maxW)
-        local h = clamp(#lines * th + self.paddingY * 2, th + self.paddingY * 2, math.floor(sh / 2))
-
-        local p = vgui.Create("Panel")
-        p:SetVisible(false)
-        p.alpha = 255
-        p.offset = 24
-        p.stack = p.stack or 0
-
-        local growTime = 0.25
-        local waitTime = 0.5
-        local slideTime = 0.5
-        local outTime = 0.5
-        local outFadeTime = 0.25
-
-        local toast = {
-            text = data.text,
-            type = data.type,
-            length = data.length,
-            lines = lines,
-            width = w,
-            height = h,
-            lineHeight = th,
-            panel = p,
-            startTime = CurTime(),
-            closing = false,
-
-            phase = "intro-grow",
-            phaseStart = CurTime(),
-            growTime = growTime,
-            waitTime = waitTime,
-            slideTime = slideTime,
-            outTime = outTime,
-
-            barFill = 0,
-            coverW = w,
-            textAlpha = 0,
-            outFadeTime = outFadeTime
+        local notification = {
+            message = message,
+            type = NormalizeType(type),
+            startTime = now,
+            duration = math.max(0.1, duration),
+            state = "entering",
+            y = 0,
+            targetY = 0,
         }
 
-        if ( ax.option:Get("notification.sounds", true) ) then
-            ax.client:EmitSound("ax.interface.notification.in")
-        end
-
-        p:Motion(0.25, {
-            Easing = "OutQuad",
-            Target = { stack = 0 }
-        })
-
-        table.insert(self.active, toast)
-        self:Layout()
+        table.insert(self.active, 1, notification)
+        PruneOverflow()
     end
 
-    --- Recompute stacked y-offset targets for active toasts.
-    function ax.notification:Layout()
-        local y = 0
-        for i = 1, #self.active do
-            local t = self.active[i]
-            local target = y
-            y = y + t.height + self.spacing
-
-            if ( IsValid(t.panel) ) then
-                t.panel:Motion(0.25, {
-                    Easing = "OutQuad",
-                    Target = { stack = target }
-                })
-            end
-        end
+    --- Clear all active notifications.
+    function ax.notification:Clear()
+        self.active = {}
     end
 
-    function ax.notification:Close(idx)
-        local t = self.active[idx]
-        if ( !t or !IsValid(t.panel) or t.closing ) then return end
-
-        t.closing = true
-        t.phase = "out-eat"
-        t.phaseStart = CurTime()
-
-        if ( ax.option:Get("notification.sounds", true) ) then
-            ax.client:EmitSound("ax.interface.notification.out")
-        end
-    end
-
+    --- Render stacked notifications.
     function ax.notification:Render()
         if ( !ax.option:Get("notification.enabled", true) ) then return end
-        if ( self.active[ 1 ] == nil ) then return end
+        if ( #self.active == 0 ) then return end
 
-        ax.notification.paddingX = ax.util:ScreenScale(16)
-        ax.notification.paddingY = ax.util:ScreenScaleH(2)
-        ax.notification.spacing = ax.util:ScreenScaleH(2)
-
-        local sw, sh = ScrW(), ScrH()
-        local notificationScale = ax.option:Get("notification.scale", 1.0)
-        local position = ax.option:Get("notification.position", "bottomcenter")
-
-        -- Calculate position based on user preference
-        local baseX, baseY, anchorX, anchorY
-        if ( position == "topright" ) then
-            baseX = sw - self.paddingX
-            baseY = ax.util:ScreenScaleH(32)
-            anchorX = TEXT_ALIGN_RIGHT
-            anchorY = 1 -- grow downward
-        elseif ( position == "topleft" ) then
-            baseX = self.paddingX
-            baseY = ax.util:ScreenScaleH(32)
-            anchorX = TEXT_ALIGN_LEFT
-            anchorY = 1 -- grow downward
-        elseif ( position == "topcenter" ) then
-            baseX = sw / 2
-            baseY = ax.util:ScreenScaleH(32)
-            anchorX = TEXT_ALIGN_CENTER
-            anchorY = 1 -- grow downward
-        elseif ( position == "bottomright" ) then
-            baseX = sw - self.paddingX
-            baseY = sh - ax.util:ScreenScaleH(32)
-            anchorX = TEXT_ALIGN_RIGHT
-            anchorY = -1 -- grow upward
-        elseif ( position == "bottomleft" ) then
-            baseX = self.paddingX
-            baseY = sh - ax.util:ScreenScaleH(32)
-            anchorX = TEXT_ALIGN_LEFT
-            anchorY = -1 -- grow upward
-        else -- bottomcenter (default behavior)
-            baseX = sw / 2
-            baseY = sh - ax.util:ScreenScaleH(32)
-            anchorX = TEXT_ALIGN_CENTER
-            anchorY = -1 -- grow upward
+        local style = self.style
+        local scale = Clamp(ax.option:Get("notification.scale", 1), 0.5, 2)
+        local position = tostring(ax.option:Get("notification.position", "topright") or "topright")
+        if ( position != "topright" and position != "topcenter" ) then
+            position = "topright"
         end
 
-        surface.SetFont(self.font)
+        local baseX
+        if ( position == "topcenter" ) then
+            baseX = ScrW() * 0.5
+        else
+            baseX = ScrW() - math.floor(style.marginRight * scale)
+        end
+
+        local baseY = math.floor(style.marginTop * scale)
+        local backgroundColor = style.backgroundColor
+        local textColor = style.textColor
+
+        local stackY = 0
+        local now = CurTime()
+
+        for i = 1, #self.active do
+            local notification = self.active[i]
+            BuildLayout(notification, scale)
+
+            notification.targetY = stackY
+            notification.y = LerpFrame(style.reflowSpeed, notification.y or stackY, notification.targetY)
+
+            if ( notification.state != "exiting" and (now - notification.startTime) >= notification.duration ) then
+                StartExit(notification)
+            end
+
+            local lifeTime = now - notification.startTime
+            local alpha = 255
+            local slideOffset = 0
+
+            if ( notification.state == "entering" ) then
+                local fraction = Clamp(lifeTime / style.enterTime, 0, 1)
+                local eased = EaseOutCubic(fraction)
+                alpha = math.floor(255 * eased)
+                slideOffset = (1 - eased) * (style.slideDistance * scale)
+
+                if ( fraction >= 1 ) then
+                    notification.state = "visible"
+                    alpha = 255
+                    slideOffset = 0
+                end
+            elseif ( notification.state == "exiting" ) then
+                local exitElapsed = now - (notification.exitStartTime or now)
+                local fraction = Clamp(exitElapsed / style.exitTime, 0, 1)
+                local eased = EaseInCubic(fraction)
+                alpha = math.floor(255 * (1 - eased))
+                slideOffset = eased * (style.slideDistance * scale)
+
+                if ( fraction >= 1 ) then
+                    notification.state = "done"
+                end
+            end
+
+            notification.alpha = alpha
+            notification.slideOffset = slideOffset
+
+            stackY = stackY + notification.height + math.floor(style.gap * scale)
+        end
 
         for i = #self.active, 1, -1 do
-            local t = self.active[i]
-            local p = t.panel
-            if ( !IsValid(p) ) then
+            if ( self.active[i].state == "done" ) then
                 table.remove(self.active, i)
+            end
+        end
+
+        for i = #self.active, 1, -1 do
+            local notification = self.active[i]
+            local alpha = Clamp(notification.alpha or 255, 0, 255)
+            if ( alpha <= 0 ) then continue end
+
+            local width = notification.width
+            local height = notification.height
+            local y = baseY + notification.y
+
+            local x
+            if ( position == "topcenter" ) then
+                x = baseX - (width * 0.5) + (notification.slideOffset or 0)
             else
-                if ( t.phase == "visible" and (CurTime() - t.phaseStart) >= t.length and !t.closing ) then
-                    self:Close(i)
-                end
+                x = baseX - width + (notification.slideOffset or 0)
+            end
 
-                local stack = p.stack or 0
-                local offset = p.offset or 0
+            local drawBackground = Color(backgroundColor.r, backgroundColor.g, backgroundColor.b, math.floor((backgroundColor.a or 255) * (alpha / 255)))
+            local drawText = Color(textColor.r, textColor.g, textColor.b, alpha)
+            local accentColor = notification.accentColor
+            local drawAccent = Color(accentColor.r, accentColor.g, accentColor.b, alpha)
 
-                local fullW, h = t.width * notificationScale, t.height * notificationScale
+            ax.render.Draw(notification.radius, x, y, width, height, drawBackground)
+            ax.render.Draw(0, x, y, notification.accentWidth, height, drawAccent)
 
-                -- Position based on anchor
-                local x, y
-                if ( anchorX == TEXT_ALIGN_RIGHT ) then
-                    x = baseX - fullW
-                elseif ( anchorX == TEXT_ALIGN_CENTER ) then
-                    x = baseX - (fullW / 2)
-                else -- TEXT_ALIGN_LEFT
-                    x = baseX
-                end
+            local textX = x + notification.padding + notification.accentWidth + notification.accentGap
+            local textY
 
-                if ( anchorY == 1 ) then -- growing downward
-                    y = baseY + (stack + offset)
-                else -- growing upward
-                    y = baseY - (stack + offset + h)
-                end
+            if ( #notification.lines == 1 ) then
+                textY = y + ((height - notification.lineHeight) * 0.5)
+            else
+                textY = y + notification.padding
+            end
 
-                -- Progress logic per-phase
-                local now = CurTime()
-                local elapsed = now - t.phaseStart
-
-                if ( t.phase == "intro-grow" ) then
-                    local pfrac = clamp(elapsed / t.growTime, 0, 1)
-                    t.barFill = EaseOutCubic(pfrac)
-                    t.textAlpha = 0
-                    t.coverW = 0
-                    if ( pfrac >= 1 ) then
-                        t.phase = "intro-wait"
-                        t.phaseStart = CurTime()
-                    end
-                elseif ( t.phase == "intro-wait" ) then
-                    if ( elapsed >= t.waitTime ) then
-                        t.phase = "intro-slide"
-                        t.phaseStart = CurTime()
-                    end
-                elseif ( t.phase == "intro-slide" ) then
-                    local pfrac = clamp(elapsed / t.slideTime, 0, 1)
-                    t.barFill = 1 - EaseOutCubic(pfrac)
-                    t.textAlpha = math.floor(EaseOutCubic(pfrac) * 255)
-                    t.shrinkAnchorRight = true
-                    if ( pfrac >= 1 ) then
-                        t.phase = "visible"
-                        t.phaseStart = CurTime()
-                        t.barFill = 0
-                        t.coverW = 0
-                        t.textAlpha = 255
-                        t.shrinkAnchorRight = false
-                    end
-                elseif ( t.phase == "visible" ) then
-                    local _ = true
-                elseif ( t.phase == "out-eat" ) then
-                    local pfrac = clamp(elapsed / t.outTime, 0, 1)
-                    local eatW = math.floor(EaseInCubic(pfrac) * fullW)
-                    t.coverW = eatW
-                    t.textAlpha = 255
-                    if ( pfrac >= 1 ) then
-                        t.phase = "out-wait"
-                        t.phaseStart = CurTime()
-                    end
-                elseif ( t.phase == "out-wait" ) then
-                    if ( elapsed >= t.waitTime ) then
-                        t.phase = "out-reveal"
-                        t.phaseStart = CurTime()
-                        t.barFill = 1
-                        t.coverW = 0
-                        t.shrinkAnchorRight = true
-                    end
-                elseif ( t.phase == "out-reveal" ) then
-                    local pfrac = clamp(elapsed / t.slideTime, 0, 1)
-                    t.barFill = 1 - EaseOutCubic(pfrac)
-                    t.textAlpha = 0
-                    t.shrinkAnchorRight = true
-                    if ( pfrac >= 1 ) then
-                        t.phase = "done"
-                        t.phaseStart = CurTime()
-                        t.barFill = 0
-                        t.coverW = 0
-                        t.textAlpha = 0
-                        t.shrinkAnchorRight = false
-                    end
-                end
-
-                -- colored accent / foreground color (matte)
-                local col = Color(32, 32, 32)
-
-                -- draw text (render beneath matte foreground). It will be revealed as the foreground shrinks.
-                local scaledPaddingX = self.paddingX * notificationScale
-                local scaledPaddingY = self.paddingY * notificationScale
-                local ty = y + scaledPaddingY
-                local tx = x + scaledPaddingX
-                local textA = clamp(t.textAlpha or 0, 0, 255)
-                for k = 1, #t.lines do
-                    local line = t.lines[k]
-                    draw.SimpleText(line, self.font, tx, ty, Color(200, 200, 200, textA), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
-                    ty = ty + (t.lineHeight * notificationScale)
-                end
-
-                -- draw the matte foreground rectangle driven by barFill (this is the element that shrinks to reveal)
-                local fillW = math.floor(fullW * (t.barFill or 0))
-                if ( fillW > 0 ) then
-                    if ( t.shrinkAnchorRight ) then
-                        -- draw anchored to the right so the left edge moves right as fillW decreases
-                        ax.render.Draw(0, x + (fullW - fillW), y, fillW, h, col)
-                    else
-                        ax.render.Draw(0, x, y, fillW, h, col)
-                    end
-                end
-
-                -- draw the outro matte cover (left portion) which hides the text; coverW==0 means fully revealed
-                if ( t.coverW and t.coverW > 0 ) then
-                    ax.render.Draw(0, x, y, t.coverW, h, col)
-                end
-
-                -- cleanup if done
-                if ( t.phase == "done" ) then
-                    if ( IsValid(p) ) then p:Remove() end
-                    table.remove(self.active, i)
-                    ax.notification:Layout()
-                    ax.notification:Next()
-                end
+            for lineIndex = 1, #notification.lines do
+                draw.SimpleText(notification.lines[lineIndex], self.font, textX, textY, drawText, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+                textY = textY + notification.lineHeight + notification.lineSpacing
             end
         end
     end
 
-    --- Clear all queued and active notifications.
-    function ax.notification:Clear()
-        self.queue = {}
-
-        for i = #self.active, 1, -1 do
-            local t = self.active[i]
-            if ( t and IsValid(t.panel) ) then t.panel:Remove() end
-            table.remove(self.active, i)
-        end
-    end
-
-    -- Receive server-sent toasts
-    ax.net:Hook("notification.push", function(text, ntype, length)
-        ax.notification:Add(text, ntype, length)
+    ax.net:Hook("notification.push", function(text, notificationType, length)
+        ax.notification:Add(text, notificationType, length)
     end)
 end
