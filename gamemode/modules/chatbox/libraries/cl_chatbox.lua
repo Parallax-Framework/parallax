@@ -206,6 +206,10 @@ function ax.chatbox:OverrideChatAddText()
 
         ax.chatbox:PlayReceiveSound()
         ax.chatbox:ScrollHistoryToBottom(panel)
+
+        arguments[#arguments + 1] = "\n"
+
+        MsgC(unpack(arguments))
     end
 end
 
