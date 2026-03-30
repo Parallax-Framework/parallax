@@ -766,7 +766,7 @@ function PANEL:PaintSectionsPanel(layout, glass, metrics)
     local titleHeight = ax.radialmenu:GetTextHeight("ax.large.bold")
     local subtitleLineHeight = ax.radialmenu:GetTextHeight("ax.small")
     local rowTitleHeight = ax.radialmenu:GetTextHeight("ax.regular.bold")
-    local rowDescriptionHeight = ax.radialmenu:GetTextHeight("ax.small")
+    local rowDescriptionHeight = ax.radialmenu:GetTextHeight("ax.tiny") / 1.5
     local subtitleText = self:GetSectionsPanelSubtitle()
     local subtitleLines = ax.radialmenu:LimitWrappedLines(ax.util:GetWrappedText(subtitleText, "ax.small", width - padding * 2) or { subtitleText }, width < ax.util:ScreenScale(174) and 1 or 2)
     local subtitleY = y + padding + titleHeight + ax.util:ScreenScaleH(3)
