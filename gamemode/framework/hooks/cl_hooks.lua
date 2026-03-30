@@ -533,6 +533,43 @@ ax.viewstack:RegisterModifier("ragdoll", function(client, patch)
     return { origin = pos + ang:Forward() * 10, angles = ang, fov = patch.fov }
 end, 1)
 
+ax.viewstack:RegisterModifier("sequence.viewer", function(client, patch)
+    if ( !ax.util:IsValidPlayer(client) or !client:Alive() ) then return end
+    if ( client:GetRelay("sequence.identifier") == nil ) then return end
+
+    local ragdoll = Entity(client:GetRelay("ragdoll.index", -1))
+    local bHasRagdoll = IsValid(ragdoll)
+    local headEntity = bHasRagdoll and ragdoll or client
+
+    local headPos, headAng = ax.util:GetHeadTransform(headEntity)
+
+    return {
+        origin = headPos or patch.origin,
+        angles = Lerp(0.5, patch.angles, headAng),
+        drawviewer = true
+    }
+end, 2)
+
+local function ShouldHideSequenceViewerHead(client)
+    if ( !ax.util:IsValidPlayer(client) ) then return false end
+    if ( client != ax.client ) then return false end
+    if ( client:GetRelay("sequence.identifier") == nil ) then return false end
+
+    return hook.Run("ShouldDrawLocalPlayer", client) != true
+end
+
+hook.Add("PostPlayerDraw", "ax.sequence.viewer.hide_head", function(client)
+    local headBone = client:LookupBone("ValveBiped.Bip01_Head1")
+    if ( !isnumber(headBone) or headBone < 0 ) then return end
+
+    if ( ShouldHideSequenceViewerHead(client) ) then
+        client:ManipulateBoneScale(headBone, Vector(0.001, 0.001, 0.001))
+        return
+    end
+
+    client:ManipulateBoneScale(headBone, Vector(1, 1, 1))
+end)
+
 local cameraFOV = CreateConVar("ax_camera_fov", "90", {FCVAR_ARCHIVE, FCVAR_REPLICATED}, "Set the camera FOV when using a view entity.")
 ax.viewstack:RegisterModifier("camera", function(client, patch)
     if ( !ax.util:IsValidPlayer(client) or client:InVehicle() ) then return end
