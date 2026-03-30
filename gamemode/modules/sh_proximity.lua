@@ -139,9 +139,12 @@ function MODULE:Think()
 
         if ( hook.Run("ShouldModifyVoiceVolume", listener, speaker) == false ) then
             local speakerID = speaker:EntIndex()
-            volumeTargets[speakerID] = cachedConfig.maxVolume
-            voiceVolumeCache[speakerID] = cachedConfig.maxVolume
-            speaker:SetVoiceVolumeScale(cachedConfig.maxVolume)
+            local overrideVolume = hook.Run("ModifyVoiceVolume", listener, speaker, cachedConfig.maxVolume)
+            local targetVolume = isnumber(overrideVolume) and math.Clamp(overrideVolume, 0, cachedConfig.maxVolume) or cachedConfig.maxVolume
+
+            volumeTargets[speakerID] = targetVolume
+            voiceVolumeCache[speakerID] = targetVolume
+            speaker:SetVoiceVolumeScale(targetVolume)
             continue
         end
 
@@ -170,6 +173,11 @@ function MODULE:Think()
         volumeTargets[speakerID] = targetVolume
         local currentVolume = voiceVolumeCache[speakerID]
         local smoothedVolume = Lerp(math.Clamp(ft * VOLUME_LERP_SPEED, 0, 1), currentVolume, targetVolume)
+
+        local overrideVolume = hook.Run("ModifyVoiceVolume", listener, speaker, smoothedVolume)
+        if ( isnumber(overrideVolume) ) then
+            smoothedVolume = math.Clamp(overrideVolume, 0, cachedConfig.maxVolume)
+        end
 
         voiceVolumeCache[speakerID] = smoothedVolume
         speaker:SetVoiceVolumeScale(smoothedVolume)
