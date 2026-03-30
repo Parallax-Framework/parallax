@@ -204,7 +204,7 @@ function ax.radialmenu:DrawDivider(centerX, centerY, innerRadius, outerRadius, a
     surface.DrawLine(startX, startY, endX, endY)
 end
 
-function ax.radialmenu:SortEntries(a, b)
+function ax.radialmenu.SortEntries(a, b)
     local orderA = a.sort or (a.data and a.data.sort) or 100
     local orderB = b.sort or (b.data and b.data.sort) or 100
 
