@@ -654,6 +654,7 @@ end
 
 function PANEL:SetContainer(entity, inventoryID, displayName, searchTime, money, maxWeight)
 	self.entity = entity
+	self.bVirtualContainer = !IsValid(entity)
 	self.inventoryID = inventoryID
 	self.displayName = isstring(displayName) and displayName or ax.localization:GetPhrase("container.title")
 	self.searchTime = tonumber(searchTime) or 0
@@ -777,9 +778,11 @@ function PANEL:UpdateButtons()
 end
 
 function PANEL:RefreshInventories(force)
-	if ( !IsValid(self.entity) or self.entity:GetClass() != "ax_container" ) then
-		self:Close()
-		return
+	if ( self.bVirtualContainer != true ) then
+		if ( !IsValid(self.entity) or self.entity:GetClass() != "ax_container" ) then
+			self:Close()
+			return
+		end
 	end
 
 	local playerInventory = self:GetPlayerInventory()
