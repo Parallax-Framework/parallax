@@ -65,12 +65,12 @@ function currencyEntry:GetWeight()
     return 0
 end
 
-function currencyEntry:GetFormattedAmount()
-    if ( self:GetCurrencyID() == "default" ) then
+function currencyEntry:GetFormattedAmount(displaySmall)
+    if ( displaySmall ) then
         return ax.currencies:FormatWithSymbol(self:GetAmount(), self:GetCurrencyID(), true, "prefix", false)
     end
 
-    return ax.currencies:Format(self:GetAmount(), self:GetCurrencyID(), false)
+    return ax.currencies:Format(self:GetAmount(), self:GetCurrencyID())
 end
 
 function currencyEntry:IsPhysical()
@@ -972,7 +972,7 @@ function PANEL:PopulateItems()
                     balanceLabel:Dock(RIGHT)
                     balanceLabel:DockMargin(0, 0, ax.util:ScreenScale(8), 0)
                     balanceLabel:SetFont("ax.small.italic")
-                    balanceLabel:SetText(representativeItem:GetFormattedAmount(), true)
+                    balanceLabel:SetText(representativeItem:GetFormattedAmount(true), true)
                     balanceLabel:SetContentAlignment(6)
                 elseif ( stack.stackCount > 1 ) then
                     local stackLabel = item:Add("ax.text")
@@ -1008,7 +1008,7 @@ function PANEL:PopulateInfo(stack)
     title:SetFont("ax.large.bold")
     local titleText = representativeItem:GetName() or "Unknown Item"
     if ( stack.isCurrencyStack ) then
-        titleText = representativeItem:GetFormattedAmount()
+        titleText = representativeItem:GetFormattedAmount(false)
     elseif ( stack.stackCount > 1 ) then
         titleText = titleText .. " x" .. stack.stackCount
     end
