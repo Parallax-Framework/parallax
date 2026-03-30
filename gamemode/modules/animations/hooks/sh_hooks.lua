@@ -20,6 +20,8 @@ function MODULE:HandlePlayerJumping(client, velocity, clientTable)
         clientTable = client:GetTable()
     end
 
+    if ( !clientTable.axCharacter ) then return end
+
     if ( client:GetMoveType() == MOVETYPE_NOCLIP ) then
         clientTable.m_bJumping = false
         return
@@ -62,6 +64,8 @@ function MODULE:HandlePlayerDucking(client, velocity, clientTable)
         clientTable = client:GetTable()
     end
 
+    if ( !clientTable.axCharacter ) then return end
+
     if ( !client:IsFlagSet(FL_ANIMDUCKING) ) then return false end
 
     if ( velocity:Length2DSqr() > 0.25 ) then
@@ -77,6 +81,8 @@ function MODULE:HandlePlayerNoClipping(client, velocity, clientTable)
     if ( !istable(clientTable) ) then
         clientTable = client:GetTable()
     end
+
+    if ( !clientTable.axCharacter ) then return end
 
     if ( client:GetMoveType() != MOVETYPE_NOCLIP or client:InVehicle() ) then
         if ( clientTable.m_bWasNoclipping ) then
@@ -99,6 +105,8 @@ function MODULE:HandlePlayerVaulting(client, velocity, clientTable)
         clientTable = client:GetTable()
     end
 
+    if ( !clientTable.axCharacter ) then return end
+
     if ( velocity:LengthSqr() < 1000000 ) then return end
     if ( client:IsOnGround() ) then return end
 
@@ -112,6 +120,8 @@ function MODULE:HandlePlayerSwimming(client, velocity, clientTable)
         clientTable = client:GetTable()
     end
 
+    if ( !clientTable.axCharacter ) then return end
+
     if ( client:WaterLevel() < 2 or client:IsOnGround() ) then
         clientTable.m_bInSwim = false
         return false
@@ -124,12 +134,14 @@ function MODULE:HandlePlayerSwimming(client, velocity, clientTable)
 end
 
 function MODULE:OnPlayerHitGround(client, inWater, onFloater, speed)
-    if ( inWater or onFloater or SERVER ) then return end
+    local clientTable = client:GetTable()
+    if ( !clientTable.axCharacter ) then return end
 
+    if ( inWater or onFloater or SERVER ) then return end
     if ( CLIENT and !IsFirstTimePredicted() ) then return end
 
     local land = ACT_LAND
-    local clientTable = client:GetTable()
+
     local animTable = clientTable.axAnimations
     if ( animTable and animTable.land ) then
         land = animTable.land
@@ -148,14 +160,14 @@ end
 local SEQ_SIT_ROLLERCOASTER = nil
 local SEQ_SIT = nil
 
-function MODULE:HandlePlayerDriving(client, clientTable)
+function MODULE:HandlePlayerDriving(client, velocity, clientTable)
     if ( !istable(clientTable) ) then
         clientTable = client:GetTable()
     end
 
     if ( !client:InVehicle() or !IsValid(client:GetParent()) ) then return false end
 
-    local vehicle = client:GetVehicle()
+    local vehicle = client.lvsGetVehicle and client:lvsGetVehicle() or client:GetVehicle()
     if ( !vehicle.HandleAnimation and vehicle.GetVehicleClass ) then
         local c = vehicle:GetVehicleClass()
         local t = list.Get("Vehicles")[c]
@@ -163,13 +175,6 @@ function MODULE:HandlePlayerDriving(client, clientTable)
             vehicle.HandleAnimation = t.Members.HandleAnimation
         else
             vehicle.HandleAnimation = true
-        end
-    end
-
-    if ( isfunction(vehicle.HandleAnimation) ) then
-        local seq = vehicle:HandleAnimation(client)
-        if ( seq != nil ) then
-            clientTable.CalcSeqOverride = seq
         end
     end
 
@@ -184,6 +189,26 @@ function MODULE:HandlePlayerDriving(client, clientTable)
         else
             clientTable.CalcSeqOverride = client:LookupSequence("sit_rollercoaster")
         end
+    end
+
+    if ( isfunction(vehicle.HandleAnimation) ) then
+        local seq = vehicle:HandleAnimation(client)
+        if ( seq != nil ) then
+            clientTable.CalcSeqOverride = seq
+        end
+    end
+
+    if ( isfunction(vehicle.CalcMainActivity) ) then
+        local act, seq = vehicle:CalcMainActivity(client, velocity)
+        if ( act != nil ) then
+            clientTable.CalcIdeal = act
+        end
+
+        if ( seq != nil ) then
+            clientTable.CalcSeqOverride = seq
+        end
+
+        return true
     end
 
     -- Cache sequence lookups
@@ -255,11 +280,11 @@ function MODULE:GrabEarAnimation(client, clientTable)
         clientTable = client:GetTable()
     end
 
+    if ( !clientTable.axCharacter ) then return end
+
     clientTable.ChatGestureWeight = clientTable.ChatGestureWeight or 0
 
-    if ( client:IsPlayingTaunt() ) then
-        return
-    end
+    if ( client:IsPlayingTaunt() ) then return end
 
     local frameTimeMult = FrameTime() * 5
     if ( client:IsTyping() ) then
@@ -276,6 +301,7 @@ end
 
 function MODULE:MouthMoveAnimation(client)
     local clientTable = client:GetTable()
+    if ( !clientTable.axCharacter ) then return end
 
     -- Cache flex IDs per client to avoid repeated lookups
     if ( !clientTable.axFlexCache ) then
@@ -296,6 +322,9 @@ function MODULE:MouthMoveAnimation(client)
 end
 
 function MODULE:CalcMainActivity(client, velocity)
+    local clientTable = client:GetTable()
+    if ( !clientTable.axCharacter ) then return end
+
     local forcedSequence = client:ResolveForcedSequence()
     if ( forcedSequence ) then
         if ( client:GetSequence() != forcedSequence ) then
@@ -305,7 +334,6 @@ function MODULE:CalcMainActivity(client, velocity)
         return -1, forcedSequence
     end
 
-    local clientTable = client:GetTable()
     clientTable.CalcIdeal = ACT_MP_STAND_IDLE
 
     local eyeAngles = client:EyeAngles()
@@ -331,7 +359,7 @@ function MODULE:CalcMainActivity(client, velocity)
     client:SetPoseParameter("head_pitch", normalizeAngle(renderAng.p - aimVectorPitch))
 
     if !( self:HandlePlayerNoClipping(client, velocity, clientTable) or
-        self:HandlePlayerDriving(client, clientTable) or
+        self:HandlePlayerDriving(client, velocity, clientTable) or
         self:HandlePlayerVaulting(client, velocity, clientTable) or
         self:HandlePlayerJumping(client, velocity, clientTable) or
         self:HandlePlayerSwimming(client, velocity, clientTable) or
@@ -376,8 +404,9 @@ IdleActivityTranslate[ACT_LAND] = ACT_LAND
 
 function MODULE:TranslateActivity(client, act)
     local clientTable = client:GetTable()
-    local oldAct = clientTable.axLastAct or -1
+    if ( !clientTable.axCharacter ) then return end
 
+    local oldAct = clientTable.axLastAct or -1
     local newAct = client:TranslateWeaponActivity(act)
 
     -- When the weapon didn't translate the act we map it to HL2MP idle variants.
@@ -490,8 +519,9 @@ end
 
 function MODULE:DoAnimationEvent(client, event, data)
     local clientTable = client:GetTable()
-    local animTable = clientTable.axAnimations
+    if ( !clientTable.axCharacter ) then return end
 
+    local animTable = clientTable.axAnimations
     if ( event == PLAYERANIMEVENT_ATTACK_PRIMARY ) then
         if ( !animTable ) then return end
 
