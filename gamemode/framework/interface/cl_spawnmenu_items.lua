@@ -108,7 +108,7 @@ spawnmenu.AddContentType("axitem", function(container, obj)
         end):SetIcon("icon16/page_copy.png")
 
         menu:AddOption("Give to Self", function()
-            ax.command:Run("/CharGiveItem", ax.client:SteamID64(), obj.spawnname)
+             ax.command:Send("/CharGiveItem \"" .. ax.client:Nick() .. "\" \"" .. obj.spawnname .. "\"")
         end):SetIcon("icon16/brick_go.png")
 
         menu:Open()
