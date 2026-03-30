@@ -104,9 +104,20 @@ local function ReplaceLeadingName(formatted, oldName, newName)
         return newName .. string.sub(formatted, #oldName + 1)
     end
 
+    local actionPrefix = "** "
+    local actionLeadingName = actionPrefix .. oldName
+
+    if ( string.StartWith(formatted, actionLeadingName) ) then
+        return actionPrefix .. newName .. string.sub(formatted, #actionLeadingName + 1)
+    end
+
     local fontTag = string.match(formatted, "^(<font=[^>]+>)")
     if ( isstring(fontTag) and string.StartWith(string.sub(formatted, #fontTag + 1), oldName) ) then
         return fontTag .. newName .. string.sub(formatted, #fontTag + #oldName + 1)
+    end
+
+    if ( isstring(fontTag) and string.StartWith(string.sub(formatted, #fontTag + 1), actionLeadingName) ) then
+        return fontTag .. actionPrefix .. newName .. string.sub(formatted, #fontTag + #actionLeadingName + 1)
     end
 
     return formatted
@@ -247,7 +258,7 @@ local function WrapChatTypeListener(chatType)
     end
 end
 
---- Wrap IC, yell, and whisper chat types after all framework code has loaded.
+--- Wrap IC, yell, whisper, and me chat types after all framework code has loaded.
 local function WrapChatTypes()
     WrapChatTypeListener("ic")
     WrapChatTypeListener("yell")
