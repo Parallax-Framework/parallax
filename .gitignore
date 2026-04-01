@@ -8,3 +8,4 @@ docs/manuals
 site
 mkdocs.yml
 gamemode/framework/environment.lua
+.env
