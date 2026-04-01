@@ -41,7 +41,7 @@ function ax.radialmenu:EaseNumber(current, target, speed, easing)
         return ax.ease:Lerp(easing or "OutQuad", fraction, current, target)
     end
 
-    return Lerp(fraction, current, target)
+    return ax.ease:Lerp("Linear", fraction, current, target)
 end
 
 function ax.radialmenu:AlphaColor(color, alpha)
@@ -58,10 +58,10 @@ function ax.radialmenu:BlendColors(from, to, fraction)
     to = to or color_white
 
     return Color(
-        Lerp(fraction, from.r, to.r),
-        Lerp(fraction, from.g, to.g),
-        Lerp(fraction, from.b, to.b),
-        Lerp(fraction, from.a or 255, to.a or 255)
+        ax.ease:Lerp("Linear", fraction, from.r, to.r),
+        ax.ease:Lerp("Linear", fraction, from.g, to.g),
+        ax.ease:Lerp("Linear", fraction, from.b, to.b),
+        ax.ease:Lerp("Linear", fraction, from.a or 255, to.a or 255)
     )
 end
 
@@ -173,8 +173,8 @@ function ax.radialmenu:DrawRingSegment(centerX, centerY, innerRadius, outerRadiu
     for i = 0, steps - 1 do
         local fractionA = i / steps
         local fractionB = (i + 1) / steps
-        local angleA = Lerp(fractionA, startAngle, endAngle)
-        local angleB = Lerp(fractionB, startAngle, endAngle)
+        local angleA = ax.ease:Lerp("Linear", fractionA, startAngle, endAngle)
+        local angleB = ax.ease:Lerp("Linear", fractionB, startAngle, endAngle)
         local outerAX, outerAY = ax.radialmenu:PolarToScreen(centerX, centerY, outerRadius, angleA)
         local outerBX, outerBY = ax.radialmenu:PolarToScreen(centerX, centerY, outerRadius, angleB)
         local innerAX, innerAY = ax.radialmenu:PolarToScreen(centerX, centerY, innerRadius, angleA)

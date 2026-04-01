@@ -448,10 +448,10 @@ function MODULE:HUDPaintCurvy()
 
             ResetEntry(runningData, curTime)
         else
-            runningData.a = Lerp(lerpSpeed, runningData.a, 0)
+            runningData.a = ax.ease:Lerp("Linear", lerpSpeed, runningData.a, 0)
         end
     else
-        runningData.a = Lerp(lerpSpeed, runningData.a, 255)
+        runningData.a = ax.ease:Lerp("Linear", lerpSpeed, runningData.a, 255)
     end
 
     local targetText = isfunction(runningData.targetText) and runningData.targetText() or runningData.targetText or ""

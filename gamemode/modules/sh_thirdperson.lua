@@ -354,13 +354,13 @@ ax.viewstack:RegisterModifier("thirdperson", function(client, patch)
 
     local ft = math.Clamp(FrameTime(), 0, 0.1)
     if ( posInterpSpeed > 0 ) then
-        curPos = LerpVector(ft * posInterpSpeed, curPos, desiredPos)
+        curPos = ax.ease:Lerp("Linear", ft * posInterpSpeed, curPos, desiredPos)
     else
         curPos = desiredPos
     end
 
     if ( angInterpSpeed > 0 ) then
-        curAng = LerpAngle(ft * angInterpSpeed, curAng, desiredAng)
+        curAng = ax.ease:Lerp("Linear", ft * angInterpSpeed, curAng, desiredAng)
     else
         curAng = desiredAng
     end
@@ -371,7 +371,7 @@ ax.viewstack:RegisterModifier("thirdperson", function(client, patch)
     end
 
     if ( fovInterpSpeed > 0 ) then
-        curFOV = Lerp(ft * fovInterpSpeed, curFOV, desiredFOV)
+        curFOV = ax.ease:Lerp("Linear", ft * fovInterpSpeed, curFOV, desiredFOV)
     else
         curFOV = desiredFOV
     end

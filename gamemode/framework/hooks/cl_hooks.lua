@@ -232,7 +232,7 @@ function GM:HUDPaintCurvy()
 
             local targetHealth = math.Clamp(client:Health(), 0, 100)
             client.axHealth = client.axHealth or targetHealth
-            client.axHealth = Lerp(math.Clamp(FrameTime() * 10, 0, 1), client.axHealth, targetHealth)
+            client.axHealth = ax.ease:Lerp("Linear", math.Clamp(FrameTime() * 10, 0, 1), client.axHealth, targetHealth)
 
             local healthFraction = client.axHealth / 100
             local fillWidth = math.max(0, barWidth * healthFraction - ax.util:ScreenScale(2))
@@ -255,7 +255,7 @@ function GM:HUDPaintCurvy()
 
             local targetArmor = math.Clamp(client:Armor(), 0, 100)
             client.axArmor = client.axArmor or targetArmor
-            client.axArmor = Lerp(math.Clamp(FrameTime() * 10, 0, 1), client.axArmor, targetArmor)
+            client.axArmor = ax.ease:Lerp("Linear", math.Clamp(FrameTime() * 10, 0, 1), client.axArmor, targetArmor)
 
             local armorFraction = client.axArmor / 100
             local armorFillWidth = math.max(0, barWidth * armorFraction - ax.util:ScreenScale(2))
@@ -358,9 +358,9 @@ function GM:HUDPaint()
                 if ( bShouldFlash ) then
                     local flashFraction = 0.5 + 0.5 * math.sin(CurTime() * 0.75)
                     nameColor = Color(
-                        Lerp(flashFraction, displayColor.r, 255),
-                        Lerp(flashFraction, displayColor.g, 255),
-                        Lerp(flashFraction, displayColor.b, 255)
+                        ax.ease:Lerp("Linear", flashFraction, displayColor.r, 255),
+                        ax.ease:Lerp("Linear", flashFraction, displayColor.g, 255),
+                        ax.ease:Lerp("Linear", flashFraction, displayColor.b, 255)
                     )
                 end
 
@@ -491,7 +491,7 @@ function GM:PostDrawTranslucentRenderables(depth, skybox)
         local size = 64 * (1 + client:VoiceVolume() * 2)
 
         client.axVoiceIconSize = client.axVoiceIconSize or size
-        client.axVoiceIconSize = Lerp(math.Clamp(ft * 10, 0, 1), client.axVoiceIconSize, size)
+        client.axVoiceIconSize = ax.ease:Lerp("Linear", math.Clamp(ft * 10, 0, 1), client.axVoiceIconSize, size)
         size = client.axVoiceIconSize
 
         pos.z = pos.z + math.sin(curTime) * size / 96
@@ -551,7 +551,7 @@ ax.viewstack:RegisterModifier("sequence.viewer", function(client, patch)
 
     local headPos, headAng = ax.util:GetHeadTransform(headEntity)
 
-    headAng = Lerp(0.5, patch.angles, headAng)
+    headAng = ax.ease:Lerp("Linear", 0.5, patch.angles, headAng)
     headAng = headAng:Normalize()
 
     return {

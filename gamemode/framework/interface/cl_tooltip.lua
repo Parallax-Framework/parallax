@@ -270,8 +270,8 @@ function PANEL:Think()
     local targetX, targetY = self:ResolveTargetPosition()
     local fraction = math.Clamp(FrameTime() * 18, 0, 1)
 
-    self.positionX = Lerp(fraction, self.positionX or targetX, targetX)
-    self.positionY = Lerp(fraction, self.positionY or targetY, targetY)
+    self.positionX = ax.ease:Lerp("Linear", fraction, self.positionX or targetX, targetX)
+    self.positionY = ax.ease:Lerp("Linear", fraction, self.positionY or targetY, targetY)
 
     self:SetPos(self.positionX + (self.offsetX or 0), self.positionY + (self.offsetY or 0))
 end

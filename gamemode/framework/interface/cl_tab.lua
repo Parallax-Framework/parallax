@@ -603,8 +603,8 @@ function PANEL:Paint(width, height)
         time = 1
     end
 
-    self:SetBackgroundBlur(Lerp(time, self:GetBackgroundBlur(), self:GetBackgroundBlurTarget()))
-    self:SetBackgroundAlpha(Lerp(time, self:GetBackgroundAlpha(), self:GetBackgroundAlphaTarget()))
+    self:SetBackgroundBlur(ax.ease:Lerp("Linear", time, self:GetBackgroundBlur(), self:GetBackgroundBlurTarget()))
+    self:SetBackgroundAlpha(ax.ease:Lerp("Linear", time, self:GetBackgroundAlpha(), self:GetBackgroundAlphaTarget()))
 
     if ( math.Round(self:GetBackgroundBlur()) > 0 ) then
         ax.render().Rect(0, 0, width, height)
@@ -619,10 +619,10 @@ function PANEL:Paint(width, height)
     local scaledTabBackdrop = ax.theme:ScaleAlpha(glass.tabBackdrop, metrics.opacity)
     ax.render.Draw(0, 0, 0, width, height, ColorAlpha(scaledTabBackdrop, 50 * self:GetBackgroundAlpha()))
 
-    self:SetGradientLeft(Lerp(time, self:GetGradientLeft(), self:GetGradientLeftTarget()))
-    self:SetGradientRight(Lerp(time, self:GetGradientRight(), self:GetGradientRightTarget()))
-    self:SetGradientTop(Lerp(time, self:GetGradientTop(), self:GetGradientTopTarget()))
-    self:SetGradientBottom(Lerp(time, self:GetGradientBottom(), self:GetGradientBottomTarget()))
+    self:SetGradientLeft(ax.ease:Lerp("Linear", time, self:GetGradientLeft(), self:GetGradientLeftTarget()))
+    self:SetGradientRight(ax.ease:Lerp("Linear", time, self:GetGradientRight(), self:GetGradientRightTarget()))
+    self:SetGradientTop(ax.ease:Lerp("Linear", time, self:GetGradientTop(), self:GetGradientTopTarget()))
+    self:SetGradientBottom(ax.ease:Lerp("Linear", time, self:GetGradientBottom(), self:GetGradientBottomTarget()))
 
     local scaledGradLeft = ax.theme:ScaleAlpha(glass.gradientLeft, metrics.gradientOpacity)
     local scaledGradRight = ax.theme:ScaleAlpha(glass.gradientRight, metrics.gradientOpacity)

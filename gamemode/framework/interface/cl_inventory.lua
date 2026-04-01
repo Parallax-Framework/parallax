@@ -284,7 +284,7 @@ function PANEL:SetPreviewActive(active)
     if ( self.previewTransitioning and state.transitionStartTime and state.transitionDuration ) then
         local duration = math.max(state.transitionDuration, 0.001)
         local frac = math.Clamp((CurTime() - state.transitionStartTime) / duration, 0, 1)
-        currentBlend = Lerp(frac, state.transitionStartBlend or currentBlend, state.transitionTargetBlend or currentBlend)
+        currentBlend = ax.ease:Lerp("Linear", frac, state.transitionStartBlend or currentBlend, state.transitionTargetBlend or currentBlend)
     end
 
     if ( !self.previewTransitioning and math.abs(currentBlend - targetBlend) <= 0.001 and (self.previewActive == true) == active ) then
@@ -373,7 +373,7 @@ function PANEL:BuildPreviewView(client)
             targetBlend = self.previewActive and 1 or 0
         end
 
-        blend = Lerp(frac, startBlend, targetBlend)
+        blend = ax.ease:Lerp("Linear", frac, startBlend, targetBlend)
 
         if ( frac >= 1 ) then
             blend = targetBlend
@@ -388,9 +388,9 @@ function PANEL:BuildPreviewView(client)
     end
 
     state.blend = math.Clamp(blend, 0, 1)
-    state.origin = LerpVector(state.blend, defaultOrigin, previewOrigin)
-    state.angles = LerpAngle(state.blend, defaultAngles, previewAngles)
-    state.fov = Lerp(state.blend, defaultFov, INVENTORY_PREVIEW_TARGET_FOV)
+    state.origin = ax.ease:Lerp("Linear", state.blend, defaultOrigin, previewOrigin)
+    state.angles = ax.ease:Lerp("Linear", state.blend, defaultAngles, previewAngles)
+    state.fov = ax.ease:Lerp("Linear", state.blend, defaultFov, INVENTORY_PREVIEW_TARGET_FOV)
 
     return {
         origin = state.origin,
