@@ -182,6 +182,53 @@ local STORE_GRID_ITEM_HEIGHT = ax.util:ScreenScaleH(16)
 local STORE_GRID_SPACING_X = ax.util:ScreenScale(2)
 local STORE_GRID_SPACING_Y = ax.util:ScreenScaleH(4)
 
+local function EnsureScrollStore(storeType)
+    ax.gui = ax.gui or {}
+
+    if ( storeType == "config" ) then
+        ax.gui.storeLastConfigScroll = ax.gui.storeLastConfigScroll or {}
+        return ax.gui.storeLastConfigScroll
+    elseif ( storeType == "option" ) then
+        ax.gui.storeLastOptionScroll = ax.gui.storeLastOptionScroll or {}
+        return ax.gui.storeLastOptionScroll
+    end
+
+    return nil
+end
+
+local function RestoreStoredScroll(scroller, storeType, category)
+    if ( storeType != "config" and storeType != "option" ) then return end
+    if ( !IsValid(scroller) ) then return end
+    if ( !isstring(category) or category == "" ) then return end
+
+    local scrollStore = EnsureScrollStore(storeType)
+    if ( !istable(scrollStore) ) then return end
+
+    local scrollTarget = tonumber(scrollStore[category] or 0) or 0
+
+    scroller.ScrollTarget = math.max(scrollTarget, 0)
+    scroller.ScrollLerp = scroller.ScrollTarget
+    scroller:InvalidateLayout(true)
+end
+
+local function AttachScrollTracking(scroller, storeType, category)
+    if ( storeType != "config" and storeType != "option" ) then return end
+    if ( !IsValid(scroller) ) then return end
+    if ( !isstring(category) or category == "" ) then return end
+
+    local originalThink = scroller.Think
+    scroller.Think = function(this)
+        if ( originalThink ) then
+            originalThink(this)
+        end
+
+        local scrollStore = EnsureScrollStore(storeType)
+        if ( !istable(scrollStore) ) then return end
+
+        scrollStore[category] = tonumber(this.ScrollTarget or 0) or 0
+    end
+end
+
 local function GetStoreColumnCount()
     return math.max(math.floor(tonumber(ax.option:Get("store.columns", 3)) or 3), 1)
 end
@@ -243,6 +290,7 @@ function PANEL:SetType(type)
         local scroller = tab:Add("ax.scroller.vertical")
         scroller:Dock(FILL)
         tab.storeScroller = scroller
+        AttachScrollTracking(scroller, type, v)
 
         button.tab = tab
         button.tab.index = tab.index
@@ -261,6 +309,7 @@ function PANEL:SetType(type)
 
             self:TransitionToPage(button.tab.index, ax.option:Get("tabFadeTime", 0.25))
             self:Populate(tab, scroller, type, v)
+            RestoreStoredScroll(scroller, type, v)
         end
     end
 
@@ -307,6 +356,7 @@ function PANEL:SetType(type)
         end
 
         self:Populate(targetButton.tab, targetScroller, type, targetCategory)
+        RestoreStoredScroll(targetScroller, type, targetCategory)
     end
 end
 
