@@ -168,6 +168,8 @@ function MODULE:HandlePlayerDriving(client, velocity, clientTable)
     if ( !client:InVehicle() or !IsValid(client:GetParent()) ) then return false end
 
     local vehicle = client.lvsGetVehicle and client:lvsGetVehicle() or client:GetVehicle()
+    if ( !IsValid(vehicle) ) then return false end
+
     if ( !vehicle.HandleAnimation and vehicle.GetVehicleClass ) then
         local c = vehicle:GetVehicleClass()
         local t = list.Get("Vehicles")[c]
