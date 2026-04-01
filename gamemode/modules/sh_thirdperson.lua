@@ -267,6 +267,12 @@ function MODULE:ShouldDrawLocalPlayer(client)
     end
 end
 
+hook.Add("prone.ShouldChangeCalcView", "ax.thirdperson.prone", function(client)
+    if ( MODULE:ShouldUseThirdPerson(client) ) then
+        return false
+    end
+end)
+
 ax.viewstack:RegisterModifier("thirdperson", function(client, patch)
     if ( hook.Run("ShouldUseThirdPerson", client) == false ) then return end
 
