@@ -20,3 +20,6 @@ ax.util:IncludeDirectory("core")
 ax.util:IncludeDirectory("hooks")
 ax.util:IncludeDirectory("networking")
 ax.util:IncludeDirectory("interface")
+
+ax.ENV = ax.ENV or {}
+ax.ENV.name = "dev"
