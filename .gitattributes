@@ -24,7 +24,3 @@
 # Windows scripts keep CRLF
 *.bat text eol=crlf
 *.cmd text eol=crlf
-
-gamemode/framework/environment.lua merge=ours
-environment.lua merge=ours
-version.json merge=ours
