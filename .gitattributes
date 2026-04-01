@@ -26,3 +26,4 @@
 *.cmd text eol=crlf
 
 gamemode/framework/environment.lua merge=ours
+version.json merge=theirs
