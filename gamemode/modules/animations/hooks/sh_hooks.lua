@@ -327,9 +327,6 @@ function MODULE:CalcMainActivity(client, velocity)
     local clientTable = client:GetTable()
     if ( !clientTable.axCharacter ) then return end
 
-    -- Support for pronemod
-    if ( client.IsProne and client:IsProne() ) then return end
-
     local forcedSequence = client:ResolveForcedSequence()
     if ( forcedSequence ) then
         if ( client:GetSequence() != forcedSequence ) then
@@ -338,6 +335,9 @@ function MODULE:CalcMainActivity(client, velocity)
 
         return -1, forcedSequence
     end
+
+    -- Support for pronemod
+    if ( client.IsProne and client:IsProne() ) then return end
 
     clientTable.CalcIdeal = ACT_MP_STAND_IDLE
 
