@@ -249,6 +249,11 @@ ax.localization:Register("en", {
     ["notify.chat.ooc.disabled"] = "OOC chat is currently disabled on this server.",
     ["notify.chat.ooc.wait"] = "Please wait %d second(s) before sending another OOC message.",
     ["notify.chat.ooc.rate_limited"] = "You have reached the OOC message limit (%d) for the last %d minutes.",
+    ["error.ragdolled.action"] = "You cannot perform actions while ragdolled.",
+    ["error.ragdolled.inventory"] = "You cannot move inventory items while ragdolled.",
+    ["error.ragdolled.item_interact"] = "You cannot use items while ragdolled.",
+    ["error.ragdolled.use"] = "You cannot use entities while ragdolled.",
+    ["error.ragdolled.vehicle_enter"] = "You cannot enter vehicles while ragdolled.",
 
     ---- Flags
     ["flag.p.name"] = "Physgun Permission",

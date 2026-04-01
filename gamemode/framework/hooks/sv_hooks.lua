@@ -441,7 +441,7 @@ function GM:Move(client, moveData)
         if ( bit.band(moveData:GetButtons(), IN_JUMP) != 0 and hook.Run("CanPlayerUnRagdoll", client) != false ) then
             client:PerformAction("Getting up...", 5, function()
                 SafeRemoveEntity(ragdoll)
-            end)
+            end, nil, true)
         end
     end
 end
@@ -538,6 +538,34 @@ end
 function GM:CanPlayerSuicide(client)
     ax.util:PrintDebug("Player " .. client:SteamID64() .. " attempted suicide.")
     return false
+end
+
+function GM:CanPlayerEnterVehicle(client, vehicle, role)
+    if ( !ax.util:IsValidPlayer(client) ) then
+        return false
+    end
+
+    if ( client:IsRagdolled() ) then
+        if ( client:RateLimit("ragdolled.vehicle.notify", 1) ) then
+            client:Notify(ax.localization:GetPhrase("error.ragdolled.vehicle_enter"), "error")
+        end
+
+        return false
+    end
+end
+
+function GM:PlayerUse(client, entity)
+    if ( !ax.util:IsValidPlayer(client) ) then
+        return false
+    end
+
+    if ( client:IsRagdolled() ) then
+        if ( client:RateLimit("ragdolled.use.notify", 1) ) then
+            client:Notify(ax.localization:GetPhrase("error.ragdolled.use"), "error")
+        end
+
+        return false
+    end
 end
 
 function GM:ShutDown()
