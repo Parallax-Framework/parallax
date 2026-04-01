@@ -543,9 +543,12 @@ ax.viewstack:RegisterModifier("sequence.viewer", function(client, patch)
 
     local headPos, headAng = ax.util:GetHeadTransform(headEntity)
 
+    headAng = Lerp(0.5, patch.angles, headAng)
+    headAng = headAng:Normalize()
+
     return {
         origin = headPos or patch.origin,
-        angles = Lerp(0.5, patch.angles, headAng),
+        angles = headAng,
         drawviewer = true
     }
 end, 2)
