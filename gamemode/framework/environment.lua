@@ -9,5 +9,5 @@ cvars.AddChangeCallback("ax_environment_name", function(convar, old, new)
 end, "ax_env_update")
 
 function ax.ENV:IsDev()
-    return SERVER and self.name != "prod" or GetRelay("env_name") != "prod"
+    return SERVER and self.name != "prod" or GetRelay("env_name", "prod") != "prod"
 end
