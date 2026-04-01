@@ -328,7 +328,7 @@ function MODULE:CalcMainActivity(client, velocity)
     if ( !clientTable.axCharacter ) then return end
 
     -- Support for pronemod
-    if ( clientTable.IsProne and client:IsProne() ) then return end
+    if ( client.IsProne and client:IsProne() ) then return end
 
     local forcedSequence = client:ResolveForcedSequence()
     if ( forcedSequence ) then
