@@ -131,18 +131,24 @@ function GM:HUDPaintBackground()
 
     if ( hook.Run("ShouldDrawVignette") != false ) then
         local scrW, scrH = ScrW(), ScrH()
-        local trace = util.TraceLine({
-            start = client:GetShootPos(),
-            endpos = client:GetShootPos() + client:GetAimVector() * 96,
-            filter = client,
-            mask = MASK_SHOT
-        })
+        local bTraceEnabled = ax.option:Get("performance.vignette.trace", true)
+        local targetAlpha = 255
 
-        if ( trace.Hit and trace.HitPos:DistToSqr(client:GetShootPos()) < 96 * 96 ) then
-            vignetteColor.a = Lerp(FrameTime(), vignetteColor.a, 200)
-        else
-            vignetteColor.a = Lerp(FrameTime(), vignetteColor.a, 255)
+        if ( bTraceEnabled ) then
+            local shootPos = client:GetShootPos()
+            local trace = util.TraceLine({
+                start = shootPos,
+                endpos = shootPos + client:GetAimVector() * 96,
+                filter = client,
+                mask = MASK_SHOT
+            })
+
+            if ( trace.Hit and trace.HitPos:DistToSqr(shootPos) < 96 * 96 ) then
+                targetAlpha = 200
+            end
         end
+
+        vignetteColor.a = ax.ease:Lerp("Linear", FrameTime(), vignetteColor.a, targetAlpha)
 
         if ( hook.Run("ShouldDrawDefaultVignette") != false ) then
             ax.render.DrawMaterial(0, 0, 0, scrW, scrH, vignetteColor, vignette)
@@ -261,7 +267,8 @@ function GM:HUDPaintCurvy()
     end
 
     shouldDraw = hook.Run("ShouldDrawVoiceChatIcon")
-    if ( shouldDraw != false and client:IsSpeaking() ) then
+    local bVoiceIndicators = ax.option:Get("performance.voice.indicators", true)
+    if ( shouldDraw != false and bVoiceIndicators and client:IsSpeaking() ) then
         local iconSize = 64 * (1 + client:VoiceVolume())
         local iconX = width - ax.util:ScreenScale(8) - iconSize
         local iconY = height / 2 - iconSize / 2
@@ -463,6 +470,7 @@ end
 
 function GM:PostDrawTranslucentRenderables(depth, skybox)
     if ( skybox ) then return end
+    if ( !ax.option:Get("performance.voice.indicators", true) ) then return end
 
     local ft = FrameTime()
     local curTime = CurTime()

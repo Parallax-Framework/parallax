@@ -16,6 +16,35 @@
 
 ax.ease = ax.ease or {}
 
+local function AreAnimationsEnabled()
+    if ( SERVER ) then
+        return true
+    end
+
+    if ( !ax.option or !ax.option.Get ) then
+        return true
+    end
+
+    return ax.option:Get("performance.animations", ax.option:Get("performanceAnimations", true)) == true
+end
+
+local function InterpolateValue(time, startValue, endValue)
+    if ( isvector(startValue) and isvector(endValue) ) then
+        return LerpVector(time, startValue, endValue)
+    elseif ( isangle(startValue) and isangle(endValue) ) then
+        return LerpAngle(time, startValue, endValue)
+    elseif ( istable(startValue) and istable(endValue) ) then
+        return {
+            r = Lerp(time, startValue.r, endValue.r),
+            g = Lerp(time, startValue.g, endValue.g),
+            b = Lerp(time, startValue.b, endValue.b),
+            a = Lerp(time, startValue.a or 255, endValue.a or 255)
+        }
+    else
+        return Lerp(time, startValue, endValue)
+    end
+end
+
 --- Internal mapping of available easing functions
 ax.ease.list = {
     InBack = math.ease.InBack,
@@ -70,22 +99,15 @@ function ax.ease:Lerp(easeType, time, startValue, endValue)
         error("[easeLerp] startValue and endValue must not be nil")
     end
 
-    if ( easeType == "Linear" ) then
-        -- Simple linear interpolation
-        if ( isvector(startValue) and isvector(endValue) ) then
-            return LerpVector(time, startValue, endValue)
-        elseif ( isangle(startValue) and isangle(endValue) ) then
-            return LerpAngle(time, startValue, endValue)
-        elseif ( istable(startValue) and istable(endValue) ) then
-            return {
-                r = Lerp(time, startValue.r, endValue.r),
-                g = Lerp(time, startValue.g, endValue.g),
-                b = Lerp(time, startValue.b, endValue.b),
-                a = Lerp(time, startValue.a or 255, endValue.a or 255)
-            }
-        else
-            return Lerp(time, startValue, endValue)
-        end
+    local animationsEnabled = AreAnimationsEnabled()
+    if ( !animationsEnabled ) then
+        time = 1
+    end
+
+    time = math.Clamp(time, 0, 1)
+
+    if ( easeType == "Linear" or !animationsEnabled ) then
+        return InterpolateValue(time, startValue, endValue)
     end
 
     local easeFunc = ax.ease.list[easeType]
@@ -93,24 +115,7 @@ function ax.ease:Lerp(easeType, time, startValue, endValue)
         error("[easeLerp] Invalid easing type: " .. tostring(easeType))
     end
 
-    local easedT = easeFunc(math.Clamp(time, 0, 1))
+    local easedT = easeFunc(time)
 
-    if ( isvector(startValue) and isvector(endValue) ) then
-        -- Handle vector lerping
-        return LerpVector(easedT, startValue, endValue)
-    elseif ( isangle(startValue) and isangle(endValue) ) then
-        -- Handle angle lerping
-        return LerpAngle(easedT, startValue, endValue)
-    elseif ( istable(startValue) and istable(endValue) ) then
-        -- Handle color lerping
-        return {
-            r = Lerp(easedT, startValue.r, endValue.r),
-            g = Lerp(easedT, startValue.g, endValue.g),
-            b = Lerp(easedT, startValue.b, endValue.b),
-            a = Lerp(easedT, startValue.a or 255, endValue.a or 255)
-        }
-    else
-        -- Handle numeric lerping
-        return Lerp(easedT, startValue, endValue)
-    end
+    return InterpolateValue(easedT, startValue, endValue)
 end

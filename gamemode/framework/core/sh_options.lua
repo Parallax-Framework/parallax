@@ -11,8 +11,29 @@
 
 ax.option:Add("performance.animations", ax.type.bool, true, {
     category = "interface",
-    subCategory = "display",
+    subCategory = "performance",
     description = "performance.animations.help",
+    bNoNetworking = true
+})
+
+ax.option:Add("performance.blur", ax.type.bool, true, {
+    category = "interface",
+    subCategory = "performance",
+    description = "performance.blur.help",
+    bNoNetworking = true
+})
+
+ax.option:Add("performance.vignette.trace", ax.type.bool, true, {
+    category = "interface",
+    subCategory = "performance",
+    description = "performance.vignette.trace.help",
+    bNoNetworking = true
+})
+
+ax.option:Add("performance.voice.indicators", ax.type.bool, true, {
+    category = "interface",
+    subCategory = "performance",
+    description = "performance.voice.indicators.help",
     bNoNetworking = true
 })
 
