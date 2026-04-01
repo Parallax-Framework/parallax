@@ -15,12 +15,12 @@ MODULE.name = "Proximity"
 MODULE.description = "A proximity styled voice chat modifier."
 MODULE.author = "Riggs"
 
-ax.config:Add("proximity", ax.type.bool, true, { category = "audio", subCategory = "proximity", description = "Whether or not the proximity system is enabled." })
-ax.config:Add("proximityMuteVolume", ax.type.number, 10, { category = "audio", subCategory = "proximity", description = "The volume to set when a player is muted.", min = 0, max = 100, decimals = 0 })
-ax.config:Add("proximityUnMutedDistance", ax.type.number, 10, { category = "audio", subCategory = "proximity", description = "The distance at which a player is unmuted.", min = 0, max = 100, decimals = 0 })
-ax.config:Add("proximityMaxTraces", ax.type.number, 5, { category = "audio", subCategory = "proximity", description = "The maximum number of traces to perform when calculating voice volume.", min = 1, max = 20, decimals = 0 })
-ax.config:Add("proximityMaxDistance", ax.type.number, 1000, { category = "audio", subCategory = "proximity", description = "The maximum distance for full volume reduction.", min = 0, max = 10000, decimals = 0 })
-ax.config:Add("proximityMaxVolume", ax.type.number, 1, { category = "audio", subCategory = "proximity", description = "The maximum voice volume allowed.", min = 0, max = 1, decimals = 2 })
+ax.config:Add("proximity", ax.type.bool, true, { category = "audio", subCategory = "proximity", description = "config.proximity.help" })
+ax.config:Add("proximityMuteVolume", ax.type.number, 10, { category = "audio", subCategory = "proximity", description = "config.proximityMuteVolume.help", min = 0, max = 100, decimals = 0 })
+ax.config:Add("proximityUnMutedDistance", ax.type.number, 10, { category = "audio", subCategory = "proximity", description = "config.proximityUnMutedDistance.help", min = 0, max = 100, decimals = 0 })
+ax.config:Add("proximityMaxTraces", ax.type.number, 5, { category = "audio", subCategory = "proximity", description = "config.proximityMaxTraces.help", min = 1, max = 20, decimals = 0 })
+ax.config:Add("proximityMaxDistance", ax.type.number, 1000, { category = "audio", subCategory = "proximity", description = "config.proximityMaxDistance.help", min = 0, max = 10000, decimals = 0 })
+ax.config:Add("proximityMaxVolume", ax.type.number, 1, { category = "audio", subCategory = "proximity", description = "config.proximityMaxVolume.help", min = 0, max = 1, decimals = 2 })
 
 if ( SERVER ) then return end
 
