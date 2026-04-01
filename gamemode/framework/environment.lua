@@ -5,8 +5,9 @@ ax.ENV.name = GetConVar("ax_environment_name"):GetString()
 
 cvars.AddChangeCallback("ax_environment_name", function(convar, old, new)
     ax.ENV.name = new
-end)
+    SetRelay("env_name", new)
+end, "ax_env_update")
 
 function ax.ENV:IsDev()
-    return self.name != "prod"
+    return SERVER and self.name != "prod" or GetRelay("env_name") != "prod"
 end
