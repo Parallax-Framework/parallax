@@ -40,6 +40,7 @@ ax.localization:Register("tr", {
     ["category.audio"] = "Ses",
     ["category.interface"] = "Arayüz",
     ["category.modules"] = "Modüller",
+    ["category.recognition"] = "Tanıma",
     ["category.schema"] = "Şema",
 
     -- Subcategory Translations
@@ -58,6 +59,7 @@ ax.localization:Register("tr", {
     ["subcategory.size"] = "Boyut",
     ["subcategory.general"] = "Genel",
     ["subcategory.ooc"] = "OOC",
+    ["subcategory.audio"] = "Ses",
     ["subcategory.tools"] = "Araçlar",
 
     -- Store Translations

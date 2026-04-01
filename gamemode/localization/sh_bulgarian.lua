@@ -40,6 +40,7 @@ ax.localization:Register("bg", {
     ["category.audio"] = "Аудио",
     ["category.interface"] = "Интерфейс",
     ["category.modules"] = "Модули",
+    ["category.recognition"] = "Разпознаване",
     ["category.schema"] = "Схема",
 
     -- Subcategory Translations
@@ -58,6 +59,7 @@ ax.localization:Register("bg", {
     ["subcategory.size"] = "Размер",
     ["subcategory.general"] = "Общи",
     ["subcategory.ooc"] = "OOC",
+    ["subcategory.audio"] = "Аудио",
     ["subcategory.tools"] = "Инструменти",
 
     -- Store Translations

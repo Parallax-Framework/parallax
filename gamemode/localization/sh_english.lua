@@ -40,6 +40,7 @@ ax.localization:Register("en", {
     ["category.audio"] = "Audio",
     ["category.interface"] = "Interface",
     ["category.modules"] = "Modules",
+    ["category.recognition"] = "Recognition",
     ["category.schema"] = "Schema",
 
     -- Subcategory Translations
@@ -58,6 +59,7 @@ ax.localization:Register("en", {
     ["subcategory.size"] = "Size",
     ["subcategory.general"] = "General",
     ["subcategory.ooc"] = "OOC",
+    ["subcategory.audio"] = "Audio",
     ["subcategory.tools"] = "Tools",
 
     -- Store Translations
@@ -138,11 +140,17 @@ ax.localization:Register("en", {
 
     -- Audio
     ["config.proximity"] = "Enable Proximity Voice",
+    ["config.proximity.help"] = "Whether or not the proximity system is enabled.",
     ["config.proximityMaxDistance"] = "Proximity Max Distance",
+    ["config.proximityMaxDistance.help"] = "The maximum distance for full volume reduction.",
     ["config.proximityMaxTraces"] = "Proximity Max Traces",
+    ["config.proximityMaxTraces.help"] = "The maximum number of traces to perform when calculating voice volume.",
     ["config.proximityMaxVolume"] = "Proximity Max Volume",
+    ["config.proximityMaxVolume.help"] = "The maximum voice volume allowed.",
     ["config.proximityMuteVolume"] = "Proximity Mute Volume",
+    ["config.proximityMuteVolume.help"] = "The volume to set when a player is muted.",
     ["config.proximityUnMutedDistance"] = "Proximity Unmute Distance",
+    ["config.proximityUnMutedDistance.help"] = "The distance at which a player is unmuted.",
 
     -- Options Translations
     --- Chat

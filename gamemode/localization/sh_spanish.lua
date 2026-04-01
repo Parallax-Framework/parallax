@@ -40,6 +40,7 @@ ax.localization:Register("es", {
     ["category.audio"] = "Audio",
     ["category.interface"] = "Interfaz",
     ["category.modules"] = "Módulos",
+    ["category.recognition"] = "Reconocimiento",
     ["category.schema"] = "Esquema",
 
     -- Subcategory Translations
@@ -58,6 +59,7 @@ ax.localization:Register("es", {
     ["subcategory.size"] = "Tamaño",
     ["subcategory.general"] = "General",
     ["subcategory.ooc"] = "OOC",
+    ["subcategory.audio"] = "Audio",
     ["subcategory.tools"] = "Herramientas",
 
     -- Store Translations
