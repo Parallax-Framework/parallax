@@ -739,6 +739,12 @@ end
 function PANEL:OnThink()
     local store = self:GetStore()
     local target = (store and store:Get(self.key) == true) and 1 or 0
+
+    if ( !ax.option:Get("performance.animations", true) ) then
+        self.toggleBlend = target
+        return
+    end
+
     self.toggleBlend = ax.ease:Lerp("Linear", FrameTime() * 10, self.toggleBlend or 0, target)
 end
 
@@ -759,10 +765,10 @@ function PANEL:Paint(width, height)
     local offColor = ax.theme:ScaleAlpha(glass.button, metrics.opacity)
     local onColor = ax.theme:ScaleAlpha(glass.progress, metrics.opacity)
     local trackColor = Color(
-        ax.ease:Lerp("Linear", blend, offColor.r, onColor.r),
-        ax.ease:Lerp("Linear", blend, offColor.g, onColor.g),
-        ax.ease:Lerp("Linear", blend, offColor.b, onColor.b),
-        ax.ease:Lerp("Linear", blend, offColor.a, onColor.a)
+        Lerp(blend, offColor.r, onColor.r),
+        Lerp(blend, offColor.g, onColor.g),
+        Lerp(blend, offColor.b, onColor.b),
+        Lerp(blend, offColor.a, onColor.a)
     )
 
     ax.render.Draw(r, toggleX, toggleY, toggleW, toggleH, trackColor, ax.render.SHAPE_IOS)
@@ -774,7 +780,7 @@ function PANEL:Paint(width, height)
     local knobOffX = toggleX + knobPad
     local knobOnX = toggleX + toggleW - knobSize - knobPad
 
-    ax.render.Draw(knobSize * 0.5, ax.ease:Lerp("Linear", blend, knobOffX, knobOnX), toggleY + knobPad,
+    ax.render.Draw(knobSize * 0.5, Lerp(blend, knobOffX, knobOnX), toggleY + knobPad,
         knobSize, knobSize, color_white, ax.render.SHAPE_IOS)
 end
 
@@ -797,7 +803,12 @@ function PANEL:Toggle()
         return
     end
 
-    store:Set(self.key, !current)
+    local newValue = !current
+    store:Set(self.key, newValue)
+
+    if ( !ax.option:Get("performance.animations", true) ) then
+        self.toggleBlend = newValue == true and 1 or 0
+    end
 end
 
 function PANEL:SetKey(key)
