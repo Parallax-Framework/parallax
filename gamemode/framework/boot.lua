@@ -14,12 +14,12 @@ GM.Author = "riggs9162 & bloodycop6385"
 GM.Website = "https://discord.gg/yekEvSszW3"
 GM.Email = "riggs9162@gmx.de"
 
+ax.ENV = ax.ENV or {}
+ax.ENV.name = "dev"
+
 ax.util:IncludeDirectory("libraries")
 ax.util:IncludeDirectory("meta")
 ax.util:IncludeDirectory("core")
 ax.util:IncludeDirectory("hooks")
 ax.util:IncludeDirectory("networking")
 ax.util:IncludeDirectory("interface")
-
-ax.ENV = ax.ENV or {}
-ax.ENV.name = "dev"
