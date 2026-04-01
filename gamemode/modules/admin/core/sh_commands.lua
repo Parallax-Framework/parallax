@@ -258,7 +258,8 @@ ax.command:Add("PlySlay", {
         { name = "player", type = ax.type.player }
     },
     OnRun = function(def, client, target)
-        target:Kill()
+        target:TakeDamage(target:Health(), client, nil)
+
         return "Killed " .. target:Nick()
     end
 })
