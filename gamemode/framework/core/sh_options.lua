@@ -124,6 +124,22 @@ ax.option:Add("inventory.columns", ax.type.number, 4, {
     end
 })
 
+ax.option:Add("store.columns", ax.type.number, 3, {
+    category = "interface",
+    subCategory = "inventory",
+    description = "store.columns.help",
+    min = 1,
+    max = 8,
+    decimals = 0,
+    bNoNetworking = true,
+    OnChanged = function(self, oldValue, value)
+        if ( CLIENT and IsValid(ax.gui.settings) ) then
+            ax.gui.settings:Remove()
+            ax.command:Run("settings")
+        end
+    end
+})
+
 ax.option:Add("inventory.sort.categories", ax.type.array, "alphabetical", {
     category = "interface",
     subCategory = "inventory",

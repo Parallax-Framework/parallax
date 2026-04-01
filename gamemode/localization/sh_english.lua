@@ -225,6 +225,7 @@ ax.localization:Register("en", {
     ---- Inventory
     ["option.inventory.categories.italic"] = "Italicize Category Names",
     ["option.inventory.columns"] = "Number of Inventory Columns",
+    ["option.store.columns"] = "Number of Store Columns",
     ["option.inventory.sort.categories"] = "Inventory Category Sort Mode",
     ["option.inventory.sort.items"] = "Inventory Item Sort Mode",
     ["option.inventory.search.live"] = "Live Inventory Search",
@@ -233,6 +234,7 @@ ax.localization:Register("en", {
     ["option.inventory.actions.confirm_bulk_drop"] = "Confirm Bulk Drop Actions",
     ["option.inventory.sort.categories.help"] = "Choose how inventory categories are ordered.",
     ["option.inventory.sort.items.help"] = "Choose how items are ordered inside each category.",
+    ["option.store.columns.help"] = "Set how many columns are used in the settings store grid.",
     ["option.inventory.search.live.help"] = "Update search results while typing.",
     ["option.inventory.categories.collapsible.help"] = "Allow inventory categories to be collapsed and expanded.",
     ["option.inventory.pagination.page_size.help"] = "Number of inventory stacks shown per page.",
