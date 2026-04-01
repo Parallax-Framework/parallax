@@ -338,8 +338,20 @@ hook.Add("player_disconnect", "Parallax.PlayerDisconnected", function(data)
     if ( characters[1] != nil ) then
         for i = 1, #characters do
             local character = characters[i]
+            if ( !istable(character) or !isnumber(character.id) ) then
+                continue
+            end
+
+            local bWasActiveCharacter = character.player == client
+
             ax.character.instances[character.id] = nil
-            ax.net:Start(nil, "character.invalidate", character.id)
+
+            -- Other clients usually only know this player's active character.
+            -- Avoid broadcasting invalidation for inactive slots to prevent
+            -- unnecessary "character does not exist" client errors.
+            if ( bWasActiveCharacter ) then
+                ax.net:Start(nil, "character.invalidate", character.id)
+            end
         end
     end
 
