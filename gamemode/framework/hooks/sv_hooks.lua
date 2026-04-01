@@ -552,6 +552,8 @@ function GM:CanPlayerEnterVehicle(client, vehicle, role)
 
         return false
     end
+
+    return true -- Idk if we should be doing this, but returning nothing prevents us from entering vehicles.
 end
 
 function GM:PlayerUse(client, entity)
