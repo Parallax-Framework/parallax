@@ -49,6 +49,7 @@ ax.localization:Register("bg", {
     ["subcategory.characters"] = "Персонажи",
     ["subcategory.colors"] = "Цветове",
     ["subcategory.display"] = "Показване",
+    ["subcategory.performance"] = "Производителност",
     ["subcategory.distances"] = "Разстояния",
     ["subcategory.fonts"] = "Шрифтове",
     ["subcategory.hud"] = "HUD",
@@ -190,6 +191,13 @@ ax.localization:Register("bg", {
     ["option.interface.glass.gradientOpacity"] = "Непрозрачност на градиента на стъклото",
     ["option.interface.glass.gradientOpacity.help"] = "Регулирайте силата на градиентните наслагвания върху стъклените панели.",
     ["option.performance.animations"] = "Включи Анимации на Интерфейса",
+    ["option.performance.animations.help"] = "Включва или изключва интерполационните и преходните анимации на интерфейса.",
+    ["option.performance.blur"] = "Включи Замъгляване на Интерфейса",
+    ["option.performance.blur.help"] = "Изключва скъпите фонови замъглявания върху стъклените елементи на интерфейса.",
+    ["option.performance.vignette.trace"] = "Включи Трасиране за Винетка",
+    ["option.performance.vignette.trace.help"] = "Контролира трасировката близо до стени за промяна на интензитета на винетката.",
+    ["option.performance.voice.indicators"] = "Включи Гласови Индикатори",
+    ["option.performance.voice.indicators.help"] = "Включва или изключва HUD и световните индикатори за гласова активност на играчите.",
 
     -- Theme Names
     ["theme.dark"] = "Тъмна",
