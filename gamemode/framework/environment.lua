@@ -1,6 +1,6 @@
 ax.ENV = ax.ENV or {}
 
-CreateConVar("ax_environment_name", "prod", FCVAR_ARCHIVE, "The current environment name")
+CreateConVar("ax_environment_name", "prod", {FCVAR_ARCHIVE, FCVAR_REPLICATED}, "The current environment name")
 ax.ENV.name = GetConVar("ax_environment_name"):GetString()
 
 cvars.AddChangeCallback("ax_environment_name", function(convar, old, new)
