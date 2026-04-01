@@ -16,6 +16,9 @@ ax._reload = ax._reload or { pingAt = 0, armed = false, frame = -1 }
 
 AddCSLuaFile("cl_init.lua")
 
+include("framework/environment.lua")
+AddCSLuaFile("framework/environment.lua")
+
 AddCSLuaFile("framework/util/boot.lua")
 include("framework/util/boot.lua")
 
