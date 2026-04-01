@@ -473,27 +473,39 @@ function PANEL:PopulateTabs()
         self.buttons:AddPanel(button)
     end
 
+    local bRestoredLastTab = false
+
     if ( pendingSectionKey and IsValid(pendingParentButton) ) then
         pendingParentButton:DoClick()
 
         local subbutton = self.subbuttons.buttons and self.subbuttons.buttons[pendingSectionKey]
         if ( IsValid(subbutton) ) then
             subbutton:DoClick()
+            bRestoredLastTab = true
         end
-
-        self.restoredLastTab = true
     end
 
-    if ( !self.restoredLastTab and ax.gui.tabLast and self.tabs[ax.gui.tabLast] ) then
-        self.tabs[ax.gui.tabLast]:StartAtBottom()
-        if ( self.buttonMap[ax.gui.tabLast] ) then
+    if ( !bRestoredLastTab and ax.gui.tabLast ) then
+        local parentKey = self.sectionParentMap[ax.gui.tabLast]
+
+        if ( parentKey and self.buttonMap[parentKey] ) then
+            self.buttonMap[parentKey]:DoClick()
+
+            local subbutton = self.subbuttons.buttons and self.subbuttons.buttons[ax.gui.tabLast]
+            if ( IsValid(subbutton) ) then
+                subbutton:DoClick()
+                bRestoredLastTab = true
+            end
+        elseif ( self.buttonMap[ax.gui.tabLast] ) then
             self.buttonMap[ax.gui.tabLast]:DoClick()
+            bRestoredLastTab = true
         end
-    else
-        for k, v in SortedPairs(self.tabs) do
-            if ( k == ax.gui.tabLast ) then
-                v:StartAtBottom()
-                self:TransitionToPage(v.index, ax.option:Get("tabFadeTime", 0.25), true)
+    end
+
+    if ( !bRestoredLastTab ) then
+        for _, button in SortedPairs(self.buttonMap) do
+            if ( IsValid(button) ) then
+                button:DoClick()
                 break
             end
         end
