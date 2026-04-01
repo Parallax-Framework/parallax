@@ -155,6 +155,10 @@ end
 function GM:DrawVignette(fraction)
 end
 
+function GM:ShouldDrawVersionWatermark()
+    return ax.ENV != nil and ax.ENV:IsDev()
+end
+
 function GM:PostRenderCurvy()
     local _, height = ScrW(), ScrH()
     ax.notification:Render()
