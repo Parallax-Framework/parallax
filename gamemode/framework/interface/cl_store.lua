@@ -737,6 +737,8 @@ function PANEL:Init()
 end
 
 function PANEL:OnThink()
+    BaseClass.OnThink(self)
+
     local store = self:GetStore()
     local target = (store and store:Get(self.key) == true) and 1 or 0
 
