@@ -175,7 +175,14 @@ function GM:InitPostEntity()
     end
 end
 
-function GM:CanPlayerInteractItem( client, item, action )
+function GM:CanPlayerInteractItem(client, item, action)
+    if ( !ax.util:IsValidPlayer(client) ) then
+        return false
+    end
+
+    if ( client:IsRagdolled() ) then
+        return false, ax.localization:GetPhrase("error.ragdolled.item_interact")
+    end
 end
 
 function GM:ShowHelp(client)

@@ -14,6 +14,13 @@ local MODULE = MODULE
 MODULE.name = "Spawn Save"
 MODULE.description = "Saves characters' spawn locations to their previous positions."
 MODULE.author = "Riggs"
+MODULE.data = {}
+
+function MODULE:InitPostEntity()
+    self.data = ax.data:Get("spawn_save", {}, {
+        scope = "map"
+    })
+end
 
 function MODULE:OnCharacterDisconnected(character)
     local client = character:GetOwner()
@@ -22,38 +29,29 @@ function MODULE:OnCharacterDisconnected(character)
     local position = client:GetPos()
     local angles = client:EyeAngles()
 
-    local data = ax.data:Get("spawn_save", {}, {
-        scope = "map"
-    })
+    local data = self.data
 
     data[character:GetID()] = {
         position,
         angles
     }
-
-    ax.data:Set("spawn_save", data, {
-        scope = "map",
-        human = true
-    })
 end
 
 function MODULE:PlayerLoadedCharacter(client, character, previous)
     if ( CLIENT or !character ) then return end
 
-    local data = ax.data:Get("spawn_save", {}, {
-        scope = "map"
-    })
-
-    local spawn_save = data[character:GetID()]
+    local spawn_save = self.data[character:GetID()]
     if ( spawn_save ) then
         client:SetPos(spawn_save[1])
         client:SetEyeAngles(spawn_save[2])
 
-        data[character:GetID()] = nil
-
-        ax.data:Set("spawn_save", data, {
-            scope = "map",
-            human = true
-        })
+        self.data[character:GetID()] = nil
     end
+end
+
+function MODULE:ShutDown()
+    ax.data:Set("spawn_save", self.data, {
+        scope = "map",
+        human = true
+    })
 end

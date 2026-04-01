@@ -68,6 +68,11 @@ ax.net:Hook("item.transfer", function(client, itemID, targetInventoryID)
     local character = client:GetCharacter()
     if ( !character ) then return end
 
+    if ( client:IsRagdolled() ) then
+        client:Notify(ax.localization:GetPhrase("error.ragdolled.inventory"), "error")
+        return
+    end
+
     local transferRateLimit = math.max(tonumber(ax.config:Get("inventory.transfer.rate_limit", 0.1)) or 0.1, 0)
     if ( !client:RateLimit("item.transfer", transferRateLimit) ) then return end
 
@@ -112,6 +117,11 @@ ax.net:Hook("item.transfer.batch", function(client, itemIDs, targetInventoryID)
     local character = client:GetCharacter()
     if ( !character ) then return end
 
+    if ( client:IsRagdolled() ) then
+        client:Notify(ax.localization:GetPhrase("error.ragdolled.inventory"), "error")
+        return
+    end
+
     if ( !istable(itemIDs) or !isnumber(targetInventoryID) or targetInventoryID < 1 ) then
         ax.util:Error("Invalid payload received for item.transfer.batch.")
         return
@@ -149,6 +159,11 @@ ax.net:Hook("item.transfer.batch", function(client, itemIDs, targetInventoryID)
 end)
 
 ax.net:Hook("inventory.item.action", function(client, itemID, action)
+    if ( client:IsRagdolled() ) then
+        client:Notify(ax.localization:GetPhrase("error.ragdolled.item_interact"), "error")
+        return
+    end
+
     local actionRateLimit = math.max(tonumber(ax.config:Get("inventory.action.rate_limit", 0.1)) or 0.1, 0)
     if ( !client:RateLimit("inventory.action", actionRateLimit) ) then return end
 

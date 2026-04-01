@@ -52,6 +52,12 @@ end
 if ( CLIENT ) then
     ax.notification.active = ax.notification.active or {}
     ax.notification.font = "ax.small.bold"
+    ax.notification.sounds = {
+        error = "parallax/ui/notifications/error.wav",
+        warning = "parallax/ui/notifications/hint.wav",
+        info = "parallax/ui/notifications/generic.wav",
+        success = "parallax/ui/notifications/generic.wav",
+    }
 
     ax.notification.style = {
         width = 340,
@@ -102,6 +108,19 @@ if ( CLIENT ) then
         if ( notificationType == "warning" ) then return "warning" end
         if ( notificationType == "success" ) then return "success" end
         return "info"
+    end
+
+    local function PlayNotificationSound(notificationType)
+        if ( !ax.option:Get("notification.sounds", true) ) then
+            return
+        end
+
+        local soundPath = ax.notification.sounds[notificationType] or ax.notification.sounds.info
+        if ( !isstring(soundPath) or soundPath == "" ) then
+            return
+        end
+
+        pcall(surface.PlaySound, soundPath)
     end
 
     local function BuildLayout(notification, scale)
@@ -180,6 +199,7 @@ if ( CLIENT ) then
         }
 
         table.insert(self.active, 1, notification)
+        PlayNotificationSound(notification.type)
         PruneOverflow()
     end
 

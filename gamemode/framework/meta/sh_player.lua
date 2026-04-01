@@ -592,7 +592,7 @@ function ax.player.meta:SyncRelay()
     end
 end
 
-function ax.player.meta:PerformAction(label, duration, onComplete, onCancel)
+function ax.player.meta:PerformAction(label, duration, onComplete, onCancel, bAllowRagdolled)
     if ( SERVER ) then
         if ( label == nil ) then
             local selfTable = self:GetTable()
@@ -609,6 +609,11 @@ function ax.player.meta:PerformAction(label, duration, onComplete, onCancel)
             timer.Remove("ax.player." .. self:SteamID64() .. ".entityAction")
             ax.net:Start(self, "player.actionbar.stop", true)
             return
+        end
+
+        if ( bAllowRagdolled != true and self:IsRagdolled() ) then
+            self:Notify(ax.localization:GetPhrase("error.ragdolled.action"), "error")
+            return false
         end
 
         ax.net:Start(self, "player.actionbar.start", label or "Processing...", duration or 5)
