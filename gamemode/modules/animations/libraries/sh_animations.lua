@@ -175,17 +175,19 @@ ax.animations.stored["citizen_female"] = {
         [ACT_MP_WALK] = {ACT_WALK_RIFLE_RELAXED, ACT_WALK_AIM_RIFLE_STIMULATED},
         [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH_RIFLE, ACT_WALK_CROUCH_AIM_RIFLE},
         [ACT_MP_RUN] = {ACT_RUN_RIFLE_RELAXED, ACT_RUN_AIM_RIFLE_STIMULATED},
-        ["shoot"] = ACT_GESTURE_RANGE_ATTACK_SMG1,
-        ["reload"] = ACT_GESTURE_RELOAD_SMG1
+        ["shoot"] = "gesture_shoot_ar2",
+        ["reload"] = "gesture_reload_ar2",
+        ["land"] = "jump_holding_land"
     },
     ["rpg"] = {
-        [ACT_MP_STAND_IDLE] = {ACT_IDLE_SMG1_RELAXED, ACT_IDLE_ANGRY_SMG1},
+        [ACT_MP_STAND_IDLE] = {{"idle_rpg_relaxed", "idle_angry_rpg"}, "idle_rpg_aim"},
         [ACT_MP_CROUCH_IDLE] = {ACT_COVER_LOW, ACT_RANGE_AIM_SMG1_LOW},
-        [ACT_MP_WALK] = {ACT_WALK_RIFLE_RELAXED, ACT_WALK_AIM_RIFLE_STIMULATED},
-        [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH_RIFLE, ACT_WALK_CROUCH_AIM_RIFLE},
-        [ACT_MP_RUN] = {ACT_RUN_RIFLE_RELAXED, ACT_RUN_AIM_RIFLE_STIMULATED},
-        ["shoot"] = ACT_GESTURE_RANGE_ATTACK_SMG1,
-        ["reload"] = ACT_GESTURE_RELOAD_SMG1
+        [ACT_MP_WALK] = {{"walk_rpg_relaxed_all", "walk_holding_rpg_all"}, ACT_WALK_AIM_RIFLE_STIMULATED},
+        [ACT_MP_CROUCHWALK] = {"crouch_walk_holding_rpg_all", ACT_WALK_CROUCH_AIM_RIFLE},
+        [ACT_MP_RUN] = {{"run_rpg_relaxed_all", "run_holding_rpg_all"}, ACT_RUN_AIM_RIFLE_STIMULATED},
+        ["shoot"] = "gesture_shoot_rpg",
+        ["reload"] = "gesture_reload_ar2",
+        ["land"] = "jump_holding_land"
     },
     ["melee"] = {
         [ACT_MP_STAND_IDLE] = {ACT_IDLE, ACT_IDLE_MANNEDGUN},
