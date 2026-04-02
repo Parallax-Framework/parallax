@@ -281,7 +281,7 @@ ax.animations.stored["overwatch"] = {
         [ACT_MP_WALK] = {"walkunarmed_all", ACT_WALK_RIFLE},
         [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH_RIFLE, ACT_WALK_CROUCH_RIFLE},
         [ACT_MP_RUN] = {ACT_RUN_AIM_RIFLE, ACT_RUN_AIM_RIFLE},
-        ["shoot"] = "swinggesture",
+        ["shoot"] = "melee_gunhit",
         ["land"] = "jump_holding_land"
     },
     ["grenade"] = {
