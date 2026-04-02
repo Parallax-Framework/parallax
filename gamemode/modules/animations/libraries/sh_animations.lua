@@ -144,8 +144,9 @@ ax.animations.stored["citizen_female"] = {
         [ACT_MP_WALK] = {ACT_WALK, ACT_WALK_AIM_PISTOL},
         [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH, ACT_WALK_CROUCH_AIM_RIFLE},
         [ACT_MP_RUN] = {ACT_RUN, ACT_RUN_AIM_PISTOL},
-        ["shoot"] = ACT_GESTURE_RANGE_ATTACK_PISTOL,
-        ["shoot"] = ACT_RELOAD_PISTOL
+        ["shoot"] = "gesture_shootp1",
+        ["reload"] = "gesture_reload_smg1",
+        ["land"] = "jump_holding_land"
     },
     ["smg"] = {
         [ACT_MP_STAND_IDLE] = {ACT_IDLE_SMG1_RELAXED, ACT_IDLE_ANGRY_SMG1},
