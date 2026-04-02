@@ -75,7 +75,8 @@ function ax.character:Create(payload, callback)
         end
 
         -- Override creationTime
-        character:SetCreationTime( creationTime )
+        character:SetCreationTime(creationTime)
+        character:SetLastPlayed(creationTime)
 
         ax.character.instances[character.id] = character
 
@@ -135,6 +136,8 @@ function ax.character:Load(client, character)
 
     clientData.axCharacterPrevious = clientData.axCharacter
     if ( clientData.axCharacterPrevious ) then
+        clientData.axCharacterPrevious:SetLastPlayed(os.time())
+
         local inventory = clientData.axCharacter:GetInventory()
         if ( istable(inventory) ) then
             inventory:RemoveReceivers()
