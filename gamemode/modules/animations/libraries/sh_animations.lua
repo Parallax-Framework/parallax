@@ -262,7 +262,7 @@ ax.animations.stored["overwatch"] = {
         [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH_RIFLE, ACT_WALK_CROUCH_RIFLE},
         [ACT_MP_RUN] = {ACT_RUN_RIFLE, ACT_RUN_AIM_RIFLE},
         ["shoot"] = "gesture_shoot_ar2",
-        ["reload"] = "gesture_reload_ar2",
+        ["reload"] = "gesture_reload",
         ["land"] = "jump_holding_land"
     },
     ["rpg"] = {
