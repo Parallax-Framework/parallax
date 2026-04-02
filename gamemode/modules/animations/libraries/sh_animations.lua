@@ -434,21 +434,30 @@ ax.animations.stored["vortigaunt"] = {
         [ACT_MP_WALK] = {ACT_WALK, "Walk_all_TC"},
         [ACT_MP_RUN] = {ACT_RUN, "run_all_TC"},
         [ACT_MP_CROUCH_IDLE] = {"crouchidle", "crouchidle"},
-        [ACT_MP_CROUCHWALK] = {ACT_WALK, ACT_WALK}
+        [ACT_MP_CROUCHWALK] = {ACT_WALK, ACT_WALK},
+        ["land"] = "jump_holding_land"
     },
     ["melee"] = {
         [ACT_MP_STAND_IDLE] = {ACT_IDLE, "ActionIdle"},
         [ACT_MP_WALK] = {ACT_WALK, ACT_WALK_AIM},
         [ACT_MP_RUN] = {ACT_RUN, ACT_RUN_AIM},
         [ACT_MP_CROUCH_IDLE] = {"crouchidle", "crouchidle"},
-        [ACT_MP_CROUCHWALK] = {ACT_WALK, ACT_WALK}
+        [ACT_MP_CROUCHWALK] = {ACT_WALK, ACT_WALK},
+        ["land"] = "jump_holding_land"
     },
     ["grenade"] = {
         [ACT_MP_STAND_IDLE] = {ACT_IDLE, "ActionIdle"},
         [ACT_MP_WALK] = {ACT_WALK, ACT_WALK},
         [ACT_MP_RUN] = {ACT_RUN, ACT_RUN},
         [ACT_MP_CROUCH_IDLE] = {"crouchidle", "crouchidle"},
-        [ACT_MP_CROUCHWALK] = {ACT_WALK, ACT_WALK}
+        [ACT_MP_CROUCHWALK] = {ACT_WALK, ACT_WALK},
+        ["land"] = "jump_holding_land"
+    },
+    ["vehicle"] = {
+        prop_vehicle_airboat = {"chess_wait", Vector(26, 0, -22)},
+        prop_vehicle_jeep = {"chess_wait", Vector(32, 0, -16)},
+        ["models/vehicles/prisoner_pod_inner.mdl"] = {"idle01", Vector(2, 1, -4)},
+        chair = {"chess_wait", Vector(24, 0, -24)},
     }
 }
 
