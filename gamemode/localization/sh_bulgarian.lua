@@ -12,8 +12,8 @@ ax.localization:Register("bg", {
 
     -- Main Menu Translations
     ["mainmenu.category.00_faction"] = "Фракции",
-    ["mainmenu.category.01_identity"] = "Самоличност",
-    ["mainmenu.category.02_appearance"] = "Външност",
+    ["mainmenu.category.01_appearance"] = "Външност",
+    ["mainmenu.category.02_identity"] = "Самоличност",
     ["mainmenu.category.03_other"] = "Друго",
     ["mainmenu.create"] = "Създай Персонаж",
     ["mainmenu.disconnect"] = "Изключи се",

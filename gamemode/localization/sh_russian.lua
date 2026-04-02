@@ -13,8 +13,8 @@ ax.localization:Register("ru", {
 
     -- Main Menu Translations
     ["mainmenu.category.00_faction"] = "Фракции",
-    ["mainmenu.category.01_identity"] = "О Вас",
-    ["mainmenu.category.02_appearance"] = "Внешность",
+    ["mainmenu.category.01_appearance"] = "Внешность",
+    ["mainmenu.category.02_identity"] = "О Вас",
     ["mainmenu.category.03_other"] = "Другое",
     ["mainmenu.create"] = "Создать Персонажа",
     ["mainmenu.disconnect"] = "Отключиться",

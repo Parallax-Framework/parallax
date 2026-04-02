@@ -12,8 +12,8 @@ ax.localization:Register("tr", {
 
     -- Main Menu Translations
     ["mainmenu.category.00_faction"] = "Fraksiyonlar",
-    ["mainmenu.category.01_identity"] = "Kimlik",
-    ["mainmenu.category.02_appearance"] = "Görünüm",
+    ["mainmenu.category.01_appearance"] = "Görünüm",
+    ["mainmenu.category.02_identity"] = "Kimlik",
     ["mainmenu.category.03_other"] = "Diğer",
     ["mainmenu.create"] = "Karakter Oluştur",
     ["mainmenu.disconnect"] = "Bağlantıyı Kes",

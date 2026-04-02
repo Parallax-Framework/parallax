@@ -12,8 +12,8 @@ ax.localization:Register("en", {
 
     -- Main Menu Translations
     ["mainmenu.category.00_faction"] = "Factions",
-    ["mainmenu.category.01_identity"] = "Identity",
-    ["mainmenu.category.02_appearance"] = "Appearance",
+    ["mainmenu.category.01_appearance"] = "Appearance",
+    ["mainmenu.category.02_identity"] = "Identity",
     ["mainmenu.category.03_other"] = "Other",
     ["mainmenu.create"] = "Create Character",
     ["mainmenu.disconnect"] = "Disconnect",
