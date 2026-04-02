@@ -290,14 +290,14 @@ ax.animations.stored["overwatch"] = {
         [ACT_MP_WALK] = {"walkunarmed_all", ACT_WALK_RIFLE},
         [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH_RIFLE, ACT_WALK_CROUCH_RIFLE},
         [ACT_MP_RUN] = {ACT_RUN_AIM_RIFLE, ACT_RUN_AIM_RIFLE},
-        ["shoot"] = "grenthrow_gesture",
+        ["shoot"] = "grenthrow",
         ["land"] = "jump_holding_land"
     },
     ["vehicle"] = {
-        prop_vehicle_airboat = {"silo_sit", Vector(10, 0, -18)},
-        prop_vehicle_jeep = {"silo_sit", Vector(18, 0, -14)},
-        ["models/vehicles/prisoner_pod_inner.mdl"] = {"podpose", Vector(-3.5, 0, -4)},
-        chair = {"silo_sit", Vector(8, 0, -22)},
+        prop_vehicle_airboat = {"crouchidle", Vector(0, -2, -10)},
+        prop_vehicle_jeep = {"crouchidle", Vector(8, -2, 0)},
+        ["models/vehicles/prisoner_pod_inner.mdl"] = {"idle_unarmed", Vector(-7, -1, -4)},
+        chair = {"crouchidle", Vector(0, 0, -10)},
     }
 }
 
