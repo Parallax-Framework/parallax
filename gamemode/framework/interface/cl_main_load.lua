@@ -128,10 +128,17 @@ function PANEL:PopulateCharacterList()
             end
         end
 
+        local nameText = v:GetName() or "Unnamed Character"
+        local nameFont = "ax.huge.bold"
+        local nameWidth = ax.util:GetTextSize(nameFont, nameText)
+        if ( nameWidth > self:GetWide() / 3 ) then
+            nameFont = "ax.large.bold"
+        end
+
         local name = button:Add("ax.text")
         name:Dock(TOP)
-        name:SetFont("ax.giant.bold")
-        name:SetText(v:GetName():upper(), true)
+        name:SetFont(nameFont)
+        name:SetText(nameText:upper(), true)
         name.Think = function(this)
             this:SetTextColor(button:GetTextColor())
         end
