@@ -291,11 +291,13 @@ ax.animations.stored["overwatch"] = {
         [ACT_MP_RUN] = {ACT_RUN_AIM_RIFLE, ACT_RUN_AIM_RIFLE},
         ["shoot"] = "grenthrow_gesture",
         ["land"] = "jump_holding_land"
+    },
+    ["vehicle"] = {
+        prop_vehicle_airboat = {"silo_sit", Vector(10, 0, -18)},
+        prop_vehicle_jeep = {"silo_sit", Vector(18, 0, -14)},
+        ["models/vehicles/prisoner_pod_inner.mdl"] = {"podpose", Vector(-3.5, 0, -4)},
+        chair = {"silo_sit", Vector(8, 0, -22)},
     }
-}
-
-ax.animations.stored["overwatch"].vehicle = {
-    chair = {"sit", Vector(0, 0, 0)},
 }
 
 ax.animations.stored["metrocop"] = {
