@@ -128,7 +128,9 @@ ax.character:RegisterVar("faction", {
                 local imageHeight = height * 0.8
                 imageHeight = math.Round(imageHeight)
 
-                ax.render.DrawMaterial(12, 0, 0, width, imageHeight - 8, color_white, banner)
+                ax.theme:DrawGlassButton(0, 0, width, imageHeight - 8, {
+                    material = banner
+                })
 
                 local inertia = factionButton:GetInertia()
                 local boxHeightStatic = (height * 0.2)
