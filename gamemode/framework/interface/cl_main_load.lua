@@ -81,9 +81,9 @@ function PANEL:PopulateCharacterList()
         image:SetSize(button:GetTall() * 1.75, button:GetTall())
         image:SetMouseInputEnabled(false)
         image.Paint = function(this, width, height)
-            surface.SetDrawColor(color_white)
-            surface.SetMaterial(banner)
-            surface.DrawTexturedRect(0, 0, width, height)
+            ax.theme:DrawGlassButton(0, 0, width, height, {
+                material = banner
+            })
         end
 
         local deleteButton = button:Add("ax.button")
