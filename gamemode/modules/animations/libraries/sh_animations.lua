@@ -317,7 +317,7 @@ ax.animations.stored["metrocop"] = {
         [ACT_MP_CROUCH_IDLE] = {ACT_COVER_PISTOL_LOW, ACT_COVER_PISTOL_LOW},
         [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH, ACT_WALK_CROUCH},
         ["shoot"] = "gesture_shoot_pistol",
-        ["reload"] = "gesture_reload_357",
+        ["reload"] = "gesture_reload_pistol",
         ["land"] = "jump_holding_land"
     },
     ["smg"] = {
