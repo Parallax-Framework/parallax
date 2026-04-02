@@ -128,7 +128,7 @@ function PANEL:PerformLayout()
     self.title:SetPos(ScrW() / 2 - self.title:GetWide() / 2, ScrH() / 8)
     self.subtitle:SetPos(ScrW() / 2 - self.subtitle:GetWide() / 2, ScrH() / 8 + self.title:GetTall())
 
-    self.buttons:SetWide(ScrW() / 2)
+    self.buttons:SetWide(ScrW() / 1.5)
 
     local children = self.buttons:GetChildren()
 
