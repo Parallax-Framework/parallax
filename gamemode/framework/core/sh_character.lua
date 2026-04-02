@@ -251,7 +251,7 @@ ax.character:RegisterVar("name", {
     fieldType = ax.type.string,
     default = "Unnamed Character",
     sortOrder = 10,
-    category = "01_identity",
+    category = "02_identity",
     hints = {
         "Your name should be fitting to the theme of the server and roleplay setting.",
         "Use proper capitalization and provide both a first and last name."
@@ -397,7 +397,7 @@ ax.character:RegisterVar("description", {
     fieldType = ax.type.string,
     default = "This is a character description.",
     sortOrder = 20,
-    category = "01_identity",
+    category = "02_identity",
     hints = {
         "Character description is a brief summary that helps others visualize your character. It can include details about their physical appearance, clothing style, or any notable traits.",
         "Write a short description of your physical appearance, clothing style, or any notable traits that help others visualize your character."
@@ -500,7 +500,7 @@ ax.character:RegisterVar("model", {
     fieldType = ax.type.string,
     default = "models/player.mdl",
     sortOrder = 30,
-    category = "02_appearance",
+    category = "01_appearance",
     validate = function(this, value, payload, client)
         if ( !isstring(value) or value == "" ) then
             return false, "You must select a character model before creating your character. Please choose one of the available models from the selection below."
@@ -682,7 +682,7 @@ ax.character:RegisterVar("skin", {
     fieldType = ax.type.number,
     default = 0,
     sortOrder = 40,
-    category = "02_appearance",
+    category = "01_appearance",
     validate = function(this, value, payload, client)
         if ( !tonumber(value) ) then
             return false, "You must select a valid skin number for your character model. Please use the slider to choose a skin variant (usually 0-16) that you prefer for your character's appearance."
