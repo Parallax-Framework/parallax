@@ -376,13 +376,15 @@ ax.animations.stored["metrocop"] = {
         [ACT_MP_RUN] = {"run_all", "run_all"},
         [ACT_MP_CROUCH_IDLE] = {ACT_COVER_PISTOL_LOW, ACT_COVER_PISTOL_LOW},
         [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH, ACT_WALK_CROUCH},
-        ["shoot"] = "grenthrow_gesture",
+        ["shoot"] = "grenadethrow",
         ["land"] = "jump_holding_land"
+    },
+    ["vehicle"] = {
+        prop_vehicle_airboat = {"crouch_idle_pistol", Vector(10, -2, -10)},
+        prop_vehicle_jeep = {"crouch_idle_pistol", Vector(18, -2, 0)},
+        ["models/vehicles/prisoner_pod_inner.mdl"] = {"batonidle2", Vector(-4, -1, -4)},
+        chair = {"crouch_idle_pistol", Vector(8, -4, -10)},
     }
-}
-
-ax.animations.stored["metrocop"].vehicle = {
-    chair = {"sit", Vector(0, 0, 0)},
 }
 
 ax.animations.stored["vortigaunt"] = {
