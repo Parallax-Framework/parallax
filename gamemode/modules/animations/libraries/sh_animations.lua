@@ -394,28 +394,33 @@ ax.animations.stored["vortigaunt"] = {
         [ACT_MP_WALK] = {ACT_WALK, ACT_WALK_AIM},
         [ACT_MP_RUN] = {ACT_RUN, ACT_RUN_AIM},
         [ACT_MP_CROUCH_IDLE] = {"crouchidle", "crouchidle"},
-        [ACT_MP_CROUCHWALK] = {ACT_WALK, ACT_WALK}
+        [ACT_MP_CROUCHWALK] = {ACT_WALK, ACT_WALK},
+        ["shoot"] = {"meleehigh1", "meleehigh2", "meleehigh3"},
+        ["land"] = "jump_holding_land"
     },
     ["pistol"] = {
         [ACT_MP_STAND_IDLE] = {ACT_IDLE, "TCidlecombat"},
         [ACT_MP_WALK] = {ACT_WALK, "Walk_all_TC"},
         [ACT_MP_RUN] = {ACT_RUN, "run_all_TC"},
         [ACT_MP_CROUCH_IDLE] = {"crouchidle", "crouchidle"},
-        [ACT_MP_CROUCHWALK] = {ACT_WALK, ACT_WALK}
+        [ACT_MP_CROUCHWALK] = {ACT_WALK, ACT_WALK},
+        ["land"] = "jump_holding_land"
     },
     ["smg"] = {
         [ACT_MP_STAND_IDLE] = {ACT_IDLE, "TCidlecombat"},
         [ACT_MP_WALK] = {ACT_WALK, "Walk_all_TC"},
         [ACT_MP_RUN] = {ACT_RUN, "run_all_TC"},
         [ACT_MP_CROUCH_IDLE] = {"crouchidle", "crouchidle"},
-        [ACT_MP_CROUCHWALK] = {ACT_WALK, ACT_WALK}
+        [ACT_MP_CROUCHWALK] = {ACT_WALK, ACT_WALK},
+        ["land"] = "jump_holding_land"
     },
     ["shotgun"] = {
         [ACT_MP_STAND_IDLE] = {ACT_IDLE, "TCidlecombat"},
         [ACT_MP_WALK] = {ACT_WALK, "Walk_all_TC"},
         [ACT_MP_RUN] = {ACT_RUN, "run_all_TC"},
         [ACT_MP_CROUCH_IDLE] = {"crouchidle", "crouchidle"},
-        [ACT_MP_CROUCHWALK] = {ACT_WALK, ACT_WALK}
+        [ACT_MP_CROUCHWALK] = {ACT_WALK, ACT_WALK},
+        ["land"] = "jump_holding_land"
     },
     ["ar2"] = {
         [ACT_MP_STAND_IDLE] = {ACT_IDLE, "TCidlecombat"},
