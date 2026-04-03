@@ -576,8 +576,35 @@ ax.animations.stored["player"] = {
         [ACT_MP_JUMP] = {"jump_grenade", "jump_grenade"},
         ["land"] = "jump_land",
         ["shoot"] = "range_grenade"
+    },
+    ["flinch"] = {
+        [HITGROUP_HEAD] = {"flinchheadgest1", "flinchheadgest2"},
+        [HITGROUP_CHEST] = {"flinchgutgest1", "flinchgutgest2"},
+        [HITGROUP_STOMACH] = {"flinchgutgest1", "flinchgutgest2"},
+        [HITGROUP_LEFTARM] = "flinchlarmgest",
+        [HITGROUP_RIGHTARM] = "flinchrarmgest",
+        [HITGROUP_LEFTLEG] = {"flinchgutgest1", "flinchgutgest2"},
+        [HITGROUP_RIGHTLEG] = {"flinchgutgest1", "flinchgutgest2"},
+        [HITGROUP_GEAR] = "flinch_gesture",
     }
 }
+
+--- Returns the flinch gesture sequence name for a model class and hitgroup.
+-- @realm shared
+-- @param modelClass string The model class (e.g. "citizen_male")
+-- @param hitGroup number The HITGROUP_* constant
+-- @return string|nil The gesture sequence name, or nil if none defined
+function ax.animations:GetFlinchGesture(modelClass, hitGroup)
+    local classData = self.stored[modelClass]
+    if ( !classData or !classData["flinch"] ) then return end
+
+    local gesture = classData["flinch"][hitGroup]
+    if ( istable(gesture) ) then
+        return gesture[math.random(#gesture)]
+    end
+
+    return gesture
+end
 
 --- Sets a model class translation for a specific model.
 -- @param model The model to set the translation for.
