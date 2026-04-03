@@ -157,9 +157,7 @@ if ( SERVER ) then
                 self.ignoreUse = false
                 self.ixIsMuted = false
 
-                for _, v in ents.Iterator() do
-                    if ( v:GetParent() != self ) then continue end
-
+                for _, v in ipairs(self:GetChildren()) do
                     v:SetNotSolid(false)
                     v:SetNoDraw(false)
 
@@ -184,14 +182,12 @@ if ( SERVER ) then
 
         dummy:InheritBodygroups(self)
 
-        for _, v in ents.Iterator() do
-            if ( v:GetParent() == self ) then
-                v:SetNotSolid(true)
-                v:SetNoDraw(true)
+        for _, v in ipairs(self:GetChildren()) do
+            v:SetNotSolid(true)
+            v:SetNoDraw(true)
 
-                if ( v.OnDoorBlasted ) then
-                    v:OnDoorBlasted(self)
-                end
+            if ( v.OnDoorBlasted ) then
+                v:OnDoorBlasted(self)
             end
         end
 
