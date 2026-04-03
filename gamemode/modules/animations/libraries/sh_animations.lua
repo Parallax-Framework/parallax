@@ -405,6 +405,16 @@ ax.animations.stored["metrocop"] = {
         prop_vehicle_jeep = {"crouch_idle_pistol", Vector(18, -2, 0)},
         ["models/vehicles/prisoner_pod_inner.mdl"] = {"batonidle2", Vector(-4, -1, -4)},
         chair = {"crouch_idle_pistol", Vector(8, -4, -10)},
+    },
+    ["flinch"] = {
+        [HITGROUP_HEAD] = {"flinchheadgest1", "flinchheadgest2"},
+        [HITGROUP_CHEST] = {"flinchgutgest1", "flinchgutgest2"},
+        [HITGROUP_STOMACH] = {"flinchgutgest1", "flinchgutgest2"},
+        [HITGROUP_LEFTARM] = "flinchlarmgest",
+        [HITGROUP_RIGHTARM] = "flinchrarmgest",
+        [HITGROUP_LEFTLEG] = {"flinchgutgest1", "flinchgutgest2"},
+        [HITGROUP_RIGHTLEG] = {"flinchgutgest1", "flinchgutgest2"},
+        [HITGROUP_GEAR] = "flinch_gesture",
     }
 }
 
