@@ -101,6 +101,9 @@ end
 local developer = GetConVar("developer")
 local debugRealm = CreateConVar("ax_debug_realm", "0", {FCVAR_ARCHIVE, FCVAR_REPLICATED}, "Set to 1 to enable debug messages on the client, 2 for server, 3 for both.")
 local debugFilter = CreateConVar("ax_debug_filter", "", {FCVAR_ARCHIVE, FCVAR_REPLICATED}, "Optional comma-separated filter for debug messages. Only messages containing any of the specified keywords will be printed.")
+local debugRateLimit = CreateConVar("ax_debug_rate_limit", "0", {FCVAR_ARCHIVE, FCVAR_REPLICATED}, "Set to a positive number to enable rate limiting for debug messages (in seconds).")
+
+local rateLimitTracker = {}
 
 --- Print a debug message
 -- @param ... any Values to print for debugging
@@ -133,6 +136,17 @@ function ax.util:PrintDebug(...)
         if ( !matchesFilter ) then
             return
         end
+    end
+
+    local rateLimit = debugRateLimit:GetFloat()
+    if ( rateLimit > 0 ) then
+        local key = table.concat(args, " ")
+        local lastPrinted = rateLimitTracker[key]
+        if ( lastPrinted and ( CurTime() - lastPrinted ) < rateLimit ) then
+            return
+        end
+
+        rateLimitTracker[key] = CurTime()
     end
 
     MsgC(debugColor, "[PARALLAX] [DEBUG] ", unpack(args))

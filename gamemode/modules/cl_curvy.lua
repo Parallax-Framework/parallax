@@ -17,14 +17,14 @@ MODULE.author = "Riggs"
 
 ax.option:Add("curvy", ax.type.bool, true, {
     description = "Enable or disable the curvy visual effect",
-    category = "visual",
-    subcategory = "curvy"
+    category = "interface",
+    subCategory = "effects"
 })
 
 ax.option:Add("curvy.intensity", ax.type.number, 0.25, {
     description = "Controls the curvature strength",
-    category = "visual",
-    subcategory = "curvy",
+    category = "interface",
+    subCategory = "effects",
     decimals = 2,
     min = 0.0,
     max = 1.0
@@ -32,48 +32,48 @@ ax.option:Add("curvy.intensity", ax.type.number, 0.25, {
 
 ax.option:Add("curvy.edge_fade", ax.type.number, 0.25, {
     description = "Controls the edge fading effect",
-    category = "visual",
-    subcategory = "curvy",
+    category = "interface",
+    subCategory = "effects",
     decimals = 2,
     min = 0.0,
     max = 1.0
 })
 
 ax.localization:Register("en", {
-    ["category.visual"] = "Visual",
-    ["subcategory.curvy"] = "Curvy",
+    ["category.interface"] = "Interface",
+    ["subcategory.effects"] = "Effects",
     ["option.curvy"] = "Curvy HUD",
     ["option.curvy.intensity"] = "Curvature",
     ["option.curvy.edge_fade"] = "Edge Fade"
 })
 
 ax.localization:Register("de", {
-    ["category.visual"] = "Visuell",
-    ["subcategory.curvy"] = "Gebogen",
+    ["category.interface"] = "Oberfläche",
+    ["subcategory.effects"] = "Effekte",
     ["option.curvy"] = "Gebogenes HUD",
     ["option.curvy.intensity"] = "Krümmung",
     ["option.curvy.edge_fade"] = "Rand-Ausblendung"
 })
 
 ax.localization:Register("tr", {
-    ["category.visual"] = "Görsel",
-    ["subcategory.curvy"] = "Kavis",
+    ["category.interface"] = "Arayüz",
+    ["subcategory.effects"] = "Efektler",
     ["option.curvy"] = "Kavisli HUD",
     ["option.curvy.intensity"] = "Kavis",
     ["option.curvy.edge_fade"] = "Kenar Solması"
 })
 
 ax.localization:Register("ru", {
-    ["category.visual"] = "Визуал",
-    ["subcategory.curvy"] = "Изогнутость",
+    ["category.interface"] = "Интерфейс",
+    ["subcategory.effects"] = "Эффекты",
     ["option.curvy"] = "Изогнутый HUD",
     ["option.curvy.intensity"] = "Кривизна",
     ["option.curvy.edge_fade"] = "Исчезновение Краев"
 })
 
 ax.localization:Register("es", {
-    ["category.visual"] = "Visual",
-    ["subcategory.curvy"] = "Curvo",
+    ["category.interface"] = "Interfaz",
+    ["subcategory.effects"] = "Efectos",
     ["option.curvy"] = "HUD Curvo",
     ["option.curvy.intensity"] = "Curvatura",
     ["option.curvy.edge_fade"] = "Desvanecimiento de Bordes"

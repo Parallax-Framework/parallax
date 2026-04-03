@@ -349,10 +349,9 @@ function INVENTORY_PANE:Populate(inventory, selectedIDs, filterName)
 			continue
 		end
 
-		if ( filterName and #filterName > 0 and filterName != "") then
-			if ( !string.find(string.lower(item:GetName()), string.lower(filterName), 1, true) ) then
-				continue
-			end
+		if ( filterName and #filterName > 0 and filterName != ""
+		and !string.find(string.lower(item:GetName()), string.lower(filterName), 1, true) ) then
+			continue
 		end
 
 		entries[#entries + 1] = item
@@ -778,11 +777,10 @@ function PANEL:UpdateButtons()
 end
 
 function PANEL:RefreshInventories(force)
-	if ( self.bVirtualContainer != true ) then
-		if ( !IsValid(self.entity) or self.entity:GetClass() != "ax_container" ) then
-			self:Close()
-			return
-		end
+	if ( self.bVirtualContainer != true
+	and !IsValid(self.entity) or self.entity:GetClass() != "ax_container" ) then
+		self:Close()
+		return
 	end
 
 	local playerInventory = self:GetPlayerInventory()

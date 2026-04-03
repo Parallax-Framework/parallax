@@ -105,9 +105,10 @@ function PANEL:ScrollToChild(panel)
 end
 
 function PANEL:Think()
-    self.ScrollLerp = Lerp(0.1, self.ScrollLerp, self.ScrollTarget)
+    local previousScroll = self.ScrollLerp
+    self.ScrollLerp = ax.ease:Lerp("Linear", 0.1, self.ScrollLerp, self.ScrollTarget)
 
-    if ( math.abs(self.ScrollLerp - self.ScrollTarget) > 1 ) then
+    if ( math.abs(previousScroll - self.ScrollLerp) > 0.001 or math.abs(self.ScrollLerp - self.ScrollTarget) > 1 ) then
         self:InvalidateLayout()
     end
 end
@@ -277,7 +278,7 @@ function PANEL:Think()
         self:InvalidateLayout(true)
     end
 
-    self.OffsetXLerp = Lerp(0.1, self.OffsetXLerp, self.OffsetX)
+    self.OffsetXLerp = ax.ease:Lerp("Linear", 0.1, self.OffsetXLerp, self.OffsetX)
     self:PerformLayout()
 end
 

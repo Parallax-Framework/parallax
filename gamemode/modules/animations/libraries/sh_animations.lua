@@ -48,6 +48,7 @@ ax.animations.stored["citizen_male"] = {
         [ACT_MP_WALK] = {ACT_WALK, ACT_WALK_AIM_RIFLE_STIMULATED},
         [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH, ACT_WALK_CROUCH_AIM_RIFLE},
         [ACT_MP_RUN] = {ACT_RUN, ACT_RUN_AIM_RIFLE_STIMULATED},
+        ["shoot"] = "meleeattack01",
         ["land"] = "jump_holding_land"
     },
     ["pistol"] = {
@@ -56,8 +57,8 @@ ax.animations.stored["citizen_male"] = {
         [ACT_MP_WALK] = {ACT_WALK, ACT_WALK_AIM_RIFLE_STIMULATED},
         [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH, ACT_WALK_CROUCH_AIM_RIFLE},
         [ACT_MP_RUN] = {ACT_RUN, ACT_RUN_AIM_RIFLE_STIMULATED},
-        ["shoot"] = "gesture_shoot_pistol",
-        ["reload"] = "gesture_reload_357",
+        ["shoot"] = "gesture_shootp1",
+        ["reload"] = "gesture_reload_smg1",
         ["land"] = "jump_holding_land"
     },
     ["smg"] = {
@@ -77,8 +78,8 @@ ax.animations.stored["citizen_male"] = {
         [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH_RIFLE, ACT_WALK_CROUCH_RIFLE},
         [ACT_MP_RUN] = {ACT_RUN_RIFLE_RELAXED, ACT_RUN_AIM_RIFLE_STIMULATED},
         ["shoot"] = "gesture_shoot_shotgun",
-        ["shoot_crouch"] = "gesture_shoot_shotgun_crouch",
-        ["reload"] = "gesture_reload_shotgun",
+        ["shoot_crouch"] = "gesture_shoot_shotgun",
+        ["reload"] = "gesture_reload_smg1",
         ["land"] = "jump_holding_land"
     },
     ["ar2"] = {
@@ -92,12 +93,12 @@ ax.animations.stored["citizen_male"] = {
         ["land"] = "jump_holding_land"
     },
     ["rpg"] = {
-        [ACT_MP_STAND_IDLE] = {ACT_IDLE_SMG1_RELAXED, ACT_IDLE_ANGRY_SMG1},
+        [ACT_MP_STAND_IDLE] = {{"idle_rpg_relaxed", "idle_angry_rpg"}, "idle_rpg_aim"},
         [ACT_MP_CROUCH_IDLE] = {ACT_COVER_LOW, ACT_RANGE_AIM_SMG1_LOW},
-        [ACT_MP_WALK] = {ACT_WALK_RIFLE_RELAXED, ACT_WALK_AIM_RIFLE_STIMULATED},
-        [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH_RIFLE, ACT_WALK_CROUCH_AIM_RIFLE},
-        [ACT_MP_RUN] = {ACT_RUN_RIFLE_RELAXED, ACT_RUN_AIM_RIFLE_STIMULATED},
-        ["shoot"] = "gesture_shoot_ar2",
+        [ACT_MP_WALK] = {{"walk_rpg_relaxed_all", "walk_holding_rpg_all"}, ACT_WALK_AIM_RIFLE_STIMULATED},
+        [ACT_MP_CROUCHWALK] = {"crouch_walk_holding_rpg_all", ACT_WALK_CROUCH_AIM_RIFLE},
+        [ACT_MP_RUN] = {{"run_rpg_relaxed_all", "run_holding_rpg_all"}, ACT_RUN_AIM_RIFLE_STIMULATED},
+        ["shoot"] = "gesture_shoot_rpg",
         ["reload"] = "gesture_reload_ar2",
         ["land"] = "jump_holding_land"
     },
@@ -118,6 +119,12 @@ ax.animations.stored["citizen_male"] = {
         [ACT_MP_RUN] = {ACT_RUN, ACT_RUN_RIFLE_STIMULATED},
         ["shoot"] = "grenthrow_gesture",
         ["land"] = "jump_holding_land"
+    },
+    ["vehicle"] = {
+        prop_vehicle_airboat = {"silo_sit", Vector(10, 0, -18)},
+        prop_vehicle_jeep = {"silo_sit", Vector(18, 0, -14)},
+        ["models/vehicles/prisoner_pod_inner.mdl"] = {"podpose", Vector(-3.5, 0, -4)},
+        chair = {"silo_sit", Vector(8, 0, -22)},
     }
 }
 
@@ -127,7 +134,9 @@ ax.animations.stored["citizen_female"] = {
         [ACT_MP_CROUCH_IDLE] = {ACT_COVER_LOW, ACT_COVER_LOW},
         [ACT_MP_WALK] = {ACT_WALK, ACT_WALK_AIM_RIFLE_STIMULATED},
         [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH, ACT_WALK_CROUCH_AIM_RIFLE},
-        [ACT_MP_RUN] = {ACT_RUN, ACT_RUN_AIM_RIFLE_STIMULATED}
+        [ACT_MP_RUN] = {ACT_RUN, ACT_RUN_AIM_RIFLE_STIMULATED},
+        ["shoot"] = "meleeattack01",
+        ["land"] = "jump_holding_land"
     },
     ["pistol"] = {
         [ACT_MP_STAND_IDLE] = {ACT_IDLE_PISTOL, ACT_IDLE_ANGRY_PISTOL},
@@ -135,8 +144,9 @@ ax.animations.stored["citizen_female"] = {
         [ACT_MP_WALK] = {ACT_WALK, ACT_WALK_AIM_PISTOL},
         [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH, ACT_WALK_CROUCH_AIM_RIFLE},
         [ACT_MP_RUN] = {ACT_RUN, ACT_RUN_AIM_PISTOL},
-        ["shoot"] = ACT_GESTURE_RANGE_ATTACK_PISTOL,
-        ["shoot"] = ACT_RELOAD_PISTOL
+        ["shoot"] = "gesture_shootp1",
+        ["reload"] = "gesture_reload_smg1",
+        ["land"] = "jump_holding_land"
     },
     ["smg"] = {
         [ACT_MP_STAND_IDLE] = {ACT_IDLE_SMG1_RELAXED, ACT_IDLE_ANGRY_SMG1},
@@ -144,8 +154,9 @@ ax.animations.stored["citizen_female"] = {
         [ACT_MP_WALK] = {ACT_WALK_RIFLE_RELAXED, ACT_WALK_AIM_RIFLE_STIMULATED},
         [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH_RIFLE, ACT_WALK_CROUCH_AIM_RIFLE},
         [ACT_MP_RUN] = {ACT_RUN_RIFLE_RELAXED, ACT_RUN_AIM_RIFLE_STIMULATED},
-        ["shoot"] = ACT_GESTURE_RANGE_ATTACK_SMG1,
-        ["shoot"] = ACT_GESTURE_RELOAD_SMG1
+        ["shoot"] = "gesture_shoot_smg1",
+        ["reload"] = "gesture_reload_smg1",
+        ["land"] = "jump_holding_land"
     },
     ["shotgun"] = {
         [ACT_MP_STAND_IDLE] = {ACT_IDLE_SHOTGUN_RELAXED, ACT_IDLE_ANGRY_SMG1},
@@ -153,7 +164,10 @@ ax.animations.stored["citizen_female"] = {
         [ACT_MP_WALK] = {ACT_WALK_RIFLE_RELAXED, ACT_WALK_AIM_RIFLE_STIMULATED},
         [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH_RIFLE, ACT_WALK_CROUCH_AIM_RIFLE},
         [ACT_MP_RUN] = {ACT_RUN_RIFLE_RELAXED, ACT_RUN_AIM_RIFLE_STIMULATED},
-        ["shoot"] = ACT_GESTURE_RANGE_ATTACK_SHOTGUN
+        ["shoot"] = "gesture_shoot_shotgun",
+        ["shoot_crouch"] = "gesture_shoot_shotgun",
+        ["reload"] = "gesture_reload_smg1",
+        ["land"] = "jump_holding_land"
     },
     ["ar2"] = {
         [ACT_MP_STAND_IDLE] = {ACT_IDLE_SMG1_RELAXED, ACT_IDLE_ANGRY_SMG1},
@@ -161,17 +175,19 @@ ax.animations.stored["citizen_female"] = {
         [ACT_MP_WALK] = {ACT_WALK_RIFLE_RELAXED, ACT_WALK_AIM_RIFLE_STIMULATED},
         [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH_RIFLE, ACT_WALK_CROUCH_AIM_RIFLE},
         [ACT_MP_RUN] = {ACT_RUN_RIFLE_RELAXED, ACT_RUN_AIM_RIFLE_STIMULATED},
-        ["shoot"] = ACT_GESTURE_RANGE_ATTACK_SMG1,
-        ["reload"] = ACT_GESTURE_RELOAD_SMG1
+        ["shoot"] = "gesture_shoot_ar2",
+        ["reload"] = "gesture_reload_ar2",
+        ["land"] = "jump_holding_land"
     },
     ["rpg"] = {
-        [ACT_MP_STAND_IDLE] = {ACT_IDLE_SMG1_RELAXED, ACT_IDLE_ANGRY_SMG1},
+        [ACT_MP_STAND_IDLE] = {{"idle_rpg_relaxed", "idle_angry_rpg"}, "idle_rpg_aim"},
         [ACT_MP_CROUCH_IDLE] = {ACT_COVER_LOW, ACT_RANGE_AIM_SMG1_LOW},
-        [ACT_MP_WALK] = {ACT_WALK_RIFLE_RELAXED, ACT_WALK_AIM_RIFLE_STIMULATED},
-        [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH_RIFLE, ACT_WALK_CROUCH_AIM_RIFLE},
-        [ACT_MP_RUN] = {ACT_RUN_RIFLE_RELAXED, ACT_RUN_AIM_RIFLE_STIMULATED},
-        ["shoot"] = ACT_GESTURE_RANGE_ATTACK_SMG1,
-        ["reload"] = ACT_GESTURE_RELOAD_SMG1
+        [ACT_MP_WALK] = {{"walk_rpg_relaxed_all", "walk_holding_rpg_all"}, ACT_WALK_AIM_RIFLE_STIMULATED},
+        [ACT_MP_CROUCHWALK] = {"crouch_walk_holding_rpg_all", ACT_WALK_CROUCH_AIM_RIFLE},
+        [ACT_MP_RUN] = {{"run_rpg_relaxed_all", "run_holding_rpg_all"}, ACT_RUN_AIM_RIFLE_STIMULATED},
+        ["shoot"] = "gesture_shoot_rpg",
+        ["reload"] = "gesture_reload_ar2",
+        ["land"] = "jump_holding_land"
     },
     ["melee"] = {
         [ACT_MP_STAND_IDLE] = {ACT_IDLE, ACT_IDLE_MANNEDGUN},
@@ -189,6 +205,12 @@ ax.animations.stored["citizen_female"] = {
         [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH, ACT_WALK_CROUCH_AIM_RIFLE},
         [ACT_MP_RUN] = {ACT_RUN, ACT_RUN_AIM_PISTOL},
         ["shoot"] = ACT_RANGE_ATTACK_THROW
+    },
+    ["vehicle"] = {
+        prop_vehicle_airboat = {"silo_sit", Vector(10, 0, -18)},
+        prop_vehicle_jeep = {"silo_sit", Vector(18, 0, -14)},
+        ["models/vehicles/prisoner_pod_inner.mdl"] = {"podpose", Vector(-3.5, 0, -4)},
+        chair = {"silo_sit", Vector(8, 0, -22)},
     }
 }
 
@@ -199,6 +221,7 @@ ax.animations.stored["overwatch"] = {
         [ACT_MP_WALK] = {"walkunarmed_all", ACT_WALK_RIFLE},
         [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH_RIFLE, ACT_WALK_CROUCH_RIFLE},
         [ACT_MP_RUN] = {ACT_RUN_AIM_RIFLE, ACT_RUN_AIM_RIFLE},
+        ["shoot"] = "melee_gunhit",
         ["land"] = "jump_holding_land"
     },
     ["pistol"] = {
@@ -207,8 +230,8 @@ ax.animations.stored["overwatch"] = {
         [ACT_MP_WALK] = {"walkunarmed_all", ACT_WALK_RIFLE},
         [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH_RIFLE, ACT_WALK_CROUCH_RIFLE},
         [ACT_MP_RUN] = {ACT_RUN_AIM_RIFLE, ACT_RUN_AIM_RIFLE},
-        ["shoot"] = "gesture_shoot_pistol",
-        ["reload"] = "gesture_reload_357",
+        ["shoot"] = "gesture_shoot_smg1",
+        ["reload"] = "gesture_reload",
         ["land"] = "jump_holding_land"
     },
     ["smg"] = {
@@ -218,7 +241,7 @@ ax.animations.stored["overwatch"] = {
         [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH_RIFLE, ACT_WALK_CROUCH_RIFLE},
         [ACT_MP_RUN] = {ACT_RUN_RIFLE, ACT_RUN_AIM_RIFLE},
         ["shoot"] = "gesture_shoot_smg1",
-        ["reload"] = "gesture_reload_smg1",
+        ["reload"] = "gesture_reload",
         ["land"] = "jump_holding_land"
     },
     ["shotgun"] = {
@@ -228,8 +251,8 @@ ax.animations.stored["overwatch"] = {
         [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH_RIFLE, ACT_WALK_CROUCH_RIFLE},
         [ACT_MP_RUN] = {ACT_RUN_RIFLE, ACT_RUN_AIM_SHOTGUN},
         ["shoot"] = "gesture_shoot_shotgun",
-        ["shoot_crouch"] = "gesture_shoot_shotgun_crouch",
-        ["reload"] = "gesture_reload_shotgun",
+        ["shoot_crouch"] = "gesture_shoot_shotgun",
+        ["reload"] = "gesture_reload",
         ["land"] = "jump_holding_land"
     },
     ["ar2"] = {
@@ -239,7 +262,7 @@ ax.animations.stored["overwatch"] = {
         [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH_RIFLE, ACT_WALK_CROUCH_RIFLE},
         [ACT_MP_RUN] = {ACT_RUN_RIFLE, ACT_RUN_AIM_RIFLE},
         ["shoot"] = "gesture_shoot_ar2",
-        ["reload"] = "gesture_reload_ar2",
+        ["reload"] = "gesture_reload",
         ["land"] = "jump_holding_land"
     },
     ["rpg"] = {
@@ -248,8 +271,8 @@ ax.animations.stored["overwatch"] = {
         [ACT_MP_WALK] = {ACT_WALK_RIFLE, ACT_WALK_AIM_RIFLE},
         [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH_RIFLE, ACT_WALK_CROUCH_RIFLE},
         [ACT_MP_RUN] = {ACT_RUN_RIFLE, ACT_RUN_AIM_RIFLE},
-        ["shoot"] = "gesture_shoot_ar2",
-        ["reload"] = "gesture_reload_ar2",
+        ["shoot"] = "gesture_shoot_shotgun",
+        ["reload"] = "gesture_reload",
         ["land"] = "jump_holding_land"
     },
     ["melee"] = {
@@ -258,7 +281,7 @@ ax.animations.stored["overwatch"] = {
         [ACT_MP_WALK] = {"walkunarmed_all", ACT_WALK_RIFLE},
         [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH_RIFLE, ACT_WALK_CROUCH_RIFLE},
         [ACT_MP_RUN] = {ACT_RUN_AIM_RIFLE, ACT_RUN_AIM_RIFLE},
-        ["shoot"] = "swinggesture",
+        ["shoot"] = "melee_gunhit",
         ["land"] = "jump_holding_land"
     },
     ["grenade"] = {
@@ -267,8 +290,14 @@ ax.animations.stored["overwatch"] = {
         [ACT_MP_WALK] = {"walkunarmed_all", ACT_WALK_RIFLE},
         [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH_RIFLE, ACT_WALK_CROUCH_RIFLE},
         [ACT_MP_RUN] = {ACT_RUN_AIM_RIFLE, ACT_RUN_AIM_RIFLE},
-        ["shoot"] = "grenthrow_gesture",
+        ["shoot"] = "grenthrow",
         ["land"] = "jump_holding_land"
+    },
+    ["vehicle"] = {
+        prop_vehicle_airboat = {"crouchidle", Vector(0, -2, -10)},
+        prop_vehicle_jeep = {"crouchidle", Vector(8, -2, 0)},
+        ["models/vehicles/prisoner_pod_inner.mdl"] = {"idle_unarmed", Vector(-7, -1, -4)},
+        chair = {"crouchidle", Vector(0, 0, -10)},
     }
 }
 
@@ -289,7 +318,7 @@ ax.animations.stored["metrocop"] = {
         [ACT_MP_CROUCH_IDLE] = {ACT_COVER_PISTOL_LOW, ACT_COVER_PISTOL_LOW},
         [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH, ACT_WALK_CROUCH},
         ["shoot"] = "gesture_shoot_pistol",
-        ["reload"] = "gesture_reload_357",
+        ["reload"] = "gesture_reload_pistol",
         ["land"] = "jump_holding_land"
     },
     ["smg"] = {
@@ -299,7 +328,8 @@ ax.animations.stored["metrocop"] = {
         [ACT_MP_CROUCH_IDLE] = {ACT_COVER_SMG1_LOW, ACT_COVER_SMG1_LOW},
         [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH, ACT_WALK_CROUCH},
         ["shoot"] = "gesture_shoot_smg1",
-        ["reload"] = "gesture_reload_smg1"
+        ["reload"] = "gesture_reload_smg1",
+        ["land"] = "jump_holding_land"
     },
     ["shotgun"] = {
         [ACT_MP_STAND_IDLE] = {ACT_IDLE_SMG1, ACT_IDLE_ANGRY_SMG1},
@@ -307,9 +337,10 @@ ax.animations.stored["metrocop"] = {
         [ACT_MP_RUN] = {ACT_RUN_RIFLE, ACT_RUN_AIM_RIFLE},
         [ACT_MP_CROUCH_IDLE] = {ACT_COVER_SMG1_LOW, ACT_COVER_SMG1_LOW},
         [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH, ACT_WALK_CROUCH},
-        ["shoot"] = "gesture_shoot_shotgun",
-        ["shoot_crouch"] = "gesture_shoot_shotgun_crouch",
-        ["reload"] = "gesture_reload_shotgun"
+        ["shoot"] = "gesture_shoot_smg1",
+        ["shoot_crouch"] = "gesture_shoot_smg1",
+        ["reload"] = "gesture_reload_smg1",
+        ["land"] = "jump_holding_land"
     },
     ["ar2"] = {
         [ACT_MP_STAND_IDLE] = {ACT_IDLE, ACT_IDLE_ANGRY_MELEE},
@@ -317,8 +348,9 @@ ax.animations.stored["metrocop"] = {
         [ACT_MP_RUN] = {ACT_RUN, ACT_RUN},
         [ACT_MP_CROUCH_IDLE] = {ACT_COVER_PISTOL_LOW, ACT_COVER_PISTOL_LOW},
         [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH, ACT_WALK_CROUCH},
-        ["shoot"] = "gesture_shoot_rpg",
-        ["reload"] = "gesture_reload_smg1"
+        ["shoot"] = "gesture_shoot_smg1",
+        ["reload"] = "gesture_reload_smg1",
+        ["land"] = "jump_holding_land"
     },
     ["rpg"] = {
         [ACT_MP_STAND_IDLE] = {ACT_IDLE_SMG1, ACT_IDLE_ANGRY_SMG1},
@@ -326,13 +358,14 @@ ax.animations.stored["metrocop"] = {
         [ACT_MP_RUN] = {ACT_RUN_RIFLE, ACT_RUN_AIM_RIFLE},
         [ACT_MP_CROUCH_IDLE] = {ACT_COVER_SMG1_LOW, ACT_COVER_SMG1_LOW},
         [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH, ACT_WALK_CROUCH},
-        ["shoot"] = "gesture_shoot_rpg",
-        ["reload"] = "gesture_reload_smg1"
+        ["shoot"] = "gesture_shoot_smg1",
+        ["reload"] = "gesture_reload_smg1",
+        ["land"] = "jump_holding_land"
     },
     ["melee"] = {
-        [ACT_MP_STAND_IDLE] = {ACT_IDLE, ACT_IDLE_ANGRY_MELEE},
-        [ACT_MP_WALK] = {ACT_WALK, ACT_WALK_ANGRY},
-        [ACT_MP_RUN] = {ACT_RUN, ACT_RUN},
+        [ACT_MP_STAND_IDLE] = {{"batonidle1", "batonidle2"}, "batonangryidle1"},
+        [ACT_MP_WALK] = {"walk_all", "walk_hold_baton_angry"},
+        [ACT_MP_RUN] = {"run_all", "run_all"},
         [ACT_MP_CROUCH_IDLE] = {ACT_COVER_PISTOL_LOW, ACT_COVER_PISTOL_LOW},
         [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH, ACT_WALK_CROUCH},
         ["shoot"] = "swinggesture",
@@ -344,8 +377,14 @@ ax.animations.stored["metrocop"] = {
         [ACT_MP_RUN] = {"run_all", "run_all"},
         [ACT_MP_CROUCH_IDLE] = {ACT_COVER_PISTOL_LOW, ACT_COVER_PISTOL_LOW},
         [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH, ACT_WALK_CROUCH},
-        ["shoot"] = "grenthrow_gesture",
+        ["shoot"] = "grenadethrow",
         ["land"] = "jump_holding_land"
+    },
+    ["vehicle"] = {
+        prop_vehicle_airboat = {"crouch_idle_pistol", Vector(10, -2, -10)},
+        prop_vehicle_jeep = {"crouch_idle_pistol", Vector(18, -2, 0)},
+        ["models/vehicles/prisoner_pod_inner.mdl"] = {"batonidle2", Vector(-4, -1, -4)},
+        chair = {"crouch_idle_pistol", Vector(8, -4, -10)},
     }
 }
 
@@ -355,28 +394,33 @@ ax.animations.stored["vortigaunt"] = {
         [ACT_MP_WALK] = {ACT_WALK, ACT_WALK_AIM},
         [ACT_MP_RUN] = {ACT_RUN, ACT_RUN_AIM},
         [ACT_MP_CROUCH_IDLE] = {"crouchidle", "crouchidle"},
-        [ACT_MP_CROUCHWALK] = {ACT_WALK, ACT_WALK}
+        [ACT_MP_CROUCHWALK] = {ACT_WALK, ACT_WALK},
+        ["shoot"] = {"meleehigh1", "meleehigh2", "meleehigh3"},
+        ["land"] = "jump_holding_land"
     },
     ["pistol"] = {
         [ACT_MP_STAND_IDLE] = {ACT_IDLE, "TCidlecombat"},
         [ACT_MP_WALK] = {ACT_WALK, "Walk_all_TC"},
         [ACT_MP_RUN] = {ACT_RUN, "run_all_TC"},
         [ACT_MP_CROUCH_IDLE] = {"crouchidle", "crouchidle"},
-        [ACT_MP_CROUCHWALK] = {ACT_WALK, ACT_WALK}
+        [ACT_MP_CROUCHWALK] = {ACT_WALK, ACT_WALK},
+        ["land"] = "jump_holding_land"
     },
     ["smg"] = {
         [ACT_MP_STAND_IDLE] = {ACT_IDLE, "TCidlecombat"},
         [ACT_MP_WALK] = {ACT_WALK, "Walk_all_TC"},
         [ACT_MP_RUN] = {ACT_RUN, "run_all_TC"},
         [ACT_MP_CROUCH_IDLE] = {"crouchidle", "crouchidle"},
-        [ACT_MP_CROUCHWALK] = {ACT_WALK, ACT_WALK}
+        [ACT_MP_CROUCHWALK] = {ACT_WALK, ACT_WALK},
+        ["land"] = "jump_holding_land"
     },
     ["shotgun"] = {
         [ACT_MP_STAND_IDLE] = {ACT_IDLE, "TCidlecombat"},
         [ACT_MP_WALK] = {ACT_WALK, "Walk_all_TC"},
         [ACT_MP_RUN] = {ACT_RUN, "run_all_TC"},
         [ACT_MP_CROUCH_IDLE] = {"crouchidle", "crouchidle"},
-        [ACT_MP_CROUCHWALK] = {ACT_WALK, ACT_WALK}
+        [ACT_MP_CROUCHWALK] = {ACT_WALK, ACT_WALK},
+        ["land"] = "jump_holding_land"
     },
     ["ar2"] = {
         [ACT_MP_STAND_IDLE] = {ACT_IDLE, "TCidlecombat"},
@@ -390,21 +434,30 @@ ax.animations.stored["vortigaunt"] = {
         [ACT_MP_WALK] = {ACT_WALK, "Walk_all_TC"},
         [ACT_MP_RUN] = {ACT_RUN, "run_all_TC"},
         [ACT_MP_CROUCH_IDLE] = {"crouchidle", "crouchidle"},
-        [ACT_MP_CROUCHWALK] = {ACT_WALK, ACT_WALK}
+        [ACT_MP_CROUCHWALK] = {ACT_WALK, ACT_WALK},
+        ["land"] = "jump_holding_land"
     },
     ["melee"] = {
         [ACT_MP_STAND_IDLE] = {ACT_IDLE, "ActionIdle"},
         [ACT_MP_WALK] = {ACT_WALK, ACT_WALK_AIM},
         [ACT_MP_RUN] = {ACT_RUN, ACT_RUN_AIM},
         [ACT_MP_CROUCH_IDLE] = {"crouchidle", "crouchidle"},
-        [ACT_MP_CROUCHWALK] = {ACT_WALK, ACT_WALK}
+        [ACT_MP_CROUCHWALK] = {ACT_WALK, ACT_WALK},
+        ["land"] = "jump_holding_land"
     },
     ["grenade"] = {
         [ACT_MP_STAND_IDLE] = {ACT_IDLE, "ActionIdle"},
         [ACT_MP_WALK] = {ACT_WALK, ACT_WALK},
         [ACT_MP_RUN] = {ACT_RUN, ACT_RUN},
         [ACT_MP_CROUCH_IDLE] = {"crouchidle", "crouchidle"},
-        [ACT_MP_CROUCHWALK] = {ACT_WALK, ACT_WALK}
+        [ACT_MP_CROUCHWALK] = {ACT_WALK, ACT_WALK},
+        ["land"] = "jump_holding_land"
+    },
+    ["vehicle"] = {
+        prop_vehicle_airboat = {"chess_wait", Vector(26, 0, -22)},
+        prop_vehicle_jeep = {"chess_wait", Vector(32, 0, -16)},
+        ["models/vehicles/prisoner_pod_inner.mdl"] = {"idle01", Vector(2, 1, -4)},
+        chair = {"chess_wait", Vector(24, 0, -24)},
     }
 }
 
@@ -496,358 +549,6 @@ ax.animations.stored["player"] = {
     }
 }
 
-ax.animations.stored["player_citizen_male"] = {
-    ["normal"] = {
-        [ACT_MP_STAND_IDLE] = {{"idle_all_01", "idle_all_02"}, "idle_fist"},
-        [ACT_MP_WALK] = {"walk_all", "walk_fist"},
-        [ACT_MP_RUN] = {"run_all_01", "run_fist"},
-        [ACT_MP_CROUCH_IDLE] = {"cidle_all", "cidle_fist"},
-        [ACT_MP_CROUCHWALK] = {"cwalk_all", "cwalk_fist"},
-        [ACT_MP_JUMP] = {"jump_slam", "jump_fist"},
-        ["land"] = "jump_land",
-        ["shoot"] = {"range_fists_l", "range_fists_r"}
-    },
-    ["pistol"] = {
-        [ACT_MP_STAND_IDLE] = {{"idle_all_01", "idle_all_02"}, "idle_revolver"},
-        [ACT_MP_WALK] = {"walk_all", "walk_revolver"},
-        [ACT_MP_RUN] = {"run_all_01", "run_revolver"},
-        [ACT_MP_CROUCH_IDLE] = {"cidle_all", "cidle_revolver"},
-        [ACT_MP_CROUCHWALK] = {"cwalk_all", "cwalk_revolver"},
-        [ACT_MP_JUMP] = {"jump_revolver", "jump_revolver"},
-        ["land"] = "jump_land",
-        ["shoot"] = "range_pistol",
-        ["reload"] = "gesture_reload_357"
-    },
-    ["smg"] = {
-        [ACT_MP_STAND_IDLE] = {"idle_passive", "idle_smg1"},
-        [ACT_MP_WALK] = {"walk_passive", "walk_smg1"},
-        [ACT_MP_RUN] = {"run_passive", "run_smg1"},
-        [ACT_MP_CROUCH_IDLE] = {"cidle_passive", "cidle_smg1"},
-        [ACT_MP_CROUCHWALK] = {"cwalk_passive", "cwalk_smg1"},
-        [ACT_MP_JUMP] = {"jump_passive", "jump_smg1"},
-        ["land"] = "jump_land",
-        ["shoot"] = "range_smg1",
-        ["reload"] = {"gesture_reload_smg1", "reload_smg1_alt"}
-    },
-    ["shotgun"] = {
-        [ACT_MP_STAND_IDLE] = {"idle_passive", "idle_shotgun"},
-        [ACT_MP_WALK] = {"walk_passive", "walk_shotgun"},
-        [ACT_MP_RUN] = {"run_passive", "run_shotgun"},
-        [ACT_MP_CROUCH_IDLE] = {"cidle_passive", "cidle_shotgun"},
-        [ACT_MP_CROUCHWALK] = {"cwalk_passive", "cwalk_shotgun"},
-        [ACT_MP_JUMP] = {"jump_passive", "jump_shotgun"},
-        ["land"] = "jump_land",
-        ["shoot"] = "range_shotgun",
-        ["reload"] = "gesture_reload_shotgun"
-    },
-    ["ar2"] = {
-        [ACT_MP_STAND_IDLE] = {"idle_passive", "idle_ar2"},
-        [ACT_MP_WALK] = {"walk_passive", "walk_ar2"},
-        [ACT_MP_RUN] = {"run_passive", "run_ar2"},
-        [ACT_MP_CROUCH_IDLE] = {"cidle_passive", "cidle_ar2"},
-        [ACT_MP_CROUCHWALK] = {"cwalk_passive", "cwalk_ar2"},
-        [ACT_MP_JUMP] = {"jump_passive", "jump_ar2"},
-        ["land"] = "jump_land",
-        ["shoot"] = "range_ar2",
-        ["reload"] = "gesture_reload_ar2"
-    },
-    ["rpg"] = {
-        [ACT_MP_STAND_IDLE] = {"idle_passive", "idle_rpg"},
-        [ACT_MP_WALK] = {"walk_passive", "walk_rpg"},
-        [ACT_MP_RUN] = {"run_passive", "run_rpg"},
-        [ACT_MP_CROUCH_IDLE] = {"cidle_passive", "cidle_rpg"},
-        [ACT_MP_CROUCHWALK] = {"cwalk_passive", "cwalk_rpg"},
-        [ACT_MP_JUMP] = {"jump_passive", "jump_rpg"},
-        ["land"] = "jump_land",
-        ["shoot"] = "range_rpg",
-        ["reload"] = "gesture_reload_rpg"
-    },
-    ["melee"] = {
-        [ACT_MP_STAND_IDLE] = {{"idle_all_01", "idle_all_02"}, "idle_melee"},
-        [ACT_MP_WALK] = {"walk_all", "walk_melee"},
-        [ACT_MP_RUN] = {"run_all_01", "run_melee"},
-        [ACT_MP_CROUCH_IDLE] = {"cidle_all", "cidle_melee"},
-        [ACT_MP_CROUCHWALK] = {"cwalk_all", "cwalk_melee"},
-        [ACT_MP_JUMP] = {"jump_melee", "jump_melee"},
-        ["land"] = "jump_land",
-        ["shoot"] = "range_melee"
-    },
-    ["grenade"] = {
-        [ACT_MP_STAND_IDLE] = {{"idle_all_01", "idle_all_02"}, "idle_grenade"},
-        [ACT_MP_WALK] = {"walk_all", "walk_grenade"},
-        [ACT_MP_RUN] = {"run_all_01", "run_grenade"},
-        [ACT_MP_CROUCH_IDLE] = {"cidle_all", "cidle_grenade"},
-        [ACT_MP_CROUCHWALK] = {"cwalk_all", "cwalk_grenade"},
-        [ACT_MP_JUMP] = {"jump_grenade", "jump_grenade"},
-        ["land"] = "jump_land",
-        ["shoot"] = "range_grenade"
-    }
-}
-
-ax.animations.stored["player_citizen_female"] = {
-    ["normal"] = {
-        [ACT_MP_STAND_IDLE] = {{"idle_all_01", "idle_all_02"}, "idle_fist"},
-        [ACT_MP_WALK] = {"walk_all", "walk_fist"},
-        [ACT_MP_RUN] = {"run_all_01", "run_fist"},
-        [ACT_MP_CROUCH_IDLE] = {"cidle_all", "cidle_fist"},
-        [ACT_MP_CROUCHWALK] = {"cwalk_all", "cwalk_fist"},
-        [ACT_MP_JUMP] = {"jump_slam", "jump_fist"},
-        ["land"] = "jump_land",
-        ["shoot"] = {"range_fists_l", "range_fists_r"}
-    },
-    ["pistol"] = {
-        [ACT_MP_STAND_IDLE] = {{"idle_all_01", "idle_all_02"}, "idle_revolver"},
-        [ACT_MP_WALK] = {"walk_all", "walk_revolver"},
-        [ACT_MP_RUN] = {"run_all_01", "run_revolver"},
-        [ACT_MP_CROUCH_IDLE] = {"cidle_all", "cidle_revolver"},
-        [ACT_MP_CROUCHWALK] = {"cwalk_all", "cwalk_revolver"},
-        [ACT_MP_JUMP] = {"jump_revolver", "jump_revolver"},
-        ["land"] = "jump_land",
-        ["shoot"] = "range_pistol",
-        ["reload"] = "gesture_reload_357"
-    },
-    ["smg"] = {
-        [ACT_MP_STAND_IDLE] = {"idle_passive", "idle_smg1"},
-        [ACT_MP_WALK] = {"walk_passive", "walk_smg1"},
-        [ACT_MP_RUN] = {"run_passive", "run_smg1"},
-        [ACT_MP_CROUCH_IDLE] = {"cidle_passive", "cidle_smg1"},
-        [ACT_MP_CROUCHWALK] = {"cwalk_passive", "cwalk_smg1"},
-        [ACT_MP_JUMP] = {"jump_passive", "jump_smg1"},
-        ["land"] = "jump_land",
-        ["shoot"] = "range_smg1",
-        ["reload"] = {"gesture_reload_smg1", "reload_smg1_alt"}
-    },
-    ["shotgun"] = {
-        [ACT_MP_STAND_IDLE] = {"idle_passive", "idle_shotgun"},
-        [ACT_MP_WALK] = {"walk_passive", "walk_shotgun"},
-        [ACT_MP_RUN] = {"run_passive", "run_shotgun"},
-        [ACT_MP_CROUCH_IDLE] = {"cidle_passive", "cidle_shotgun"},
-        [ACT_MP_CROUCHWALK] = {"cwalk_passive", "cwalk_shotgun"},
-        [ACT_MP_JUMP] = {"jump_passive", "jump_shotgun"},
-        ["land"] = "jump_land",
-        ["shoot"] = "range_shotgun",
-        ["reload"] = "gesture_reload_shotgun"
-    },
-    ["ar2"] = {
-        [ACT_MP_STAND_IDLE] = {"idle_passive", "idle_ar2"},
-        [ACT_MP_WALK] = {"walk_passive", "walk_ar2"},
-        [ACT_MP_RUN] = {"run_passive", "run_ar2"},
-        [ACT_MP_CROUCH_IDLE] = {"cidle_passive", "cidle_ar2"},
-        [ACT_MP_CROUCHWALK] = {"cwalk_passive", "cwalk_ar2"},
-        [ACT_MP_JUMP] = {"jump_passive", "jump_ar2"},
-        ["land"] = "jump_land",
-        ["shoot"] = "range_ar2",
-        ["reload"] = "gesture_reload_ar2"
-    },
-    ["rpg"] = {
-        [ACT_MP_STAND_IDLE] = {"idle_passive", "idle_rpg"},
-        [ACT_MP_WALK] = {"walk_passive", "walk_rpg"},
-        [ACT_MP_RUN] = {"run_passive", "run_rpg"},
-        [ACT_MP_CROUCH_IDLE] = {"cidle_passive", "cidle_rpg"},
-        [ACT_MP_CROUCHWALK] = {"cwalk_passive", "cwalk_rpg"},
-        [ACT_MP_JUMP] = {"jump_passive", "jump_rpg"},
-        ["land"] = "jump_land",
-        ["shoot"] = "range_rpg",
-        ["reload"] = "gesture_reload_rpg"
-    },
-    ["melee"] = {
-        [ACT_MP_STAND_IDLE] = {{"batonidle1", "batonidle2"}, "batonangryidle1"},
-        [ACT_MP_WALK] = {"walk_all", "walk_melee"},
-        [ACT_MP_RUN] = {"run_all_01", "run_melee"},
-        [ACT_MP_CROUCH_IDLE] = {"cidle_all", "cidle_melee"},
-        [ACT_MP_CROUCHWALK] = {"cwalk_all", "cwalk_melee"},
-        [ACT_MP_JUMP] = {"jump_melee", "jump_melee"},
-        ["land"] = "jump_land",
-        ["shoot"] = "range_melee"
-    },
-    ["grenade"] = {
-        [ACT_MP_STAND_IDLE] = {{"batonidle1", "batonidle2"}, "batonangryidle1"},
-        [ACT_MP_WALK] = {"walk_all", "walk_grenade"},
-        [ACT_MP_RUN] = {"run_all_01", "run_grenade"},
-        [ACT_MP_CROUCH_IDLE] = {"cidle_all", "cidle_grenade"},
-        [ACT_MP_CROUCHWALK] = {"cwalk_all", "cwalk_grenade"},
-        [ACT_MP_JUMP] = {"jump_grenade", "jump_grenade"},
-        ["land"] = "jump_land",
-        ["shoot"] = "range_grenade"
-    }
-}
-
-ax.animations.stored["player_overwatch"] = {
-    ["normal"] = {
-        [ACT_MP_STAND_IDLE] = {"idle_unarmed", "idle_fist"},
-        [ACT_MP_WALK] = {"walk_all", "walk_fist"},
-        [ACT_MP_RUN] = {"run_all_01", "run_fist"},
-        [ACT_MP_CROUCH_IDLE] = {"cidle_all", "cidle_fist"},
-        [ACT_MP_CROUCHWALK] = {"cwalk_all", "cwalk_fist"},
-        [ACT_MP_JUMP] = {"jump_slam", "jump_fist"},
-        ["land"] = "jump_land",
-        ["shoot"] = {"range_fists_l", "range_fists_r"}
-    },
-    ["pistol"] = {
-        [ACT_MP_STAND_IDLE] = {"idle1_pistol", "combatidle1_pistol"},
-        [ACT_MP_WALK] = {"walk_all", "walk_revolver"},
-        [ACT_MP_RUN] = {"run_all_01", "run_revolver"},
-        [ACT_MP_CROUCH_IDLE] = {"cidle_all", "cidle_revolver"},
-        [ACT_MP_CROUCHWALK] = {"cwalk_all", "cwalk_revolver"},
-        [ACT_MP_JUMP] = {"jump_revolver", "jump_revolver"},
-        ["land"] = "jump_land",
-        ["shoot"] = "range_pistol",
-        ["reload"] = "gesture_reload_357"
-    },
-    ["smg"] = {
-        [ACT_MP_STAND_IDLE] = {"idle1_smg1", "combatidle1_smg1"},
-        [ACT_MP_WALK] = {"walk_all_smg1", "walk_aiming_all"},
-        [ACT_MP_RUN] = {"runall_smg1", "run_smg1"},
-        [ACT_MP_CROUCH_IDLE] = {"cidle_passive", "cidle_smg1"},
-        [ACT_MP_CROUCHWALK] = {"cwalk_passive", "cwalk_smg1"},
-        [ACT_MP_JUMP] = {"jump_passive", "jump_smg1"},
-        ["land"] = "jump_land",
-        ["shoot"] = "range_smg1",
-        ["reload"] = {"gesture_reload_smg1", "reload_smg1_alt"}
-    },
-    ["shotgun"] = {
-        [ACT_MP_STAND_IDLE] = {"idle1_sg", "combatidle1_sg"},
-        [ACT_MP_WALK] = {"walk_all_sg", "walk_aiming_all_sg"},
-        [ACT_MP_RUN] = {"runall_sg", "run_shotgun"},
-        [ACT_MP_CROUCH_IDLE] = {"cidle_passive", "cidle_shotgun"},
-        [ACT_MP_CROUCHWALK] = {"cwalk_passive", "cwalk_shotgun"},
-        [ACT_MP_JUMP] = {"jump_passive", "jump_shotgun"},
-        ["land"] = "jump_land",
-        ["shoot"] = "range_shotgun",
-        ["reload"] = "gesture_reload_shotgun"
-    },
-    ["ar2"] = {
-        [ACT_MP_STAND_IDLE] = {"idle1_ar2", "idle_ar2"},
-        [ACT_MP_WALK] = {"walk_all_ar2", "walk_ar2"},
-        [ACT_MP_RUN] = {"runall_ar2", "run_ar2"},
-        [ACT_MP_CROUCH_IDLE] = {"cidle_passive", "cidle_ar2"},
-        [ACT_MP_CROUCHWALK] = {"cwalk_passive", "cwalk_ar2"},
-        [ACT_MP_JUMP] = {"jump_passive", "jump_ar2"},
-        ["land"] = "jump_land",
-        ["shoot"] = "range_ar2",
-        ["reload"] = "gesture_reload_ar2"
-    },
-    ["rpg"] = {
-        [ACT_MP_STAND_IDLE] = {"idle1_rpg", "idle_rpg"},
-        [ACT_MP_WALK] = {"walk_all_rpg", "walk_rpg"},
-        [ACT_MP_RUN] = {"runall_rpg", "run_rpg"},
-        [ACT_MP_CROUCH_IDLE] = {"cidle_passive", "cidle_rpg"},
-        [ACT_MP_CROUCHWALK] = {"cwalk_passive", "cwalk_rpg"},
-        [ACT_MP_JUMP] = {"jump_passive", "jump_rpg"},
-        ["land"] = "jump_land",
-        ["shoot"] = "range_rpg",
-        ["reload"] = "gesture_reload_rpg"
-    },
-    ["melee"] = {
-        [ACT_MP_STAND_IDLE] = {"idle_unarmed", "idle_melee"},
-        [ACT_MP_WALK] = {"walk_all", "walk_melee"},
-        [ACT_MP_RUN] = {"run_all_01", "run_melee"},
-        [ACT_MP_CROUCH_IDLE] = {"cidle_all", "cidle_melee"},
-        [ACT_MP_CROUCHWALK] = {"cwalk_all", "cwalk_melee"},
-        [ACT_MP_JUMP] = {"jump_melee", "jump_melee"},
-        ["land"] = "jump_land",
-        ["shoot"] = "range_melee"
-    },
-    ["grenade"] = {
-        [ACT_MP_STAND_IDLE] = {"idle_unarmed", "idle_grenade"},
-        [ACT_MP_WALK] = {"walk_all", "walk_grenade"},
-        [ACT_MP_RUN] = {"run_all_01", "run_grenade"},
-        [ACT_MP_CROUCH_IDLE] = {"cidle_all", "cidle_grenade"},
-        [ACT_MP_CROUCHWALK] = {"cwalk_all", "cwalk_grenade"},
-        [ACT_MP_JUMP] = {"jump_grenade", "jump_grenade"},
-        ["land"] = "jump_land",
-        ["shoot"] = "range_grenade"
-    }
-}
-
-ax.animations.stored["player_metrocop"] = {
-    ["normal"] = {
-        [ACT_MP_STAND_IDLE] = {"unarmedidle1", "idle_fist"},
-        [ACT_MP_WALK] = {"walk_all_unarmed", "walk_fist"},
-        [ACT_MP_RUN] = {"run_all_unarmed", "run_fist"},
-        [ACT_MP_CROUCH_IDLE] = {ACT_COVER_PISTOL_LOW, "cidle_fist"},
-        [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH, "cwalk_fist"},
-        [ACT_MP_JUMP] = {"jump_slam", "jump_fist"},
-        ["land"] = "jump_land",
-        ["shoot"] = {"range_fists_l", "range_fists_r"}
-    },
-    ["pistol"] = {
-        [ACT_MP_STAND_IDLE] = {{"pistolidle1", "pistolidle2", "pistolidle3"}, "pistolangryidle2"},
-        [ACT_MP_WALK] = {"walk_hold_pistol", "walk_aiming_pistol_alert_all"},
-        [ACT_MP_RUN] = {"run_hold_pistol", "run_aiming_pistol_alert_all"},
-        [ACT_MP_CROUCH_IDLE] = {ACT_COVER_PISTOL_LOW, ACT_COVER_PISTOL_LOW},
-        [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH, ACT_WALK_CROUCH},
-        [ACT_MP_JUMP] = {"jump_revolver", "jump_revolver"},
-        ["land"] = "jump_land",
-        ["shoot"] = "range_pistol",
-        ["reload"] = "gesture_reload_357"
-    },
-    ["smg"] = {
-        [ACT_MP_STAND_IDLE] = {{"smg1idle1", "smg1idle2"}, "smg1angryidle1"},
-        [ACT_MP_WALK] = {"walk_hold_smg1", "walk_aiming_smg1_all"},
-        [ACT_MP_RUN] = {"run_hold_smg1", "run_aiming_smg1_all"},
-        [ACT_MP_CROUCH_IDLE] = {ACT_COVER_SMG1_LOW, ACT_COVER_SMG1_LOW},
-        [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH, ACT_WALK_CROUCH},
-        [ACT_MP_JUMP] = {"jump_passive", "jump_smg1"},
-        ["land"] = "jump_land",
-        ["shoot"] = "range_smg1",
-        ["reload"] = {"gesture_reload_smg1", "reload_smg1_alt"}
-    },
-    ["shotgun"] = {
-        [ACT_MP_STAND_IDLE] = {"shotgunidle1", "shotgunangryidle1"},
-        [ACT_MP_WALK] = {"walk_hold_shotgun", "walk_aiming_shotgun_all"},
-        [ACT_MP_RUN] = {"run_hold_shotgun", "run_aiming_shotgun_all"},
-        [ACT_MP_CROUCH_IDLE] = {ACT_COVER_SMG1_LOW, ACT_COVER_SMG1_LOW},
-        [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH, ACT_WALK_CROUCH},
-        [ACT_MP_JUMP] = {"jump_passive", "jump_shotgun"},
-        ["land"] = "jump_land",
-        ["shoot"] = "range_shotgun",
-        ["reload"] = "gesture_reload_shotgun"
-    },
-    ["ar2"] = {
-        [ACT_MP_STAND_IDLE] = {"ar2idle1", "ar2angryidle1"},
-        [ACT_MP_WALK] = {"walk_hold_ar2", "walk_aiming_ar2_all"},
-        [ACT_MP_RUN] = {"run_hold_ar2", "run_aiming_ar2_all"},
-        [ACT_MP_CROUCH_IDLE] = {ACT_COVER_SMG1_LOW, ACT_COVER_SMG1_LOW},
-        [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH, ACT_WALK_CROUCH},
-        [ACT_MP_JUMP] = {"jump_passive", "jump_ar2"},
-        ["land"] = "jump_land",
-        ["shoot"] = "range_ar2",
-        ["reload"] = "gesture_reload_ar2"
-    },
-    ["rpg"] = {
-        [ACT_MP_STAND_IDLE] = {"ar2idle1", "ar2angryidle1"},
-        [ACT_MP_WALK] = {"walk_hold_ar2", "walk_aiming_ar2_all"},
-        [ACT_MP_RUN] = {"run_hold_ar2", "run_aiming_ar2_all"},
-        [ACT_MP_CROUCH_IDLE] = {ACT_COVER_SMG1_LOW, ACT_COVER_SMG1_LOW},
-        [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH, ACT_WALK_CROUCH},
-        [ACT_MP_JUMP] = {"jump_passive", "jump_ar2"},
-        ["land"] = "jump_land",
-        ["shoot"] = "range_ar2",
-        ["reload"] = "gesture_reload_ar2"
-    },
-    ["melee"] = {
-        [ACT_MP_STAND_IDLE] = {{"batonidle1", "batonidle2"}, "batonangryidle1"},
-        [ACT_MP_WALK] = {"walk_all_unarmed", "walk_all_unarmed"},
-        [ACT_MP_RUN] = {"run_all_unarmed", "run_all_unarmed"},
-        [ACT_MP_CROUCH_IDLE] = {ACT_COVER_PISTOL_LOW, ACT_COVER_PISTOL_LOW},
-        [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH, ACT_WALK_CROUCH},
-        [ACT_MP_JUMP] = {"jump_melee", "jump_melee"},
-        ["land"] = "jump_land",
-        ["shoot"] = "swinggesture"
-    },
-    ["grenade"] = {
-        [ACT_MP_STAND_IDLE] = {{"batonidle1", "batonidle2"}, "batonangryidle1"},
-        [ACT_MP_WALK] = {"walk_all_unarmed", "walk_all_unarmed"},
-        [ACT_MP_RUN] = {"run_all_unarmed", "run_all_unarmed"},
-        [ACT_MP_CROUCH_IDLE] = {ACT_COVER_PISTOL_LOW, ACT_COVER_PISTOL_LOW},
-        [ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH, ACT_WALK_CROUCH},
-        [ACT_MP_JUMP] = {"jump_melee", "jump_melee"},
-        ["land"] = "jump_land",
-        ["shoot"] = "swinggesture"
-    }
-}
-
 --- Sets a model class translation for a specific model.
 -- @param model The model to set the translation for.
 -- @param class The class to set the translation to.
@@ -935,25 +636,3 @@ ax.animations:SetModelClass(Model("models/vortigaunt.mdl"), "vortigaunt")
 ax.animations:SetModelClass(Model("models/vortigaunt_blue.mdl"), "vortigaunt")
 ax.animations:SetModelClass(Model("models/vortigaunt_doctor.mdl"), "vortigaunt")
 ax.animations:SetModelClass(Model("models/vortigaunt_slave.mdl"), "vortigaunt")
-
-ax.animations:SetModelClass(Model("models/player/police.mdl"), "player_metrocop")
-ax.animations:SetModelClass(Model("models/player/combine_soldier.mdl"), "player_overwatch")
-ax.animations:SetModelClass(Model("models/player/combine_soldier_prisonguard.mdl"), "player_overwatch")
-ax.animations:SetModelClass(Model("models/player/combine_super_soldier.mdl"), "player_overwatch")
-
--- Not needed but good to have incase...
-ax.animations:SetModelClass(Model("models/player/group01/female_01.mdl"), "player")
-ax.animations:SetModelClass(Model("models/player/group01/female_02.mdl"), "player")
-ax.animations:SetModelClass(Model("models/player/group01/female_03.mdl"), "player")
-ax.animations:SetModelClass(Model("models/player/group01/female_04.mdl"), "player")
-ax.animations:SetModelClass(Model("models/player/group01/female_05.mdl"), "player")
-ax.animations:SetModelClass(Model("models/player/group01/female_06.mdl"), "player")
-ax.animations:SetModelClass(Model("models/player/group01/male_01.mdl"), "player")
-ax.animations:SetModelClass(Model("models/player/group01/male_02.mdl"), "player")
-ax.animations:SetModelClass(Model("models/player/group01/male_03.mdl"), "player")
-ax.animations:SetModelClass(Model("models/player/group01/male_04.mdl"), "player")
-ax.animations:SetModelClass(Model("models/player/group01/male_05.mdl"), "player")
-ax.animations:SetModelClass(Model("models/player/group01/male_06.mdl"), "player")
-ax.animations:SetModelClass(Model("models/player/group01/male_07.mdl"), "player")
-ax.animations:SetModelClass(Model("models/player/group01/male_08.mdl"), "player")
-ax.animations:SetModelClass(Model("models/player/group01/male_09.mdl"), "player")

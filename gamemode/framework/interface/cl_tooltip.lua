@@ -270,8 +270,8 @@ function PANEL:Think()
     local targetX, targetY = self:ResolveTargetPosition()
     local fraction = math.Clamp(FrameTime() * 18, 0, 1)
 
-    self.positionX = Lerp(fraction, self.positionX or targetX, targetX)
-    self.positionY = Lerp(fraction, self.positionY or targetY, targetY)
+    self.positionX = ax.ease:Lerp("Linear", fraction, self.positionX or targetX, targetX)
+    self.positionY = ax.ease:Lerp("Linear", fraction, self.positionY or targetY, targetY)
 
     self:SetPos(self.positionX + (self.offsetX or 0), self.positionY + (self.offsetY or 0))
 end
@@ -282,13 +282,13 @@ function PANEL:Paint(width, height)
 
     local glass = ax.theme:GetGlass()
     local metrics = ax.theme:GetMetrics()
-    
+
     -- Apply user's opacity preferences first
     local scaledHighlight = ax.theme:ScaleAlpha(glass.highlight, metrics.opacity)
     local scaledProgress = ax.theme:ScaleAlpha(glass.progress, metrics.opacity)
     local scaledMenu = ax.theme:ScaleAlpha(glass.menu or glass.panel, metrics.opacity)
     local scaledMenuBorder = ax.theme:ScaleAlpha(glass.menuBorder or glass.panelBorder, metrics.borderOpacity)
-    
+
     -- Then apply animation alpha on top of user settings
     local accent = self.payload.accentColor or scaledHighlight or scaledProgress
     local fill = ScaleAlpha(scaledMenu, alpha)

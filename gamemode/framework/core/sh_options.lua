@@ -11,8 +11,29 @@
 
 ax.option:Add("performance.animations", ax.type.bool, true, {
     category = "interface",
-    subCategory = "display",
+    subCategory = "performance",
     description = "performance.animations.help",
+    bNoNetworking = true
+})
+
+ax.option:Add("performance.blur", ax.type.bool, true, {
+    category = "interface",
+    subCategory = "performance",
+    description = "performance.blur.help",
+    bNoNetworking = true
+})
+
+ax.option:Add("performance.vignette.trace", ax.type.bool, true, {
+    category = "interface",
+    subCategory = "performance",
+    description = "performance.vignette.trace.help",
+    bNoNetworking = true
+})
+
+ax.option:Add("performance.voice.indicators", ax.type.bool, true, {
+    category = "interface",
+    subCategory = "performance",
+    description = "performance.voice.indicators.help",
     bNoNetworking = true
 })
 
@@ -25,7 +46,7 @@ ax.option:Add("inventory.categories.italic", ax.type.bool, true, {
 
 ax.option:Add("interface.theme", ax.type.array, "dark", {
     category = "interface",
-    subCategory = "display",
+    subCategory = "appearance",
     description = "interface.theme.help",
     choices = {
         ["dark"] = "theme.dark",
@@ -50,7 +71,7 @@ ax.option:Add("interface.theme", ax.type.array, "dark", {
 
 ax.option:Add("interface.glass.roundness", ax.type.number, 8, {
     category = "interface",
-    subCategory = "display",
+    subCategory = "appearance",
     description = "interface.glass.roundness.help",
     min = 0,
     max = 24,
@@ -60,7 +81,7 @@ ax.option:Add("interface.glass.roundness", ax.type.number, 8, {
 
 ax.option:Add("interface.glass.blur", ax.type.number, 1.0, {
     category = "interface",
-    subCategory = "display",
+    subCategory = "appearance",
     description = "interface.glass.blur.help",
     min = 0,
     max = 2.0,
@@ -70,7 +91,7 @@ ax.option:Add("interface.glass.blur", ax.type.number, 1.0, {
 
 ax.option:Add("interface.glass.opacity", ax.type.number, 1.0, {
     category = "interface",
-    subCategory = "display",
+    subCategory = "appearance",
     description = "interface.glass.opacity.help",
     min = 0.2,
     max = 1.5,
@@ -80,7 +101,7 @@ ax.option:Add("interface.glass.opacity", ax.type.number, 1.0, {
 
 ax.option:Add("interface.glass.borderOpacity", ax.type.number, 1.0, {
     category = "interface",
-    subCategory = "display",
+    subCategory = "appearance",
     description = "interface.glass.borderOpacity.help",
     min = 0.2,
     max = 1.5,
@@ -90,7 +111,7 @@ ax.option:Add("interface.glass.borderOpacity", ax.type.number, 1.0, {
 
 ax.option:Add("interface.glass.gradientOpacity", ax.type.number, 1.0, {
     category = "interface",
-    subCategory = "display",
+    subCategory = "appearance",
     description = "interface.glass.gradientOpacity.help",
     min = 0.0,
     max = 1.5,
@@ -104,7 +125,7 @@ ax.option:Add("interface.scale", ax.type.number, 1.0, {
     max = 2.0,
     decimals = 1,
     category = "interface",
-    subCategory = "display",
+    subCategory = "layout",
     description = "UI element scaling factor (affects notifications, panels, etc.)",
     bNoNetworking = true
 })
@@ -196,7 +217,7 @@ ax.option:Add("inventory.actions.confirm_bulk_drop", ax.type.bool, true, {
 
 ax.option:Add("button.delay.click", ax.type.number, 0.1, {
     category = "interface",
-    subCategory = "buttons",
+    subCategory = "interaction",
     description = "button.delay.click.help",
     min = 0,
     max = 1,
@@ -223,7 +244,7 @@ ax.option:Add("hud.bar.armor.show", ax.type.bool, true, {
 -- Chat preferences
 ax.option:Add("chat.timestamps", ax.type.bool, false, {
     category = "chat",
-    subCategory = "basic",
+    subCategory = "formatting",
     description = "chat.timestamps.help",
     bNoNetworking = true
 })
@@ -231,21 +252,21 @@ ax.option:Add("chat.timestamps", ax.type.bool, false, {
 -- whether or not to use 0-24 hours or the PM/AM system
 ax.option:Add("chat.timestamps.24hour", ax.type.bool, false, {
     category = "chat",
-    subCategory = "basic",
+    subCategory = "formatting",
     description = "chat.timestamps.24hour.help",
     bNoNetworking = true
 })
 
 ax.option:Add("chat.sounds", ax.type.bool, true, {
     category = "chat",
-    subCategory = "basic",
+    subCategory = "behavior",
     description = "chat.sounds.help",
     bNoNetworking = true
 })
 
 ax.option:Add("chat.randomized.verbs", ax.type.bool, true, {
     category = "chat",
-    subCategory = "basic",
+    subCategory = "behavior",
     description = "chat.randomized.verbs.help",
     bNoNetworking = true
 })
@@ -253,7 +274,7 @@ ax.option:Add("chat.randomized.verbs", ax.type.bool, true, {
 -- Notification customization
 ax.option:Add("notification.enabled", ax.type.bool, true, {
     category = "interface",
-    subCategory = "hud",
+    subCategory = "notifications",
     description = "notification.enabled.help",
     bNoNetworking = true
 })
@@ -263,21 +284,21 @@ ax.option:Add("notification.length.default", ax.type.number, 5, {
     max = 20,
     decimals = 0,
     category = "interface",
-    subCategory = "hud",
+    subCategory = "notifications",
     description = "notification.length.default.help",
     bNoNetworking = true
 })
 
 ax.option:Add("notification.sounds", ax.type.bool, true, {
     category = "interface",
-    subCategory = "hud",
+    subCategory = "notifications",
     description = "notification.sounds.help",
     bNoNetworking = true
 })
 
 ax.option:Add("notification.position", ax.type.array, "bottomcenter", {
     category = "interface",
-    subCategory = "hud",
+    subCategory = "notifications",
     description = "notification.position.help",
     choices = {
         ["topright"] = "Top Right", ["topleft"] = "Top Left", ["topcenter"] = "Top Center",
@@ -291,14 +312,14 @@ ax.option:Add("notification.scale", ax.type.number, 1.0, {
     max = 2.0,
     decimals = 1,
     category = "interface",
-    subCategory = "hud",
+    subCategory = "notifications",
     description = "notification.scale.help",
     bNoNetworking = true
 })
 
 ax.option:Add("fontScaleGeneral", ax.type.number, 1, {
     category = "interface",
-    subCategory = "fonts",
+    subCategory = "typography",
     description = "fontScaleGeneral.help",
     min = 0.5,
     max = 2,
@@ -314,7 +335,7 @@ ax.option:Add("fontScaleGeneral", ax.type.number, 1, {
 
 ax.option:Add("fontScaleSmall", ax.type.number, 1, {
     category = "interface",
-    subCategory = "fonts",
+    subCategory = "typography",
     description = "fontScaleSmall.help",
     min = 0.5,
     max = 2,
@@ -330,7 +351,7 @@ ax.option:Add("fontScaleSmall", ax.type.number, 1, {
 
 ax.option:Add("fontScaleBig", ax.type.number, 1, {
     category = "interface",
-    subCategory = "fonts",
+    subCategory = "typography",
     description = "fontScaleBig.help",
     min = 0.5,
     max = 2,

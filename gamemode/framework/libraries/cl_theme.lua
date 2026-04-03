@@ -348,6 +348,7 @@ function ax.theme:DrawGlassButton(x, y, w, h, options)
     local blur = (options.blur == nil and 0.85 or options.blur) * metrics.blur
     local flags = options.flags or ax.render.SHAPE_IOS
     local fill = options.fill or ScaleAlpha(glass.button, metrics.opacity)
+    local material = options.material or nil
     local border = options.border or ScaleAlpha(glass.buttonBorder, metrics.borderOpacity)
 
     if ( blur > 0 ) then
@@ -360,6 +361,10 @@ function ax.theme:DrawGlassButton(x, y, w, h, options)
 
     if ( fill ) then
         ax.render.Draw(radius, x, y, w, h, fill, flags)
+    end
+
+    if ( material ) then
+        ax.render.DrawMaterial(radius, x, y, w, h, color_white, material, flags)
     end
 
     if ( border and border.a > 0 ) then
@@ -383,7 +388,8 @@ function ax.theme:DrawGlassBackdrop(x, y, w, h, options)
     local blur = (options.blur == nil and 1.1 or options.blur) * metrics.blur
     local flags = options.flags or ax.render.SHAPE_IOS
     local fill = options.fill or ScaleAlpha(glass.overlay, metrics.opacity)
-    local border = options.border
+    local border = options.border or ScaleAlpha(glass.overlayBorder, metrics.borderOpacity)
+    local material = options.material or nil
 
     if ( blur > 0 ) then
         ax.render().Rect(x, y, w, h)
@@ -395,6 +401,10 @@ function ax.theme:DrawGlassBackdrop(x, y, w, h, options)
 
     if ( fill ) then
         ax.render.Draw(radius, x, y, w, h, fill, flags)
+    end
+
+    if ( material ) then
+        ax.render.DrawMaterial(radius, x, y, w, h, color_white, material, flags)
     end
 
     if ( border and border.a > 0 ) then

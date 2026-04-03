@@ -29,8 +29,6 @@ function ENTITY:RateLimit(name, delay)
 
     if ( isnumber(delay) and delay > 0 ) then
         data.axRateLimits[name] = curTime + delay
-    else
-        -- No delay means we just want to check the rate limit without setting it.
     end
 
     return true -- Rate limit passed.

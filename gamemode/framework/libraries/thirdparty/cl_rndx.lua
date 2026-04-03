@@ -326,6 +326,8 @@ end
 local USE_SHADOWS_BLUR = false
 
 local function draw_blur()
+	if not ax.option:Get("performance.blur", true) then return end
+
 	if USE_SHADOWS_BLUR then
 		MAT = SHADOWS_BLUR_MAT
 	else

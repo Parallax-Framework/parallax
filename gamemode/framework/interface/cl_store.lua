@@ -182,6 +182,53 @@ local STORE_GRID_ITEM_HEIGHT = ax.util:ScreenScaleH(16)
 local STORE_GRID_SPACING_X = ax.util:ScreenScale(2)
 local STORE_GRID_SPACING_Y = ax.util:ScreenScaleH(4)
 
+local function EnsureScrollStore(storeType)
+    ax.gui = ax.gui or {}
+
+    if ( storeType == "config" ) then
+        ax.gui.storeLastConfigScroll = ax.gui.storeLastConfigScroll or {}
+        return ax.gui.storeLastConfigScroll
+    elseif ( storeType == "option" ) then
+        ax.gui.storeLastOptionScroll = ax.gui.storeLastOptionScroll or {}
+        return ax.gui.storeLastOptionScroll
+    end
+
+    return nil
+end
+
+local function RestoreStoredScroll(scroller, storeType, category)
+    if ( storeType != "config" and storeType != "option" ) then return end
+    if ( !IsValid(scroller) ) then return end
+    if ( !isstring(category) or category == "" ) then return end
+
+    local scrollStore = EnsureScrollStore(storeType)
+    if ( !istable(scrollStore) ) then return end
+
+    local scrollTarget = tonumber(scrollStore[category] or 0) or 0
+
+    scroller.ScrollTarget = math.max(scrollTarget, 0)
+    scroller.ScrollLerp = scroller.ScrollTarget
+    scroller:InvalidateLayout(true)
+end
+
+local function AttachScrollTracking(scroller, storeType, category)
+    if ( storeType != "config" and storeType != "option" ) then return end
+    if ( !IsValid(scroller) ) then return end
+    if ( !isstring(category) or category == "" ) then return end
+
+    local originalThink = scroller.Think
+    scroller.Think = function(this)
+        if ( originalThink ) then
+            originalThink(this)
+        end
+
+        local scrollStore = EnsureScrollStore(storeType)
+        if ( !istable(scrollStore) ) then return end
+
+        scrollStore[category] = tonumber(this.ScrollTarget or 0) or 0
+    end
+end
+
 local function GetStoreColumnCount()
     return math.max(math.floor(tonumber(ax.option:Get("store.columns", 3)) or 3), 1)
 end
@@ -242,6 +289,8 @@ function PANEL:SetType(type)
 
         local scroller = tab:Add("ax.scroller.vertical")
         scroller:Dock(FILL)
+        tab.storeScroller = scroller
+        AttachScrollTracking(scroller, type, v)
 
         button.tab = tab
         button.tab.index = tab.index
@@ -260,6 +309,7 @@ function PANEL:SetType(type)
 
             self:TransitionToPage(button.tab.index, ax.option:Get("tabFadeTime", 0.25))
             self:Populate(tab, scroller, type, v)
+            RestoreStoredScroll(scroller, type, v)
         end
     end
 
@@ -294,7 +344,19 @@ function PANEL:SetType(type)
     -- Show the target page
     if ( targetButton and targetButton.tab ) then
         self:TransitionToPage(targetButton.tab.index, 0, true)
-        self:Populate(targetButton.tab, targetButton.tab:GetChildren()[1], type, targetCategory)
+
+        local targetScroller = targetButton.tab.storeScroller
+        if ( !IsValid(targetScroller) ) then
+            for _, child in ipairs(targetButton.tab:GetChildren()) do
+                if ( IsValid(child) and child:GetClassName() == "ax.scroller.vertical" ) then
+                    targetScroller = child
+                    break
+                end
+            end
+        end
+
+        self:Populate(targetButton.tab, targetScroller, type, targetCategory)
+        RestoreStoredScroll(targetScroller, type, targetCategory)
     end
 end
 
@@ -674,10 +736,18 @@ function PANEL:Init()
     self.toggleBlend = 0
 end
 
-function PANEL:Think()
+function PANEL:OnThink()
+    BaseClass.OnThink(self)
+
     local store = self:GetStore()
     local target = (store and store:Get(self.key) == true) and 1 or 0
-    self.toggleBlend = Lerp(FrameTime() * 10, self.toggleBlend or 0, target)
+
+    if ( !ax.option:Get("performance.animations", true) ) then
+        self.toggleBlend = target
+        return
+    end
+
+    self.toggleBlend = ax.ease:Lerp("Linear", FrameTime() * 10, self.toggleBlend or 0, target)
 end
 
 function PANEL:Paint(width, height)
@@ -735,7 +805,12 @@ function PANEL:Toggle()
         return
     end
 
-    store:Set(self.key, !current)
+    local newValue = !current
+    store:Set(self.key, newValue)
+
+    if ( !ax.option:Get("performance.animations", true) ) then
+        self.toggleBlend = newValue == true and 1 or 0
+    end
 end
 
 function PANEL:SetKey(key)
@@ -759,6 +834,8 @@ function SLIDER:Init()
     self.maxVal = 100
     self.decimals = 0
     self.value = 0
+    self.displayValue = 0
+    self.displayFraction = 0
     self.dragging = false
     self.ValueChangedDeferred = nil
 
@@ -793,6 +870,11 @@ end
 
 function SLIDER:SetValue(val)
     self.value = self:RoundToDecimals(math.Clamp(tonumber(val) or 0, self.minVal, self.maxVal))
+
+    if ( !self.dragging ) then
+        self.displayValue = self.value
+        self.displayFraction = self:GetFraction()
+    end
 end
 
 function SLIDER:GetValue()
@@ -807,6 +889,16 @@ function SLIDER:GetFraction()
     local range = self.maxVal - self.minVal
     if ( range == 0 ) then return 0 end
     return math.Clamp((self.value - self.minVal) / range, 0, 1)
+end
+
+function SLIDER:Think()
+    local targetFraction = self:GetFraction()
+    local targetValue = self.value
+    local speed = self.dragging and 26 or 14
+    local lerpFactor = math.Clamp(FrameTime() * speed, 0, 1)
+
+    self.displayFraction = ax.ease:Lerp("Linear", lerpFactor, self.displayFraction or 0, targetFraction)
+    self.displayValue = ax.ease:Lerp("Linear", lerpFactor, self.displayValue or targetValue, targetValue)
 end
 
 function SLIDER:GetTrackBounds()
@@ -870,7 +962,7 @@ function SLIDER:Paint(w, h)
     local cy = math.Round(h * 0.5)
     local trackY = cy - math.Round(trackH * 0.5)
     local trackR = trackH * 0.5
-    local frac = self:GetFraction()
+    local frac = self.displayFraction or self:GetFraction()
     local knobX = math.Round(trackX + frac * trackW)
     local knobSize = knobR * 2
     local glowR = math.Round(knobR * 1.65)
@@ -906,9 +998,10 @@ function SLIDER:Paint(w, h)
 
     -- Value label (right of track)
     local decimals = self.decimals or 0
+    local displayValue = self.displayValue or self.value
     local valStr = decimals > 0
-        and string.format("%." .. decimals .. "f", self.value)
-        or tostring(math.Round(self.value))
+        and string.format("%." .. decimals .. "f", displayValue)
+        or tostring(math.Round(displayValue))
 
     local textColor = (self.TextArea and self.TextArea._textColor) or glass.textMuted or glass.text
     local font = (self.TextArea and self.TextArea._font) or "ax.small"
@@ -954,16 +1047,18 @@ function PANEL:Init()
             self.pendingTime = nil
         end
     end
-    self.slider.Think = function(this)
-        this.Label:SetTextColor(self:GetTextColor())
-        this.TextArea:SetFont(self:GetFont())
-        this.TextArea:SetTextColor(self:GetTextColor())
+    self.Think = function()
+        if ( !IsValid(self.slider) ) then return end
+
+        self.slider.Label:SetTextColor(self:GetTextColor())
+        self.slider.TextArea:SetFont(self:GetFont())
+        self.slider.TextArea:SetTextColor(self:GetTextColor())
 
         local store = self:GetStore()
-        if ( self.deferredUpdate and !this:IsEditing() and this.ValueChangedDeferred ) then
+        if ( self.deferredUpdate and !self.slider:IsEditing() and self.slider.ValueChangedDeferred ) then
             if ( store ) then
-                store:Set(self.key, this.ValueChangedDeferred)
-                this.ValueChangedDeferred = nil
+                store:Set(self.key, self.slider.ValueChangedDeferred)
+                self.slider.ValueChangedDeferred = nil
                 self.pendingValue = nil
                 self.pendingTime = nil
             end
@@ -971,7 +1066,7 @@ function PANEL:Init()
             return
         end
 
-        if ( self.pendingValue != nil and self.pendingTime and !this:IsEditing() and self.debounceTime and self.debounceTime > 0 and (CurTime() - self.pendingTime) >= self.debounceTime ) then
+        if ( self.pendingValue != nil and self.pendingTime and !self.slider:IsEditing() and self.debounceTime and self.debounceTime > 0 and (CurTime() - self.pendingTime) >= self.debounceTime ) then
             if ( store ) then
                 store:Set(self.key, self.pendingValue)
             end

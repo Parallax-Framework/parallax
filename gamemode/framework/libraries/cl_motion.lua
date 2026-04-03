@@ -24,13 +24,17 @@ function ax.motion:Motion(panel, duration, data)
 
     if ( !ax.option:Get("performance.animations") ) then
         -- if animations are disabled, set target values immediately
+        local immediate = {}
+
         for key, target in pairs(data.Target) do
             panel[key] = target
+            immediate[key] = target
         end
 
-        -- call think if provided, because it might include logic that needs to run
+        -- call think if provided, because it might include logic that needs to run.
+        -- match the animated path by passing interpolated/current values table.
         if ( data.Think ) then
-            data.Think(panel)
+            data.Think(immediate)
         end
 
         -- call onComplete if provided

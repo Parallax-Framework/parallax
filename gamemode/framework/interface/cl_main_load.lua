@@ -81,9 +81,9 @@ function PANEL:PopulateCharacterList()
         image:SetSize(button:GetTall() * 1.75, button:GetTall())
         image:SetMouseInputEnabled(false)
         image.Paint = function(this, width, height)
-            surface.SetDrawColor(color_white)
-            surface.SetMaterial(banner)
-            surface.DrawTexturedRect(0, 0, width, height)
+            ax.theme:DrawGlassButton(0, 0, width, height, {
+                material = banner
+            })
         end
 
         local deleteButton = button:Add("ax.button")
@@ -128,10 +128,17 @@ function PANEL:PopulateCharacterList()
             end
         end
 
+        local nameText = v:GetName() or "Unnamed Character"
+        local nameFont = "ax.huge.bold"
+        local nameWidth = ax.util:GetTextSize(nameFont, nameText)
+        if ( nameWidth > self:GetWide() / 3 ) then
+            nameFont = "ax.large.bold"
+        end
+
         local name = button:Add("ax.text")
         name:Dock(TOP)
-        name:SetFont("ax.giant.bold")
-        name:SetText(v:GetName():upper(), true)
+        name:SetFont(nameFont)
+        name:SetText(nameText:upper(), true)
         name.Think = function(this)
             this:SetTextColor(button:GetTextColor())
         end

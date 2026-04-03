@@ -14,6 +14,13 @@
 
 ax.notification = ax.notification or {}
 
+ax.notification.enums = {}
+ax.notification.enums.ERROR = 1
+ax.notification.enums.WARNING = 2
+ax.notification.enums.INFO = 3
+ax.notification.enums.SUCCESS = 4
+
+
 if ( SERVER ) then
     --- Send a notification to one or more players.
     -- @realm server
@@ -43,7 +50,7 @@ if ( SERVER ) then
         end
 
         local duration = tonumber(length) or (ax.config:Get("notification.length.default", 5) or 5)
-        ax.net:Start(players, "notification.push", message, type or "info", duration)
+        ax.net:Start(players, "notification.push", message, type or self.enums.INFO, duration)
 
         ax.util:PrintDebug("Notification sent to", #players, "players:", message)
     end
@@ -53,10 +60,10 @@ if ( CLIENT ) then
     ax.notification.active = ax.notification.active or {}
     ax.notification.font = "ax.small.bold"
     ax.notification.sounds = {
-        error = "parallax/ui/notifications/error.wav",
-        warning = "parallax/ui/notifications/hint.wav",
-        info = "parallax/ui/notifications/generic.wav",
-        success = "parallax/ui/notifications/generic.wav",
+        [ax.notification.enums.ERROR] = "parallax/ui/notifications/error.wav",
+        [ax.notification.enums.WARNING] = "parallax/ui/notifications/hint.wav",
+        [ax.notification.enums.INFO] = "parallax/ui/notifications/generic.wav",
+        [ax.notification.enums.SUCCESS] = "parallax/ui/notifications/generic.wav",
     }
 
     ax.notification.style = {
@@ -80,10 +87,10 @@ if ( CLIENT ) then
     }
 
     ax.notification.typeColors = {
-        error = Color(220, 70, 70),
-        warning = Color(230, 170, 60),
-        info = Color(80, 150, 230),
-        success = Color(70, 180, 110),
+        [ax.notification.enums.ERROR] = Color(220, 70, 70),
+        [ax.notification.enums.WARNING] = Color(230, 170, 60),
+        [ax.notification.enums.INFO] = Color(80, 150, 230),
+        [ax.notification.enums.SUCCESS] = Color(70, 180, 110),
     }
 
     local function Clamp(value, minValue, maxValue)
@@ -104,10 +111,10 @@ if ( CLIENT ) then
     end
 
     local function NormalizeType(notificationType)
-        if ( notificationType == "error" ) then return "error" end
-        if ( notificationType == "warning" ) then return "warning" end
-        if ( notificationType == "success" ) then return "success" end
-        return "info"
+        if ( notificationType == "error" ) then return ax.notification.enums.ERROR end
+        if ( notificationType == "warning" ) then return ax.notification.enums.WARNING end
+        if ( notificationType == "success" ) then return ax.notification.enums.SUCCESS end
+        return ax.notification.enums.INFO
     end
 
     local function PlayNotificationSound(notificationType)
@@ -115,7 +122,7 @@ if ( CLIENT ) then
             return
         end
 
-        local soundPath = ax.notification.sounds[notificationType] or ax.notification.sounds.info
+        local soundPath = ax.notification.sounds[notificationType] or ax.notification.sounds[ax.notification.enums.INFO]
         if ( !isstring(soundPath) or soundPath == "" ) then
             return
         end
@@ -157,7 +164,7 @@ if ( CLIENT ) then
         notification.accentGap = accentGap
         notification.lineSpacing = lineSpacing
         notification.radius = math.max(0, math.floor(style.radius * scale))
-        notification.accentColor = ax.notification.typeColors[notification.type] or ax.notification.typeColors.info
+        notification.accentColor = ax.notification.typeColors[notification.type] or ax.notification.typeColors[ax.notification.enums.INFO]
     end
 
     local function StartExit(notification)
