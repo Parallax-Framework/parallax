@@ -92,3 +92,16 @@ function MODULE:PlayerReady(client)
         self:UpdateClientAnimations(v)
     end
 end
+
+function MODULE:EntityTakeDamage(ent, dmgInfo)
+    if ( !ax.util:IsValidPlayer(ent) ) then return end
+
+    local clientTable = ent:GetTable()
+    if ( !clientTable.axCharacter ) then return end
+
+    local modelClass = ax.animations:GetModelClass(ent:GetModel())
+    local gesture = ax.animations:GetFlinchGesture(modelClass, ent:LastHitGroup())
+    if ( !gesture ) then return end
+
+    ent:PlayGesture(GESTURE_SLOT_FLINCH, gesture)
+end
