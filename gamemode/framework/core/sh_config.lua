@@ -248,7 +248,7 @@ ax.config:Add("speed.walk", ax.type.number, 90, {
     category = "gameplay",
     subCategory = "movement",
     OnChanged = function(_valOld, valNew)
-        for k, v in ipairs(player.GetAll()) do
+        for k, v in player.Iterator() do
             v:SetWalkSpeed(valNew)
         end
     end
@@ -262,7 +262,7 @@ ax.config:Add("speed.run", ax.type.number, 200, {
     category = "gameplay",
     subCategory = "movement",
     OnChanged = function(_valOld, valNew)
-        for k, v in ipairs(player.GetAll()) do
+        for k, v in player.Iterator() do
             v:SetRunSpeed(valNew)
         end
     end
@@ -276,7 +276,7 @@ ax.config:Add("speed.walk.slow", ax.type.number, 70, {
     category = "gameplay",
     subCategory = "movement",
     OnChanged = function(_valOld, valNew)
-        for k, v in ipairs(player.GetAll()) do
+        for k, v in player.Iterator() do
             v:SetSlowWalkSpeed(valNew)
         end
     end
@@ -290,7 +290,7 @@ ax.config:Add("speed.walk.crouched", ax.type.number, 0.7, {
     category = "gameplay",
     subCategory = "movement",
     OnChanged = function(_valOld, valNew)
-        for k, v in ipairs(player.GetAll()) do
+        for k, v in player.Iterator() do
             v:SetCrouchedWalkSpeed(valNew)
         end
     end
@@ -304,7 +304,7 @@ ax.config:Add("jump.power", ax.type.number, 175, {
     category = "gameplay",
     subCategory = "movement",
     OnChanged = function(_valOld, valNew)
-        for k, v in ipairs(player.GetAll()) do
+        for k, v in player.Iterator() do
             v:SetJumpPower(valNew)
         end
     end

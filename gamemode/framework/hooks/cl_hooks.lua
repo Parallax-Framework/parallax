@@ -165,6 +165,7 @@ function GM:ShouldDrawVersionWatermark()
     return ax.ENV != nil and ax.ENV:IsDev()
 end
 
+local WATERMARK_COL = Color(255, 255, 255, 50)
 function GM:PostRenderCurvy()
     local _, height = ScrW(), ScrH()
     ax.notification:Render()
@@ -176,7 +177,7 @@ function GM:PostRenderCurvy()
             versionText = versionText .. " (" .. ax.version.data.commitHash .. ")"
         end
 
-        draw.SimpleText(versionText, "ax.small.bold", ax.util:ScreenScale(4), height - ax.util:ScreenScaleH(4), Color(255, 255, 255, 50), TEXT_ALIGN_LEFT, TEXT_ALIGN_BOTTOM)
+        draw.SimpleText(versionText, "ax.small.bold", ax.util:ScreenScale(4), height - ax.util:ScreenScaleH(4), WATERMARK_COL, TEXT_ALIGN_LEFT, TEXT_ALIGN_BOTTOM)
     end
 end
 
@@ -291,7 +292,7 @@ local function GetPlayerFromAttachedRagdoll(entity)
     end
 
     local entIndex = entity:EntIndex()
-    for _, client in ipairs(player.GetAll()) do
+    for _, client in player.Iterator() do
         if ( !ax.util:IsValidPlayer(client) ) then
             continue
         end
@@ -478,7 +479,7 @@ function GM:PostDrawTranslucentRenderables(depth, skybox)
 
     local ft = FrameTime()
     local curTime = CurTime()
-    for _, client in ipairs(player.GetAll()) do
+    for _, client in player.Iterator() do
         if ( !ax.util:IsValidPlayer(client) or !client:Alive() or client == ax.client or !client:IsSpeaking() ) then continue end
 
         local headBone = client:LookupBone("ValveBiped.Bip01_Head1")

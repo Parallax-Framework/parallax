@@ -95,7 +95,7 @@ function MODULE:PlayerDisconnected(client)
 end
 
 timer.Create("ax.admin.activity.ping", PING_SAMPLE_INTERVAL, 0, function()
-    for _, client in ipairs(player.GetAll()) do
+    for _, client in player.Iterator() do
         if ( !ax.util:IsValidPlayer(client) ) then continue end
 
         local session = EnsureSession(client)
@@ -107,7 +107,7 @@ timer.Create("ax.admin.activity.ping", PING_SAMPLE_INTERVAL, 0, function()
 end)
 
 hook.Add("OnReloaded", "ax.admin.activity.bootstrap", function()
-    for _, client in ipairs(player.GetAll()) do
+    for _, client in player.Iterator() do
         if ( !ax.util:IsValidPlayer(client) ) then continue end
         if ( !client:GetCharacter() ) then continue end
 
