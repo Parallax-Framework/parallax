@@ -155,7 +155,6 @@ if ( SERVER ) then
                 self:SetNoDraw(false)
                 self:DrawShadow(true)
                 self.ignoreUse = false
-                self.ixIsMuted = false
 
                 for _, v in ipairs(self:GetChildren()) do
                     v:SetNotSolid(false)
@@ -177,7 +176,6 @@ if ( SERVER ) then
         self:DrawShadow(false)
         self.ignoreUse = true
         self.axDoorDummy = dummy
-        self.ixIsMuted = true
         self:DeleteOnRemove(dummy)
 
         dummy:InheritBodygroups(self)
@@ -216,7 +214,7 @@ if ( SERVER ) then
                     dummy:SetColor(ColorAlpha(color, alpha))
 
                     if ( alpha <= 0 ) then
-                        dummy:Remove()
+                        SafeRemoveEntity(dummy)
                     end
                 else
                     timer.Remove(uniqueID)
