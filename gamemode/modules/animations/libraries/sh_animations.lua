@@ -125,6 +125,16 @@ ax.animations.stored["citizen_male"] = {
         prop_vehicle_jeep = {"silo_sit", Vector(18, 0, -14)},
         ["models/vehicles/prisoner_pod_inner.mdl"] = {"podpose", Vector(-3.5, 0, -4)},
         chair = {"silo_sit", Vector(8, 0, -22)},
+    },
+    ["flinch"] = {
+        [HITGROUP_HEAD] = {"flinchheadgest1", "flinchheadgest2"},
+        [HITGROUP_CHEST] = {"flinchgutgest1", "flinchgutgest2"},
+        [HITGROUP_STOMACH] = {"flinchgutgest1", "flinchgutgest2"},
+        [HITGROUP_LEFTARM] = "flinchlarmgest",
+        [HITGROUP_RIGHTARM] = "flinchrarmgest",
+        [HITGROUP_LEFTLEG] = {"flinchgutgest1", "flinchgutgest2"},
+        [HITGROUP_RIGHTLEG] = {"flinchgutgest1", "flinchgutgest2"},
+        [HITGROUP_GEAR] = "flinch_gesture",
     }
 }
 
