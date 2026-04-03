@@ -117,7 +117,6 @@ function ax.util:PrintDebug(...)
     end
 
     local args = self:PreparePackage(...)
-    local debugColor = color_debug
 
     local filterText = debugFilter:GetString()
     if ( filterText != "" ) then
@@ -149,7 +148,7 @@ function ax.util:PrintDebug(...)
         rateLimitTracker[key] = CurTime()
     end
 
-    MsgC(debugColor, "[PARALLAX] [DEBUG] ", unpack(args))
+    MsgC(color_debug, "[PARALLAX] [DEBUG] ", unpack(args))
 
     return args
 end

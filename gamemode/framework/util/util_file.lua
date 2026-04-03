@@ -273,7 +273,7 @@ end
 -- https://github.com/NutScript/NutScript/blob/1.2-stable/gamemode/core/libs/sh_plugin.lua#L112
 -- https://github.com/NebulousCloud/helix/blob/master/gamemode/core/libs/sh_plugin.lua#L192
 
-function ax.util:LoadEntities(path) -- TODO: Implement timeFilter and skipping unchanged files
+function ax.util:LoadEntities(path, timeFilter)
     local bLoadedTools
     local files, folders
 
@@ -306,6 +306,16 @@ function ax.util:LoadEntities(path) -- TODO: Implement timeFilter and skipping u
                 v = string.sub(v, 4)
             end
 
+            if ( isnumber(timeFilter) and timeFilter > 0 ) then
+                local fileTime = file.Time(path2, "LUA")
+                local currentTime = os.time()
+
+                if ( fileTime and (currentTime - fileTime) > timeFilter ) then
+                    ax.util:PrintDebug("Skipping unchanged class file (modified " .. (currentTime - fileTime) .. "s ago): " .. fileName)
+                    continue
+                end
+            end
+
             _G[variable] = table.Copy(default)
 
             if ( !isfunction(create) ) then
@@ -335,6 +345,16 @@ function ax.util:LoadEntities(path) -- TODO: Implement timeFilter and skipping u
             local niceName = string.StripExtension(v)
             if ( string.StartWith(niceName, "sh_") or string.StartWith(niceName, "cl_") or string.StartWith(niceName, "sv_") ) then
                 niceName = string.sub(niceName, 4)
+            end
+
+            if ( isnumber(timeFilter) and timeFilter > 0 ) then
+                local fileTime = file.Time(path .. "/" .. folder .. "/" .. v, "LUA")
+                local currentTime = os.time()
+
+                if ( fileTime and (currentTime - fileTime) > timeFilter ) then
+                    ax.util:PrintDebug("Skipping unchanged class file (modified " .. (currentTime - fileTime) .. "s ago): " .. fileName)
+                    continue
+                end
             end
 
             _G[variable] = table.Copy(default)
