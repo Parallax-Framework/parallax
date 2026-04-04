@@ -3,13 +3,13 @@ if ( !tobool(ARC9) ) then return end
 -- attempt to get the correct holdtype for arc9 weapons with holster stances
 function MODULE:GetPlayerHoldType(client, weapon, holdType)
     if ( type(weapon) == "Weapon" and weapon.ARC9 == true ) then
-        if ( client:IsWeaponRaised() == false or weapon:GetSafe() == true ) then
-            weapon:SetHoldType(weapon.HoldTypeHolstered)
-            return weapon.HoldTypeHolstered
-        else
-            weapon:SetHoldType(weapon.HoldType)
-            return weapon.HoldType
+        local holdType = weapon.HoldType or "ar2"
+        if ( client:IsWeaponRaised() != true or weapon:GetSafe() == true ) then
+            holdType = weapon.HoldTypeHolstered or weapon.HoldTypeSprint or "passive"
         end
+
+        weapon:SetHoldType(holdType)
+        return holdType
     end
 end
 
