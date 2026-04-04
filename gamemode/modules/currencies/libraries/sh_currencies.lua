@@ -205,8 +205,14 @@ function ax.currencies:Format(amount, uniqueID, useText)
         end
     end
 
+    local postFix = ""
+    if ( useText ) then
+        local name = ( amount == 1 and currencyData.singular ) or currencyData.plural
+        postFix = ( currencyData.symbolSpacing and " " or "" ) .. name
+    end
+
     -- Fallback formatting
-    return string.Comma(math.floor(amount)) .. ( useText == true and " " .. currencyData.plural or "" )
+    return string.Comma(math.floor(amount)) .. postFix
 end
 
 --- Format a currency amount with symbol prefix or suffix.
