@@ -422,6 +422,47 @@ function ax.item:ExtractItemName(fileName)
     return itemName
 end
 
+--- Registers an item definition programmatically without requiring a file.
+-- @realm shared
+-- @param className string The unique class identifier for the item
+-- @param baseName string|nil The base item class to inherit from
+-- @param bIsBase boolean Whether this item is a base item
+-- @param bAddDefaultActions boolean Whether to add default take/drop actions (default true)
+-- @return table The item definition table, or nil on failure
+function ax.item:Register(className, baseName, bIsBase, bAddDefaultActions)
+    if ( !isstring(className) or className == "" ) then
+        ErrorNoHalt("[ax.item] Register called with invalid className\n")
+        return nil
+    end
+
+    local options = {
+        isBase = bIsBase == true,
+        addDefaultActions = bAddDefaultActions != false,
+    }
+
+    if ( isstring(baseName) and baseName != "" ) then
+        local baseItem = self.stored[baseName]
+        if ( istable(baseItem) ) then
+            options.baseName = baseName
+            options.baseItem = baseItem
+        else
+            ErrorNoHalt(string.format("[ax.item] Register: base item \"%s\" not found for class \"%s\"\n", baseName, className))
+        end
+    end
+
+    local itemDef = CreateItemDefinition(className, options)
+
+    if ( options.addDefaultActions ) then
+        AddDefaultItemActions(itemDef)
+    end
+
+    self.stored[className] = itemDef
+
+    ax.util:PrintDebug(string.format("Item \"%s\" registered programmatically.", tostring(itemDef.name or className)))
+
+    return itemDef
+end
+
 function ax.item:Get(identifier)
     if ( isstring(identifier) ) then
         return self.stored[identifier]
