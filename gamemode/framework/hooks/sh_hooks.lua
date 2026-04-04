@@ -183,6 +183,16 @@ function GM:CanPlayerInteractItem(client, item, action)
     if ( client:IsRagdolled() ) then
         return false, ax.localization:GetPhrase("error.ragdolled.item_interact")
     end
+
+    if ( CLIENT ) then
+        if ( ax.actionBar:IsActive()) then
+            return false
+        end
+    else
+        if ( istable(client.axActionBar) and !table.IsEmpty(client.axActionBar) ) then
+            return false
+        end
+    end
 end
 
 function GM:ShowHelp(client)
