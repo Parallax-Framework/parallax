@@ -429,7 +429,7 @@ end
 -- @param bIsBase boolean Whether this item is a base item
 -- @param bAddDefaultActions boolean Whether to add default take/drop actions (default true)
 -- @return table The item definition table, or nil on failure
-function ax.item.Register(className, baseName, bIsBase, bAddDefaultActions)
+function ax.item:Register(className, baseName, bIsBase, bAddDefaultActions)
     if ( !isstring(className) or className == "" ) then
         ErrorNoHalt("[ax.item] Register called with invalid className\n")
         return nil
