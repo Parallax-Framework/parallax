@@ -429,38 +429,47 @@ end
 -- @param bIsBase boolean Whether this item is a base item
 -- @param bAddDefaultActions boolean Whether to add default take/drop actions (default true)
 -- @return table The item definition table, or nil on failure
-function ax.item:Register(className, baseName, bIsBase, bAddDefaultActions)
+function ax.item.Register(className, baseName, bIsBase, bAddDefaultActions)
     if ( !isstring(className) or className == "" ) then
         ErrorNoHalt("[ax.item] Register called with invalid className\n")
         return nil
     end
 
-    local options = {
-        isBase = bIsBase == true,
-        addDefaultActions = bAddDefaultActions != false,
-    }
+    local itemTable = ax.item:Get(className)
+    if ( !istable(itemTable) or rawget(itemTable, "isBase") == true ) then
+        if ( isstring(baseName) and baseName != "" ) then
+            local baseItem = ax.item.stored[baseName]
+            if ( istable(baseItem) ) then
+                itemTable = setmetatable({ class = className, base = baseName }, {
+                    __index = function(t, k)
+                        local value = rawget(t, k)
+                        if ( value != nil ) then return value end
 
-    if ( isstring(baseName) and baseName != "" ) then
-        local baseItem = self.stored[baseName]
-        if ( istable(baseItem) ) then
-            options.baseName = baseName
-            options.baseItem = baseItem
+                        value = baseItem[k]
+                        if ( value != nil ) then return value end
+
+                        return ax.item.meta[k]
+                    end
+                })
+            else
+                ErrorNoHalt(string.format("[ax.item] Register: base item \"%s\" not found for class \"%s\"\n", baseName, className))
+                itemTable = setmetatable({ class = className }, ax.item.meta)
+            end
         else
-            ErrorNoHalt(string.format("[ax.item] Register: base item \"%s\" not found for class \"%s\"\n", baseName, className))
+            itemTable = setmetatable({ class = className, isBase = bIsBase == true or nil }, ax.item.meta)
         end
     end
 
-    local itemDef = CreateItemDefinition(className, options)
-
-    if ( options.addDefaultActions ) then
-        AddDefaultItemActions(itemDef)
+    if ( bAddDefaultActions != false ) then
+        itemTable:AddAction("take", ax.item:CreateDefaultTakeAction())
+        itemTable:AddAction("drop", ax.item:CreateDefaultDropAction())
     end
 
-    self.stored[className] = itemDef
+    ax.item.stored[className] = itemTable
 
-    ax.util:PrintDebug(string.format("Item \"%s\" registered programmatically.", tostring(itemDef.name or className)))
+    ax.util:PrintDebug(string.format("Item \"%s\" registered programmatically.", tostring(itemTable.name or className)))
 
-    return itemDef
+    return itemTable
 end
 
 function ax.item:Get(identifier)
