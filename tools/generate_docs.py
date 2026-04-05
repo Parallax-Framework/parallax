@@ -42,7 +42,7 @@ DEFAULT_EXTRA_CSS_CONTENT = """:root {
 """
 
 FUNCTION_DEF_RE = re.compile(
-    r"^\s*(?:local\s+)?function\s+([A-Za-z_][\w\.:]*)\s*\(([^)]*)\)"
+    r"^\s*(local\s+)?function\s+([A-Za-z_][\w\.:]*)\s*\(([^)]*)\)"
 )
 ASSIGN_FUNCTION_DEF_RE = re.compile(
     r"^\s*([A-Za-z_][\w\.:]*)\s*=\s*function\s*\(([^)]*)\)"
@@ -251,7 +251,9 @@ def read_text(path: Path) -> str:
 def find_function_definition(line: str) -> Optional[Tuple[str, str]]:
     match = FUNCTION_DEF_RE.match(line)
     if match:
-        return match.group(1), match.group(2)
+        if match.group(1):  # local function — skip
+            return None
+        return match.group(2), match.group(3)
 
     match = ASSIGN_FUNCTION_DEF_RE.match(line)
     if match:
