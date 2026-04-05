@@ -12,6 +12,7 @@ Complete documentation for the Parallax Framework - a roleplay framework for Gar
 6. [API Reference](05-API_REFERENCE.md) - Complete function reference
 7. [Examples](06-EXAMPLES.md) - Practical code examples
 8. [Best Practices](07-BEST_PRACTICES.md) - Guidelines for development
+9. [UI Theme Guidelines](08-UI_THEME_GUIDELINES.md) - Glass UI system, colors, fonts, and component reference
 
 ## Quick Links
 
