@@ -450,7 +450,7 @@ function GM:Move(client, moveData)
             return
         end
 
-        if ( bit.band(moveData:GetButtons(), IN_JUMP) != 0 and hook.Run("CanPlayerUnRagdoll", client) != false ) then
+        if ( client:Alive() and bit.band(moveData:GetButtons(), IN_JUMP) != 0 and hook.Run("CanPlayerUnRagdoll", client) != false ) then
             client:PerformAction("Getting up...", 5, function()
                 SafeRemoveEntity(ragdoll)
             end, nil, true)
