@@ -13,10 +13,8 @@
 -- @module ax.player.meta
 
 --- Returns the player's in-character name when a character is active.
--- Overrides GMod's built-in `Nick()` method. When the player has an active
--- character (via `GetCharacter()`), returns `character:GetName()`. Falls back
--- to the Steam name via the original `Nick` implementation (`GetNickInternal`)
--- when no character is loaded (e.g. during character selection).
+-- Overrides GMod's built-in `Nick()` method. When the player has an active character (via `GetCharacter()`), returns `character:GetName()`.
+-- Falls back to the Steam name via the original `Nick` implementation (`GetNickInternal`) when no character is loaded (e.g. during character selection).
 -- @realm shared
 -- @return string The character name, or the Steam display name if no character is active.
 ax.player.meta.GetNickInternal = ax.player.meta.GetNickInternal or ax.player.meta.Nick
@@ -26,9 +24,8 @@ function ax.player.meta:Nick()
 end
 
 --- Returns the player's actual Steam display name, bypassing the character name override.
--- Delegates directly to `GetNickInternal` (the original GMod `Nick` method saved before
--- the Parallax override). Use this when you specifically need the Steam name rather than
--- the in-character name.
+-- Delegates directly to `GetNickInternal` (the original GMod `Nick` method saved before the Parallax override).
+-- Use this when you specifically need the Steam name rather than the in-character name.
 -- @realm shared
 -- @return string The player's Steam display name.
 function ax.player.meta:SteamName()
@@ -36,9 +33,8 @@ function ax.player.meta:SteamName()
 end
 
 --- Returns the character instance currently active for this player.
--- Reads `axCharacter` from the player's entity table, which is set when a character is
--- loaded via `ax.character:Load`. Returns nil when the player is in the character
--- selection screen or has no character loaded. Aliased as `GetChar`.
+-- Reads `axCharacter` from the player's entity table, which is set when a character is loaded via `ax.character:Load()`.
+-- Returns nil when the player is in the character selection screen or has no character loaded. Aliased as `GetChar`.
 -- @realm shared
 -- @return table|nil The active character instance, or nil if none is loaded.
 function ax.player.meta:GetCharacter()
@@ -48,9 +44,8 @@ end
 ax.player.meta.GetChar = ax.player.meta.GetCharacter
 
 --- Returns all character instances associated with this player.
--- Reads `axCharacters` from the player's entity table, which is populated when the
--- player's characters are fetched from the database on connect. Returns an empty table
--- when no characters have been loaded yet.
+-- Reads `axCharacters` from the player's entity table, which is populated when the player's characters are fetched from the database on connect.
+-- Returns an empty table when no characters have been loaded yet.
 -- @realm shared
 -- @return table An ordered array of character instances, or `{}` if none are loaded.
 function ax.player.meta:GetCharacters()
@@ -58,9 +53,8 @@ function ax.player.meta:GetCharacters()
 end
 
 --- Returns the player's current faction index, or nil if not in a valid faction.
--- Reads the player's team index via `self:Team()` and validates it against the
--- registered faction registry via `ax.faction:IsValid`. Returns nil for spectators,
--- players not yet assigned a faction, or indices that don't map to a registered faction.
+-- Reads the player's team index via `self:Team()` and validates it against the registered faction registry via `ax.faction:IsValid`.
+-- Returns nil for spectators, players not yet assigned a faction, or indices that don't map to a registered faction.
 -- @realm shared
 -- @return number|nil The faction index, or nil if not in a valid faction.
 function ax.player.meta:GetFaction()
@@ -73,8 +67,7 @@ function ax.player.meta:GetFaction()
 end
 
 --- Returns the faction definition table for this player's current faction.
--- Delegates to `ax.faction:Get` using the result of `GetFaction()`. Returns nil when
--- the player is not in a valid faction.
+-- Delegates to `ax.faction:Get` using the result of `GetFaction()`. Returns nil when the player is not in a valid faction.
 -- @realm shared
 -- @return table|nil The faction definition table, or nil if not in a faction.
 function ax.player.meta:GetFactionData()
@@ -83,9 +76,8 @@ function ax.player.meta:GetFactionData()
 end
 
 --- Returns the class definition table for this player's active character's class.
--- Retrieves the character's class ID via `character:GetClass()` and looks it up in the
--- class registry via `ax.class:Get`. Returns nil when the player has no active character
--- or the character has no class assigned.
+-- Retrieves the character's class ID via `character:GetClass()` and looks it up in the class registry via `ax.class:Get`.
+-- Returns nil when the player has no active character or the character has no class assigned.
 -- @realm shared
 -- @return table|nil The class definition table, or nil if no class is set.
 function ax.player.meta:GetClassData()
@@ -101,9 +93,8 @@ function ax.player.meta:GetClassData()
 end
 
 --- Returns the rank definition table for this player's active character's rank.
--- Retrieves the character's rank ID via `character:GetRank()` and looks it up in the
--- rank registry via `ax.rank:Get`. Returns nil when the player has no active character
--- or the character has no rank assigned.
+-- Retrieves the character's rank ID via `character:GetRank()` and looks it up in the rank registry via `ax.rank:Get`.
+-- Returns nil when the player has no active character or the character has no rank assigned.
 -- @realm shared
 -- @return table|nil The rank definition table, or nil if no rank is set.
 function ax.player.meta:GetRankData()
@@ -123,11 +114,9 @@ ax.player.gestureCache = ax.player.gestureCache or {}
 
 --- Plays a gesture animation in the given layer slot on this player.
 -- On the server, broadcasts a PVS net message so nearby clients execute the gesture.
--- On the client, resolves a string sequence name to a numeric ID via `LookupSequence`,
--- caching the result keyed by `"modelPath:sequenceName"` to avoid repeated lookups on
--- the same model. The numeric ID is then passed to `AddVCDSequenceToGestureSlot`.
--- Returns nil and prints an error when the slot is out of range (0–6) or the player
--- has no active character.
+-- On the client, resolves a string sequence name to a numeric ID via `LookupSequence`, caching the result keyed by `"modelPath:sequenceName"` to avoid repeated lookups on the same model.
+-- The numeric ID is then passed to `AddVCDSequenceToGestureSlot`.
+-- Returns nil and prints an error when the slot is out of range (0–6) or the player has no active character.
 -- @realm shared
 -- @param slot number The gesture layer slot (0–6) to play the animation in.
 -- @param sequence string|number The sequence name (string) or sequence ID (number) to play.
@@ -178,9 +167,8 @@ function ax.player.meta:PlayGesture(slot, sequence)
 end
 
 --- Returns whether the player has been whitelisted for a given faction.
--- Reads the `"whitelists"` key from the player's data store. Returns true only when
--- the entry for `iFactionID` is explicitly `true`. Returns false when the faction ID
--- is invalid, unregistered, or the player has no whitelist entry for it.
+-- Reads the `"whitelists"` key from the player's data store. Returns true only when the entry for `iFactionID` is explicitly `true`.
+-- Returns false when the faction ID is invalid, unregistered, or the player has no whitelist entry for it.
 -- @realm shared
 -- @param iFactionID number The numeric faction index to check.
 -- @return boolean True if the player is whitelisted for the faction, false otherwise.
@@ -200,8 +188,7 @@ function ax.player.meta:HasFactionWhitelist(iFactionID)
 end
 
 --- Returns whether the player is currently in a ragdolled state.
--- Reads the `"ragdolled"` relay key set by `SetRagdolled`. Returns false when the
--- relay has not been set or has been cleared.
+-- Reads the `"ragdolled"` relay key set by `SetRagdolled`. Returns false when the relay has not been set or has been cleared.
 -- @realm shared
 -- @return boolean True if the player is currently ragdolled, false otherwise.
 function ax.player.meta:IsRagdolled()
@@ -241,9 +228,8 @@ if ( SERVER ) then
     end
 
     --- Clears the stored ragdoll weapon state from this player.
-    -- Removes `axRagdollWeapons` and `axRagdollActiveWeapon` from the player's entity
-    -- table. Called automatically by `RestoreRagdollWeapons` after weapons are given
-    -- back, and can be called manually to discard weapon state without restoring.
+    -- Removes `axRagdollWeapons` and `axRagdollActiveWeapon` from the player's entity table.
+    -- Called automatically by `RestoreRagdollWeapons` after weapons are given back, and can be called manually to discard weapon state without restoring.
     -- @realm server
     function ax.player.meta:ClearRagdollWeapons()
         self.axRagdollWeapons = nil
@@ -251,12 +237,12 @@ if ( SERVER ) then
     end
 
     --- Strips all weapons from the player and saves their state for later restoration.
-    -- Records each weapon's class, clip counts, ammo counts, and linked inventory item
-    -- (resolved via `GetWeaponInventoryItem`). For inventory-backed weapons that define
-    -- an `Unequip` method, that method is called to mark the item as unequipped. The
-    -- active weapon class is stored in `axRagdollActiveWeapon`. After recording, all
-    -- weapons are removed via `StripWeapons`. Call `RestoreRagdollWeapons` to re-give
-    -- them. Intended to be called as part of the ragdoll creation flow.
+    -- Records each weapon's class, clip counts, ammo counts, and linked inventory item (resolved via `GetWeaponInventoryItem`).
+    -- For inventory-backed weapons that define an `Unequip` method, that method is called to mark the item as unequipped.
+    -- The active weapon class is stored in `axRagdollActiveWeapon`.
+    -- After recording, all weapons are removed via `StripWeapons`.
+    -- Call `RestoreRagdollWeapons` to re-give them.
+    -- Intended to be called as part of the ragdoll creation flow.
     -- @realm server
     function ax.player.meta:StripWeaponsForRagdoll()
         local character = self:GetCharacter()
@@ -301,11 +287,11 @@ if ( SERVER ) then
     end
 
     --- Restores all weapons stripped by `StripWeaponsForRagdoll`.
-    -- Iterates the stored weapon data in `axRagdollWeapons`. For inventory-backed items
-    -- that define an `Equip` method, `Equip` is called to re-equip them; otherwise the
-    -- weapon is re-given via `self:Give`. Clip sizes and ammo counts are restored after
-    -- giving. After all weapons are restored, re-selects the previously active weapon (or
-    -- `ax_hands` as a fallback). Calls `ClearRagdollWeapons` when done.
+    -- Iterates the stored weapon data in `axRagdollWeapons`.
+    -- For inventory-backed items that define an `Equip` method, `Equip` is called to re-equip them; otherwise the weapon is re-given via `self:Give`.
+    -- Clip sizes and ammo counts are restored after giving.
+    -- After all weapons are restored, re-selects the previously active weapon (or `ax_hands` as a fallback).
+    -- Calls `ClearRagdollWeapons` when done.
     -- @realm server
     function ax.player.meta:RestoreRagdollWeapons()
         local weaponData = self.axRagdollWeapons
@@ -371,16 +357,13 @@ if ( SERVER ) then
     end
 
     --- Sets the player's ragdoll state, creating or destroying a ragdoll dummy.
-    -- When `bRagdolled` is true, creates a `prop_ragdoll` entity at the player's position
-    -- inheriting the player's model, skin, bodygroups, and materials. The player is hidden
-    -- and made non-solid while a repeating timer keeps their position synced to the ragdoll.
+    -- When `bRagdolled` is true, creates a `prop_ragdoll` entity at the player's position inheriting the player's model, skin, bodygroups, and materials.
+    -- The player is hidden and made non-solid while a repeating timer keeps their position synced to the ragdoll.
     -- Weapons are stripped via `StripWeaponsForRagdoll` and stored for later restoration.
-    -- When `bRagdolled` is false (or any non-true value), the ragdoll dummy is removed,
-    -- the player is restored to `MOVETYPE_WALK`, and `RestoreRagdollWeapons` is called.
+    -- When `bRagdolled` is false (or any non-true value), the ragdoll dummy is removed, the player is restored to `MOVETYPE_WALK`, and `RestoreRagdollWeapons` is called.
     -- Fires `"CanPlayerRagdoll"` before creating the ragdoll unless `bForced` is true;
-    -- returning false from the hook prevents ragdolling. Fires `"OnPlayerRagdollCreated"`
-    -- after the dummy is spawned. Returns the ragdoll entity on creation, false if blocked
-    -- by the hook, or nil on error.
+    -- returning false from the hook prevents ragdolling. Fires `"OnPlayerRagdollCreated"` after the dummy is spawned.
+    -- Returns the ragdoll entity on creation, false if blocked by the hook, or nil on error.
     -- @realm server
     -- @param bRagdolled boolean True to ragdoll the player, false (or any non-true value) to un-ragdoll.
     -- @param bForced boolean|nil When true, skips the `"CanPlayerRagdoll"` hook check.
@@ -496,8 +479,8 @@ if ( SERVER ) then
     end
 
     --- Toggles the player's ragdoll state between ragdolled and un-ragdolled.
-    -- Reads the current `"ragdolled"` relay value and calls `SetRagdolled` with the
-    -- inverse. Passes `bForced` through to skip the `"CanPlayerRagdoll"` hook check.
+    -- Reads the current `"ragdolled"` relay value and calls `SetRagdolled` with the inverse.
+    -- Passes `bForced` through to skip the `"CanPlayerRagdoll"` hook check.
     -- @realm server
     -- @param bForced boolean|nil When true, bypasses the `"CanPlayerRagdoll"` hook.
     function ax.player.meta:ToggleRagdoll(bForced)
@@ -505,10 +488,10 @@ if ( SERVER ) then
     end
 
     --- Sets or clears the player's whitelist status for a given faction.
-    -- Updates the `"whitelists"` key in the player's data store. Setting `bStatus` to
-    -- true grants whitelist access; false removes it (the entry is set to nil). Validates
-    -- that `iFactionID` is a registered faction and that `bStatus` is a boolean before
-    -- writing. Prints an error and returns early on invalid input.
+    -- Updates the `"whitelists"` key in the player's data store.
+    -- Setting `bStatus` to true grants whitelist access; false removes it (the entry is set to nil).
+    -- Validates that `iFactionID` is a registered faction and that `bStatus` is a boolean before writing.
+    -- Prints an error and returns early on invalid input.
     -- @realm server
     -- @param iFactionID number The numeric faction index to whitelist or un-whitelist.
     -- @param bStatus boolean True to grant whitelist access, false to revoke it.
@@ -533,12 +516,11 @@ if ( SERVER ) then
     end
 
     --- Persists all player variables and data to the database.
-    -- Constructs a MySQL UPDATE query targeting the `ax_players` table, filtered by
-    -- `steamid64`. All registered player vars that declare a `field` in their schema
-    -- are included; table values are serialised to JSON. The `data` blob is always
-    -- written as JSON. Falls back to the registered default when a var has no value
-    -- set. Call this after any direct modification to `axVars` that bypasses the
-    -- standard `SetVar` / `SetData` pathway.
+    -- Constructs a MySQL UPDATE query targeting the `ax_players` table, filtered by `steamid64`.
+    -- All registered player vars that declare a `field` in their schema are included; table values are serialised to JSON.
+    -- The `data` blob is always written as JSON.
+    -- Falls back to the registered default when a var has no value set.
+    -- Call this after any direct modification to `axVars` that bypasses the standard `SetVar` / `SetData` pathway.
     -- @realm server
     function ax.player.meta:Save()
         local clientTable = self:GetTable()
@@ -581,10 +563,10 @@ if ( SERVER ) then
     end
 
     --- Ensures the player has a row in the `ax_players` database table, creating one if needed.
-    -- On the server, issues a SELECT query for the player's SteamID64. If no row is found,
-    -- an INSERT is issued with default values for all fields. In both cases `callback(true)` is
-    -- invoked on success; `callback(false)` is invoked on database error. If no `callback` is
-    -- provided, a debug message is printed instead.
+    -- On the server, issues a SELECT query for the player's SteamID64.
+    -- If no row is found, an INSERT is issued with default values for all fields.
+    -- In both cases `callback(true)` is invoked on success; `callback(false)` is invoked on database error.
+    -- If no `callback` is provided, a debug message is printed instead.
     -- @realm server
     -- @param callback function|nil Called as `callback(ok)` where `ok` is true on success, false on error.
     function ax.player.meta:EnsurePlayer(callback)
@@ -637,9 +619,8 @@ if ( SERVER ) then
     end
 
     --- Opens a Derma string input dialog on this player's client.
-    -- Sends a `"player.dermaStringRequest"` net message to the player with the dialog
-    -- parameters. The `confirm` and `cancel` callbacks are stored on the player's entity
-    -- table and invoked when the client responds via the corresponding net handler.
+    -- Sends a `"player.dermaStringRequest"` net message to the player with the dialog parameters.
+    -- The `confirm` and `cancel` callbacks are stored on the player's entity table and invoked when the client responds via the corresponding net handler.
     -- @realm server
     -- @param title string The dialog window title.
     -- @param subtitle string The instructional subtitle shown below the title.
@@ -661,9 +642,9 @@ if ( SERVER ) then
     end
 
     --- Opens a Derma message dialog on this player's client.
-    -- Sends a `"player.dermaMessage"` net message with the dialog content. The optional
-    -- `onClosed` callback is stored server-side and invoked when the client acknowledges
-    -- the dialog. Useful for non-blocking informational prompts.
+    -- Sends a `"player.dermaMessage"` net message with the dialog content.
+    -- The optional `onClosed` callback is stored server-side and invoked when the client acknowledges the dialog.
+    -- Useful for non-blocking informational prompts.
     -- @realm server
     -- @param text string The body text of the message dialog.
     -- @param title string The window title.
@@ -681,11 +662,10 @@ if ( SERVER ) then
     end
 else
     --- Queues a callback to run once this player is ready on the client.
-    -- On the client, "ready" means `axReady` has been set on the player's entity table
-    -- by the framework initialisation sequence. If the player is already ready, `callback`
-    -- is invoked immediately. Otherwise it is appended to `axEnsureCallbacks` and invoked
-    -- once the ready state is reached. This is the client-side counterpart to the
-    -- server's database-backed `EnsurePlayer`.
+    -- On the client, "ready" means `axReady` has been set on the player's entity table by the framework initialisation sequence.
+    -- If the player is already ready, `callback` is invoked immediately.
+    -- Otherwise it is appended to `axEnsureCallbacks` and invoked once the ready state is reached.
+    -- This is the client-side counterpart to the server's database-backed `EnsurePlayer`.
     -- @realm client
     -- @param callback function|nil Called as `callback(true)` when the player is ready.
     function ax.player.meta:EnsurePlayer(callback)
@@ -701,9 +681,8 @@ else
 end
 
 --- Returns the number of seconds the player has been connected in this session.
--- Computes `os.time() - axJoinTime` where `axJoinTime` is set when the player
--- joins the server. Returns 0 when `axJoinTime` has not been set (e.g. before
--- the player has fully initialised).
+-- Computes `os.time() - axJoinTime` where `axJoinTime` is set when the player joins the server.
+-- Returns 0 when `axJoinTime` has not been set (e.g. before the player has fully initialised).
 -- @realm shared
 -- @return number The number of seconds in the current session, or 0 if unavailable.
 function ax.player.meta:GetSessionPlayTime()
@@ -726,10 +705,9 @@ if ( CLIENT ) then
 end
 
 --- Prints colored messages to this player's chat box.
--- On the server, sends a `"player.chatPrint"` net message containing the arguments;
--- the client-side hook unpacks and passes them to `chat.AddText`. On the client,
--- calls `chat.AddText` directly. Accepts the same argument format as `chat.AddText`:
--- alternating `Color` and `string` values.
+-- On the server, sends a `"player.chatPrint"` net message containing the arguments; the client-side hook unpacks and passes them to `chat.AddText`.
+-- On the client, calls `chat.AddText` directly.
+-- Accepts the same argument format as `chat.AddText`: alternating `Color` and `string` values.
 -- @realm shared
 -- @param ... Color|string Alternating color and text arguments forwarded to `chat.AddText`.
 ax.player.meta.ChatPrintInternal = ax.player.meta.ChatPrintInternal or ax.player.meta.ChatPrint
@@ -742,10 +720,10 @@ function ax.player.meta:ChatPrint(...)
 end
 
 --- Sends a toast notification to this player.
--- On the server, delegates to `ax.notification:Send`. On the client, delegates to
--- `ax.notification:Add`. The `type` parameter controls the notification style
--- (e.g. `"error"`, `"success"`, `"info"`). `length` controls display duration in
--- seconds; the notification system applies a default when omitted.
+-- On the server, delegates to `ax.notification:Send`.
+-- On the client, delegates to `ax.notification:Add`.
+-- The `type` parameter controls the notification style (e.g. `"error"`, `"success"`, `"info"`).
+-- `length` controls display duration in seconds; the notification system applies a default when omitted.
 -- @realm shared
 -- @param text string The notification message to display.
 -- @param type string|nil The notification type (e.g. `"error"`, `"success"`, `"info"`).
@@ -759,11 +737,9 @@ function ax.player.meta:Notify(text, type, length)
 end
 
 --- Syncs all relay data to this player.
--- Iterates `ax.relay.data` and calls `SetRelay` for every key/value pair in the
--- `"global"` scope, then for every per-entity scope whose entity is still valid.
--- The `false` third argument to `SetRelay` suppresses the normal broadcast so each
--- value is sent only to this player rather than all receivers. Called when the player
--- becomes ready to ensure they receive the full relay state.
+-- Iterates `ax.relay.data` and calls `SetRelay` for every key/value pair in the `"global"` scope, then for every per-entity scope whose entity is still valid.
+-- The `false` third argument to `SetRelay` suppresses the normal broadcast so each value is sent only to this player rather than all receivers.
+-- Called when the player becomes ready to ensure they receive the full relay state.
 -- @realm shared
 function ax.player.meta:SyncRelay()
     for k, v in pairs( ax.relay.data["global"] or {} ) do
@@ -783,13 +759,10 @@ function ax.player.meta:SyncRelay()
 end
 
 --- Starts or stops a progress action bar for this player.
--- When `label` is nil, cancels any running action bar: invokes `onCancel` if stored,
--- clears the action bar timer, and sends `"player.actionbar.stop"` to the client.
--- When `label` is provided, starts a new action bar by sending `"player.actionbar.start"`
--- to the client with the label and duration, and stores `onComplete`/`onCancel` on the
--- player's entity table. On the client, delegates to `ax.actionBar:Start` or
--- `ax.actionBar:Stop`. If the player is ragdolled and `bAllowRagdolled` is not true,
--- a localised error notification is sent and false is returned.
+-- When `label` is nil, cancels any running action bar: invokes `onCancel` if stored, clears the action bar timer, and sends `"player.actionbar.stop"` to the client.
+-- When `label` is provided, starts a new action bar by sending `"player.actionbar.start"` to the client with the label and duration, and stores `onComplete`/`onCancel` on the player's entity table.
+-- On the client, delegates to `ax.actionBar:Start` or `ax.actionBar:Stop`.
+-- If the player is ragdolled and `bAllowRagdolled` is not true, a localised error notification is sent and false is returned.
 -- @realm shared
 -- @param label string|nil The action bar label. Pass nil to cancel the active bar.
 -- @param duration number|nil The bar duration in seconds. Defaults to 5.
@@ -838,11 +811,9 @@ function ax.player.meta:PerformAction(label, duration, onComplete, onCancel, bAl
 end
 
 --- Returns whether the player is still in a position to maintain an entity interaction.
--- First checks `self:GetUseEntity()` — if it equals `entity` the player is actively
--- looking at it and true is returned immediately. If `allowEyeTrace` is true, also
--- checks `self:GetEyeTrace()` and optionally enforces a maximum distance between the
--- player's shoot position and the trace hit position. Returns false when the player or
--- entity is invalid, the entity is not being looked at, or the distance limit is exceeded.
+-- First checks `self:GetUseEntity()` — if it equals `entity` the player is actively looking at it and true is returned immediately.
+-- If `allowEyeTrace` is true, also checks `self:GetEyeTrace()` and optionally enforces a maximum distance between the player's shoot position and the trace hit position.
+-- Returns false when the player or entity is invalid, the entity is not being looked at, or the distance limit is exceeded.
 -- @realm shared
 -- @param entity Entity The entity the action is being performed on.
 -- @param allowEyeTrace boolean|nil When true, also accepts the eye trace as a valid look target.
@@ -880,9 +851,8 @@ end
 
 --- Starts an action bar that automatically cancels if the player stops looking at an entity.
 -- Creates a repeating 0.1-second timer that calls `CanMaintainEntityAction` each tick.
--- If the entity becomes invalid or the player stops meeting the look/distance requirements,
--- the timer is removed and `PerformAction(nil)` is called to cancel the bar. The action
--- bar itself is started via `PerformAction` with the provided parameters.
+-- If the entity becomes invalid or the player stops meeting the look/distance requirements, the timer is removed and `PerformAction(nil)` is called to cancel the bar.
+-- The action bar itself is started via `PerformAction` with the provided parameters.
 -- @realm shared
 -- @param entity Entity The entity the player must keep looking at.
 -- @param label string The action bar label displayed to the player.

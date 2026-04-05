@@ -647,9 +647,7 @@ if ( CLIENT ) then
 end
 
 --- Pads a number with leading zeroes to a minimum digit count.
--- Uses `string.format` with `%0Xd` under the hood. The result is always a
--- string. If the number already has more digits than `digits`, it is returned
--- without truncation — `digits` is a minimum, not a fixed width.
+-- Uses `string.format` with `%0Xd` under the hood. The result is always a string. If the number already has more digits than `digits`, it is returned without truncation — `digits` is a minimum, not a fixed width.
 -- @realm shared
 -- @param num number The integer to pad.
 -- @param digits number The minimum number of digits in the output string.
@@ -662,20 +660,13 @@ function ax.util:PadNumber(num, digits)
 end
 
 --- Returns true when `target` falls within `client`'s crosshair cone.
--- Uses the dot product of `client`'s aim vector and the normalised direction
--- to `target`'s eye position (or world centre for non-player entities). The
--- dot product is compared against `range` as a threshold: a value of `1.0`
--- means the target must be directly on-axis; `0.9` (default) allows roughly
--- ±26°; `0.0` accepts any direction in front of the player. A lower `range`
--- value produces a wider acceptance cone.
+-- Uses the dot product of `client`'s aim vector and the normalised direction to `target`'s eye position (or world centre for non-player entities). The dot product is compared against `range` as a threshold: a value of `1.0` means the target must be directly on-axis; `0.9` (default) allows roughly ±26°; `0.0` accepts any direction in front of the player. A lower `range` value produces a wider acceptance cone.
 -- Returns nil (falsy) when either `client` or `target` is not a valid player.
 -- @realm shared
 -- @param client Player The player whose aim vector is used.
 -- @param target Entity The entity to test against the crosshair cone.
--- @param range number|nil Dot-product threshold in [0, 1]. Higher values
---   require tighter aim. Defaults to 0.9.
--- @return boolean|nil True if `target` is within the crosshair cone, nil if
---   either argument is not a valid player.
+-- @param range number|nil Dot-product threshold in [0, 1]. Higher values require tighter aim. Defaults to 0.9.
+-- @return boolean|nil True if `target` is within the crosshair cone, nil if either argument is not a valid player.
 -- @usage -- Is Entity(2) roughly in Entity(1)'s sights?
 -- ax.util:FindInCrosshair(Entity(1), Entity(2))         -- default 0.9
 -- -- Wider cone (accepts targets up to ~60° off-axis):
@@ -702,19 +693,14 @@ function ax.util:FindInCrosshair(client, target, range)
 end
 
 --- Asserts a condition, printing an error message when it is false.
--- Unlike Lua's built-in `assert`, this does NOT throw — execution continues
--- after the call. The error is printed via `PrintError` (which uses
--- `ErrorNoHaltWithStack`, so a stack trace is included in the output).
+-- Unlike Lua's built-in `assert`, this does NOT throw — execution continues after the call. The error is printed via `PrintError` (which uses `ErrorNoHaltWithStack`, so a stack trace is included in the output).
 -- When `condition` is falsy, returns `false` followed by any extra arguments.
 -- When `condition` is truthy, returns it unchanged followed by extra arguments.
--- Use this for precondition checks where you want to log the failure clearly
--- but still allow the caller to handle it gracefully.
+-- Use this for precondition checks where you want to log the failure clearly but still allow the caller to handle it gracefully.
 -- @realm shared
 -- @param condition any The value to test. Falsy (false/nil) triggers the error.
--- @param errorMessage string|nil The message to print on failure.
---   Defaults to `"Assertion failed"`.
--- @param ... any Extra values appended to the error output and forwarded as
---   additional return values.
+-- @param errorMessage string|nil The message to print on failure. Defaults to `"Assertion failed"`.
+-- @param ... any Extra values appended to the error output and forwarded as additional return values.
 -- @return boolean|any `condition` (or false on failure), followed by `...`.
 -- @usage local ok = ax.util:Assert(istable(data), "Expected table, got", type(data))
 -- if ( !ok ) then return end
@@ -729,10 +715,7 @@ function ax.util:Assert(condition, errorMessage, ...)
 end
 
 --- Returns the player whose death ragdoll is the given entity.
--- Iterates all connected players and checks whether any has a `ragdoll.index`
--- relay value matching the entity's index. This relay is set by the framework
--- when a player's death ragdoll is created. Returns nil when the entity is not
--- a `prop_ragdoll`, is invalid, or no player has that ragdoll index.
+-- Iterates all connected players and checks whether any has a `ragdoll.index` relay value matching the entity's index. This relay is set by the framework when a player's death ragdoll is created. Returns nil when the entity is not a `prop_ragdoll`, is invalid, or no player has that ragdoll index.
 -- @realm shared
 -- @param entity Entity The entity to test, expected to be a `prop_ragdoll`.
 -- @return Player|nil The player who owns this ragdoll, or nil if not found.
@@ -758,18 +741,12 @@ function ax.util:GetPlayerFromAttachedRagdoll(entity)
 end
 
 --- Asserts a condition, printing a debug message when it is false.
--- Behaves identically to `Assert` except the failure message is routed through
--- `PrintDebug` instead of `PrintError`. This means the output is only visible
--- when the `developer` convar is ≥ 1 AND `ax_debug_realm` is set to match the
--- current realm — making it suitable for internal consistency checks that
--- should be silent in production but informative during development.
+-- Behaves identically to `Assert` except the failure message is routed through `PrintDebug` instead of `PrintError`. This means the output is only visible when the `developer` convar is ≥ 1 AND `ax_debug_realm` is set to match the current realm — making it suitable for internal consistency checks that should be silent in production but informative during development.
 -- @realm shared
 -- @param condition any The value to test. Falsy (false/nil) triggers the debug
 --   message.
--- @param errorMessage string|nil The message to print on failure.
---   Defaults to `"Assertion failed"`.
--- @param ... any Extra values appended to the debug output and forwarded as
---   additional return values.
+-- @param errorMessage string|nil The message to print on failure. Defaults to `"Assertion failed"`.
+-- @param ... any Extra values appended to the debug output and forwarded as additional return values.
 -- @return boolean|any `condition` (or false on failure), followed by `...`.
 -- @usage ax.util:AssertDebug(self.registry[key], "Key not in registry:", key)
 function ax.util:AssertDebug(condition, errorMessage, ...)
@@ -784,12 +761,7 @@ end
 
 if ( CLIENT ) then
     --- Draws a smooth arc or full circle outline using polygons.
-    -- Generates vertices along the arc from `startAngle` to `endAngle` (both
-    -- in degrees) and draws them as a polygon using `surface.DrawPoly`. The
-    -- arc is not filled — it is an open polyline. For a filled circle, use
-    -- `DrawSlice` instead. `segments` controls smoothness; 64 is a good
-    -- default for most sizes. Call `surface.SetDrawColor` before this function
-    -- to set the line colour.
+    -- Generates vertices along the arc from `startAngle` to `endAngle` (both in degrees) and draws them as a polygon using `surface.DrawPoly`. The arc is not filled — it is an open polyline. For a filled circle, use `DrawSlice` instead. `segments` controls smoothness; 64 is a good default for most sizes. Call `surface.SetDrawColor` before this function to set the line colour.
     -- @realm client
     -- @param x number Center X of the arc in screen pixels.
     -- @param y number Center Y of the arc in screen pixels.
@@ -831,12 +803,8 @@ if ( CLIENT ) then
 
 
     --- Draws a filled pie slice, useful for circular progress indicators.
-    -- Constructs a polygon with the centre point as vertex 0 and arc vertices
-    -- fanning out from `startAngle` to `endAngle`. An internal –90° offset is
-    -- applied so that 0° corresponds to the top of the circle (12-o'clock
-    -- position), making it intuitive for progress bars that start at the top.
-    -- Uses a fixed 64-segment resolution. The slice is filled solid with
-    -- `color`.
+    -- Constructs a polygon with the centre point as vertex 0 and arc vertices fanning out from `startAngle` to `endAngle`. An internal –90° offset is applied so that 0° corresponds to the top of the circle (12-o'clock position), making it intuitive for progress bars that start at the top.
+    -- Uses a fixed 64-segment resolution. The slice is filled solid with `color`.
     -- @realm client
     -- @param x number Center X of the slice in screen pixels.
     -- @param y number Center Y of the slice in screen pixels.

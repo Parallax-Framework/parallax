@@ -18,12 +18,9 @@
 --- Converts a list of values into a flat array suitable for `MsgC` output.
 -- Iterates the arguments and converts each one as follows:
 -- - Valid entities are converted to their `tostring` representation.
--- - Valid player entities additionally get `[SteamID64]` appended as a
---   separate element so the output clearly identifies who was involved.
+-- - Valid player entities additionally get `[SteamID64]` appended as a separate element so the output clearly identifies who was involved.
 -- - All other values are included as-is.
--- A newline string is always appended as the last element so that each call
--- to a Print* function ends on its own line. The returned table can be
--- unpacked directly into `MsgC` or used with `table.concat`.
+-- A newline string is always appended as the last element so that each call to a Print* function ends on its own line. The returned table can be unpacked directly into `MsgC` or used with `table.concat`.
 -- @realm shared
 -- @param ... any Any number of values to prepare.
 -- @return table Flat array of values ready to unpack into `MsgC` or similar.
@@ -58,10 +55,7 @@ color_success = Color(100, 255, 100)
 color_debug = Color(150, 150, 150)
 
 --- Prints an informational message prefixed with `[PARALLAX]`.
--- Uses `MsgC` with `color_print` (blue-ish `Color(100, 150, 255)`). Visible
--- on both server and client consoles. All arguments are processed through
--- `PreparePackage` — entities are converted to strings and players get their
--- SteamID64 appended. A trailing newline is included automatically.
+-- Uses `MsgC` with `color_print` (blue-ish `Color(100, 150, 255)`). Visible on both server and client consoles. All arguments are processed through `PreparePackage` — entities are converted to strings and players get their SteamID64 appended. A trailing newline is included automatically.
 -- @realm shared
 -- @param ... any Values to print.
 -- @return table The prepared argument array that was printed.
@@ -77,11 +71,8 @@ function ax.util:Print(...)
 end
 
 --- Prints an error message prefixed with `[PARALLAX] [ERROR]`, with a stack trace.
--- Uses `ErrorNoHaltWithStack`, so the full call stack is included in the
--- console output. Execution continues after the call — this does NOT throw.
--- Use this for non-fatal errors where you want clear diagnostics without
--- stopping the current execution path. Arguments are joined with spaces via
--- `table.concat` after `PreparePackage` processing.
+-- Uses `ErrorNoHaltWithStack`, so the full call stack is included in the console output. Execution continues after the call — this does NOT throw.
+-- Use this for non-fatal errors where you want clear diagnostics without stopping the current execution path. Arguments are joined with spaces via `table.concat` after `PreparePackage` processing.
 -- @realm shared
 -- @param ... any Values to include in the error message.
 -- @return table The prepared argument array that was printed.
@@ -95,10 +86,7 @@ function ax.util:PrintError(...)
 end
 
 --- Prints a warning message prefixed with `[PARALLAX] [WARNING]`.
--- Uses `MsgC` with `color_warning` (orange `Color(255, 200, 100)`). No stack
--- trace is included — use `PrintError` when a stack trace is needed. Suitable
--- for recoverable conditions that should be visible in the console without
--- alarming users or halting execution.
+-- Uses `MsgC` with `color_warning` (orange `Color(255, 200, 100)`). No stack trace is included — use `PrintError` when a stack trace is needed. Suitable for recoverable conditions that should be visible in the console without alarming users or halting execution.
 -- @realm shared
 -- @param ... any Values to include in the warning.
 -- @return table The prepared argument array that was printed.
@@ -113,9 +101,7 @@ function ax.util:PrintWarning(...)
 end
 
 --- Prints a success message prefixed with `[PARALLAX] [SUCCESS]`.
--- Uses `MsgC` with `color_success` (green `Color(100, 255, 100)`). Use to
--- confirm that an operation completed as expected — module loads, database
--- connections established, configuration saved successfully, etc.
+-- Uses `MsgC` with `color_success` (green `Color(100, 255, 100)`). Use to confirm that an operation completed as expected — module loads, database connections established, configuration saved successfully, etc.
 -- @realm shared
 -- @param ... any Values to include in the success message.
 -- @return table The prepared argument array that was printed.
