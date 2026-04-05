@@ -135,6 +135,26 @@ function inventory:HasItem(identifier)
     return false
 end
 
+--- Returns the first item whose class matches the given base name, or false if none found.
+-- @realm shared
+-- @param baseName string The base class name to check against
+-- @return item|false The first matching item instance, or false
+function inventory:HasItemOfBase(baseName)
+    if ( !isstring(baseName) or baseName == "" ) then return false end
+
+    for id, item in pairs(self.items or {}) do
+        if ( istable(item) ) then
+            local stored = ax.item.stored[item.class]
+
+            if ( istable(stored) and ( stored.base == baseName or stored.class == baseName ) ) then
+                return item
+            end
+        end
+    end
+
+    return false
+end
+
 function inventory:IsReceiver(client)
     if ( !istable(self.receivers) ) then
         self.receivers = {}
