@@ -29,7 +29,7 @@ FACTION.models = {
 -- Precache models for performance
 for i = 1, #FACTION.models do
     util.PrecacheModel(FACTION.models[i])
-    ax.animations:SetModelClass(FACTION.models[i], "citizen_male")
+    ax.animations:SetModelClass(FACTION.models[i], string.find(FACTION.models[i], "female", 1, true) != nil and "citizen_female" or "citizen_male")
 end
 
 -- Custom validation
