@@ -15,10 +15,22 @@
 --- File and JSON helpers.
 -- @section file_utilities
 
---- Detects the realm of a file based on its name.
--- @param file string Filename to inspect (may include path)
--- @return string One of "client", "server", or "shared"
--- @usage local realm = ax.util:DetectFileRealm("cl_init.lua") -- returns "client"
+--- Determines the intended realm of a Lua file from its filename prefix.
+-- Inspects only the filename component (not the directory path). The check is
+-- case-insensitive. Recognised prefixes:
+-- - `cl_` → `"client"`
+-- - `sv_` → `"server"`
+-- - `sh_` or anything else → `"shared"` (default)
+-- This is used internally by `Include` and `IncludeDirectory` to route files
+-- to the correct side automatically when no explicit realm is provided.
+-- @realm shared
+-- @param file string A filename or path. Only the final filename segment is
+--   examined (e.g. `"framework/cl_init.lua"` → inspects `"cl_init.lua"`).
+-- @return string `"client"`, `"server"`, or `"shared"`.
+-- @usage ax.util:DetectFileRealm("cl_hud.lua")         -- "client"
+-- ax.util:DetectFileRealm("sv_database.lua")           -- "server"
+-- ax.util:DetectFileRealm("sh_config.lua")             -- "shared"
+-- ax.util:DetectFileRealm("framework/init.lua")        -- "shared"
 function ax.util:DetectFileRealm(file)
     local fileName = string.GetFileFromFilename(file)
     if ( !fileName or !isstring(fileName) ) then
@@ -61,11 +73,25 @@ local function SafeIncludeCS(path)
     end
 end
 
---- Includes a Lua file, handling AddCSLuaFile/include based on realm.
--- @param path string Path to the Lua file to include (relative to gamemode)
--- @param realm string|nil Optional realm hint: "client", "server", or "shared"
--- @return boolean True if include/AddCSLuaFile was attempted
--- @usage ax.util:Include("framework/util.lua")
+--- Includes a Lua file with automatic realm-based routing.
+-- Normalises path separators and strips leading slashes, then detects the
+-- realm via `DetectFileRealm` if no hint is provided. Routing rules:
+-- - `"client"`: on the server, calls `AddCSLuaFile` only (sends to clients).
+--   On the client, calls `include`.
+-- - `"server"`: calls `include` on the server only. No-op on the client.
+-- - `"shared"`: on the server, calls both `AddCSLuaFile` and `include`.
+--   On the client, calls `include`.
+-- Both `AddCSLuaFile` and `include` are wrapped with `pcall` internally to
+-- prevent one bad file from halting the entire boot sequence. A warning is
+-- printed on failure. Returns false for invalid or non-`.lua` paths.
+-- @realm shared
+-- @param path string Path to the Lua file, relative to the `LUA` mount point.
+-- @param realm string|nil Realm override: `"client"`, `"server"`, or
+--   `"shared"`. Detected automatically from the filename prefix when omitted.
+-- @return boolean True if an include or AddCSLuaFile was attempted, false on
+--   invalid input.
+-- @usage ax.util:Include("framework/sh_util.lua")
+-- ax.util:Include("framework/sv_database.lua", "server")
 function ax.util:Include(path, realm)
     if ( !isstring(path) or path == "" ) then
         ax.util:PrintError("Include: Invalid path parameter provided")
@@ -105,12 +131,30 @@ function ax.util:Include(path, realm)
     end
 end
 
---- Recursively includes all Lua files found under a directory.
--- @param directory string Directory path to include (relative to gamemode)
--- @param fromLua boolean|nil Internal flag used when recursing from Lua
--- @param toSkip table|nil Optional set of filenames or directory names to skip
--- @return boolean True if directory processed
+--- Recursively includes all `.lua` files found under a directory.
+-- On the first call (not from recursion), the calling file's directory is
+-- detected via `debug.getinfo` and prepended to `directory` to resolve
+-- relative paths correctly. Subsequent recursive calls pass `fromLua = true`
+-- to skip that detection step.
+-- Each `.lua` file is passed to `Include`, which handles realm detection and
+-- `AddCSLuaFile`/`include` routing. Subdirectories are processed depth-first.
+-- Files and directories listed in `toSkip` (as keys, e.g. `{ ["boot.lua"] = true }`)
+-- are silently skipped. The optional `timeFilter` (in seconds) skips files
+-- that have not been modified within that time window — useful for selective
+-- hot-reload workflows.
+-- @realm shared
+-- @param directory string Path to the directory to scan, relative to the LUA
+--   mount or the calling file's directory.
+-- @param fromLua boolean|nil Internal recursion flag. Pass nil or false on
+--   the first call; true is set automatically during recursion.
+-- @param toSkip table|nil Table of filenames/directory names to skip, keyed
+--   by name (e.g. `{ ["ignore_me.lua"] = true }`).
+-- @param timeFilter number|nil When provided, files modified more than this
+--   many seconds ago are skipped.
+-- @return boolean True after the directory has been processed, false on
+--   invalid input.
 -- @usage ax.util:IncludeDirectory("framework/libraries/")
+-- ax.util:IncludeDirectory("modules/", nil, { ["old_module.lua"] = true })
 function ax.util:IncludeDirectory(directory, fromLua, toSkip, timeFilter)
     if ( !isstring(directory) or directory == "" ) then
         ax.util:PrintError("IncludeDirectory: Invalid directory parameter provided")
@@ -178,10 +222,17 @@ function ax.util:IncludeDirectory(directory, fromLua, toSkip, timeFilter)
     return true
 end
 
---- Read and parse a JSON file from DATA safely.
--- @param path string Path in DATA to read
--- @return table|nil Parsed table or nil on error
+--- Reads and parses a JSON file from the `DATA` directory.
+-- Reads the file with `file.Read(path, "DATA")`, then deserialises it with
+-- `util.JSONToTable` (wrapped in `pcall`). Returns nil without throwing on
+-- any failure: missing file, empty file, or malformed JSON. Safe to call
+-- speculatively — a missing config file is not an error condition.
+-- @realm shared
+-- @param path string Path relative to the `DATA` directory
+--   (e.g. `"parallax/config.json"`).
+-- @return table|nil The parsed Lua table, or nil on any failure.
 -- @usage local cfg = ax.util:ReadJSON("parallax/config.json")
+-- if ( cfg ) then print(cfg.version) end
 function ax.util:ReadJSON(path)
     if ( !isstring(path) ) then return nil end
 
@@ -196,11 +247,17 @@ function ax.util:ReadJSON(path)
     return nil
 end
 
---- Write a table to a JSON file in DATA safely.
--- @param path string Path in DATA to write
--- @param tbl table Table to serialize
--- @return boolean True on success
--- @usage ax.util:WriteJSON("parallax/config.json", myTable)
+--- Serialises a table to JSON and writes it to a file in the `DATA` directory.
+-- Creates any missing parent directories automatically before writing.
+-- All failure cases (serialisation error, directory creation error, write
+-- error) print a warning and return false without throwing. Serialisation
+-- uses `util.TableToJSON` wrapped in `pcall`.
+-- @realm shared
+-- @param path string Path relative to the `DATA` directory where the file
+--   will be written (e.g. `"parallax/config.json"`).
+-- @param tbl table The table to serialise and write.
+-- @return boolean True on success, false on any failure.
+-- @usage ax.util:WriteJSON("parallax/config.json", { version = "1.0" })
 function ax.util:WriteJSON(path, tbl)
     if ( !isstring(path) or !istable(tbl) ) then return false end
 
@@ -229,11 +286,21 @@ function ax.util:WriteJSON(path, tbl)
     return true
 end
 
---- Build a data file path based on key and scope options.
--- @param key string The data key
--- @param options table|nil Options table (scope, human)
--- @return string The data file path relative to DATA
--- @usage local path = ax.util:BuildDataPath("settings_player", { scope = "project" })
+--- Builds a `DATA`-relative JSON file path for a given key and scope.
+-- `key` is sanitised via `SanitizeKey` to remove filesystem-unsafe characters.
+-- Three scope modes are supported via `options.scope`:
+-- - `"global"` — `global/<key>.json`: shared across all gamemodes on the server.
+-- - `"map"` — `<project>/maps/<mapname>/<key>.json`: per-map within the active
+--   gamemode. Uses `game.GetMap()` for the map name.
+-- - `"project"` (default) — `<project>/<key>.json`: per-gamemode storage.
+-- @realm shared
+-- @param key string The data identifier. Will be sanitised.
+-- @param options table|nil Optional settings:
+--   - `scope` string: `"global"`, `"project"`, or `"map"` (default `"project"`).
+-- @return string The constructed path relative to the `DATA` directory.
+-- @usage ax.util:BuildDataPath("config")                          -- "parallax/config.json"
+-- ax.util:BuildDataPath("config", { scope = "global" })          -- "global/config.json"
+-- ax.util:BuildDataPath("zones", { scope = "map" })              -- "parallax/maps/gm_construct/zones.json"
 function ax.util:BuildDataPath(key, options)
     options = options or {}
 
@@ -250,9 +317,19 @@ function ax.util:BuildDataPath(key, options)
     end
 end
 
---- Ensure parent directories exist for a given data path.
--- @param path string Data path to ensure directories for (e.g. "parallax/foo/bar/")
--- @usage ax.util:EnsureDataDir("parallax/settings_player/")
+--- Creates all directories in a `DATA`-relative path that do not yet exist.
+-- Splits `path` into segments by `/` and walks them cumulatively, calling
+-- `file.CreateDir` for each segment that is not already a directory. Idempotent
+-- — safe to call repeatedly even if the directories already exist.
+-- Typically called before writing a file to guarantee its parent directories
+-- are present.
+-- @realm shared
+-- @param path string A `DATA`-relative path containing the directories to
+--   create (e.g. `"parallax/maps/gm_construct/"`). The trailing slash is
+--   important — any final segment without a slash is treated as a filename and
+--   will not be created as a directory.
+-- @usage ax.util:EnsureDataDir("parallax/settings/")
+-- ax.util:EnsureDataDir("global/maps/rp_city/")
 function ax.util:EnsureDataDir(path)
     -- Create any parent directories needed for a data path
     local parts = {}
@@ -273,6 +350,27 @@ end
 -- https://github.com/NutScript/NutScript/blob/1.2-stable/gamemode/core/libs/sh_plugin.lua#L112
 -- https://github.com/NebulousCloud/helix/blob/master/gamemode/core/libs/sh_plugin.lua#L192
 
+--- Loads scripted entities, weapons, tools, and effects from a directory.
+-- Scans four subdirectories under `path`: `entities/`, `weapons/`, `tools/`,
+-- and `effects/`. For each, both folder-based and single-file layouts are
+-- supported:
+-- - **Folder layout**: a subdirectory per entity containing `init.lua`
+--   (server), `cl_init.lua` (client), and/or `shared.lua` (both).
+-- - **Single-file layout**: a single `.lua` file per entity, included as
+--   shared.
+-- Entities and weapons are registered with `scripted_ents.Register` and
+-- `weapons.Register` respectively. Tools are injected into `gmod_tool`'s
+-- Tool table. Effects are registered client-side only via `effects.Register`.
+-- When any tools are loaded, `spawnmenu_reload` is issued on the client to
+-- refresh the spawnmenu. The optional `timeFilter` skips entities whose
+-- directory or file has not been modified within that many seconds — useful
+-- for selective hot-reload passes.
+-- @realm shared
+-- @param path string The base directory path (LUA-relative) to scan.
+-- @param timeFilter number|nil When set, entities not modified within this
+--   many seconds are skipped.
+-- @usage ax.util:LoadEntities("myaddon")
+-- ax.util:LoadEntities("modules/weapons", 30) -- only reload recently changed
 function ax.util:LoadEntities(path, timeFilter)
     local bLoadedTools
     local files, folders

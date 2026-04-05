@@ -42,7 +42,7 @@ DEFAULT_EXTRA_CSS_CONTENT = """:root {
 """
 
 FUNCTION_DEF_RE = re.compile(
-    r"^\s*(?:local\s+)?function\s+([A-Za-z_][\w\.:]*)\s*\(([^)]*)\)"
+    r"^\s*(local\s+)?function\s+([A-Za-z_][\w\.:]*)\s*\(([^)]*)\)"
 )
 ASSIGN_FUNCTION_DEF_RE = re.compile(
     r"^\s*([A-Za-z_][\w\.:]*)\s*=\s*function\s*\(([^)]*)\)"
@@ -251,7 +251,9 @@ def read_text(path: Path) -> str:
 def find_function_definition(line: str) -> Optional[Tuple[str, str]]:
     match = FUNCTION_DEF_RE.match(line)
     if match:
-        return match.group(1), match.group(2)
+        if match.group(1):  # local function — skip
+            return None
+        return match.group(2), match.group(3)
 
     match = ASSIGN_FUNCTION_DEF_RE.match(line)
     if match:
@@ -430,6 +432,11 @@ def parse_comment_lines(comment_lines: Sequence[str]) -> ParsedComment:
                 parsed.returns[-1].description = line
             continue
 
+        if description_lines and description_lines[-1] != "":
+            prev_content = next((l for l in reversed(description_lines) if l != ""), None)
+            in_list = _is_list_block_line(line) and prev_content is not None and _is_list_block_line(prev_content)
+            if not in_list:
+                description_lines.append("")
         description_lines.append(line)
         context = "description"
 
@@ -468,6 +475,14 @@ def sanitize_signature_args(args: str) -> str:
     parts = [part.strip() for part in args.split(",")]
     parts = [part for part in parts if part]
     return ", ".join(parts)
+
+
+_LIST_LINE_RE = re.compile(r"^\s*[-*+]\s|^\s*\d+[.)]\s")
+
+
+def _is_list_block_line(line: str) -> bool:
+    """True for list markers and indented continuations/sub-items."""
+    return bool(_LIST_LINE_RE.match(line)) or (bool(line) and line[0] == " ")
 
 
 def slugify(value: str) -> str:
