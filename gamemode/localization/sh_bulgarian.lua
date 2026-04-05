@@ -113,6 +113,12 @@ ax.localization:Register("bg", {
     ["config.inventory.pagination.max_page_size.help"] = "Максимален брой стекове с предмети, позволени на страница.",
     ["config.inventory.restore.batch_size.help"] = "Брой предмети от световния инвентар, възстановявани на партида при синхронизация.",
 
+    ---- Weapon Safety
+    ["config.weapon.raise.time"] = "Време на задържане за вдигане на оръжие",
+    ["config.weapon.raise.alwaysraised"] = "Оръжието винаги вдигнато",
+    ["config.weapon.raise.time.help"] = "Колко дълго трябва да се задържи клавишът за презареждане (в секунди), за да се превключи вдигането на оръжието.",
+    ["config.weapon.raise.alwaysraised.help"] = "Когато е включено, всички играчи винаги ще имат вдигнато оръжие, независимо от индивидуалното им състояние.",
+
     ---- Movement
     ["config.jump.power"] = "Сила на Скока",
     ["config.movement.bunnyhop.reduction"] = "Намаление на Скоростта при Bunnyhop",

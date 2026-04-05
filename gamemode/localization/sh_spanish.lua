@@ -120,6 +120,12 @@ ax.localization:Register("es", {
     ["config.inventory.pagination.max_page_size.help"] = "Número máximo de pilas de objetos permitidas por página.",
     ["config.inventory.restore.batch_size.help"] = "Número de objetos de inventario del mundo restaurados por lote de sincronización.",
 
+    ---- Weapon Safety
+    ["config.weapon.raise.time"] = "Tiempo de Pulsación para Levantar Arma",
+    ["config.weapon.raise.alwaysraised"] = "Arma Siempre Levantada",
+    ["config.weapon.raise.time.help"] = "Cuánto tiempo debe mantenerse presionada la tecla de recarga (en segundos) para alternar el levantamiento del arma.",
+    ["config.weapon.raise.alwaysraised.help"] = "Cuando está activado, todos los jugadores siempre tendrán su arma levantada independientemente del estado individual.",
+
     ---- Movement
     ["config.jump.power"] = "Potencia de Salto",
     ["config.movement.bunnyhop.reduction"] = "Reducción de Velocidad con Bunnyhop",
