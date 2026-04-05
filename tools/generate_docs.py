@@ -830,6 +830,14 @@ def group_hook_occurrences(
     return normalized
 
 
+HOOK_KIND_NOTES = {
+    "gm": "Each section includes `hook.Run` callers and `hook.Add` listeners where available.",
+    "module": "Each section includes `hook.Run` callers and `hook.Add` listeners where available.",
+    "run": "Hooks with a GM or MODULE definition are cross-linked to their definition page.",
+    "add": "Hooks with a GM or MODULE definition are cross-linked to their definition page.",
+}
+
+
 def render_hooks_overview(
     grouped_hooks: Dict[str, Dict[str, List[HookOccurrence]]],
     hooks_subdir: str,
@@ -838,28 +846,31 @@ def render_hooks_overview(
     lines: List[str] = []
     lines.append("# Hooks")
     lines.append("")
-    lines.append("Auto-generated hook tracker from framework and module Lua files.")
+    lines.append(
+        "Auto-generated hook tracker from framework and module Lua files. "
+        "The GM and MODULE definition pages show each hook's full lifecycle: "
+        "where it is defined, where it is fired (`hook.Run`), and where listeners are registered (`hook.Add`)."
+    )
     lines.append("")
 
-    total_unique = set()
+    total_unique: set[str] = set()
     for kind in HOOK_KIND_ORDER:
         total_unique.update(grouped_hooks[kind].keys())
 
-    lines.append(f"Unique hook names: **{len(total_unique)}**")
-    lines.append(f"Tracked occurrences: **{sum(len(items) for kind in HOOK_KIND_ORDER for items in grouped_hooks[kind].values())}**")
+    total_occurrences = sum(len(items) for kind in HOOK_KIND_ORDER for items in grouped_hooks[kind].values())
+    lines.append(f"Unique hook names: **{len(total_unique)}** &nbsp;·&nbsp; Tracked occurrences: **{total_occurrences}**")
     lines.append("")
-    lines.append("| Category | Unique Hooks | Occurrences |")
-    lines.append("| --- | --- | --- |")
+    lines.append("| Category | Hooks | Occurrences | Notes |")
+    lines.append("| --- | --- | --- | --- |")
 
     for kind in HOOK_KIND_ORDER:
         hook_count = len(grouped_hooks[kind])
         occurrence_count = sum(len(items) for items in grouped_hooks[kind].values())
         target = Path(hooks_subdir) / f"{kind}.md"
         link = relative_doc_link(overview_doc, target)
-        lines.append(f"| [{HOOK_KIND_TITLE[kind]}]({link}) | {hook_count} | {occurrence_count} |")
+        note = HOOK_KIND_NOTES[kind]
+        lines.append(f"| [{HOOK_KIND_TITLE[kind]}]({link}) | {hook_count} | {occurrence_count} | {note} |")
 
-    lines.append("")
-    lines.append("Use this section to discover implemented hooks and runtime hook usage.")
     lines.append("")
     return "\n".join(lines).rstrip() + "\n"
 
@@ -870,6 +881,7 @@ def render_hook_kind_page(
     grouped_by_name: Dict[str, List[HookOccurrence]],
     source_to_api_page: Dict[str, Path],
     hooks_subdir: str,
+    all_grouped_hooks: Optional[Dict[str, Dict[str, List[HookOccurrence]]]] = None,
 ) -> str:
     current_doc = Path(hooks_subdir) / f"{kind}.md"
     lines: List[str] = []
@@ -886,25 +898,62 @@ def render_hook_kind_page(
 
     lines.append("## Hook List")
     lines.append("")
-    for hook_name, items in grouped_by_name.items():
-        lines.append(f"- `{hook_name}` ({len(items)})")
+    for hook_name in grouped_by_name:
+        lines.append(f"- [`{hook_name}`](#{slugify(hook_name)})")
     lines.append("")
     lines.append("---")
     lines.append("")
 
-    for hook_name, items in grouped_by_name.items():
-        lines.append(f"## {hook_name}")
-        lines.append("")
+    def render_occurrences(items: List[HookOccurrence]) -> List[str]:
+        result: List[str] = []
         for item in items:
             source_rel = item.source_path.relative_to(root).as_posix()
             source_key = str(item.source_path.resolve())
             api_target = source_to_api_page.get(source_key)
             if api_target:
                 link = relative_doc_link(current_doc, api_target)
-                lines.append(f"- [`{source_rel}`]({link}) (line {item.line})")
+                result.append(f"- [`{source_rel}`]({link}) (line {item.line})")
             else:
-                lines.append(f"- `{source_rel}:{item.line}`")
+                result.append(f"- `{source_rel}:{item.line}`")
+        return result
+
+    for hook_name, items in grouped_by_name.items():
+        lines.append(f"## {hook_name}")
         lines.append("")
+
+        if kind in ("gm", "module"):
+            lines.append("#### Defined at")
+            lines.append("")
+            lines.extend(render_occurrences(items))
+            lines.append("")
+
+            if all_grouped_hooks is not None:
+                run_items = all_grouped_hooks["run"].get(hook_name, [])
+                if run_items:
+                    lines.append("#### Fired by (hook.Run)")
+                    lines.append("")
+                    lines.extend(render_occurrences(run_items))
+                    lines.append("")
+
+                add_items = all_grouped_hooks["add"].get(hook_name, [])
+                if add_items:
+                    lines.append("#### Listeners (hook.Add)")
+                    lines.append("")
+                    lines.extend(render_occurrences(add_items))
+                    lines.append("")
+        else:
+            if all_grouped_hooks is not None:
+                if hook_name in all_grouped_hooks.get("gm", {}):
+                    anchor = slugify(hook_name)
+                    lines.append(f"Defined in: [GM Definitions](gm.md#{anchor})")
+                    lines.append("")
+                elif hook_name in all_grouped_hooks.get("module", {}):
+                    anchor = slugify(hook_name)
+                    lines.append(f"Defined in: [MODULE Definitions](module.md#{anchor})")
+                    lines.append("")
+
+            lines.extend(render_occurrences(items))
+            lines.append("")
 
     return "\n".join(lines).rstrip() + "\n"
 
