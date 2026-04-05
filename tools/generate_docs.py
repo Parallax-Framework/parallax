@@ -1173,11 +1173,11 @@ def render_api_index(
         grouped[file_doc.source_group].append(file_doc)
 
     lines: List[str] = []
-    lines.append("# API Reference")
+    lines.append("# Source Reference")
     lines.append("")
-    lines.append("Raw file-by-file API export generated from Lua annotations.")
+    lines.append("File-organized view of all documented Lua source, generated from LDOC annotations.")
     lines.append("")
-    lines.append("For namespace-first browsing, use [Libraries](../{}/index.md).".format(libraries_subdir))
+    lines.append("For concept-first browsing, use [Libraries](../{}/index.md).".format(libraries_subdir))
     lines.append("For hook discovery, use [Hooks](../{}/index.md).".format(hooks_subdir))
     lines.append("")
     lines.append(f"Total documented functions: **{sum(len(file_doc.functions) for file_doc in file_docs)}**")
@@ -1314,7 +1314,7 @@ def build_mkdocs_yaml(
         lines.append("  - Hooks:")
         lines.extend(hooks_nav_lines)
 
-    lines.append("  - API:")
+    lines.append("  - Source Reference:")
     lines.append(f"      - Overview: {normalize_nav_path(f'{api_subdir}/index.md')}")
     lines.extend(render_api_nav_lines(api_tree, 6))
 
@@ -1594,6 +1594,7 @@ def main() -> None:
             grouped_by_name=grouped_hooks[kind],
             source_to_api_page=source_to_api_page,
             hooks_subdir=args.hooks_subdir,
+            all_grouped_hooks=grouped_hooks,
         )
         if write_if_changed(output_path, content, args.dry_run):
             changed_hook_files += 1
