@@ -534,6 +534,21 @@ def anchor_for_function(function_doc: FunctionDoc) -> str:
     return slugify(f"{function_doc.name}-{function_doc.line}")
 
 
+def _library_summary(entries: Sequence[Tuple["FileDoc", "FunctionDoc"]]) -> Optional[str]:
+    for file_doc, _ in entries:
+        if file_doc.summary:
+            return file_doc.summary
+    return None
+
+
+def _library_realms(entries: Sequence[Tuple["FileDoc", "FunctionDoc"]]) -> List[str]:
+    seen: set[str] = set()
+    for _, func_doc in entries:
+        if func_doc.realm:
+            seen.add(func_doc.realm)
+    return sorted(seen)
+
+
 def extract_ax_library_name(function_name: str) -> Optional[str]:
     if not function_name.startswith("ax."):
         return None
@@ -576,22 +591,26 @@ def render_libraries_index(
     lines: List[str] = []
     lines.append("# Libraries")
     lines.append("")
-    lines.append("Namespace-first view of documented `ax.*` libraries.")
+    lines.append(
+        "Primary API reference organized by namespace. "
+        "Each library page contains full inline documentation: descriptions, parameters, return values, realm, and usage examples."
+    )
     lines.append("")
-    lines.append(f"Libraries: **{len(library_index)}**")
-    lines.append(f"Documented functions: **{sum(len(entries) for entries in library_index.values())}**")
+    lines.append(f"Libraries: **{len(library_index)}** &nbsp;·&nbsp; Documented functions: **{sum(len(entries) for entries in library_index.values())}**")
     lines.append("")
-    lines.append("| Library | Functions | Files |")
-    lines.append("| --- | --- | --- |")
+    lines.append("| Library | Description | Functions | Realm(s) |")
+    lines.append("| --- | --- | --- | --- |")
 
     for library_name, entries in sorted(library_index.items(), key=lambda item: nav_sort_key(item[0])):
         page_path = library_pages[library_name]
         link = relative_doc_link(index_doc, page_path)
-        unique_files = {entry[0].output_relative.as_posix() for entry in entries}
-        lines.append(f"| [`{library_name}`]({link}) | {len(entries)} | {len(unique_files)} |")
+        summary = _library_summary(entries) or ""
+        realms = _library_realms(entries)
+        realm_str = ", ".join(f"`{r}`" for r in realms) if realms else ""
+        lines.append(f"| [`{library_name}`]({link}) | {escape_table_cell(summary)} | {len(entries)} | {realm_str} |")
 
     lines.append("")
-    lines.append("Use this section for quick namespace browsing. Raw file hierarchy remains under `API`.")
+    lines.append("For file-tree browsing by source path, see [Source Reference](../api/index.md).")
     lines.append("")
     return "\n".join(lines).rstrip() + "\n"
 
@@ -605,36 +624,86 @@ def render_library_page(
     lines: List[str] = []
     lines.append(f"# {library_name}")
     lines.append("")
-    lines.append("Auto-generated namespace index from Lua annotations.")
-    lines.append("")
-    lines.append(f"Documented functions: **{len(entries)}**")
-    lines.append(f"Source files: **{len({entry[0].output_relative.as_posix() for entry in entries})}**")
-    lines.append("")
 
-    lines.append("## Source Files")
-    lines.append("")
-    seen_files: set[str] = set()
-    for file_doc, _ in entries:
-        file_key = file_doc.output_relative.as_posix()
-        if file_key in seen_files:
-            continue
-        seen_files.add(file_key)
-        link = relative_doc_link(output_relative, file_doc.output_relative)
-        source_rel = file_doc.source_path.relative_to(root).as_posix()
-        lines.append(f"- [`{source_rel}`]({link})")
+    summary = _library_summary(entries)
+    if summary:
+        lines.append(summary)
+        lines.append("")
+
+    realms = _library_realms(entries)
+    realm_str = ", ".join(f"`{r}`" for r in realms)
+    stats = f"Documented functions: **{len(entries)}**"
+    if realm_str:
+        stats += f" &nbsp;·&nbsp; Realm: {realm_str}"
+    lines.append(stats)
     lines.append("")
 
     lines.append("## Functions")
     lines.append("")
-    lines.append("| Function | Source |")
-    lines.append("| --- | --- |")
     for file_doc, function_doc in entries:
         anchor = anchor_for_function(function_doc)
-        function_link = relative_doc_link(output_relative, file_doc.output_relative) + f"#{anchor}"
-        source_rel = file_doc.source_path.relative_to(root).as_posix()
-        lines.append(f"| [`{function_doc.signature}`]({function_link}) | `{source_rel}:{function_doc.line}` |")
-
+        lines.append(f"- [`{function_doc.signature}`](#{anchor})")
     lines.append("")
+
+    lines.append("---")
+    lines.append("")
+
+    for file_doc, function_doc in entries:
+        anchor = anchor_for_function(function_doc)
+        source_rel = file_doc.source_path.relative_to(root).as_posix()
+
+        lines.append(f'<a id="{anchor}"></a>')
+        lines.append(f"### `{function_doc.signature}`")
+        lines.append("")
+
+        if function_doc.description:
+            lines.append(function_doc.description)
+            lines.append("")
+
+        if function_doc.realm:
+            lines.append(f"Realm: `{function_doc.realm}`")
+            lines.append("")
+
+        if function_doc.params:
+            lines.append("**Parameters**")
+            lines.append("")
+            lines.append("| Name | Type | Description |")
+            lines.append("| --- | --- | --- |")
+            for param in function_doc.params:
+                description = param.description or "-"
+                lines.append(
+                    "| `{}` | `{}` | {} |".format(
+                        escape_table_cell(param.name),
+                        escape_table_cell(param.type_name),
+                        escape_table_cell(description),
+                    )
+                )
+            lines.append("")
+
+        if function_doc.returns:
+            lines.append("**Returns**")
+            lines.append("")
+            for return_doc in function_doc.returns:
+                if return_doc.description:
+                    lines.append(f"- `{return_doc.type_name}`: {return_doc.description}")
+                else:
+                    lines.append(f"- `{return_doc.type_name}`")
+            lines.append("")
+
+        if function_doc.usage:
+            lines.append("**Usage**")
+            lines.append("")
+            for snippet in function_doc.usage:
+                lines.append("```lua")
+                lines.append(snippet.rstrip())
+                lines.append("```")
+                lines.append("")
+
+        lines.append(f"Source: `{source_rel}:{function_doc.line}`")
+        lines.append("")
+        lines.append("---")
+        lines.append("")
+
     return "\n".join(lines).rstrip() + "\n"
 
 
