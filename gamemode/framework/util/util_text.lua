@@ -16,15 +16,10 @@
 -- @section text_utilities
 
 --- Truncates text to a maximum character count, appending `"..."` when cut.
--- If the text is already within `maxLength` characters it is returned
--- unchanged. When truncation is needed, the text is cut to
--- `maxLength - 3` characters and `"..."` is appended, so the returned string
--- is always at most `maxLength` characters long in total. Returns `""` and
--- prints an error when either argument is invalid.
+-- If the text is already within `maxLength` characters it is returned unchanged. When truncation is needed, the text is cut to `maxLength - 3` characters and `"..."` is appended, so the returned string is always at most `maxLength` characters long in total. Returns `""` and prints an error when either argument is invalid.
 -- @realm shared
 -- @param text string The text to truncate.
--- @param maxLength number The maximum number of characters allowed (inclusive
---   of the `"..."` suffix).
+-- @param maxLength number The maximum number of characters allowed (inclusive of the `"..."` suffix).
 -- @return string The original text, or a truncated version ending with `"..."`.
 -- @usage ax.util:CapText("Hello, World!", 8)  -- "Hello..."
 -- ax.util:CapText("Hi", 10)                   -- "Hi" (unchanged)
@@ -42,10 +37,7 @@ function ax.util:CapText(text, maxLength)
 end
 
 --- Truncates text at a word boundary to avoid splitting words mid-character.
--- Splits the text by spaces and accumulates words until the next word would
--- exceed `maxLength`. The result always has `"..."` appended, even when the
--- boundary falls exactly at `maxLength`. As a result the returned string may
--- be shorter than `maxLength` if the last fitting word ends well before it.
+-- Splits the text by spaces and accumulates words until the next word would exceed `maxLength`. The result always has `"..."` appended, even when the boundary falls exactly at `maxLength`. As a result the returned string may be shorter than `maxLength` if the last fitting word ends well before it.
 -- Returns `""` and prints an error when either argument is invalid.
 -- @realm shared
 -- @param text string The text to truncate.
@@ -84,12 +76,7 @@ end
 
 if ( CLIENT ) then
     --- Splits text into lines that each fit within a pixel width limit.
-    -- Measures text using `surface.GetTextSize` with `font` to determine
-    -- where line breaks should occur. Words are added to the current line
-    -- until adding the next word would exceed `maxWidth`, at which point a
-    -- new line is started. When a single word is wider than `maxWidth`, it is
-    -- split character-by-character so it always fits. If the entire text fits
-    -- on one line, a single-element table is returned immediately.
+    -- Measures text using `surface.GetTextSize` with `font` to determine where line breaks should occur. Words are added to the current line until adding the next word would exceed `maxWidth`, at which point a new line is started. When a single word is wider than `maxWidth`, it is split character-by-character so it always fits. If the entire text fits on one line, a single-element table is returned immediately.
     -- Returns false (with a printed error) when any argument is invalid.
     -- @realm client
     -- @param text string The text to wrap.
@@ -153,8 +140,7 @@ if ( CLIENT ) then
     end
 
     --- Returns the rendered pixel width of a string in a given font.
-    -- Calls `surface.SetFont(font)` as a side effect, changing the active
-    -- surface font state. Use `GetTextSize` if you need both dimensions at once.
+    -- Calls `surface.SetFont(font)` as a side effect, changing the active surface font state. Use `GetTextSize` if you need both dimensions at once.
     -- @realm client
     -- @param font string The font name to measure with.
     -- @param text string The string to measure.
@@ -166,10 +152,7 @@ if ( CLIENT ) then
     end
 
     --- Returns the line height of a font in pixels.
-    -- Measures the height of the capital letter `"W"` as a representative
-    -- character that occupies the full ascender height of the font. The result
-    -- is the number of vertical pixels a single line of text in this font
-    -- occupies. Calls `surface.SetFont(font)` as a side effect.
+    -- Measures the height of the capital letter `"W"` as a representative character that occupies the full ascender height of the font. The result is the number of vertical pixels a single line of text in this font occupies. Calls `surface.SetFont(font)` as a side effect.
     -- @realm client
     -- @param font string The font name to measure.
     -- @return number The line height in pixels.
@@ -180,9 +163,7 @@ if ( CLIENT ) then
     end
 
     --- Returns the rendered pixel dimensions of a string in a given font.
-    -- Convenience wrapper that calls `surface.SetFont(font)` then returns
-    -- both values from `surface.GetTextSize(text)` in one call. Use this
-    -- when you need both width and height to avoid two separate font sets.
+    -- Convenience wrapper that calls `surface.SetFont(font)` then returns both values from `surface.GetTextSize(text)` in one call. Use this when you need both width and height to avoid two separate font sets.
     -- @realm client
     -- @param font string The font name to measure with.
     -- @param text string The string to measure.

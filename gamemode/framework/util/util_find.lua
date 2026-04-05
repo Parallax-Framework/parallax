@@ -16,11 +16,7 @@
 -- @section find_utilities
 
 --- Normalises a value into a lowercase, trimmed string for search comparisons.
--- Converts `value` to a string via `tostring`, trims leading/trailing
--- whitespace, and lowercases the result using `utf8.lower` when available
--- (falling back to `string.lower`). Returns `""` when the result is empty or
--- when `value` is nil. Used as a pre-processing step by `SearchMatches` to
--- ensure consistent case-insensitive matching.
+-- Converts `value` to a string via `tostring`, trims leading/trailing whitespace, and lowercases the result using `utf8.lower` when available (falling back to `string.lower`). Returns `""` when the result is empty or when `value` is nil. Used as a pre-processing step by `SearchMatches` to ensure consistent case-insensitive matching.
 -- @realm shared
 -- @param value any The value to normalise (coerced to string).
 -- @return string The trimmed, lowercased string, or `""` if empty/nil.
@@ -40,15 +36,11 @@ function ax.util:NormalizeSearchString(value)
 end
 
 --- Tests whether a search query is contained in any of the provided candidates.
--- Both the query and each candidate are normalised with `NormalizeSearchString`
--- before comparison. An empty query always returns true — this matches the
--- convention of "show everything when the search box is blank". The check is
--- substring-based (not exact match), so `"cit"` will match `"citizen"`.
+-- Both the query and each candidate are normalised with `NormalizeSearchString` before comparison. An empty query always returns true — this matches the convention of "show everything when the search box is blank". The check is substring-based (not exact match), so `"cit"` will match `"citizen"`.
 -- @realm shared
 -- @param query string The search text to look for.
 -- @param ... any Candidate values to test against (each coerced to string).
--- @return boolean True if the query is empty, or if any candidate contains
---   the query as a substring (case-insensitive).
+-- @return boolean True if the query is empty, or if any candidate contains the query as a substring (case-insensitive).
 -- @usage ax.util:SearchMatches("pol", "Citizen", "Police Officer") -- true
 -- ax.util:SearchMatches("", "anything")                            -- true
 -- ax.util:SearchMatches("xyz", "Citizen", "Police")               -- false
@@ -69,20 +61,14 @@ function ax.util:SearchMatches(query, ...)
 end
 
 --- Tests whether `find` appears as a substring inside `str`.
--- By default the search is case-insensitive (both strings are lowercased via
--- `utf8.lower` or `string.lower` before comparison) and pattern characters in
--- `find` are treated as plain text. All optional parameters allow overriding
--- these defaults when needed.
+-- By default the search is case-insensitive (both strings are lowercased via `utf8.lower` or `string.lower` before comparison) and pattern characters in `find` are treated as plain text. All optional parameters allow overriding these defaults when needed.
 -- Prints an error and returns false when either `str` or `find` is nil.
 -- @realm shared
 -- @param str string The string to search in.
 -- @param find string The substring (or pattern) to search for.
--- @param caseSensitive boolean|nil When true, the strings are compared without
---   lowercasing. Default: false (case-insensitive).
--- @param startPos number|nil The character position to start searching from.
---   Default: 0 (from the beginning).
--- @param usePatterns boolean|nil When true, `find` is treated as a Lua
---   pattern. Default: false (plain-text search via `string.find` plain flag).
+-- @param caseSensitive boolean|nil When true, the strings are compared without lowercasing. Default: false (case-insensitive).
+-- @param startPos number|nil The character position to start searching from. Default: 0 (from the beginning).
+-- @param usePatterns boolean|nil When true, `find` is treated as a Lua pattern. Default: false (plain-text search via `string.find` plain flag).
 -- @return boolean True if `find` appears in `str`, false otherwise.
 -- @usage ax.util:FindString("Hello World", "world")            -- true
 -- ax.util:FindString("Hello World", "World", true)            -- true (exact case)
@@ -108,11 +94,7 @@ function ax.util:FindString(str, find, caseSensitive, startPos, usePatterns)
 end
 
 --- Tests whether any word in a text block contains a substring.
--- Splits `txt` by both spaces and newlines and passes each word individually
--- to `FindString`. Returns true as soon as any word matches. Returns false
--- immediately when either argument is nil. This is more permissive than a
--- whole-string search — it matches even when the query appears in only one
--- word of a multi-word text.
+-- Splits `txt` by both spaces and newlines and passes each word individually to `FindString`. Returns true as soon as any word matches. Returns false immediately when either argument is nil. This is more permissive than a whole-string search — it matches even when the query appears in only one word of a multi-word text.
 -- @realm shared
 -- @param txt string The text block to split and search.
 -- @param find string The substring to look for in each word.
@@ -147,14 +129,11 @@ end
 -- 3. If `identifier` is a string, the following are tried in order:
 --    a. SteamID format (e.g. `"STEAM_0:1:12345"`) → `player.GetBySteamID`
 --    b. SteamID64 format (e.g. `"76561198..."`) → `player.GetBySteamID64`
---    c. Partial name/SteamID/SteamID64 substring match against all players
---       (case-insensitive, first match wins).
--- 4. If `identifier` is a table (array), each element is tried recursively
---    and the first successful match is returned.
+--    c. Partial name/SteamID/SteamID64 substring match against all players (case-insensitive, first match wins).
+-- 4. If `identifier` is a table (array), each element is tried recursively and the first successful match is returned.
 -- Returns `NULL` (not nil) on no match — callers should test with `IsValid`.
 -- @realm shared
--- @param identifier number|string|Player|table An entity index, SteamID,
---   SteamID64, name substring, a Player entity, or a table of any of these.
+-- @param identifier number|string|Player|table An entity index, SteamID, SteamID64, name substring, a Player entity, or a table of any of these.
 -- @return Player|NULL The matched player entity, or `NULL` if not found.
 -- @usage ax.util:FindPlayer("76561198000000000")
 -- ax.util:FindPlayer("John")      -- partial name match
@@ -224,19 +203,11 @@ end
 
 --- Finds a character by numeric ID or by name (partial, case-insensitive).
 -- Searches in two passes:
--- 1. **Active characters** — iterates connected players and tests each one's
---    current character (`client:GetCharacter()`). Numeric identifiers are
---    matched by exact character ID; string identifiers are matched by name
---    using `FindString` (partial, case-insensitive, exact matches take
---    priority via the `matchesByName` helper).
--- 2. **All instances** — if no active character matched, falls back to
---    `ax.character.instances` (all loaded characters regardless of whether
---    a player is using them). Numeric lookup uses direct table indexing;
---    string lookup uses the same name-matching helper.
+-- 1. **Active characters** — iterates connected players and tests each one's current character (`client:GetCharacter()`). Numeric identifiers are matched by exact character ID; string identifiers are matched by name using `FindString` (partial, case-insensitive, exact matches take priority via the `matchesByName` helper).
+-- 2. **All instances** — if no active character matched, falls back to `ax.character.instances` (all loaded characters regardless of whether a player is using them). Numeric lookup uses direct table indexing; string lookup uses the same name-matching helper.
 -- Returns nil when nothing is found.
 -- @realm shared
--- @param identifier number|string A numeric character ID or a name string
---   (full or partial).
+-- @param identifier number|string A numeric character ID or a name string (full or partial).
 -- @return ax.character.meta|nil The matched character object, or nil.
 -- @usage ax.util:FindCharacter(42)        -- by ID
 -- ax.util:FindCharacter("John")           -- partial name match
