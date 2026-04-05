@@ -203,53 +203,7 @@ if ( SERVER ) then
 	end
 end
 
-if ( CLIENT ) then
-	local function ApplyTooltipRow(row, text, color, bImportant)
-		if ( !row ) then
-			return
-		end
-
-		if ( isfunction(row.SetText) ) then
-			row:SetText(text)
-		end
-
-		if ( color and isfunction(row.SetBackgroundColor) ) then
-			row:SetBackgroundColor(color)
-		end
-
-		if ( bImportant and isfunction(row.SetImportant) ) then
-			row:SetImportant()
-		end
-
-		if ( isfunction(row.SizeToContents) ) then
-			row:SizeToContents()
-		end
-	end
-
-	function ENT:GetDisplayDescription()
-		local definition = self:GetDefinition()
-		return definition and definition.description or ""
-	end
-
-	function ENT:OnPopulateEntityInfo(tooltip)
-		if ( !tooltip or !isfunction(tooltip.AddRow) ) then
-			return
-		end
-
-		local definition = self:GetDefinition()
-		local name = self:GetDisplayName() != "" and self:GetDisplayName() or (definition and definition.name or "Container")
-		local description = definition and definition.description or ""
-		local color = definition and definition.color or Color(200, 200, 200)
-		local lockColor = self:GetLocked() and Color(170, 70, 70) or Color(70, 170, 70)
-		local lockText = self:GetLocked() and ax.localization:GetPhrase("container.locked") or ax.localization:GetPhrase("container.unlocked")
-
-		ApplyTooltipRow(tooltip:AddRow("lock"), lockText, lockColor, true)
-		ApplyTooltipRow(tooltip:AddRow("name"), name, color, true)
-
-		local descriptionRow = tooltip:AddRow("description")
-		ApplyTooltipRow(descriptionRow, description, nil, false)
-		if ( descriptionRow and isfunction(descriptionRow.SetWrap) ) then
-			descriptionRow:SetWrap(true)
-		end
-	end
+function ENT:GetDisplayDescription()
+	local definition = self:GetDefinition()
+	return definition and definition.description or ""
 end

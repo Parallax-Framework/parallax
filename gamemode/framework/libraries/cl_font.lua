@@ -208,11 +208,11 @@ concommand.Add("ax_font_list", function(client, cmd, args)
     for name, data in args[1] and SortedPairsByMemberValue(ax.font.stored, "size", true) or SortedPairs(ax.font.stored) do
         ax.util:Print(" - " .. name)
     end
-end, nil, "List all available fonts in the Parallax Framework. Use 'ax_font_list combinations' to see all style combinations.", FCVAR_HIDDEN)
+end, nil, "List all available fonts in the Parallax Framework. Use 'ax_font_list combinations' to see all style combinations.")
 
 concommand.Add("ax_font_reload", function(client, cmd, args)
     ax.font:Load()
-end, nil, "Reload all fonts in the Parallax Framework", FCVAR_HIDDEN)
+end, nil, "Reload all fonts in the Parallax Framework")
 
 concommand.Add("ax_font_wipe", function(client, cmd, args)
     for name, data in pairs(ax.font.stored) do
@@ -221,7 +221,7 @@ concommand.Add("ax_font_wipe", function(client, cmd, args)
         end
     end
     ax.util:Print("Wiped and reloaded all Parallax Framework fonts.")
-end, nil, "Wipe and reload all Parallax Framework fonts", FCVAR_HIDDEN)
+end, nil, "Wipe and reload all Parallax Framework fonts")
 
 --- Available fonts registered in the Parallax Framework
 -- @table AX_FONTS

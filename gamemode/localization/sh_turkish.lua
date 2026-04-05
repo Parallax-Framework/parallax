@@ -121,6 +121,12 @@ ax.localization:Register("tr", {
     ["config.inventory.pagination.max_page_size.help"] = "Sayfa başına izin verilen maksimum öğe yığını sayısı.",
     ["config.inventory.restore.batch_size.help"] = "Senkronizasyon başına geri yüklenen dünya envanteri öğe sayısı.",
 
+    ---- Weapon Safety
+    ["config.weapon.raise.time"] = "Silah Kaldırma Basılı Tutma Süresi",
+    ["config.weapon.raise.alwaysraised"] = "Silah Her Zaman Kaldırılı",
+    ["config.weapon.raise.time.help"] = "Silah kaldırmayı değiştirmek için yeniden yükleme tuşunun kaç saniye basılı tutulması gerektiği.",
+    ["config.weapon.raise.alwaysraised.help"] = "Etkinleştirildiğinde, tüm oyuncular bireysel durumdan bağımsız olarak silahlarını her zaman kaldırılı tutacak.",
+
     ---- Movement
     ["config.jump.power"] = "Zıplama Gücü",
     ["config.movement.bunnyhop.reduction"] = "Bunnyhop Hız Azaltma",

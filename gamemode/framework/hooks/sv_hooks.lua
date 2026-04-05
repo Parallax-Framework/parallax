@@ -284,7 +284,7 @@ function GM:PlayerInitialSpawn(client)
     local steamID64 = client:SteamID64()
     ax.util:PrintDebug("Client " .. steamID64 .. " has connected, waiting for full update request...")
 
-    for k, v in ipairs(player.GetAll()) do
+    for k, v in player.Iterator() do
         v:ChatPrint(Color(60, 220, 120), "Player " .. client:SteamName() .. " has joined the server.")
     end
 
@@ -355,7 +355,7 @@ hook.Add("player_disconnect", "Parallax.PlayerDisconnected", function(data)
         end
     end
 
-    for k, v in ipairs(player.GetAll()) do
+    for k, v in player.Iterator() do
         v:ChatPrint(Color(220, 60, 60), "Player " .. name .. " has disconnected. (" .. reason .. ")")
     end
 end)
@@ -450,7 +450,7 @@ function GM:Move(client, moveData)
             return
         end
 
-        if ( bit.band(moveData:GetButtons(), IN_JUMP) != 0 and hook.Run("CanPlayerUnRagdoll", client) != false ) then
+        if ( client:Alive() and bit.band(moveData:GetButtons(), IN_JUMP) != 0 and hook.Run("CanPlayerUnRagdoll", client) != false ) then
             client:PerformAction("Getting up...", 5, function()
                 SafeRemoveEntity(ragdoll)
             end, nil, true)
@@ -491,7 +491,7 @@ local function CalcPlayerCanHearPlayersVoice(listener)
     listenerTable.axVoiceHear = listenerTable.axVoiceHear or {}
     listenerTable.axVoiceHearDynamic = listenerTable.axVoiceHearDynamic or {}
 
-    for _, speaker in ipairs(player.GetAll()) do
+    for _, speaker in player.Iterator() do
         if ( !ax.util:IsValidPlayer(speaker) or !speaker:GetCharacter() or speaker == listener ) then
             continue
         end
@@ -534,7 +534,7 @@ function GM:PlayerCanHearPlayersVoice(listener, speaker)
 end
 
 function GM:Think()
-    for k, v in ipairs(player.GetAll()) do
+    for k, v in player.Iterator() do
         hook.Run("PlayerThink", v)
     end
 end
@@ -585,7 +585,7 @@ end
 function GM:ShutDown()
     -- PlayerDisconnected isn't called on p2p/singleplayer
     if ( !game.IsDedicated() ) then
-        for _, client in ipairs(player.GetAll()) do
+        for _, client in player.Iterator() do
             hook.Run("PlayerDisconnected", client)
         end
     end

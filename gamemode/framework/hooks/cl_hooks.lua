@@ -165,6 +165,7 @@ function GM:ShouldDrawVersionWatermark()
     return ax.ENV != nil and ax.ENV:IsDev()
 end
 
+local WATERMARK_COL = Color(255, 255, 255, 50)
 function GM:PostRenderCurvy()
     local _, height = ScrW(), ScrH()
     ax.notification:Render()
@@ -176,7 +177,7 @@ function GM:PostRenderCurvy()
             versionText = versionText .. " (" .. ax.version.data.commitHash .. ")"
         end
 
-        draw.SimpleText(versionText, "ax.small.bold", ax.util:ScreenScale(4), height - ax.util:ScreenScaleH(4), Color(255, 255, 255, 50), TEXT_ALIGN_LEFT, TEXT_ALIGN_BOTTOM)
+        draw.SimpleText(versionText, "ax.small.bold", ax.util:ScreenScale(4), height - ax.util:ScreenScaleH(4), WATERMARK_COL, TEXT_ALIGN_LEFT, TEXT_ALIGN_BOTTOM)
     end
 end
 
@@ -285,24 +286,6 @@ end
 
 local targetData = {}
 
-local function GetPlayerFromAttachedRagdoll(entity)
-    if ( !IsValid(entity) or entity:GetClass() != "prop_ragdoll" ) then
-        return nil
-    end
-
-    local entIndex = entity:EntIndex()
-    for _, client in ipairs(player.GetAll()) do
-        if ( !ax.util:IsValidPlayer(client) ) then
-            continue
-        end
-
-        if ( client:GetRelay("ragdoll.index", -1) == entIndex ) then
-            return client
-        end
-    end
-
-    return nil
-end
 
 function GM:HUDPaint()
     local client = ax.client
@@ -337,11 +320,11 @@ function GM:HUDPaint()
         end
 
         if ( data.alpha > 1 ) then
-            local displayEntity = GetPlayerFromAttachedRagdoll(ent) or ent
+            local displayEntity = ax.util:GetPlayerFromAttachedRagdoll(ent) or ent
             local displayText, displayColor, bShouldFlash = hook.Run("GetEntityDisplayText", displayEntity)
             if ( isstring(displayText) ) then
                 local pos = ent:LocalToWorld(ent:OBBCenter())
-                local ragdollOwner = GetPlayerFromAttachedRagdoll(ent)
+                local ragdollOwner = ax.util:GetPlayerFromAttachedRagdoll(ent)
                 if ( ax.util:IsValidPlayer(ent) or ax.util:IsValidPlayer(ragdollOwner) ) then
                     pos = pos + Vector(0, 0, 16)
                 end
@@ -383,7 +366,7 @@ end
 function GM:GetEntityDisplayText(entity)
     local target = entity
 
-    local ragdollOwner = GetPlayerFromAttachedRagdoll(entity)
+    local ragdollOwner = ax.util:GetPlayerFromAttachedRagdoll(entity)
     if ( ax.util:IsValidPlayer(ragdollOwner) ) then
         target = ragdollOwner
     end
@@ -420,7 +403,7 @@ end
 function GM:HUDPaintTargetIDExtra(entity, x, y, alpha)
     local target = entity
 
-    local ragdollOwner = GetPlayerFromAttachedRagdoll(entity)
+    local ragdollOwner = ax.util:GetPlayerFromAttachedRagdoll(entity)
     if ( ax.util:IsValidPlayer(ragdollOwner) ) then
         target = ragdollOwner
     end
@@ -478,7 +461,7 @@ function GM:PostDrawTranslucentRenderables(depth, skybox)
 
     local ft = FrameTime()
     local curTime = CurTime()
-    for _, client in ipairs(player.GetAll()) do
+    for _, client in player.Iterator() do
         if ( !ax.util:IsValidPlayer(client) or !client:Alive() or client == ax.client or !client:IsSpeaking() ) then continue end
 
         local headBone = client:LookupBone("ValveBiped.Bip01_Head1")

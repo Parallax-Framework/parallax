@@ -579,6 +579,31 @@ function ax.util:Assert(condition, errorMessage, ...)
     return condition, ...
 end
 
+--- Returns the player that owns a death ragdoll attached via ragdoll.index relay.
+-- Returns nil if the entity is not a ragdoll or has no matching owner.
+-- @realm shared
+-- @param entity Entity The entity to check
+-- @return Player|nil The owning player, or nil
+-- @usage local client = ax.util:GetPlayerFromAttachedRagdoll(ent)
+function ax.util:GetPlayerFromAttachedRagdoll(entity)
+    if ( !IsValid(entity) or entity:GetClass() != "prop_ragdoll" ) then
+        return nil
+    end
+
+    local entIndex = entity:EntIndex()
+    for _, client in ipairs(player.GetAll()) do
+        if ( !ax.util:IsValidPlayer(client) ) then
+            continue
+        end
+
+        if ( client:GetRelay("ragdoll.index", -1) == entIndex ) then
+            return client
+        end
+    end
+
+    return nil
+end
+
 function ax.util:AssertDebug(condition, errorMessage, ...)
     errorMessage = errorMessage or "Assertion failed"
     if ( !condition ) then

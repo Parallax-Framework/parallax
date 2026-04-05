@@ -122,6 +122,12 @@ ax.localization:Register("ru", {
     ["config.inventory.pagination.max_page_size.help"] = "Максимальное количество стеков предметов на одной странице.",
     ["config.inventory.restore.batch_size.help"] = "Количество предметов мирового инвентаря, восстанавливаемых за один пакет синхронизации.",
 
+    ---- Weapon Safety
+    ["config.weapon.raise.time"] = "Время удержания для поднятия оружия",
+    ["config.weapon.raise.alwaysraised"] = "Оружие всегда поднято",
+    ["config.weapon.raise.time.help"] = "Как долго нужно удерживать клавишу перезарядки (в секундах) для переключения поднятия оружия.",
+    ["config.weapon.raise.alwaysraised.help"] = "При включении все игроки всегда будут держать оружие поднятым, независимо от индивидуального состояния.",
+
     ---- Movement
     ["config.jump.power"] = "Сила Прыжка",
     ["config.movement.bunnyhop.reduction"] = "Снижение скорости при баннихопе",

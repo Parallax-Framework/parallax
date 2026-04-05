@@ -87,17 +87,17 @@ Add comments to explain complex operations:
 -- 4. Player must meet reputation requirements
 function FACTION:CanBecome(client)
     local char = client:GetCharacter()
-    
+
     if !client:Alive() then
         return false, "You must be alive to join this faction"
     end
-    
+
     if char:IsArrested() then
         return false, "You cannot join while arrested"
     end
-    
+
     -- ... more checks
-    
+
     return true
 end
 ```
@@ -127,7 +127,7 @@ function GetData(key)
     if cachedData[key] then
         return cachedData[key]
     end
-    
+
     local query = mysql:Select("table")
     query:Where("key", key)
     query:Callback(function(result)
@@ -182,7 +182,7 @@ end)
 -- Bad: Do expensive operations in Think hook
 function SCHEMA:Think()
     -- Expensive operation every frame!
-    for _, ply in ipairs(player.GetAll()) do
+    for _, ply in player.Iterator() do
         -- Heavy calculations
     end
 end
@@ -321,11 +321,11 @@ end
 -- Good: Check permissions
 function FACTION:CanBecome(client)
     local char = client:GetCharacter()
-    
+
     if char:GetVar("banned") then
         return false, "You are banned"
     end
-    
+
     return true
 end
 
@@ -417,7 +417,7 @@ query:Callback(function(result, status)
         ax.util:PrintError("Query failed")
         return
     end
-    
+
     -- Process result
 end)
 query:Execute()
@@ -517,13 +517,13 @@ Start with a minimal schema and add features one at a time:
 function ITEM:CanUse(client)
     -- Test with nil client
     if !IsValid(client) then return false end
-    
+
     -- Test with dead player
     if !client:Alive() then return false end
-    
+
     -- Test with full inventory
     if inventory:IsFull() then return false end
-    
+
     return true
 end
 ```
@@ -683,7 +683,7 @@ end
 ```lua
 -- Bad: Send data every frame
 function SCHEMA:Think()
-    for _, ply in ipairs(player.GetAll()) do
+    for _, ply in player.Iterator() do
         ax.net:Start(nil, "player_pos", ply:GetPos())
     end
 end
@@ -691,7 +691,7 @@ end
 -- Good: Send data periodically
 timer.Create("SyncPositions", 1, 0, function()
     local positions = {}
-    for _, ply in ipairs(player.GetAll()) do
+    for _, ply in player.Iterator() do
         positions[ply] = ply:GetPos()
     end
     ax.net:Start(nil, "player_positions", positions)
@@ -719,7 +719,7 @@ ax.command:Add("give", {
         if !IsValid(target) then
             return false, "Invalid target"
         end
-        
+
         target:AddMoney(amount)
         return true
     end
@@ -745,7 +745,7 @@ function GetDistance(a, b)
     if distanceCache[key] then
         return distanceCache[key]
     end
-    
+
     local dist = a:Distance(b)
     distanceCache[key] = dist
     return dist

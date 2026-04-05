@@ -40,6 +40,11 @@ function character:GetOwner()
     return self.player
 end
 
+character.GetPlayer = character.GetOwner
+character.GetPly = character.GetOwner
+character.GetUser = character.GetOwner
+character.GetClient = character.GetOwner
+
 function character:GetFactionData()
     return ax.faction:Get(self.vars.faction)
 end

@@ -155,11 +155,8 @@ if ( SERVER ) then
                 self:SetNoDraw(false)
                 self:DrawShadow(true)
                 self.ignoreUse = false
-                self.ixIsMuted = false
 
-                for _, v in ents.Iterator() do
-                    if ( v:GetParent() != self ) then continue end
-
+                for _, v in ipairs(self:GetChildren()) do
                     v:SetNotSolid(false)
                     v:SetNoDraw(false)
 
@@ -179,19 +176,16 @@ if ( SERVER ) then
         self:DrawShadow(false)
         self.ignoreUse = true
         self.axDoorDummy = dummy
-        self.ixIsMuted = true
         self:DeleteOnRemove(dummy)
 
         dummy:InheritBodygroups(self)
 
-        for _, v in ents.Iterator() do
-            if ( v:GetParent() == self ) then
-                v:SetNotSolid(true)
-                v:SetNoDraw(true)
+        for _, v in ipairs(self:GetChildren()) do
+            v:SetNotSolid(true)
+            v:SetNoDraw(true)
 
-                if ( v.OnDoorBlasted ) then
-                    v:OnDoorBlasted(self)
-                end
+            if ( v.OnDoorBlasted ) then
+                v:OnDoorBlasted(self)
             end
         end
 
@@ -220,7 +214,7 @@ if ( SERVER ) then
                     dummy:SetColor(ColorAlpha(color, alpha))
 
                     if ( alpha <= 0 ) then
-                        dummy:Remove()
+                        SafeRemoveEntity(dummy)
                     end
                 else
                     timer.Remove(uniqueID)

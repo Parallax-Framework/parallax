@@ -123,7 +123,7 @@ function ax.util:FindPlayer(identifier)
         elseif ( ax.type:Sanitise(ax.type.steamid64, identifier) ) then
             return player.GetBySteamID64(identifier)
         else
-            for _, v in ipairs(player.GetAll()) do
+            for _, v in player.Iterator() do
                 if ( self:FindString(v:Nick(), identifier) or self:FindString(v:SteamName(), identifier) or self:FindString(v:SteamID(), identifier) or self:FindString(v:SteamID64(), identifier) ) then
                     return v
                 end
@@ -181,7 +181,7 @@ function ax.util:FindCharacter(identifier)
     local identifierNumber = tonumber(identifier)
 
     -- First: search active characters bound to players
-    for _, client in ipairs(player.GetAll()) do
+    for _, client in player.Iterator() do
         if ( !ax.util:IsValidPlayer(client) ) then continue end
 
         local char = client:GetCharacter()

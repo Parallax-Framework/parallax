@@ -132,7 +132,7 @@ function MODULE:Think()
     local ft = FrameTime()
 
     -- Process each speaker
-    for _, speaker in ipairs(player.GetAll()) do
+    for _, speaker in player.Iterator() do
         if ( !IsValid(speaker) or speaker == listener or !speaker:IsSpeaking() ) then
             continue
         end

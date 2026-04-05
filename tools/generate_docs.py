@@ -534,6 +534,41 @@ def anchor_for_function(function_doc: FunctionDoc) -> str:
     return slugify(f"{function_doc.name}-{function_doc.line}")
 
 
+def _library_summary(entries: Sequence[Tuple["FileDoc", "FunctionDoc"]]) -> Optional[str]:
+    for file_doc, _ in entries:
+        if file_doc.summary:
+            return file_doc.summary
+    return None
+
+
+def _library_realms(entries: Sequence[Tuple["FileDoc", "FunctionDoc"]]) -> List[str]:
+    seen: set[str] = set()
+    for _, func_doc in entries:
+        if func_doc.realm:
+            seen.add(func_doc.realm)
+    return sorted(seen)
+
+
+def _uncovered_file_docs(
+    file_docs: Sequence["FileDoc"],
+    library_index: Dict[str, List[Tuple["FileDoc", "FunctionDoc"]]],
+) -> List["FileDoc"]:
+    """Return FileDoc objects whose functions don't appear in any ax.* library."""
+    covered: set[str] = {
+        str(fd.source_path.resolve())
+        for entries in library_index.values()
+        for fd, _ in entries
+    }
+    seen: set[str] = set()
+    result = []
+    for fd in file_docs:
+        key = str(fd.source_path.resolve())
+        if key not in covered and key not in seen:
+            seen.add(key)
+            result.append(fd)
+    return result
+
+
 def extract_ax_library_name(function_name: str) -> Optional[str]:
     if not function_name.startswith("ax."):
         return None
@@ -571,28 +606,63 @@ def render_libraries_index(
     library_index: Dict[str, List[Tuple[FileDoc, FunctionDoc]]],
     library_pages: Dict[str, Path],
     libraries_subdir: str,
+    uncovered_file_docs: Sequence[FileDoc] = (),
 ) -> str:
     index_doc = Path(libraries_subdir) / "index.md"
+    total_ax_funcs = sum(len(entries) for entries in library_index.values())
+    total_other_funcs = sum(len(fd.functions) for fd in uncovered_file_docs)
+
     lines: List[str] = []
-    lines.append("# Libraries")
+    lines.append("# API Reference")
     lines.append("")
-    lines.append("Namespace-first view of documented `ax.*` libraries.")
+    lines.append(
+        "Complete API reference for the Parallax framework. "
+        "Each page contains full inline documentation: descriptions, parameters, return values, realm, and usage examples."
+    )
     lines.append("")
-    lines.append(f"Libraries: **{len(library_index)}**")
-    lines.append(f"Documented functions: **{sum(len(entries) for entries in library_index.values())}**")
+    lines.append(
+        f"Libraries: **{len(library_index)}** &nbsp;·&nbsp; "
+        f"Other files: **{len(uncovered_file_docs)}** &nbsp;·&nbsp; "
+        f"Documented functions: **{total_ax_funcs + total_other_funcs}**"
+    )
     lines.append("")
-    lines.append("| Library | Functions | Files |")
-    lines.append("| --- | --- | --- |")
+
+    lines.append("## Libraries")
+    lines.append("")
+    lines.append("| Library | Description | Functions | Realm(s) |")
+    lines.append("| --- | --- | --- | --- |")
 
     for library_name, entries in sorted(library_index.items(), key=lambda item: nav_sort_key(item[0])):
         page_path = library_pages[library_name]
         link = relative_doc_link(index_doc, page_path)
-        unique_files = {entry[0].output_relative.as_posix() for entry in entries}
-        lines.append(f"| [`{library_name}`]({link}) | {len(entries)} | {len(unique_files)} |")
+        summary = _library_summary(entries) or ""
+        realms = _library_realms(entries)
+        realm_str = ", ".join(f"`{r}`" for r in realms) if realms else ""
+        lines.append(f"| [`{library_name}`]({link}) | {escape_table_cell(summary)} | {len(entries)} | {realm_str} |")
 
     lines.append("")
-    lines.append("Use this section for quick namespace browsing. Raw file hierarchy remains under `API`.")
-    lines.append("")
+
+    if uncovered_file_docs:
+        grouped: Dict[str, List[FileDoc]] = defaultdict(list)
+        for fd in uncovered_file_docs:
+            grouped[fd.source_group].append(fd)
+
+        lines.append("## Other Files")
+        lines.append("")
+        lines.append("| File | Description | Functions | Realm(s) |")
+        lines.append("| --- | --- | --- | --- |")
+
+        for group_name in sorted(grouped):
+            for fd in sorted(grouped[group_name], key=lambda item: nav_sort_key(item.module or item.relative_path.with_suffix("").as_posix())):
+                link = relative_doc_link(index_doc, fd.output_relative)
+                label = fd.module or fd.relative_path.with_suffix("").as_posix()
+                summary = fd.summary or ""
+                realms = sorted({fn.realm for fn in fd.functions if fn.realm})
+                realm_str = ", ".join(f"`{r}`" for r in realms) if realms else ""
+                lines.append(f"| [`{label}`]({link}) | {escape_table_cell(summary)} | {len(fd.functions)} | {realm_str} |")
+
+        lines.append("")
+
     return "\n".join(lines).rstrip() + "\n"
 
 
@@ -605,36 +675,86 @@ def render_library_page(
     lines: List[str] = []
     lines.append(f"# {library_name}")
     lines.append("")
-    lines.append("Auto-generated namespace index from Lua annotations.")
-    lines.append("")
-    lines.append(f"Documented functions: **{len(entries)}**")
-    lines.append(f"Source files: **{len({entry[0].output_relative.as_posix() for entry in entries})}**")
-    lines.append("")
 
-    lines.append("## Source Files")
-    lines.append("")
-    seen_files: set[str] = set()
-    for file_doc, _ in entries:
-        file_key = file_doc.output_relative.as_posix()
-        if file_key in seen_files:
-            continue
-        seen_files.add(file_key)
-        link = relative_doc_link(output_relative, file_doc.output_relative)
-        source_rel = file_doc.source_path.relative_to(root).as_posix()
-        lines.append(f"- [`{source_rel}`]({link})")
+    summary = _library_summary(entries)
+    if summary:
+        lines.append(summary)
+        lines.append("")
+
+    realms = _library_realms(entries)
+    realm_str = ", ".join(f"`{r}`" for r in realms)
+    stats = f"Documented functions: **{len(entries)}**"
+    if realm_str:
+        stats += f" &nbsp;·&nbsp; Realm: {realm_str}"
+    lines.append(stats)
     lines.append("")
 
     lines.append("## Functions")
     lines.append("")
-    lines.append("| Function | Source |")
-    lines.append("| --- | --- |")
     for file_doc, function_doc in entries:
         anchor = anchor_for_function(function_doc)
-        function_link = relative_doc_link(output_relative, file_doc.output_relative) + f"#{anchor}"
-        source_rel = file_doc.source_path.relative_to(root).as_posix()
-        lines.append(f"| [`{function_doc.signature}`]({function_link}) | `{source_rel}:{function_doc.line}` |")
-
+        lines.append(f"- [`{function_doc.signature}`](#{anchor})")
     lines.append("")
+
+    lines.append("---")
+    lines.append("")
+
+    for file_doc, function_doc in entries:
+        anchor = anchor_for_function(function_doc)
+        source_rel = file_doc.source_path.relative_to(root).as_posix()
+
+        lines.append(f'<a id="{anchor}"></a>')
+        lines.append(f"### `{function_doc.signature}`")
+        lines.append("")
+
+        if function_doc.description:
+            lines.append(function_doc.description)
+            lines.append("")
+
+        if function_doc.realm:
+            lines.append(f"Realm: `{function_doc.realm}`")
+            lines.append("")
+
+        if function_doc.params:
+            lines.append("**Parameters**")
+            lines.append("")
+            lines.append("| Name | Type | Description |")
+            lines.append("| --- | --- | --- |")
+            for param in function_doc.params:
+                description = param.description or "-"
+                lines.append(
+                    "| `{}` | `{}` | {} |".format(
+                        escape_table_cell(param.name),
+                        escape_table_cell(param.type_name),
+                        escape_table_cell(description),
+                    )
+                )
+            lines.append("")
+
+        if function_doc.returns:
+            lines.append("**Returns**")
+            lines.append("")
+            for return_doc in function_doc.returns:
+                if return_doc.description:
+                    lines.append(f"- `{return_doc.type_name}`: {return_doc.description}")
+                else:
+                    lines.append(f"- `{return_doc.type_name}`")
+            lines.append("")
+
+        if function_doc.usage:
+            lines.append("**Usage**")
+            lines.append("")
+            for snippet in function_doc.usage:
+                lines.append("```lua")
+                lines.append(snippet.rstrip())
+                lines.append("```")
+                lines.append("")
+
+        lines.append(f"Source: `{source_rel}:{function_doc.line}`")
+        lines.append("")
+        lines.append("---")
+        lines.append("")
+
     return "\n".join(lines).rstrip() + "\n"
 
 
@@ -672,13 +792,20 @@ def render_namespace_nav_lines(node: Dict[str, object], indent: int) -> List[str
 def build_libraries_nav_lines(
     library_pages: Dict[str, Path],
     libraries_subdir: str,
+    uncovered_file_docs: Sequence[FileDoc] = (),
+    api_subdir: str = DEFAULT_API_SUBDIR,
     indent: int = 6,
 ) -> List[str]:
-    if not library_pages:
+    if not library_pages and not uncovered_file_docs:
         return []
 
     lines = [f'{" " * indent}- "Overview": {normalize_nav_path(f"{libraries_subdir}/index.md")}']
     lines.extend(render_namespace_nav_lines(build_libraries_nav_tree(library_pages), indent))
+
+    if uncovered_file_docs:
+        api_tree = build_api_nav_tree(uncovered_file_docs, api_subdir)
+        lines.extend(render_api_nav_lines(api_tree, indent))
+
     return lines
 
 
@@ -761,6 +888,14 @@ def group_hook_occurrences(
     return normalized
 
 
+HOOK_KIND_NOTES = {
+    "gm": "Each section includes `hook.Run` callers and `hook.Add` listeners where available.",
+    "module": "Each section includes `hook.Run` callers and `hook.Add` listeners where available.",
+    "run": "Hooks with a GM or MODULE definition are cross-linked to their definition page.",
+    "add": "Hooks with a GM or MODULE definition are cross-linked to their definition page.",
+}
+
+
 def render_hooks_overview(
     grouped_hooks: Dict[str, Dict[str, List[HookOccurrence]]],
     hooks_subdir: str,
@@ -769,28 +904,31 @@ def render_hooks_overview(
     lines: List[str] = []
     lines.append("# Hooks")
     lines.append("")
-    lines.append("Auto-generated hook tracker from framework and module Lua files.")
+    lines.append(
+        "Auto-generated hook tracker from framework and module Lua files. "
+        "The GM and MODULE definition pages show each hook's full lifecycle: "
+        "where it is defined, where it is fired (`hook.Run`), and where listeners are registered (`hook.Add`)."
+    )
     lines.append("")
 
-    total_unique = set()
+    total_unique: set[str] = set()
     for kind in HOOK_KIND_ORDER:
         total_unique.update(grouped_hooks[kind].keys())
 
-    lines.append(f"Unique hook names: **{len(total_unique)}**")
-    lines.append(f"Tracked occurrences: **{sum(len(items) for kind in HOOK_KIND_ORDER for items in grouped_hooks[kind].values())}**")
+    total_occurrences = sum(len(items) for kind in HOOK_KIND_ORDER for items in grouped_hooks[kind].values())
+    lines.append(f"Unique hook names: **{len(total_unique)}** &nbsp;·&nbsp; Tracked occurrences: **{total_occurrences}**")
     lines.append("")
-    lines.append("| Category | Unique Hooks | Occurrences |")
-    lines.append("| --- | --- | --- |")
+    lines.append("| Category | Hooks | Occurrences | Notes |")
+    lines.append("| --- | --- | --- | --- |")
 
     for kind in HOOK_KIND_ORDER:
         hook_count = len(grouped_hooks[kind])
         occurrence_count = sum(len(items) for items in grouped_hooks[kind].values())
         target = Path(hooks_subdir) / f"{kind}.md"
         link = relative_doc_link(overview_doc, target)
-        lines.append(f"| [{HOOK_KIND_TITLE[kind]}]({link}) | {hook_count} | {occurrence_count} |")
+        note = HOOK_KIND_NOTES[kind]
+        lines.append(f"| [{HOOK_KIND_TITLE[kind]}]({link}) | {hook_count} | {occurrence_count} | {note} |")
 
-    lines.append("")
-    lines.append("Use this section to discover implemented hooks and runtime hook usage.")
     lines.append("")
     return "\n".join(lines).rstrip() + "\n"
 
@@ -801,6 +939,7 @@ def render_hook_kind_page(
     grouped_by_name: Dict[str, List[HookOccurrence]],
     source_to_api_page: Dict[str, Path],
     hooks_subdir: str,
+    all_grouped_hooks: Optional[Dict[str, Dict[str, List[HookOccurrence]]]] = None,
 ) -> str:
     current_doc = Path(hooks_subdir) / f"{kind}.md"
     lines: List[str] = []
@@ -817,25 +956,62 @@ def render_hook_kind_page(
 
     lines.append("## Hook List")
     lines.append("")
-    for hook_name, items in grouped_by_name.items():
-        lines.append(f"- `{hook_name}` ({len(items)})")
+    for hook_name in grouped_by_name:
+        lines.append(f"- [`{hook_name}`](#{slugify(hook_name)})")
     lines.append("")
     lines.append("---")
     lines.append("")
 
-    for hook_name, items in grouped_by_name.items():
-        lines.append(f"## {hook_name}")
-        lines.append("")
+    def render_occurrences(items: List[HookOccurrence]) -> List[str]:
+        result: List[str] = []
         for item in items:
             source_rel = item.source_path.relative_to(root).as_posix()
             source_key = str(item.source_path.resolve())
             api_target = source_to_api_page.get(source_key)
             if api_target:
                 link = relative_doc_link(current_doc, api_target)
-                lines.append(f"- [`{source_rel}`]({link}) (line {item.line})")
+                result.append(f"- [`{source_rel}`]({link}) (line {item.line})")
             else:
-                lines.append(f"- `{source_rel}:{item.line}`")
+                result.append(f"- `{source_rel}:{item.line}`")
+        return result
+
+    for hook_name, items in grouped_by_name.items():
+        lines.append(f"## {hook_name}")
         lines.append("")
+
+        if kind in ("gm", "module"):
+            lines.append("#### Defined at")
+            lines.append("")
+            lines.extend(render_occurrences(items))
+            lines.append("")
+
+            if all_grouped_hooks is not None:
+                run_items = all_grouped_hooks["run"].get(hook_name, [])
+                if run_items:
+                    lines.append("#### Fired by (hook.Run)")
+                    lines.append("")
+                    lines.extend(render_occurrences(run_items))
+                    lines.append("")
+
+                add_items = all_grouped_hooks["add"].get(hook_name, [])
+                if add_items:
+                    lines.append("#### Listeners (hook.Add)")
+                    lines.append("")
+                    lines.extend(render_occurrences(add_items))
+                    lines.append("")
+        else:
+            if all_grouped_hooks is not None:
+                if hook_name in all_grouped_hooks.get("gm", {}):
+                    anchor = slugify(hook_name)
+                    lines.append(f"Defined in: [GM Definitions](gm.md#{anchor})")
+                    lines.append("")
+                elif hook_name in all_grouped_hooks.get("module", {}):
+                    anchor = slugify(hook_name)
+                    lines.append(f"Defined in: [MODULE Definitions](module.md#{anchor})")
+                    lines.append("")
+
+            lines.extend(render_occurrences(items))
+            lines.append("")
 
     return "\n".join(lines).rstrip() + "\n"
 
@@ -1055,11 +1231,11 @@ def render_api_index(
         grouped[file_doc.source_group].append(file_doc)
 
     lines: List[str] = []
-    lines.append("# API Reference")
+    lines.append("# Source Reference")
     lines.append("")
-    lines.append("Raw file-by-file API export generated from Lua annotations.")
+    lines.append("File-organized view of all documented Lua source, generated from LDOC annotations.")
     lines.append("")
-    lines.append("For namespace-first browsing, use [Libraries](../{}/index.md).".format(libraries_subdir))
+    lines.append("For concept-first browsing, use [Libraries](../{}/index.md).".format(libraries_subdir))
     lines.append("For hook discovery, use [Hooks](../{}/index.md).".format(hooks_subdir))
     lines.append("")
     lines.append(f"Total documented functions: **{sum(len(file_doc.functions) for file_doc in file_docs)}**")
@@ -1106,15 +1282,10 @@ def build_mkdocs_yaml(
     manuals_nav_lines: Sequence[str],
     libraries_nav_lines: Sequence[str],
     hooks_nav_lines: Sequence[str],
-    file_docs: Sequence[FileDoc],
-    api_subdir: str,
-    libraries_subdir: str,
-    hooks_subdir: str,
     logo_path: Optional[str] = None,
     favicon_path: Optional[str] = None,
     extra_css_path: Optional[str] = None,
 ) -> str:
-    api_tree = build_api_nav_tree(file_docs, api_subdir)
     lines: List[str] = []
     lines.append(f"site_name: {yaml_quote(site_name)}")
     lines.append(f"site_description: {yaml_quote(site_description)}")
@@ -1189,16 +1360,12 @@ def build_mkdocs_yaml(
         lines.extend(manuals_nav_lines)
 
     if libraries_nav_lines:
-        lines.append("  - Libraries:")
+        lines.append("  - API:")
         lines.extend(libraries_nav_lines)
 
     if hooks_nav_lines:
         lines.append("  - Hooks:")
         lines.extend(hooks_nav_lines)
-
-    lines.append("  - API:")
-    lines.append(f"      - Overview: {normalize_nav_path(f'{api_subdir}/index.md')}")
-    lines.extend(render_api_nav_lines(api_tree, 6))
 
     return "\n".join(lines).rstrip() + "\n"
 
@@ -1444,7 +1611,8 @@ def main() -> None:
     libraries_index_relative = Path(args.libraries_subdir) / "index.md"
     libraries_index_path = docs_dir / libraries_index_relative
     expected_library_files.add(str(libraries_index_path.resolve()))
-    libraries_index_content = render_libraries_index(library_index, library_pages, args.libraries_subdir)
+    uncovered = _uncovered_file_docs(file_docs, library_index)
+    libraries_index_content = render_libraries_index(library_index, library_pages, args.libraries_subdir, uncovered)
     if write_if_changed(libraries_index_path, libraries_index_content, args.dry_run):
         changed_library_files += 1
         status = "[dry-run] Would write" if args.dry_run else "Wrote"
@@ -1476,6 +1644,7 @@ def main() -> None:
             grouped_by_name=grouped_hooks[kind],
             source_to_api_page=source_to_api_page,
             hooks_subdir=args.hooks_subdir,
+            all_grouped_hooks=grouped_hooks,
         )
         if write_if_changed(output_path, content, args.dry_run):
             changed_hook_files += 1
@@ -1497,7 +1666,7 @@ def main() -> None:
 
     root_pages = collect_root_pages(docs_dir)
     manuals_nav_lines = build_manuals_nav_lines(manuals_docs_dir, args.manuals_subdir)
-    libraries_nav_lines = build_libraries_nav_lines(library_pages, args.libraries_subdir)
+    libraries_nav_lines = build_libraries_nav_lines(library_pages, args.libraries_subdir, uncovered, args.api_subdir)
     hooks_nav_lines = build_hooks_nav_lines(args.hooks_subdir)
     logo_relative = "assets/images/parallax-logo.png"
     favicon_relative = "assets/images/favicon.png"
@@ -1515,10 +1684,6 @@ def main() -> None:
         manuals_nav_lines=manuals_nav_lines,
         libraries_nav_lines=libraries_nav_lines,
         hooks_nav_lines=hooks_nav_lines,
-        file_docs=file_docs,
-        api_subdir=args.api_subdir,
-        libraries_subdir=args.libraries_subdir,
-        hooks_subdir=args.hooks_subdir,
         logo_path=logo_path,
         favicon_path=favicon_path,
         extra_css_path=extra_css_path,

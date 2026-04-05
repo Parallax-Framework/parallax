@@ -35,17 +35,17 @@ end
 -- Custom validation
 function FACTION:CanBecome(client)
     local char = client:GetCharacter()
-    
+
     -- Must have medical training flag
     if !char:HasFlag("medical_training") then
         return false, "You must complete medical training first"
     end
-    
+
     -- Must be citizen
     if char:GetFaction() != FACTION_CITIZEN then
         return false, "Only citizens can become medical staff"
     end
-    
+
     return true
 end
 
@@ -88,10 +88,10 @@ ITEM.nutrition = 25  -- HP restored
 function ITEM:Consume(client)
     local hp = client:Health()
     local newHp = math.min(hp + self.nutrition, 100)
-    
+
     client:SetHealth(newHp)
     client:Notify("You ate the bread and restored " .. (newHp - hp) .. " HP")
-    
+
     return true  -- Consume the item
 end
 
@@ -133,14 +133,14 @@ ax.command:Add("me", {
         local char = client:GetCharacter()
         local name = char:GetName()
         local message = "** " .. name .. " " .. action
-        
+
         -- Send to nearby players
-        for _, ply in ipairs(player.GetAll()) do
+        for _, ply in player.Iterator() do
             if client:GetPos():Distance(ply:GetPos()) < 300 then
                 ply:ChatPrint(message)
             end
         end
-        
+
         return true
     end
 })
@@ -165,13 +165,13 @@ ax.command:Add("pm", {
             client:Notify("Player not found")
             return false
         end
-        
+
         local senderName = client:GetCharacter():GetName()
         local receiverName = target:GetCharacter():GetName()
-        
+
         client:ChatPrint("[PM] To " .. receiverName .. ": " .. message)
         target:ChatPrint("[PM] From " .. senderName .. ": " .. message)
-        
+
         return true
     end
 })
@@ -189,11 +189,11 @@ ax.command:Add("ooc", {
     OnRun = function(this, client, message)
         local name = client:Nick()
         local msg = "(OOC) " .. name .. ": " .. message
-        
-        for _, ply in ipairs(player.GetAll()) do
+
+        for _, ply in player.Iterator() do
             ply:ChatPrint(msg)
         end
-        
+
         return true
     end
 })
@@ -284,32 +284,32 @@ function MODULE:Initialize()
         },
         OnRun = function(this, client, target, amount)
             local char = client:GetCharacter()
-            
+
             -- Check if medic
             if char:GetFaction() != FACTION_MEDICAL then
                 client:Notify("Only medical staff can heal!")
                 return false
             end
-            
+
             -- Check if target is alive
             if !target:Alive() then
                 client:Notify("Target is not alive!")
                 return false
             end
-            
+
             -- Heal target
             local hp = target:Health()
             local newHp = math.min(hp + amount, target:GetMaxHealth())
             target:SetHealth(newHp)
-            
+
             -- Notify
             client:Notify("You healed " .. target:Nick() .. " for " .. (newHp - hp) .. " HP")
             target:Notify("You were healed by " .. char:GetName() .. " for " .. (newHp - hp) .. " HP")
-            
+
             return true
         end
     })
-    
+
     ax.util:PrintSuccess("Module '" .. MODULE.name .. "' loaded!")
 end
 
@@ -326,13 +326,13 @@ return MODULE
 function SCHEMA:EntityEmitSound(data)
     local ent = data.Entity
     if !IsValid(ent) then return end
-    
+
     if ent:GetClass() == "npc_combine_camera" then
         -- Reduce camera sound volume
         data.SoundLevel = 60
         return true
     end
-    
+
     -- Reduce NPC sounds
     if ent:IsNPC() then
         data.SoundLevel = data.SoundLevel - 15
@@ -354,7 +354,7 @@ end
 -- Custom player spawn logic
 function SCHEMA:PlayerSpawn(client)
     local char = client:GetCharacter()
-    
+
     if char:IsCombine() then
         -- Combine spawn logic
         client:SetModel(char:GetModel())
@@ -373,7 +373,7 @@ end
 -- Player death hook
 function SCHEMA:PostPlayerDeath(client, inflictor, attacker)
     local char = client:GetCharacter()
-    
+
     if char then
         -- Drop items on death
         local inv = ax.inventory:Get(char:GetInventoryID())
@@ -382,7 +382,7 @@ function SCHEMA:PostPlayerDeath(client, inflictor, attacker)
                 ax.item:Transfer(item, inv, 0)
             end
         end
-        
+
         -- Create death marker
         local pos = client:GetPos()
         ax.net:StartPVS(pos, "death_marker", client:SteamID64(), pos, os.time())
@@ -392,13 +392,13 @@ end
 -- Player pickup item hook
 function SCHEMA:PlayerCanPickupItem(client, item)
     local char = client:GetCharacter()
-    
+
     -- Prevent citizens from picking up weapons
     if item.category == "Weapons" and char:GetFaction() == FACTION_CITIZEN then
         client:Notify("You cannot pick up weapons!")
         return false
     end
-    
+
     return true
 end
 ```
@@ -413,14 +413,14 @@ end
 -- Create a storage container inventory
 ax.inventory:Create({maxWeight = 100}, function(inventory)
     print("Created storage inventory:", inventory.id)
-    
+
     -- Spawn a container entity
     local container = ents.Create("prop_physics")
     container:SetModel("models/props_junk/wood_crate001a.mdl")
     container:SetPos(Vector(0, 0, 0))
     container:Spawn()
     container:SetNWInt("InventoryID", inventory.id)
-    
+
     -- Add storage action
     container:SetUseType(SIMPLE_USE)
     function container:Use(activator, caller)
@@ -452,11 +452,11 @@ ax.command:Add("give", {
     OnRun = function(this, client, target, itemName)
         local char = client:GetCharacter()
         local targetChar = target:GetCharacter()
-        
+
         -- Find item in player's inventory
         local playerInv = ax.inventory:Get(char:GetInventoryID())
         local targetInv = ax.inventory:Get(targetChar:GetInventoryID())
-        
+
         -- Search for item
         local itemToGive = nil
         for itemID, item in pairs(playerInv.items) do
@@ -465,12 +465,12 @@ ax.command:Add("give", {
                 break
             end
         end
-        
+
         if !itemToGive then
             client:Notify("You don't have that item!")
             return false
         end
-        
+
         -- Transfer item
         local success, reason = ax.item:Transfer(itemToGive, playerInv, targetInv, function(success)
             if success then
@@ -480,7 +480,7 @@ ax.command:Add("give", {
                 client:Notify("Failed to give item: " .. reason)
             end
         end)
-        
+
         return success, reason
     end
 })
@@ -517,13 +517,13 @@ ax.command:Add("charcreate", {
             client:Notify("Name must be between 2 and 32 characters!")
             return false
         end
-        
+
         -- Validate description
         if string.len(description) < 16 then
             client:Notify("Description must be at least 16 characters!")
             return false
         end
-        
+
         -- Create character
         ax.character:Create(client, {
             name = name,
@@ -538,7 +538,7 @@ ax.command:Add("charcreate", {
                 client:Notify("Failed to create character!")
             end
         end)
-        
+
         return true
     end
 })

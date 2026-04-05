@@ -125,6 +125,16 @@ ax.animations.stored["citizen_male"] = {
         prop_vehicle_jeep = {"silo_sit", Vector(18, 0, -14)},
         ["models/vehicles/prisoner_pod_inner.mdl"] = {"podpose", Vector(-3.5, 0, -4)},
         chair = {"silo_sit", Vector(8, 0, -22)},
+    },
+    ["flinch"] = {
+        [HITGROUP_HEAD] = {"flinchheadgest1", "flinchheadgest2"},
+        [HITGROUP_CHEST] = {"flinchgutgest1", "flinchgutgest2"},
+        [HITGROUP_STOMACH] = {"flinchgutgest1", "flinchgutgest2"},
+        [HITGROUP_LEFTARM] = "flinchlarmgest",
+        [HITGROUP_RIGHTARM] = "flinchrarmgest",
+        [HITGROUP_LEFTLEG] = {"flinchgutgest1", "flinchgutgest2"},
+        [HITGROUP_RIGHTLEG] = {"flinchgutgest1", "flinchgutgest2"},
+        [HITGROUP_GEAR] = "flinch_gesture",
     }
 }
 
@@ -211,6 +221,16 @@ ax.animations.stored["citizen_female"] = {
         prop_vehicle_jeep = {"silo_sit", Vector(18, 0, -14)},
         ["models/vehicles/prisoner_pod_inner.mdl"] = {"podpose", Vector(-3.5, 0, -4)},
         chair = {"silo_sit", Vector(8, 0, -22)},
+    },
+    ["flinch"] = {
+        [HITGROUP_HEAD] = {"flinchheadgest1", "flinchheadgest2"},
+        [HITGROUP_CHEST] = {"flinchgutgest1", "flinchgutgest2"},
+        [HITGROUP_STOMACH] = {"flinchgutgest1", "flinchgutgest2"},
+        [HITGROUP_LEFTARM] = "flinchlarmgest",
+        [HITGROUP_RIGHTARM] = "flinchrarmgest",
+        [HITGROUP_LEFTLEG] = {"flinchgutgest1", "flinchgutgest2"},
+        [HITGROUP_RIGHTLEG] = {"flinchgutgest1", "flinchgutgest2"},
+        [HITGROUP_GEAR] = "flinch_gesture",
     }
 }
 
@@ -385,6 +405,16 @@ ax.animations.stored["metrocop"] = {
         prop_vehicle_jeep = {"crouch_idle_pistol", Vector(18, -2, 0)},
         ["models/vehicles/prisoner_pod_inner.mdl"] = {"batonidle2", Vector(-4, -1, -4)},
         chair = {"crouch_idle_pistol", Vector(8, -4, -10)},
+    },
+    ["flinch"] = {
+        [HITGROUP_HEAD] = {"flinchheadgest1", "flinchheadgest2"},
+        [HITGROUP_CHEST] = {"flinchgutgest1", "flinchgutgest2"},
+        [HITGROUP_STOMACH] = {"flinchgutgest1", "flinchgutgest2"},
+        [HITGROUP_LEFTARM] = "flinchlarmgest",
+        [HITGROUP_RIGHTARM] = "flinchrarmgest",
+        [HITGROUP_LEFTLEG] = {"flinchgutgest1", "flinchgutgest2"},
+        [HITGROUP_RIGHTLEG] = {"flinchgutgest1", "flinchgutgest2"},
+        [HITGROUP_GEAR] = "flinch_gesture",
     }
 }
 
@@ -546,8 +576,35 @@ ax.animations.stored["player"] = {
         [ACT_MP_JUMP] = {"jump_grenade", "jump_grenade"},
         ["land"] = "jump_land",
         ["shoot"] = "range_grenade"
+    },
+    ["flinch"] = {
+        [HITGROUP_HEAD] = {"flinchheadgest1", "flinchheadgest2"},
+        [HITGROUP_CHEST] = {"flinchgutgest1", "flinchgutgest2"},
+        [HITGROUP_STOMACH] = {"flinchgutgest1", "flinchgutgest2"},
+        [HITGROUP_LEFTARM] = "flinchlarmgest",
+        [HITGROUP_RIGHTARM] = "flinchrarmgest",
+        [HITGROUP_LEFTLEG] = {"flinchgutgest1", "flinchgutgest2"},
+        [HITGROUP_RIGHTLEG] = {"flinchgutgest1", "flinchgutgest2"},
+        [HITGROUP_GEAR] = "flinch_gesture",
     }
 }
+
+--- Returns the flinch gesture sequence name for a model class and hitgroup.
+-- @realm shared
+-- @param modelClass string The model class (e.g. "citizen_male")
+-- @param hitGroup number The HITGROUP_* constant
+-- @return string|nil The gesture sequence name, or nil if none defined
+function ax.animations:GetFlinchGesture(modelClass, hitGroup)
+    local classData = self.stored[modelClass]
+    if ( !classData or !classData["flinch"] ) then return end
+
+    local gesture = classData["flinch"][hitGroup]
+    if ( istable(gesture) ) then
+        return gesture[math.random(#gesture)]
+    end
+
+    return gesture
+end
 
 --- Sets a model class translation for a specific model.
 -- @param model The model to set the translation for.

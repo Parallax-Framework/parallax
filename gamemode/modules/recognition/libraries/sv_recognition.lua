@@ -140,7 +140,7 @@ local function HandleProximityTick(client)
 
     local passiveGain = tonumber(ax.config:Get("recognition_passive_gain", 1)) or 1
 
-    for _, target in ipairs(player.GetAll()) do
+    for _, target in player.Iterator() do
         if ( target == client or !ax.util:IsValidPlayer(target) or !target:Alive() ) then continue end
 
         if ( !icChat:CanHear(client, target) ) then continue end

@@ -21,5 +21,9 @@
         "undefined-global",
         "duplicate-set-field"
     ],
-    "Lua.workspace.checkThirdParty": false
+    "Lua.workspace.checkThirdParty": false,
+
+    "editor.insertSpaces": true,
+    "editor.trimAutoWhitespace": true,
+    "files.trimTrailingWhitespace": true
 }
