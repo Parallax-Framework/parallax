@@ -287,26 +287,6 @@ if ( CLIENT ) then
     end
 end
 
---- Calls a function safely, capturing any Lua error without throwing.
--- This is the authoritative definition — it overwrites the earlier one in this file. Uses `pcall` to protect the call; if `fn` is not a function it returns `false, "Not a function"` immediately. On error the error message string is returned as the second value. On success the first return value of `fn` is returned; additional return values from `fn` are silently discarded.
--- Unlike the overwritten version above, errors are NOT printed automatically — check the returned boolean and handle the error message yourself.
--- @realm shared
--- @param fn function The function to call.
--- @param ... any Arguments forwarded to `fn`.
--- @return boolean True if the call succeeded without error.
--- @return any The first return value of `fn` on success, or the error message string on failure.
--- @usage local ok, result = ax.util:SafeCall(function() return 123 end)
--- local ok, err = ax.util:SafeCall(maybeNilFn, arg1, arg2)
--- if ( !ok ) then ax.util:PrintError(err) end
-function ax.util:SafeCall(fn, ...)
-    if ( !isfunction(fn) ) then
-        return false, "Not a function"
-    end
-
-    local ok, result = pcall(fn, ...)
-    return ok, result
-end
-
 --- Clamps a number to a range, then rounds it to a given precision.
 -- Clamping is applied first, so the rounded result is always within `[min, max]`. When `decimals` is 0 or omitted, `math.Round` is used (nearest integer). For positive `decimals`, the number is scaled by `10^decimals`, rounded, then scaled back, preserving that many decimal places. `min` and `max` are both optional; pass nil to skip either bound.
 -- Non-numeric input for `n` is treated as 0.
