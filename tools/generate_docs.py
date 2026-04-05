@@ -549,6 +549,26 @@ def _library_realms(entries: Sequence[Tuple["FileDoc", "FunctionDoc"]]) -> List[
     return sorted(seen)
 
 
+def _uncovered_file_docs(
+    file_docs: Sequence["FileDoc"],
+    library_index: Dict[str, List[Tuple["FileDoc", "FunctionDoc"]]],
+) -> List["FileDoc"]:
+    """Return FileDoc objects whose functions don't appear in any ax.* library."""
+    covered: set[str] = {
+        str(fd.source_path.resolve())
+        for entries in library_index.values()
+        for fd, _ in entries
+    }
+    seen: set[str] = set()
+    result = []
+    for fd in file_docs:
+        key = str(fd.source_path.resolve())
+        if key not in covered and key not in seen:
+            seen.add(key)
+            result.append(fd)
+    return result
+
+
 def extract_ax_library_name(function_name: str) -> Optional[str]:
     if not function_name.startswith("ax."):
         return None
@@ -586,17 +606,28 @@ def render_libraries_index(
     library_index: Dict[str, List[Tuple[FileDoc, FunctionDoc]]],
     library_pages: Dict[str, Path],
     libraries_subdir: str,
+    uncovered_file_docs: Sequence[FileDoc] = (),
 ) -> str:
     index_doc = Path(libraries_subdir) / "index.md"
+    total_ax_funcs = sum(len(entries) for entries in library_index.values())
+    total_other_funcs = sum(len(fd.functions) for fd in uncovered_file_docs)
+
     lines: List[str] = []
-    lines.append("# Libraries")
+    lines.append("# API Reference")
     lines.append("")
     lines.append(
-        "Primary API reference organized by namespace. "
-        "Each library page contains full inline documentation: descriptions, parameters, return values, realm, and usage examples."
+        "Complete API reference for the Parallax framework. "
+        "Each page contains full inline documentation: descriptions, parameters, return values, realm, and usage examples."
     )
     lines.append("")
-    lines.append(f"Libraries: **{len(library_index)}** &nbsp;·&nbsp; Documented functions: **{sum(len(entries) for entries in library_index.values())}**")
+    lines.append(
+        f"Libraries: **{len(library_index)}** &nbsp;·&nbsp; "
+        f"Other files: **{len(uncovered_file_docs)}** &nbsp;·&nbsp; "
+        f"Documented functions: **{total_ax_funcs + total_other_funcs}**"
+    )
+    lines.append("")
+
+    lines.append("## Libraries")
     lines.append("")
     lines.append("| Library | Description | Functions | Realm(s) |")
     lines.append("| --- | --- | --- | --- |")
@@ -610,8 +641,28 @@ def render_libraries_index(
         lines.append(f"| [`{library_name}`]({link}) | {escape_table_cell(summary)} | {len(entries)} | {realm_str} |")
 
     lines.append("")
-    lines.append("For file-tree browsing by source path, see [Source Reference](../api/index.md).")
-    lines.append("")
+
+    if uncovered_file_docs:
+        grouped: Dict[str, List[FileDoc]] = defaultdict(list)
+        for fd in uncovered_file_docs:
+            grouped[fd.source_group].append(fd)
+
+        lines.append("## Other Files")
+        lines.append("")
+        lines.append("| File | Description | Functions | Realm(s) |")
+        lines.append("| --- | --- | --- | --- |")
+
+        for group_name in sorted(grouped):
+            for fd in sorted(grouped[group_name], key=lambda item: nav_sort_key(item.module or item.relative_path.with_suffix("").as_posix())):
+                link = relative_doc_link(index_doc, fd.output_relative)
+                label = fd.module or fd.relative_path.with_suffix("").as_posix()
+                summary = fd.summary or ""
+                realms = sorted({fn.realm for fn in fd.functions if fn.realm})
+                realm_str = ", ".join(f"`{r}`" for r in realms) if realms else ""
+                lines.append(f"| [`{label}`]({link}) | {escape_table_cell(summary)} | {len(fd.functions)} | {realm_str} |")
+
+        lines.append("")
+
     return "\n".join(lines).rstrip() + "\n"
 
 
@@ -741,13 +792,20 @@ def render_namespace_nav_lines(node: Dict[str, object], indent: int) -> List[str
 def build_libraries_nav_lines(
     library_pages: Dict[str, Path],
     libraries_subdir: str,
+    uncovered_file_docs: Sequence[FileDoc] = (),
+    api_subdir: str = DEFAULT_API_SUBDIR,
     indent: int = 6,
 ) -> List[str]:
-    if not library_pages:
+    if not library_pages and not uncovered_file_docs:
         return []
 
     lines = [f'{" " * indent}- "Overview": {normalize_nav_path(f"{libraries_subdir}/index.md")}']
     lines.extend(render_namespace_nav_lines(build_libraries_nav_tree(library_pages), indent))
+
+    if uncovered_file_docs:
+        api_tree = build_api_nav_tree(uncovered_file_docs, api_subdir)
+        lines.extend(render_api_nav_lines(api_tree, indent))
+
     return lines
 
 
@@ -1224,15 +1282,10 @@ def build_mkdocs_yaml(
     manuals_nav_lines: Sequence[str],
     libraries_nav_lines: Sequence[str],
     hooks_nav_lines: Sequence[str],
-    file_docs: Sequence[FileDoc],
-    api_subdir: str,
-    libraries_subdir: str,
-    hooks_subdir: str,
     logo_path: Optional[str] = None,
     favicon_path: Optional[str] = None,
     extra_css_path: Optional[str] = None,
 ) -> str:
-    api_tree = build_api_nav_tree(file_docs, api_subdir)
     lines: List[str] = []
     lines.append(f"site_name: {yaml_quote(site_name)}")
     lines.append(f"site_description: {yaml_quote(site_description)}")
@@ -1307,16 +1360,12 @@ def build_mkdocs_yaml(
         lines.extend(manuals_nav_lines)
 
     if libraries_nav_lines:
-        lines.append("  - Libraries:")
+        lines.append("  - API:")
         lines.extend(libraries_nav_lines)
 
     if hooks_nav_lines:
         lines.append("  - Hooks:")
         lines.extend(hooks_nav_lines)
-
-    lines.append("  - Source Reference:")
-    lines.append(f"      - Overview: {normalize_nav_path(f'{api_subdir}/index.md')}")
-    lines.extend(render_api_nav_lines(api_tree, 6))
 
     return "\n".join(lines).rstrip() + "\n"
 
@@ -1562,7 +1611,8 @@ def main() -> None:
     libraries_index_relative = Path(args.libraries_subdir) / "index.md"
     libraries_index_path = docs_dir / libraries_index_relative
     expected_library_files.add(str(libraries_index_path.resolve()))
-    libraries_index_content = render_libraries_index(library_index, library_pages, args.libraries_subdir)
+    uncovered = _uncovered_file_docs(file_docs, library_index)
+    libraries_index_content = render_libraries_index(library_index, library_pages, args.libraries_subdir, uncovered)
     if write_if_changed(libraries_index_path, libraries_index_content, args.dry_run):
         changed_library_files += 1
         status = "[dry-run] Would write" if args.dry_run else "Wrote"
@@ -1616,7 +1666,7 @@ def main() -> None:
 
     root_pages = collect_root_pages(docs_dir)
     manuals_nav_lines = build_manuals_nav_lines(manuals_docs_dir, args.manuals_subdir)
-    libraries_nav_lines = build_libraries_nav_lines(library_pages, args.libraries_subdir)
+    libraries_nav_lines = build_libraries_nav_lines(library_pages, args.libraries_subdir, uncovered, args.api_subdir)
     hooks_nav_lines = build_hooks_nav_lines(args.hooks_subdir)
     logo_relative = "assets/images/parallax-logo.png"
     favicon_relative = "assets/images/favicon.png"
@@ -1634,10 +1684,6 @@ def main() -> None:
         manuals_nav_lines=manuals_nav_lines,
         libraries_nav_lines=libraries_nav_lines,
         hooks_nav_lines=hooks_nav_lines,
-        file_docs=file_docs,
-        api_subdir=args.api_subdir,
-        libraries_subdir=args.libraries_subdir,
-        hooks_subdir=args.hooks_subdir,
         logo_path=logo_path,
         favicon_path=favicon_path,
         extra_css_path=extra_css_path,
