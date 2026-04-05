@@ -105,7 +105,7 @@ local debugRateLimit = CreateConVar("ax_debug_rate_limit", "0", {FCVAR_ARCHIVE, 
 
 local rateLimitTracker = {}
 
---- Print a debug message
+--- Print a debug message, requires "developer" convar to be enabled
 -- @param ... any Values to print for debugging
 -- @return table|nil The prepared arguments when printed, nil otherwise
 -- @usage ax.util:PrintDebug("Loaded module", moduleName)
