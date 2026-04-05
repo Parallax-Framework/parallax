@@ -29,18 +29,24 @@ AX_BOT_LAST_NAMES = {
     "Smith", "Taylor", "Walker", "Wilson", "Young", "Brown", "Miller", "Moore"
 }
 
---- Generates a random name for a bot
--- @return string A randomly generated full name
--- @usage local name = ax.util:GenerateBotName()
+--- Generates a random full name for a bot player.
+-- Picks one entry at random from `AX_BOT_FIRST_NAMES` and one from `AX_BOT_LAST_NAMES`, then concatenates them with a space.
+-- The name tables are defined as globals at the top of this file and can be extended by other modules before bots are created.
+-- @realm shared
+-- @return string A randomly generated "Firstname Lastname" string.
+-- @usage local name = ax.util:GenerateBotName() -- e.g. "Jordan Walker"
 function ax.util:GenerateBotName()
     local firstName = AX_BOT_FIRST_NAMES[math.random(#AX_BOT_FIRST_NAMES)]
     local lastName = AX_BOT_LAST_NAMES[math.random(#AX_BOT_LAST_NAMES)]
     return firstName .. " " .. lastName
 end
 
---- Gets a random faction that bots can join
--- @return table|nil Random faction table or nil if no valid factions
+--- Returns a random faction that bots are allowed to join.
+-- Iterates all registered factions and filters to those where either `faction.isDefault` is true, or `faction.allowBots` is not explicitly set to false. Returns nil when no eligible factions exist (e.g. every faction is whitelisted or explicitly bans bots).
+-- @realm shared
+-- @return table|nil A random eligible faction table, or nil if none qualify.
 -- @usage local faction = ax.util:GetRandomBotFaction()
+-- if ( faction ) then print(faction.name) end
 function ax.util:GetRandomBotFaction()
     local factions = ax.faction:GetAll()
     if ( !factions or #factions == 0 ) then
@@ -63,10 +69,14 @@ function ax.util:GetRandomBotFaction()
     return validFactions[math.random(#validFactions)]
 end
 
---- Gets a random model from a faction's model list
--- @param faction table The faction to get a model from
--- @return string|table|nil Random model (string or table {model, skin}) or nil if no models available
+--- Returns a random model from a faction's model list.
+-- Calls `faction:GetModels()` and picks a random entry. Entries are resolved in this order: if the selected entry is a function it is called and its return value is used; if it is a table whose first element is a string, that string path is used directly. Any other value (plain string or `{model, skin}` table) is returned as-is.
+-- Returns nil if the faction has no `GetModels` method or its list is empty.
+-- @realm shared
+-- @param faction table The faction table to query.
+-- @return string|table|nil A model path string, a `{model, skin}` table, or nil when no models are available.
 -- @usage local model = ax.util:GetRandomFactionModel(faction)
+-- local path = istable(model) and model[1] or model
 function ax.util:GetRandomFactionModel(faction)
     if ( !faction or !faction.GetModels ) then
         return nil
@@ -89,10 +99,14 @@ function ax.util:GetRandomFactionModel(faction)
     return selected
 end
 
---- Creates a temporary character for a bot with random faction and appearance
--- Bot characters are not stored in the database and exist only in memory
--- @param client Player The bot player object
+--- Creates a temporary in-memory character for a bot and loads it immediately.
+-- Selects a random eligible faction via `GetRandomBotFaction` and a random model via `GetRandomFactionModel`, then constructs a character metatable instance populated with default variable values. The character is registered in `ax.character.instances` but is never written to the database — it exists only for the lifetime of the server session.
+-- If the faction defines a `GetDefaultName` function, that name takes priority over the randomly generated one. A temporary inventory is created via `ax.inventory:CreateTemporary` if available; otherwise the inventory slot is set to 0 with a warning.
+-- Returns false (with a printed warning) if the bot is invalid, has no eligible faction, or has no available models.
+-- After loading, `ax.character:SyncBotToClients` is called so connected clients receive the new character's variables.
 -- @realm server
+-- @param client Player The bot player to create a character for.
+-- @return boolean True on success, false on any failure.
 -- @usage ax.util:CreateBotCharacter(bot)
 function ax.util:CreateBotCharacter(client)
     if ( !ax.util:IsValidPlayer(client) or !client:IsBot() ) then return false end

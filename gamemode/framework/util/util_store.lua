@@ -22,21 +22,38 @@
 -- Store library modification time - used to detect when rebuild is needed
 local STORE_LIB_TIME = file.Time("gamemodes/parallax/gamemode/framework/util/util_store.lua", "GAME") or 0
 
---- Create a new store instance.
+--- Creates and returns a new store instance for managing key/value settings.
+-- A store is a self-contained object that handles registration of typed
+-- settings, persistence to a JSON file (or `ax.data`), optional networking
+-- between server and client, and change callbacks. The framework uses two
+-- stores: `ax.config` (server authority, broadcast to clients) and `ax.option`
+-- (client authority, synced to server for server-side reads).
+-- `spec` fields:
+-- - `name` string: identifier used in debug messages (e.g. `"config"`).
+-- - `authority` string: `"server"` or `"client"` — only that side persists
+--   and loads values from disk.
+-- - `path` string|function: `DATA`-relative path to the JSON file, or a
+--   function `(spec, store) → string` for dynamic paths.
+-- - `net` table: net channel names used for networking:
+--   `init` (bulk sync), `set` (single key update), `sync` (option bulk
+--   upload), `request` (server asks client to sync).
+-- - `data` table (optional): `{ key, options }` for `ax.data`-backed
+--   persistence instead of raw JSON.
+-- - `legacyPaths` table (optional): array of older paths to migrate data from
+--   on first load.
+-- When `oldStore` is provided (hot-reload scenario), registry, defaults,
+-- values, and networkedKeys are copied from it before the new store is
+-- configured, preserving runtime state across live code reloads.
 -- @realm shared
--- @param spec table Store specification with fields:
---  - name (string): identifier, e.g. "config" or "option"
---  - authority (string): "server" or "client" — side that persists values
---  - path (string): JSON file path under DATA for persistence
---  - net (table): net channel names (init, set, sync, request as applicable)
--- @param oldStore table Optional existing store to migrate data from during hot-reload
--- @return table Store object with methods for registration, get/set, IO, and networking
--- @usage
--- local store = ax.util:CreateStore({
+-- @param spec table The store specification (see above).
+-- @param oldStore table|nil An existing store to migrate state from, used
+--   during hot-reload to avoid losing in-memory values.
+-- @return table The new store object with all methods attached.
+-- @usage local store = ax.util:CreateStore({
 --     name = "config",
 --     authority = "server",
---     path = ax.util:BuildDataPath("config", { human = true }),
---     net = { init = "config.init", set = "config.set" }
+--     path = ax.util:BuildDataPath("config"),
+--     net = { init = "ax.config.init", set = "ax.config.set" }
 -- })
 function ax.util:CreateStore(spec, oldStore)
     local store = {}
@@ -186,14 +203,29 @@ function ax.util:CreateStore(spec, oldStore)
         return PERSISTED_CACHE
     end
 
-    --- Add a new setting definition to the store.
+    --- Registers a new key/type/default definition in the store.
+    -- After registration, the key is available for `Get` and `Set`. The
+    -- initial value is loaded from persisted data (if available and on the
+    -- authority side), coerced to the registered type, and stored. If
+    -- persisted data is absent or fails coercion, the `default` is used.
+    -- Keys are automatically added to `store.networkedKeys` unless
+    -- `data.bNoNetworking = true`.
+    -- `data` fields:
+    -- - `category` string: grouping label for UI (default `"general"`).
+    -- - `bNoNetworking` boolean: exclude this key from network sync.
+    -- - `min` / `max` number: clamp bounds applied when the type is `ax.type.number`.
+    -- - `decimals` number: decimal precision for number clamping.
+    -- - `choices` table / `populate` function: valid values for `ax.type.array`.
+    --   `populate()` is called to build the choices list dynamically.
+    -- - `OnChanged` function: callback `(oldValue, newValue, key)` fired when
+    --   the value changes (unless `bNoCallback` is set in `Set`).
+    -- Returns false (with a debug message) when any required parameter is nil.
     -- @realm shared
-    -- @param key string Setting key
-    -- @param type any ax.type data type (e.g. ax.type.number)
-    -- @param default any Default value
-    -- @param data table Additional metadata (category, bNoNetworking, min/max/decimals,
-    -- populate=function, OnChanged=function)
-    -- @return boolean True if added, false on invalid params
+    -- @param key string The unique setting key.
+    -- @param type any An `ax.type` constant (e.g. `ax.type.number`, `ax.type.string`).
+    -- @param default any The default value used when no persisted value exists.
+    -- @param data table|nil Optional metadata table (see field descriptions above).
+    -- @return boolean True if registered successfully, false on invalid input.
     function store:Add(key, type, default, data)
         if ( !isstring(key) or !type or default == nil ) then
             ax.util:PrintDebug(spec.name, " Add: Invalid parameters for key ", key)
@@ -236,11 +268,18 @@ function ax.util:CreateStore(spec, oldStore)
         return true
     end
 
-    --- Get a value from the store.
-    -- For option on server, supports per-player reads when the first arg is a Player.
+    --- Retrieves a value from the store with optional fallback.
+    -- Normal call: `store:Get(key, fallback)` — returns the stored value for
+    -- `key`, or `store.defaults[key]`, or `fallback` (in that priority order).
+    -- On the client, config values are served from the local CONFIG_CACHE
+    -- (populated by server sync) rather than `store.values`.
+    -- Special call for `option` stores on the server:
+    -- `store:Get(player, key, fallback)` — reads a per-player option value
+    -- from SERVER_CACHE (populated when the client sends its preferences). If
+    -- no cached value exists for that player, the registered default is used.
     -- @realm shared
-    -- @param ... any Key and optional default; or (player, key, fallback) for option
-    -- @return any Value or default
+    -- @param ... any Either `(key, fallback)` or `(player, key, fallback)`.
+    -- @return any The resolved value, or the fallback when no value is found.
     function store:Get(...)
         -- Server-side per-player read for option
         local key, default = select(1, ...), select(2, ...)
@@ -273,10 +312,13 @@ function ax.util:CreateStore(spec, oldStore)
         return store.defaults[key] or default
     end
 
-    --- Get the metadata table for a registered key.
+    --- Returns a copy of the metadata table for a registered key.
+    -- Returns a deep copy so callers cannot accidentally mutate the registry.
+    -- Returns nil when `key` is not a string or is not registered.
     -- @realm shared
-    -- @param key string Setting key
-    -- @return table|nil Copy of data table or nil if unknown
+    -- @param key string The setting key to look up.
+    -- @return table|nil A copy of the `data` table provided when the key was
+    --   registered, or nil if the key is unknown.
     function store:GetData(key)
         if ( !isstring(key) ) then
             return nil
@@ -291,10 +333,13 @@ function ax.util:CreateStore(spec, oldStore)
     end
 
 
-    --- Get the default value for a key.
+    --- Returns the registered default value for a key.
+    -- This is the value passed as `default` to `store:Add`, or subsequently
+    -- updated by `store:SetDefault`. Returns nil when `key` is not a string
+    -- or is not registered.
     -- @realm shared
-    -- @param key string Setting key
-    -- @return any Default value or nil if unknown
+    -- @param key string The setting key.
+    -- @return any The default value, or nil if the key is unknown.
     function store:GetDefault(key)
         if ( !isstring(key) ) then
             return nil
@@ -355,15 +400,28 @@ function ax.util:CreateStore(spec, oldStore)
         return false
     end
 
-    --- Set a value in the store.
-    -- Coerces to the registered type, clamps numbers, validates array choices,
-    -- triggers OnChanged and global hooks, persists, and handles networking.
+    --- Sets a value in the store, triggering coercion, callbacks, and networking.
+    -- The full pipeline when setting a value:
+    -- 1. **Coercion**: value is sanitised to the registered type via
+    --    `ax.type:Sanitise`. Numbers are additionally clamped and rounded using
+    --    `data.min`, `data.max`, and `data.decimals`. Array values are validated
+    --    against `data.choices` / `data.populate`.
+    -- 2. **Change check**: if the coerced value equals the current value,
+    --    returns false immediately (no-op).
+    -- 3. **Callbacks** (unless `bNoCallback` is true):
+    --    - `regEntry.data.OnChanged(oldValue, newValue, key)` if defined.
+    --    - `hook.Run("OnConfigChanged", ...)` or `hook.Run("OnOptionChanged", ...)`.
+    -- 4. **Persistence** (unless `bNoSave` is true): calls `store:Save()`.
+    -- 5. **Networking** (if the key is in `networkedKeys`): broadcasts the
+    --    new value via the appropriate net channel for the store type and realm.
+    -- Returns false (silently, with a debug message) for unknown keys or
+    -- invalid values. Returns true when the value was actually changed.
     -- @realm shared
-    -- @param key string Setting key
-    -- @param value any New value
-    -- @param bNoSave boolean Optional; when true, skip persistence
-    -- @param bNoCallback boolean Optional; when true, skip OnChanged and hooks
-    -- @return boolean True if the value changed, false otherwise along with a reason
+    -- @param key string The setting key to update.
+    -- @param value any The new value (will be coerced to the registered type).
+    -- @param bNoSave boolean|nil When true, skips writing to disk.
+    -- @param bNoCallback boolean|nil When true, skips `OnChanged` and hooks.
+    -- @return boolean True if the value changed, false otherwise.
     function store:Set(key, value, bNoSave, bNoCallback)
         if ( !isstring(key) ) then
             ax.util:PrintDebug(spec.name, " Set: Invalid key")
@@ -446,11 +504,16 @@ function ax.util:CreateStore(spec, oldStore)
         return true
     end
 
-    --- Set the default value for a key.
+    --- Updates the registered default value for a key without changing the current value.
+    -- Modifies both the registry entry's `default` field and `store.defaults[key]`.
+    -- The live value in `store.values` is only changed if it is currently nil —
+    -- existing values are preserved. Useful for overriding defaults set during
+    -- initial registration, e.g. when a gamemode wants to change framework defaults.
+    -- Returns false when the key is not registered.
     -- @realm shared
-    -- @param key string Setting key
-    -- @param value any Default value
-    -- @return boolean True on success
+    -- @param key string The setting key whose default should be changed.
+    -- @param value any The new default value.
+    -- @return boolean True on success, false if the key is unknown.
     function store:SetDefault(key, value)
         if ( !isstring(key) ) then
             return false
@@ -471,10 +534,15 @@ function ax.util:CreateStore(spec, oldStore)
         return true
     end
 
-    --- Set's a value to its default.
+    --- Resets a key's value to its registered default.
+    -- Convenience wrapper around `store:Set(key, default)`. Goes through the
+    -- full Set pipeline including coercion, callbacks, persistence, and
+    -- networking — the reset is treated the same as any other value change.
+    -- Returns false when the key is not registered, or when the current value
+    -- is already equal to the default (no change).
     -- @realm shared
-    -- @param key string Setting key
-    -- @return boolean True if the value changed, false otherwise
+    -- @param key string The setting key to reset.
+    -- @return boolean True if the value was changed, false otherwise.
     function store:SetToDefault(key)
         if ( !isstring(key) ) then
             return false
@@ -488,9 +556,13 @@ function ax.util:CreateStore(spec, oldStore)
         return store:Set(key, regEntry.default)
     end
 
-    --- Get a list of all categories present in the registry.
+    --- Returns an array of all unique category names in the registry.
+    -- Iterates all registered keys and collects their `data.category` field.
+    -- Keys without an explicit category are counted under `"general"`.
+    -- The returned array contains each category string exactly once, in
+    -- arbitrary order. Useful for building category tabs in a settings UI.
     -- @realm shared
-    -- @return table Array of category names
+    -- @return table An array of unique category name strings.
     function store:GetAllCategories()
         local result = {}
 
@@ -502,9 +574,14 @@ function ax.util:CreateStore(spec, oldStore)
         return table.GetKeys(result)
     end
 
-    --- Get a copy of all registered definitions.
+    --- Returns a deep copy of all registered setting definitions.
+    -- Each entry in the returned map is a copy of the registry entry (type,
+    -- default, data) keyed by the setting key. Modifying the returned table
+    -- does not affect the live registry. Useful for introspecting all
+    -- available settings, e.g. for building a settings panel or exporting
+    -- documentation.
     -- @realm shared
-    -- @return table Map of key -> definition table
+    -- @return table Map of `key → { type, default, data }` for all registered keys.
     function store:GetAllDefinitions()
         local result = {}
 
@@ -515,11 +592,14 @@ function ax.util:CreateStore(spec, oldStore)
         return result
     end
 
-    --- Get all definitions where the category matches the given string.
-    -- Case-insensitive partial matching via ax.util:FindString.
+    --- Returns definitions for all keys whose category matches a filter string.
+    -- Matching is performed by `ax.util:FindString` — case-insensitive
+    -- substring match. For example, `"gen"` will match `"general"`. Keys with
+    -- no category fall under `"misc"` for the purposes of this filter.
+    -- The returned map contains deep copies of the matched registry entries.
     -- @realm shared
-    -- @param category string Category filter
-    -- @return table Map of key -> definition table
+    -- @param category string The category string to filter by (partial match).
+    -- @return table Map of `key → { type, default, data }` for matched keys.
     function store:GetAllByCategory(category)
         local result = {}
 
@@ -533,10 +613,20 @@ function ax.util:CreateStore(spec, oldStore)
         return result
     end
 
-    --- Load persisted values from disk.
-    -- Only runs on the authority side set by spec.authority.
+    --- Loads persisted values from disk into the store.
+    -- Only executes on the authority side (`spec.authority`): server stores
+    -- load on `SERVER`, client stores load on `CLIENT`. Calling from the
+    -- non-authority side is a no-op that returns false.
+    -- Clears the persisted data cache first (`InvalidatePersistedCache`), then
+    -- loads from the primary path (or `ax.data` if configured). If the primary
+    -- path is absent, falls back to any `spec.legacyPaths` entries and migrates
+    -- the data to the primary path on success.
+    -- Each loaded key is coerced to its registered type; keys that fail
+    -- coercion are skipped (debug message only). After loading, fires either
+    -- `hook.Run("OnConfigsLoaded")` or `hook.Run("OnOptionsLoaded")`.
     -- @realm shared
-    -- @return boolean True on success, false if no file or invalid
+    -- @return boolean True if values were loaded successfully, false if no
+    --   data file exists or the store is on the wrong realm.
     function store:Load()
         if ( !((spec.authority == "server" and SERVER) or (spec.authority == "client" and CLIENT)) ) then
             return false
@@ -578,10 +668,17 @@ function ax.util:CreateStore(spec, oldStore)
         return true
     end
 
-    --- Save current values to disk.
-    -- Only runs on the authority side set by spec.authority.
+    --- Persists the current store values to disk.
+    -- Only executes on the authority side (`spec.authority`). No-op on the
+    -- non-authority side. Serialises `store.values` and writes it to the
+    -- primary path via `ax.data:Set` (if configured) or `ax.util:WriteJSON`.
+    -- On success, updates the persisted cache so subsequent `Add` calls can
+    -- read back the correct initial value without re-reading the file.
+    -- A warning is printed (but false is returned silently) if the path is
+    -- invalid or the write fails. This function is called automatically by
+    -- `Set` (unless `bNoSave` is true) and on `ShutDown`.
     -- @realm shared
-    -- @return boolean True on success
+    -- @return boolean True if values were saved successfully, false otherwise.
     function store:Save()
         if ( !((spec.authority == "server" and SERVER) or (spec.authority == "client" and CLIENT)) ) then
             return false
@@ -617,11 +714,20 @@ function ax.util:CreateStore(spec, oldStore)
         return success
     end
 
-    --- Sync networked keys.
-    -- For config on server: sends initial values to clients (or a target).
-    -- For option on client: sends local preferences to the server.
+    --- Synchronises networked key values across the network.
+    -- Behaviour depends on the store type and current realm:
+    -- - **`config` on server**: collects all keys in `store.networkedKeys` and
+    --   sends them via `spec.net.init` to `target` (a player or table of
+    --   players). When `target` is nil, broadcasts to `player.GetAll()`. This
+    --   is called automatically on `PlayerReady` to initialise new clients.
+    -- - **`option` on client**: collects all networked option values from
+    --   `store.values` and sends them to the server via `spec.net.sync`. This
+    --   is called automatically 2 seconds after `InitPostEntity` and when the
+    --   server sends a `request` net message.
+    -- Does nothing in other realm/store combinations.
     -- @realm shared
-    -- @param target any Optional player or table of players (server-side config)
+    -- @param target Player|table|nil For config syncs: the recipient player(s).
+    --   Defaults to all players when nil. Ignored for option syncs.
     function store:Sync(target)
         if ( spec.name == "config" and SERVER ) then
             local recipients = target or player.GetAll()
@@ -653,8 +759,21 @@ function ax.util:CreateStore(spec, oldStore)
         end
     end
 
-    --- Internal: register net channels and hooks for networking.
-    -- Wires up init/set/sync/request handlers for config and option.
+    --- Internal: wires up all net channel receivers and lifecycle hooks.
+    -- Called once during store initialisation. If `ax.net` is not yet available,
+    -- defers via `timer.Simple(0, ...)` and retries on the next frame.
+    -- Registers the following depending on store type and realm:
+    -- - **config/server**: `PlayerReady` hook (sends initial values to joining
+    --   clients); `spec.net.set` receiver (admin-only remote config changes).
+    -- - **config/client**: `spec.net.init` receiver (bulk initial values);
+    --   `spec.net.set` receiver (individual key updates from server).
+    -- - **option/server**: `spec.net.sync` receiver (bulk preference upload);
+    --   `spec.net.set` receiver (single key updates); `PlayerDisconnected`
+    --   hook (cleans up SERVER_CACHE); exposes `store.RequestPlayerSync`.
+    -- - **option/client**: `spec.net.request` receiver (triggers `Sync`);
+    --   `InitPostEntity` hook (auto-syncs after 2 seconds).
+    -- Also registers a `ShutDown` hook on the authority side to call `Save`.
+    -- This is an internal method — do not call it directly.
     -- @realm shared
     function store:_setupNetworking()
         if ( !istable(spec) ) then
@@ -786,12 +905,19 @@ function ax.util:CreateStore(spec, oldStore)
         end
     end
 
-    --- Invoke a key's OnChanged handler if present.
+    --- Invokes the `OnChanged` callback for a key if one is registered.
+    -- Called by the networking layer after a config value arrives from the
+    -- server (on the client side). The callback is called via `SafeCall` so
+    -- errors in user-defined callbacks do not break the networking flow.
+    -- `oldValue` may be nil when this is the initial sync (no prior value).
+    -- `regEntry` being nil or having no `OnChanged` function is safe — the
+    -- call is silently skipped.
     -- @realm shared
-    -- @param regEntry table Registry entry for the key
-    -- @param oldValue any Previous value
-    -- @param newValue any New value
-    -- @param key string Setting key
+    -- @param regEntry table|nil The registry entry for the key (from
+    --   `store.registry[key]`).
+    -- @param oldValue any The previous value of the key, or nil on first sync.
+    -- @param newValue any The newly received value.
+    -- @param key string The setting key that changed.
     function store:HandleConfigChange(regEntry, oldValue, newValue, key)
         if ( regEntry and isfunction(regEntry.data.OnChanged) ) then
             ax.util:SafeCall(regEntry.data.OnChanged, oldValue, newValue, key)

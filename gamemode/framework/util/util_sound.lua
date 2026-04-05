@@ -12,20 +12,35 @@
 --- Utility helpers used across the Parallax framework (printing, file handling, text utilities, etc.).
 -- @module ax.util
 
---- Register a sound script by name.
--- Wrapper around `sound.Add` with a stable signature used across the framework.
---
--- Notes:
--- - `path` may be a string or a table of strings.
--- - `pitch` may be a number (fixed) or a {min,max} table.
---
+--- Registers a named sound script and precaches it for use in gameplay.
+-- Wraps `sound.Add` with validated inputs and sane defaults. After
+-- registration the sound is immediately precached via `util.PrecacheSound`,
+-- so callers do not need to call that separately. Sound scripts registered
+-- here can be emitted with `Entity:EmitSound(name)`.
+-- Defaults when parameters are omitted:
+-- - `volume`: 1.0 (full volume)
+-- - `pitch`: 100 (normal pitch)
+-- - `channel`: `CHAN_AUTO` (GMod selects the channel automatically)
+-- - `level`: 75 dB (typical indoor sound radius)
+-- `path` may be a string for a single file, or a table of file paths for
+-- random variation (GMod picks one at random per emission). `pitch` may be a
+-- fixed number (e.g. 100) or a `{ min, max }` table for random pitch per
+-- emission (e.g. `{ 95, 105 }`).
+-- Returns false with a printed error when `name` or `path` is invalid.
 -- @realm shared
--- @param name string Sound script name (e.g. "ax.ui.hint")
--- @param path string|table Sound file path(s)
--- @param volume number|nil Volume scalar (0-1)
--- @param pitch number|table|nil Pitch percent or range table
--- @param channel number|nil Sound channel (CHAN_*)
--- @param level number|nil Sound level (dB)
+-- @param name string The sound script identifier (e.g. `"ax.ui.click"`).
+--   Use namespaced names to avoid collisions with other addons.
+-- @param path string|table The sound file path(s) relative to `sound/`
+--   (e.g. `"buttons/button14.wav"`).
+-- @param volume number|nil Volume scalar 0–1. Default: 1.0.
+-- @param pitch number|table|nil Fixed pitch percent, or `{ min, max }` table
+--   for random pitch. Default: 100.
+-- @param channel number|nil Sound channel constant (`CHAN_*`). Default:
+--   `CHAN_AUTO`.
+-- @param level number|nil Sound propagation level in dB. Default: 75.
+-- @return boolean True on successful registration, false on invalid input.
+-- @usage ax.util:AddSound("ax.ui.click", "buttons/button14.wav")
+-- ax.util:AddSound("ax.ui.notify", { "ambient/alarms/alarm1.wav", "ambient/alarms/alarm2.wav" }, 0.8, { 95, 105 })
 function ax.util:AddSound(name, path, volume, pitch, channel, level)
     if ( !isstring(name) or name == "" ) then
         self:PrintError("AddSound: invalid name")

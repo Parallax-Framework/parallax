@@ -15,10 +15,20 @@
 --- Printing and logging helpers.
 -- @section print_utilities
 
---- Prepares a package of arguments for printing (converts entities to readable values).
--- @param ... any Any values to prepare for printing
--- @return table A table of values suitable for MsgC/Error printing
--- @usage local pkg = ax.util:PreparePackage("example", someEntity)
+--- Converts a list of values into a flat array suitable for `MsgC` output.
+-- Iterates the arguments and converts each one as follows:
+-- - Valid entities are converted to their `tostring` representation.
+-- - Valid player entities additionally get `[SteamID64]` appended as a
+--   separate element so the output clearly identifies who was involved.
+-- - All other values are included as-is.
+-- A newline string is always appended as the last element so that each call
+-- to a Print* function ends on its own line. The returned table can be
+-- unpacked directly into `MsgC` or used with `table.concat`.
+-- @realm shared
+-- @param ... any Any number of values to prepare.
+-- @return table Flat array of values ready to unpack into `MsgC` or similar.
+-- @usage local pkg = ax.util:PreparePackage("Player joined:", somePlayer)
+-- MsgC(Color(255, 255, 255), unpack(pkg))
 function ax.util:PreparePackage(...)
     local arguments = {...}
     local package = {}
@@ -47,10 +57,16 @@ color_warning = Color(255, 200, 100)
 color_success = Color(100, 255, 100)
 color_debug = Color(150, 150, 150)
 
---- Print a regular message with framework styling.
--- @param ... any Values to print (strings, entities, etc.)
--- @return table The prepared arguments that were printed
--- @usage ax.util:Print("Server started")
+--- Prints an informational message prefixed with `[PARALLAX]`.
+-- Uses `MsgC` with `color_print` (blue-ish `Color(100, 150, 255)`). Visible
+-- on both server and client consoles. All arguments are processed through
+-- `PreparePackage` — entities are converted to strings and players get their
+-- SteamID64 appended. A trailing newline is included automatically.
+-- @realm shared
+-- @param ... any Values to print.
+-- @return table The prepared argument array that was printed.
+-- @usage ax.util:Print("Module loaded:", moduleName)
+-- ax.util:Print("Player connected:", client)
 function ax.util:Print(...)
     local args = self:PreparePackage(...)
     local printColor = color_print
@@ -60,10 +76,16 @@ function ax.util:Print(...)
     return args
 end
 
---- Print an error message (Uses ErrorNoHaltWithStack).
--- @param ... any Values to print as an error
--- @return table The prepared arguments that were printed
--- @usage ax.util:PrintError("Failed to load module", moduleName)
+--- Prints an error message prefixed with `[PARALLAX] [ERROR]`, with a stack trace.
+-- Uses `ErrorNoHaltWithStack`, so the full call stack is included in the
+-- console output. Execution continues after the call — this does NOT throw.
+-- Use this for non-fatal errors where you want clear diagnostics without
+-- stopping the current execution path. Arguments are joined with spaces via
+-- `table.concat` after `PreparePackage` processing.
+-- @realm shared
+-- @param ... any Values to include in the error message.
+-- @return table The prepared argument array that was printed.
+-- @usage ax.util:PrintError("Failed to load config:", err)
 function ax.util:PrintError(...)
     local args = self:PreparePackage(...)
 
@@ -72,10 +94,15 @@ function ax.util:PrintError(...)
     return args
 end
 
---- Print a warning message.
--- @param ... any Values to print as a warning
--- @return table The prepared arguments that were printed
--- @usage ax.util:PrintWarning("Deprecated API used")
+--- Prints a warning message prefixed with `[PARALLAX] [WARNING]`.
+-- Uses `MsgC` with `color_warning` (orange `Color(255, 200, 100)`). No stack
+-- trace is included — use `PrintError` when a stack trace is needed. Suitable
+-- for recoverable conditions that should be visible in the console without
+-- alarming users or halting execution.
+-- @realm shared
+-- @param ... any Values to include in the warning.
+-- @return table The prepared argument array that was printed.
+-- @usage ax.util:PrintWarning("Deprecated function called, use NewFunc instead")
 function ax.util:PrintWarning(...)
     local args = self:PreparePackage(...)
     local warningColor = color_warning
@@ -85,10 +112,15 @@ function ax.util:PrintWarning(...)
     return args
 end
 
---- Print a success message.
--- @param ... any Values to print as success output
--- @return table The prepared arguments that were printed
--- @usage ax.util:PrintSuccess("Configuration saved")
+--- Prints a success message prefixed with `[PARALLAX] [SUCCESS]`.
+-- Uses `MsgC` with `color_success` (green `Color(100, 255, 100)`). Use to
+-- confirm that an operation completed as expected — module loads, database
+-- connections established, configuration saved successfully, etc.
+-- @realm shared
+-- @param ... any Values to include in the success message.
+-- @return table The prepared argument array that was printed.
+-- @usage ax.util:PrintSuccess("Database connected:", dbName)
+-- ax.util:PrintSuccess("Configuration saved to", path)
 function ax.util:PrintSuccess(...)
     local args = self:PreparePackage(...)
     local successColor = color_success
@@ -105,10 +137,21 @@ local debugRateLimit = CreateConVar("ax_debug_rate_limit", "0", {FCVAR_ARCHIVE, 
 
 local rateLimitTracker = {}
 
---- Print a debug message
--- @param ... any Values to print for debugging
--- @return table|nil The prepared arguments when printed, nil otherwise
--- @usage ax.util:PrintDebug("Loaded module", moduleName)
+--- Prints a debug message, gated behind developer mode and realm convars.
+-- Output is only produced when ALL of the following conditions are true:
+-- 1. The `developer` convar is ≥ 1 (set with `developer 1` in console).
+-- 2. `ax_debug_realm` matches the current realm:
+--    - `1` → client only
+--    - `2` → server only
+--    - `3` → both sides
+-- 3. If `ax_debug_filter` is non-empty, the message must contain at least one of its comma-separated keywords (case-insensitive substring match).
+-- 4. If `ax_debug_rate_limit` is positive, the same message (by content key) can only be printed once within that many seconds — prevents log spam from code running every frame.
+-- Uses `MsgC` with `color_debug` (grey `Color(150, 150, 150)`). Returns nil silently when any gate condition prevents output.
+-- @realm shared
+-- @param ... any Values to include in the debug message.
+-- @return table|nil The prepared argument array when printed, nil when gated.
+-- @usage ax.util:PrintDebug("Character loaded:", char:GetName())
+-- ax.util:PrintDebug("Store set:", key, "=", value)
 function ax.util:PrintDebug(...)
     if ( developer:GetInt() < 1 ) then return end
 
