@@ -7,6 +7,11 @@ function ENTITY:GiveDoorAccess(client, accessGroup)
 
     local doorTable = self:GetTable()
     doorTable.axPlayerAccess = doorTable.axPlayerAccess or {}
+
+    if ( accessGroup == MODULE.AccessGroups.NONE ) then
+        return self:TakeDoorAccess(client)
+    end
+
     doorTable.axPlayerAccess[client] = accessGroup
 
     local receivers = {}

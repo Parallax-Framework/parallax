@@ -28,7 +28,7 @@ if ( SERVER ) then
         if ( !client:IsAdmin() ) then return end
 
         local entity = client:GetEyeTrace().Entity
-        if ( !entity:IsDoor() ) then return end
+        if ( !IsValid(entity) or !entity:IsDoor() ) then return end
 
         local accessGroup = args[1]
         local accessGroupName = ""
@@ -49,14 +49,9 @@ if ( SERVER ) then
             entityTable.axPlayerAccess[client] = accessGroup
             print("Player " .. client:GetName() .. " set to access group " .. accessGroupName)
             print("This door access group has the following permissions:")
-            for group, perms in pairs(MODULE.AccessGroup_Permissions) do
-                if ( group == accessGroup ) then
-                    for permName, permValue in pairs(MODULE.Permissions) do
-                        if ( bit.band(perms, permValue) == permValue ) then
-                            print("  - " .. permName)
-                        end
-                    end
-                end
+            local stringTable = MODULE:GetAccessGroupPermissions(accessGroup, true)
+            for _, permName in ipairs(stringTable) do
+                print("  - " .. permName)
             end
 
         end
@@ -66,7 +61,7 @@ if ( SERVER ) then
         if ( !client:IsAdmin() ) then return end
 
         local entity = client:GetEyeTrace().Entity
-        if ( !entity:IsDoor() ) then return end
+        if ( !IsValid(entity) or !entity:IsDoor() ) then return end
 
         local checkingAccess = 0
 
