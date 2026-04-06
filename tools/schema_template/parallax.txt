@@ -1,0 +1,7 @@
+"{{SCHEMA_FOLDER}}"
+{
+    "base"              "parallax"
+    "title"             "Parallax: {{SCHEMA_NAME}}"
+    "author"            "{{SCHEMA_AUTHOR}}"
+    "menusystem"        "1"
+}

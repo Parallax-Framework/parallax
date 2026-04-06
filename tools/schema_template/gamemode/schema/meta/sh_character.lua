@@ -1,0 +1,20 @@
+--[[
+    Parallax Framework
+    Copyright (c) 2025-2026 Parallax Framework Contributors
+
+    This file is part of the Parallax Framework and is licensed under the MIT License.
+    You may use, copy, modify, merge, publish, distribute, and sublicense this file
+    under the terms of the LICENSE file included with this project.
+
+    Attribution is required. If you use or modify this file, you must retain this notice.
+]]
+
+local characterMeta = ax.meta.character
+
+function characterMeta:GetExample()
+    return self:GetData("example", false)
+end
+
+function characterMeta:SetExample(value, bNoNetworking, bNoDBUpdate)
+    self:SetData("example", value, bNoNetworking, bNoDBUpdate)
+end

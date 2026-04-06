@@ -1,0 +1,55 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Init Parallax schema template",
+            "type": "shell",
+            "command": "powershell",
+            "args": [
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                "${workspaceFolder}\\tools\\init_schema_template.ps1",
+                "-Destination",
+                "${input:schemaPath}",
+                "-SchemaName",
+                "${input:schemaName}",
+                "-Description",
+                "${input:schemaDescription}",
+                "-Author",
+                "${input:schemaAuthor}"
+            ],
+            "options": {
+                "cwd": "${fileDirname}"
+            },
+            "problemMatcher": []
+        }
+    ],
+    "inputs": [
+        {
+            "id": "schemaPath",
+            "type": "promptString",
+            "description": "Target folder to populate (leave blank to use active folder)",
+            "default": ""
+        },
+        {
+            "id": "schemaName",
+            "type": "promptString",
+            "description": "Schema display name",
+            "default": "Schema Template"
+        },
+        {
+            "id": "schemaDescription",
+            "type": "promptString",
+            "description": "Schema description",
+            "default": "A minimal Parallax schema template."
+        },
+        {
+            "id": "schemaAuthor",
+            "type": "promptString",
+            "description": "Schema author",
+            "default": "Unknown"
+        }
+    ]
+}
