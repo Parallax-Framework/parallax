@@ -67,7 +67,7 @@ function ax.util:SafeCall(fn, ...)
     -- Remove the boolean success and return remaining values
     table.remove(results, 1)
 
-    return true, table.unpack(results)
+    return true, unpack(results)
 end
 
 --- Converts a human-readable name into a lowercase, underscore-separated ID.
