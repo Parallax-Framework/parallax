@@ -1,5 +1,18 @@
 local MODULE = MODULE
 
-function MODULE:PostPlayerLoadout(client)
-	client:Give("ax_keys")
+function MODULE:PlayerUse(client, entity)
+	if ( !entity:IsDoor() ) then return end
+
+	if ( client:KeyDown(IN_WALK) ) then
+		local isLocked = entity:IsLocked()
+		local permsNeeded = isLocked and MODULE.Permissions.UNLOCK or MODULE.Permissions.LOCK
+
+		if ( client:HasDoorAccess(entity, permsNeeded) ) then
+			client:PerformEntityAction(entity, isLocked and "Unlock" or "Lock", 0.5, function()
+				entity:ToggleLock()
+			end, nil)
+		end
+
+		return false
+	end
 end
