@@ -69,6 +69,21 @@ function ENTITY:ResetRateLimit(name)
     return true
 end
 
+local DOOR_CLASSES = {
+    ["prop_door_rotating"] = true,
+    ["func_door_rotating"] = true,
+    ["func_door"] = true,
+}
+
+function ENTITY:IsDoor()
+    local try = hook.Run("IsEntityDoor", self)
+    if ( try != nil ) then
+        return try
+    end
+
+    return DOOR_CLASSES[self:GetClass()] or false
+end
+
 --- Emits a sequence of sounds one after another, timed by their durations.
 -- Iterates `soundNames` and schedules each sound with `timer.Simple`, accumulating delays based on `SoundDuration` plus a 100 ms buffer to prevent clipping between back-to-back clips. All sounds share the same level, pitch, volume, channel, flags, DSP, and filter settings. Returns the total playback duration in seconds. The entity is validity-checked inside each timer callback — sounds that fire after the entity has been removed are silently skipped.
 -- @realm shared
@@ -134,7 +149,7 @@ if ( SERVER ) then
     -- @realm server
     -- @return Entity The partner door entity, or `NULL` if none.
     function ENTITY:GetDoorPartner()
-        if ( self:GetClass() != "prop_door_rotating" ) then return NULL end
+        if ( self:GetClass() != "prop_door_rotating" ) then return nil end
 
         local selfTable = self:GetTable()
         if ( IsValid(selfTable.m_hPartner) ) then
@@ -142,7 +157,7 @@ if ( SERVER ) then
         end
 
         local doors = ents.FindByClass(self:GetClass())
-        if ( doors[1] == nil ) then return NULL end
+        if ( doors[1] == nil ) then return nil end
 
         for i = 1, #doors do
             local door = doors[i]
@@ -154,7 +169,7 @@ if ( SERVER ) then
             end
         end
 
-        return NULL
+        return nil
     end
 
     --- Blasts a door open by creating a physics-enabled dummy and hiding the original.
