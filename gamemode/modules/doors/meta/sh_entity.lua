@@ -14,11 +14,7 @@ function ENTITY:GiveDoorAccess(client, accessGroup)
         receivers[#receivers + 1] = k
     end
 
-    net.Start("ax.doors.door_access.give")
-        net.WriteEntity(self)
-        net.WritePlayer(client)
-        net.WriteUInt(accessGroup, 8)
-    net.Send(receivers)
+    ax.net:Start(nil, "ax.doors.door_access.give", self, client, accessGroup)
 
     -- not sure whether to call this here, or in a hook/command
     hook.Run("OnPlayerReceivedDoorAccess", client, self, accessGroup)
@@ -41,10 +37,7 @@ function ENTITY:TakeDoorAccess(client)
         receivers[#receivers + 1] = k
     end
 
-    net.Start("ax.doors.door_access.take")
-        net.WriteEntity(self)
-        net.WritePlayer(client)
-    net.Send(receivers)
+    ax.net:Start(receivers, "ax.doors.door_access.take", self, client)
 
     hook.Run("OnPlayerLostDoorAccess", client, self, doorAccessHad)
     return true

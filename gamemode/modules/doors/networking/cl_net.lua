@@ -1,19 +1,13 @@
 local MODULE = MODULE
 
-net.Receive("ax.doors.door_access.give", function(length)
-    local door = net.ReadEntity()
-    local client = net.ReadPlayer()
-    local accessGroup = net.ReadUInt(8)
-
+ax.net:Hook("ax.doors.door_access.give", function(door, client, accessGroup)
     local doorTable = door:GetTable()
+
     doorTable.axPlayerAccess = doorTable.axPlayerAccess or {}
     doorTable.axPlayerAccess[client] = accessGroup
 end)
 
-net.Receive("ax.doors.door_access.take", function(length)
-    local door = net.ReadEntity()
-    local client = net.ReadPlayer()
-
+ax.net:Hook("ax.doors.door_access.take", function(door, client)
     local doorTable = door:GetTable()
     doorTable.axPlayerAccess = doorTable.axPlayerAccess or {}
     doorTable.axPlayerAccess[client] = nil
