@@ -9,7 +9,7 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
-local characterMeta = ax.meta.character
+local characterMeta = ax.character.meta
 
 function characterMeta:GetExample()
     return self:GetData("example", false)

@@ -9,7 +9,6 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
-FACTION = {}
 FACTION.name = "Example"
 FACTION.description = "An example faction."
 FACTION.color = Color(255, 255, 255)
