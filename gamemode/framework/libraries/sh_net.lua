@@ -159,7 +159,7 @@ if ( SERVER ) then
             for i = 1, targetCount do
                 local v = target[i]
 
-                if ( type(v) == "Player" and IsValid(v) ) then
+                if ( ax.util:IsValidPlayer(v) ) then
                     recipients[#recipients + 1] = v
                 end
             end
@@ -177,6 +177,58 @@ if ( SERVER ) then
         self:QueueMessage(name, arguments, function()
             net.Broadcast()
         end, nil, "ax.net:Start called with invalid target, broadcasting to all clients instead")
+    end
+
+    --- Starts a stream, sends to people other than the specified target.
+    -- @param target Player, table, vector or nil (nil = broadcast or to server).
+    -- @string name Hook name.
+    -- @vararg Arguments to send.
+    function ax.net:StartOmit(target, name, ...)
+        local arguments = {...}
+        -- Fast paths
+        if ( target == nil ) then
+            self:QueueMessage(name, arguments, function()
+                net.Broadcast()
+            end, "[NET] Sent '" .. name .. "' to all clients")
+
+            return
+        end
+
+        if ( type(target) == "Player" ) then
+            if ( !ax.util:IsValidPlayer(target) ) then return end
+
+            self:QueueMessage(name, arguments, function()
+                net.SendOmit(target)
+            end, "[NET] Sent '" .. name .. "' to " .. target:Nick())
+
+            return
+        end
+
+        if ( istable(target) ) then
+            local recipients = {}
+            local targetCount = #target
+
+            for i = 1, targetCount do
+                local v = target[i]
+
+                if ( ax.util:IsValidPlayer(v) ) then
+                    recipients[#recipients + 1] = v
+                end
+            end
+
+            if ( recipients[1] != nil ) then
+                self:QueueMessage(name, arguments, function()
+                    net.SendOmit(recipients)
+                end, "[NET] Sent '" .. name .. "' to " .. #recipients .. " recipients")
+            end
+
+            return
+        end
+
+        -- Fallback: broadcast if caller passed garbage
+        self:QueueMessage(name, arguments, function()
+            net.Broadcast()
+        end, nil, "ax.net:StartOmit called with invalid target, broadcasting to all clients instead")
     end
 else
     --- Starts a stream.
