@@ -182,7 +182,7 @@ function ax.rank:GetAll(filter)
         local filtered = {}
         for _, rankTable in pairs(self.instances) do
             local match = false
-            if ( isnumber(filter.faction) and rankTable.faction == filter.faction ) then
+            if ( isnumber(filter.faction) and isnumber(rankTable.faction) and rankTable.faction == filter.faction ) then
                 match = true
             elseif ( isstring(filter.name) and ax.util:FindString(rankTable.name or "", filter.name) ) then
                 match = true
