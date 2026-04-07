@@ -182,14 +182,19 @@ function ax.rank:GetAll(filter)
         local filtered = {}
         for _, rankTable in pairs(self.instances) do
             local match = false
-            if ( isnumber(filter.faction) and isnumber(rankTable.faction) and rankTable.faction == filter.faction ) then
+            if ( !isnumber(rankTable.faction) ) then
+                filtered[#filtered + 1] = rankTable
+                continue
+            end
+
+            if ( isnumber(filter.faction) and rankTable.faction == filter.faction ) then
                 match = true
             elseif ( isstring(filter.name) and ax.util:FindString(rankTable.name or "", filter.name) ) then
                 match = true
             end
 
             if ( match ) then
-                table.insert(filtered, rankTable)
+                filtered[#filtered + 1] = rankTable
             end
         end
 

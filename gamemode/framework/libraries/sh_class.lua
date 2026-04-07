@@ -186,6 +186,11 @@ function ax.class:GetAll(filter)
         local filtered = {}
         for _, classTable in pairs(self.instances) do
             local match = false
+            if ( !isnumber(classTable.faction) ) then
+                filtered[#filtered + 1] = classTable
+                continue
+            end
+
             if ( isnumber(filter.faction) and isnumber(classTable.faction) and classTable.faction == filter.faction ) then
                 match = true
             elseif ( isstring(filter.name) and ax.util:FindString(classTable.name or "", filter.name) ) then
