@@ -92,19 +92,16 @@ function ax.class:Include(directory, timeFilter)
                 ax.util:Include(directory .. "/" .. fileName, "shared")
                 ax.util:PrintDebug(color_success, "CLASS \"" .. (CLASS.Name or CLASS.name or CLASS.id) .. "\" initialised successfully.")
 
-                if ( !isnumber(CLASS.faction) ) then
-                    ax.util:PrintDebug(color_error, "Class \"" .. CLASS.id .. "\" does not have faction ID, skipping file: " .. fileName)
-                    continue
-                end
+                if ( isnumber(CLASS.faction) ) then
+                    local factionTable = ax.faction:Get(CLASS.faction)
+                    if ( !istable(factionTable) ) then
+                        ax.util:PrintDebug(color_error, "Class \"" .. CLASS.id .. "\" uses an invalid faction ID skipping file: " .. fileName)
+                        continue
+                    end
 
-                local factionTable = ax.faction:Get(CLASS.faction)
-                if ( !istable(factionTable) ) then
-                    ax.util:PrintDebug(color_error, "Class \"" .. CLASS.id .. "\" uses an invalid faction ID skipping file: " .. fileName)
-                    continue
+                    if ( !istable(factionTable.classes) ) then factionTable.classes = {} end
+                    factionTable.classes[CLASS.id] = CLASS
                 end
-
-                if ( !istable(factionTable.Classes) ) then factionTable.Classes = {} end
-                factionTable.Classes[CLASS.id] = CLASS
 
                 self.stored[CLASS.id] = CLASS
                 self.instances[CLASS.index] = CLASS
@@ -189,14 +186,14 @@ function ax.class:GetAll(filter)
         local filtered = {}
         for _, classTable in pairs(self.instances) do
             local match = false
-            if ( isnumber(filter.faction) and classTable.faction == filter.faction ) then
+            if ( isnumber(filter.faction) and isnumber(classTable.faction) and classTable.faction == filter.faction ) then
                 match = true
             elseif ( isstring(filter.name) and ax.util:FindString(classTable.name or "", filter.name) ) then
                 match = true
             end
 
             if ( match ) then
-                table.insert(filtered, classTable)
+                filtered[#filtered + 1] = classTable
             end
         end
 

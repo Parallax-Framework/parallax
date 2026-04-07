@@ -370,7 +370,7 @@ ax.command:Add("CharSetClass", {
 
         local classes = {}
         for _, classTable in ipairs(ax.class:GetAll({faction = target:GetFaction()})) do
-            table.insert(classes, classTable)
+            classes[#classes + 1] = classTable
         end
 
         local classTable = nil
@@ -384,14 +384,10 @@ ax.command:Add("CharSetClass", {
         if ( !classTable ) then
             local classNames = {}
             for _, classIter in ipairs(classes) do
-                table.insert(classNames, classIter.name)
+                classNames[#classNames + 1] = classIter.name
             end
 
             return "You must specify a valid class for the character's faction, possible classes are: " .. " " .. table.concat(classNames, ", ")
-        end
-
-        if ( classTable.faction and classTable.faction != target:GetFaction() ) then
-            return "This class does not belong to the character's faction."
         end
 
         target:SetClass(classTable.index)

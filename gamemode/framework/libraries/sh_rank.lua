@@ -91,19 +91,16 @@ function ax.rank:Include(directory, timeFilter)
                 ax.util:Include(directory .. "/" .. fileName, "shared")
                 ax.util:PrintDebug(color_success, "RANK \"" .. (RANK.Name or RANK.name or RANK.id) .. "\" initialised successfully.")
 
-                if ( !isnumber(RANK.faction) ) then
-                    ax.util:PrintDebug(color_error, "Rank \"" .. RANK.id .. "\" does not have faction ID, skipping file: " .. fileName)
-                    continue
-                end
+                if ( isnumber(RANK.faction) ) then
+                    local factionTable = ax.faction:Get(RANK.faction)
+                    if ( !istable(factionTable) ) then
+                        ax.util:PrintDebug(color_error, "Rank \"" .. RANK.id .. "\" uses an invalid faction ID skipping file: " .. fileName)
+                        continue
+                    end
 
-                local factionTable = ax.faction:Get(RANK.faction)
-                if ( !istable(factionTable) ) then
-                    ax.util:PrintDebug(color_error, "Rank \"" .. RANK.id .. "\" uses an invalid faction ID skipping file: " .. fileName)
-                    continue
+                    if ( !istable(factionTable.ranks) ) then factionTable.ranks = {} end
+                    factionTable.ranks[RANK.id] = RANK
                 end
-
-                if ( !istable(factionTable.Ranks) ) then factionTable.Ranks = {} end
-                factionTable.Ranks[RANK.id] = RANK
 
                 self.stored[RANK.id] = RANK
                 self.instances[RANK.index] = RANK
