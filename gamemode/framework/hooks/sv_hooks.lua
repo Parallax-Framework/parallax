@@ -87,6 +87,8 @@ function GM:DoPlayerDeath(client, attacker, damageInfo)
         hook.Run("OnRagdollCreated", client, ragdoll, attacker, damageInfo)
 
         SafeRemoveEntityDelayed(ragdoll, 300)
+
+        ragdoll:Fire("FadeAndRemove", 10, 300)
     end
 
     local factionData = client:GetFactionData()
