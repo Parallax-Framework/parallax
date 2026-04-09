@@ -35,29 +35,12 @@ function PANEL:PopulateDoorAccessGroups()
 
     self.rightPanel.groupPanels = {}
 
-    local function UpdateArrowShouldDisplay(groupEnum, groupIndex, arrowUp, arrowDown)
-        -- if it's below Owner, hide arrowUp ( so we don't replace owner being on top)
-
-        if groupEnum == "OWNER" then
-            arrowUp:SetVisible(false)
-        else
-            arrowUp:SetVisible(true)
-        end
-
-        if groupEnum == "OWNER" then
-            arrowDown:SetVisible(false)
-        else
-            arrowDown:SetVisible(true)
-        end
-
-    end
-
     for groupEnum, groupIndex in SortedPairsByValue(groups, true) do
         local groupPanel = self.rightPanel.scrollBar:Add("EditablePanel")
         groupPanel:Dock(TOP)
         groupPanel:SetTall(50)
 
-        if ( groupEnum != "OWNER" ) then
+        if ( groupIndex != MODULE.AccessGroups.OWNER and groupIndex != MODULE.AccessGroups.NONE ) then
             local arrowUp = groupPanel:Add("ax.button.icon")
             arrowUp:Dock(LEFT)
             arrowUp:SetFont("ax.small")
@@ -111,7 +94,6 @@ function PANEL:PopulateDoorAccessGroups()
                 ax.net:Start("ax.doors.group_movedown", groupEnum, groupIndex)
                 UpdateArrowShouldDisplay(groupEnum, groupIndex, arrowUp, this)
             end
-
         end
 
 
