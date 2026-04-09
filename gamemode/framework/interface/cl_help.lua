@@ -26,7 +26,7 @@ end
 function PANEL:Paint(width, height)
 end
 
-vgui.Register("ax.tab.help", PANEL, "ax.transition.pages")
+vgui.Register("ax.tab.help", PANEL, "EditablePanel")
 
 local function GetWrappedLines(text, font, maxWidth)
     text = tostring(text or "")

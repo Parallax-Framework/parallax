@@ -9,10 +9,18 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
-DEFINE_BASECLASS("EditablePanel")
-
 local PANEL = {}
 
+-- Layout constants
+local SIDEBAR_WIDTH = ax.util:ScreenScale(72)
+local SIDEBAR_GAP = ax.util:ScreenScale(2)
+local PADDING_X = ax.util:ScreenScale(24)
+local PADDING_Y = ax.util:ScreenScaleH(24)
+local BODY_GAP = ax.util:ScreenScaleH(8)
+local SIDEBAR_BUTTON_GAP = ax.util:ScreenScaleH(2)
+local SIDEBAR_PADDING = ax.util:ScreenScale(4)
+
+--- Sorts section keys by sort order, then by name alphabetically.
 local function GetSortedSectionKeys(sections)
     local keys = table.GetKeys(sections or {})
 
@@ -42,6 +50,7 @@ local function GetSortedSectionKeys(sections)
     return keys
 end
 
+--- Collects tab button registration data from hooks.
 local function PopulateTabButtonTable()
     local buttons = {}
 
@@ -51,6 +60,7 @@ local function PopulateTabButtonTable()
     return buttons
 end
 
+-- Backdrop animation accessors
 AccessorFunc(PANEL, "backgroundBlur", "BackgroundBlur", FORCE_NUMBER)
 AccessorFunc(PANEL, "backgroundAlpha", "BackgroundAlpha", FORCE_NUMBER)
 AccessorFunc(PANEL, "gradientLeft", "GradientLeft", FORCE_NUMBER)
@@ -64,9 +74,6 @@ AccessorFunc(PANEL, "gradientLeftTarget", "GradientLeftTarget", FORCE_NUMBER)
 AccessorFunc(PANEL, "gradientRightTarget", "GradientRightTarget", FORCE_NUMBER)
 AccessorFunc(PANEL, "gradientTopTarget", "GradientTopTarget", FORCE_NUMBER)
 AccessorFunc(PANEL, "gradientBottomTarget", "GradientBottomTarget", FORCE_NUMBER)
-
-AccessorFunc(PANEL, "anchorTime", "AnchorTime", FORCE_NUMBER)
-AccessorFunc(PANEL, "anchorEnabled", "AnchorEnabled", FORCE_BOOL)
 
 function PANEL:Init()
     if ( IsValid(ax.gui.tab) ) then
@@ -86,11 +93,13 @@ function PANEL:Init()
         system.FlashWindow()
     end
 
+    -- Visual state
     self.alpha = 0
     self:SetAlpha(0)
     self.opening = true
     self.closing = false
 
+    -- Backdrop values
     self.backgroundBlur = 0
     self.backgroundAlpha = 0
     self.gradientLeft = 0
@@ -105,38 +114,61 @@ function PANEL:Init()
     self.gradientTopTarget = 0
     self.gradientBottomTarget = 0
 
+    -- TAB anchor
     self.anchorTime = CurTime() + ax.option:Get("tab.anchor.time", 0.4)
-    self.anchorEnabled = true
+    self.bAnchorEnabled = true
+
+    -- State
+    self.state = {
+        activeTab = nil,
+        activeSection = nil,
+        tabOrder = {},
+    }
 
     self.tabs = {}
+    self.tabButtons = {}
+    self.buttonMap = {}
+    self.sectionPages = {}
+    self.innerPages = {}
+    self.sectionButtonMap = {}
+    self.sectionParentMap = {}
+    self.bSidebarVisible = false
 
+    -- Fullscreen overlay
     self:SetSize(ScrW(), ScrH())
     self:SetPos(0, 0)
     self:MakePopup()
 
-    self.buttons = self:Add("ax.scroller.horizontal")
-    self.buttons:SetSize(ScrW() - ax.util:ScreenScale(48), ax.util:ScreenScaleH(40))
-    self.buttons:SetPos(ax.util:ScreenScale(24), -ax.util:ScreenScaleH(40))
-    self.buttons.x = self.buttons:GetX()
-    self.buttons.y = self.buttons:GetY()
-    self.buttons.alpha = 0
-    self.buttons:SetAlpha(0)
-    self.buttons:SetZPos(2)
-
-    self.subbuttons = self:Add("ax.scroller.horizontal")
-    self.subbuttons:SetSize(ScrW() - ax.util:ScreenScale(48), ax.util:ScreenScaleH(40))
-    self.subbuttons:SetPos(ax.util:ScreenScale(24), -ax.util:ScreenScaleH(40))
-    self.subbuttons.x = self.subbuttons:GetX()
-    self.subbuttons.y = self.subbuttons:GetY()
-    self.subbuttons.alpha = 0
-    self.subbuttons:SetAlpha(0)
-    self.subbuttons:SetZPos(1)
-
+    self:CreateTopBar()
+    self:CreateSidebar()
+    self:CreateContent()
     self:PopulateTabs()
+    self:RestoreLastTab()
+    self:Open()
+end
 
-    local characters = self.buttons:Add("ax.button")
-    characters:Dock(LEFT)
-    characters:DockMargin(0, 0, ax.util:ScreenScale(4), 0)
+function PANEL:CreateTopBar()
+    local topBarHeight = ax.util:ScreenScaleH(24)
+
+    self.topBar = self:Add("EditablePanel")
+    self.topBar:SetSize(ScrW() - PADDING_X * 2, topBarHeight)
+    self.topBar:SetPos(PADDING_X, -topBarHeight)
+    self.topBar:SetZPos(10)
+    self.topBar:SetAlpha(0)
+    self.topBar.Paint = nil
+    self.topBarHeight = topBarHeight
+
+    -- Motion starting values
+    self.topBar.topBarY = -topBarHeight
+    self.topBar.topBarAlpha = 0
+
+    self.tabScroller = self.topBar:Add("ax.scroller.horizontal")
+    self.tabScroller:Dock(FILL)
+
+    -- Characters button (always visible, right side)
+    local characters = self.topBar:Add("ax.button")
+    characters:Dock(RIGHT)
+    characters:DockMargin(ax.util:ScreenScale(4), 0, 0, 0)
     characters:SetText("tab.characters")
     characters:SetWide(characters:GetWide() * 1.25)
     characters.DoClick = function()
@@ -145,82 +177,440 @@ function PANEL:Init()
             ax.gui.main = vgui.Create("ax.main")
         end)
     end
-    self.buttons:AddPanel(characters)
-
-    self:Open()
 end
 
-function PANEL:Open()
-    self:Motion(ax.option:Get("tabFadeTime", 0.25), {
-        Target = {alpha = 255},
-        Easing = "OutQuad",
-        Think = function(this)
-            self:SetAlpha(this.alpha)
-        end,
-        OnComplete = function()
-            self.opening = false
-        end
-    })
+function PANEL:CreateSidebar()
+    self.sidebar = self:Add("EditablePanel")
+    self.sidebar:SetPos(PADDING_X, self:GetBodyY())
+    self.sidebar:SetSize(0, self:GetBodyHeight())
+    self.sidebar:SetZPos(5)
+    self.sidebar:SetVisible(false)
+    self.sidebar.sidebarWidth = 0
 
-    self.buttons:Motion(ax.option:Get("tabFadeTime", 0.25), {
-        Target = {x = ax.util:ScreenScale(24), y = ax.util:ScreenScaleH(24), alpha = 255},
-        Easing = "OutQuad",
-        Think = function(vars)
-            self.buttons:SetPos(vars.x, vars.y)
-            self.buttons:SetAlpha(vars.alpha)
-        end
-    })
+    self.sidebar.Paint = nil
 
-    -- if the current tab has subbuttons, show them
-    local currentPageIndex = self:GetCurrentPage()
-    local hasSubbuttons = false
-    for k, v in pairs(self.tabs) do
-        if ( v.index == currentPageIndex ) then
-            local tabKey = k
-            for buttonKey, button in pairs(self.buttons.buttons or {}) do
-                if ( button.tab == v ) then
-                    tabKey = buttonKey
-                    break
+    self.sidebarScroller = self.sidebar:Add("DScrollPanel")
+    self.sidebarScroller:Dock(FILL)
+    self.sidebarScroller:DockPadding(SIDEBAR_PADDING, SIDEBAR_PADDING, SIDEBAR_PADDING, SIDEBAR_PADDING)
+    self.sidebarScroller:GetVBar():SetWide(0)
+    self.sidebarScroller.Paint = nil
+end
+
+function PANEL:CreateContent()
+    self.content = vgui.Create("ax.transition.pages", self)
+    self.content:SetZPos(1)
+    self.content.Paint = function() end
+
+    self:UpdateContentBounds()
+end
+
+function PANEL:GetBodyY()
+    return PADDING_Y + (self.topBarHeight or 0) + BODY_GAP
+end
+
+function PANEL:GetBodyHeight()
+    return ScrH() - self:GetBodyY() - PADDING_Y
+end
+
+function PANEL:UpdateContentBounds()
+    local sidebarWidth = 0
+    if ( IsValid(self.sidebar) and self.sidebar:IsVisible() ) then
+        sidebarWidth = self.sidebar:GetWide() or 0
+    end
+
+    local x = PADDING_X + (sidebarWidth > 1 and sidebarWidth + SIDEBAR_GAP or 0)
+    local y = self:GetBodyY()
+    local w = ScrW() - x - PADDING_X
+    local h = self:GetBodyHeight()
+
+    self.content:SetPos(x, y)
+    self.content:SetSize(w, h)
+
+    self:ReflowAllPages()
+end
+
+function PANEL:ReflowAllPages()
+    if ( !IsValid(self.content) ) then return end
+
+    local pages = self.content.pages
+    if ( !pages ) then return end
+
+    for i = 1, #pages do
+        local page = pages[i]
+        if ( !IsValid(page) ) then continue end
+
+        page:ReflowFromOffsets()
+
+        -- Also reflow inner pages for tabs with sections
+        local tabKey = page.key
+        local innerPages = tabKey and self.innerPages[tabKey]
+        if ( IsValid(innerPages) ) then
+            innerPages:SetSize(page:GetWide(), page:GetTall())
+
+            local subPages = innerPages.pages
+            if ( subPages ) then
+                for j = 1, #subPages do
+                    if ( IsValid(subPages[j]) ) then
+                        subPages[j]:ReflowFromOffsets()
+                    end
                 end
             end
+        end
+    end
+end
 
-            -- If current tab is a section, find its parent tab
-            if ( self.sectionParentMap[tabKey] ) then
-                tabKey = self.sectionParentMap[tabKey]
+function PANEL:PopulateTabs()
+    local buttons = PopulateTabButtonTable()
+    self.tabButtons = buttons
+
+    local tabOrder = {}
+    for k in SortedPairs(buttons) do
+        tabOrder[#tabOrder + 1] = k
+    end
+    self.state.tabOrder = tabOrder
+
+    for i = 1, #tabOrder do
+        local k = tabOrder[i]
+        local v = buttons[k]
+
+        -- Create top bar button
+        local button = self.tabScroller:Add("ax.button")
+        button:Dock(LEFT)
+        button:DockMargin(0, 0, ax.util:ScreenScale(4), 0)
+        button:SetText("tab." .. k)
+        button:SetWide(button:GetWide() * 1.25)
+        button.bActive = false
+        button.tabKey = k
+
+        -- Active tab underline indicator
+        button.PaintAdditional = function(this, width, height)
+            if ( !this.bActive ) then return end
+
+            local glass = ax.theme:GetGlass()
+            local metrics = ax.theme:GetMetrics()
+            local barHeight = math.max(2, ax.util:ScreenScaleH(2))
+            surface.SetDrawColor(ax.theme:ScaleAlpha(glass.progress, metrics.opacity))
+            surface.DrawRect(0, height - barHeight, width, barHeight)
+        end
+
+        button.DoClick = function()
+            self:SwitchTab(k)
+        end
+
+        self.tabScroller:AddPanel(button)
+        self.buttonMap[k] = button
+
+        -- Adjust top bar height to match tallest button
+        if ( button:GetTall() > self.topBarHeight ) then
+            self.topBarHeight = button:GetTall()
+            self.topBar:SetTall(self.topBarHeight)
+        end
+
+        -- Create content page
+        local page = self.content:CreatePage()
+        page.key = k
+        self.tabs[k] = page
+
+        if ( istable(v) ) then
+            if ( isfunction(v.Populate) ) then
+                v:Populate(page)
             end
 
-            local buttons = PopulateTabButtonTable()
-            local tabData = buttons[tabKey]
-            if ( istable(tabData) and istable(tabData.Sections) and table.Count(tabData.Sections) > 0 ) then
-                hasSubbuttons = true
-                break
+            -- Create inner transition pages for tabs with sections
+            if ( istable(v.Sections) and table.Count(v.Sections) > 0 ) then
+                local innerPages = vgui.Create("ax.transition.pages", page)
+                innerPages:SetSize(page:GetWide(), page:GetTall())
+                innerPages:SetPos(0, 0)
+                innerPages.Paint = function() end
+                self.innerPages[k] = innerPages
+
+                local sortedKeys = GetSortedSectionKeys(v.Sections)
+                for j = 1, #sortedKeys do
+                    local sectionKey = sortedKeys[j]
+                    self.sectionParentMap[sectionKey] = k
+
+                    local subPage = innerPages:CreatePage()
+                    subPage.key = sectionKey
+                    self.sectionPages[sectionKey] = subPage
+                end
             end
+        elseif ( isfunction(v) ) then
+            v(page)
         end
     end
 
-    if ( hasSubbuttons ) then
-        self.subbuttons:Motion(ax.option:Get("tabFadeTime", 0.25), {
-            Target = {y = ax.util:ScreenScaleH(28) + self.buttons:GetTall(), alpha = 255},
-            Easing = "OutQuad",
-            Think = function(vars)
-                self.subbuttons:SetPos(self.subbuttons:GetX(), vars.y)
-                self.subbuttons:SetAlpha(vars.alpha)
-            end
-        })
-
-        return
+    -- Update sidebar and content positions after top bar height is finalized
+    if ( IsValid(self.sidebar) ) then
+        self.sidebar:SetPos(PADDING_X, self:GetBodyY())
+        self.sidebar:SetTall(self:GetBodyHeight())
     end
 
-    self.subbuttons:Motion(ax.option:Get("tabFadeTime", 0.25), {
-        Target = {y = ax.util:ScreenScaleH(28), alpha = 0},
+    self:UpdateContentBounds()
+end
+
+--- Switches to a main tab by key.
+function PANEL:SwitchTab(tabKey)
+    if ( !tabKey or self.state.activeTab == tabKey ) then return end
+    if ( self.closing ) then return end
+
+    local fadeTime = ax.option:Get("tabFadeTime", 0.25)
+
+    if ( !self.opening ) then
+        ax.client:EmitSound("ax.gui.menu.switch")
+    end
+
+    -- Close active section and tab
+    self:CloseActiveSection()
+    self:CloseActiveTab()
+
+    -- Update state
+    self.state.activeTab = tabKey
+    ax.gui.tabLast = tabKey
+
+    -- Update top bar button active states
+    for k, btn in pairs(self.buttonMap) do
+        if ( IsValid(btn) ) then
+            btn.bActive = (k == tabKey)
+        end
+    end
+
+    -- Transition to the tab's content page
+    local page = self.tabs[tabKey]
+    if ( IsValid(page) and page.index ) then
+        self.content:TransitionToPage(page.index, fadeTime)
+    end
+
+    -- Fire tab OnOpen lifecycle hook
+    local tabData = self.tabButtons[tabKey]
+    if ( istable(tabData) and isfunction(tabData.OnOpen) ) then
+        tabData:OnOpen(page, self.buttonMap[tabKey])
+    end
+
+    -- Handle sidebar visibility based on whether this tab has sections
+    local hasSections = istable(tabData) and istable(tabData.Sections) and table.Count(tabData.Sections) > 0
+    if ( hasSections ) then
+        self:ShowSidebar(tabKey, tabData.Sections, fadeTime)
+
+        -- Auto-select the first section
+        local sortedKeys = GetSortedSectionKeys(tabData.Sections)
+        if ( sortedKeys[1] ) then
+            self:SwitchSection(sortedKeys[1])
+        end
+    elseif ( self.bSidebarVisible ) then
+        self:HideSidebar(fadeTime)
+    end
+end
+
+--- Switches to a section within the current tab.
+function PANEL:SwitchSection(sectionKey)
+    if ( !sectionKey or self.state.activeSection == sectionKey ) then return end
+    if ( self.closing ) then return end
+
+    local fadeTime = ax.option:Get("tabFadeTime", 0.25)
+    local parentKey = self.sectionParentMap[sectionKey]
+    if ( !parentKey ) then return end
+
+    -- Only play sound when explicitly switching sections (not auto-selecting first)
+    if ( !self.opening and self.state.activeSection ) then
+        ax.client:EmitSound("ax.gui.menu.switch")
+    end
+
+    self:CloseActiveSection()
+
+    -- Update state
+    self.state.activeSection = sectionKey
+    ax.gui.tabLast = sectionKey
+
+    -- Update sidebar button active states
+    for k, btn in pairs(self.sectionButtonMap) do
+        if ( IsValid(btn) ) then
+            btn.bActive = (k == sectionKey)
+        end
+    end
+
+    -- Lazy populate section content on first access
+    local subPage = self.sectionPages[sectionKey]
+    local tabData = self.tabButtons[parentKey]
+    if ( IsValid(subPage) and !subPage.bPopulated and istable(tabData) and istable(tabData.Sections) ) then
+        local sectionData = tabData.Sections[sectionKey]
+        if ( istable(sectionData) and isfunction(sectionData.Populate) ) then
+            sectionData:Populate(subPage)
+            subPage.bPopulated = true
+        end
+    end
+
+    -- Transition inner page
+    local innerPages = self.innerPages[parentKey]
+    if ( IsValid(innerPages) and IsValid(subPage) and subPage.index ) then
+        innerPages:TransitionToPage(subPage.index, fadeTime)
+    end
+
+    -- Fire section OnOpen lifecycle hook
+    if ( istable(tabData) and istable(tabData.Sections) ) then
+        local sectionData = tabData.Sections[sectionKey]
+        if ( istable(sectionData) and isfunction(sectionData.OnOpen) ) then
+            sectionData:OnOpen(subPage, self.sectionButtonMap[sectionKey])
+        end
+    end
+end
+
+function PANEL:CloseActiveTab()
+    local activeTab = self.state.activeTab
+    if ( !activeTab ) then return end
+
+    local tabData = self.tabButtons[activeTab]
+    if ( istable(tabData) and isfunction(tabData.OnClose) ) then
+        tabData:OnClose(self.tabs[activeTab], self.buttonMap[activeTab])
+    end
+end
+
+function PANEL:CloseActiveSection()
+    local activeSection = self.state.activeSection
+    if ( !activeSection ) then return end
+
+    local parentKey = self.sectionParentMap[activeSection]
+    if ( !parentKey ) then return end
+
+    local tabData = self.tabButtons[parentKey]
+    if ( istable(tabData) and istable(tabData.Sections) ) then
+        local sectionData = tabData.Sections[activeSection]
+        if ( istable(sectionData) and isfunction(sectionData.OnClose) ) then
+            sectionData:OnClose(self.sectionPages[activeSection], self.sectionButtonMap[activeSection])
+        end
+    end
+
+    self.state.activeSection = nil
+end
+
+--- Shows the sidebar with section buttons for the given tab.
+function PANEL:ShowSidebar(tabKey, sections, fadeTime)
+    -- Clear old section buttons
+    for _, btn in pairs(self.sectionButtonMap) do
+        if ( IsValid(btn) ) then
+            btn:Remove()
+        end
+    end
+    self.sectionButtonMap = {}
+
+    -- Create section buttons
+    local sortedKeys = GetSortedSectionKeys(sections)
+    for i = 1, #sortedKeys do
+        local sectionKey = sortedKeys[i]
+
+        local button = self.sidebarScroller:Add("ax.button")
+        button:Dock(TOP)
+        button:DockMargin(0, 0, 0, SIDEBAR_BUTTON_GAP)
+        button:SetText("tab." .. tabKey .. "." .. sectionKey)
+        button.bActive = false
+        button.sectionKey = sectionKey
+
+        -- Active section left accent indicator
+        button.PaintAdditional = function(this, width, height)
+            if ( !this.bActive ) then return end
+
+            local glass = ax.theme:GetGlass()
+            local metrics = ax.theme:GetMetrics()
+            local barWidth = math.max(2, ax.util:ScreenScale(2))
+            surface.SetDrawColor(ax.theme:ScaleAlpha(glass.progress, metrics.opacity))
+            surface.DrawRect(0, 0, barWidth, height)
+        end
+
+        button.DoClick = function()
+            self:SwitchSection(sectionKey)
+        end
+
+        self.sectionButtonMap[sectionKey] = button
+    end
+
+    -- Animate sidebar in (only if not already visible)
+    if ( !self.bSidebarVisible ) then
+        self.bSidebarVisible = true
+        self.sidebar:SetVisible(true)
+        self.sidebar:SetWide(0)
+        self.sidebar.sidebarWidth = 0
+
+        self.sidebar:Motion(fadeTime or ax.option:Get("tabFadeTime", 0.25), {
+            Target = {sidebarWidth = SIDEBAR_WIDTH},
+            Easing = "OutQuad",
+            Think = function(vars)
+                self.sidebar:SetWide(vars.sidebarWidth)
+                self:UpdateContentBounds()
+            end,
+            OnComplete = function()
+                self:UpdateContentBounds()
+            end
+        })
+    end
+end
+
+--- Hides the sidebar with an animation.
+function PANEL:HideSidebar(fadeTime)
+    if ( !self.bSidebarVisible ) then return end
+
+    self.bSidebarVisible = false
+
+    -- Remove section buttons before clearing the map
+    for _, btn in pairs(self.sectionButtonMap) do
+        if ( IsValid(btn) ) then
+            btn:Remove()
+        end
+    end
+    self.sectionButtonMap = {}
+
+    self.sidebar:Motion(fadeTime or ax.option:Get("tabFadeTime", 0.25), {
+        Target = {sidebarWidth = 0},
         Easing = "OutQuad",
         Think = function(vars)
-            self.subbuttons:SetY(vars.y)
-            self.subbuttons:SetAlpha(vars.alpha)
+            self.sidebar:SetWide(vars.sidebarWidth)
+            self:UpdateContentBounds()
+        end,
+        OnComplete = function()
+            -- Guard against race condition if ShowSidebar was called during animation
+            if ( !self.bSidebarVisible ) then
+                self.sidebar:SetVisible(false)
+            end
+
+            self:UpdateContentBounds()
         end
     })
 end
 
+--- Restores the last active tab/section, or selects the first tab.
+function PANEL:RestoreLastTab()
+    local lastKey = ax.gui.tabLast
+    if ( !lastKey ) then
+        return self:SelectFirstTab()
+    end
+
+    -- Case 1: lastKey is a main tab key
+    if ( self.tabButtons[lastKey] ) then
+        self:SwitchTab(lastKey)
+        return true
+    end
+
+    -- Case 2: lastKey is a section key — switch to parent tab, then section
+    local parentKey = self.sectionParentMap[lastKey]
+    if ( parentKey and self.tabButtons[parentKey] ) then
+        self:SwitchTab(parentKey)
+        self:SwitchSection(lastKey)
+        return true
+    end
+
+    return self:SelectFirstTab()
+end
+
+--- Selects the first available tab.
+function PANEL:SelectFirstTab()
+    local firstKey = self.state.tabOrder[1]
+    if ( firstKey ) then
+        self:SwitchTab(firstKey)
+        return true
+    end
+
+    return false
+end
+
+--- Returns the tab/section data table for a given key.
 function PANEL:GetTabButtonData(key)
     if ( !istable(self.tabButtons) or !key ) then
         return nil
@@ -240,277 +630,48 @@ function PANEL:GetTabButtonData(key)
     return nil
 end
 
+--- Returns the button panel for a given tab or section key.
 function PANEL:GetTabButtonPanel(key)
     local parentKey = self.sectionParentMap and self.sectionParentMap[key]
     if ( parentKey ) then
-        return self.subbuttons.buttons and self.subbuttons.buttons[key]
+        return self.sectionButtonMap[key]
     end
 
     return self.buttonMap and self.buttonMap[key]
 end
 
-function PANEL:CloseActiveTab()
-    local activeKey = self.activeTabKey
-    if ( !activeKey ) then
-        return
-    end
+function PANEL:Open()
+    local fadeTime = ax.option:Get("tabFadeTime", 0.25)
 
-    local tabData = self:GetTabButtonData(activeKey)
-    if ( istable(tabData) and isfunction(tabData.OnClose) ) then
-        tabData:OnClose(self.tabs[activeKey], self:GetTabButtonPanel(activeKey))
-    end
+    -- Ensure topBar starts offscreen with correct height
+    self.topBar.topBarY = -self.topBarHeight
+    self.topBar.topBarAlpha = 0
+    self.topBar:SetPos(PADDING_X, -self.topBarHeight)
+    self.topBar:SetAlpha(0)
 
-    self.activeTabKey = nil
-end
-
-function PANEL:SetActiveTab(key, button)
-    if ( !key or self.activeTabKey == key ) then
-        return
-    end
-
-    self:CloseActiveTab()
-
-    self.activeTabKey = key
-
-    local tabData = self:GetTabButtonData(key)
-    if ( istable(tabData) and isfunction(tabData.OnOpen) ) then
-        tabData:OnOpen(self.tabs[key], button or self:GetTabButtonPanel(key))
-    end
-end
-
-function PANEL:PopulateTabs()
-    self.buttonMap = {}
-    self.sectionParentMap = {}
-
-    local pendingSectionKey
-    local pendingParentButton
-
-    local buttons = PopulateTabButtonTable()
-    self.tabButtons = buttons
-    for k, v in SortedPairs(buttons) do
-        local button = self.buttons:Add("ax.button")
-        button:Dock(LEFT)
-        button:DockMargin(0, 0, ax.util:ScreenScale(4), 0)
-        button:SetText("tab." .. k)
-        button:SetWide(button:GetWide() * 1.25)
-
-        self.buttons:SetTall(math.max(0, button:GetTall()))
-        self.buttons:SetY(self.buttons:GetY())
-        self.subbuttons:SetTall(math.max(0, button:GetTall()))
-        self.subbuttons:SetY(self.subbuttons:GetY())
-
-        -- TODO: add a toggle option for ax.button
-        -- button.Paint = function(this, width, height)
-        --     if ( ax.gui.tabLast == k ) then
-        --         ax.render.Draw(0, 0, 0, width, height, color_white)
-        --
-        --         if ( this:GetTextColor() != color_black ) then
-        --             this:SetTextColor(color_black)
-        --         end
-        --     else
-        --         if ( this:GetTextColor() != color_white ) then
-        --             this:SetTextColor(color_white)
-        --         end
-        --     end
-        -- end
-
-        local tab = self:CreatePage()
-        tab:SetXOffset(ax.util:ScreenScale(24))
-        tab:SetYOffset(self.buttons:GetTall() + ax.util:ScreenScaleH(32))
-        tab:SetWidthOffset(-ax.util:ScreenScale(24) * 2)
-        tab:SetHeightOffset(-self.buttons:GetTall() - ax.util:ScreenScaleH(64))
-        tab.key = k
-        self.tabs[k] = tab
-        self.buttonMap[k] = button
-
-        button.tab = tab
-
-        if ( istable(v) ) then
-            if ( isfunction(v.Populate) ) then
-                v:Populate(tab)
-            end
-
-            if ( istable(v.Sections) and table.Count(v.Sections) > 0 ) then
-                tab:SetYOffset(self.buttons:GetTall() + self.subbuttons:GetTall() + ax.util:ScreenScaleH(32))
-                tab:SetHeightOffset(-self.buttons:GetTall() - self.subbuttons:GetTall() - ax.util:ScreenScaleH(64))
-
-                for sectionKey, section in pairs(v.Sections) do
-                    self.sectionParentMap[sectionKey] = k
-
-                    local subTab = self:CreatePage()
-                    subTab:SetXOffset(ax.util:ScreenScale(24))
-                    subTab:SetYOffset(self.buttons:GetTall() + self.subbuttons:GetTall() + ax.util:ScreenScaleH(32))
-                    subTab:SetWidthOffset(-ax.util:ScreenScale(24) * 2)
-                    subTab:SetHeightOffset(-self.buttons:GetTall() - self.subbuttons:GetTall() - ax.util:ScreenScaleH(64))
-                    subTab.key = sectionKey
-                    self.tabs[sectionKey] = subTab
-
-                    if ( ax.gui.tabLast == sectionKey ) then
-                        pendingSectionKey = sectionKey
-                        pendingParentButton = button
-                    end
-                end
-            end
-        elseif ( isfunction(v) ) then
-            v(tab)
+    -- Fade in self
+    self:Motion(fadeTime, {
+        Target = {alpha = 255},
+        Easing = "OutQuad",
+        Think = function(vars)
+            self:SetAlpha(vars.alpha)
+        end,
+        OnComplete = function()
+            self.opening = false
         end
+    })
 
-        button.DoClick = function()
-            if ( !self.opening ) then
-                ax.client:EmitSound("ax.gui.menu.switch")
-            end
-
-            ax.gui.tabLast = k
-
-            if ( istable(v) and istable(v.Sections) and table.Count(v.Sections) > 0 ) then
-                self:CloseActiveTab()
-
-                for _, subbutton in pairs(self.subbuttons.buttons or {}) do
-                    subbutton:Remove()
-                end
-                self.subbuttons.buttons = {}
-
-                -- Add buttons for each section
-                local sortedSectionKeys = GetSortedSectionKeys(v.Sections)
-
-                for i = 1, #sortedSectionKeys do
-                    local sectionKey = sortedSectionKeys[i]
-                    local sectionData = v.Sections[sectionKey]
-                    local subbutton = self.subbuttons:Add("ax.button")
-                    subbutton:Dock(LEFT)
-                    subbutton:DockMargin(0, 0, ax.util:ScreenScale(4), 0)
-                    subbutton:SetText("tab." .. k .. "." .. sectionKey)
-
-                    subbutton:SetUpdateSizeOnHover(true)
-
-                    -- TODO: add a toggle option for ax.button
-                    -- subbutton.Paint = function(this, width, height)
-                    --     if ( ax.gui.tabLast == sectionKey ) then
-                    --         ax.render.Draw(0, 0, 0, width, height, color_white)
-                    --         if ( this:GetTextColor() != color_black ) then
-                    --             this:SetTextColor(color_black)
-                    --         end
-                    --     else
-                    --         if ( this:GetTextColor() != color_white ) then
-                    --             this:SetTextColor(color_white)
-                    --         end
-                    --     end
-                    -- end
-
-                    subbutton.DoClick = function()
-                        if ( !self.opening ) then
-                            ax.client:EmitSound("ax.gui.menu.switch")
-                        end
-
-                        ax.gui.tabLast = sectionKey
-                        self:SetActiveTab(sectionKey, subbutton)
-                        self:TransitionToPage(self.tabs[sectionKey].index, ax.option:Get("tabFadeTime", 0.25))
-                    end
-
-                    self.subbuttons.buttons[sectionKey] = subbutton
-                end
-
-                -- Populate each sub tab
-                for i = 1, #sortedSectionKeys do
-                    local sectionKey = sortedSectionKeys[i]
-                    local section = v.Sections[sectionKey]
-                    local subTab = self.tabs[sectionKey]
-
-                    if ( IsValid(subTab) and !subTab.bPopulated and isfunction(section.Populate) ) then
-                        section:Populate(subTab)
-                        subTab.bPopulated = true
-                    end
-                end
-
-                -- Auto-select the first section when clicking a tab with sections
-                local firstSectionKey = sortedSectionKeys[1]
-
-                if ( firstSectionKey ) then
-                    ax.gui.tabLast = firstSectionKey
-
-                    local firstTab = self.tabs and self.tabs[firstSectionKey]
-                    local firstSubbutton = self.subbuttons.buttons and self.subbuttons.buttons[firstSectionKey]
-
-                    if ( firstTab and firstTab.index ) then
-                        self:SetActiveTab(firstSectionKey, firstSubbutton)
-                        self:TransitionToPage(firstTab.index, ax.option:Get("tabFadeTime", 0.25))
-                    end
-                else
-                    self:SetActiveTab(k, button)
-                    self:TransitionToPage(button.tab.index, ax.option:Get("tabFadeTime", 0.25))
-                end
-
-                -- Motion below the main buttons
-                self.subbuttons:Motion(ax.option:Get("tabFadeTime", 0.25), {
-                    Target = {y = ax.util:ScreenScaleH(28) + self.buttons:GetTall(), alpha = 255},
-                    Easing = "OutQuad",
-                    Think = function(this)
-                        self.subbuttons:SetPos(self.subbuttons:GetX(), this.y)
-                        self.subbuttons:SetAlpha(this.alpha)
-                    end
-                })
-            else
-                self:SetActiveTab(k, button)
-                self:TransitionToPage(button.tab.index, ax.option:Get("tabFadeTime", 0.25))
-
-                -- Hide subbuttons
-                self.subbuttons:Motion(ax.option:Get("tabFadeTime", 0.25), {
-                    Target = {y = self.buttons:GetY(), alpha = 0},
-                    Easing = "OutQuad",
-                    Think = function(this)
-                        self.subbuttons:SetPos(self.subbuttons:GetX(), this.y)
-                        self.subbuttons:SetAlpha(this.alpha)
-                    end
-                })
-            end
+    -- Slide top bar down
+    self.topBar:Motion(fadeTime, {
+        Target = {topBarY = PADDING_Y, topBarAlpha = 255},
+        Easing = "OutQuad",
+        Think = function(vars)
+            self.topBar:SetPos(PADDING_X, vars.topBarY)
+            self.topBar:SetAlpha(vars.topBarAlpha)
         end
+    })
 
-        -- if this was our last tab, run doclick
-        if ( ax.gui.tabLast == k ) then
-            button:DoClick()
-        end
-
-        self.buttons:AddPanel(button)
-    end
-
-    local bRestoredLastTab = false
-
-    if ( pendingSectionKey and IsValid(pendingParentButton) ) then
-        pendingParentButton:DoClick()
-
-        local subbutton = self.subbuttons.buttons and self.subbuttons.buttons[pendingSectionKey]
-        if ( IsValid(subbutton) ) then
-            subbutton:DoClick()
-            bRestoredLastTab = true
-        end
-    end
-
-    if ( !bRestoredLastTab and ax.gui.tabLast ) then
-        local parentKey = self.sectionParentMap[ax.gui.tabLast]
-
-        if ( parentKey and self.buttonMap[parentKey] ) then
-            self.buttonMap[parentKey]:DoClick()
-
-            local subbutton = self.subbuttons.buttons and self.subbuttons.buttons[ax.gui.tabLast]
-            if ( IsValid(subbutton) ) then
-                subbutton:DoClick()
-                bRestoredLastTab = true
-            end
-        elseif ( self.buttonMap[ax.gui.tabLast] ) then
-            self.buttonMap[ax.gui.tabLast]:DoClick()
-            bRestoredLastTab = true
-        end
-    end
-
-    if ( !bRestoredLastTab ) then
-        for _, button in SortedPairs(self.buttonMap) do
-            if ( IsValid(button) ) then
-                button:DoClick()
-                break
-            end
-        end
-    end
-
+    -- Set backdrop animation targets
     self:SetBackgroundBlurTarget(1)
     self:SetBackgroundAlphaTarget(1)
     self:SetGradientLeftTarget(1)
@@ -523,10 +684,13 @@ function PANEL:Close(callback)
     if ( self.closing ) then return end
 
     self.closing = true
-
     self:SetMouseInputEnabled(false)
     self:SetKeyboardInputEnabled(false)
 
+    local fadeTime = ax.option:Get("tabFadeTime", 0.25)
+    hook.Run("OnTabMenuClosing", self, fadeTime)
+
+    -- Set backdrop animation targets to 0
     self:SetBackgroundBlurTarget(0)
     self:SetBackgroundAlphaTarget(0)
     self:SetGradientLeftTarget(0)
@@ -534,61 +698,43 @@ function PANEL:Close(callback)
     self:SetGradientTopTarget(0)
     self:SetGradientBottomTarget(0)
 
-    local fadeDuration = ax.option:Get("tabFadeTime", 0.25)
-    hook.Run("OnTabMenuClosing", self, fadeDuration)
-
-    self:AlphaTo(0, fadeDuration, 0, function()
-        self:Remove()
-
-        if ( callback ) then
-            callback()
-        end
-    end)
-
-    self.buttons:Motion(fadeDuration, {
-        Target = {x = ax.util:ScreenScale(24), y = -self.buttons:GetTall() - ax.util:ScreenScaleH(24), alpha = 0},
-        Easing = "OutQuad",
-        Think = function(this)
-            self.buttons:SetPos(this.x, this.y)
-            self.buttons:SetAlpha(this.alpha)
-        end
-    })
-
-    self.subbuttons:Motion(fadeDuration, {
-        Target = {y = -self.subbuttons:GetTall() - ax.util:ScreenScaleH(24), alpha = 0},
-        Easing = "OutQuad",
-        Think = function(this)
-            self.subbuttons:SetY(this.y)
-            self.subbuttons:SetAlpha(this.alpha)
-        end
-    })
-
-    self:Motion(fadeDuration, {
+    -- Fade out and remove
+    self:Motion(fadeTime, {
         Target = {alpha = 0},
         Easing = "OutQuad",
-        Think = function(this)
-            self:SetAlpha(this.alpha)
+        Think = function(vars)
+            self:SetAlpha(vars.alpha)
         end,
         OnComplete = function()
-            if ( callback ) then
+            self:Remove()
+
+            if ( isfunction(callback) ) then
                 callback()
             end
-
-            self:Remove()
         end
     })
 
-    local currentPageIndex = self:GetCurrentPage()
-    local currentPage = self.pages[currentPageIndex]
+    -- Slide top bar up
+    self.topBar:Motion(fadeTime, {
+        Target = {topBarY = -self.topBarHeight - PADDING_Y, topBarAlpha = 0},
+        Easing = "OutQuad",
+        Think = function(vars)
+            self.topBar:SetPos(PADDING_X, vars.topBarY)
+            self.topBar:SetAlpha(vars.topBarAlpha)
+        end
+    })
+
+    -- Slide current content page down
+    local currentPageIndex = self.content:GetCurrentPage()
+    local currentPage = self.content.pages and self.content.pages[currentPageIndex]
     if ( IsValid(currentPage) ) then
-        currentPage:SlideDown(fadeDuration)
+        currentPage:SlideDown(fadeTime)
     end
 end
 
 function PANEL:OnKeyCodePressed(keyCode)
     if ( keyCode == KEY_TAB or keyCode == KEY_ESCAPE ) then
         self:Close()
-
         return true
     end
 
@@ -597,11 +743,11 @@ end
 
 function PANEL:Think()
     local bHoldingTab = input.IsKeyDown(KEY_TAB)
-    if ( bHoldingTab and ( self.anchorTime < CurTime() ) and self.anchorEnabled ) then
-        self.anchorEnabled = false
+    if ( bHoldingTab and ( self.anchorTime < CurTime() ) and self.bAnchorEnabled ) then
+        self.bAnchorEnabled = false
     end
 
-    if ( ( !bHoldingTab and !self.anchorEnabled ) or gui.IsGameUIVisible() ) then
+    if ( ( !bHoldingTab and !self.bAnchorEnabled ) or gui.IsGameUIVisible() ) then
         self:Close()
     end
 end
@@ -648,7 +794,7 @@ function PANEL:Paint(width, height)
     })
 end
 
-vgui.Register("ax.tab", PANEL, "ax.transition.pages")
+vgui.Register("ax.tab", PANEL, "EditablePanel")
 
 if ( IsValid(ax.gui.tab) ) then
     ax.gui.tab:Remove()

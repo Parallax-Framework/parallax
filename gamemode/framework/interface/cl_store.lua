@@ -276,7 +276,7 @@ function PANEL:SetType(type)
     for k, v in SortedPairsByValue(categories) do
         local button = self.categories:Add("ax.button")
         button:Dock(TOP)
-        button:DockMargin(0, 0, 0, ax.util:ScreenScaleH(4))
+        button:DockMargin(0, 0, 0, ax.util:ScreenScaleH(2))
         button:SetText("category." .. v)
 
         -- ["general"] = "General",
@@ -318,8 +318,8 @@ function PANEL:SetType(type)
 
     -- Adjust all pages now that we know the final width of categories
     for k, v in ipairs(self:GetPages()) do
-        v:SetXOffset(self.categories:GetWide() + ax.util:ScreenScale(32))
-        v:SetWidthOffset(-self.categories:GetWide() - ax.util:ScreenScale(32))
+        v:SetXOffset(self.categories:GetWide() + ax.util:ScreenScale(2))
+        v:SetWidthOffset(-self.categories:GetWide() - ax.util:ScreenScale(2))
     end
 
     -- Determine which category to show initially
@@ -517,6 +517,18 @@ function PANEL:Populate(tab, scroller, type, category)
     end
 end
 
+function PANEL:PerformLayout(width, height)
+    -- Reflow internal pages when the store resizes (e.g. sidebar appearing)
+    local pages = self:GetPages()
+    if ( !pages ) then return end
+
+    for i = 1, #pages do
+        if ( IsValid(pages[i]) ) then
+            pages[i]:ReflowFromOffsets()
+        end
+    end
+end
+
 function PANEL:Paint(width, height)
 end
 
@@ -538,7 +550,10 @@ function PANEL:Init()
 
     self:SetContentAlignment(4)
     self:SetText("unknown")
-    self:SetTextInset(ax.util:ScreenScale(8), 0)
+    self:SetTextInset(ax.util:ScreenScale(4), 0)
+    self:SetFont("ax.small")
+    self:SetFontDefault("ax.small")
+    self:SetFontHovered("ax.small")
     self:SetAxTooltip(function(panel)
         return panel:GetTooltipPayload()
     end)
