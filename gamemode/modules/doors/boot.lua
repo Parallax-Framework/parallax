@@ -7,8 +7,7 @@ MODULE.author = "bloodycop6385"
 MODULE.AccessGroups = {
     NONE    = 1, -- keep none with the lowest index, thanks
     TENANT  = 2,
-    MANAGER = 3,
-    OWNER   = 4 -- keep owner with the highest index, thanks
+    OWNER   = 3 -- keep owner with the highest index, thanks
 }
 
 MODULE.Permissions = {
@@ -19,8 +18,7 @@ MODULE.Permissions = {
 
 MODULE.AccessGroup_Permissions = {
     [MODULE.AccessGroups.OWNER]     = bit.bor(MODULE.Permissions.UNLOCK, MODULE.Permissions.LOCK, MODULE.Permissions.EDIT_ACCESS),
-    [MODULE.AccessGroups.MANAGER]   = bit.bor(MODULE.Permissions.UNLOCK, MODULE.Permissions.LOCK),
-    [MODULE.AccessGroups.TENANT]    = bit.bor(MODULE.Permissions.UNLOCK),
+    [MODULE.AccessGroups.TENANT]    = bit.bor(MODULE.Permissions.UNLOCK, MODULE.Permissions.LOCK),
     [MODULE.AccessGroups.NONE]      = 0
 }
 
