@@ -5,9 +5,10 @@ MODULE.description = "Provides functionality for managing doors in the game."
 MODULE.author = "bloodycop6385"
 
 MODULE.AccessGroups = {
-    NONE    = 1,
+    NONE    = 1, -- keep none with the lowest index, thanks
     TENANT  = 2,
-    OWNER   = 3
+    MANAGER = 3,
+    OWNER   = 4 -- keep owner with the highest index, thanks
 }
 
 MODULE.Permissions = {
@@ -16,9 +17,12 @@ MODULE.Permissions = {
     EDIT_ACCESS = bit.lshift(1, 2)
 }
 
+if ( ax.data:Get("doors.accessGroups"))
+
 MODULE.AccessGroup_Permissions = {
     [MODULE.AccessGroups.OWNER]     = bit.bor(MODULE.Permissions.UNLOCK, MODULE.Permissions.LOCK, MODULE.Permissions.EDIT_ACCESS),
-    [MODULE.AccessGroups.TENANT]    = bit.bor(MODULE.Permissions.UNLOCK, MODULE.Permissions.LOCK),
+    [MODULE.AccessGroups.MANAGER]   = bit.bor(MODULE.Permissions.UNLOCK, MODULE.Permissions.LOCK),
+    [MODULE.AccessGroups.TENANT]    = bit.bor(MODULE.Permissions.UNLOCK),
     [MODULE.AccessGroups.NONE]      = 0
 }
 

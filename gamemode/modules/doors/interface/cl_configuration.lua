@@ -30,7 +30,6 @@ end
 function PANEL:PopulateDoorAccessGroups()
     local groups = MODULE.AccessGroups
 
-    print(self.rightPanel)
     self.rightPanel.scrollBar = self.rightPanel:Add("ax.scroller.vertical")
     self.rightPanel.scrollBar:Dock(FILL)
 
@@ -75,6 +74,34 @@ function PANEL:PopulateDoorAccessGroups()
             arrowDown:SetIcon("parallax/icons/chevron-down-square.png")
             arrowDown:SetContentAlignment(4)
 
+            local groupPermissions = MODULE.AccessGroup_Permissions[groupIndex]
+
+            local permissions = groupPanel:Add("ax.button")
+            permissions:SetText("door.interface.permissions")
+            permissions:Dock(RIGHT)
+            permissions.DoClick = function(this)
+                local menu = DermaMenu()
+
+                local groupPermsTable, groupPermsMissingTable = MODULE:GetAccessGroupPermissions(groupIndex, true)
+
+                local subMenu = menu:AddSubMenu("Give Permissions")
+                for permIndex, permName in pairs(groupPermsMissingTable) do
+                    subMenu:AddOption(permName, function()
+                        ax.net:Start("ax.doors.access_group.permission_give", groupIndex, permIndex)
+                    end)
+                end
+
+                subMenu = menu:AddSubMenu("Take Permissions")
+                for permIndex, permName in pairs(groupPermsTable) do
+                    subMenu:AddOption(permName, function()
+                        ax.net:Start("ax.doors.access_group.permission_take", groupIndex, permIndex)
+                    end)
+                end
+
+
+                menu:Open()
+            end
+
             arrowUp.DoClick = function(this)
                 ax.net:Start("ax.doors.group_moveup", groupEnum, groupIndex)
                 UpdateArrowShouldDisplay(groupEnum, groupIndex, this, arrowDown)
@@ -84,6 +111,7 @@ function PANEL:PopulateDoorAccessGroups()
                 ax.net:Start("ax.doors.group_movedown", groupEnum, groupIndex)
                 UpdateArrowShouldDisplay(groupEnum, groupIndex, arrowUp, this)
             end
+
         end
 
 
