@@ -106,7 +106,7 @@ ax.command:Add("Roll", {
     },
     OnRun = function(def, client, sides)
         sides = sides or 6
-        ax.chat:Send(client, "roll", "", { sides = sides, result = math.random(1, sides) })
+        ax.chat:Send(client, "roll", "", { sides = sides, result = math.random(sides) })
 
         return ""
     end
