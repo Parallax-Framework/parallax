@@ -154,7 +154,7 @@ function GM:GetPlayerDeathSound(client)
 end
 
 function GM:GetPlayerPainSound(client, attacker, healthRemaining, damageInfo)
-    local painSound = "vo/npc/male01/pain0" .. math.random(1, 6) .. ".wav"
+    local painSound = "vo/npc/male01/pain0" .. math.random(6) .. ".wav"
     local character = client:GetCharacter()
     if ( character ) then
         local classData = character:GetClassData()
