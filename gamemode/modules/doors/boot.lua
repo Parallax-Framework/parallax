@@ -22,6 +22,11 @@ MODULE.AccessGroup_Permissions = {
     [MODULE.AccessGroups.NONE]      = 0
 }
 
+CAMI.RegisterPrivilege({
+    Name = "Parallax - Doors - Manage Access Groups",
+    MinAccess = "superadmin"
+})
+
 if ( SERVER ) then
     -- some developer commands, remove before merging to prod environment (main)
     concommand.Add("ax_door_player_setaccessgroup", function(client, command, args)

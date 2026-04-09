@@ -10,6 +10,7 @@ function PANEL:Init()
 
     self:SetSize(800, 600)
     self:Center()
+    self:MakePopup()
 
     self:SetTitle("Door Config")
 
@@ -23,10 +24,76 @@ function PANEL:Init()
     self.rightPanel = self:Add("EditablePanel")
     self.rightPanel:Dock(FILL)
 
-    self:AddButton("Door Access Groups", self.PopulateDoorAccessGroups)
+    self:AddButton("door.interface.access_groups", self.PopulateDoorAccessGroups)
 end
 
 function PANEL:PopulateDoorAccessGroups()
+    local groups = MODULE.AccessGroups
+
+    print(self.rightPanel)
+    self.rightPanel.scrollBar = self.rightPanel:Add("ax.scroller.vertical")
+    self.rightPanel.scrollBar:Dock(FILL)
+
+    self.rightPanel.groupPanels = {}
+
+    local function UpdateArrowShouldDisplay(groupEnum, groupIndex, arrowUp, arrowDown)
+        -- if it's below Owner, hide arrowUp ( so we don't replace owner being on top)
+
+        if groupEnum == "OWNER" then
+            arrowUp:SetVisible(false)
+        else
+            arrowUp:SetVisible(true)
+        end
+
+        if groupEnum == "OWNER" then
+            arrowDown:SetVisible(false)
+        else
+            arrowDown:SetVisible(true)
+        end
+
+    end
+
+    for groupEnum, groupIndex in SortedPairsByValue(groups, true) do
+        local groupPanel = self.rightPanel.scrollBar:Add("EditablePanel")
+        groupPanel:Dock(TOP)
+        groupPanel:SetTall(50)
+
+        if ( groupEnum != "OWNER" ) then
+            local arrowUp = groupPanel:Add("ax.button.icon")
+            arrowUp:Dock(LEFT)
+            arrowUp:SetFont("ax.small")
+            arrowUp:SetFontDefault("ax.small")
+            arrowUp:SetFontHovered("ax.small.italic")
+            arrowUp:SetIcon("parallax/icons/chevron-up-square.png")
+            arrowUp:SetContentAlignment(4)
+
+            local arrowDown = groupPanel:Add("ax.button.icon")
+            arrowDown:Dock(LEFT)
+            arrowDown:SetFont("ax.small")
+            arrowDown:SetFontDefault("ax.small")
+            arrowDown:SetFontHovered("ax.small.italic")
+            arrowDown:SetIcon("parallax/icons/chevron-down-square.png")
+            arrowDown:SetContentAlignment(4)
+
+            arrowUp.DoClick = function(this)
+                ax.net:Start("ax.doors.group_moveup", groupEnum, groupIndex)
+                UpdateArrowShouldDisplay(groupEnum, groupIndex, this, arrowDown)
+            end
+
+            arrowDown.DoClick = function(this)
+                ax.net:Start("ax.doors.group_movedown", groupEnum, groupIndex)
+                UpdateArrowShouldDisplay(groupEnum, groupIndex, arrowUp, this)
+            end
+        end
+
+
+        local groupName = groupPanel:Add("ax.text")
+        groupName:SetText(groupEnum)
+        groupName:Dock(LEFT)
+        groupName:SizeToContents()
+
+        self.rightPanel.groupPanels[groupEnum] = groupPanel
+    end
 end
 
 function PANEL:AddButton(name, callback)
@@ -35,9 +102,10 @@ function PANEL:AddButton(name, callback)
     button:Dock(TOP)
     button:SizeToContents()
 
-    button.DoClick = function()
+    button.DoClick = function(this)
         self.rightPanel:Clear()
-        callback()
+        callback(self)
+        self.activePageName = name
     end
 
     self.leftPanel.scrollBar:SizeToChildren(true, false)
