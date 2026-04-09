@@ -198,7 +198,7 @@ function SWEP:Pickup()
             children[i]:SetCollisionGroup(COLLISION_GROUP_PASSABLE_DOOR)
         end
 
-        self:GetOwner():EmitSound("physics/body/body_medium_impact_soft" .. math.random(1, 3) .. ".wav", 60)
+        self:GetOwner():EmitSound("physics/body/body_medium_impact_soft" .. math.random(3) .. ".wav", 60)
 
         hook.Run("PlayerPickup", self:GetOwner(), self.axHoldingEntity)
     end
