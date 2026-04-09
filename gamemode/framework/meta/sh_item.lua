@@ -237,7 +237,8 @@ end
 -- @realm shared
 -- @param key string The data key to write.
 -- @param value any The value to store. Must be JSON-serialisable when persisting.
-function item:SetData(key, value)
+-- @param bNoDBUpdate boolean Whether to skip the database update. Defaults to false.
+function item:SetData(key, value, bNoDBUpdate)
     if ( !istable(self.data) ) then self.data = {} end
 
     self.data[key] = value
@@ -253,18 +254,20 @@ function item:SetData(key, value)
         end
 
         -- Persist changes to database
-        local query = mysql:Update("ax_items")
-            query:Update("data", util.TableToJSON(self.data))
-            query:Where("id", self.id)
-            query:Callback(function(result, status)
-                if ( result == false ) then
-                    ax.util:PrintError("Failed to update item data in database for item ID " .. tostring(self.id))
-                    return
-                end
+        if ( !bNoDBUpdate ) then
+            local query = mysql:Update("ax_items")
+                query:Update("data", util.TableToJSON(self.data))
+                query:Where("id", self.id)
+                query:Callback(function(result, status)
+                    if ( result == false ) then
+                        ax.util:PrintError("Failed to update item data in database for item ID " .. tostring(self.id))
+                        return
+                    end
 
-                ax.util:PrintDebug("Updated item data for item ID " .. tostring(self.id))
-            end)
-        query:Execute()
+                    ax.util:PrintDebug("Updated item data for item ID " .. tostring(self.id))
+                end)
+            query:Execute()
+        end
 
         -- Sync changes to relevant receivers
         if ( istable(inventory) and inventoryID != 0 ) then
