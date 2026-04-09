@@ -552,7 +552,7 @@ function ax.mapscene:PickNextScene()
         end
     end
 
-    local index = math.random(1, #scenes)
+    local index = math.random(#scenes)
     return scenes[index], index
 end
 
