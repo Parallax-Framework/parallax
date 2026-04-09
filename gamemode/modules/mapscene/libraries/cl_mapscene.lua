@@ -538,7 +538,7 @@ function ax.mapscene:PickNextScene()
         end
 
         if ( total <= 0 ) then
-            local index = math.random(1, #scenes)
+            local index = math.random(#scenes)
             return scenes[index], index
         end
 
