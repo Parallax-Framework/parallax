@@ -1,6 +1,6 @@
 # Parallax Framework
 
-Parallax is a modular roleplay framework for Garry's Mod.  
+Parallax is a modular roleplay framework for Garry's Mod.
 It provides the core runtime (characters, items, factions, commands, networking, modules, hooks), while your schema defines game-specific content.
 
 ## Links
@@ -14,7 +14,7 @@ It provides the core runtime (characters, items, factions, commands, networking,
 
 ## What This Repository Contains
 
-This repository is the framework itself.  
+This repository is the framework itself.
 You typically run Parallax by deriving a separate schema gamemode from it.
 
 Core areas:
