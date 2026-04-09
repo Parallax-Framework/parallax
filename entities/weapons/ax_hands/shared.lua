@@ -274,7 +274,7 @@ function SWEP:PrimaryAttack()
 
     if ( IsValid(self.axHoldingEntity) ) then
         if ( SERVER ) then
-            owner:EmitSound("npc/vort/claw_swing" .. math.random(1, 2) .. ".wav", 60)
+            owner:EmitSound("npc/vort/claw_swing" .. math.random(2) .. ".wav", 60)
         end
 
         owner:SetAnimation(PLAYER_ATTACK1)
