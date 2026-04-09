@@ -59,6 +59,11 @@ ax.net:Hook("ax.doors.access_group.permission_give", function(client, groupIndex
     ax.net:Start(nil, "ax.doors.access_group_permissions_update", groupIndex, MODULE.AccessGroup_Permissions[groupIndex])
 
     client:Notify("You have given permission to this access group", ax.notification.enums.SUCCESS)
+
+    ax.data:Set("door.groupPermissions", MODULE.AccessGroup_Permissions, {
+        scope = "schema",
+        noCache = true
+    })
 end, false)
 
 ax.net:Hook("ax.doors.access_group.permission_take", function(client, groupIndex, permIndex)
@@ -76,4 +81,9 @@ ax.net:Hook("ax.doors.access_group.permission_take", function(client, groupIndex
     ax.net:Start(nil, "ax.doors.access_group_permissions_update", groupIndex, MODULE.AccessGroup_Permissions[groupIndex])
 
     client:Notify("You have taken permission from this access group", ax.notification.enums.SUCCESS)
+
+    ax.data:Set("door.groupPermissions", MODULE.AccessGroup_Permissions, {
+        scope = "schema",
+        noCache = true
+    })
 end, false)

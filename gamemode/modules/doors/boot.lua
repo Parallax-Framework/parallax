@@ -24,6 +24,14 @@ MODULE.AccessGroup_Permissions = {
     [MODULE.AccessGroups.NONE]      = 0
 }
 
+if ( ax.data:Get("door.groupPermissions", nil, {
+    scope = "schema",
+    force = true,
+}) ) then
+    MODULE.AccessGroup_Permissions = ax.data:Get("door.groupPermissions")
+end
+
+
 CAMI.RegisterPrivilege({
     Name = "Parallax - Doors - Manage Access Groups",
     MinAccess = "superadmin"

@@ -25,3 +25,7 @@ end)
 ax.net:Hook("ax.doors.access_group_permissions_update", function(groupIndex, permissions)
     MODULE.AccessGroup_Permissions[groupIndex] = permissions
 end)
+
+ax.net:Hook("ax.doors.permissions_sync", function(permissions)
+    MODULE.AccessGroup_Permissions = permissions
+end)

@@ -16,3 +16,7 @@ function MODULE:PlayerUse(client, entity)
 		return false
 	end
 end
+
+function MODULE:PlayerReady(client)
+	ax.net:Start(client, "ax.doors.permissions_sync", MODULE.AccessGroup_Permissions)
+end
