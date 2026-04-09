@@ -101,6 +101,11 @@ function GM:DoPlayerDeath(client, attacker, damageInfo)
         classData:OnDeath(client, attacker, damageInfo)
     end
 
+    local rankData = client:GetRankData()
+    if ( rankData and rankData.OnDeath ) then
+        rankData:OnDeath(client, attacker, damageInfo)
+    end
+
     client:GetTable().axDeathRespawnSound = true
 end
 
