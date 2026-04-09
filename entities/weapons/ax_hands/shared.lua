@@ -338,7 +338,7 @@ function SWEP:SecondaryAttack()
                 vDirection.z = 0
                 entity:SetVelocity(vDirection)
 
-                pushViewPunchAngle.x = math.random(1, 2)
+                pushViewPunchAngle.x = math.random(2)
                 pushViewPunchAngle.y = math.random(2, 6)
                 pushViewPunchAngle.z = math.random(0, -3)
 
