@@ -500,7 +500,7 @@ function SWEP:DoPunch()
                 entity:DispatchTraceAttack(dmgInfo, trace, trace.HitNormal)
 
                 if ( math.random(2) == 1 ) then
-                    entity:EmitSound("physics/plastic/plastic_box_impact_hard" .. math.random(1, 4) .. ".wav", 80)
+                    entity:EmitSound("physics/plastic/plastic_box_impact_hard" .. math.random(4) .. ".wav", 80)
                 else
                     entity:EmitSound("physics/wood/wood_crate_impact_hard" .. math.random(2, 3) .. ".wav", 80)
                 end
