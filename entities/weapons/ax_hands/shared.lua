@@ -457,7 +457,7 @@ function SWEP:DoPunch()
     owner:SetAnimation(PLAYER_ATTACK1)
     self:EmitSound(Sound("WeaponFrag.Throw"))
 
-    local random = math.random(1, 2)
+    local random = math.random(2)
     owner:ViewPunch(random == 1 and punchViewPunchAngle or knockViewPunchAngle)
 
     local vm = owner:GetViewModel()
