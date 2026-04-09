@@ -17,8 +17,6 @@ MODULE.Permissions = {
     EDIT_ACCESS = bit.lshift(1, 2)
 }
 
-if ( ax.data:Get("doors.accessGroups"))
-
 MODULE.AccessGroup_Permissions = {
     [MODULE.AccessGroups.OWNER]     = bit.bor(MODULE.Permissions.UNLOCK, MODULE.Permissions.LOCK, MODULE.Permissions.EDIT_ACCESS),
     [MODULE.AccessGroups.MANAGER]   = bit.bor(MODULE.Permissions.UNLOCK, MODULE.Permissions.LOCK),
