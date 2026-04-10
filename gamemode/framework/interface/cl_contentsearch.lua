@@ -95,7 +95,8 @@ function PANEL:RefreshResults(str)
 
 	if not str or str == "" then return end
 	local results = search.GetResults(str, self.m_strSearchType, GetConVarNumber("sbox_search_maxresults"))
-	for id, result in ipairs(results) do
+	for id = 1, #results do
+		local result = results[id]
 		if not IsValid(result.icon) then
 			ErrorNoHalt("Failed to create icon for " .. (result.words and isstring(result.words[1]) and result.words[1] or result.text) .. "\n")
 			continue
@@ -106,7 +107,8 @@ function PANEL:RefreshResults(str)
 
 	-- I know this is not perfect, but this is the best I am willing to do with how the search library was set up
 	if self.OldResults == #results then -- No updates, don't rebuild
-		for id, result in ipairs(results) do
+		for id = 1, #results do
+			local result = results[id]
 			if IsValid(result.icon) then -- Kill all icons
 				result.icon:Remove()
 			end
@@ -119,8 +121,9 @@ function PANEL:RefreshResults(str)
 	local Header = self:Add("ContentHeader")
 	Header:SetText(#results .. " Results for \"" .. str .. "\"")
 	self.PropPanel:Add(Header)
-	for k, v in ipairs(results) do
-		self:AddSearchResult(v.text, v.func, v.icon)
+	for id = 1, #results do
+		local result = results[id]
+		self:AddSearchResult(result.text, result.func, result.icon)
 	end
 
 	self.PropPanel:SetParent(self.ContentPanel)

@@ -375,7 +375,8 @@ ax.character:RegisterVar("name", {
 
             local glass = ax.theme:GetGlass()
             local hintZPos = this.sortOrder + 0.5
-            for i, hintText in ipairs(this.hints) do
+            for i = 1, #this.hints do
+                local hintText = this.hints[i]
                 local hint = container:Add("ax.text")
                 hint:SetFont("ax.small.italic")
                 hint:SetText("• " .. hintText)
@@ -478,7 +479,9 @@ ax.character:RegisterVar("description", {
 
             local glass = ax.theme:GetGlass()
             local hintZPos = this.sortOrder + 0.5
-            for i, hintText in ipairs(this.hints) do
+            for i = 1, #this.hints do
+                local textHint = this.hints[i]
+
                 local hint = container:Add("ax.text")
                 hint:SetFont("ax.small.italic")
                 hint:SetText("• " .. hintText)
@@ -520,7 +523,10 @@ ax.character:RegisterVar("model", {
         end
 
         local valid = false
-        for k, v in ipairs(factionData:GetModels()) do
+        local models = factionData:GetModels()
+        for i = 1, #models do
+            local v = models[i]
+
             if ( istable(v) ) then
                 if ( utf8.lower(v[1]) == utf8.lower(value) ) then
                     valid = true
@@ -559,7 +565,8 @@ ax.character:RegisterVar("model", {
 
         local size = math.min(container:GetWide() / 8, 128)
         local models = ax.faction:Get(factionID):GetModels()
-        for k, v in pairs(models) do
+        for i = 1, #models do
+            local v = models[i]
             local model = v
             local skin = 0
             if ( istable(v) ) then
@@ -623,7 +630,8 @@ ax.character:RegisterVar("model", {
         -- we populate the skin from the faction model entry so creation uses
         -- the forced skin when customization is disabled.
         if ( payload.model and payload.skin == nil ) then
-            for _, mv in ipairs(models) do
+            for i = 1, #models do
+                local mv = models[i]
                 if ( istable(mv) and utf8.lower(mv[1]) == utf8.lower(payload.model) ) then
                     payload.skin = mv[2] or 0
                     break
@@ -656,7 +664,8 @@ ax.character:RegisterVar("model", {
         local factionData = character:GetFactionData()
         if ( factionData and factionData.allowSkinCustomization == false ) then
             local forcedSkin = 0
-            for _, mv in ipairs(factionData:GetModels() or {}) do
+            for i = 1, #factionData:GetModels() or {} do
+                local mv = factionData:GetModels()[i]
                 if ( istable(mv) ) then
                     if ( utf8.lower(mv[1]) == utf8.lower(value) ) then
                         forcedSkin = mv[2] or 0
@@ -699,7 +708,8 @@ ax.character:RegisterVar("skin", {
             -- Determine the forced skin for the chosen model
             local forcedSkin = nil
             if ( payload and payload.model ) then
-                for _, mv in ipairs(factionData:GetModels() or {}) do
+                for i = 1, #factionData:GetModels() or {} do
+                    local mv = factionData:GetModels()[i]
                     if ( istable(mv) ) then
                         if ( utf8.lower(mv[1]) == utf8.lower(payload.model) ) then
                             forcedSkin = mv[2] or 0
@@ -742,7 +752,8 @@ ax.character:RegisterVar("skin", {
         -- skin so the server can accept & persist the forced skin value.
         if ( factionData.allowSkinCustomization == false ) then
             if ( payload and payload.model ) then
-                for _, mv in ipairs(factionData:GetModels() or {}) do
+                for i = 1, #factionData:GetModels() or {} do
+                    local mv = factionData:GetModels()[i]
                     if ( istable(mv) and utf8.lower(mv[1]) == utf8.lower(payload.model) ) then
                         return true
                     end

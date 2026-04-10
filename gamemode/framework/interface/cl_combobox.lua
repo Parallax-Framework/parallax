@@ -191,7 +191,9 @@ function PANEL:PerformLayout( w, h )
 	local minW = self:GetMinimumWidth()
 
 	-- Find the widest one
-	for k, pnl in ipairs( self:GetCanvas():GetChildren() ) do
+	local children = self:GetCanvas():GetChildren()
+	for i = 1, #children do
+		local pnl = children[i]
 
 		pnl:InvalidateLayout( true )
 		minW = math.max( minW, pnl:GetWide() )
@@ -202,7 +204,8 @@ function PANEL:PerformLayout( w, h )
 
 	local y = 0 -- for padding
 
-	for k, pnl in ipairs( self:GetCanvas():GetChildren() ) do
+	for i = 1, #children do
+		local pnl = children[i]
 
 		pnl:SetWide( minW )
 		pnl:SetPos( 0, y )
@@ -298,17 +301,19 @@ end
 
 function PANEL:ClearHighlights()
 
-	for k, pnl in ipairs( self:GetCanvas():GetChildren() ) do
-		pnl.Highlight = nil
+	local children = self:GetCanvas():GetChildren()
+	for i = 1, #children do
+		children[i].Highlight = nil
 	end
 
 end
 
 function PANEL:HighlightItem( item )
 
-	for k, pnl in ipairs( self:GetCanvas():GetChildren() ) do
-		if ( pnl == item ) then
-			pnl.Highlight = true
+	local children = self:GetCanvas():GetChildren()
+	for i = 1, #children do
+		if ( children[i] == item ) then
+			children[i].Highlight = true
 		end
 	end
 
@@ -553,7 +558,8 @@ function PANEL:OpenMenu( pControlOpener )
 
 	if ( self:GetSortItems() ) then
 		local sorted = {}
-		for k, v in ipairs( self.Choices ) do
+		for k = 1, #self.Choices do
+			local v = self.Choices[k]
 			local val = tostring( v )
 			if ( string.len( val ) > 1 && !tonumber( val ) && val:StartsWith( "#" ) ) then val = language.GetPhrase( val:sub( 2 ) ) end
 			sorted[#sorted + 1] = { id = k, data = v, label = val }
@@ -571,7 +577,8 @@ function PANEL:OpenMenu( pControlOpener )
 			end
 		end
 	else
-		for k, v in ipairs( self.Choices ) do
+		for k = 1, #self.Choices do
+			local v = self.Choices[k]
 			local option = self.Menu:AddOption( v, function() self:ChooseOption( v, k ) end )
 			if ( self.ChoiceIcons[ k ] ) then
 				option:SetIcon( self.ChoiceIcons[ k ] )

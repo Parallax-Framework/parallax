@@ -436,16 +436,20 @@ function PANEL:GetLiveStackItems(stack)
 
     local liveItems = {}
     local seen = {}
-    for _, stackedItem in ipairs(stack.stackedItems or {}) do
-        local liveItem = istable(stackedItem) and inventoryLookup[stackedItem.id] or nil
-        if ( istable(liveItem) and !seen[liveItem.id] ) then
-            liveItems[#liveItems + 1] = liveItem
-            seen[liveItem.id] = true
+    if ( stack.stackedItems ) then
+        for id = 1, #stack.stackedItems do
+            local stackedItem = stack.stackedItems[id]
+            local liveItem = istable(stackedItem) and inventoryLookup[stackedItem.id] or nil
+            if ( istable(liveItem) and !seen[liveItem.id] ) then
+                liveItems[#liveItems + 1] = liveItem
+                seen[liveItem.id] = true
+            end
         end
     end
 
     if ( liveItems[1] == nil and isstring(stack.class) and stack.class != "" ) then
-        for _, invItem in pairs(inventoryItems) do
+        for id = 1, #inventoryItems do
+            local invItem = inventoryItems[id]
             if ( istable(invItem) and invItem.class == stack.class and !seen[invItem.id] ) then
                 liveItems[#liveItems + 1] = invItem
                 seen[invItem.id] = true
@@ -705,7 +709,8 @@ function PANEL:PopulateItems()
         if ( shouldStack ) then
             -- Look for existing stack of the same class.
             local foundStack = false
-            for i, existingStack in ipairs(categorizedItems[category]) do
+            for i = 1, #categorizedItems[category] do
+                local existingStack = categorizedItems[category][i]
                 if ( existingStack.class == itemClass and existingStack.stackCount < maxStack ) then
                     -- Add to existing stack.
                     existingStack.stackCount = existingStack.stackCount + 1
@@ -794,7 +799,8 @@ function PANEL:PopulateItems()
         local categoryName = sortedCategories[i]
         local stacks = categorizedItems[categoryName] or {}
 
-        for _, stack in ipairs(stacks) do
+        for id = 1, #stacks do
+            local stack = stacks[id]
             local representativeItem = stack.representativeItem
             if ( !istable(representativeItem) ) then
                 continue
@@ -920,7 +926,9 @@ function PANEL:PopulateItems()
 
                 local col = 0
                 local row = 0
-                for _, child in ipairs(this:GetChildren()) do
+                local children = this:GetChildren()
+                for id = 1, #children do
+                    local child = children[id]
                     if ( !IsValid(child) ) then continue end
                     local x = col * (itemW + spacingX)
                     local y = row * (INVENTORY_GRID_ITEM_HEIGHT + INVENTORY_GRID_SPACING_Y)
@@ -934,7 +942,8 @@ function PANEL:PopulateItems()
                 end
             end
 
-            for _, stack in ipairs(stacks) do
+            for id = 1, #stacks do
+                local stack = stacks[id]
                 local representativeItem = stack.representativeItem
 
                 local item = grid:Add("ax.button")
@@ -1086,7 +1095,9 @@ function PANEL:PopulateInfo(stack)
     end
 
     local addedActions = 0
-    for _, actionEntry in ipairs(GetSortedActionEntries(actions)) do
+    local sortedActionEntires = GetSortedActionEntries(actions)
+    for id = 1, #sortedActionEntires do
+        local actionEntry = sortedActionEntires[id]
         local k = actionEntry.id
         local v = actionEntry.data
 
@@ -1135,22 +1146,25 @@ function PANEL:PopulateInfo(stack)
             -- Use a random item from the stack for the action
             local itemToUse
             -- Iterate through stacked items to find one that can perform the action and if we have it in the inventory still
-            for _, stackedItem in ipairs(liveStack.stackedItems or {}) do
-                -- Get the item template to check for actions
-                local itemTemplate = ax.item.stored[stackedItem.class]
-                if ( itemTemplate and itemTemplate:GetActions()[k] ) then
-                    -- Check if we still have this item in inventory
-                    local hasItem = false
-                    for itemId, invItem in pairs(self.inventory:GetItems()) do
-                        if ( invItem.id == stackedItem.id ) then
-                            hasItem = true
+            if ( liveStack.stackedItems ) then
+                for id = 1, #liveStack.stackedItems do
+                    local stackedItem = liveStack.stackedItems[id]
+                    -- Get the item template to check for actions
+                    local itemTemplate = ax.item.stored[stackedItem.class]
+                    if ( itemTemplate and itemTemplate:GetActions()[k] ) then
+                        -- Check if we still have this item in inventory
+                        local hasItem = false
+                        for itemId, invItem in pairs(self.inventory:GetItems()) do
+                            if ( invItem.id == stackedItem.id ) then
+                                hasItem = true
+                                break
+                            end
+                        end
+
+                        if ( hasItem ) then
+                            itemToUse = stackedItem
                             break
                         end
-                    end
-
-                    if ( hasItem ) then
-                        itemToUse = stackedItem
-                        break
                     end
                 end
             end

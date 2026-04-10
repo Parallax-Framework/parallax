@@ -59,12 +59,14 @@ local function GeneratePermutations(arr)
         end
 
         local perms = GeneratePermutations(remaining)
-        for _, perm in ipairs(perms) do
+        for _ = 1, #perms do
+            local perm = perms[_]
             local new = { elem }
-            for _, v in ipairs(perm) do
-                table.insert(new, v)
+            for _ = 1, #v do
+                new[#new + 1] = v[_]
             end
-            table.insert(result, new)
+
+            result[#result + 1] = new
         end
     end
 

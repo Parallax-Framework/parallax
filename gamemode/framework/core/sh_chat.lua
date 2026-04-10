@@ -97,8 +97,12 @@ local function CheckOOCAllowed(client)
     if ( rateLimit > 0 ) then
         local window = 600
         local newtimes = {}
-        for _, t in ipairs(info.times or {}) do
-            if ( now - t <= window ) then table.insert(newtimes, t) end
+
+        if ( info.times ) then
+            for i = 1, #info.times do
+                local t = info.times[i]
+                if ( now - t <= window ) then table.insert(newtimes, t) end
+            end
         end
 
         if ( #newtimes >= rateLimit ) then
