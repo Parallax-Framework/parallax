@@ -66,11 +66,6 @@ if ( CLIENT ) then
         [ax.notification.enums.SUCCESS] = "parallax/ui/notifications/generic.wav",
     }
 
-    ax.notification.enums.STATE_HIDDEN = 1
-    ax.notification.enums.STATE_VISIBLE = 2
-    ax.notification.enums.STATE_EXITING = 3
-
-
     ax.notification.style = {
         width = 340,
         minHeight = 44,
@@ -97,6 +92,12 @@ if ( CLIENT ) then
         [ax.notification.enums.INFO] = Color(80, 150, 230),
         [ax.notification.enums.SUCCESS] = Color(70, 180, 110),
     }
+
+    ax.notification.enums.STATE_ENTERING = 1
+    ax.notification.enums.STATE_VISIBLE = 2
+    ax.notification.enums.STATE_EXITING = 3
+    ax.notification.enums.STATE_DONE = 4
+
 
     local function Clamp(value, minValue, maxValue)
         return math.min(math.max(value, minValue), maxValue)
@@ -173,7 +174,7 @@ if ( CLIENT ) then
     end
 
     local function StartExit(notification)
-        if ( notification.state == ax.notification.enums.STATE_HIDDEN ) then return end
+        if ( notification.state == ax.notification.enums.STATE_EXITING ) then return end
 
         notification.state = ax.notification.enums.STATE_EXITING
         notification.exitStartTime = CurTime()
