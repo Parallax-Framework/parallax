@@ -158,7 +158,7 @@ if ( SERVER ) then
     --- Returns the paired partner door for a rotating door entity.
     -- Only meaningful for `prop_door_rotating` entities. Caches the result in `selfTable.m_hPartner` after the first lookup. The search inspects `m_hMaster` on all doors of the same class to find the one that references this door as its master. Returns `NULL` when the entity is not a rotating door or no partner is found.
     -- @realm server
-    -- @return Entity The partner door entity, or `NULL` if none.
+    -- @return Entity The partner door entity, or `nil` if none.
     function ENTITY:GetDoorPartner()
         if ( self:GetClass() != "prop_door_rotating" ) then return nil end
 
