@@ -11,9 +11,9 @@ MODULE.AccessGroups = {
 }
 
 MODULE.Permissions = {
-    UNLOCK      = (1) '<<' (0),
-    LOCK        = (1) '<<' (1),
-    EDIT_ACCESS = (1) '<<' (2)
+    UNLOCK      = (1) "<<" (0),
+    LOCK        = (1) "<<" (1),
+    EDIT_ACCESS = (1) "<<" (2)
 }
 
 MODULE.AccessGroup_Permissions = {
