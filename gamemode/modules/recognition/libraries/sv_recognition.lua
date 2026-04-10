@@ -175,7 +175,8 @@ local function HandleChatBonus(speaker, chatType, rawText, text, receivers, data
     local char = speaker:GetCharacter()
     if ( !char ) then return end
 
-    for _, receiver in ipairs(receivers) do
+    for _ = 1, #receivers do
+        local receiver = receivers[_]
         if ( receiver == speaker or !ax.util:IsValidPlayer(receiver) ) then continue end
 
         local targetChar = receiver:GetCharacter()

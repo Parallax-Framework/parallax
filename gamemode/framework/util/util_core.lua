@@ -707,7 +707,7 @@ function ax.util:GetPlayerFromAttachedRagdoll(entity)
     end
 
     local entIndex = entity:EntIndex()
-    for _, client in ipairs(player.GetAll()) do
+    for _, client in player.Iterator() do
         if ( !ax.util:IsValidPlayer(client) ) then
             continue
         end

@@ -101,7 +101,7 @@ local function CheckOOCAllowed(client)
         if ( info.times ) then
             for i = 1, #info.times do
                 local t = info.times[i]
-                if ( now - t <= window ) then table.insert(newtimes, t) end
+                if ( now - t <= window ) then newtimes[#newtimes + 1] = t end
             end
         end
 
@@ -111,7 +111,7 @@ local function CheckOOCAllowed(client)
             return false
         end
 
-        table.insert(newtimes, now)
+        newtimes[#newtimes + 1] = now
         info.times = newtimes
     end
 

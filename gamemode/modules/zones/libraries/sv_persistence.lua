@@ -39,7 +39,8 @@ function ax.zones:Load()
 
     -- Restore zones
     if ( data.items ) then
-        for _, zone in ipairs(data.items) do
+        for _ = 1, #data.items do
+            local zone = data.items[_]
             if ( zone.id and zone.map == mapName ) then
                 self.stored[zone.id] = zone
             end
@@ -81,7 +82,8 @@ function ax.zones:LoadStatic(zoneList)
     if ( !zoneList ) then return end
 
     local count = 0
-    for _, spec in ipairs(zoneList) do
+    for _ = 1, #zoneList do
+        local spec = zoneList[_]
         -- Mark as static
         spec.source = "static"
 

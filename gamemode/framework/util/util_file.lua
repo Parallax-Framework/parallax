@@ -303,8 +303,8 @@ function ax.util:EnsureDataDir(path)
     end
 
     local cur = ""
-    for _, p in ipairs(parts) do
-        cur = cur .. p
+    for _ = 1, #parts do
+        cur = cur .. parts[_]
         if ( !file.IsDir(cur, "DATA") ) then
             file.CreateDir(cur)
         end
@@ -352,7 +352,8 @@ function ax.util:LoadEntities(path, timeFilter)
         files, folders = file.Find(path .. "/" .. folder .. "/*", "LUA")
         default = default or {}
 
-        for _, v in ipairs(folders) do
+        for _ = 1, #folders do
+            local v = folders[_]
             local path2 = path .. "/" .. folder .. "/" .. v .. "/"
             v = string.lower(v)
             if ( string.StartWith(v, "sh_") or string.StartWith(v, "cl_") or string.StartWith(v, "sv_") ) then
@@ -394,7 +395,8 @@ function ax.util:LoadEntities(path, timeFilter)
             _G[variable] = nil
         end
 
-        for _, v in ipairs(files) do
+        for _ = 1, #files do
+            local v = files[_]
             local niceName = string.StripExtension(v)
             if ( string.StartWith(niceName, "sh_") or string.StartWith(niceName, "cl_") or string.StartWith(niceName, "sv_") ) then
                 niceName = string.sub(niceName, 4)

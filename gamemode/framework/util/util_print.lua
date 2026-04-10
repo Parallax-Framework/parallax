@@ -153,8 +153,8 @@ function ax.util:PrintDebug(...)
         local messageString = string.lower(tostring(unpack(args)))
         local matchesFilter = false
 
-        for _, filter in ipairs(filters) do
-            filter = string.Trim(filter)
+        for _ = 1, #filters do
+            local filter = string.Trim(filters[_])
             if ( filter != "" and string.find(messageString, string.lower(filter), 1, true) ) then
                 matchesFilter = true
                 break

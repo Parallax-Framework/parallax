@@ -219,7 +219,7 @@ function PANEL:GetOrderedCategories()
         if ( prefix ) then
             orderKey = tonumber(prefix) * 100000 + baseOrder
         end
-        table.insert(catList, { name = name, order = orderKey })
+        catList[#catList + 1] = { name = name, order = orderKey }
     end
 
     table.sort(catList, function(a, b)

@@ -46,13 +46,13 @@ function PANEL:RebuildScoreboard()
     for _, client in player.Iterator() do
         local tid = client:Team() or 0
         teams[tid] = teams[tid] or {}
-        table.insert(teams[tid], client)
+        teams[tid][#teams[tid] + 1] = client
     end
 
     -- Sort team ids
     local ids = {}
     for id, _ in pairs(teams) do
-        table.insert(ids, id)
+        ids[#ids + 1] = id
     end
 
     table.sort(ids)

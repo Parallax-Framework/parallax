@@ -496,7 +496,8 @@ end
 
 function PANEL:AddChoice( value, data, select, icon )
 
-	local index = table.insert( self.Choices, value )
+	local index = #self.Choices + 1
+	self.Choices[ index ] = value
 
 	if ( data ) then
 		self.Data[ index ] = data

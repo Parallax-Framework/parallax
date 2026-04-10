@@ -460,7 +460,8 @@ function JOURNAL_PANEL:Refresh()
         return
     end
 
-    for _, entry in ipairs(entries) do
+    for _ = 1, #entries do
+        local entry = entries[_]
         local record    = entry.record
         local tier      = ax.recognition:GetTier(record.score or 0)
         local alias     = record.alias or ax.localization:GetPhrase("unknown")

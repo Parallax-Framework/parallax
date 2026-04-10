@@ -166,7 +166,8 @@ function ax.chatbox:OverrideChatAddText()
             text = string.format("<font=ax.small.shadow><color=%d,%d,%d>[%s] </color></font>", ts.r, ts.g, ts.b, os.date(format))
         end
         -- Build markup from arguments
-        for _, v in ipairs(arguments) do
+        for _ = 1, #arguments do
+            local v = arguments[_]
             if ( ax.type:Sanitise(ax.type.color, v) ) then
                 color = v
             elseif ( ax.util:IsValidPlayer(v) ) then

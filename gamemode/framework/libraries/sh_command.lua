@@ -126,7 +126,8 @@ function ax.command:Find(look, bCaseSensitive, bExact)
 
         if ( def.alias ) then
             local aliases = istable(def.alias) and def.alias or {def.alias}
-            for _, alias in ipairs(aliases) do
+            for _ = 1, #aliases do
+                local alias = aliases[_]
                 if ( ax.util:FindString(alias, look, bCaseSensitive) ) then
                     return def
                 end
@@ -155,7 +156,8 @@ function ax.command:FindAll(partial)
             results[def.name] = def
         elseif ( def.alias ) then
             local aliases = istable(def.alias) and def.alias or {def.alias}
-            for _, alias in ipairs(aliases) do
+            for _ = 1, #aliases do
+                local alias = aliases[_]
                 if ( ax.util:FindString(alias, partial) ) then
                     results[def.name] = def
                     break
@@ -186,7 +188,8 @@ function ax.command:FindClosest(partial)
             end
         elseif ( def.alias ) then
             local aliases = istable(def.alias) and def.alias or {def.alias}
-            for _, alias in ipairs(aliases) do
+            for _ = 1, #aliases do
+                local alias = aliases[_]
                 if ( string.StartWith(alias, partial) ) then
                     local length = #alias
                     if ( length > bestLength ) then
@@ -327,7 +330,8 @@ function ax.command:ExtractArgs(def, raw)
     local values = {}
     local tokenIndex = 1
 
-    for i, argDef in ipairs(def.arguments) do
+    for i = 1, #def.arguments do
+        local argDef = def.arguments[i]
         local value = nil
         local hasValue = tokenIndex <= #tokens
 

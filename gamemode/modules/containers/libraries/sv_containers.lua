@@ -228,7 +228,10 @@ end
 function MODULE:SaveContainers()
 	local data = {}
 
-	for _, entity in ipairs(ents.FindByClass("ax_container")) do
+	local containers = ents.FindByClass("ax_container")
+
+	for _ = 1, #containers do
+		local entity = containers[_]
 		if ( !IsValid(entity) ) then
 			continue
 		end

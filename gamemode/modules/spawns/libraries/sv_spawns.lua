@@ -83,7 +83,8 @@ function ax.spawns:GetValidSpawns(factionIdentifier, classIdentifier)
     if ( classIdentifier ) then
         local classData = ax.class:Get(classIdentifier)
         if ( classData ) then
-            for _, spawnData in ipairs(ax.spawns.list) do
+            for _ = 1, #ax.spawns.list do
+                local spawnData = ax.spawns.list[_]
                 if ( spawnData.class == classData.id ) then
                     table.insert(validSpawns, spawnData)
                 end
@@ -95,7 +96,8 @@ function ax.spawns:GetValidSpawns(factionIdentifier, classIdentifier)
     if ( #validSpawns == 0 and factionIdentifier ) then
         local factionData = ax.faction:Get(factionIdentifier)
         if ( factionData ) then
-            for _, spawnData in ipairs(ax.spawns.list) do
+            for _ = 1, #ax.spawns.list do
+                local spawnData = ax.spawns.list[_]
                 if ( spawnData.faction == factionData.id ) then
                     table.insert(validSpawns, spawnData)
                 end
@@ -105,7 +107,9 @@ function ax.spawns:GetValidSpawns(factionIdentifier, classIdentifier)
 
     -- fallback to spawns without faction/class restrictions
     if ( #validSpawns == 0 ) then
-        for _, spawnData in ipairs(ax.spawns.list) do
+        for _ = 1, #ax.spawns.list do
+            local spawnData = ax.spawns.list[_]
+
             if ( !spawnData.faction and !spawnData.class ) then
                 table.insert(validSpawns, spawnData)
             end

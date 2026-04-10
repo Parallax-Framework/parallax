@@ -133,7 +133,8 @@ ax.net:Hook("item.transfer.batch", function(client, itemIDs, targetInventoryID)
         return
     end
 
-    for _, itemID in ipairs(itemIDs) do
+    for _ = 1, #itemIDs do
+        local itemID = itemIDs[_]
         if ( !isnumber(itemID) or itemID < 1 ) then
             continue
         end

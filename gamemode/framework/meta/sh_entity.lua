@@ -114,7 +114,9 @@ function ENTITY:EmitQueuedSound(soundNames, soundLevel, pitchPercent, volume, ch
     local delay = 0
     local totalDuration = 0
 
-    for _, snd in ipairs(soundNames) do
+    for _ = 1, #soundNames do
+        local snd = soundNames[_]
+
         local duration = SoundDuration(snd) or 0
         duration = duration + 0.1 -- small buffer to prevent clipping
         totalDuration = totalDuration + duration
@@ -221,7 +223,10 @@ if ( SERVER ) then
                 self:DrawShadow(true)
                 self.ignoreUse = false
 
-                for _, v in ipairs(self:GetChildren()) do
+                local children = self:GetChildren()
+                for _ = 1, #children do
+                    local v = children[_]
+
                     v:SetNotSolid(false)
                     v:SetNoDraw(false)
 
@@ -245,7 +250,9 @@ if ( SERVER ) then
 
         dummy:InheritBodygroups(self)
 
-        for _, v in ipairs(self:GetChildren()) do
+        local children = self:GetChildren()
+        for _ = 1, #children do
+            local v = children[_]
             v:SetNotSolid(true)
             v:SetNoDraw(true)
 

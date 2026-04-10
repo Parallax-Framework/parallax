@@ -88,17 +88,18 @@ function ax.font:GenerateStyleCombinations()
         local combo = {}
         for j = 1, #styleModifiers do
             if ( bit.band(i, bit.lshift(1, j - 1)) != 0 ) then
-                table.insert(combo, styleModifiers[j])
+                combo[#combo + 1] = styleModifiers[j]
             end
         end
 
         -- Generate all permutations of this combination
         local perms = GeneratePermutations(combo)
-        for _, perm in ipairs(perms) do
+        for _ = 1, #perms do
+            local perm = perms[_]
             local str = table.concat(perm, ".")
             if ( !seen[str] ) then
                 seen[str] = true
-                table.insert(self.styleCombinations, str)
+                self.styleCombinations[#self.styleCombinations + 1] = str
             end
         end
     end
@@ -119,7 +120,8 @@ function ax.font:CreateFamily(name, font, size, fontData)
     end
 
     local combinations = self:GenerateStyleCombinations()
-    for _, combo in ipairs(combinations) do
+    for _ = 1, #combinations do
+        local combo = combinations[_]
         local fontName = "ax." .. name .. (combo != "" and ("." .. combo) or "")
 
         local black = string.find(combo, "black", 1, true)
@@ -187,8 +189,11 @@ function ax.font:GenerateAvailableFonts()
     local fonts = {}
     local baseFonts = { "tiny", "small", "regular", "medium", "large", "massive", "huge", "giant" }
 
-    for _, baseName in ipairs(baseFonts) do
-        for _, combo in ipairs(self:GenerateStyleCombinations()) do
+    for _ = 1, #baseFonts do
+        local baseName = baseFonts[_]
+        local genStyleCombinations = self:GenerateStyleCombinations()
+        for _ = 1, #genStyleCombinations do
+            local combo = genStyleCombinations[_]
             fonts[#fonts + 1] = "ax." .. baseName .. (combo != "" and ("." .. combo) or "")
         end
     end
@@ -200,7 +205,8 @@ concommand.Add("ax_font_list", function(client, cmd, args)
     if ( args[1] == "combinations" ) then
         local combinations = ax.font:GenerateStyleCombinations()
         ax.util:Print("Available style combinations (" .. #combinations .. " total):")
-        for _, combo in ipairs(combinations) do
+        for _ = 1, #combinations do
+            local combo = combinations[_]
             ax.util:Print(" - " .. (combo == "" and "(base)" or combo))
         end
         return
