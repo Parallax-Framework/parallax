@@ -708,8 +708,9 @@ ax.character:RegisterVar("skin", {
             -- Determine the forced skin for the chosen model
             local forcedSkin = nil
             if ( payload and payload.model ) then
-                for i = 1, #factionData:GetModels() or {} do
-                    local mv = factionData:GetModels()[i]
+                local models = factionData:GetModels() or {}
+                for i = 1, #models do
+                    local mv = models[i]
                     if ( istable(mv) ) then
                         if ( utf8.lower(mv[1]) == utf8.lower(payload.model) ) then
                             forcedSkin = mv[2] or 0
@@ -752,8 +753,9 @@ ax.character:RegisterVar("skin", {
         -- skin so the server can accept & persist the forced skin value.
         if ( factionData.allowSkinCustomization == false ) then
             if ( payload and payload.model ) then
-                for i = 1, #factionData:GetModels() or {} do
-                    local mv = factionData:GetModels()[i]
+                local models = factionData:GetModels() or {}
+                for i = 1, #models do
+                    local mv = models[i]
                     if ( istable(mv) and utf8.lower(mv[1]) == utf8.lower(payload.model) ) then
                         return true
                     end
