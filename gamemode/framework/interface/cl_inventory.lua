@@ -448,11 +448,10 @@ function PANEL:GetLiveStackItems(stack)
     end
 
     if ( liveItems[1] == nil and isstring(stack.class) and stack.class != "" ) then
-        for id = 1, #inventoryItems do
-            local invItem = inventoryItems[id]
-            if ( istable(invItem) and invItem.class == stack.class and !seen[invItem.id] ) then
+        for itemID, invItem in pairs(inventoryItems) do
+            if ( istable(invItem) and invItem.class == stack.class and !seen[itemID] ) then
                 liveItems[#liveItems + 1] = invItem
-                seen[invItem.id] = true
+                seen[itemID] = true
 
                 if ( isnumber(stack.maxStack) and #liveItems >= stack.maxStack ) then
                     break
