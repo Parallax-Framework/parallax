@@ -15,10 +15,10 @@
 ax.notification = ax.notification or {}
 
 ax.notification.enums = {}
-ax.notification.enums.ERROR = 1
-ax.notification.enums.WARNING = 2
-ax.notification.enums.INFO = 3
-ax.notification.enums.SUCCESS = 4
+ax.notification.enums.TYPE_ERROR = 1
+ax.notification.enums.TYPE_WARNING = 2
+ax.notification.enums.TYPE_INFO = 3
+ax.notification.enums.TYPE_SUCCESS = 4
 
 
 if ( SERVER ) then
@@ -50,7 +50,7 @@ if ( SERVER ) then
         end
 
         local duration = tonumber(length) or (ax.config:Get("notification.length.default", 5) or 5)
-        ax.net:Start(players, "notification.push", message, type or self.enums.INFO, duration)
+        ax.net:Start(players, "notification.push", message, type or self.enums.TYPE_INFO, duration)
 
         ax.util:PrintDebug("Notification sent to", #players, "players:", message)
     end
@@ -60,10 +60,10 @@ if ( CLIENT ) then
     ax.notification.active = ax.notification.active or {}
     ax.notification.font = "ax.small.bold"
     ax.notification.sounds = {
-        [ax.notification.enums.ERROR] = "parallax/ui/notifications/error.wav",
-        [ax.notification.enums.WARNING] = "parallax/ui/notifications/hint.wav",
-        [ax.notification.enums.INFO] = "parallax/ui/notifications/generic.wav",
-        [ax.notification.enums.SUCCESS] = "parallax/ui/notifications/generic.wav",
+        [ax.notification.enums.TYPE_ERROR] = "parallax/ui/notifications/error.wav",
+        [ax.notification.enums.TYPE_WARNING] = "parallax/ui/notifications/hint.wav",
+        [ax.notification.enums.TYPE_INFO] = "parallax/ui/notifications/generic.wav",
+        [ax.notification.enums.TYPE_SUCCESS] = "parallax/ui/notifications/generic.wav",
     }
 
     ax.notification.style = {
@@ -87,10 +87,10 @@ if ( CLIENT ) then
     }
 
     ax.notification.typeColors = {
-        [ax.notification.enums.ERROR] = Color(220, 70, 70),
-        [ax.notification.enums.WARNING] = Color(230, 170, 60),
-        [ax.notification.enums.INFO] = Color(80, 150, 230),
-        [ax.notification.enums.SUCCESS] = Color(70, 180, 110),
+        [ax.notification.enums.TYPE_ERROR] = Color(220, 70, 70),
+        [ax.notification.enums.TYPE_WARNING] = Color(230, 170, 60),
+        [ax.notification.enums.TYPE_INFO] = Color(80, 150, 230),
+        [ax.notification.enums.TYPE_SUCCESS] = Color(70, 180, 110),
     }
 
     ax.notification.enums.STATE_ENTERING = 1
@@ -117,10 +117,10 @@ if ( CLIENT ) then
     end
 
     local function NormalizeType(notificationType)
-        if ( notificationType == "error" ) then return ax.notification.enums.ERROR end
-        if ( notificationType == "warning" ) then return ax.notification.enums.WARNING end
-        if ( notificationType == "success" ) then return ax.notification.enums.SUCCESS end
-        return ax.notification.enums.INFO
+        if ( notificationType == "error" ) then return ax.notification.enums.TYPE_ERROR end
+        if ( notificationType == "warning" ) then return ax.notification.enums.TYPE_WARNING end
+        if ( notificationType == "success" ) then return ax.notification.enums.TYPE_SUCCESS end
+        return ax.notification.enums.TYPE_INFO
     end
 
     local function PlayNotificationSound(notificationType)
@@ -128,7 +128,7 @@ if ( CLIENT ) then
             return
         end
 
-        local soundPath = ax.notification.sounds[notificationType] or ax.notification.sounds[ax.notification.enums.INFO]
+        local soundPath = ax.notification.sounds[notificationType] or ax.notification.sounds[ax.notification.enums.TYPE_INFO]
         if ( !isstring(soundPath) or soundPath == "" ) then
             return
         end
@@ -170,7 +170,7 @@ if ( CLIENT ) then
         notification.accentGap = accentGap
         notification.lineSpacing = lineSpacing
         notification.radius = math.max(0, math.floor(style.radius * scale))
-        notification.accentColor = ax.notification.typeColors[notification.type] or ax.notification.typeColors[ax.notification.enums.INFO]
+        notification.accentColor = ax.notification.typeColors[notification.type] or ax.notification.typeColors[ax.notification.enums.TYPE_INFO]
     end
 
     local function StartExit(notification)
