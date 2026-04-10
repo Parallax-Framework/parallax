@@ -62,8 +62,8 @@ local function GeneratePermutations(arr)
         for _ = 1, #perms do
             local perm = perms[_]
             local new = { elem }
-            for _ = 1, #v do
-                new[#new + 1] = v[_]
+            for _ = 1, #perm do
+                new[#new + 1] = perm[_]
             end
 
             result[#result + 1] = new
