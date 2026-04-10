@@ -54,7 +54,7 @@ local function GeneratePermutations(arr)
         local remaining = {}
         for j = 1, #arr do
             if ( j != i ) then
-                table.insert(remaining, arr[j])
+                remaining[#remaining + 1] = arr[j]
             end
         end
 

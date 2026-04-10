@@ -58,7 +58,7 @@ function ax.util:GetRandomBotFaction()
     for i = 1, #factions do
         local faction = factions[i]
         if ( faction and (faction.isDefault or faction.allowBots != false) ) then
-            table.insert(validFactions, faction)
+            validFactions[#validFactions + 1] = faction
         end
     end
 

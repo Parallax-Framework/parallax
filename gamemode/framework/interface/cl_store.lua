@@ -412,7 +412,7 @@ function PANEL:Populate(tab, scroller, type, category)
     -- Sort subcategories alphabetically, but put "general" first if it exists
     local sortedSubCategories = {}
     for subCat, _ in pairs(groupedEntries) do
-        table.insert(sortedSubCategories, subCat)
+        sortedSubCategories[#sortedSubCategories + 1] = subCat
     end
 
     table.sort(sortedSubCategories, function(a, b)

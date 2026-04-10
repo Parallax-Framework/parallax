@@ -47,7 +47,7 @@ function MODULE:DrawItems()
             local dx = scr.x - stack.x
             local dy = scr.y - stack.y
             if ( math.sqrt(dx * dx + dy * dy) <= THRESHOLD ) then
-                table.insert(stack.items, item)
+                stack.items[#stack.items + 1] = item
                 -- update stack anchor to running average so it follows visual cluster
                 local n = #stack.items
                 stack.x = (stack.x * (n - 1) + scr.x) / n
@@ -58,7 +58,7 @@ function MODULE:DrawItems()
         end
 
         if ( !placed ) then
-            table.insert(stacks_by_class[cls], { x = scr.x, y = scr.y, items = { item } })
+            stacks_by_class[cls][#stacks_by_class[cls] + 1] = { x = scr.x, y = scr.y, items = { item } }
         end
     end
 

@@ -136,7 +136,7 @@ function ax.player.meta:GetZonesWithFlag(flagName, flagValue)
     for _ = 1, #zones do
         local zone = zones[_]
         if ( zone.flags and zone.flags[flagName] != nil and (flagValue == nil or zone.flags[flagName] == flagValue) ) then
-            table.insert(result, zone)
+            result[#result + 1] = zone
         end
     end
 
@@ -234,7 +234,7 @@ function ax.player.meta:GetZonesByType(zoneType)
     for _ = 1, #zones do
         local zone = zones[_]
         if ( zone.type == zoneType ) then
-            table.insert(result, zone)
+            result[#result + 1] = zone
         end
     end
 
@@ -279,7 +279,7 @@ function ax.player.meta:GetZoneNames()
 
     for _ = 1, #zones do
         local zone = zones[_]
-        table.insert(names, zone.name)
+        names[#names + 1] = zone.name
     end
 
     return names

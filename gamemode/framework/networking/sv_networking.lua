@@ -177,7 +177,7 @@ ax.net:Hook("inventory.item.action", function(client, itemID, action)
     if ( !istable(item) ) then
         local validIDs = {}
         for id in pairs(ax.item.instances) do
-            table.insert(validIDs, id)
+            validIDs[#validIDs + 1] = id
         end
 
         table.sort(validIDs)

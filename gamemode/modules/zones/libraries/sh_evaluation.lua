@@ -30,7 +30,7 @@ function ax.zones:AtPos(pos)
         if ( !typeImpl or !typeImpl.Contains ) then continue end
 
         if ( typeImpl.Contains(zone, pos) ) then
-            table.insert(result, zone)
+            result[#result + 1] = zone
         end
     end
 
@@ -66,7 +66,7 @@ function ax.zones:VisibleZones(ent)
         if ( weight > 0 ) then
             local entry = table.Copy(zone)
             entry._weight = weight
-            table.insert(result, entry)
+            result[#result + 1] = entry
         end
     end
 

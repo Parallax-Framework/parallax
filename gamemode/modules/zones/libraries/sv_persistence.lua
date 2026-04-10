@@ -60,7 +60,7 @@ function ax.zones:Save()
     local items = {}
     for id, zone in pairs(self.stored) do
         if ( zone.source == "runtime" and zone.map == mapName ) then
-            table.insert(items, zone)
+            items[#items + 1] = zone
         end
     end
 

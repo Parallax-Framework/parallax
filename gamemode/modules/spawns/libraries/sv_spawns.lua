@@ -55,7 +55,7 @@ function ax.spawns:Add(spawnData, factionIdentifier, classIdentifier)
         return
     end
 
-    table.insert(ax.spawns.list, spawnData)
+    ax.spawns.list[#ax.spawns.list + 1] = spawnData
 
     self:Save()
 end
@@ -86,7 +86,7 @@ function ax.spawns:GetValidSpawns(factionIdentifier, classIdentifier)
             for _ = 1, #ax.spawns.list do
                 local spawnData = ax.spawns.list[_]
                 if ( spawnData.class == classData.id ) then
-                    table.insert(validSpawns, spawnData)
+                    validSpawns[#validSpawns + 1] = spawnData
                 end
             end
         end
@@ -99,7 +99,7 @@ function ax.spawns:GetValidSpawns(factionIdentifier, classIdentifier)
             for _ = 1, #ax.spawns.list do
                 local spawnData = ax.spawns.list[_]
                 if ( spawnData.faction == factionData.id ) then
-                    table.insert(validSpawns, spawnData)
+                    validSpawns[#validSpawns + 1] = spawnData
                 end
             end
         end
@@ -111,7 +111,7 @@ function ax.spawns:GetValidSpawns(factionIdentifier, classIdentifier)
             local spawnData = ax.spawns.list[_]
 
             if ( !spawnData.faction and !spawnData.class ) then
-                table.insert(validSpawns, spawnData)
+                validSpawns[#validSpawns + 1] = spawnData
             end
         end
     end

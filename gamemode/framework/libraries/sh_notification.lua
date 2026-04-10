@@ -66,6 +66,11 @@ if ( CLIENT ) then
         [ax.notification.enums.SUCCESS] = "parallax/ui/notifications/generic.wav",
     }
 
+    ax.notification.enums.STATE_HIDDEN = 1
+    ax.notification.enums.STATE_VISIBLE = 2
+    ax.notification.enums.STATE_EXITING = 3
+
+
     ax.notification.style = {
         width = 340,
         minHeight = 44,
@@ -168,9 +173,9 @@ if ( CLIENT ) then
     end
 
     local function StartExit(notification)
-        if ( notification.state == "exiting" ) then return end
+        if ( notification.state == ax.notification.enums.STATE_HIDDEN ) then return end
 
-        notification.state = "exiting"
+        notification.state = ax.notification.enums.STATE_EXITING
         notification.exitStartTime = CurTime()
     end
 
@@ -200,7 +205,7 @@ if ( CLIENT ) then
             type = NormalizeType(type),
             startTime = now,
             duration = math.max(0.1, duration),
-            state = "entering",
+            state = ax.notification.enums.STATE_ENTERING,
             y = 0,
             targetY = 0,
         }
@@ -248,7 +253,7 @@ if ( CLIENT ) then
             notification.targetY = stackY
             notification.y = LerpFrame(style.reflowSpeed, notification.y or stackY, notification.targetY)
 
-            if ( notification.state != "exiting" and (now - notification.startTime) >= notification.duration ) then
+            if ( notification.state != ax.notification.enums.STATE_EXITING and (now - notification.startTime) >= notification.duration ) then
                 StartExit(notification)
             end
 
@@ -256,18 +261,18 @@ if ( CLIENT ) then
             local alpha = 255
             local slideOffset = 0
 
-            if ( notification.state == "entering" ) then
+            if ( notification.state == ax.notification.enums.STATE_ENTERING ) then
                 local fraction = Clamp(lifeTime / style.enterTime, 0, 1)
                 local eased = EaseOutCubic(fraction)
                 alpha = math.floor(255 * eased)
                 slideOffset = (1 - eased) * (style.slideDistance * scale)
 
                 if ( fraction >= 1 ) then
-                    notification.state = "visible"
+                    notification.state = ax.notification.enums.STATE_VISIBLE
                     alpha = 255
                     slideOffset = 0
                 end
-            elseif ( notification.state == "exiting" ) then
+            elseif ( notification.state == ax.notification.enums.STATE_EXITING ) then
                 local exitElapsed = now - (notification.exitStartTime or now)
                 local fraction = Clamp(exitElapsed / style.exitTime, 0, 1)
                 local eased = EaseInCubic(fraction)
@@ -275,7 +280,7 @@ if ( CLIENT ) then
                 slideOffset = eased * (style.slideDistance * scale)
 
                 if ( fraction >= 1 ) then
-                    notification.state = "done"
+                    notification.state = ax.notification.enums.STATE_DONE
                 end
             end
 
@@ -286,7 +291,7 @@ if ( CLIENT ) then
         end
 
         for i = #self.active, 1, -1 do
-            if ( self.active[i].state == "done" ) then
+            if ( self.active[i].state == ax.notification.enums.STATE_DONE ) then
                 table.remove(self.active, i)
             end
         end

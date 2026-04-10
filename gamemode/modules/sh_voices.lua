@@ -104,7 +104,7 @@ else
                 end
             end
 
-            table.insert(finaltable, !info and {text = v} or table.Copy(info))
+            finaltable[#finaltable + 1] = !info and {text = v} or table.Copy(info)
         end
 
         return finaltable
@@ -213,7 +213,7 @@ else
                         ax.util:PrintDebug("Global voice line detected:", v2.path)
                     end
 
-                    table.insert(sounds, v2.path)
+                    sounds[#sounds + 1] = v2.path
                 else
                     print("[Voices] Token has no path:", v2.text)
                 end
