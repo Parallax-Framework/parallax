@@ -63,8 +63,7 @@ if ( SERVER ) then
             print("Player " .. client:GetName() .. " set to access group " .. accessGroupName)
             print("This door access group has the following permissions:")
             local stringTable = MODULE:GetAccessGroupPermissions(accessGroup, true)
-            for _ = 1, #stringTable do
-                local permName = stringTable[_]
+            for _, permName in pairs(stringTable) do
                 print("  - " .. permName)
             end
 
