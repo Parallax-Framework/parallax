@@ -378,7 +378,8 @@ function INVENTORY_PANE:Populate(inventory, selectedIDs, filterName)
 
 		if ( shouldStack ) then
 			local foundStack = false
-			for _, existingStack in ipairs(stacks) do
+			for _ = 1, #stacks do
+				local existingStack = stacks[_]
 				if ( existingStack.class == itemClass and existingStack.stackCount < maxStack ) then
 					existingStack.stackCount = existingStack.stackCount + 1
 					existingStack.stackedItems[#existingStack.stackedItems + 1] = item
@@ -412,12 +413,14 @@ function INVENTORY_PANE:Populate(inventory, selectedIDs, filterName)
 		local stack = stacks[i]
 
 		local stackedItemIDs = {}
-		for _, stackedItem in ipairs(stack.stackedItems) do
+		for _ = 1, #stack.stackedItems do
+			local stackedItem = stack.stackedItems[_]
 			stackedItemIDs[#stackedItemIDs + 1] = stackedItem.id
 		end
 
 		local allSelected = true
-		for _, id in ipairs(stackedItemIDs) do
+		for _ = 1, #stackedItemIDs do
+			local id = stackedItemIDs[_]
 			if ( !selectedIDs[id] ) then
 				allSelected = false
 				break
@@ -482,7 +485,8 @@ function PANEL:Init()
 	self.playerPane:SetTitle(ax.localization:GetPhrase("container.your_inventory"))
 	self.playerPane.OnItemSelected = function(_, stackedItemIDs)
 		local allSelected = true
-		for _, id in ipairs(stackedItemIDs) do
+		for _ = 1, #stackedItemIDs do
+			local id = stackedItemIDs[_]
 			if ( !self.selectedPlayerItemIDs[id] ) then
 				allSelected = false
 				break
@@ -490,11 +494,13 @@ function PANEL:Init()
 		end
 
 		if ( allSelected ) then
-			for _, id in ipairs(stackedItemIDs) do
+			for _ = 1, #stackedItemIDs do
+				local id = stackedItemIDs[_]
 				self.selectedPlayerItemIDs[id] = nil
 			end
 		else
-			for _, id in ipairs(stackedItemIDs) do
+			for _ = 1, #stackedItemIDs do
+				local id = stackedItemIDs[_]
 				self.selectedPlayerItemIDs[id] = true
 			end
 			self.selectedContainerItemIDs = {}
@@ -504,7 +510,8 @@ function PANEL:Init()
 	end
 	self.playerPane.OnItemActivated = function(_, stackedItemIDs)
 		self.selectedPlayerItemIDs = {}
-		for _, id in ipairs(stackedItemIDs) do
+		for _ = 1, #stackedItemIDs do
+			local id = stackedItemIDs[_]
 			self.selectedPlayerItemIDs[id] = true
 		end
 		self.selectedContainerItemIDs = {}
@@ -582,7 +589,8 @@ function PANEL:Init()
 	self.containerPane.status:SetContentAlignment(4)
 	self.containerPane.OnItemSelected = function(_, stackedItemIDs)
 		local allSelected = true
-		for _, id in ipairs(stackedItemIDs) do
+		for _ = 1, #stackedItemIDs do
+			local id = stackedItemIDs[_]
 			if ( !self.selectedContainerItemIDs[id] ) then
 				allSelected = false
 				break
@@ -590,11 +598,13 @@ function PANEL:Init()
 		end
 
 		if ( allSelected ) then
-			for _, id in ipairs(stackedItemIDs) do
+			for _ = 1, #stackedItemIDs do
+				local id = stackedItemIDs[_]
 				self.selectedContainerItemIDs[id] = nil
 			end
 		else
-			for _, id in ipairs(stackedItemIDs) do
+			for _ = 1, #stackedItemIDs do
+				local id = stackedItemIDs[_]
 				self.selectedContainerItemIDs[id] = true
 			end
 			self.selectedPlayerItemIDs = {}
@@ -604,7 +614,8 @@ function PANEL:Init()
 	end
 	self.containerPane.OnItemActivated = function(_, stackedItemIDs)
 		self.selectedContainerItemIDs = {}
-		for _, id in ipairs(stackedItemIDs) do
+		for _ = 1, #stackedItemIDs do
+			local id = stackedItemIDs[_]
 			self.selectedContainerItemIDs[id] = true
 		end
 		self.selectedPlayerItemIDs = {}

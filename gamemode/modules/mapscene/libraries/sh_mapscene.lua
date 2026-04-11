@@ -76,8 +76,9 @@ function ax.mapscene:ParseTags(tagString)
     if ( !isstring(tagString) or tagString == "" ) then return {} end
 
     local tags = {}
-    for _, raw in ipairs(string.Explode(",", tagString)) do
-        local tag = string.Trim(raw)
+    local exploded = string.Explode(",", tagString)
+    for _ = 1, #exploded do
+        local tag = string.Trim(exploded[_])
         if ( tag != "" ) then
             tags[#tags + 1] = tag
         end

@@ -133,7 +133,8 @@ ax.net:Hook("item.transfer.batch", function(client, itemIDs, targetInventoryID)
         return
     end
 
-    for _, itemID in ipairs(itemIDs) do
+    for _ = 1, #itemIDs do
+        local itemID = itemIDs[_]
         if ( !isnumber(itemID) or itemID < 1 ) then
             continue
         end
@@ -176,7 +177,7 @@ ax.net:Hook("inventory.item.action", function(client, itemID, action)
     if ( !istable(item) ) then
         local validIDs = {}
         for id in pairs(ax.item.instances) do
-            table.insert(validIDs, id)
+            validIDs[#validIDs + 1] = id
         end
 
         table.sort(validIDs)

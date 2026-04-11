@@ -98,12 +98,14 @@ local function UpdateTracking(ent)
 
     -- Check physical zone changes
     local oldPhysicalSet = {}
-    for _, zone in ipairs(state.physical) do
+    for _ = 1, #state.physical do
+        local zone = state.physical[_]
         oldPhysicalSet[zone.id] = zone
     end
 
     local newPhysicalSet = {}
-    for _, zone in ipairs(newPhysical) do
+    for _ = 1, #newPhysical do
+        local zone = newPhysical[_]
         newPhysicalSet[zone.id] = zone
     end
 
@@ -123,12 +125,14 @@ local function UpdateTracking(ent)
 
     -- Check visible zone changes
     local oldVisibleSet = {}
-    for _, zone in ipairs(state.visible) do
+    for _ = 1, #state.visible do
+        local zone = state.visible[_]
         oldVisibleSet[zone.id] = zone
     end
 
     local newVisibleSet = {}
-    for _, zone in ipairs(newVisible) do
+    for _ = 1, #newVisible do
+        local zone = newVisible[_]
         newVisibleSet[zone.id] = zone
     end
 

@@ -91,7 +91,8 @@ if ( SERVER ) then
 		if ( istable(inventory) ) then
 			local receivers = table.Copy(inventory:GetReceivers() or {})
 
-			for _, receiver in ipairs(receivers) do
+			for _ = 1, #receivers do
+				local receiver = receivers[_]
 				if ( istable(moduleTable) and isfunction(moduleTable.CloseContainerForClient) ) then
 					moduleTable:CloseContainerForClient(receiver, self)
 				end

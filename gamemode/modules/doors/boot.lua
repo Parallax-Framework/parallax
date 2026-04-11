@@ -63,7 +63,7 @@ if ( SERVER ) then
             print("Player " .. client:GetName() .. " set to access group " .. accessGroupName)
             print("This door access group has the following permissions:")
             local stringTable = MODULE:GetAccessGroupPermissions(accessGroup, true)
-            for _, permName in ipairs(stringTable) do
+            for _, permName in pairs(stringTable) do
                 print("  - " .. permName)
             end
 
@@ -82,7 +82,8 @@ if ( SERVER ) then
         if ( !isstring(accessString) or accessString == "" ) then return end
 
         local splitTable = string.Split(accessString, " ")
-        for k, v in ipairs(splitTable) do
+        for _ = 1, #splitTable do
+            local v = splitTable[_]
             if ( isstring(v) ) then
                 for permName, permValue in pairs( MODULE.Permissions ) do
                     if ( ax.util:FindString(permName, v) ) then

@@ -28,7 +28,9 @@ function PANEL:Init()
     settings:SetType("option")
     settings:DockMargin(ax.util:ScreenScale(32), ax.util:ScreenScaleH(32), ax.util:ScreenScale(32), ax.util:ScreenScaleH(32))
 
-    for _, tab in ipairs(settings:GetPages()) do
+    local pages = settings:GetPages()
+    for _ = 1, #pages do
+        local tab = pages[_]
         tab:DockPadding(0, 0, ax.util:ScreenScale(64), 0)
     end
 

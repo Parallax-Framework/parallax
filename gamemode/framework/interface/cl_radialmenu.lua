@@ -258,7 +258,8 @@ function ax.radialmenu:FinalizeWheelData(sections, context, options)
 
     local totalItems = 0
 
-    for _, section in ipairs(sections) do
+    for i = 1, #sections do
+        local section = sections[i]
         table.sort(section.items, options.sortEntries or ax.radialmenu.SortEntries)
         totalItems = totalItems + #section.items
     end
@@ -284,11 +285,13 @@ function ax.radialmenu:FinalizeWheelData(sections, context, options)
     local cursor = 0
     local flatItems = {}
 
-    for _, section in ipairs(sections) do
+    for i = 1, #sections do
+        local section = sections[i]
         cursor = cursor + resolvedSectionGap * 0.5
         section.startAngle = cursor
 
-        for _, item in ipairs(section.items) do
+        for j = 1, #section.items do
+            local item = section.items[j]
             item.section = section
             item.startAngle = cursor
             item.endAngle = cursor + segmentAngle + itemGap
@@ -430,7 +433,8 @@ function PANEL:FindWheelItem(itemId)
         return nil
     end
 
-    for _, item in ipairs(self.wheelData.items) do
+    for i = 1, #self.wheelData.items do
+        local item = self.wheelData.items[i]
         if ( item.id == itemId ) then
             return item
         end
@@ -564,7 +568,8 @@ function PANEL:UpdateHoverState(layout)
     local hovered = nil
 
     if ( distance >= layout.deadzone and distance <= layout.ringOuter + layout.edgePadding ) then
-        for _, item in ipairs(self.wheelData.items) do
+        for i = 1, #self.wheelData.items do
+            local item = self.wheelData.items[i]
             if ( ax.radialmenu:AngleWithin(angle, item.startAngle, item.endAngle) ) then
                 hovered = item
                 break
@@ -611,7 +616,8 @@ function PANEL:Think()
     self:UpdateHoverState(layout)
     self:UpdateRadialMenu(layout)
 
-    for _, item in ipairs(self.wheelData.items or {}) do
+    for i = 1, #self.wheelData.items do
+        local item = self.wheelData.items[i]
         local target = 0
 
         if ( self.hoveredItem == item ) then
@@ -623,7 +629,8 @@ function PANEL:Think()
         self.itemAnimations[item.id] = ax.radialmenu:EaseNumber(self.itemAnimations[item.id] or 0, target, 10, "OutQuad")
     end
 
-    for _, section in ipairs(self.wheelData.sections or {}) do
+    for i = 1, #self.wheelData.sections do
+        local section = self.wheelData.sections[i]
         local target = 0.18
 
         if ( self.hoveredSection == section ) then
@@ -690,7 +697,8 @@ function PANEL:PaintWheel(layout, glass)
     ax.render.DrawCircleOutlined(centerX, centerY, layout.ringOuter * 2 + ax.util:ScreenScale(6), ax.radialmenu:AlphaColor(glass.panelBorder, 70), 1.5)
     ax.render.DrawCircleOutlined(centerX, centerY, layout.ringInner * 2 - ax.util:ScreenScale(2), ax.radialmenu:AlphaColor(glass.panelBorder, 55), 1)
 
-    for _, item in ipairs(self.wheelData.items or {}) do
+    for i = 1, #self.wheelData.items do
+        local item = self.wheelData.items[i]
         local itemFraction = self.itemAnimations[item.id] or 0
         local accent = item.section.color
         local fillColor = ax.radialmenu:BlendColors(
@@ -724,8 +732,9 @@ function PANEL:PaintWheel(layout, glass)
         local secondaryAlpha = showSecondary and (140 + itemFraction * 80) or 0
         local primaryStartY = labelY - ((#primaryLines - 1) * primaryLineHeight * 0.5)
 
-        for index, line in ipairs(primaryLines) do
-            draw.SimpleText(line, "ax.small.bold", labelX, primaryStartY + (index - 1) * primaryLineHeight - ax.util:ScreenScaleH(2),
+        for i = 1, #primaryLines do
+            local line = primaryLines[i]
+            draw.SimpleText(line, "ax.small.bold", labelX, primaryStartY + (i - 1) * primaryLineHeight - ax.util:ScreenScaleH(2),
                 itemFraction > 0.05 and glass.textHover or glass.text, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
         end
 
@@ -792,11 +801,13 @@ function PANEL:PaintSectionsPanel(layout, glass, metrics)
 
     draw.SimpleText(self:GetSectionsPanelTitle(), "ax.large.bold", x + padding, y + padding, glass.text, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
 
-    for index, line in ipairs(subtitleLines) do
-        draw.SimpleText(line, "ax.small", x + padding, subtitleY + (index - 1) * subtitleLineHeight, glass.textMuted, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+    for i = 1, #subtitleLines do
+        local line = subtitleLines[i]
+        draw.SimpleText(line, "ax.small", x + padding, subtitleY + (i - 1) * subtitleLineHeight, glass.textMuted, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
     end
 
-    for _, section in ipairs(sections) do
+    for i = 1, #sections do
+        local section = sections[i]
         local fraction = self.sectionAnimations[section.id] or 0
         local rowFill = ax.radialmenu:BlendColors(
             ax.radialmenu:AlphaColor(glass.button, 98),
@@ -836,8 +847,9 @@ function PANEL:PaintSectionsPanel(layout, glass, metrics)
 
         draw.SimpleText(section.name, "ax.regular.bold", rowX + ax.util:ScreenScale(14), rowY + rowHeight / 2 + ax.util:ScreenScaleH(2), fraction > 0.5 and glass.textHover or glass.text, TEXT_ALIGN_LEFT, TEXT_ALIGN_BOTTOM)
 
-        for index, line in ipairs(descriptionLines) do
-            draw.SimpleText(line, "ax.tiny", rowX + ax.util:ScreenScale(14), rowY + rowHeight / 2 + (index - 1) * rowDescriptionHeight, glass.textMuted, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+        for i = 1, #descriptionLines do
+            local line = descriptionLines[i]
+            draw.SimpleText(line, "ax.tiny", rowX + ax.util:ScreenScale(14), rowY + rowHeight / 2 + (i - 1) * rowDescriptionHeight, glass.textMuted, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
         end
 
         draw.SimpleText(countLabel, "ax.small.bold", rowX + rowWidth - ax.util:ScreenScale(8), rowY + rowHeight / 2, ax.radialmenu:AlphaColor(section.color, 235), TEXT_ALIGN_RIGHT, TEXT_ALIGN_CENTER)
@@ -930,8 +942,9 @@ function PANEL:PaintInfoPanel(layout, glass, metrics)
 
     draw.SimpleText("Selection", "ax.large.bold", x + padding, y + padding, glass.text, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
 
-    for index, line in ipairs(titleLines) do
-        draw.SimpleText(line, "ax.medium.bold", x + padding, titleY + (index - 1) * titleLineHeight, ax.radialmenu:AlphaColor(accent, 235), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+    for i = 1, #titleLines do
+        local line = titleLines[i]
+        draw.SimpleText(line, "ax.medium.bold", x + padding, titleY + (i - 1) * titleLineHeight, ax.radialmenu:AlphaColor(accent, 235), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
     end
 
     local tagY = titleY + (#titleLines * titleLineHeight) + 12
@@ -967,7 +980,8 @@ function PANEL:PaintInfoPanel(layout, glass, metrics)
     local maxDescriptionLines = math.max(2, math.floor((y + height - ax.util:ScreenScaleH(54) - textY) / regularLineHeight))
     local limitedDescription = ax.radialmenu:LimitWrappedLines(wrapped, maxDescriptionLines)
 
-    for _, line in ipairs(limitedDescription) do
+    for i = 1, #limitedDescription do
+        local line = limitedDescription[i]
         draw.SimpleText(line, "ax.regular", x + padding, textY, glass.textMuted, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
         textY = textY + regularLineHeight
     end

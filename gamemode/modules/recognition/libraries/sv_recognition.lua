@@ -175,7 +175,8 @@ local function HandleChatBonus(speaker, chatType, rawText, text, receivers, data
     local char = speaker:GetCharacter()
     if ( !char ) then return end
 
-    for _, receiver in ipairs(receivers) do
+    for _ = 1, #receivers do
+        local receiver = receivers[_]
         if ( receiver == speaker or !ax.util:IsValidPlayer(receiver) ) then continue end
 
         local targetChar = receiver:GetCharacter()
@@ -289,8 +290,8 @@ function ax.recognition:AdminSetFamiliarity(admin, charID, targetID, score)
         local targetOwner = istable(targetChar) and targetChar.player or nil
 
         local recipients = {}
-        if ( ax.util:IsValidPlayer(owner) ) then table.insert(recipients, owner) end
-        if ( ax.util:IsValidPlayer(targetOwner) ) then table.insert(recipients, targetOwner) end
+        if ( ax.util:IsValidPlayer(owner) ) then recipients[#recipients + 1] = owner end
+        if ( ax.util:IsValidPlayer(targetOwner) ) then recipients[#recipients + 1] = targetOwner end
 
         ax.character:SetVar(char, "familiarity", tostring(targetID), {
             dataValue  = record,

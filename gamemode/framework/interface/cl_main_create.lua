@@ -137,7 +137,9 @@ function PANEL:NavigateToNextTab(currentTab)
 
     local currentCategory = currentTab.category
     local currentIndex
-    for i, name in ipairs(categories) do
+    for i = 1, #categories do
+        local name = categories[i]
+
         if ( name == currentCategory ) then
             currentIndex = i
             break
@@ -176,7 +178,8 @@ function PANEL:NavigateToPreviousTab(currentTab)
 
     local currentCategory = currentTab.category
     local currentIndex
-    for i, name in ipairs(categories) do
+    for i = 1, #categories do
+        local name = categories[i]
         if ( name == currentCategory ) then currentIndex = i break end
     end
 
@@ -240,7 +243,7 @@ function PANEL:GetOrderedCategories()
         if ( prefix ) then
             orderKey = tonumber(prefix) * 100000 + baseOrder
         end
-        table.insert(catList, { name = name, order = orderKey })
+        catList[#catList + 1] = { name = name, order = orderKey }
     end
 
     table.sort(catList, function(a, b)
@@ -249,10 +252,14 @@ function PANEL:GetOrderedCategories()
     end)
 
     local ordered = {}
-    for _, info in ipairs(catList) do table.insert(ordered, info.name) end
+    for i = 1, #catList do
+        local info = catList[i]
+        ordered[#ordered + 1] = info.name
+    end
 
     -- Update indices on existing tabs for consistent navigation
-    for i, name in ipairs(ordered) do
+    for i = 1, #ordered do
+        local name = ordered[i]
         local tab = self.tabs[name]
         if ( IsValid(tab) ) then tab.index = i end
     end

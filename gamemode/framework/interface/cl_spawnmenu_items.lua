@@ -27,7 +27,7 @@ hook.Add("PopulateItems", "AddItemContent", function(pnlContent, tree, browseNod
 
             Categorised[Category] = Categorised[Category] or {}
 
-            table.insert(Categorised[Category], v)
+            Categorised[Category][#Categorised[Category] + 1] = v
         end
     end
 

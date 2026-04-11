@@ -308,7 +308,8 @@ ax.command:Add("ViewFamiliarity", {
             ax.localization:GetPhrase("recognition.admin.view.toward_you", score, tierLabel, alias),
         }
 
-        for _, line in ipairs(lines) do
+        for _ = 1, #lines do
+            local line = lines[_]
             ax.util:PrintDebug(line)
             client:ChatPrint(line)
         end

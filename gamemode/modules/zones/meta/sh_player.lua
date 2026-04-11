@@ -74,7 +74,8 @@ function ax.player.meta:IsInZone(identifier)
     if ( !zone ) then return false end
 
     local zones = self:GetZones()
-    for _, z in ipairs(zones) do
+    for _ = 1, #zones do
+        local z = zones[_]
         if ( z.id == zone.id ) then
             return true
         end
@@ -94,7 +95,8 @@ function ax.player.meta:CanSeeZone(identifier)
     if ( zone.type != "pvs" and zone.type != "trace" ) then return false end
 
     local visible = self:GetVisibleZones()
-    for _, z in ipairs(visible) do
+    for _ = 1, #visible do
+        local z = visible[_]
         if ( z.id == zone.id ) then
             return true
         end
@@ -111,7 +113,8 @@ end
 -- @usage if client:IsInZoneWithFlag("pvp", true) then
 function ax.player.meta:IsInZoneWithFlag(flagName, flagValue)
     local zones = self:GetZones()
-    for _, zone in ipairs(zones) do
+    for _ = 1, #zones do
+        local zone = zones[_]
         if ( zone.flags and zone.flags[flagName] != nil and (flagValue == nil or zone.flags[flagName] == flagValue) ) then
             return true
         end
@@ -130,9 +133,10 @@ function ax.player.meta:GetZonesWithFlag(flagName, flagValue)
     local zones = self:GetZones()
     local result = {}
 
-    for _, zone in ipairs(zones) do
+    for _ = 1, #zones do
+        local zone = zones[_]
         if ( zone.flags and zone.flags[flagName] != nil and (flagValue == nil or zone.flags[flagName] == flagValue) ) then
-            table.insert(result, zone)
+            result[#result + 1] = zone
         end
     end
 
@@ -191,7 +195,8 @@ end
 -- @usage local spawn = client:GetZoneData("spawn_point")
 function ax.player.meta:GetZoneData(key)
     local zones = self:GetZones()
-    for _, zone in ipairs(zones) do
+    for _ = 1, #zones do
+        local zone = zones[_]
         if ( zone.data and zone.data[key] != nil ) then
             return zone.data[key]
         end
@@ -207,7 +212,8 @@ end
 -- @usage if client:IsInZoneType("box") then
 function ax.player.meta:IsInZoneType(zoneType)
     local zones = self:GetZones()
-    for _, zone in ipairs(zones) do
+    for _ = 1, #zones do
+        local zone = zones[_]
         if ( zone.type == zoneType ) then
             return true
         end
@@ -225,9 +231,10 @@ function ax.player.meta:GetZonesByType(zoneType)
     local zones = self:GetZones()
     local result = {}
 
-    for _, zone in ipairs(zones) do
+    for _ = 1, #zones do
+        local zone = zones[_]
         if ( zone.type == zoneType ) then
-            table.insert(result, zone)
+            result[#result + 1] = zone
         end
     end
 
@@ -270,8 +277,9 @@ function ax.player.meta:GetZoneNames()
     local zones = self:GetZones()
     local names = {}
 
-    for _, zone in ipairs(zones) do
-        table.insert(names, zone.name)
+    for _ = 1, #zones do
+        local zone = zones[_]
+        names[#names + 1] = zone.name
     end
 
     return names

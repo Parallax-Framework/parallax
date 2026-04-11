@@ -44,8 +44,8 @@ function PANEL:Init()
     local buttons = {}
     hook.Run("CreateMainMenuButtons", self, buttons)
 
-    for _, button in ipairs(buttons) do
-        self.buttons:AddItem(button)
+    for i = 1, #buttons do
+        self.buttons:AddItem(buttons[i])
     end
 
     -- Now create our own buttons

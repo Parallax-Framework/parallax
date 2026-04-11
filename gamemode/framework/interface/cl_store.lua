@@ -317,7 +317,10 @@ function PANEL:SetType(type)
     self.categoryButtons = categoryButtons
 
     -- Adjust all pages now that we know the final width of categories
-    for k, v in ipairs(self:GetPages()) do
+    local pages = self:GetPages()
+    for k = 1, #pages do
+        local v = pages[k]
+
         v:SetXOffset(self.categories:GetWide() + ax.util:ScreenScale(2))
         v:SetWidthOffset(-self.categories:GetWide() - ax.util:ScreenScale(2))
     end
@@ -347,8 +350,11 @@ function PANEL:SetType(type)
 
         local targetScroller = targetButton.tab.storeScroller
         if ( !IsValid(targetScroller) ) then
-            for _, child in ipairs(targetButton.tab:GetChildren()) do
-                if ( IsValid(child) and child:GetClassName() == "ax.scroller.vertical" ) then
+            local children = targetButton.tab:GetChildren()
+            for _ = 1, #children do
+                local child = children[_]
+
+                if ( child:GetClassName() == "ax.scroller.vertical" ) then
                     targetScroller = child
                     break
                 end
@@ -406,7 +412,7 @@ function PANEL:Populate(tab, scroller, type, category)
     -- Sort subcategories alphabetically, but put "general" first if it exists
     local sortedSubCategories = {}
     for subCat, _ in pairs(groupedEntries) do
-        table.insert(sortedSubCategories, subCat)
+        sortedSubCategories[#sortedSubCategories + 1] = subCat
     end
 
     table.sort(sortedSubCategories, function(a, b)
@@ -418,7 +424,8 @@ function PANEL:Populate(tab, scroller, type, category)
     -- Only show subcategory headers if there are actual subcategories (not just "general")
     local showSubCategoryHeaders = hasSubCategories and table.Count(groupedEntries) > 1
 
-    for _, subCat in ipairs(sortedSubCategories) do
+    for _ = 1, #sortedSubCategories do
+        local subCat = sortedSubCategories[_]
         local entries = groupedEntries[subCat]
 
         -- Add subcategory header (except for "general" when there's only one subcategory)
@@ -476,7 +483,10 @@ function PANEL:Populate(tab, scroller, type, category)
 
                 local col = 0
                 local row = 0
-                for _, child in ipairs(this:GetChildren()) do
+                local children = this:GetChildren()
+                for _ = 1, #children do
+                    local child = children[_]
+
                     if ( !IsValid(child) ) then continue end
                     child:SetPos(col * (itemW + STORE_GRID_SPACING_X), row * (STORE_GRID_ITEM_HEIGHT + STORE_GRID_SPACING_Y))
                     child:SetSize(itemW, STORE_GRID_ITEM_HEIGHT)
@@ -488,7 +498,9 @@ function PANEL:Populate(tab, scroller, type, category)
                 end
             end
 
-            for _, e in ipairs(validEntries) do
+            for _ = 1, #validEntries do
+                local e = validEntries[_]
+
                 local btn = grid:Add(e.panelName)
                 btn:SetSize(64, STORE_GRID_ITEM_HEIGHT)
                 btn:SetType(type)
@@ -497,7 +509,9 @@ function PANEL:Populate(tab, scroller, type, category)
         end
 
         -- Add unsupported-type labels directly below the grid
-        for _, u in ipairs(unsupportedEntries) do
+        for _ = 1, #unsupportedEntries do
+            local u = unsupportedEntries[_]
+
             local label = scroller:Add("ax.text")
             label:Dock(TOP)
             label:DockMargin(0, 0, 0, ax.util:ScreenScaleH(4))
@@ -624,7 +638,9 @@ function PANEL:SetKey(key)
 end
 
 function PANEL:PerformLayout(width, height)
-    for _, child in ipairs(self:GetChildren()) do
+    local children = self:GetChildren()
+    for _ = 1, #children do
+        local child = children[_]
         if ( IsValid(child) and child:GetDock() == RIGHT ) then
             child:SetWide(math.Round(width * 0.33))
         end
@@ -1455,7 +1471,8 @@ function PANEL:RebuildSegments()
 
     local segPad = 2
 
-    for _, choice in ipairs(choices) do
+    for _ = 1, #choices do
+        local choice = choices[_]
         local seg = self.segmentPanel:Add("ax.button")
         seg:SetText(ResolveStoreString(choice.label) or tostring(choice.label), true)
         seg:SetFont("ax.small")
@@ -1488,7 +1505,8 @@ function PANEL:RebuildSegments()
         local n = #children
         if ( n == 0 ) then return end
         local segW = math.floor((w - segPad * (n + 1)) / n)
-        for i, child in ipairs(children) do
+        for i = 1, #children do
+            local child = children[i]
             if ( IsValid(child) ) then
                 child:SetPos(segPad + (i - 1) * (segW + segPad), segPad)
                 child:SetSize(segW, h - segPad * 2)

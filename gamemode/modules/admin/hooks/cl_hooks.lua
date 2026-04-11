@@ -31,8 +31,9 @@ function MODULE:DrawItems()
 
     local stacks_by_class = {}
 
-    for _, item in ipairs(ents.FindByClass("ax_item")) do
-        if ( !IsValid(item) ) then continue end
+    local items = ents.FindByClass("ax_item")
+    for _ = 1, #items do
+        local item = items[_]
 
         local scr = item:GetPos():ToScreen()
         if ( !scr.visible ) then continue end
@@ -41,11 +42,12 @@ function MODULE:DrawItems()
         stacks_by_class[cls] = stacks_by_class[cls] or {}
 
         local placed = false
-        for _, stack in ipairs(stacks_by_class[cls]) do
+        for _ = 1, #stacks_by_class[cls] do
+            local stack = stacks_by_class[cls][_]
             local dx = scr.x - stack.x
             local dy = scr.y - stack.y
             if ( math.sqrt(dx * dx + dy * dy) <= THRESHOLD ) then
-                table.insert(stack.items, item)
+                stack.items[#stack.items + 1] = item
                 -- update stack anchor to running average so it follows visual cluster
                 local n = #stack.items
                 stack.x = (stack.x * (n - 1) + scr.x) / n
@@ -56,13 +58,14 @@ function MODULE:DrawItems()
         end
 
         if ( !placed ) then
-            table.insert(stacks_by_class[cls], { x = scr.x, y = scr.y, items = { item } })
+            stacks_by_class[cls][#stacks_by_class[cls] + 1] = { x = scr.x, y = scr.y, items = { item } }
         end
     end
 
     -- Draw stacks: single label per visual cluster, add count if > 1
     for cls, stacks in pairs(stacks_by_class) do
-        for _, stack in ipairs(stacks) do
+        for _ = 1, #stacks do
+            local stack = stacks[_]
             local x, y = stack.x, stack.y
             local count = #stack.items
 
@@ -151,7 +154,10 @@ function MODULE:DrawEntities()
     local client = ax.client
     if ( !ax.util:IsValidPlayer(client) or !client:IsAdmin() ) then return end
 
-    for _, ent in ipairs(ents.FindByClass("ax_*")) do
+    local gamemodeItems = ents.FindByClass("ax_*")
+
+    for _ = 1, #gamemodeItems do
+        local ent = gamemodeItems[_]
         if ( !IsValid(ent) or blacklist[ent:GetClass()] or ent:GetOwner() ) then continue end
 
         local scr = ent:GetPos():ToScreen()

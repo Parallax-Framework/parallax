@@ -42,7 +42,7 @@ function file.ReadStaggered(name, callback)
                 return false
             end
         end
-        table.insert(workQueue, doRead)
+        workQueue[#workQueue + 1] = doRead
     end
     processQueue()
 end
@@ -68,7 +68,7 @@ function file.WriteStaggered(name, str, callback)
                 return true -- tell it to schedule the next job. this one is done.
             end
         end
-        table.insert(workQueue, doWrite)
+        workQueue[#workQueue + 1] = doWrite
     end
     processQueue()
 end

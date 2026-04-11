@@ -114,7 +114,9 @@ function ENTITY:EmitQueuedSound(soundNames, soundLevel, pitchPercent, volume, ch
     local delay = 0
     local totalDuration = 0
 
-    for _, snd in ipairs(soundNames) do
+    for _ = 1, #soundNames do
+        local snd = soundNames[_]
+
         local duration = SoundDuration(snd) or 0
         duration = duration + 0.1 -- small buffer to prevent clipping
         totalDuration = totalDuration + duration
@@ -156,7 +158,7 @@ if ( SERVER ) then
     --- Returns the paired partner door for a rotating door entity.
     -- Only meaningful for `prop_door_rotating` entities. Caches the result in `selfTable.m_hPartner` after the first lookup. The search inspects `m_hMaster` on all doors of the same class to find the one that references this door as its master. Returns `NULL` when the entity is not a rotating door or no partner is found.
     -- @realm server
-    -- @return Entity The partner door entity, or `NULL` if none.
+    -- @return Entity The partner door entity, or `nil` if none.
     function ENTITY:GetDoorPartner()
         if ( self:GetClass() != "prop_door_rotating" ) then return nil end
 
@@ -221,7 +223,10 @@ if ( SERVER ) then
                 self:DrawShadow(true)
                 self.ignoreUse = false
 
-                for _, v in ipairs(self:GetChildren()) do
+                local children = self:GetChildren()
+                for _ = 1, #children do
+                    local v = children[_]
+
                     v:SetNotSolid(false)
                     v:SetNoDraw(false)
 
@@ -245,7 +250,9 @@ if ( SERVER ) then
 
         dummy:InheritBodygroups(self)
 
-        for _, v in ipairs(self:GetChildren()) do
+        local children = self:GetChildren()
+        for _ = 1, #children do
+            local v = children[_]
             v:SetNotSolid(true)
             v:SetNoDraw(true)
 

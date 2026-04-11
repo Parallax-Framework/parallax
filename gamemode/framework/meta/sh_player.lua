@@ -252,7 +252,10 @@ if ( SERVER ) then
 
         self.axRagdollActiveWeapon = IsValid(activeWeapon) and activeWeapon:GetClass() or nil
 
-        for _, weapon in ipairs(self:GetWeapons()) do
+        local weapons = self:GetWeapons()
+
+        for _ = 1, #weapons do
+            local weapon = weapons[_]
             if ( !IsValid(weapon) ) then
                 continue
             end
@@ -300,7 +303,8 @@ if ( SERVER ) then
             return
         end
 
-        for _, data in ipairs(weaponData) do
+        for _ = 1, #weaponData do
+            local data = weaponData[_]
             local weapon
             local item = data.item
 

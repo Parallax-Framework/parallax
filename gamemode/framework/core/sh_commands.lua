@@ -368,13 +368,14 @@ ax.command:Add("CharSetClass", {
             return "Invalid character."
         end
 
-        local classes = {}
-        for _, classTable in ipairs(ax.class:GetAll({faction = target:GetFaction()})) do
-            classes[#classes + 1] = classTable
+        local classes = ax.class:GetAll({faction = target:GetFaction()})
+        if ( classes[1] == nil ) then
+            return "No valid classes found for the character's faction."
         end
 
         local classTable = nil
-        for _, classIter in ipairs(classes) do
+        for i = 1, #classes do
+            local classIter = classes[i]
             if ( ax.util:FindString(classIter.name, class) ) then
                 classTable = classIter
                 break
@@ -383,7 +384,8 @@ ax.command:Add("CharSetClass", {
 
         if ( !classTable ) then
             local classNames = {}
-            for _, classIter in ipairs(classes) do
+            for i = 1, #classes do
+                local classIter = classes[i]
                 classNames[#classNames + 1] = classIter.name
             end
 
@@ -415,7 +417,9 @@ ax.command:Add("CharSetRank", {
         end
 
         local rankTable = nil
-        for _, rankIter in ipairs(ax.rank:GetAll({faction = target:GetFaction()})) do
+        local ranks = ax.rank:GetAll({faction = target:GetFaction()})
+        for i = 1, #ranks do
+            local rankIter = ranks[i]
             if ( ax.util:FindString(rankIter.name, rank) ) then
                 rankTable = rankIter
                 break

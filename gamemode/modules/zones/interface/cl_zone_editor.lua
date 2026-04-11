@@ -192,7 +192,8 @@ local function AddWrappedInfoBlock(parent)
     function block:Paint(width, height)
         local lineHeight = ax.util:GetTextHeight(self.axFont)
 
-        for index, line in ipairs(self.axLines) do
+        for index = 1, #self.axLines do
+            local line = self.axLines[index]
             draw.SimpleText(line, self.axFont, 0, (index - 1) * lineHeight, self.axTextColor, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
         end
     end
@@ -211,7 +212,9 @@ end
 local function GetDockHeight(panel, minimumHeight)
     local height = 0
 
-    for _, child in ipairs(panel:GetChildren()) do
+    local children = panel:GetChildren()
+    for _ = 1, #children do
+        local child = children[_]
         if ( !IsValid(child) or !child:IsVisible() ) then
             continue
         end

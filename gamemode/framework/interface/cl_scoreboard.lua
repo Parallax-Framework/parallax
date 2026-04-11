@@ -46,18 +46,19 @@ function PANEL:RebuildScoreboard()
     for _, client in player.Iterator() do
         local tid = client:Team() or 0
         teams[tid] = teams[tid] or {}
-        table.insert(teams[tid], client)
+        teams[tid][#teams[tid] + 1] = client
     end
 
     -- Sort team ids
     local ids = {}
     for id, _ in pairs(teams) do
-        table.insert(ids, id)
+        ids[#ids + 1] = id
     end
 
     table.sort(ids)
 
-    for _, tid in ipairs(ids) do
+    for _ = 1, #ids do
+        local tid = ids[_]
         local members = teams[tid]
         if ( !members or #members == 0 ) then continue end
 
@@ -85,7 +86,9 @@ function PANEL:RebuildScoreboard()
         header:SetTall(title:GetTall())
 
         -- Player rows
-        for index, client in ipairs(members) do
+        for index = 1, #members do
+            local client = members[index]
+
             local row = self.container:Add("EditablePanel")
             row:Dock(TOP)
             row:DockMargin(0, 0, 0, index == #members and ax.util:ScreenScaleH(12) or 0)

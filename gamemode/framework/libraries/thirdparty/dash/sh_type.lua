@@ -53,7 +53,7 @@ function ismaterial(v)
 end
 
 function isnumber(v)
-    return type(v) == "number"
+    return tonumber(v) != nil
 end
 
 function isbool(v)

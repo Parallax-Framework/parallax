@@ -356,8 +356,8 @@ function ax.chat:BuildFontName(baseFont, styles)
     if ( !next(styles) ) then return baseFont end
 
     local styleNames = {}
-    if ( styles.bold ) then table.insert(styleNames, "bold") end
-    if ( styles.italic ) then table.insert(styleNames, "italic") end
+    if ( styles.bold ) then styleNames[#styleNames + 1] = "bold" end
+    if ( styles.italic ) then styleNames[#styleNames + 1] = "italic" end
     table.sort(styleNames)
 
     return baseFont .. "." .. table.concat(styleNames, ".")

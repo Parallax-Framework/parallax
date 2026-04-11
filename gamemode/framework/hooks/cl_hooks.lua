@@ -427,9 +427,13 @@ function GM:HUDPaintTargetIDExtra(entity, x, y, alpha)
 
     if ( desc ) then
         local maxWidth = ax.util:ScreenScale(128)
-        for _, segment in ipairs(string.Explode("\n", desc)) do
+        local segments = string.Explode("\n", desc)
+        for i = 1, #segments do
+            local segment = segments[i]
             local wrapped = ax.util:GetWrappedText(segment, "ax.small", maxWidth)
-            for _, line in ipairs(wrapped) do
+
+            for j = 1, #wrapped do
+                local line = wrapped[j]
                 lineCount = lineCount + 1
                 draw.SimpleText(line, "ax.small", x + 1, y + ax.util:ScreenScaleH(6) * lineCount + 1, Color(0, 0, 0, alpha / 4), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
                 draw.SimpleText(line, "ax.small", x, y + ax.util:ScreenScaleH(6) * lineCount, Color(255, 255, 255, alpha / 2), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
@@ -440,12 +444,14 @@ function GM:HUDPaintTargetIDExtra(entity, x, y, alpha)
     if ( target.GetDisplayDescriptionExtras ) then
         local extras = target:GetDisplayDescriptionExtras()
         if ( istable(extras) ) then
-            for _, extra in ipairs(extras) do
+            for i = 1, #extras do
+                local extra = extras[i]
                 if ( !isstring(extra.text) or extra.text == "" ) then continue end
 
                 local color = IsColor(extra.color) and extra.color or Color(255, 255, 255)
                 local wrapped = ax.util:GetWrappedText(extra.text, "ax.small", ax.util:ScreenScale(128))
-                for _, line in ipairs(wrapped) do
+                for j = 1, #wrapped do
+                    local line = wrapped[j]
                     lineCount = lineCount + 1
                     draw.SimpleText(line, "ax.small", x + 1, y + ax.util:ScreenScaleH(6) * lineCount + 1, Color(0, 0, 0, alpha / 4), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
                     draw.SimpleText(line, "ax.small", x, y + ax.util:ScreenScaleH(6) * lineCount, ColorAlpha(color, alpha / 2), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)

@@ -194,7 +194,9 @@ function ax.viewstack:RunCamera(client, view)
     local changed = false
     local cur = { origin = view.origin, angles = view.angles, fov = view.fov, znear = view.znear, zfar = view.zfar, drawviewer = view.drawviewer }
 
-    for _, m in ipairs(self:GetCameraPipeline()) do
+    local pipeline = self:GetCameraPipeline()
+    for _ = 1, #pipeline do
+        local m = pipeline[_]
         local patch = safe_call(m.fn, client, cur)
         if ( patch ) then
             if ( patch.origin ) then cur.origin = patch.origin end
@@ -227,7 +229,9 @@ function ax.viewstack:RunViewModel(weapon, patch)
     local changed = false
     local cur = { pos = patch.pos, ang = patch.ang }
 
-    for _, m in ipairs(self:GetViewModelPipeline()) do
+    local pipeline = self:GetViewModelPipeline()
+    for _ = 1, #pipeline do
+        local m = pipeline[_]
         local nextPatch = safe_call(m.fn, weapon, cur)
         if ( nextPatch ) then
             if ( nextPatch.pos ) then cur.pos = nextPatch.pos end

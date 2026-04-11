@@ -79,7 +79,8 @@ else
         local finaltable = {}
         local usedkeys = {}
 
-        for k, v in ipairs(strings) do
+        for k = 1, #strings do
+            local v = strings[k]
             if ( usedkeys[k] ) then continue end
 
             v = string.Trim(v)
@@ -103,7 +104,7 @@ else
                 end
             end
 
-            table.insert(finaltable, !info and {text = v} or table.Copy(info))
+            finaltable[#finaltable + 1] = !info and {text = v} or table.Copy(info)
         end
 
         return finaltable
@@ -113,7 +114,8 @@ else
         local carry
         -- carry like in mathematical equations :)
         -- the point of the carry is to move question marks or exclamation marks to the end of the text
-        for k, v in ipairs(stringtabl) do
+        for k = 1, #stringtabl do
+            local v = stringtabl[k]
             local before, after = stringtabl[k - 1] and k - 1, stringtabl[k + 1] and k + 1
 
             -- if we are not a voice command, check if we have someone before us, cuz if we do and they are a voice command than only they can have the carry symbol set
@@ -202,7 +204,8 @@ else
             local sounds = {}
             texts = ExperimentalFormatting(texts)
             print("[Voices] Parsed tokens:", #texts)
-            for k2, v2 in ipairs(texts) do
+            for k2 = 1, #texts do
+                local v2 = texts[k2]
                 if ( v2.path ) then
                     print("[Voices] Token has path:", v2.path, "text=", v2.text)
                     if ( v2.global ) then
@@ -210,7 +213,7 @@ else
                         ax.util:PrintDebug("Global voice line detected:", v2.path)
                     end
 
-                    table.insert(sounds, v2.path)
+                    sounds[#sounds + 1] = v2.path
                 else
                     print("[Voices] Token has no path:", v2.text)
                 end
@@ -250,7 +253,8 @@ else
 
                     if ( isRadio ) then
                         receivers = receivers or {}
-                        for _, receiver in ipairs(receivers) do
+                        for _ = 1, #receivers do
+                            local receiver = receivers[_]
                             if ( receiver == speaker ) then continue end
 
                             volume = 80

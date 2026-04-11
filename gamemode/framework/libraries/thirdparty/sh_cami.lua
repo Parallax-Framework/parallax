@@ -299,8 +299,7 @@ end
 function CAMI.GetPlayersWithAccess(privilegeName, callback, targetPly,
 extraInfoTbl)
     local allowedPlys = {}
-    local allPlys = select(2, ipairs(player.GetAll()))
-    local countdown = #allPlys
+    local countdown = player.GetCount()
 
     local function onResult(client, hasAccess, _)
         countdown = countdown - 1
@@ -309,9 +308,7 @@ extraInfoTbl)
         if countdown == 0 then callback(allowedPlys) end
     end
 
-    local playerCount = #allPlys
-    for i = 1, playerCount do
-        local client = allPlys[i]
+    for _, client in player.Iterator() do
         CAMI.PlayerHasAccess(client, privilegeName,
             function(...) onResult(client, ...) end,
             targetPly, extraInfoTbl)
