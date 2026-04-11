@@ -977,6 +977,10 @@ function PANEL:PopulateItems()
 
                 item.Paint = function(this, width, height)
                     ax.util:PrintDebug(representativeItem)
+                    if ( representativeItem ) then
+                        PrintTable(representativeItem)
+                    end
+
                     if ( representativeItem:GetData("equipped", nil) ) then
                         ax.render.DrawShadows(20, 0, 0, 3, height, surface.SetDrawColor(0, 0, 0, 200), 10, 20, bit.bor(ax.render.MANUAL_COLOR, ax.render.SHAPE_IOS, ax.render.NO_TL, ax.render.NO_BL, ax.render.BLUR))
 
