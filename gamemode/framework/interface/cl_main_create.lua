@@ -375,7 +375,7 @@ function PANEL:PopulateVars(category)
         if ( v.fieldType == ax.type.string ) then
             local option = container:Add("ax.text")
             option:SetFont("ax.large.bold")
-            option:SetText(utf8.upper(ax.util:UniqueIDToName(k)))
+            option:SetText(utf8.upper(ax.localization:GetPhrase(v.field)), true)
             option:SetZPos(v.sortOrder - 1)
             option:Dock(TOP)
 

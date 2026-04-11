@@ -379,7 +379,7 @@ ax.character:RegisterVar("name", {
                 local hintText = this.hints[i]
                 local hint = container:Add("ax.text")
                 hint:SetFont("ax.small.italic")
-                hint:SetText("• " .. hintText)
+                hint:SetText("• " .. ax.localization:GetPhrase("mainmenu.category." .. this.category .. ".hint_" .. this.field .. "_" .. i), true)
                 hint:SetTextColor(glass.textMuted)
                 hint:SetZPos(hintZPos + i * 0.1)
                 hint:Dock(TOP)
@@ -484,7 +484,7 @@ ax.character:RegisterVar("description", {
 
                 local hint = container:Add("ax.text")
                 hint:SetFont("ax.small.italic")
-                hint:SetText("• " .. hintText)
+                hint:SetText("• " .. ax.localization:GetPhrase("mainmenu.category." .. this.category .. ".hint_" .. this.field .. "_" .. i), true)
                 hint:SetTextColor(glass.textMuted)
                 hint:SetZPos(hintZPos + i * 0.1)
                 hint:Dock(TOP)
@@ -547,7 +547,7 @@ ax.character:RegisterVar("model", {
     populate = function(this, container, payload)
         local option = container:Add("ax.text")
         option:SetFont("ax.regular.bold")
-        option:SetText(utf8.upper(ax.util:UniqueIDToName(this.key)))
+        option:SetText(utf8.upper(ax.localization:GetPhrase("model")), true)
         option:SetZPos(this.sortOrder - 1)
         option:Dock(TOP)
 
@@ -770,7 +770,7 @@ ax.character:RegisterVar("skin", {
     populate = function(this, container, payload)
         local option = container:Add("ax.text")
         option:SetFont("ax.regular.bold")
-        option:SetText(utf8.upper(ax.util:UniqueIDToName(this.key)))
+        option:SetText(utf8.upper(ax.localization:GetPhrase("skin")), true)
         option:SetZPos(this.sortOrder - 1)
         option:Dock(TOP)
 
