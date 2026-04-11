@@ -28,6 +28,7 @@ local INVENTORY_PREVIEW_WIDTH = ax.util:ScreenScale(256)
 local INVENTORY_INFO_HEIGHT = ax.util:ScreenScaleH(128)
 local INVENTORY_CATEGORY_SPACING = ax.util:ScreenScaleH(2)
 local INVENTORY_ACTIONS_WIDTH = ax.util:ScreenScale(128)
+local INVENTORY_ITEMCAM_WIDTH = ax.util:ScreenScale(64)
 local INVENTORY_GRID_SPACING_X = ax.util:ScreenScale(2)
 local INVENTORY_GRID_SPACING_Y = ax.util:ScreenScaleH(2)
 local INVENTORY_GRID_ITEM_HEIGHT = ax.util:ScreenScaleH(16)
@@ -1007,6 +1008,7 @@ function PANEL:PopulateItems()
     end
 end
 
+local ANG_DONT_MOVE = Angle(0, 45, 0)
 function PANEL:PopulateInfo(stack)
     if ( !istable(stack) ) then return end
 
@@ -1014,6 +1016,51 @@ function PANEL:PopulateInfo(stack)
     if ( !istable(representativeItem) ) then return end
 
     self.stack = stack
+
+    local camPanel = self.info:Add("EditablePanel")
+    camPanel:Dock(LEFT)
+    camPanel:SetWide(INVENTORY_ITEMCAM_WIDTH)
+
+    local camController = camPanel:Add("DAdjustableModelPanel")
+    camController:Dock(FILL)
+    camController:SetModel(representativeItem:GetModel() or "models/props_junk/PopCan01a.mdl")
+    camController:SetFOV(20)
+    camController.FirstPersonControls = function(this)
+        local x, y = this:CaptureMouse()
+
+        local scale = this:GetFOV() / 180
+        x = x * -0.5 * scale
+        y = y * 0.5 * scale
+
+        if ( this.MouseKey == MOUSE_LEFT ) then
+            if ( input.IsShiftDown() ) then y = 0 end
+
+            this.aLookAngle = this.aLookAngle + Angle( y * 4, x * 4, 0 )
+
+            this.vCamPos = this.OrbitPoint - this.aLookAngle:Forward() * this.OrbitDistance
+        end
+    end
+
+    local mins, maxs = camController.Entity:GetModelBounds()
+	local center = ( mins + maxs ) / 2
+
+	local hit1 = util.IntersectRayWithPlane( camController.vCamPos, camController.aLookAngle:Forward(), vector_origin, Vector( 0, 0, 1 ) )
+	camController.OrbitPoint = hit1
+
+	local hit2 = util.IntersectRayWithPlane( camController.vCamPos, camController.aLookAngle:Forward(), vector_origin, Vector( 0, 1, 0 ) )
+	if ( ( !hit1 and hit2 ) or hit2 and hit2:Distance( camController.Entity:GetPos() ) < hit1:Distance( camController.Entity:GetPos() ) ) then camController.OrbitPoint = hit2 end
+
+	local hit3 = util.IntersectRayWithPlane( camController.vCamPos, camController.aLookAngle:Forward(), vector_origin, Vector( 1, 0, 0 ) )
+	if ( ( ( !hit1 or !hit2 ) and hit3 ) or hit3 and hit3:Distance( camController.Entity:GetPos() ) < hit2:Distance( camController.Entity:GetPos() ) ) then camController.OrbitPoint = hit3 end
+
+	camController.OrbitPoint = camController.OrbitPoint or center
+	camController.OrbitDistance = ( camController.OrbitPoint - camController.vCamPos ):Length()
+
+    camController:SetCamPos(camController.OrbitPoint - camController.aLookAngle:Forward() * camController.OrbitDistance)
+
+    camController.LayoutEntity = function(this, entity)
+        entity:SetAngles(ANG_DONT_MOVE)
+    end
 
     local header = self.info:Add("EditablePanel")
     header:Dock(TOP)
@@ -1062,7 +1109,7 @@ function PANEL:PopulateInfo(stack)
     body.Paint = nil
 
     local description = representativeItem:GetDescription() or "No description available."
-    local availableWidth = math.max(self:GetWide() - INVENTORY_PREVIEW_WIDTH - INVENTORY_ACTIONS_WIDTH - ax.util:ScreenScale(48), ax.util:ScreenScale(120))
+    local availableWidth = math.max(self:GetWide() - INVENTORY_PREVIEW_WIDTH - INVENTORY_ACTIONS_WIDTH - INVENTORY_ITEMCAM_WIDTH - ax.util:ScreenScale(48), ax.util:ScreenScale(120))
     local descriptionWrapped = ax.util:GetWrappedText(description, "ax.regular", availableWidth)
 
     for _ = 1, #descriptionWrapped do
