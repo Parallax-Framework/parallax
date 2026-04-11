@@ -1114,13 +1114,13 @@ function PANEL:PopulateInfo(stack)
 
     local description = representativeItem:GetDescription() or "No description available."
     local availableWidth = math.max(self:GetWide() - INVENTORY_PREVIEW_WIDTH - INVENTORY_ACTIONS_WIDTH - INVENTORY_ITEMCAM_WIDTH - ax.util:ScreenScale(48), ax.util:ScreenScale(120))
-    local descriptionWrapped = ax.util:GetWrappedText(description, "ax.regular", availableWidth)
+    local descriptionWrapped = ax.util:GetWrappedText(description, "ax.small", availableWidth)
 
     for _ = 1, #descriptionWrapped do
         local line = descriptionWrapped[_]
         local descLine = body:Add("ax.text")
         descLine:Dock(TOP)
-        descLine:SetFont("ax.regular")
+        descLine:SetFont("ax.small")
         descLine:SetText(line, true)
         descLine:SetContentAlignment(4)
     end
