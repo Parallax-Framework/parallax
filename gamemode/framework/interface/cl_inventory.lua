@@ -975,7 +975,7 @@ function PANEL:PopulateItems()
                     ax.item:ApplyAppearanceToIcon(representativeItem, icon)
                 end
 
-                item.Paint = function(this, width, height)
+                item.PaintAdditional = function(this, width, height)
                     ax.util:PrintDebug(representativeItem)
                     if ( representativeItem ) then
                         PrintTable(representativeItem)
