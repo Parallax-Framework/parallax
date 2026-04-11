@@ -89,7 +89,7 @@ ax.net:Hook("character.create", function(characterID, characters)
     else
         if ( IsValid(main) ) then
             main.create:SlideDown(nil, function()
-                main.create:ClearVars()
+                main.create:Reset()
             end)
             main.splash:SlideToFront()
         end
