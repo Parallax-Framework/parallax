@@ -480,7 +480,7 @@ ax.character:RegisterVar("description", {
             local glass = ax.theme:GetGlass()
             local hintZPos = this.sortOrder + 0.5
             for i = 1, #this.hints do
-                local textHint = this.hints[i]
+                local hintText = this.hints[i]
 
                 local hint = container:Add("ax.text")
                 hint:SetFont("ax.small.italic")
