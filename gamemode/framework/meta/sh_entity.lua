@@ -239,6 +239,10 @@ if ( SERVER ) then
         dummy:SetOwner(self)
         dummy:SetCollisionGroup(COLLISION_GROUP_WEAPON)
 
+        for i = 1, #self:GetMaterials() do
+            dummy:SetSubMaterial(i - 1, self:GetSubMaterial(i - 1))
+        end
+
         self:Fire("unlock")
         self:Fire("open")
         self:SetNotSolid(true)

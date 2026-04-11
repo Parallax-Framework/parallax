@@ -379,7 +379,7 @@ ax.character:RegisterVar("name", {
                 local hintText = this.hints[i]
                 local hint = container:Add("ax.text")
                 hint:SetFont("ax.small.italic")
-                hint:SetText("• " .. hintText)
+                hint:SetText("• " .. ax.localization:GetPhrase("mainmenu.category." .. this.category .. ".hint_" .. this.field .. "_" .. i), true)
                 hint:SetTextColor(glass.textMuted)
                 hint:SetZPos(hintZPos + i * 0.1)
                 hint:Dock(TOP)
@@ -480,11 +480,11 @@ ax.character:RegisterVar("description", {
             local glass = ax.theme:GetGlass()
             local hintZPos = this.sortOrder + 0.5
             for i = 1, #this.hints do
-                local textHint = this.hints[i]
+                local hintText = this.hints[i]
 
                 local hint = container:Add("ax.text")
                 hint:SetFont("ax.small.italic")
-                hint:SetText("• " .. hintText)
+                hint:SetText("• " .. ax.localization:GetPhrase("mainmenu.category." .. this.category .. ".hint_" .. this.field .. "_" .. i), true)
                 hint:SetTextColor(glass.textMuted)
                 hint:SetZPos(hintZPos + i * 0.1)
                 hint:Dock(TOP)
@@ -547,7 +547,7 @@ ax.character:RegisterVar("model", {
     populate = function(this, container, payload)
         local option = container:Add("ax.text")
         option:SetFont("ax.regular.bold")
-        option:SetText(utf8.upper(ax.util:UniqueIDToName(this.key)))
+        option:SetText(utf8.upper(ax.localization:GetPhrase("model")), true)
         option:SetZPos(this.sortOrder - 1)
         option:Dock(TOP)
 
@@ -770,7 +770,7 @@ ax.character:RegisterVar("skin", {
     populate = function(this, container, payload)
         local option = container:Add("ax.text")
         option:SetFont("ax.regular.bold")
-        option:SetText(utf8.upper(ax.util:UniqueIDToName(this.key)))
+        option:SetText(utf8.upper(ax.localization:GetPhrase("skin")), true)
         option:SetZPos(this.sortOrder - 1)
         option:Dock(TOP)
 
@@ -779,7 +779,7 @@ ax.character:RegisterVar("skin", {
         slider:DockMargin(0, 0, 0, ax.util:ScreenScaleH(16))
         slider:SetZPos(this.sortOrder)
         slider:SetMin(0)
-        slider:SetMax(16)
+        slider:SetMax(NumModelSkins(payload.model) - 1)
         slider:SetDecimals(0)
         slider:SetValue(payload.skin or 0)
         slider.OnValueChanged = function(_, value)

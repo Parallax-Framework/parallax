@@ -77,26 +77,19 @@ local langCodeTranslations = {
 function ax.localization:GetCurrentLanguage()
     local langCode
 
+    local cfg = ax != nil and ax.config != nil and ax.config:Get("language")
+
     if ( CLIENT ) then
-        if ( istable(ax) and ax.config ) then
-            local cfg = ax.config:Get("language")
-            if ( isstring(cfg) and cfg != "" ) then
-                langCode = cfg
-            else
-                local cvar = GetConVar("gmod_language")
-                langCode = (cvar and cvar:GetString()) or "en"
-            end
-        else
-            local cvar = GetConVar("gmod_language")
-            langCode = (cvar and cvar:GetString()) or "en"
+        local fallback = (cvar and cvar:GetString()) or "en"
+        if ( isstring(cfg) and cfg != "" ) then
+            langCode = cfg
+        end
+
+        if ( langCode == nil ) then
+            langCode = fallback
         end
     else
-        if ( istable(ax) and ax.config ) then
-            local cfg = ax.config:Get("language")
-            langCode = (isstring(cfg) and cfg != "") and cfg or "en"
-        else
-            langCode = "en"
-        end
+        langCode = cfg or "en"
     end
 
     langCode = langCodeTranslations[langCode] or langCode
@@ -131,7 +124,11 @@ function ax.localization:GetPhrase(phrase, ...)
 
     local translation = lang[phrase]
     if ( !isstring(translation) or translation == "" ) then
-        ax.util:PrintWarning("Translation for phrase \"" .. phrase .. "\" is not a valid string")
+        ax.util:PrintWarning("Translation for phrase \"" .. phrase .. "\" is not a valid string. Called from")
+        if ( GetConVar("developer"):GetInt() > 0 ) then
+            debug.Trace()
+        end
+
         return phrase
     end
 

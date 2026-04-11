@@ -276,7 +276,9 @@ ax.net:Hook("character.create", function(client, payload)
     ax.character:Create(newPayload, function(character, inventory)
         inventory:AddReceiver( client )
 
-        if ( !client:GetCharacter() ) then
+        local bHasCharacter = client:GetCharacter()
+
+        if ( !bHasCharacter ) then
             client:SetNoDraw(false)
             client:SetNotSolid(false)
             client:SetMoveType(MOVETYPE_WALK)
@@ -291,7 +293,9 @@ ax.net:Hook("character.create", function(client, payload)
         ax.character.instances[character.id] = character
 
         ax.inventory:Sync(inventory)
-        ax.character:Sync(client, character)
+        if ( !bHasCharacter ) then
+            ax.character:Sync(client, character)
+        end
 
         ax.net:Start(client, "character.create", character.id, clientData.axCharacters)
 

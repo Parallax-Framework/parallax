@@ -10,10 +10,25 @@ ax.localization:Register("en", {
     ["next"] = "Next",
     ["unknown"] = "Unknown",
 
+    ["skin"] = "Skin",
+    ["model"] = "Model",
+    ["name"] = "Name",
+    ["description"] = "Description",
+
+    ["not_enough_money"] = "You don't have enough money to purchase this.",
+    ["not_enough_money_missing"] = "You don't have enough money to purchase this. You need %s more.",
+
     -- Main Menu Translations
     ["mainmenu.category.00_faction"] = "Factions",
     ["mainmenu.category.01_appearance"] = "Appearance",
+
     ["mainmenu.category.02_identity"] = "Identity",
+    ["mainmenu.category.02_identity.hint_name_1"] = "Use proper capitalization and provide both a first and last name.",
+    ["mainmenu.category.02_identity.hint_name_2"] = "Your name should be fitting to the theme of the server and roleplay setting.",
+
+    ["mainmenu.category.02_identity.hint_description_1"] = "Character description is a brief summary that helps others visualize your character. It can include details about their physical appearance, clothing style, or any notable traits.",
+    ["mainmenu.category.02_identity.hint_description_2"] = "Write a short description of your physical appearance, clothing style, or any notable traits that help others visualize your character.",
+
     ["mainmenu.category.03_other"] = "Other",
     ["mainmenu.create"] = "Create Character",
     ["mainmenu.disconnect"] = "Disconnect",

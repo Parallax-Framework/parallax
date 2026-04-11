@@ -98,7 +98,7 @@ function GM:OnEntityCreated(entity)
 
         LocalPlayer = function() return ax.client end
 
-        hook.Run("OnClientCached", ax.client)
+        hook.Run("OnClientCached")
     end
 end
 
