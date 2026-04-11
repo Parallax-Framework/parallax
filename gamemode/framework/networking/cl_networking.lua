@@ -50,7 +50,7 @@ ax.net:Hook("character.create", function(characterID, characters)
 
     -- Read the character list first before trying to access the character
     local clientData = ax.client:GetTable()
-    clientData.axCharacters = clientData.axCharacters or {}
+    clientData.axCharacters = {}
 
     for i = 1, #characters do
         local charData = characters[i]
