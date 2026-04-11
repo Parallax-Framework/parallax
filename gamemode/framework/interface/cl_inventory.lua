@@ -977,6 +977,10 @@ function PANEL:PopulateItems()
                 end
 
                 item.PaintAdditional = function(this, width, height)
+                    if ( self.stack and self.stack.representativeItem == representativeItem ) then
+                        ax.render.DrawOutlined(10, 0, 0, width, height, color_white, 1, bit.bor(ax.render.SHAPE_IOS))
+                    end
+
                     if ( representativeItem.GetData and representativeItem:GetData("equipped", nil) ) then
                         ax.render.DrawShadows(20, 0, 0, 3, height, surface.SetDrawColor(80, 215, 100), 10, 20, bit.bor(ax.render.MANUAL_COLOR, ax.render.SHAPE_IOS, ax.render.NO_TL, ax.render.NO_BL, ax.render.BLUR))
 
