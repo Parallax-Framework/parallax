@@ -275,6 +275,8 @@ function PANEL:CreateOrGetCategoryTab(category, index)
         return tab
     end
 
+    ax.util:PrintDebug("Creating category tab for: " .. category)
+
     tab = self:CreatePage(category)
     tab.category = category
     tab.index = index or tab.index or 1
@@ -294,8 +296,9 @@ function PANEL:CreateOrGetCategoryTab(category, index)
 
     title = tab:Add("ax.text")
     title:SetFont("ax.huge.bold")
+
     local displayText = ax.localisation:GetPhrase("mainmenu.category." .. category)
-    title:SetText(utf8.upper(displayText))
+    title:SetText(utf8.upper(displayText), true)
     title:Dock(TOP)
     title:DockMargin(ax.util:ScreenScale(48), ax.util:ScreenScaleH(40), 0, 0)
 
