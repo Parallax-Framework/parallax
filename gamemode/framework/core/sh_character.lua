@@ -779,7 +779,7 @@ ax.character:RegisterVar("skin", {
         slider:DockMargin(0, 0, 0, ax.util:ScreenScaleH(16))
         slider:SetZPos(this.sortOrder)
         slider:SetMin(0)
-        slider:SetMax(16)
+        slider:SetMax(NumModelSkins(payload.model) - 1)
         slider:SetDecimals(0)
         slider:SetValue(payload.skin or 0)
         slider.OnValueChanged = function(_, value)
