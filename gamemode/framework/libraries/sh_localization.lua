@@ -131,7 +131,11 @@ function ax.localization:GetPhrase(phrase, ...)
 
     local translation = lang[phrase]
     if ( !isstring(translation) or translation == "" ) then
-        ax.util:PrintWarning("Translation for phrase \"" .. phrase .. "\" is not a valid string")
+        ax.util:PrintWarning("Translation for phrase \"" .. phrase .. "\" is not a valid string. Called from")
+        if ( GetConVar("developer") > 0 ) then
+            debug.Trace()
+        end
+
         return phrase
     end
 
