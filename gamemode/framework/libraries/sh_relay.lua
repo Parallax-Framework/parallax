@@ -86,7 +86,7 @@ function ENTITY:GetRelay(name, fallback)
 
     ax.relay.data[index] = ax.relay.data[index] or {}
 
-    return ax.relay.data[index][name] != nil and ax.relay.data[index][name] or fallback
+    return ax.relay.data[index][name] == nil and fallback or ax.relay.data[index][name]
 end
 
 --- Set a global relay variable with optional networking.

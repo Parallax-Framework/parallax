@@ -47,3 +47,12 @@ function ENTITY:TakeDoorAccess(client)
     hook.Run("OnPlayerLostDoorAccess", client, self, doorAccessHad)
     return true
 end
+
+function ENTITY:GetDoorOwner()
+    if ( !self:IsDoor() ) then return nil end
+
+    local charOwnerID = self:GetRelay("owner", -1)
+    if ( charOwnerID == -1 ) then return nil end
+
+    return ax.character.instances[charOwnerID]
+end

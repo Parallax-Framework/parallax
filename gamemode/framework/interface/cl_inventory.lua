@@ -978,7 +978,7 @@ function PANEL:PopulateItems()
 
                 item.PaintAdditional = function(this, width, height)
                     if ( self.stack and self.stack.representativeItem == representativeItem ) then
-                        ax.render.DrawOutlined(10, 0, 0, width, height, color_white, 1, bit.bor(ax.render.SHAPE_IOS))
+                        ax.render.DrawOutlined(12, 0, 0, width, height, color_white, 2, bit.bor(ax.render.SHAPE_IOS))
                     end
 
                     if ( representativeItem.GetData and representativeItem:GetData("equipped", nil) ) then
