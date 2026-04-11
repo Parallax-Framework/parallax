@@ -16,8 +16,20 @@ local PANEL = {}
 function PANEL:Init()
     hook.Run("PreMainMenuCreateCreated", self)
 
-    self.payload = {}
     self.tabs = {}
+    self:Reset()
+    self:StartAtBottom()
+
+    hook.Run("PostMainMenuCreateCreated", self)
+end
+
+--- Resets the character creation state so the panel can be reused for a fresh character.
+-- Wipes the payload back to its defaults, destroys any cached tab pages, and clears the
+-- in-flight submission guard. Called on panel init and every time the panel slides in.
+-- @realm client
+function PANEL:Reset()
+    self.payload = {}
+    self.bSending = false
 
     local vars = self:GetVars()
     for k, v in pairs(vars) do
@@ -44,13 +56,22 @@ function PANEL:Init()
         end
     end
 
-    self:StartAtBottom()
-    self:ClearVars()
+    -- Remove every cached tab page so navigation rebuilds them from the fresh payload.
+    for category, tab in pairs(self.tabs) do
+        if ( IsValid(tab) ) then
+            tab:Remove()
+        end
 
-    hook.Run("PostMainMenuCreateCreated", self)
+        self.tabs[category] = nil
+    end
+
+    self.tabs = {}
 end
 
 function PANEL:OnSlideStart()
+    -- Every entry into the create panel is a brand new character; wipe any stale state first.
+    self:Reset()
+
     -- Build only the first available category dynamically based on current payload.
     local categories = self:GetOrderedCategories()
     if ( #categories == 0 ) then return end
@@ -134,6 +155,9 @@ function PANEL:NavigateToNextTab(currentTab)
     end
 
     if ( currentIndex == #categories ) then
+        if ( self.bSending ) then return end
+
+        self.bSending = true
         ax.net:Start("character.create", self.payload)
         return
     end
