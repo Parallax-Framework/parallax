@@ -868,6 +868,7 @@ function SLIDER:Init()
     self.displayValue = 0
     self.displayFraction = 0
     self.dragging = false
+    self.bEditing = false
     self.ValueChangedDeferred = nil
 
     -- Compat stubs so the number panel's Think can call Label/TextArea methods
@@ -878,8 +879,26 @@ function SLIDER:Init()
         _font = nil,
         SetFont = function(this, font) this._font = font end,
         SetTextColor = function(this, col) this._textColor = col end,
-        IsEditing = function() return false end,
+        IsEditing = function() return self.bEditing end,
     }
+
+    self.textEntry = vgui.Create("DTextEntry", self)
+    self.textEntry:SetVisible(false)
+    self.textEntry:SetFont("ax.small")
+    self.textEntry:SetNumeric(true)
+    self.textEntry:SetPaintBackground(false)
+    self.textEntry:SetTextColor(color_white)
+    self.textEntry:SetContentAlignment(5)
+    self.textEntry:SetCursorColor(color_white)
+    self.textEntry:SetHighlightColor(Color(255, 255, 255, 50))
+    self.textEntry.OnEnter = function()
+        self:FinishEditing(true)
+    end
+    self.textEntry.OnLoseFocus = function()
+        if ( self.bEditing ) then
+            self:FinishEditing(true)
+        end
+    end
 
     self:SetMouseInputEnabled(true)
     self:SetCursor("hand")
@@ -921,7 +940,47 @@ function SLIDER:GetValue()
 end
 
 function SLIDER:IsEditing()
-    return false
+    return self.bEditing
+end
+
+function SLIDER:StartEditing()
+    if ( self.bEditing ) then return end
+    self.bEditing = true
+
+    local decimals = self.decimals or 0
+    local valStr = decimals > 0
+        and string.format("%." .. decimals .. "f", self.value)
+        or tostring(math.Round(self.value))
+
+    local font = (self.TextArea and self.TextArea._font) or "ax.small"
+    local textColor = (self.TextArea and self.TextArea._textColor) or color_white
+
+    self.textEntry:SetFont(font)
+    self.textEntry:SetTextColor(textColor)
+    self.textEntry:SetVisible(true)
+    self.textEntry:SetText(valStr)
+    self.textEntry:RequestFocus()
+    self.textEntry:SelectAllText()
+end
+
+function SLIDER:FinishEditing(bApply)
+    if ( !self.bEditing ) then return end
+    self.bEditing = false
+
+    if ( bApply and IsValid(self.textEntry) ) then
+        local newVal = tonumber(self.textEntry:GetText())
+        if ( newVal ) then
+            newVal = self:RoundToDecimals(math.Clamp(newVal, self.minVal, self.maxVal))
+            if ( newVal != self.value ) then
+                self:SetValue(newVal)
+                if ( self.OnValueChanged ) then self:OnValueChanged(newVal) end
+            end
+        end
+    end
+
+    if ( IsValid(self.textEntry) ) then
+        self.textEntry:SetVisible(false)
+    end
 end
 
 function SLIDER:GetFraction()
@@ -959,6 +1018,14 @@ function SLIDER:GetTrackBounds()
     return trackX, trackW, knobR, valueTextW, gapAfterTrack
 end
 
+function SLIDER:PerformLayout(w, h)
+    if ( !IsValid(self.textEntry) ) then return end
+
+    local trackX, trackW, knobR, valueTextW = self:GetTrackBounds()
+    self.textEntry:SetPos(w - valueTextW, 0)
+    self.textEntry:SetSize(valueTextW, h)
+end
+
 function SLIDER:ValueFromCursor()
     local mx = self:CursorPos()
     local trackX, trackW, knobR = self:GetTrackBounds()
@@ -968,6 +1035,14 @@ end
 
 function SLIDER:OnMousePressed(mouseCode)
     if ( mouseCode != MOUSE_LEFT ) then return end
+
+    local mx = self:CursorPos()
+    local trackX, trackW, knobR = self:GetTrackBounds()
+    if ( mx >= trackX + trackW + knobR ) then
+        self:StartEditing()
+        return
+    end
+
     self.dragging = true
     self:MouseCapture(true)
     local newVal = self:ValueFromCursor()
@@ -1035,17 +1110,19 @@ function SLIDER:Paint(w, h)
     ax.render.DrawOutlined(knobR, knobX - knobR, cy - knobR, knobSize, knobSize,
         Color(progressColor.r, progressColor.g, progressColor.b, 160), 1, ax.render.SHAPE_IOS)
 
-    -- Value label (right of track)
-    local decimals = self.decimals or 0
-    local displayValue = self.displayValue or self.value
-    local valStr = decimals > 0
-        and string.format("%." .. decimals .. "f", displayValue)
-        or tostring(math.Round(displayValue))
+    -- Value label (right of track) — hidden while text entry is active
+    if ( !self.bEditing ) then
+        local decimals = self.decimals or 0
+        local displayValue = self.displayValue or self.value
+        local valStr = decimals > 0
+            and string.format("%." .. decimals .. "f", displayValue)
+            or tostring(math.Round(displayValue))
 
-    local textColor = (self.TextArea and self.TextArea._textColor) or glass.textMuted or glass.text
-    local font = (self.TextArea and self.TextArea._font) or "ax.small"
-    local textX = math.Round(trackX + trackW + knobR + gapAfterTrack + valueTextW * 0.5)
-    draw.SimpleText(valStr, font, textX, cy, textColor, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+        local textColor = (self.TextArea and self.TextArea._textColor) or glass.textMuted or glass.text
+        local font = (self.TextArea and self.TextArea._font) or "ax.small"
+        local textX = math.Round(trackX + trackW + knobR + gapAfterTrack + valueTextW * 0.5)
+        draw.SimpleText(valStr, font, textX, cy, textColor, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+    end
 end
 
 vgui.Register("ax.store.slider", SLIDER, "EditablePanel")
@@ -1127,6 +1204,7 @@ function PANEL:SetKey(key)
     local data = store:GetData(key)
     self.slider:SetMinMax(data.min or 0, data.max or 100)
     self.slider:SetDecimals(data.decimals or 0)
+    self.slider:SetSnap(data.snap or 0)
     self.slider:SetValue(store:Get(key))
 
     self.deferredUpdate = data.deferredUpdate
