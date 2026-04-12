@@ -30,7 +30,7 @@ ax.localization:Register("en", {
     ["config.joinsecurity.versionmismatch.help"] = "Kicks players with mismatched client versions.",
 
     ["config.joinsecurity.versionmismatch.branchmatch"] = "Branch Match",
-    ["config.joinsecurity.versionmismatch.branchmatch.help"] = "Only kicks players with mismatched client versions on the same branch.",
+    ["config.joinsecurity.versionmismatch.branchmatch.help"] = "Only kicks players with mismatched client versions on the same branch as the server.",
 
 
     ["joinsecurity.versionmismatch.kick_msg"] = "Your client version does not match the server's version.\nYours: %s\nServer: %s",
