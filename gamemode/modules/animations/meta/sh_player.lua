@@ -9,17 +9,6 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
-function ax.player.meta:IsFemale()
-    local modelClass = ax.animations:GetModelClass(self:GetModel())
-    if ( !isstring(modelClass) or modelClass == "" ) then return false end
-
-    if ( ax.util:FindString(modelClass, "female") ) then
-        return true
-    end
-
-    return false
-end
-
 function ax.player.meta:GetHoldType()
     if ( !ax.util:IsValidPlayer(self) ) then return "normal" end
 

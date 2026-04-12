@@ -16,6 +16,21 @@ function ENTITY:IsChair()
     return MODEL_CHAIRS[model]
 end
 
+--- Returns true if the entity's model class contains the substring "female".
+-- The model class is retrieved via `ax.animations:GetModelClass(model)`. If the model class is not a valid non-empty string, the function returns false. Otherwise, it performs a case-insensitive substring search for "female" within the model class name.
+-- @realm shared
+-- @return boolean True if the model class contains "female", false otherwise.
+function ENTITY:IsFemale()
+    local modelClass = ax.animations:GetModelClass(self:GetModel())
+    if ( !isstring(modelClass) or modelClass == "" ) then return false end
+
+    if ( ax.util:FindString(modelClass, "female") ) then
+        return true
+    end
+
+    return false
+end
+
 --- Enforces a named rate limit on this entity.
 -- Stores timestamps in `entity.axRateLimits[name]`. On each call:
 -- - If a limit was previously set and has not yet expired, returns `false` plus the remaining cooldown time in seconds.
