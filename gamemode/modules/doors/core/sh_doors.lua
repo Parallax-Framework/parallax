@@ -49,7 +49,7 @@ properties.Add("door.toggleownable", {
 
     Filter = function(self, ent, client)
         if ( !IsValid(ent) or !ent:IsDoor() or !client:IsAdmin() ) then return false end
-        if ( !gamemode.Call( "CanProperty", client, "door.toggleownable", ent ) ) then return false end
+        if ( !hook.Run( "CanProperty", client, "door.toggleownable", ent ) ) then return false end
 
         return true
     end,
@@ -79,4 +79,74 @@ properties.Add("door.toggleownable", {
             scope = "map",
         })
     end
+})
+
+properties.Add("door.manageusers", {
+    MenuLabel = "Manage Users",
+    Order = 9999,
+    MenuIcon = "icon16/user.png",
+
+    Filter = function(self, ent, client)
+        if ( !IsValid(ent) or !ent:IsDoor() ) then return false end
+        if ( !hook.Run( "CanProperty", client, "door.manageusers", ent ) ) then return false end
+
+        local owner = ent:GetDoorOwner()
+
+        return owner and client:GetChar() == owner
+    end,
+    MenuOpen = function(self, menu, entity, trace)
+        local subMenu = menu:AddSubMenu("Manage Users")
+
+        local giveAccessMenu = subMenu:AddSubMenu("Give Access")
+        local takeAccessMenu = subMenu:AddSubMenu("Take Access")
+
+        local function SendMsg(target, accessGroup)
+            self:MsgStart()
+                net.WriteEntity(entity)
+                net.WritePlayer(target)
+                net.WriteUInt(accessGroup, 8)
+            self:MsgEnd()
+        end
+
+        for k, v in player.Iterator() do
+            if ( v == ax.client ) then continue end
+
+            local bHasAccess = v:HasDoorAccess(entity)
+
+            if ( bHasAccess ) then
+                local userSubOption = takeAccessMenu:AddOption(v:GetName(), SendMsg(v, MODULE.AccessGroups.NONE))
+                continue
+            end
+
+            local userSubOption = giveAccessMenu:AddSubMenu(v:GetName())
+
+            for enumName, enumIndex in pairs(MODULE.AccessGroups) do
+                if ( enumIndex != MODULE.AccessGroups.NONE and enumIndex != MODULE.AccessGroups.OWNER ) then
+                    userSubOption:AddOption(enumName, SendMsg(v, enumIndex))
+                end
+            end
+
+        end
+    end,
+    Receive = function( self, length, client )
+        local entity = net.ReadEntity()
+
+        if ( !properties.CanBeTargeted(entity, client) ) then return end
+        if ( !self:Filter(entity, client) ) then return end
+
+        local target = net.ReadPlayer()
+        local accessGroup = net.ReadUInt(8)
+
+        if ( !ax.util:IsValidPlayer(target) ) then return end
+        if ( !table.HasValue(MODULE.AccessGroups, accessGroup) ) then return end
+
+        if ( target == client ) then return end
+
+        if ( accessGroup == MODULE.AccessGroups.NONE ) then
+            entity:TakeDoorAccess(target)
+        else
+            entity:GiveDoorAccess(target, accessGroup)
+        end
+    end
+
 })
