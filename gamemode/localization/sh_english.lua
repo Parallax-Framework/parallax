@@ -15,6 +15,9 @@ ax.localization:Register("en", {
     ["name"] = "Name",
     ["description"] = "Description",
 
+    ["not_enough_money"] = "You don't have enough money to purchase this.",
+    ["not_enough_money_missing"] = "You don't have enough money to purchase this. You need %s more.",
+
     -- Main Menu Translations
     ["mainmenu.category.00_faction"] = "Factions",
     ["mainmenu.category.01_appearance"] = "Appearance",

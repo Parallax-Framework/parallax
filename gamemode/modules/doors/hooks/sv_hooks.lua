@@ -20,3 +20,17 @@ end
 function MODULE:PlayerReady(client)
 	ax.net:Start(client, "ax.doors.permissions_sync", MODULE.AccessGroup_Permissions)
 end
+
+function MODULE:InitPostEntity()
+	local unownableDoors = ax.data:Get("doors_unownable", {}, {
+		scope = "map",
+		force = true,
+	})
+
+	for doorID, isUnownable in pairs(unownableDoors) do
+		local door = ents.GetMapCreatedEntity(doorID)
+		if ( IsValid(door) and door:IsDoor() ) then
+			door:SetRelay("ownable", !isUnownable)
+		end
+	end
+end

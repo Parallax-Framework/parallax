@@ -240,86 +240,86 @@ if ( SERVER ) then
 
         -- TODO: Find a way to optimize this to use fewer pyramids
         local inventoryIDs = {}
-        if ( characterIDs[1] != nil ) then
-            for _, characterID in pairs(characterIDs) do
-                local characterQuery = mysql:Select("ax_characters")
-                characterQuery:Where("id", characterID)
-                characterQuery:Callback(function(result, status)
-                    if ( result == nil or status == false ) then
-                        return
-                    end
+        if ( characterIDs[1] == nil ) then return end
 
-                    for i = 1, #result do
-                        if ( result[i].inventory != nil ) then
-                            inventoryIDs[#inventoryIDs + 1] = result[i].inventory
+        for _, characterID in pairs(characterIDs) do
+            local characterQuery = mysql:Select("ax_characters")
+            characterQuery:Where("id", characterID)
+            characterQuery:Callback(function(result, status)
+                if ( result == nil or status == false ) then
+                    return
+                end
+
+                for i = 1, #result do
+                    if ( result[i].inventory != nil ) then
+                        inventoryIDs[#inventoryIDs + 1] = result[i].inventory
+                    end
+                end
+
+                ax.util:PrintDebug(string.format("Found %d inventories for %s", #inventoryIDs, client:SteamID64()))
+
+                for _, inventoryID in pairs(inventoryIDs) do
+                    local inventoryQuery = mysql:Select("ax_inventories")
+                    inventoryQuery:Where("id", inventoryID)
+                    inventoryQuery:Callback(function(result, status)
+                        if ( result == nil or status == false ) then return end
+
+                        ax.util:PrintDebug(string.format("Restoring %d inventories for %s", #result, client:SteamID64()))
+
+                        for i = 1, #result do
+                            local data = result[i]
+                            local inventory = setmetatable({}, ax.inventory.meta)
+
+                            data.id = tonumber(data.id)
+                            inventory.id = data.id
+
+                            local maxWeight = data.maxWeight or 30.0
+                            inventory.maxWeight = maxWeight
+                            inventory.receivers = {}
+
+                            local itemFetchQuery = mysql:Select("ax_items")
+                            itemFetchQuery:Where("inventory_id", data.id)
+                            itemFetchQuery:Callback(function(itemsResult, itemsStatus)
+                                if ( itemsResult == nil or itemsStatus == false ) then return end
+
+                                local itemsInInv = {}
+                                for j = 1, #itemsResult do
+                                    local itemData = itemsResult[j]
+                                    local item = ax.item.stored[itemData.class]
+                                    if ( !item ) then continue end
+
+                                    local itemObject = ax.item:Instance(itemData.id, itemData.class)
+                                    itemObject.invID = itemData.inventory_id
+                                    itemObject.data = util.JSONToTable(itemData.data) or {}
+
+                                    ax.item.instances[itemObject.id] = itemObject
+                                    itemsInInv[itemObject.id] = itemObject
+                                end
+
+                                inventory.items = itemsInInv
+
+                                self.instances[inventory.id] = inventory
+                                self:Sync(inventory)
+
+                                local clientChar = client:GetCharacter()
+                                local charInv = clientChar and clientChar.vars and clientChar.vars.inventory
+                                if ( charInv == inventory.id ) then
+                                    inventory:AddReceiver(client)
+                                    ax.util:PrintDebug(string.format("Added %s as a receiver to inventory %d", client:SteamID64(), inventory.id))
+                                end
+
+                                -- and finally, call the callback if provided
+                                if ( isfunction(callback) ) then
+                                    callback(inventory)
+                                end
+                            end)
+                            itemFetchQuery:Execute()
                         end
-                    end
-
-                    ax.util:PrintDebug(string.format("Found %d inventories for %s", #inventoryIDs, client:SteamID64()))
-
-                    for _, inventoryID in pairs(inventoryIDs) do
-                        local inventoryQuery = mysql:Select("ax_inventories")
-                        inventoryQuery:Where("id", inventoryID)
-                        inventoryQuery:Callback(function(result, status)
-                            if ( result == nil or status == false ) then return end
-
-                            ax.util:PrintDebug(string.format("Restoring %d inventories for %s", #result, client:SteamID64()))
-
-                            for i = 1, #result do
-                                local data = result[i]
-                                local inventory = setmetatable({}, ax.inventory.meta)
-
-                                data.id = tonumber(data.id)
-                                inventory.id = data.id
-
-                                local maxWeight = data.maxWeight or 30.0
-                                inventory.maxWeight = maxWeight
-                                inventory.receivers = {}
-
-                                local itemFetchQuery = mysql:Select("ax_items")
-                                itemFetchQuery:Where("inventory_id", data.id)
-                                itemFetchQuery:Callback(function(itemsResult, itemsStatus)
-                                    if ( itemsResult == nil or itemsStatus == false ) then return end
-
-                                    local itemsInInv = {}
-                                    for j = 1, #itemsResult do
-                                        local itemData = itemsResult[j]
-                                        local item = ax.item.stored[itemData.class]
-                                        if ( !item ) then continue end
-
-                                        local itemObject = ax.item:Instance(itemData.id, itemData.class)
-                                        itemObject.invID = itemData.inventory_id
-                                        itemObject.data = util.JSONToTable(itemData.data) or {}
-
-                                        ax.item.instances[itemObject.id] = itemObject
-                                        itemsInInv[itemObject.id] = itemObject
-                                    end
-
-                                    inventory.items = itemsInInv
-
-                                    self.instances[inventory.id] = inventory
-                                    self:Sync(inventory)
-
-                                    local clientChar = client:GetCharacter()
-                                    local charInv = clientChar and clientChar.vars and clientChar.vars.inventory
-                                    if ( charInv == inventory.id ) then
-                                        inventory:AddReceiver(client)
-                                        ax.util:PrintDebug(string.format("Added %s as a receiver to inventory %d", client:SteamID64(), inventory.id))
-                                    end
-
-                                    -- and finally, call the callback if provided
-                                    if ( isfunction(callback) ) then
-                                        callback(inventory)
-                                    end
-                                end)
-                                itemFetchQuery:Execute()
-                            end
-                        end)
-                        inventoryQuery:Execute()
-                    end
-                end)
-                characterQuery:Execute()
-            end
+                    end)
+                    inventoryQuery:Execute()
+                end
+            end)
+            characterQuery:Execute()
         end
     end
 end

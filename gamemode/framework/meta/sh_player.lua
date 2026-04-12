@@ -12,17 +12,6 @@
 --- Player meta functions
 -- @module ax.player.meta
 
---- Returns the player's in-character name when a character is active.
--- Overrides GMod's built-in `Nick()` method. When the player has an active character (via `GetCharacter()`), returns `character:GetName()`.
--- Falls back to the Steam name via the original `Nick` implementation (`GetNickInternal`) when no character is loaded (e.g. during character selection).
--- @realm shared
--- @return string The character name, or the Steam display name if no character is active.
-ax.player.meta.GetNickInternal = ax.player.meta.GetNickInternal or ax.player.meta.Nick
-function ax.player.meta:Nick()
-    local character = self:GetCharacter()
-    return character and character:GetName() or self:GetNickInternal()
-end
-
 --- Returns the player's actual Steam display name, bypassing the character name override.
 -- Delegates directly to `GetNickInternal` (the original GMod `Nick` method saved before the Parallax override).
 -- Use this when you specifically need the Steam name rather than the in-character name.
@@ -42,6 +31,17 @@ function ax.player.meta:GetCharacter()
 end
 
 ax.player.meta.GetChar = ax.player.meta.GetCharacter
+
+--- Returns the player's in-character name when a character is active.
+-- Overrides GMod's built-in `Nick()` method. When the player has an active character (via `GetCharacter()`), returns `character:GetName()`.
+-- Falls back to the Steam name via the original `Nick` implementation (`GetNickInternal`) when no character is loaded (e.g. during character selection).
+-- @realm shared
+-- @return string The character name, or the Steam display name if no character is active.
+ax.player.meta.GetNickInternal = ax.player.meta.GetNickInternal or ax.player.meta.Nick
+function ax.player.meta:Nick()
+    local character = self:GetCharacter()
+    return character and character:GetName() or self:GetNickInternal()
+end
 
 --- Returns all character instances associated with this player.
 -- Reads `axCharacters` from the player's entity table, which is populated when the player's characters are fetched from the database on connect.
