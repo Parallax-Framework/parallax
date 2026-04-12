@@ -62,6 +62,7 @@ ax.localization:Register("bg", {
     ["subcategory.ooc"] = "OOC",
     ["subcategory.audio"] = "Аудио",
     ["subcategory.tools"] = "Инструменти",
+    ["subcategory.respawn"] = "Прераждане",
 
     -- Store Translations
     ["store.enabled"] = "Включено",
@@ -113,12 +114,6 @@ ax.localization:Register("bg", {
     ["config.inventory.pagination.max_page_size.help"] = "Максимален брой стекове с предмети, позволени на страница.",
     ["config.inventory.restore.batch_size.help"] = "Брой предмети от световния инвентар, възстановявани на партида при синхронизация.",
 
-    ---- Weapon Safety
-    ["config.weapon.raise.time"] = "Време на задържане за вдигане на оръжие",
-    ["config.weapon.raise.alwaysraised"] = "Оръжието винаги вдигнато",
-    ["config.weapon.raise.time.help"] = "Колко дълго трябва да се задържи клавишът за презареждане (в секунди), за да се превключи вдигането на оръжието.",
-    ["config.weapon.raise.alwaysraised.help"] = "Когато е включено, всички играчи винаги ще имат вдигнато оръжие, независимо от индивидуалното им състояние.",
-
     ---- Movement
     ["config.jump.power"] = "Сила на Скока",
     ["config.movement.bunnyhop.reduction"] = "Намаление на Скоростта при Bunnyhop",
@@ -126,6 +121,10 @@ ax.localization:Register("bg", {
     ["config.speed.walk"] = "Скорост на Ходене",
     ["config.speed.walk.crouched"] = "Скорост на Ходене Прегърбен",
     ["config.speed.walk.slow"] = "Скорост на Бавно Ходене",
+
+    ---- Respawn
+    ["config.respawn.delay"] = "Забавяне на Прераждане",
+    ["config.respawn.delay.help"] = "Време в секунди преди играчът да може да се преради след смърт.",
 
     ---- Misc
     ["respawning"] = "Прераждане...",

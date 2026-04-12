@@ -375,3 +375,12 @@ ax.config:Add("interface.buildmenu.notify_reset_delay", ax.type.number, 2, {
     category = "interface",
     subCategory = "interaction"
 })
+
+ax.config:Add("respawn.delay", ax.type.number, 30, {
+    description = "respawn.delay.help",
+    min = 0,
+    max = 300,
+    decimals = 0,
+    category = "gameplay",
+    subCategory = "respawn"
+})

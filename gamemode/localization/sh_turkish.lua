@@ -70,6 +70,7 @@ ax.localization:Register("tr", {
     ["subcategory.ooc"] = "OOC",
     ["subcategory.audio"] = "Ses",
     ["subcategory.tools"] = "Araçlar",
+    ["subcategory.respawn"] = "Yeniden Doğma",
 
     -- Store Translations
     ["store.enabled"] = "Etkin",
@@ -121,12 +122,6 @@ ax.localization:Register("tr", {
     ["config.inventory.pagination.max_page_size.help"] = "Sayfa başına izin verilen maksimum öğe yığını sayısı.",
     ["config.inventory.restore.batch_size.help"] = "Senkronizasyon başına geri yüklenen dünya envanteri öğe sayısı.",
 
-    ---- Weapon Safety
-    ["config.weapon.raise.time"] = "Silah Kaldırma Basılı Tutma Süresi",
-    ["config.weapon.raise.alwaysraised"] = "Silah Her Zaman Kaldırılı",
-    ["config.weapon.raise.time.help"] = "Silah kaldırmayı değiştirmek için yeniden yükleme tuşunun kaç saniye basılı tutulması gerektiği.",
-    ["config.weapon.raise.alwaysraised.help"] = "Etkinleştirildiğinde, tüm oyuncular bireysel durumdan bağımsız olarak silahlarını her zaman kaldırılı tutacak.",
-
     ---- Movement
     ["config.jump.power"] = "Zıplama Gücü",
     ["config.movement.bunnyhop.reduction"] = "Bunnyhop Hız Azaltma",
@@ -134,6 +129,10 @@ ax.localization:Register("tr", {
     ["config.speed.walk"] = "Yürüme Hızı",
     ["config.speed.walk.crouched"] = "Çömelme Yürüme Hızı",
     ["config.speed.walk.slow"] = "Yavaş Yürüme Hızı",
+
+    ---- Respawn
+    ["config.respawn.delay"] = "Yeniden Doğma Süresi",
+    ["config.respawn.delay.help"] = "Öldükten sonra yeniden doğmak için gereken süre (saniye).",
 
     ---- Misc
     ["respawning"] = "Yeniden Doğuyor...",

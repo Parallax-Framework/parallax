@@ -85,6 +85,7 @@ ax.localization:Register("en", {
     ["subcategory.ooc"] = "OOC",
     ["subcategory.audio"] = "Audio",
     ["subcategory.tools"] = "Tools",
+    ["subcategory.respawn"] = "Respawn",
 
     -- Store Translations
     ["store.enabled"] = "Enabled",
@@ -135,12 +136,6 @@ ax.localization:Register("en", {
     ["config.inventory.pagination.max_page_size.help"] = "Maximum number of item stacks allowed per page.",
     ["config.inventory.restore.batch_size.help"] = "Number of world inventory items restored per sync batch.",
 
-    ---- Weapon Safety
-    ["config.weapon.raise.time"] = "Weapon Raise Hold Time",
-    ["config.weapon.raise.alwaysraised"] = "Always Weapon Raised",
-    ["config.weapon.raise.time.help"] = "How long the reload key must be held (in seconds) before toggling weapon raise.",
-    ["config.weapon.raise.alwaysraised.help"] = "When enabled, all players will always have their weapon raised regardless of individual state.",
-
     ---- Movement
     ["config.jump.power"] = "Jump Power",
     ["config.movement.bunnyhop.reduction"] = "Bunnyhop Speed Reduction",
@@ -148,6 +143,10 @@ ax.localization:Register("en", {
     ["config.speed.walk"] = "Walk Speed",
     ["config.speed.walk.crouched"] = "Crouched Walk Speed",
     ["config.speed.walk.slow"] = "Slow Walk Speed",
+
+    ---- Respawn
+    ["config.respawn.delay"] = "Respawn Delay",
+    ["config.respawn.delay.help"] = "Time in seconds before a player can respawn after dying.",
 
     ---- Misc
     ["respawning"] = "Respawning...",

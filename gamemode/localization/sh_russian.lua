@@ -71,6 +71,7 @@ ax.localization:Register("ru", {
     ["subcategory.ooc"] = "OOC",
     ["subcategory.audio"] = "Аудио",
     ["subcategory.tools"] = "Инструменты",
+    ["subcategory.respawn"] = "Возрождение",
 
     -- Store Translations
     ["store.enabled"] = "Вкл",
@@ -122,12 +123,6 @@ ax.localization:Register("ru", {
     ["config.inventory.pagination.max_page_size.help"] = "Максимальное количество стеков предметов на одной странице.",
     ["config.inventory.restore.batch_size.help"] = "Количество предметов мирового инвентаря, восстанавливаемых за один пакет синхронизации.",
 
-    ---- Weapon Safety
-    ["config.weapon.raise.time"] = "Время удержания для поднятия оружия",
-    ["config.weapon.raise.alwaysraised"] = "Оружие всегда поднято",
-    ["config.weapon.raise.time.help"] = "Как долго нужно удерживать клавишу перезарядки (в секундах) для переключения поднятия оружия.",
-    ["config.weapon.raise.alwaysraised.help"] = "При включении все игроки всегда будут держать оружие поднятым, независимо от индивидуального состояния.",
-
     ---- Movement
     ["config.jump.power"] = "Сила Прыжка",
     ["config.movement.bunnyhop.reduction"] = "Снижение скорости при баннихопе",
@@ -135,6 +130,10 @@ ax.localization:Register("ru", {
     ["config.speed.walk"] = "Скорость Ходьбы",
     ["config.speed.walk.crouched"] = "Скорость В Приседание",
     ["config.speed.walk.slow"] = "Скорость Медленной Ходьбы",
+
+    ---- Respawn
+    ["config.respawn.delay"] = "Задержка Возрождения",
+    ["config.respawn.delay.help"] = "Время в секундах перед возрождением игрока после смерти.",
 
     ---- Misc
     ["respawning"] = "Возрождение...",

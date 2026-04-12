@@ -71,6 +71,7 @@ ax.localization:Register("de", {
     ["subcategory.audio"] = "Audio",
     ["subcategory.audio"] = "Audio",
     ["subcategory.tools"] = "Werkzeuge",
+    ["subcategory.respawn"] = "Wiederbelebung",
 
     -- Store Translations
     ["store.enabled"] = "Aktiviert",
@@ -121,12 +122,6 @@ ax.localization:Register("de", {
     ["config.inventory.pagination.max_page_size.help"] = "Maximale Anzahl an Gegenstandsstapeln pro Seite.",
     ["config.inventory.restore.batch_size.help"] = "Anzahl an Weltinventar-Gegenständen, die pro Synchronisierungs-Batch wiederhergestellt werden.",
 
-    ---- Weapon Safety
-    ["config.weapon.raise.time"] = "Haltezeit zum Waffe heben",
-    ["config.weapon.raise.alwaysraised"] = "Waffe immer gehoben",
-    ["config.weapon.raise.time.help"] = "Wie lange die Nachladen-Taste gehalten werden muss (in Sekunden), bevor das Heben der Waffe umgeschaltet wird.",
-    ["config.weapon.raise.alwaysraised.help"] = "Wenn aktiv, haben alle Spieler ihre Waffe immer gehoben, unabhaengig vom individuellen Status.",
-
     ---- Movement
     ["config.jump.power"] = "Sprungkraft",
     ["config.movement.bunnyhop.reduction"] = "Geschwindigkeitsreduktion beim Bunnyhop",
@@ -134,6 +129,10 @@ ax.localization:Register("de", {
     ["config.speed.walk"] = "Gehgeschwindigkeit",
     ["config.speed.walk.crouched"] = "Gehgeschwindigkeit in der Hocke",
     ["config.speed.walk.slow"] = "Langsame Gehgeschwindigkeit",
+
+    ---- Respawn
+    ["config.respawn.delay"] = "Wiederbelebungszeit",
+    ["config.respawn.delay.help"] = "Zeit in Sekunden, bevor ein Spieler nach dem Tod respawnen kann.",
 
     ---- Misc
     ["respawning"] = "Respawne...",

@@ -31,9 +31,11 @@ function GM:DoPlayerDeath(client, attacker, damageInfo)
 
     client:SetDSP(31)
 
+    local respawnDelay = ax.config:Get("respawn.delay", 30)
+
     client:ResetRateLimit("respawn")
-    client:RateLimit("respawn", 30)
-    client:PerformAction(ax.localization:GetPhrase("respawning"), 30)
+    client:RateLimit("respawn", respawnDelay)
+    client:PerformAction(ax.localization:GetPhrase("respawning"), respawnDelay)
 
     local should = hook.Run("ShouldCreateRagdoll", client, attacker, damageInfo)
     if ( should != false ) then
