@@ -64,7 +64,7 @@ if ( SERVER ) then
         local sid64Owner = client:OwnerSteamID64()
         local sid64 = util.SteamIDTo64(steamid)
 
-        if ( sid64Owner != sid64 and  ) then
+        if ( sid64Owner != sid64 ) then
             client:Kick(ax.localization:GetPhrase("joinsecurity.antifamilyshare.kick_msg") or "You must own the game, not play it via family sharing.")
             print("Player " .. client:SteamName() .. "(" .. client:SteamID64() .. ")" .. " has been kicked for anti-family share violation.")
             return
