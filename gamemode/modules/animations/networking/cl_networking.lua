@@ -18,7 +18,7 @@ local function ApplyIK(client)
     client:SetIK(false)
     timer.Simple(0.1, function()
         if ( ax.util:IsValidPlayer(client) ) then
-            client:SetIK(client:GetMoveType() != MOVETYPE_NOCLIP)
+            client:SetIK(!client:InNoclip())
         end
     end)
 end
