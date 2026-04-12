@@ -95,10 +95,11 @@ ax.character:RegisterVar("faction", {
             local descriptionWrapped = ax.util:GetWrappedText(description, "ax.regular.bold", buttonWidth - ax.util:ScreenScale(16))
 
             local factionButton = factionList:Add("ax.button")
-            factionButton:SetText("", true, true)
-            factionButton:SetWide(buttonWidth)
             factionButton:Dock(LEFT)
             factionButton:DockMargin(ax.util:ScreenScale(2), 0, ax.util:ScreenScale(2), 0)
+            factionButton:SetText("", true, true)
+            factionButton:SetWide(buttonWidth)
+            factionButton:SetBlur(3)
             factionButton.DoClick = function()
                 table.Empty(payload or {})
                 payload.faction = v.index
@@ -141,7 +142,7 @@ ax.character:RegisterVar("faction", {
 
                 ax.theme:DrawGlassPanel(0, height - boxHeight, width, boxHeight, {
                     radius = 12,
-                    blur = 1.1,
+                    blur = 3,
                     flags = ax.render.SHAPE_IOS,
                     fill = glass.panel,
                     border = glass.panelBorder
