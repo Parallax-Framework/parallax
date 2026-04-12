@@ -391,7 +391,7 @@ function SWEP:AllowPickup(target)
     and physicsObject:GetMass() < ax.config:Get("hands.max.carry", 160)
     and !self:IsEntityStoodOn(target)
     and target.CanPickup != false )
-    and hook.Run("CanPlayerPickup", owner, target) != false
+    and hook.Run("PlayerCanPickup", owner, target) != false
 end
 
 function SWEP:DoPickup(throw)
