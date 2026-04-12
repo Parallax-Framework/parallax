@@ -26,24 +26,32 @@ ax.net:Hook("hands.reset", function(client)
 end)
 
 function SWEP:SetWeaponRaised(bRaised)
+    local owner = self:GetOwner()
+
+    if ( hook.Run("PlayerCanRaiseHands", owner, bRaised) == false ) then
+        return
+    end
+
     if ( bRaised ) then
         self:SetHoldType("fist")
 
-        local vm = self:GetOwner():GetViewModel()
+        local vm = owner:GetViewModel()
         vm:SendViewModelMatchingSequence(vm:LookupSequence("fists_draw"))
     else
         self:SetHoldType("normal")
 
-        local vm = self:GetOwner():GetViewModel()
+        local vm = owner:GetViewModel()
         local fistsHolster = vm:LookupSequence("fists_holster")
         vm:SendViewModelMatchingSequence(fistsHolster)
 
         timer.Simple(vm:SequenceDuration(fistsHolster), function()
-            if ( IsValid(self) and IsValid(self:GetOwner()) and !self:GetOwner():IsWeaponRaised() ) then
+            if ( IsValid(self) and IsValid(owner) and !owner:IsWeaponRaised() ) then
                 vm:SendViewModelMatchingSequence(vm:LookupSequence("idle"))
             end
         end)
     end
+
+    hook.Run("PlayerRaisedHands", owner, bRaised)
 end
 
 function SWEP:CalcLerpSpeed(eHoldingEntity)
