@@ -50,6 +50,12 @@ if ( SERVER ) then
         print("Version Mismatch toggled to: " .. tostring(!value))
     end)
 
+    concommand.Add("ax_joinsecurity_toggle_versionmismatch_branchmatch", function(client, cmd, args)
+        local value = ax.config:Get("joinsecurity.versionmismatch.branchmatch", true)
+        ax.config:Set("joinsecurity.versionmismatch.branchmatch", !value)
+        print("Version Mismatch Branch Match toggled to: " .. tostring(!value))
+    end)
+
     MODULE.GMODVERSION  = VERSION
     MODULE.GMODBRANCH   = BRANCH
     function MODULE:PlayerAuthed(client, steamid, _)
