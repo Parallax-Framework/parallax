@@ -894,7 +894,15 @@ function SLIDER:SetDecimals(d)
     self.decimals = tonumber(d) or 0
 end
 
+function SLIDER:SetSnap(snap)
+    self.snap = tonumber(snap) or 0
+end
+
 function SLIDER:RoundToDecimals(val)
+    if ( self.snap and self.snap > 0 ) then
+        val = math.Round(val / self.snap) * self.snap
+    end
+
     if ( self.decimals > 0 ) then return math.Round(val, self.decimals) end
     return math.Round(val)
 end
