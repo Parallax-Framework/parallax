@@ -28,6 +28,19 @@ ax.localization:Register("en", {
 })
 
 if ( SERVER ) then
+    concommand.Add("ax_joinsecurity_toggle_familyshare", function(client, cmd, args)
+        local value = ax.config:Get("joinsecurity.antifamilyshare", true)
+        ax.config:Set("joinsecurity.antifamilyshare", !value)
+
+        print("Anti-Family Share toggled to: " .. tostring(!value))
+    end)
+
+    concommand.Add("ax_joinsecurity_toggle_versionmismatch", function(client, cmd, args)
+        local value = ax.config:Get("joinsecurity.versionmismatch", true)
+        ax.config:Set("joinsecurity.versionmismatch", !value)
+        print("Version Mismatch toggled to: " .. tostring(!value))
+    end)
+
     MODULE.GMODVERSION = VERSION
 
     function MODULE:PlayerAuthed(client, steamid, _)
