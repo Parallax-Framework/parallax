@@ -382,7 +382,7 @@ function SKIN:PaintTextEntry(panel, w, h)
     end
 
     -- Placeholder text handling
-    if panel.GetPlaceholderText and panel.GetPlaceholderColor and panel:GetPlaceholderText() and panel:GetPlaceholderText():Trim() ~= "" and panel:GetPlaceholderColor() and (not panel:GetText() or panel:GetText() == "") then
+    if panel.GetPlaceholderText and panel.GetPlaceholderColor and panel:GetPlaceholderText() and panel:GetPlaceholderText():Trim() != "" and panel:GetPlaceholderColor() and (not panel:GetText() or panel:GetText() == "") then
         local oldText = panel:GetText()
         local str = panel:GetPlaceholderText()
         if str:StartsWith("#") then str = str:sub(2) end
