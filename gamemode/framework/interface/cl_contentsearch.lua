@@ -65,7 +65,7 @@ function PANEL:SetSearchType(stype, hookname)
 	end)
 
 	-- This stuff is only for the primary search
-	if hookname ~= "PopulateContent" then return end
+	if hookname != "PopulateContent" then return end
 	g_SpawnMenu.SearchPropPanel = self.PropPanel
 	hook.Add("StartSearch", "StartSearch", function()
 		if g_SpawnMenu:IsVisible() then return hook.Run("OnSpawnMenuClose") end
@@ -90,7 +90,7 @@ function PANEL:RefreshResults(str)
 		self.OldResults = -1
 	else
 		-- Don't force open the search when you click away from search while this function is called from cl_search_models.lua
-		if self.ContentPanel.SelectedPanel ~= self.PropPanel then return end
+		if self.ContentPanel.SelectedPanel != self.PropPanel then return end
 	end
 
 	if not str or str == "" then return end
