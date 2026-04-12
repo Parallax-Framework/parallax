@@ -482,6 +482,10 @@ function SWEP:DoPunch()
             dmgInfo:SetDamageForce(owner:GetAimVector() * 1000)
             dmgInfo:SetReportedPosition(owner:GetShootPos())
 
+            if ( hook.Run("PlayerPunchDamage", owner, entity, dmgInfo, trace) == false ) then
+                return
+            end
+
             owner:EmitSound(Sound("Flesh.ImpactHard"))
 
             if ( ax.util:IsValidPlayer(entity) ) then
