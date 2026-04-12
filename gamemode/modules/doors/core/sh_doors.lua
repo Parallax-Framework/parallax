@@ -90,9 +90,7 @@ properties.Add("door.manageusers", {
         if ( !IsValid(ent) or !ent:IsDoor() ) then return false end
         if ( !hook.Run( "CanProperty", client, "door.manageusers", ent ) ) then return false end
 
-        local owner = ent:GetDoorOwner()
-
-        return owner and client:GetChar() == owner
+        return client:HasDoorAccess(ent, MODULE.Permissions.EDIT_ACCESS)
     end,
     MenuOpen = function(self, menu, entity, trace)
         local subMenu = menu:AddSubMenu("Manage Users")
