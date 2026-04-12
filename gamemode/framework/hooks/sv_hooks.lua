@@ -35,60 +35,63 @@ function GM:DoPlayerDeath(client, attacker, damageInfo)
     client:RateLimit("respawn", 30)
     client:PerformAction(ax.localization:GetPhrase("respawning"), 30)
 
-    local ragdoll = ents.Create("prop_ragdoll")
-    ragdoll:SetModel(client:GetModel())
-    ragdoll:SetMaterial(client:GetMaterial())
-    ragdoll:SetSkin(client:GetSkin())
+    local should = hook.Run("ShouldCreateRagdoll", client, attacker, damageInfo)
+    if ( should != false ) then
+        local ragdoll = ents.Create("prop_ragdoll")
+        ragdoll:SetModel(client:GetModel())
+        ragdoll:SetMaterial(client:GetMaterial())
+        ragdoll:SetSkin(client:GetSkin())
 
-    local materials = client:GetMaterials()
-    for i = 1, #materials do
-        ragdoll:SetSubMaterial(i - 1, materials[i])
-    end
-
-    local bodyGroups = {}
-    for i = 0, client:GetNumBodyGroups() - 1 do
-        bodyGroups[i] = client:GetBodygroup(i)
-    end
-
-    for i = 0, #bodyGroups do
-        ragdoll:SetBodygroup(i, bodyGroups[i])
-    end
-
-    ragdoll:SetPos(client:GetPos())
-    ragdoll:SetAngles(client:GetAngles())
-    ragdoll:Spawn()
-    ragdoll:SetSequence(client:GetSequence())
-    ragdoll:Activate()
-
-    client:SetRelay("ragdoll.index", ragdoll:EntIndex())
-
-    if ( IsValid(ragdoll) ) then
-        local physicsObject = ragdoll:GetPhysicsObject()
-        if ( IsValid(physicsObject) ) then
-            physicsObject:SetVelocity(client:GetVelocity())
+        local materials = client:GetMaterials()
+        for i = 1, #materials do
+            ragdoll:SetSubMaterial(i - 1, materials[i])
         end
 
-        local velocity = client:GetVelocity()
-        for i = 0, ragdoll:GetPhysicsObjectCount() - 1 do
-            physicsObject = ragdoll:GetPhysicsObjectNum(i)
+        local bodyGroups = {}
+        for i = 0, client:GetNumBodyGroups() - 1 do
+            bodyGroups[i] = client:GetBodygroup(i)
+        end
+
+        for i = 0, #bodyGroups do
+            ragdoll:SetBodygroup(i, bodyGroups[i])
+        end
+
+        ragdoll:SetPos(client:GetPos())
+        ragdoll:SetAngles(client:GetAngles())
+        ragdoll:Spawn()
+        ragdoll:SetSequence(client:GetSequence())
+        ragdoll:Activate()
+
+        client:SetRelay("ragdoll.index", ragdoll:EntIndex())
+
+        if ( IsValid(ragdoll) ) then
+            local physicsObject = ragdoll:GetPhysicsObject()
             if ( IsValid(physicsObject) ) then
-                physicsObject:SetVelocity(velocity)
+                physicsObject:SetVelocity(client:GetVelocity())
+            end
 
-                local index = ragdoll:TranslatePhysBoneToBone(i)
-                if ( index != -1 ) then
-                    local pos, ang = client:GetBonePosition(index)
+            local velocity = client:GetVelocity()
+            for i = 0, ragdoll:GetPhysicsObjectCount() - 1 do
+                physicsObject = ragdoll:GetPhysicsObjectNum(i)
+                if ( IsValid(physicsObject) ) then
+                    physicsObject:SetVelocity(velocity)
 
-                    physicsObject:SetPos(pos)
-                    physicsObject:SetAngles(ang)
+                    local index = ragdoll:TranslatePhysBoneToBone(i)
+                    if ( index != -1 ) then
+                        local pos, ang = client:GetBonePosition(index)
+
+                        physicsObject:SetPos(pos)
+                        physicsObject:SetAngles(ang)
+                    end
                 end
             end
+
+            hook.Run("OnRagdollCreated", client, ragdoll, attacker, damageInfo)
+
+            SafeRemoveEntityDelayed(ragdoll, 300)
+
+            ragdoll:Fire("FadeAndRemove", 10, 300)
         end
-
-        hook.Run("OnRagdollCreated", client, ragdoll, attacker, damageInfo)
-
-        SafeRemoveEntityDelayed(ragdoll, 300)
-
-        ragdoll:Fire("FadeAndRemove", 10, 300)
     end
 
     local factionData = client:GetFactionData()
