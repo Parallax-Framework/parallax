@@ -113,6 +113,34 @@ function character:HasFlags(flags)
     return true
 end
 
+--- Returns the value of a bodygroup index for this character.
+-- Looks up the bodygroup value in the character's data table under `"bodygroups"` keyed by the index as a string. Returns 0 if no value is set for that index.
+-- @realm shared
+-- @param index number The bodygroup index to query.
+-- @return number The bodygroup value, or 0 if not set.
+function character:GetBodygroup(index)
+    local bodygroups = self:GetData("bodygroups", {})
+    return tonumber(bodygroups[tostring(index)]) or 0
+end
+
+--- Returns the value of a bodygroup by name for this character.
+-- Looks up the bodygroup value in the character's data table under `"bodygroups"` keyed by the name string. Returns 0 if no value is set for that name.
+-- @realm shared
+-- @param name string The bodygroup name to query.
+-- @return number The bodygroup value, or 0 if not set.
+function character:GetBodygroupName(name)
+    local bodygroups = self:GetData("bodygroups", {})
+    return tonumber(bodygroups[name]) or 0
+end
+
+--- Returns a table of all bodygroup values for this character.
+-- Returns the entire `"bodygroups"` table from the character's data, or an empty table if none is set. The keys are bodygroup indices as strings or bodygroup names, and the values are the corresponding bodygroup values as numbers. This is useful for iterating all bodygroups or when you need the full set of bodygroup values for saving or transferring to another character.
+-- @realm shared
+-- @return table A table of bodygroup values keyed by index (as strings) and name. Values are numbers. Returns an empty table if no bodygroups are set.
+function character:GetBodyGroups()
+    return self:GetData("bodygroups", {})
+end
+
 if ( SERVER ) then
     --- Sets a bodygroup on the character's player model and persists it.
     -- Immediately applies the bodygroup to the owning player (if online) via `Player:SetBodygroup`, then stores the value in the character's data under `"bodygroups"` keyed by the numeric index (as a string) and saves via `SetData`. The stored value is reapplied when the character loads.
