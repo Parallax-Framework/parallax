@@ -940,7 +940,7 @@ function SLIDER:GetValue()
 end
 
 function SLIDER:IsEditing()
-    return self.bEditing
+    return self.bEditing or self.dragging
 end
 
 function SLIDER:StartEditing()
