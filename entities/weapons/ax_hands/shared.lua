@@ -210,12 +210,17 @@ function SWEP:Drop(throw)
     if ( !self:CheckValidity() ) then return end
     if ( !self:AllowEntityDrop() ) then return end
 
+    local owner = self:GetOwner()
+    local entity = self:GetTable().axHoldingEntity
+
+    if ( hook.Run("PlayerCanDropEntity", owner, entity, throw or false) == false ) then
+        return
+    end
+
     if ( SERVER ) then
         local selfTable = self:GetTable()
         SafeRemoveEntity(selfTable.axConstraint)
         SafeRemoveEntity(selfTable.axCarry)
-
-        local entity = selfTable.axHoldingEntity
 
         local physicsObject = entity:GetPhysicsObject()
         if ( IsValid(physicsObject) ) then
@@ -233,10 +238,12 @@ function SWEP:Drop(throw)
             VelocityRemove(entity)
         end
 
-        entity:SetPhysicsAttacker(self:GetOwner())
+        entity:SetPhysicsAttacker(owner)
     end
 
     self:Reset(throw)
+
+    hook.Run("PlayerDropEntity", owner, entity, throw or false)
 end
 
 function SWEP:CheckValidity()
