@@ -28,6 +28,7 @@
 -- ax.util:DetectFileRealm("sv_database.lua")           -- "server"
 -- ax.util:DetectFileRealm("sh_config.lua")             -- "shared"
 -- ax.util:DetectFileRealm("framework/init.lua")        -- "shared"
+-- ax.util:DetectFileRealm("modules/rq_minstd.lua")     -- "require"
 function ax.util:DetectFileRealm(file)
     local fileName = string.GetFileFromFilename(file)
     if ( !fileName or !isstring(fileName) ) then
@@ -38,6 +39,10 @@ function ax.util:DetectFileRealm(file)
         fileName = utf8.lower(fileName)
     else
         fileName = string.lower(fileName)
+    end
+
+    if ( string.StartWith(fileName, "rq_") ) then
+        return "require"
     end
 
     -- Client-side patterns
@@ -170,6 +175,11 @@ function ax.util:IncludeDirectory(directory, fromLua, toSkip, timeFilter)
 
         -- Skip files in the toSkip list
         if ( toSkip and toSkip[fileName] ) then
+            continue
+        end
+
+        -- Skip rq_ files since they are not meant to be included directly
+        if ( string.StartWith(fileName, "rq_") ) then
             continue
         end
 
