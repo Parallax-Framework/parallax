@@ -1163,36 +1163,39 @@ function PANEL:Init()
             self.pendingTime = nil
         end
     end
-    self.Think = function()
-        if ( !IsValid(self.slider) ) then return end
 
-        self.slider.Label:SetTextColor(self:GetTextColor())
-        self.slider.TextArea:SetFont(self:GetFont())
-        self.slider.TextArea:SetTextColor(self:GetTextColor())
+    self:RegisterTooltipTarget(self.slider)
+end
 
-        local store = self:GetStore()
-        if ( self.deferredUpdate and !self.slider:IsEditing() and self.slider.ValueChangedDeferred ) then
-            if ( store ) then
-                store:Set(self.key, self.slider.ValueChangedDeferred)
-                self.slider.ValueChangedDeferred = nil
-                self.pendingValue = nil
-                self.pendingTime = nil
-            end
+function PANEL:OnThink()
+    BaseClass.OnThink(self)
 
-            return
-        end
+    if ( !IsValid(self.slider) ) then return end
 
-        if ( self.pendingValue != nil and self.pendingTime and !self.slider:IsEditing() and self.debounceTime and self.debounceTime > 0 and (CurTime() - self.pendingTime) >= self.debounceTime ) then
-            if ( store ) then
-                store:Set(self.key, self.pendingValue)
-            end
+    self.slider.Label:SetTextColor(self:GetTextColor())
+    self.slider.TextArea:SetFont(self:GetFont())
+    self.slider.TextArea:SetTextColor(self:GetTextColor())
 
+    local store = self:GetStore()
+    if ( self.deferredUpdate and !self.slider:IsEditing() and self.slider.ValueChangedDeferred ) then
+        if ( store ) then
+            store:Set(self.key, self.slider.ValueChangedDeferred)
+            self.slider.ValueChangedDeferred = nil
             self.pendingValue = nil
             self.pendingTime = nil
         end
+
+        return
     end
 
-    self:RegisterTooltipTarget(self.slider)
+    if ( self.pendingValue != nil and self.pendingTime and !self.slider:IsEditing() and self.debounceTime and self.debounceTime > 0 and (CurTime() - self.pendingTime) >= self.debounceTime ) then
+        if ( store ) then
+            store:Set(self.key, self.pendingValue)
+        end
+
+        self.pendingValue = nil
+        self.pendingTime = nil
+    end
 end
 
 function PANEL:SetKey(key)
