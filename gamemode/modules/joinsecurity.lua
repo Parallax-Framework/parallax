@@ -13,6 +13,11 @@ ax.config:Add("joinsecurity.versionmismatch", ax.type.bool, true, {
     category = "joinsecurity"
 })
 
+ax.config:Add("joinsecurity.versionmismatch.branchmatch", ax.type.bool, true, {
+    description = "joinsecurity.versionmismatch.branchmatch.help",
+    category = "joinsecurity"
+})
+
 ax.localization:Register("en", {
     ["category.joinsecurity"] = "Join Security",
 
@@ -23,6 +28,10 @@ ax.localization:Register("en", {
 
     ["config.joinsecurity.versionmismatch"] = "Version Mismatch",
     ["config.joinsecurity.versionmismatch.help"] = "Kicks players with mismatched client versions.",
+
+    ["config.joinsecurity.versionmismatch.branchmatch"] = "Branch Match",
+    ["config.joinsecurity.versionmismatch.branchmatch.help"] = "Only kicks players with mismatched client versions on the same branch.",
+
 
     ["joinsecurity.versionmismatch.kick_msg"] = "Your client version does not match the server's version.\nYours: %s\nServer: %s",
 })
@@ -41,32 +50,32 @@ if ( SERVER ) then
         print("Version Mismatch toggled to: " .. tostring(!value))
     end)
 
-    MODULE.GMODVERSION = VERSION
-
+    MODULE.GMODVERSION  = VERSION
+    MODULE.GMODBRANCH   = BRANCH
     function MODULE:PlayerAuthed(client, steamid, _)
         if ( !ax.config:Get("joinsecurity.antifamilyshare", true) ) then return end
 
         local sid64Owner = client:OwnerSteamID64()
         local sid64 = util.SteamIDTo64(steamid)
 
-        if ( sid64Owner != sid64 ) then
+        if ( sid64Owner != sid64 and  ) then
             client:Kick(ax.localization:GetPhrase("joinsecurity.antifamilyshare.kick_msg") or "You must own the game, not play it via family sharing.")
             print("Player " .. client:SteamName() .. "(" .. client:SteamID64() .. ")" .. " has been kicked for anti-family share violation.")
             return
         end
     end
 
-    ax.net:Hook("joinsecurity.versioncheck", function(client, clientVersion)
+    ax.net:Hook("joinsecurity.versioncheck", function(client, clientVersion, clientBranch)
         if ( !ax.config:Get("joinsecurity.versionmismatch", true) ) then return end
 
-        if ( clientVersion != MODULE.GMODVERSION ) then
-            --client:Kick(string.format(ax.localization:GetPhrase("joinsecurity.versionmismatch.kick_msg", clientVersion, MODULE.GMODVERSION) or "Your client version does not match the server's version.\nYours: %s\nServer: %s", clientVersion, MODULE.GMODVERSION))
-            --print("Player " .. client:SteamName() .. "(" .. client:SteamID64() .. ")" .. " has been kicked for version mismatch.")
+        if ( ( ax.config:Get("config.joinsecurity.versionmismatch.branchmatch", true) and clientBranch == MODULE.GMODBRANCH ) and clientVersion != MODULE.GMODVERSION ) then
+            client:Kick(string.format(ax.localization:GetPhrase("joinsecurity.versionmismatch.kick_msg", clientVersion, MODULE.GMODVERSION) or "Your client version does not match the server's version.\nYours: %s\nServer: %s", clientVersion, MODULE.GMODVERSION))
+            print("Player " .. client:SteamName() .. "(" .. client:SteamID64() .. ")" .. " has been kicked for version mismatch.")
             return
         end
     end)
 else
     function MODULE:OnClientCached()
-        ax.net:Start("joinsecurity.versioncheck", VERSION)
+        ax.net:Start("joinsecurity.versioncheck", VERSION, BRANCH)
     end
 end
