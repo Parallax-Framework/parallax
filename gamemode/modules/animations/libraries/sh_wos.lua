@@ -242,9 +242,9 @@ ax.animations.stored["player_overwatch"] = {
         ["reload"] = "gesture_reload_ar2"
     },
     ["rpg"] = {
-        [ACT_MP_STAND_IDLE] = {"idle1_rpg", "idle_rpg"},
-        [ACT_MP_WALK] = {"walk_all_rpg", "walk_rpg"},
-        [ACT_MP_RUN] = {"runall_rpg", "run_rpg"},
+        [ACT_MP_STAND_IDLE] = {"idle_passive", "idle_rpg"},
+        [ACT_MP_WALK] = {"walk_passive", "walk_rpg"},
+        [ACT_MP_RUN] = {"run_passive", "run_rpg"},
         [ACT_MP_CROUCH_IDLE] = {"cidle_passive", "cidle_rpg"},
         [ACT_MP_CROUCHWALK] = {"cwalk_passive", "cwalk_rpg"},
         [ACT_MP_JUMP] = {"jump_passive", "jump_rpg"},
