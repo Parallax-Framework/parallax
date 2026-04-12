@@ -282,7 +282,6 @@ local function HandleIntroduceKey(client, bind, pressed)
 
     local override = hook.Run("CanUseRecognitionIntroduce", client, bind, pressed)
     if ( override == false ) then return end
-    if ( override == true ) then return true end
 
     if ( !ax.util:IsValidPlayer(ax.client) ) then return end
 
@@ -293,7 +292,8 @@ local function HandleIntroduceKey(client, bind, pressed)
     local target = trace and trace.Entity or nil
 
     if ( !IsValid(target) or !ax.util:IsValidPlayer(target) or target == ax.client ) then
-        ax.notification:Add(ax.localization:GetPhrase("recognition.notify.no_target"))
+        -- Not sure if we want to notify the player in this case since they likely just have nothing targeted, but we can consider it.
+        -- ax.notification:Add(ax.localization:GetPhrase("recognition.notify.no_target"))
         return
     end
 
