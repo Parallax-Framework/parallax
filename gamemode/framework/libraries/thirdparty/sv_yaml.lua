@@ -271,7 +271,7 @@ exports.tokenize = function(str)
                     inline = false
                     lastIndents = indents
                     if indentAmount == 0 then indentAmount = #token[2][1] end
-                    if indentAmount ~= 0 then
+                    if indentAmount != 0 then
                         indents = #token[2][1] / indentAmount
                     else
                         indents = 0
@@ -487,7 +487,7 @@ Parser.parseTextBlock = function(self, sep)
     local token = self:advance()
     local result = string_trim(token.raw, "\n")
     local indents = 0
-    while self:peek() ~= nil and (indents > 0 or not self:peekType("dedent")) do
+    while self:peek() != nil and (indents > 0 or not self:peekType("dedent")) do
         local newtoken = self:advance()
         while token.row < newtoken.row do
             result = result .. sep
