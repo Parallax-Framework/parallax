@@ -30,7 +30,7 @@ function MODULE:PhysgunDrop(client, entity)
 end
 
 function MODULE:EntityTakeDamage(target, dmgInfo)
-    if ( ax.util:IsValidPlayer(target) and target:GetMoveType() == MOVETYPE_NOCLIP ) then
+    if ( ax.util:IsValidPlayer(target) and target:InNoclip() ) then
         return true
     end
 end

@@ -16,8 +16,7 @@ function MODULE:HUDPaint()
     if ( !ax.util:IsValidPlayer(client) or !client:IsAdmin() ) then return end
 
     if ( !ax.option:Get("admin.esp") ) then return end
-    if ( client:InVehicle() ) then return end
-    if ( client:GetMoveType() != MOVETYPE_NOCLIP ) then return end
+    if ( client:InVehicle() or !client:InNoclip() ) then return end
 
     self:DrawItems()
     self:DrawPlayers()
