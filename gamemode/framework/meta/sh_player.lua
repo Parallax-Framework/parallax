@@ -187,6 +187,15 @@ function ax.player.meta:HasFactionWhitelist(iFactionID)
     return whitelists[iFactionID] == true
 end
 
+--- Returns whether the player is currently in noclip mode.
+-- Checks if the player's move type is `MOVETYPE_NOCLIP` and if they are not drawing their model (as a proxy for being hidden in noclip).
+-- This is more reliable than just checking the move type, as some gamemodes (like DarkRP) set `MOVETYPE_NOCLIP` when the player is arrested but they are still solid and visible.
+-- @realm shared
+-- @return boolean True if the player is in noclip mode, false otherwise.
+function ax.player.meta:InNoclip()
+    return self:GetMoveType() == MOVETYPE_NOCLIP and self:GetNoDraw()
+end
+
 --- Returns whether the player is currently in a ragdolled state.
 -- Reads the `"ragdolled"` relay key set by `SetRagdolled`. Returns false when the relay has not been set or has been cleared.
 -- @realm shared
