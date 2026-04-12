@@ -44,27 +44,27 @@ end
 
 properties.Add("door.toggleownable", {
     MenuLabel = "Toggle Ownable",
-	Order = 9999,
-	MenuIcon = "icon16/fire.png",
+    Order = 9999,
+    MenuIcon = "icon16/fire.png",
 
-	Filter = function(self, ent, client)
-		if ( !IsValid(ent) or !ent:IsDoor() or !client:IsAdmin() ) then return false end
-		if ( !gamemode.Call( "CanProperty", client, "door.toggleownable", ent ) ) then return false end
+    Filter = function(self, ent, client)
+        if ( !IsValid(ent) or !ent:IsDoor() or !client:IsAdmin() ) then return false end
+        if ( !gamemode.Call( "CanProperty", client, "door.toggleownable", ent ) ) then return false end
 
-		return true
-	end,
-	Action = function(self, ent)
-		self:MsgStart()
-			net.WriteEntity( ent )
-		self:MsgEnd()
-	end,
-	Receive = function( self, length, client )
-		local ent = net.ReadEntity()
+        return true
+    end,
+    Action = function(self, ent)
+        self:MsgStart()
+            net.WriteEntity( ent )
+        self:MsgEnd()
+    end,
+    Receive = function( self, length, client )
+        local ent = net.ReadEntity()
 
-		if ( !properties.CanBeTargeted(ent, client) ) then return end
-		if ( !self:Filter(ent, client) ) then return end
+        if ( !properties.CanBeTargeted(ent, client) ) then return end
+        if ( !self:Filter(ent, client) ) then return end
 
-		local currentUnownable = ax.data:Get("doors_unownable", {}, {
+        local currentUnownable = ax.data:Get("doors_unownable", {}, {
             scope = "map",
         })
 
@@ -78,5 +78,5 @@ properties.Add("door.toggleownable", {
         ax.data:Set("doors_unownable", currentUnownable, {
             scope = "map",
         })
-	end
+    end
 })

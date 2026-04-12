@@ -1046,19 +1046,19 @@ function PANEL:PopulateInfo(stack)
     end
 
     local mins, maxs = camController.Entity:GetModelBounds()
-	local center = ( mins + maxs ) / 2
+    local center = ( mins + maxs ) / 2
 
-	local hit1 = util.IntersectRayWithPlane( camController.vCamPos, camController.aLookAngle:Forward(), vector_origin, Vector( 0, 0, 1 ) )
-	camController.OrbitPoint = hit1
+    local hit1 = util.IntersectRayWithPlane( camController.vCamPos, camController.aLookAngle:Forward(), vector_origin, Vector( 0, 0, 1 ) )
+    camController.OrbitPoint = hit1
 
-	local hit2 = util.IntersectRayWithPlane( camController.vCamPos, camController.aLookAngle:Forward(), vector_origin, Vector( 0, 1, 0 ) )
-	if ( ( !hit1 and hit2 ) or hit2 and hit2:Distance( camController.Entity:GetPos() ) < hit1:Distance( camController.Entity:GetPos() ) ) then camController.OrbitPoint = hit2 end
+    local hit2 = util.IntersectRayWithPlane( camController.vCamPos, camController.aLookAngle:Forward(), vector_origin, Vector( 0, 1, 0 ) )
+    if ( ( !hit1 and hit2 ) or hit2 and hit2:Distance( camController.Entity:GetPos() ) < hit1:Distance( camController.Entity:GetPos() ) ) then camController.OrbitPoint = hit2 end
 
-	local hit3 = util.IntersectRayWithPlane( camController.vCamPos, camController.aLookAngle:Forward(), vector_origin, Vector( 1, 0, 0 ) )
-	if ( ( ( !hit1 or !hit2 ) and hit3 ) or hit3 and hit3:Distance( camController.Entity:GetPos() ) < hit2:Distance( camController.Entity:GetPos() ) ) then camController.OrbitPoint = hit3 end
+    local hit3 = util.IntersectRayWithPlane( camController.vCamPos, camController.aLookAngle:Forward(), vector_origin, Vector( 1, 0, 0 ) )
+    if ( ( ( !hit1 or !hit2 ) and hit3 ) or hit3 and hit3:Distance( camController.Entity:GetPos() ) < hit2:Distance( camController.Entity:GetPos() ) ) then camController.OrbitPoint = hit3 end
 
-	camController.OrbitPoint = camController.OrbitPoint or center
-	camController.OrbitDistance = ( camController.OrbitPoint - camController.vCamPos ):Length()
+    camController.OrbitPoint = camController.OrbitPoint or center
+    camController.OrbitDistance = ( camController.OrbitPoint - camController.vCamPos ):Length()
 
     camController:SetCamPos(camController.OrbitPoint - camController.aLookAngle:Forward() * camController.OrbitDistance)
 
