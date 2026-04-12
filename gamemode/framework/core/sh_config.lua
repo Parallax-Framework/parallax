@@ -245,6 +245,7 @@ ax.config:Add("speed.walk", ax.type.number, 90, {
     min = 50,
     max = 500,
     decimals = 0,
+    snap = 5,
     category = "gameplay",
     subCategory = "movement",
     OnChanged = function(_valOld, valNew)
@@ -259,6 +260,7 @@ ax.config:Add("speed.run", ax.type.number, 200, {
     min = 100,
     max = 600,
     decimals = 0,
+    snap = 5,
     category = "gameplay",
     subCategory = "movement",
     OnChanged = function(_valOld, valNew)
