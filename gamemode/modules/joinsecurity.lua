@@ -52,6 +52,7 @@ if ( SERVER ) then
         if ( sid64Owner != sid64 ) then
             client:Kick(ax.localization:GetPhrase("joinsecurity.antifamilyshare.kick_msg") or "You must own the game, not play it via family sharing.")
             print("Player " .. client:SteamName() .. "(" .. client:SteamID64() .. ")" .. " has been kicked for anti-family share violation.")
+            return
         end
     end
 
@@ -60,9 +61,9 @@ if ( SERVER ) then
 
         if ( clientVersion != MODULE.GMODVERSION ) then
             client:Kick(string.format(ax.localization:GetPhrase("joinsecurity.versionmismatch.kick_msg", clientVersion, MODULE.GMODVERSION) or "Your client version does not match the server's version.\nYours: %s\nServer: %s", clientVersion, MODULE.GMODVERSION))
+            print("Player " .. client:SteamName() .. "(" .. client:SteamID64() .. ")" .. " has been kicked for version mismatch.")
+            return
         end
-
-        print("Player " .. client:SteamName() .. "(" .. client:SteamID64() .. ")" .. " has been kicked for version mismatch.")
     end)
 else
     function MODULE:OnClientCached()
