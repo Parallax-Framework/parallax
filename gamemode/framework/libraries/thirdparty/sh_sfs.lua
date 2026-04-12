@@ -256,7 +256,7 @@ do
             end
             write_u32(buf, u32)
             return u32
-        elseif num ~= num then -- NaN check
+        elseif num != num then -- NaN check
             u32 = 0x7FFFFFFF
             write_u32(buf, u32)
             return u32
@@ -316,7 +316,7 @@ do
             write_u32(buf, u32_1)
             write_u32(buf, u32_2)
             return
-        elseif num ~= num then -- NaN check
+        elseif num != num then -- NaN check
             u32_1 = 0x7FFFFFFF
             u32_2 = 1
             write_u32(buf, u32_1)
@@ -476,7 +476,7 @@ do
         for k, v in pairs(tbl) do
             if is_pure_array then
                 -- check if this key breaks array assumption
-                if type(k) ~= "number" or k ~= n + 1 or k % 1 ~= 0 then
+                if type(k) != "number" or k != n + 1 or k % 1 != 0 then
                     -- if it's pure hash, then write as table directly
                     if n == 0 then
                         buf[tag_pos] = chars[TABLE]
@@ -511,8 +511,8 @@ do
     end
 
     encoders.number = function(buf, num)
-        -- a number like 1.7976931348623e308 will fail with % 1 ~= 0, but if you subtract 1 from it, it will still equal itself
-        if num % 1 ~= 0 or num - 1 == num then -- DOUBLE
+        -- a number like 1.7976931348623e308 will fail with % 1 != 0, but if you subtract 1 from it, it will still equal itself
+        if num % 1 != 0 or num - 1 == num then -- DOUBLE
             write_byte(buf, DOUBLE)
             write_double(buf, num)
             return
@@ -780,7 +780,7 @@ do
         -- mantissa >> 23
         local mantissa_scaled = mantissa / (2 ^ 23)
 
-        if exponent_field ~= 0 then
+        if exponent_field != 0 then
             -- Normal numbers
             mantissa_scaled = mantissa_scaled + 1
             local actual_exponent = exponent_field - 127
@@ -822,7 +822,7 @@ do
         -- mantissa_upper << 32 + u32_2
         local mantissa_scaled = mantissa_upper * (2 ^ 32) + u32_2
 
-        if exponent_field ~= 0 then
+        if exponent_field != 0 then
             -- Normal numbers
             mantissa_scaled = (mantissa_scaled / (2 ^ 52)) + 1
             local actual_exponent = exponent_field - 1023
@@ -838,7 +838,7 @@ do
     local function read_array(ctx, till)
         local arr = { nil, nil, nil, nil, nil, nil, nil, nil, nil, nil } -- initialize with size of 10
         local size = 0
-        while peak_type(ctx) ~= till do
+        while peak_type(ctx) != till do
             local val, err = read_value(ctx)
             if err then
                 return nil, err
@@ -853,7 +853,7 @@ do
 
     local function read_table(ctx, till)
         local tbl = { nil, nil, nil, nil, nil, nil, nil, nil, nil, nil } -- initialize with size of 10
-        while peak_type(ctx) ~= till do
+        while peak_type(ctx) != till do
             local key, val, err
             key, err = read_value(ctx)
             if err then
@@ -871,13 +871,13 @@ do
     Decoder.read_table = read_table
 
     function Decoder.setup_context(bytes, max_size)
-        if type(bytes) ~= "string" then
+        if type(bytes) != "string" then
             return nil, "bytes must be a string"
         end
 
         if max_size == nil then
             max_size = 1 / 0 -- math.huge
-        elseif type(max_size) ~= "number" then
+        elseif type(max_size) != "number" then
             return nil, "max_size must be a number"
         elseif max_size < 1 then
             return nil, "max_size must be greater than 0"
@@ -1169,7 +1169,7 @@ do
         if err then return nil, err end
 
         -- hash part
-        while peak_type(ctx) ~= ENDING do
+        while peak_type(ctx) != ENDING do
             local key, val
             key, err = read_value(ctx)
             if err then return nil, err end
