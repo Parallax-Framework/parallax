@@ -90,6 +90,9 @@ local DOOR_CLASSES = {
     ["func_door"] = true,
 }
 
+--- Checks if an entity is a door.
+-- @realm shared
+-- @return boolean True if the entity is a door or it passes the IsEntityDoor hook.
 function ENTITY:IsDoor()
     local try = hook.Run("IsEntityDoor", self)
     if ( try != nil ) then
