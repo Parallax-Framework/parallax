@@ -333,4 +333,7 @@ ax.localization:Register("en", {
     ["config.chatbox.recommendations.command_limit"] = "Chatbox Command Recommendation Limit",
     ["config.chatbox.recommendations.voice_limit"] = "Chatbox Voice Recommendation Limit",
     ["config.chatbox.recommendations.wrap_cycle"] = "Chatbox Recommendation Cycle Wrap",
+
+    ["scoreboard.context.copy_steamid"] = "Copy SteamID",
+    ["scoreboard.context.view_profile"] = "View Profile"
 })

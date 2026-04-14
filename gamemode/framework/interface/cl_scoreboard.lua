@@ -106,9 +106,13 @@ function PANEL:RebuildScoreboard()
             function row:OnMousePressed(code)
                 if ( code == MOUSE_RIGHT ) then
                     local menu = DermaMenu()
-                    menu:AddOption("View Profile", function()
+                    menu:AddOption(ax.localization:GetPhrase("scoreboard.context.view_profile"), function()
                         gui.OpenURL("http://steamcommunity.com/profiles/" .. client:SteamID64())
                     end):SetIcon("icon16/user_go.png")
+
+                    menu:AddOption(ax.localization:GetPhrase("scoreboard.context.copy_steamid"), function()
+                        SetClipboardText(client:SteamID64())
+                    end):SetIcon("icon16/application_edit.png")
 
                     -- Allow modules to populate the menu
                     local ok, err = pcall(hook.Run, "PopulateScoreboardPlayerContext", menu, client, row)
