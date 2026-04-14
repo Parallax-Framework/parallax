@@ -5,21 +5,24 @@ MODULE.author = "bloodycop6385"
 
 ax.config:Add("joinsecurity.antifamilyshare", ax.type.bool, true, {
     description = "joinsecurity.antifamilyshare.help",
-    category = "joinsecurity"
+    subCategory = "joinsecurity",
+    category = "general",
 })
 
 ax.config:Add("joinsecurity.versionmismatch", ax.type.bool, true, {
     description = "joinsecurity.versionmismatch.help",
-    category = "joinsecurity"
+    subCategory = "joinsecurity",
+    category = "general",
 })
 
 ax.config:Add("joinsecurity.versionmismatch.branchmatch", ax.type.bool, true, {
     description = "joinsecurity.versionmismatch.branchmatch.help",
-    category = "joinsecurity"
+    subCategory = "joinsecurity",
+    category = "general",
 })
 
 ax.localization:Register("en", {
-    ["category.joinsecurity"] = "Join Security",
+    ["subcategory.joinsecurity"] = "Join Security",
 
     ["config.joinsecurity.antifamilyshare"] = "Anti-Family Share",
     ["config.joinsecurity.antifamilyshare.help"] = "Kicks players that have the game via family sharing.",
@@ -31,7 +34,6 @@ ax.localization:Register("en", {
 
     ["config.joinsecurity.versionmismatch.branchmatch"] = "Branch Match",
     ["config.joinsecurity.versionmismatch.branchmatch.help"] = "Only kicks players with mismatched client versions on the same branch as the server.",
-
 
     ["joinsecurity.versionmismatch.kick_msg"] = "Your client version does not match the server's version.\nYours: %s\nServer: %s",
 })
