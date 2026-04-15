@@ -175,7 +175,7 @@ function GM:PostRenderCurvy()
 
     local shouldDraw = hook.Run("ShouldDrawVersionWatermark")
     if ( shouldDraw != false and ax.version and ax.version.data and ax.version.data.version ) then
-        if ( self.lastRemoteVersionCheck and self.lastRemoteVersionCheck < CurTime() ) then
+        if ( ( self.lastRemoteVersionCheck or 0 ) < CurTime() ) then
             self.lastRemoteVersionCheck = CurTime() + VERSION_REMOTE_INTERVAL_CHECK
 
             http.Fetch(REMOTE_VERSION_URL, function(body)
@@ -192,7 +192,7 @@ function GM:PostRenderCurvy()
         end
 
         if ( LATEST_VERSION_REMOTE and ax.version.data.version != LATEST_VERSION_REMOTE ) then
-            versionText = versionText .. " - Newer version available!"
+            versionText = versionText .. " - Outdated!"
         end
 
 
