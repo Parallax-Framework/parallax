@@ -10,6 +10,5 @@
 ]]
 
 ax.config:Add("example_setting", ax.type.bool, true, {
-    category = "Example",
-    bNetworked = true,
+    category = "Example"
 })
