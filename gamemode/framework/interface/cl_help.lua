@@ -174,7 +174,7 @@ function HELP:AddCompactCard(parent, width, data)
         end
     end
 
-    self:AddPaintCard(parent, height, data.accentColor, function(this, cardWidth, cardHeight, glass)
+    return self:AddPaintCard(parent, height, data.accentColor, function(this, cardWidth, cardHeight, glass)
         local x = xOffset
         local y = HELP_CARD_PADDING
         local badgeColor = data.badgeColor or data.accentColor or glass.progress
@@ -217,7 +217,7 @@ function HELP:AddStatsCard(parent, title, rows, accentColor)
     local rowHeight = ax.util:GetTextHeight(rowFont)
     local height = HELP_CARD_PADDING * 2 + titleHeight + ax.util:ScreenScaleH(6) + (#rows * (rowHeight + ax.util:ScreenScaleH(5)))
 
-    self:AddPaintCard(parent, height, accentColor, function(this, width, panelHeight, glass)
+    return self:AddPaintCard(parent, height, accentColor, function(this, width, panelHeight, glass)
         local x = HELP_CARD_PADDING + HELP_CARD_ACCENT + ax.util:ScreenScale(6)
         local y = HELP_CARD_PADDING
         local right = width - HELP_CARD_PADDING
