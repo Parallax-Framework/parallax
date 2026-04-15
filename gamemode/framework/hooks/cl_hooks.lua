@@ -166,16 +166,35 @@ function GM:ShouldDrawVersionWatermark()
 end
 
 local WATERMARK_COL = Color(255, 255, 255, 50)
+local LATEST_VERSION_REMOTE = nil
+local VERSION_REMOTE_INTERVAL_CHECK = 30
+local REMOTE_VERSION_URL = "https://raw.githubusercontent.com/Parallax-Framework/parallax/refs/heads/main/version.json"
 function GM:PostRenderCurvy()
     local _, height = ScrW(), ScrH()
     ax.notification:Render()
 
     local shouldDraw = hook.Run("ShouldDrawVersionWatermark")
     if ( shouldDraw != false and ax.version and ax.version.data and ax.version.data.version ) then
+        if ( self.lastRemoteVersionCheck and self.lastRemoteVersionCheck < CurTime() ) then
+            self.lastRemoteVersionCheck = CurTime() + VERSION_REMOTE_INTERVAL_CHECK
+
+            http.Fetch(REMOTE_VERSION_URL, function(body)
+                local success, data = pcall(util.JSONToTable, body)
+                if ( success and data and data.version ) then
+                    LATEST_VERSION_REMOTE = data.version
+                end
+            end)
+        end
+
         local versionText = string.format("Parallax v%s", ax.version.data.version)
         if ( ax.version.data.commitHash ) then
             versionText = versionText .. " (" .. ax.version.data.commitHash .. ")"
         end
+
+        if ( LATEST_VERSION_REMOTE and ax.version.data.version != LATEST_VERSION_REMOTE ) then
+            versionText = versionText .. " - Newer version available!"
+        end
+
 
         draw.SimpleText(versionText, "ax.small.bold", ax.util:ScreenScale(4), height - ax.util:ScreenScaleH(4), WATERMARK_COL, TEXT_ALIGN_LEFT, TEXT_ALIGN_BOTTOM)
     end
