@@ -193,6 +193,7 @@ function ax.util:CreateStore(spec, oldStore)
     -- `data` fields:
     -- - `category` string: grouping label for UI (default `"general"`).
     -- - `bNoNetworking` boolean: exclude this key from network sync.
+    -- - `bServerOnly` boolean: (config only) value lives only on the server and is never transmitted to clients. Implies `bNoNetworking` and skips registration entirely on the client side, so `ax.config:Get` on the client returns the caller's fallback rather than a misleading default.
     -- - `min` / `max` number: clamp bounds applied when the type is `ax.type.number`.
     -- - `decimals` number: decimal precision for number clamping.
     -- - `choices` table / `populate` function: valid values for `ax.type.array`. `populate()` is called to build the choices list dynamically.
@@ -212,6 +213,10 @@ function ax.util:CreateStore(spec, oldStore)
 
         data = data or {}
 
+        if ( spec.name == "config" and data.bServerOnly and CLIENT ) then
+            return true
+        end
+
         store.registry[key] = {
             type = type,
             default = default,
@@ -220,7 +225,7 @@ function ax.util:CreateStore(spec, oldStore)
 
         store.defaults[key] = default
 
-        if ( !data.bNoNetworking ) then
+        if ( !data.bNoNetworking and !(spec.name == "config" and data.bServerOnly) ) then
             store.networkedKeys[key] = true
         end
 

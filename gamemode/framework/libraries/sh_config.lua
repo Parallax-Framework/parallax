@@ -23,14 +23,18 @@
 -- @section accessors
 
 --- Register a config key definition.
+-- Set `data.bServerOnly = true` to keep the value strictly on the server: it is
+-- never transmitted to clients, and the key is not registered in the client
+-- registry at all (client `Get` calls return the caller's fallback).
 -- @realm shared
 -- @function ax.config:Add
 -- @param key string Unique config key
 -- @param type any `ax.type` value used for sanitization/coercion
 -- @param default any Default value for the key
--- @param[opt] data table Metadata (description, category, min/max, decimals, `OnChanged`, etc.)
+-- @param[opt] data table Metadata (description, category, min/max, decimals, `OnChanged`, `bServerOnly`, etc.)
 -- @return boolean success True on success
 -- @usage ax.config:Add("voice.distance", ax.type.number, 512, { min = 64, max = 4096, category = "voice" })
+-- @usage ax.config:Add("admin.webhook", ax.type.string, "", { bServerOnly = true, category = "general" })
 
 --- Get a config value.
 -- On the client, this returns the replicated cache value when available.
@@ -117,6 +121,7 @@
     Examples:
     ax.config:Add("thirdperson", ax.type.bool, true, { description = "Enable third-person view.", category = "camera", subCategory = "thirdperson" })
     ax.config:Add("gravityScale", ax.type.number, 1, { min = 0.1, max = 3, decimals = 2, bNoNetworking = true, category = "gameplay", subCategory = "physics" })
+    ax.config:Add("admin.webhook", ax.type.string, "", { description = "Discord webhook URL.", bServerOnly = true, category = "general", subCategory = "admin" })
 
     ax.config:Set("thirdperson", false)
     print(ax.config:Get("thirdperson", true))  -- server: source of truth; client: cached
