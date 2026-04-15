@@ -166,7 +166,7 @@ function GM:ShouldDrawVersionWatermark()
 end
 
 local WATERMARK_COL = Color(255, 255, 255, 50)
-local LATEST_VERSION_REMOTE = nil
+local LATEST_VERSION_REMOTE = LATEST_VERSION_REMOTE or nil
 local VERSION_REMOTE_INTERVAL_CHECK = 30
 local REMOTE_VERSION_URL = "https://raw.githubusercontent.com/Parallax-Framework/parallax/refs/heads/main/version.json"
 function GM:PostRenderCurvy()
