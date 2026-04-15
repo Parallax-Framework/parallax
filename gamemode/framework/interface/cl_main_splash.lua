@@ -106,9 +106,14 @@ function PANEL:Init()
         disconnectButton.DoClick = function()
             Derma_Query("Are you sure you want to disconnect?", "Disconnect",
                 "Yes", function()
-                    RunConsoleCommand("disconnect")
+                    local canDisconnect = hook.Run("MainMenuDisconnect", self)
+                    if ( canDisconnect != false ) then
+                        RunConsoleCommand("disconnect")
+                    end
                 end,
-                "No", function() end
+                "No", function()
+                    hook.Run("MainMenuDisconnectCancelled", self)
+                end
             )
         end
     end
