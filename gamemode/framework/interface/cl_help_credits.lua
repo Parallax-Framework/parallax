@@ -11,6 +11,7 @@ local CREDITS = {
 
     {"76561199122803303", "Winkarst-cpu", ax.localization:GetPhrase("credit.contributor")},           -- https://steamcommunity.com/profiles/76561199122803303/
     {"76561199208575979", "Flexgg13", ax.localization:GetPhrase("credit.contributor")},              -- https://steamcommunity.com/profiles/76561199208575979/
+    {"76561198151383580", "cuboxis", ax.localization:GetPhrase("credit.contributor")},                -- https://steamcommunity.com/profiles/76561198151383580/
 
     {"76561198882429953", "reallordmax", ax.localization:GetPhrase("credit.brainfucker")}                 -- https://steamcommunity.com/profiles/76561198882429953/
 }
