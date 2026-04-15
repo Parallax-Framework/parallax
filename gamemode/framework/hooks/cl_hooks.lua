@@ -499,9 +499,24 @@ function GM:DrawDeathNotice(_x, _y)
 end
 
 function GM:OnPauseMenuShow()
-    if ( IsValid(ax.gui.main) and ax.client:GetCharacter() ) then
+    if ( ax.gui.bPauseLegacy ) then
+        ax.gui.bPauseLegacy = false
+        return
+    end
+
+    if ( !ax.client:GetCharacter() ) then return end
+
+    if ( IsValid(ax.gui.main) ) then
         ax.gui.main:Remove()
     end
+
+    if ( IsValid(ax.gui.pause) ) then
+        ax.gui.pause:Close()
+    else
+        vgui.Create("ax.pause")
+    end
+
+    return false
 end
 
 ax.viewstack:RegisterModifier("ragdoll", function(client, patch)

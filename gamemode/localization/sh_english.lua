@@ -36,6 +36,14 @@ ax.localization:Register("en", {
     ["mainmenu.options"] = "Options",
     ["mainmenu.play"] = "Play",
 
+    -- Pause Menu Translations
+    ["pause.title"] = "Paused",
+    ["pause.resume"] = "Resume",
+    ["pause.characters"] = "Characters",
+    ["pause.options"] = "Options",
+    ["pause.disconnect"] = "Disconnect",
+    ["pause.legacy"] = "Legacy Menu",
+
     -- Tab Menu Translations
     ["tab.config"] = "Config",
     ["tab.help"] = "Help",
