@@ -102,7 +102,7 @@ end
     }
 ]]
 --- Returns the bodygroup overrides table for this item.
--- The table maps bodygroup IDs (string or number keys) to their desired values. The format is `{ ["groupID"] = groupValue }` where groupID can be either the numeric bodygroup index or a named string resolved via `ax.item:ResolveBodygroupIndex`.
+-- The table maps bodygroup IDs (string or number keys) to their desired values. The format is `{ ["groupID"] = groupValue }` where groupID can be either the numeric bodygroup index or a named string resolved via `ax.util:ResolveBodygroupIndex`.
 -- Returns an empty table when no bodygroups are defined.
 -- @realm shared
 -- @return table The bodygroups table, or `{}` if not set.
@@ -132,7 +132,7 @@ function item:HasAppearanceOverrides()
 end
 
 --- Applies this item's visual appearance to a world entity.
--- Sets the entity's skin, material, color, and bodygroups from the item's current values. Bodygroup IDs are resolved through `ax.item:ResolveBodygroupIndex` which supports both numeric indices and named string keys. Skips bodygroups whose index cannot be resolved. Returns false immediately if `entity` is not valid.
+-- Sets the entity's skin, material, color, and bodygroups from the item's current values. Bodygroup IDs are resolved through `ax.util:ResolveBodygroupIndex` which supports both numeric indices and named string keys. Skips bodygroups whose index cannot be resolved. Returns false immediately if `entity` is not valid.
 -- @realm shared
 -- @param entity Entity The entity to apply appearance properties to.
 -- @return boolean True on success, false if `entity` is not valid.
@@ -147,7 +147,7 @@ function item:ApplyAppearance(entity)
     entity:SetColor(color)
 
     for groupID, value in pairs(self:GetBodygroups()) do
-        local bodygroupIndex = ax.item:ResolveBodygroupIndex(entity, groupID)
+        local bodygroupIndex = ax.util:ResolveBodygroupIndex(entity, groupID)
         if ( bodygroupIndex == nil ) then
             continue
         end
