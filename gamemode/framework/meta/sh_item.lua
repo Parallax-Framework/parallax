@@ -15,11 +15,11 @@ item.id = item.id
 item.class = item.class
 
 --- Returns a human-readable string representation of the item.
--- Format: `"Item [id][name]"`. Useful for debug output and logging.
+-- Format: `"Item [id][name][class]"`. Useful for debug output and logging.
 -- @realm shared
 -- @return string A formatted string identifying this item.
 function item:__tostring()
-    return string.format("Item [%d][%s]", self.id, self.name or "Unknown")
+    return string.format("Item [%d][%s][%s]", self.id, self:GetName(), self:GetClass())
 end
 
 --- Returns the unique numeric ID of this item instance.
@@ -35,7 +35,7 @@ end
 -- @realm shared
 -- @return string The item's class name string.
 function item:GetClass()
-    return self.class
+    return self.class or "undefined_item_class"
 end
 
 --- Returns the display name of this item.
