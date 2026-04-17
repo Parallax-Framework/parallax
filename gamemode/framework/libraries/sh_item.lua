@@ -313,10 +313,6 @@ function ax.item:CreateDefaultTakeAction()
                     ))
 
                     if ( IsValid(entity) ) then
-                        entity:GetTable().axBeingPickedUp = true
-                    end
-
-                    if ( IsValid(entity) ) then
                         hook.Run("OnPlayerItemTake", client, entity, item)
                         SafeRemoveEntity(entity)
                     else
