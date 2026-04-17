@@ -691,6 +691,13 @@ else
         clientTable.axEnsureCallbacks = clientTable.axEnsureCallbacks or {}
         clientTable.axEnsureCallbacks[#clientTable.axEnsureCallbacks + 1] = callback
     end
+
+    local DEV_CONVAR = GetConVar("developer")
+    function ax.player.meta:InDevMode(iMinLvl)
+        if ( iMinLvl == nil ) then iMinLvl = 1 end
+
+        return DEV_CONVAR:GetInt() >= iMinLvl
+    end
 end
 
 --- Returns the number of seconds the player has been connected in this session.

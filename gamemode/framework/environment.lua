@@ -8,7 +8,6 @@ cvars.AddChangeCallback("ax_environment_name", function(convar, old, new)
     ax.ENV.name = new
     BroadcastLua("ax.ENV.name = \"" .. new .. "\"")
 end, "ax_env_update")
-
 function ax.ENV:IsDev()
-    return self.name != "prod"
+    return self.name != "prod" or GetConVar("developer"):GetInt() > 0
 end
