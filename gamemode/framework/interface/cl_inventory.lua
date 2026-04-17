@@ -964,6 +964,22 @@ function PANEL:PopulateItems()
                     self:PopulateInfo(stack)
                 end
 
+                item.DoRightClick = function(this)
+                    if ( !ax.ENV:IsDev() ) then return end
+
+                    local dMenu = DermaMenu()
+                    local itemID = representativeItem:GetID()
+                    dMenu:AddOption("Copy Item ID (" .. itemID .. ")", function()
+                        SetClipboardText(itemID)
+                    end)
+
+                    dMenu:AddOption("Copy Item Class (" .. representativeItem.class .. ")", function()
+                        SetClipboardText(representativeItem.class)
+                    end)
+
+                    dMenu:Open()
+                end
+
                 local useModelPanel = istable(representativeItem) and ax.item:NeedsSpawnIconRebuild(representativeItem)
                 local icon = item:Add(useModelPanel and "DModelPanel" or "SpawnIcon")
                 icon:SetWide(INVENTORY_GRID_ITEM_HEIGHT - 16)
