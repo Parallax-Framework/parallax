@@ -75,7 +75,7 @@ function PANEL:AddCVar( strText, convar, on, off, funcFunction )
 	local pnl = vgui.Create( "DMenuOptionCVar", self )
 	pnl:SetMenu( self )
 	pnl:SetText( ax.localization:GetPhrase(strText) )
-	pnl:SetFont( "ax.regular" )
+	pnl:SetFont( "ax.small" )
 	if ( funcFunction ) then pnl.DoClick = funcFunction end
 
 	pnl:SetConVar( convar )
@@ -108,7 +108,7 @@ function PANEL:AddSubMenu( strText, funcFunction )
 	local SubMenu = pnl:AddSubMenu()
 
 	pnl:SetText( ax.localization:GetPhrase(strText) )
-	pnl:SetFont( "ax.regular" )
+	pnl:SetFont( "ax.small" )
 	if ( funcFunction ) then pnl.DoClick = funcFunction end
 
 	self:AddPanel( pnl )
@@ -374,7 +374,7 @@ function PANEL:Init()
 	self:SetTextInset( 8, 0 )
 	self:SetIsMenu( true )
 	self:SetSortItems( true )
-	self:SetFont( "ax.regular" )
+	self:SetFont( "ax.small" )
 	self.UpdateColours = function( p )
 		if ( !p:IsEnabled() ) then
 			return p:SetTextColor( ax.theme:GetGlass().textMuted )
