@@ -15,16 +15,17 @@ ax.net:Hook("player.actionbar.stop", function(client, bCancelled)
 
     ax.net:Start(client, "player.actionbar.stop", bCancelled)
 
-    if ( bCancelled and isfunction(clientTable.axActionBar.onCancel) ) then
-        clientTable.axActionBar.onCancel()
-        clientTable.axActionBar.onCancel = nil
-    elseif ( !bCancelled and isfunction(clientTable.axActionBar.onComplete) ) then
-        clientTable.axActionBar.onComplete()
-        clientTable.axActionBar.onComplete = nil
-    end
+    local onComplete = clientTable.axActionBar.onComplete
+    local onCancel = clientTable.axActionBar.onCancel
 
     timer.Remove("ax.player." .. client:SteamID64() .. ".entityAction")
     clientTable.axActionBar = nil
+
+    if ( bCancelled and isfunction(onCancel) ) then
+        onCancel()
+    elseif ( !bCancelled and isfunction(onComplete) ) then
+        onComplete()
+    end
 end)
 
 ax.net:Hook("voice.start", function(client, speaker)
