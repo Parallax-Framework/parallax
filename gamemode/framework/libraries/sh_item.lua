@@ -317,6 +317,11 @@ function ax.item:CreateDefaultTakeAction()
                         SafeRemoveEntity(entity)
                     else
                         hook.Run("OnPlayerItemTake", client, nil, item)
+                        ax.util:PrintWarning(string.format(
+                            "Player %s picked up item %s but the entity was no longer valid.",
+                            tostring(client),
+                            tostring(item.id)
+                        ))
                     end
                 else
                     ax.util:PrintWarning(string.format(
