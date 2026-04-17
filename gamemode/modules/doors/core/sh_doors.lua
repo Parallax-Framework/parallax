@@ -29,7 +29,6 @@ function MODULE:GetAccessGroupPermissions(accessGroup, bReturnStringTable)
         end
     end
 
-
     return perms, permsMissing
 end
 
