@@ -123,7 +123,7 @@ function ax.module:Include(path, timeFilter)
                     ax.util:IncludeDirectory(path .. "/" .. dirName .. "/interface", true, nil, timeFilter)
 
                     if ( MODULE.autoload != false ) then
-                        ax.util:IncludeDirectory(path .. "/" .. dirName, true, {
+                        local skipDirs = {
                             ["libraries"] = true,
                             ["meta"] = true,
                             ["core"] = true,
@@ -135,8 +135,16 @@ function ax.module:Include(path, timeFilter)
                             ["ranks"] = true,
                             ["items"] = true,
                             ["entities"] = true,
-                            ["boot.lua"] = true
-                        }, timeFilter)
+                            ["boot.lua"] = true,
+                        }
+
+                        if ( istable(MODULE.ignorePaths) ) then
+                            for _, ignorePath in ipairs(MODULE.ignorePaths) do
+                                skipDirs[ignorePath] = true
+                            end
+                        end
+
+                        ax.util:IncludeDirectory(path .. "/" .. dirName, true, skipDirs, timeFilter)
                     end
 
                     ax.faction:Include(path .. "/" .. dirName .. "/factions", timeFilter)
