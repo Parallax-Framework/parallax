@@ -51,11 +51,6 @@ end
 function ismaterial(v)
     return getmetatable(v) == MATERIAL
 end
-
-function isnumber(v)
-    return tonumber(v) != nil
-end
-
 function isbool(v)
     return v == true or v == false
 end

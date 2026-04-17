@@ -139,7 +139,7 @@ end
 -- ax.util:FindPlayer("John")      -- partial name match
 -- ax.util:FindPlayer(1)           -- entity index
 function ax.util:FindPlayer(identifier)
-    if ( identifier == nil ) then return NULL end
+    if ( identifier == nil ) then return nil end
 
     if ( ax.util:IsValidPlayer(identifier) ) then
         return identifier
@@ -151,16 +151,18 @@ function ax.util:FindPlayer(identifier)
 
     if ( isstring(identifier) ) then
         if ( ax.type:Sanitise(ax.type.steamid, identifier) ) then
-            return player.GetBySteamID(identifier)
+            return player.GetBySteamID(identifier) or nil
         elseif ( ax.type:Sanitise(ax.type.steamid64, identifier) ) then
-            return player.GetBySteamID64(identifier)
+            return player.GetBySteamID64(identifier) or nil
         else
             for _, v in player.Iterator() do
-                if ( self:FindString(v:Nick(), identifier) or self:FindString(v:SteamName(), identifier) or self:FindString(v:SteamID(), identifier) or self:FindString(v:SteamID64(), identifier) ) then
+                if ( self:FindString(v:Nick(), identifier, false) or self:FindString(v:SteamName(), identifier, false) or self:FindString(v:SteamID(), identifier, false) or self:FindString(v:SteamID64(), identifier, false) ) then
                     return v
                 end
             end
         end
+
+        return nil
     end
 
     if ( istable(identifier) ) then
@@ -173,7 +175,7 @@ function ax.util:FindPlayer(identifier)
         end
     end
 
-    return NULL
+    return nil
 end
 
 -- Local helper to check if a character matches by name
