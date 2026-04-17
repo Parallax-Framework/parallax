@@ -11,27 +11,32 @@
 
 ax.item = ax.item or {}
 
-function ax.item:RunAction(client, item, action, context)
+function ax.item:RunAction(client, item, action, context, callback)
     if ( !ax.util:IsValidPlayer(client) ) then
+        if ( isfunction(callback) ) then callback(false, "Invalid player.") end
         return false, "Invalid player."
     end
 
     if ( !istable(item) ) then
+        if ( isfunction(callback) ) then callback(false, "Invalid item.") end
         return false, "Invalid item."
     end
 
     if ( !isstring(action) or action == "" ) then
+        if ( isfunction(callback) ) then callback(false, "Invalid action.") end
         return false, "Invalid action."
     end
 
     local actions = item:GetActions()
     local actionTable = istable(actions) and actions[action] or nil
     if ( !istable(actionTable) ) then
+        if ( isfunction(callback) ) then callback(false, "That action is not available for this item.") end
         return false, "That action is not available for this item."
     end
 
     local canRun, reason = item:CanInteract(client, action, false, context)
     if ( canRun == false ) then
+        if ( isfunction(callback) ) then callback(false, reason) end
         return false, reason
     end
 
@@ -57,6 +62,8 @@ function ax.item:RunAction(client, item, action, context)
     if ( inventoryID and inventoryID > 0 ) then
         ax.inventory:Sync(inventoryID)
     end
+
+    if ( isfunction(callback) ) then callback(true) end
 
     return true
 end
