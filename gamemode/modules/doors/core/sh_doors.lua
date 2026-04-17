@@ -41,6 +41,36 @@ function MODULE:CanAccessGroupPerformAction(accessGroup, actions)
     return false
 end
 
+local function GetPartner(door)
+    local partner = door:GetDoorPartner()
+    if ( IsValid(partner) and partner:IsDoor() ) then
+        return partner
+    end
+end
+
+local function ClearDoorOwnership(door)
+    local owner = door:GetDoorOwner()
+    if ( owner and owner.OwnedDoors ) then
+        owner.OwnedDoors[door:EntIndex()] = nil
+    end
+
+    local doorTable = door:GetTable()
+    if ( doorTable.axPlayerAccess ) then
+        local accessList = {}
+        for pl, _ in pairs(doorTable.axPlayerAccess) do
+            accessList[#accessList + 1] = pl
+        end
+        for i = 1, #accessList do
+            door:TakeDoorAccess(accessList[i])
+        end
+    end
+
+    door:SetRelay("owner", -1)
+    door:SetRelay("cost", 0)
+    door:SetRelay("purchased", false)
+    door:SetRelay("ownerSteamID", "")
+end
+
 properties.Add("door.toggleownable", {
     MenuLabel = "Toggle Ownable",
     Order = 9999,
@@ -48,16 +78,16 @@ properties.Add("door.toggleownable", {
 
     Filter = function(self, ent, client)
         if ( !IsValid(ent) or !ent:IsDoor() or !client:IsAdmin() ) then return false end
-        if ( !hook.Run( "CanProperty", client, "door.toggleownable", ent ) ) then return false end
+        if ( !hook.Run("CanProperty", client, "door.toggleownable", ent) ) then return false end
 
         return true
     end,
     Action = function(self, ent)
         self:MsgStart()
-            net.WriteEntity( ent )
+            net.WriteEntity(ent)
         self:MsgEnd()
     end,
-    Receive = function( self, length, client )
+    Receive = function(self, length, client)
         local ent = net.ReadEntity()
 
         if ( !properties.CanBeTargeted(ent, client) ) then return end
@@ -69,8 +99,17 @@ properties.Add("door.toggleownable", {
 
         local ownable = !ent:GetRelay("ownable", true)
 
-        currentUnownable[ent:MapCreationID()] = ownable == false and true or nil
-        ent:SetRelay("ownable", ownable)
+        local function ApplyToggle(door)
+            currentUnownable[door:MapCreationID()] = ownable == false and true or nil
+            door:SetRelay("ownable", ownable)
+        end
+
+        ApplyToggle(ent)
+
+        local partner = GetPartner(ent)
+        if ( partner ) then
+            ApplyToggle(partner)
+        end
 
         client:Notify("You have made this door " .. (!ownable and "unownable" or "ownable"))
 
@@ -87,7 +126,7 @@ properties.Add("door.manageusers", {
 
     Filter = function(self, ent, client)
         if ( !IsValid(ent) or !ent:IsDoor() ) then return false end
-        if ( !hook.Run( "CanProperty", client, "door.manageusers", ent ) ) then return false end
+        if ( !hook.Run("CanProperty", client, "door.manageusers", ent) ) then return false end
 
         return client:HasDoorAccess(ent, MODULE.Permissions.EDIT_ACCESS)
     end,
@@ -122,10 +161,9 @@ properties.Add("door.manageusers", {
                     userSubOption:AddOption(enumName, SendMsg(v, enumIndex))
                 end
             end
-
         end
     end,
-    Receive = function( self, length, client )
+    Receive = function(self, length, client)
         local entity = net.ReadEntity()
 
         if ( !properties.CanBeTargeted(entity, client) ) then return end
@@ -139,11 +177,82 @@ properties.Add("door.manageusers", {
 
         if ( target == client ) then return end
 
-        if ( accessGroup == MODULE.AccessGroups.NONE ) then
-            entity:TakeDoorAccess(target)
-        else
-            entity:GiveDoorAccess(target, accessGroup)
+        local function ApplyAccess(door)
+            if ( accessGroup == MODULE.AccessGroups.NONE ) then
+                door:TakeDoorAccess(target)
+            else
+                door:GiveDoorAccess(target, accessGroup)
+            end
+        end
+
+        ApplyAccess(entity)
+
+        local partner = GetPartner(entity)
+        if ( partner ) then
+            ApplyAccess(partner)
         end
     end
+})
 
+properties.Add("door.togglelock", {
+    MenuLabel = "Toggle Lock",
+    Order = 9999,
+    MenuIcon = "icon16/lock.png",
+
+    Filter = function(self, ent, client)
+        if ( !IsValid(ent) or !ent:IsDoor() or !client:IsAdmin() ) then return false end
+        if ( !hook.Run("CanProperty", client, "door.togglelock", ent) ) then return false end
+
+        return true
+    end,
+    Action = function(self, ent)
+        self:MsgStart()
+            net.WriteEntity(ent)
+        self:MsgEnd()
+    end,
+    Receive = function(self, length, client)
+        local ent = net.ReadEntity()
+
+        if ( !properties.CanBeTargeted(ent, client) ) then return end
+        if ( !self:Filter(ent, client) ) then return end
+
+        local bNewLocked = !ent:IsLocked()
+        ent:ToggleDoorLock()
+
+        client:Notify("Door is now " .. (bNewLocked and "locked" or "unlocked") .. ".")
+    end
+})
+
+properties.Add("door.clearownership", {
+    MenuLabel = "Clear Ownership",
+    Order = 9999,
+    MenuIcon = "icon16/user_delete.png",
+
+    Filter = function(self, ent, client)
+        if ( !IsValid(ent) or !ent:IsDoor() or !client:IsAdmin() ) then return false end
+        if ( !ent:GetRelay("purchased", false) ) then return false end
+        if ( !hook.Run("CanProperty", client, "door.clearownership", ent) ) then return false end
+
+        return true
+    end,
+    Action = function(self, ent)
+        self:MsgStart()
+            net.WriteEntity(ent)
+        self:MsgEnd()
+    end,
+    Receive = function(self, length, client)
+        local ent = net.ReadEntity()
+
+        if ( !properties.CanBeTargeted(ent, client) ) then return end
+        if ( !self:Filter(ent, client) ) then return end
+
+        ClearDoorOwnership(ent)
+
+        local partner = GetPartner(ent)
+        if ( partner ) then
+            ClearDoorOwnership(partner)
+        end
+
+        client:Notify("Door ownership has been cleared.")
+    end
 })
