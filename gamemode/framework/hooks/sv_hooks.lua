@@ -490,6 +490,14 @@ function GM:OnDatabaseTablesCreated()
     ax.util:PrintDebug("Database tables created successfully.")
 end
 
+function GM:OnPlayerItemTake(client, entity, item)
+    if ( IsValid(entity) ) then
+        entity:EmitSound("items/itempickup.wav", 70, math.Rand(95, 105), 1, CHAN_AUTO)
+    else
+        client:EmitSound("items/itempickup.wav", 70, math.Rand(95, 105), 1, CHAN_AUTO)
+    end
+end
+
 local voiceDistance
 local function CalcPlayerCanHearPlayersVoice(listener)
     if ( !ax.util:IsValidPlayer(listener) ) then return end
