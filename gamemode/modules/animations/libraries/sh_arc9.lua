@@ -6,6 +6,8 @@ function MODULE:GetPlayerHoldType(client, weapon, holdType)
         local holdType = weapon.HoldType or "ar2"
         if ( client:IsWeaponRaised() != true or weapon:GetSafe() == true ) then
             holdType = weapon.HoldTypeHolstered or weapon.HoldTypeSprint or "passive"
+        elseif ( client:GetVelocity():Length2DSqr() > 22500 ) then
+            holdType = weapon.HoldTypeSprint or weapon.HoldTypeHolstered or "passive"
         end
 
         weapon:SetHoldType(holdType)
