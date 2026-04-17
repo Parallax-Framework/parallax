@@ -37,20 +37,57 @@ if ( SERVER ) then
     function ENT:Use(activator, caller)
         if ( !ax.util:IsValidPlayer(activator) ) then return end
 
-        if ( self:GetTable().axTakeInProgress ) then return end
+        local entTable = self:GetTable()
+        if ( entTable.axTakeInProgress or entTable.axPickupPending ) then return end
+
+        local trace = util.TraceLine({
+            start = activator:GetShootPos(),
+            endpos = activator:GetShootPos() + activator:GetAimVector() * 96,
+            filter = activator
+        })
+
+        if ( trace.Entity != self ) then return end
 
         local item = self:GetItemTable()
         if ( !istable(item) ) then return end
 
-        ax.item:RunAction(activator, item, "take", {
-            entity = self,
-            caller = caller,
-            source = "entity_use"
-        })
+        local ent = self
+        entTable.axPickupPending = true
+
+        local function cancelPickup()
+            entTable.axPickupPending = nil
+            activator:RemoveTimer("ax.item.pickup.monitor")
+        end
+
+        activator:PerformAction("Picking up...", 2, function()
+            cancelPickup()
+
+            ax.item:RunAction(activator, item, "take", {
+                entity = ent,
+                caller = caller,
+                source = "entity_use"
+            })
+        end, cancelPickup)
+
+        activator:Timer("ax.item.pickup.monitor", 0.1, 0, function(client)
+            if ( !client:KeyDown(IN_USE) ) then
+                client:PerformAction()
+            end
+
+            local trace = util.TraceLine({
+                start = client:GetShootPos(),
+                endpos = client:GetShootPos() + client:GetAimVector() * 96,
+                filter = client
+            })
+
+            if ( trace.Entity != ent ) then
+                client:PerformAction()
+            end
+        end)
     end
 
     function ENT:OnRemove()
-        if ( self:GetTable().axBeingPickedUp or self:GetTable().axTakeInProgress ) then return end
+        if ( self:GetTable().axTakeInProgress ) then return end
 
         local id = self:GetItemID()
         local item = ax.item.instances[id]
