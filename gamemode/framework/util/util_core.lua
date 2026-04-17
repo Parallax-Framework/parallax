@@ -694,6 +694,56 @@ function ax.util:Assert(condition, errorMessage, ...)
     return condition, ...
 end
 
+--- Normalizes a color value to a valid Color object.
+-- @realm shared
+-- @param value any The value to normalize.
+-- @return Color The normalized color.
+function ax.util:NormalizeColor(value)
+    if ( IsColor(value) ) then
+        return value
+    end
+
+    if ( istable(value) ) then
+        return Color(
+            math.Clamp(math.floor(tonumber(value.r or value[1]) or 255), 0, 255),
+            math.Clamp(math.floor(tonumber(value.g or value[2]) or 255), 0, 255),
+            math.Clamp(math.floor(tonumber(value.b or value[3]) or 255), 0, 255),
+            math.Clamp(math.floor(tonumber(value.a or value[4]) or 255), 0, 255)
+        )
+    end
+
+    return Color(255, 255, 255, 255)
+end
+
+--- Resolves a bodygroup ID to a valid index.
+-- @realm shared
+-- @param entity Entity The entity to resolve the bodygroup for.
+-- @param groupID any The bodygroup ID to resolve.
+-- @return number|nil The resolved bodygroup index, or nil if invalid.
+function ax.util:ResolveBodygroupIndex(entity, groupID)
+    if ( isnumber(groupID) ) then
+        return math.max(math.floor(groupID), 0)
+    end
+
+    if ( !isstring(groupID) or groupID == "" ) then
+        return nil
+    end
+
+    local numericIndex = tonumber(groupID)
+    if ( numericIndex != nil ) then
+        return math.max(math.floor(numericIndex), 0)
+    end
+
+    if ( isfunction(entity.FindBodygroupByName) ) then
+        local bodygroupIndex = entity:FindBodygroupByName(groupID)
+        if ( isnumber(bodygroupIndex) and bodygroupIndex >= 0 ) then
+            return bodygroupIndex
+        end
+    end
+
+    return nil
+end
+
 --- Returns the player whose death ragdoll is the given entity.
 -- Iterates all connected players and checks whether any has a `ragdoll.index` relay value matching the entity's index. This relay is set by the framework when a player's death ragdoll is created. Returns nil when the entity is not a `prop_ragdoll`, is invalid, or no player has that ragdoll index.
 -- @realm shared

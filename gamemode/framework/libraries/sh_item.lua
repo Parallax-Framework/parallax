@@ -570,47 +570,6 @@ function ax.item:Instance(id, class)
     return itemObject
 end
 
-function ax.item:NormalizeColor(value)
-    if ( IsColor(value) ) then
-        return value
-    end
-
-    if ( istable(value) ) then
-        return Color(
-            math.Clamp(math.floor(tonumber(value.r or value[1]) or 255), 0, 255),
-            math.Clamp(math.floor(tonumber(value.g or value[2]) or 255), 0, 255),
-            math.Clamp(math.floor(tonumber(value.b or value[3]) or 255), 0, 255),
-            math.Clamp(math.floor(tonumber(value.a or value[4]) or 255), 0, 255)
-        )
-    end
-
-    return Color(255, 255, 255, 255)
-end
-
-function ax.item:ResolveBodygroupIndex(entity, groupID)
-    if ( isnumber(groupID) ) then
-        return math.max(math.floor(groupID), 0)
-    end
-
-    if ( !isstring(groupID) or groupID == "" ) then
-        return nil
-    end
-
-    local numericIndex = tonumber(groupID)
-    if ( numericIndex != nil ) then
-        return math.max(math.floor(numericIndex), 0)
-    end
-
-    if ( isfunction(entity.FindBodygroupByName) ) then
-        local bodygroupIndex = entity:FindBodygroupByName(groupID)
-        if ( isnumber(bodygroupIndex) and bodygroupIndex >= 0 ) then
-            return bodygroupIndex
-        end
-    end
-
-    return nil
-end
-
 if ( CLIENT ) then
     function ax.item:HasContentIconMaterial(materialPath)
         if ( !isstring(materialPath) or materialPath == "" ) then

@@ -45,25 +45,6 @@ local function NormalizeModel(model)
 	return model
 end
 
-local function NormalizeColorValue(value)
-	if ( IsColor(value) ) then
-		return Color(value.r, value.g, value.b, value.a or 255)
-	end
-
-	if ( !istable(value) ) then
-		return nil
-	end
-
-	local red = tonumber(value.r)
-	local green = tonumber(value.g)
-	local blue = tonumber(value.b)
-	if ( !red or !green or !blue ) then
-		return nil
-	end
-
-	return Color(red, green, blue, tonumber(value.a) or 255)
-end
-
 local function NormalizeDefinitionData(data)
 	local normalized = table.Copy(data)
 	local inventoryData = istable(data.inventory) and data.inventory or {}
@@ -89,7 +70,7 @@ local function NormalizeDefinitionData(data)
 		or data.defaultMoney
 		or interactionData.money
 	) or 0), 0)
-	normalized.color = NormalizeColorValue(data.color)
+	normalized.color = ax.util:NormalizeColor(data.color)
 	normalized.locksound = isstring(
 		data.locksound
 		or lockingData.sound

@@ -85,7 +85,7 @@ end
 -- @realm shared
 -- @return Color The item's color value.
 function item:GetColor()
-    return ax.item:NormalizeColor(self.color)
+    return ax.util:NormalizeColor(self.color)
 end
 
 --- Returns the material override for this item's model.
