@@ -313,7 +313,7 @@ function ax.command:ConvertArgument(value, argDef)
 
         return foundPlayer
     elseif ( argDef.type == ax.type.character ) then
-        local foundChar = ax.util:FindCharacter(value)
+        local foundChar = ax.util:FindCharacter(value, argDef.allowUnloaded)
         if ( !foundChar ) then
             return nil, "character not found or ambiguous match"
         end

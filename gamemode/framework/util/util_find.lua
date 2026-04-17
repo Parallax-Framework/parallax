@@ -212,7 +212,7 @@ end
 -- @usage ax.util:FindCharacter(42)        -- by ID
 -- ax.util:FindCharacter("John")           -- partial name match
 -- ax.util:FindCharacter("john doe")       -- case-insensitive
-function ax.util:FindCharacter(identifier)
+function ax.util:FindCharacter(identifier, allowUnloaded)
     if ( identifier == nil ) then return nil end
 
     -- Always prioritize active characters (those currently being used by players)
@@ -235,6 +235,22 @@ function ax.util:FindCharacter(identifier)
         if ( isstring(identifier) and matchesByName(char, identifier) ) then
             return char
         end
+    end
+
+    if ( !allowUnloaded ) then
+        for id, charTable in pairs(ax.character.instances) do
+            if ( !ax.util:IsValidPlayer(charTable.player) ) then continue end
+
+            if ( identifierNumber and charTable:GetID() == identifierNumber ) then
+                return charTable
+            end
+
+            if ( isstring(identifier) and matchesByName(charTable, identifier) ) then
+                return charTable
+            end
+        end
+
+        return nil
     end
 
     -- No active match found; fall back to all instanced characters

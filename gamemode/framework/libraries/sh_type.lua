@@ -77,7 +77,7 @@ function ax.type:Sanitise(typeID, value)
     elseif ( typeID == ax.type.player ) then
         return ax.util:FindPlayer(value)
     elseif ( typeID == ax.type.character ) then
-        if ( istable(value) and ax.util:IsCharacter(value) ) then
+        if ( istable(value) and getmetatable(value) == ax.character.meta ) then
             return value
         end
     elseif ( typeID == ax.type.steamid ) then
