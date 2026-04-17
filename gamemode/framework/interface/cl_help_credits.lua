@@ -9,12 +9,12 @@ local CREDITS = {
     {"76561197963057641", "riggs9162", ax.localization:GetPhrase("credit.framework_dev")},      -- https://steamcommunity.com/profiles/76561197963057641/
     {"76561198373309941", "bloodycop6385", ax.localization:GetPhrase("credit.framework_dev")},  -- https://steamcommunity.com/profiles/76561198373309941/
 
-    {"76561199122803303", "Winkarst-cpu", ax.localization:GetPhrase("credit.contributor")},           -- https://steamcommunity.com/profiles/76561199122803303/
-    {"76561199208575979", "Flexgg13", ax.localization:GetPhrase("credit.contributor")},              -- https://steamcommunity.com/profiles/76561199208575979/
-    {"76561198151383580", "cuboxis", ax.localization:GetPhrase("credit.contributor")},                -- https://steamcommunity.com/profiles/76561198151383580/
-    {"76561197996534315", "scotnay", ax.localization:GetPhrase("credit.contributor")},               -- https://steamcommunity.com/profiles/76561197996534315/
+    {"76561199122803303", "Winkarst-cpu", ax.localization:GetPhrase("credit.contributor")},     -- https://steamcommunity.com/profiles/76561199122803303/
+    {"76561199208575979", "Flexgg13", ax.localization:GetPhrase("credit.contributor")},         -- https://steamcommunity.com/profiles/76561199208575979/
+    {"76561198151383580", "cuboxis", ax.localization:GetPhrase("credit.contributor")},          -- https://steamcommunity.com/profiles/76561198151383580/
+    {"76561197996534315", "scotnay", ax.localization:GetPhrase("credit.contributor")},          -- https://steamcommunity.com/profiles/76561197996534315/
 
-    {"76561198882429953", "reallordmax", ax.localization:GetPhrase("credit.brainfucker")}                 -- https://steamcommunity.com/profiles/76561198882429953/
+    {"76561198882429953", "reallordmax", ax.localization:GetPhrase("credit.brainfucker")}       -- https://steamcommunity.com/profiles/76561198882429953/
 }
 
 local function PopulateCredits(this, panel)

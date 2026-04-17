@@ -10,5 +10,5 @@ cvars.AddChangeCallback("ax_environment_name", function(convar, old, new)
 end, "ax_env_update")
 
 function ax.ENV:IsDev()
-    return self.name != "prod"
+    return self.name != "prod" and GetConVar("developer"):GetInt() > 0
 end
