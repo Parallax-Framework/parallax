@@ -137,6 +137,7 @@ function ax.character:Load(client, character)
 
     clientData.axCharacterPrevious = clientData.axCharacter
     if ( clientData.axCharacterPrevious ) then
+        ax.character.loaded[clientData.axCharacterPrevious.id] = nil
         clientData.axCharacterPrevious:SetLastPlayed(os.time())
 
         local inventory = clientData.axCharacter:GetInventory()
@@ -157,7 +158,7 @@ function ax.character:Load(client, character)
 
     clientData.axCharacter = character
     ax.character:Sync(client, character)
-    ax.character.loaded[character.id] = true
+    ax.character.loaded[character.id] = character
 
     -- Only handle inventory for non-bot characters
     if ( !character.isBot ) then
