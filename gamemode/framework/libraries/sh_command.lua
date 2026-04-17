@@ -57,12 +57,21 @@ function ax.command:Add(name, def)
     self.registry[name] = def
     ax.util:PrintDebug("ax.command:Add - Command \"" .. name .. "\" registered successfully")
 
-    -- Handle aliases
+    -- Handle aliases (strip leading prefix chars so registry keys match parsed commandName)
     if ( istable(def.alias) and def.alias[1] != nil ) then
         for i = 1, #def.alias do
             local aliasName = def.alias[i]
             if ( isstring(aliasName) and aliasName != "" ) then
-                self.registry[aliasName] = def
+                local firstChar = string.sub(aliasName, 1, 1)
+                for _, pfx in ipairs(ax.command.prefixes) do
+                    if ( firstChar == pfx ) then
+                        aliasName = string.sub(aliasName, 2)
+                        break
+                    end
+                end
+                if ( aliasName != "" ) then
+                    self.registry[aliasName] = def
+                end
             end
         end
     end
@@ -408,9 +417,18 @@ function ax.command:Parse(text)
         if ( istable(v.alias) ) then
             for i = 1, #v.alias do
                 local alias = v.alias[i]
-                if ( isstring(alias) and utf8.lower(alias) == commandName ) then
-                    commandName = k
-                    break
+                if ( isstring(alias) ) then
+                    local firstChar = string.sub(alias, 1, 1)
+                    for _, pfx in ipairs(ax.command.prefixes) do
+                        if ( firstChar == pfx ) then
+                            alias = string.sub(alias, 2)
+                            break
+                        end
+                    end
+                    if ( utf8.lower(alias) == commandName ) then
+                        commandName = k
+                        break
+                    end
                 end
             end
         end
