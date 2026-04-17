@@ -22,15 +22,40 @@ function MODULE:PlayerReady(client)
 end
 
 function MODULE:InitPostEntity()
-	local unownableDoors = ax.data:Get("doors_unownable", {}, {
+	local bInitialized = ax.data:Get("doors_initialized", false, {
 		scope = "map",
 		force = true,
 	})
 
-	for doorID, isUnownable in pairs(unownableDoors) do
-		local door = ents.GetMapCreatedEntity(doorID)
-		if ( IsValid(door) and door:IsDoor() ) then
-			door:SetRelay("ownable", !isUnownable)
+	if ( !bInitialized ) then
+		local unownableData = {}
+
+		for _, ent in ipairs(ents.GetAll()) do
+			if ( ent:IsDoor() ) then
+				ent:SetRelay("ownable", false)
+				unownableData[ent:MapCreationID()] = true
+			end
+		end
+
+		ax.data:Set("doors_unownable", unownableData, { scope = "map" })
+		ax.data:Set("doors_initialized", true, { scope = "map" })
+	else
+		local unownableDoors = ax.data:Get("doors_unownable", {}, {
+			scope = "map",
+			force = true,
+		})
+
+		for doorID, isUnownable in pairs(unownableDoors) do
+			local door = ents.GetMapCreatedEntity(doorID)
+			if ( IsValid(door) and door:IsDoor() ) then
+				door:SetRelay("ownable", !isUnownable)
+			end
+		end
+	end
+
+	for _, ent in ipairs(ents.GetAll()) do
+		if ( ent:IsDoor() ) then
+			ent:SetRelay("locked", ent:IsLocked())
 		end
 	end
 end
