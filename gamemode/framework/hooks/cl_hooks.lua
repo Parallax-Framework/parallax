@@ -525,13 +525,13 @@ function GM:OnPauseMenuShow()
 
     if ( !ax.client:GetCharacter() ) then return end
 
-    if ( IsValid(ax.gui.main) ) then
-        ax.gui.main:Remove()
-    end
-
     if ( IsValid(ax.gui.pause) ) then
         ax.gui.pause:Close()
     else
+        if ( vgui.CursorVisible() ) then
+            return
+        end
+
         vgui.Create("ax.pause")
     end
 
