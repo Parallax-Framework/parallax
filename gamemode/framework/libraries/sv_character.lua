@@ -17,6 +17,7 @@ ax.character = ax.character or {}
 ax.character.instances = ax.character.instances or {}
 ax.character.meta = ax.character.meta or {}
 ax.character.vars = ax.character.vars or {}
+ax.character.loaded = ax.character.loaded or {}
 
 --- Create a new character in the database.
 -- Creates a character with the provided payload data and automatically creates an inventory.
@@ -156,6 +157,7 @@ function ax.character:Load(client, character)
 
     clientData.axCharacter = character
     ax.character:Sync(client, character)
+    ax.character.loaded[character.id] = true
 
     -- Only handle inventory for non-bot characters
     if ( !character.isBot ) then
@@ -250,6 +252,7 @@ function ax.character:Kick(client, reason)
     client:SendLua([[vgui.Create("ax.main")]])
 
     hook.Run("PlayerUnloadedCharacter", client, character)
+    ax.character.loaded[character.id] = nil
 
     return true
 end
@@ -429,6 +432,10 @@ function ax.character:Delete(id, callback)
             -- Remove from runtime instances if present
             if ( ax.character.instances[id] ) then
                 ax.character.instances[id] = nil
+            end
+
+            if ( ax.character.loaded[id] ) then
+                ax.character.loaded[id] = nil
             end
 
             ax.util:PrintDebug(color_success, "Character with ID " .. id .. " deleted successfully")

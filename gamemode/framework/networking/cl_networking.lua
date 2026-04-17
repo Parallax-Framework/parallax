@@ -110,7 +110,14 @@ ax.net:Hook("character.load", function(characterID)
 
     local clientData = client:GetTable()
     clientData.axCharacterPrevious = clientData.axCharacter
+
+    if ( clientData.axCharacterPrevious and ax.character.loaded[clientData.axCharacterPrevious.id] ) then
+        ax.character.loaded[clientData.axCharacterPrevious.id] = nil
+    end
+
     clientData.axCharacter = character
+
+    ax.character.loaded[character.id] = character
 
     if ( IsValid(ax.gui.main) ) then
         ax.gui.main:Remove()
@@ -122,16 +129,17 @@ ax.net:Hook("character.load", function(characterID)
 end)
 
 ax.net:Hook("character.sync", function(client, character)
-    ax.util:PrintDebug("Received character sync for client. Printing all players the client knows about:")
-    for k, v in player.Iterator() do
-        ax.util:PrintDebug(" - Player: " .. tostring(k) .. " (" .. tostring(v) .. ")")
-    end
     if ( !ax.util:IsValidPlayer(client) ) then return end
 
     -- Assume we are trying to kick the player off of their character
     if ( character == nil or !istable(character) ) then
         client:GetTable().axCharacter = nil
         return
+    end
+
+    local curChar = client:GetCharacter()
+    if ( curChar and ax.character.loaded[curChar.id] ) then
+        ax.character.loaded[curChar.id] = nil
     end
 
     character = setmetatable(character, ax.character.meta)
@@ -201,6 +209,10 @@ ax.net:Hook("character.delete", function(id)
         clientData.axCharacter = nil
     end
 
+    if ( ax.character.loaded[id] ) then
+        ax.character.loaded[id] = nil
+    end
+
     if ( istable( clientData.axCharacters ) ) then
         for i = 1, #clientData.axCharacters do
             if ( clientData.axCharacters[i].id == id ) then
@@ -212,9 +224,9 @@ ax.net:Hook("character.delete", function(id)
 
     local invID = character:GetInventoryID()
     local inventory = ax.inventory.instances[ invID ]
-    if ( istable( inventory ) ) then
-        for itemID in pairs( inventory.items ) do
-            ax.item.instances[ itemID ] = nil
+    if ( istable(inventory) ) then
+        for itemID in pairs(inventory.items) do
+            ax.item.instances[itemID] = nil
         end
     end
 
@@ -598,6 +610,7 @@ ax.net:Hook("character.invalidate", function(id)
 
     ax.inventory.instances[invID] = nil
     ax.character.instances[id] = nil
+    ax.character.loaded[id] = nil
 end)
 
 ax.net:Hook("player.actionbar.start", function(label, duration)

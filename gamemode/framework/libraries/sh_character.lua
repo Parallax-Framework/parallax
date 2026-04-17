@@ -18,6 +18,7 @@ ax.character = ax.character or {}
 ax.character.instances = ax.character.instances or {}
 ax.character.meta = ax.character.meta or {}
 ax.character.vars = ax.character.vars or {}
+ax.character.loaded = ax.character.loaded or {}
 
 --- Get a character by their unique ID.
 -- @realm shared
