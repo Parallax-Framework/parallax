@@ -44,11 +44,13 @@ end
 -- @return boolean True if initialization succeeded, false if boot file failed to load
 -- @usage ax.schema:Initialize()
 function ax.schema:Initialize(timeFilter)
-    SCHEMA = SCHEMA or { folder = engine.ActiveGamemode() }
-
     ax.hook:Register("SCHEMA")
 
-    local active = SCHEMA.folder or engine.ActiveGamemode() -- Fallback to active gamemode if folder not set
+    if ( !SCHEMA.folder ) then
+        SCHEMA.folder = engine.ActiveGamemode()
+    end
+
+    local active = SCHEMA.folder
     local boot = ax.util:Include(active .. "/gamemode/schema/boot.lua", "shared")
     if ( boot == false ) then
         ax.util:PrintError("Failed to load schema boot file for \"" .. active .. "\". Please ensure your schema is set up correctly.")
