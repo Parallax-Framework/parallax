@@ -9,7 +9,7 @@ function MODULE:PlayerUse(client, entity)
 
 		if ( client:HasDoorAccess(entity, permsNeeded) ) then
 			client:PerformEntityAction(entity, isLocked and "Unlock" or "Lock", 0.5, function()
-				entity:ToggleLock()
+				entity:ToggleDoorLock()
 			end, nil)
 		end
 
