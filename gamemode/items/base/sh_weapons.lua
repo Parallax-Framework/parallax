@@ -64,6 +64,10 @@ ITEM:AddAction("unequip", {
     end
 })
 
+function ITEM:ShouldHighlightInInventory()
+    return self:GetData("equipped", false)
+end
+
 function ITEM:OnPlayerLoadedCharacter(client, character) -- Called when a character is loaded
     if ( !ax.util:IsValidPlayer(client) ) then return end
 

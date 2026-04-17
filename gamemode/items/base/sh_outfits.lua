@@ -44,3 +44,7 @@ ITEM:AddAction("unequip", {
         return true -- TODO: Add checks to see if the player can unequip the outfit (e.g., is currently wearing this outfit)
     end
 })
+
+function ITEM:ShouldHighlightInInventory()
+    return self:GetData("equipped", false)
+end
