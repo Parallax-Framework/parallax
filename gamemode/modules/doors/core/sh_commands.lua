@@ -1,6 +1,18 @@
 local MODULE = MODULE
 
 local DOOR_PURCHASE_DIST = 96 * 96
+
+local function GetLinkedDoors(door)
+    local doors = { door }
+
+    local partner = door:GetDoorPartner()
+    if ( IsValid(partner) and partner:IsDoor() ) then
+        doors[#doors + 1] = partner
+    end
+
+    return doors
+end
+
 ax.command:Add("DoorBuy", {
     description = "Purchase a door.",
     OnRun = function(def, client)
@@ -24,37 +36,51 @@ ax.command:Add("DoorBuy", {
             return
         end
 
-        local charOwner = door:GetDoorOwner()
-        if ( charOwner ) then
-            client:Notify(charOwner == character and ax.localization:GetPhrase("door.already_owned") or ax.localization:GetPhrase("door.already_purchased"), ax.notification.enums.TYPE_ERROR)
+        local linkedDoors = GetLinkedDoors(door)
+
+        for i = 1, #linkedDoors do
+            local linkedDoor = linkedDoors[i]
+            local charOwner = linkedDoor:GetDoorOwner()
+            if ( charOwner ) then
+                client:Notify(charOwner == character and ax.localization:GetPhrase("door.already_owned") or ax.localization:GetPhrase("door.already_purchased"), ax.notification.enums.TYPE_ERROR)
+                return
+            end
+
+            if ( !linkedDoor:GetRelay("ownable", true) ) then
+                client:Notify(ax.localization:GetPhrase("door.not_ownable"), ax.notification.enums.TYPE_ERROR)
+                return
+            end
+        end
+
+        local unitCost = ax.config:Get("doors.purchase_cost", 10)
+        local totalCost = unitCost * #linkedDoors
+
+        if ( !character:HasMoney(totalCost) ) then
+            local charMoney = character:GetMoney()
+            client:Notify(ax.localization:GetPhrase("not_enough_money_missing", ax.currencies:Format(totalCost - charMoney)), ax.notification.enums.TYPE_ERROR)
             return
         end
 
-        if ( !door:GetRelay("ownable", true) ) then
-            client:Notify(ax.localization:GetPhrase("door.not_ownable"), ax.notification.enums.TYPE_ERROR)
-            return
-        end
-
-        local cost = ax.config:Get("doors.purchase_cost", 10)
-        local charMoney = character:GetMoney()
-        if ( !character:HasMoney(cost) ) then
-            client:Notify(ax.localization:GetPhrase("not_enough_money_missing", ax.currencies:Format(cost - charMoney)), ax.notification.enums.TYPE_ERROR)
-            return
-        end
-
-        character:TakeMoney(cost)
-        client:Notify(ax.localization:GetPhrase("door.purchased"), ax.notification.enums.TYPE_SUCCESS)
-
-        door:SetRelay("owner", character:GetID())
-        door:SetRelay("cost", cost)
-        door:SetRelay("purchased", true)
-        door:SetRelay("ownerSteamID", client:SteamID64())
-        door:GiveDoorAccess(client, MODULE.AccessGroups.OWNER)
-
+        character:TakeMoney(totalCost)
         character.OwnedDoors = character.OwnedDoors or {}
-        character.OwnedDoors[door:EntIndex()] = true
 
-        hook.Run("OnDoorPurchased", client, door, cost)
+        for i = 1, #linkedDoors do
+            local linkedDoor = linkedDoors[i]
+            linkedDoor:SetRelay("owner", character:GetID())
+            linkedDoor:SetRelay("cost", unitCost)
+            linkedDoor:SetRelay("purchased", true)
+            linkedDoor:SetRelay("ownerSteamID", client:SteamID64())
+            linkedDoor:GiveDoorAccess(client, MODULE.AccessGroups.OWNER)
+            character.OwnedDoors[linkedDoor:EntIndex()] = true
+            hook.Run("OnDoorPurchased", client, linkedDoor, unitCost)
+        end
+
+        local count = #linkedDoors
+        if ( count > 1 ) then
+            client:Notify("You have purchased " .. count .. " doors.", ax.notification.enums.TYPE_SUCCESS)
+        else
+            client:Notify(ax.localization:GetPhrase("door.purchased"), ax.notification.enums.TYPE_SUCCESS)
+        end
     end
 })
 
@@ -87,20 +113,40 @@ ax.command:Add("DoorSell", {
             return
         end
 
-        local cost = door:GetRelay("cost", 0)
-        if ( cost <= 0 ) then return end
+        local linkedDoors = GetLinkedDoors(door)
+        local totalRefund = 0
+        local soldCount = 0
 
-        character:AddMoney(cost)
-        client:Notify(ax.localization:GetPhrase("door.sold"), ax.notification.enums.TYPE_SUCCESS)
+        character.OwnedDoors = character.OwnedDoors or {}
 
-        door:SetRelay("owner", -1)
-        door:SetRelay("cost", 0)
-        door:SetRelay("purchased", false)
-        door:SetRelay("ownerSteamID", "")
-        door:TakeDoorAccess(client)
+        for i = 1, #linkedDoors do
+            local linkedDoor = linkedDoors[i]
+            local linkedOwner = linkedDoor:GetDoorOwner()
+            if ( !linkedOwner or linkedOwner != character ) then continue end
 
-        character.OwnedDoors[door:EntIndex()] = nil
-        hook.Run("OnDoorSold", client, door, cost)
+            local cost = linkedDoor:GetRelay("cost", 0)
+            totalRefund = totalRefund + cost
+
+            linkedDoor:SetRelay("owner", -1)
+            linkedDoor:SetRelay("cost", 0)
+            linkedDoor:SetRelay("purchased", false)
+            linkedDoor:SetRelay("ownerSteamID", "")
+            linkedDoor:TakeDoorAccess(client)
+
+            character.OwnedDoors[linkedDoor:EntIndex()] = nil
+            hook.Run("OnDoorSold", client, linkedDoor, cost)
+            soldCount = soldCount + 1
+        end
+
+        if ( totalRefund > 0 ) then
+            character:AddMoney(totalRefund)
+        end
+
+        if ( soldCount > 1 ) then
+            client:Notify("You have sold " .. soldCount .. " doors.", ax.notification.enums.TYPE_SUCCESS)
+        else
+            client:Notify(ax.localization:GetPhrase("door.sold"), ax.notification.enums.TYPE_SUCCESS)
+        end
     end
 })
 
