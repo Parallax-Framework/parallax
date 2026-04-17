@@ -37,7 +37,7 @@ function ENTITY:TakeDoorAccess(client)
 
     doorTable.axPlayerAccess[client] = nil
 
-    local receivers = {}
+    local receivers = { client }
     for k, v in pairs(doorTable.axPlayerAccess) do
         receivers[#receivers + 1] = k
     end
@@ -46,6 +46,61 @@ function ENTITY:TakeDoorAccess(client)
 
     hook.Run("OnPlayerLostDoorAccess", client, self, doorAccessHad)
     return true
+end
+
+--- Locks a door and syncs the state to clients via relay. Also locks the partner door if one exists.
+-- @realm server
+-- @param bNoPartner boolean If true, skips locking the partner door (used internally to avoid recursion)
+-- @return boolean success
+function ENTITY:LockDoor(bNoPartner)
+    if ( !self:IsDoor() ) then return false end
+
+    self:Fire("Lock")
+    self:SetRelay("locked", true)
+    hook.Run("OnDoorLocked", self)
+
+    if ( !bNoPartner ) then
+        local partner = self:GetDoorPartner()
+        if ( IsValid(partner) and partner:IsDoor() ) then
+            partner:LockDoor(true)
+        end
+    end
+
+    return true
+end
+
+--- Unlocks a door and syncs the state to clients via relay. Also unlocks the partner door if one exists.
+-- @realm server
+-- @param bNoPartner boolean If true, skips unlocking the partner door (used internally to avoid recursion)
+-- @return boolean success
+function ENTITY:UnlockDoor(bNoPartner)
+    if ( !self:IsDoor() ) then return false end
+
+    self:Fire("Unlock")
+    self:SetRelay("locked", false)
+    hook.Run("OnDoorUnlocked", self)
+
+    if ( !bNoPartner ) then
+        local partner = self:GetDoorPartner()
+        if ( IsValid(partner) and partner:IsDoor() ) then
+            partner:UnlockDoor(true)
+        end
+    end
+
+    return true
+end
+
+--- Toggles a door's lock state and syncs to clients via relay.
+-- @realm server
+-- @return boolean success
+function ENTITY:ToggleDoorLock()
+    if ( !self:IsDoor() ) then return false end
+
+    if ( self:IsLocked() ) then
+        return self:UnlockDoor()
+    end
+
+    return self:LockDoor()
 end
 
 function ENTITY:GetDoorOwner()
