@@ -13,4 +13,4 @@ local MODULE = MODULE
 
 MODULE.name = "Vendors"
 MODULE.description = "Implements vendor NPCs and a UI for buying/selling items, along with a in-game editor for configuring vendors."
-MODULE.author = "Riggs"
+MODULE.author = "riggs9162"

@@ -13,7 +13,7 @@ local MODULE = MODULE
 
 MODULE.name = "Curvy"
 MODULE.description = "Adds a curvy visual style to HUD elements."
-MODULE.author = "Riggs"
+MODULE.author = "riggs9162"
 
 ax.option:Add("curvy", ax.type.bool, true, {
     description = "Enable or disable the curvy visual effect",

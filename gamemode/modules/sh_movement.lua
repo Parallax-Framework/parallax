@@ -13,7 +13,7 @@ local MODULE = MODULE
 
 MODULE.name = "Movement"
 MODULE.description = "Restricts player movement to a specific set of rules."
-MODULE.author = "Riggs"
+MODULE.author = "riggs9162"
 
 function MODULE:OnPlayerHitGround(client, inWater)
     local bunnyhopVelocityMultiplier = ax.config:Get("movement.bunnyhop.reduction", 0.5)

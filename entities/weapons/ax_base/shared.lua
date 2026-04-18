@@ -17,7 +17,7 @@ SWEP.AdminOnly = true
 SWEP.UseHands = true
 
 SWEP.PrintName = "Parallax Weapon Base"
-SWEP.Author = "Riggs"
+SWEP.Author = "riggs9162"
 SWEP.Category = "Parallax"
 
 SWEP.Primary = {

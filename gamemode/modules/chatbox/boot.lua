@@ -13,4 +13,4 @@ local MODULE = MODULE
 
 MODULE.name = "Chatbox"
 MODULE.description = "Movable, resizable, tabbed chat with rich markdown and mention highlighting."
-MODULE.author = "Riggs"
+MODULE.author = "riggs9162"

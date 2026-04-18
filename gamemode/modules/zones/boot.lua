@@ -13,4 +13,4 @@ local MODULE = MODULE
 
 MODULE.name = "Zones"
 MODULE.description = "Adds support for defining zones in the world with custom properties."
-MODULE.author = "Riggs"
+MODULE.author = "riggs9162"

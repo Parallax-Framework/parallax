@@ -13,7 +13,7 @@ local MODULE = MODULE
 
 MODULE.name = "Spawn Save"
 MODULE.description = "Saves characters' spawn locations to their previous positions."
-MODULE.author = "Riggs"
+MODULE.author = "riggs9162"
 MODULE.data = {}
 
 function MODULE:InitPostEntity()

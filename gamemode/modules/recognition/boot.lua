@@ -13,4 +13,4 @@ local MODULE = MODULE
 
 MODULE.name = "Recognition"
 MODULE.description = "Familiarity-based character recognition system with alias support and passive score accumulation."
-MODULE.author = "Riggs"
+MODULE.author = "riggs9162"

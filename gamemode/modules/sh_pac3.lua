@@ -13,7 +13,7 @@ local MODULE = MODULE
 
 MODULE.name = "PAC3 Flag"
 MODULE.description = "Adds a flag to PAC3."
-MODULE.author = "Riggs"
+MODULE.author = "riggs9162"
 
 function MODULE:PrePACConfigApply(client)
     if ( client:GetCharacter() ) then

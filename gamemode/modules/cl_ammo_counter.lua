@@ -13,7 +13,7 @@ local MODULE = MODULE
 
 MODULE.name = "Ammo Counter"
 MODULE.description = "Displays a sleek ammo counter on the HUD with dynamic effects."
-MODULE.author = "Riggs"
+MODULE.author = "riggs9162"
 
 local ammoAlpha = 0
 local lastAmmo = 0

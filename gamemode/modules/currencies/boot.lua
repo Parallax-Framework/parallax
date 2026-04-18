@@ -13,4 +13,4 @@ local MODULE = MODULE
 
 MODULE.name = "Currencies"
 MODULE.description = "Character-based currency system with support for multiple currencies and meta helpers."
-MODULE.author = "Riggs"
+MODULE.author = "riggs9162"

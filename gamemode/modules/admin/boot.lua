@@ -2,7 +2,7 @@ local MODULE = MODULE
 
 MODULE.name = "Admin"
 MODULE.description = "Handles admin-related functionality."
-MODULE.author = "Riggs"
+MODULE.author = "riggs9162"
 
 ax.admin = MODULE
 

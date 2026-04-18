@@ -13,7 +13,7 @@ local MODULE = MODULE
 
 MODULE.name = "Animations"
 MODULE.description = "Handles player animations."
-MODULE.author = "Riggs"
+MODULE.author = "riggs9162"
 
 ax.config:Add("animations.ik", ax.type.bool, true, {
     category = "animations",

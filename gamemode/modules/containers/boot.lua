@@ -13,4 +13,4 @@ local MODULE = MODULE
 
 MODULE.name = "Containers"
 MODULE.description = "Adds persistent storage containers with password protection."
-MODULE.author = "Riggs"
+MODULE.author = "riggs9162"

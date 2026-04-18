@@ -13,4 +13,4 @@ local MODULE = MODULE
 
 MODULE.name = "Spawns"
 MODULE.description = "Handles player spawn points and spawn logic for facions and classes."
-MODULE.author = "Riggs"
+MODULE.author = "riggs9162"

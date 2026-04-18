@@ -13,7 +13,7 @@ local MODULE = MODULE
 
 MODULE.name = "Proximity"
 MODULE.description = "A proximity styled voice chat modifier."
-MODULE.author = "Riggs"
+MODULE.author = "riggs9162"
 
 ax.config:Add("proximity", ax.type.bool, true, { category = "audio", subCategory = "proximity", description = "config.proximity.help" })
 ax.config:Add("proximityMuteVolume", ax.type.number, 10, { category = "audio", subCategory = "proximity", description = "config.proximityMuteVolume.help", min = 0, max = 100, decimals = 0 })

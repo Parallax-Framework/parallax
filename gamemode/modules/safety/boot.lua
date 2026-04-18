@@ -13,4 +13,4 @@ local MODULE = MODULE
 
 MODULE.name = "Weapon Safety"
 MODULE.description = "Manages per-player weapon safety state with server authority."
-MODULE.author = "Riggs"
+MODULE.author = "riggs9162"
