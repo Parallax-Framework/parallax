@@ -9,13 +9,13 @@ ax.config:Add("joinsecurity.antifamilyshare", ax.type.bool, true, {
     category = "general",
 })
 
-ax.config:Add("joinsecurity.versionmismatch", ax.type.bool, true, {
+ax.config:Add("joinsecurity.versionmismatch", ax.type.bool, false, {
     description = "joinsecurity.versionmismatch.help",
     subCategory = "joinsecurity",
     category = "general",
 })
 
-ax.config:Add("joinsecurity.versionmismatch.branchmatch", ax.type.bool, true, {
+ax.config:Add("joinsecurity.versionmismatch.branchmatch", ax.type.bool, false, {
     description = "joinsecurity.versionmismatch.branchmatch.help",
     subCategory = "joinsecurity",
     category = "general",
