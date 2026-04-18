@@ -13,7 +13,7 @@ local MODULE = MODULE
 
 MODULE.name = "Crash Analysis"
 MODULE.description = "Analyzes server responsiveness to detect crashes."
-MODULE.author = "Riggs"
+MODULE.author = "riggs9162"
 
 local nextCrashAnalysis = nil
 local nextCrashThink = 0
@@ -22,9 +22,15 @@ local lastServerData1 = 0
 local lastServerData2 = 0
 
 -- Constants for timing and limits
-local CRASH_ANALYSIS_INTERVAL = 0.05
-local CRASH_THINK_INTERVAL = 0.66
-local MAX_CRASH_ATTEMPTS = 15
+-- Total stall before trigger = MAX_CRASH_ATTEMPTS * CRASH_ANALYSIS_INTERVAL (~6s).
+-- STARTUP_GRACE avoids false positives during the initial join while the client
+-- is still receiving snapshots.
+local CRASH_ANALYSIS_INTERVAL = 0.1
+local CRASH_THINK_INTERVAL = 1
+local MAX_CRASH_ATTEMPTS = 60
+local STARTUP_GRACE = 30
+
+local startupTime = RealTime()
 
 -- Helper function to update server frame time snapshot
 local function updateServerFrameSnapshot()
@@ -79,6 +85,8 @@ end
 
 -- Main Think hook logic
 function MODULE:Think()
+    if ( RealTime() - startupTime < STARTUP_GRACE ) then return end
+
     if ( !AX_SERVER_DOWN and nextCrashAnalysis and nextCrashAnalysis < CurTime() ) then
         analyzeServerCrash()
     end
