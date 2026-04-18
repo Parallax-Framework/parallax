@@ -56,6 +56,10 @@ function ax.net:ProcessQueue()
     job(done)
 end
 
+-- GMod net messages cap at 64 KiB. Leave headroom for the message name + null
+-- terminator + framing bits so we stay comfortably under the engine limit.
+local AX_NET_MAX_PAYLOAD = 65000
+
 --- Builds the encoded payload for a net message.
 -- @param arguments table
 -- @return string|boolean Encoded payload or false on failure.
@@ -80,6 +84,11 @@ function ax.net:QueueMessage(name, arguments, sendFunc, debugMessage, warningMes
 
     local encoded = self:BuildPayload(arguments)
     if ( !encoded ) then return end
+
+    if ( #encoded > AX_NET_MAX_PAYLOAD ) then
+        ax.util:PrintError("[NET] Refusing to send '" .. tostring(name) .. "': payload is " .. #encoded .. " bytes (max " .. AX_NET_MAX_PAYLOAD .. ")")
+        return
+    end
 
     self:Enqueue(function(done)
         net.Start("ax.net.msg")
@@ -246,11 +255,24 @@ end
 
 net.Receive("ax.net.msg", function(len, client)
     local name = net.ReadString()
+    if ( !isstring(name) or name == "" ) then return end
 
-    local bytesLeft = net.BytesLeft and net.BytesLeft() or math.floor((len / 8) - (#name + 1))
+    -- Derive bytes from `len` (always in bits) rather than net.BytesLeft(), whose
+    -- first return can be the bit count on some builds, yielding bogus sizes.
+    local bytesLeft = math.floor(len / 8) - (#name + 1)
     if ( !isnumber(bytesLeft) or bytesLeft <= 0 ) then return end
 
-    local raw = net.ReadData(bytesLeft)
+    if ( bytesLeft > AX_NET_MAX_PAYLOAD ) then
+        ax.util:PrintError("[NET] '" .. name .. "' payload exceeds max size (" .. bytesLeft .. " bytes); dropping")
+        return
+    end
+
+    local readOk, raw = pcall(net.ReadData, bytesLeft)
+    if ( !readOk or !isstring(raw) ) then
+        ax.util:PrintError("[NET] ReadData failed for '" .. name .. "' (" .. bytesLeft .. " bytes)")
+        return
+    end
+
     local ok, decoded = pcall(sfs.decode, raw)
     if ( !ok or !istable(decoded) ) then
         ax.util:PrintError("[NET] Decode failed for '" .. name .. "'")
