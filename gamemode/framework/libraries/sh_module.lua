@@ -67,6 +67,8 @@ function ax.module:Include(path, timeFilter)
             ax.util:Include(filePath)
             ax.module.stored[moduleName] = MODULE
 
+            ax.hook:AttachHooks(MODULE, "module." .. tostring(MODULE.uniqueID))
+
             ax.util:PrintSuccess("Module \"" .. tostring(MODULE.name) .. "\" initialized successfully.")
 
             MODULE = nil
@@ -158,6 +160,8 @@ function ax.module:Include(path, timeFilter)
                     if ( isfunction(MODULE.OnLoaded) ) then
                         MODULE:OnLoaded()
                     end
+
+                    ax.hook:AttachHooks(MODULE, "module." .. tostring(MODULE.uniqueID))
 
                     hook.Run("OnModuleLoaded", MODULE)
                     MODULE = nil

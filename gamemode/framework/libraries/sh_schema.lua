@@ -44,7 +44,7 @@ end
 -- @return boolean True if initialization succeeded, false if boot file failed to load
 -- @usage ax.schema:Initialize()
 function ax.schema:Initialize(timeFilter)
-    ax.hook:Register("SCHEMA")
+    SCHEMA = SCHEMA or {}
 
     if ( !SCHEMA.folder ) then
         SCHEMA.folder = engine.ActiveGamemode()
@@ -88,6 +88,9 @@ function ax.schema:Initialize(timeFilter)
 
     -- Finally, load the schema config files (including map-specific configs)
     LoadSchemaConfig(active, timeFilter)
+
+    -- Attach schema hooks once every SCHEMA:HookName method is defined
+    ax.hook:AttachHooks(SCHEMA, "schema")
 
     -- Initialize the schema
     ax.util:PrintSuccess("Schema \"" .. active .. "\" initialized successfully.")

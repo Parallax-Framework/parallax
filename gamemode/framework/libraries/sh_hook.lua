@@ -9,111 +9,61 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
---- Hook system for registering and managing custom hook types, internally handles Schema and Module hooks.
+--- Hook attachment system that registers every function member of a table as its own
+-- `hook.Add` handler. Replaces the previous `hook.Call` hijack used to dispatch
+-- `SCHEMA:HookName` and `MODULE:HookName` methods.
 -- @module ax.hook
 
 ax.hook = ax.hook or {}
-ax.hook.stored = ax.hook.stored or {}
+ax.hook.attached = ax.hook.attached or {}
 
---- Registers a new hook type.
+--- Attach every function member of the given table as an individual `hook.Add` handler.
+-- Any existing attachment under the same identifier is removed first, so this is safe
+-- to call again on hot reload.
 -- @realm shared
--- @string name The name of the hook type.
-function ax.hook:Register(name)
-    _G[name] = _G[name] or {}
-    self.stored[name] = true
-    hook.Run("OnHookRegistered", name)
+-- @param tbl table The table whose functions should be registered as hooks (e.g. `SCHEMA`, a `MODULE` table).
+-- @param identifier string A unique identifier used to namespace the underlying hook names.
+function ax.hook:AttachHooks(tbl, identifier)
+    if ( !istable(tbl) ) then
+        ax.util:PrintError("ax.hook:AttachHooks expected a table, got " .. type(tbl) .. ".\n")
+        return
+    end
+
+    if ( !isstring(identifier) or identifier == "" ) then
+        ax.util:PrintError("ax.hook:AttachHooks expected a non-empty string identifier.\n")
+        return
+    end
+
+    self:DetachHooks(identifier)
+
+    local events = {}
+    self.attached[identifier] = events
+
+    for event, func in pairs(tbl) do
+        if ( !isfunction(func) ) then continue end
+
+        local hookName = "ax.hook." .. identifier .. "." .. event
+        events[#events + 1] = { event = event, hookName = hookName }
+
+        hook.Add(event, hookName, function(...)
+            local resolved = tbl[event]
+            if ( !isfunction(resolved) ) then return end
+
+            return resolved(tbl, ...)
+        end)
+    end
 end
 
---- Unregisters a hook type.
+--- Detach all hooks previously attached under the given identifier.
 -- @realm shared
--- @string name The name of the hook type.
--- @internal
-function ax.hook:UnRegister(name)
-    self.stored[name] = nil
-    hook.Run("OnHookUnRegistered", name)
-end
+-- @param identifier string The identifier passed to `ax.hook:AttachHooks`.
+function ax.hook:DetachHooks(identifier)
+    local events = self.attached[identifier]
+    if ( !events ) then return end
 
-hook.axCall = hook.axCall or hook.Call
-
-local function _profilerEnabled()
-    local dev = GetConVar and GetConVar("developer")
-    local devEnabled = dev and dev:GetBool() or false
-    local cfgEnabled = false
-    if ( ax and ax.config and ax.config.Get ) then
-        cfgEnabled = ax.config:Get("debug.profiler.enabled", false) or false
-    end
-    return devEnabled or cfgEnabled
-end
-
-local function _profThreshold()
-    if ( ax and ax.config and ax.config.Get ) then
-        return ax.config:Get("debug.profiler.thresholdMs", 8)
-    end
-    return 8
-end
-
-function hook.Call(name, gm, ...)
-    local doProfile = _profilerEnabled()
-
-    -- Dispatch to custom hook tables registered via ax.hook
-    for k, v in pairs(ax.hook.stored) do
-        local tab = _G[k]
-        if ( !tab ) then continue end
-
-        local fn = tab[name]
-        if ( !fn ) then continue end
-
-        local a, b, c, d, e, f
-        if ( doProfile ) then
-            local t1 = SysTime()
-            a, b, c, d, e, f = fn(tab, ...)
-            local dtSec = SysTime() - t1
-            if ( dtSec * 1000 >= _profThreshold() and ax and ax.profiler and ax.profiler.Record ) then
-                ax.profiler:Record("hook:" .. tostring(name), "ax.hook:" .. tostring(k), dtSec)
-            end
-        else
-            a, b, c, d, e, f = fn(tab, ...)
-        end
-
-        if ( a != nil ) then
-            return a, b, c, d, e, f
-        end
+    for i = 1, #events do
+        hook.Remove(events[i].event, events[i].hookName)
     end
 
-    -- Dispatch to module methods (MODULE:HookName) registered in ax.module.stored
-    for moduleName, moduleTable in pairs(ax.module.stored) do
-        for methodName, method in pairs(moduleTable) do
-            if ( isfunction(method) and methodName == name ) then
-                local a, b, c, d, e, f
-                if ( doProfile ) then
-                    local t1 = SysTime()
-                    a, b, c, d, e, f = method(moduleTable, ...)
-                    local dtSec = SysTime() - t1
-                    if ( dtSec * 1000 >= _profThreshold() and ax and ax.profiler and ax.profiler.Record ) then
-                        ax.profiler:Record("hook:" .. tostring(name), "module:" .. tostring(moduleName), dtSec)
-                    end
-                else
-                    a, b, c, d, e, f = method(moduleTable, ...)
-                end
-
-                if ( a != nil ) then
-                    return a, b, c, d, e, f
-                end
-            end
-        end
-    end
-
-    -- Fallback to gamemode
-    local a, b, c, d, e, f
-    if ( doProfile ) then
-        local t1 = SysTime()
-        a, b, c, d, e, f = hook.axCall(name, gm, ...)
-        local dtSec = SysTime() - t1
-        if ( dtSec * 1000 >= _profThreshold() and ax and ax.profiler and ax.profiler.Record ) then
-            ax.profiler:Record("hook:" .. tostring(name), "gamemode", dtSec)
-        end
-    else
-        a, b, c, d, e, f = hook.axCall(name, gm, ...)
-    end
-    return a, b, c, d, e, f
+    self.attached[identifier] = nil
 end
