@@ -108,15 +108,10 @@ function MODULE:DrawPlayers()
         end
 
         local health = target:Health() or 0
-        local maxHealth = target:GetMaxHealth() or 100
         local armor = target:Armor() or 0
-        local maxArmor = target:GetMaxArmor() or 100
 
         local yOffset = 0
         local ySpacing = draw.GetFontHeight("ax.regular.admin.bold") / 1.25
-
-        draw.SimpleTextOutlined(steamID64, "ax.regular.admin", scr.x, scr.y + yOffset, Color(255, 0, 0), TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM, 1, Color(0, 0, 0))
-        yOffset = yOffset + ySpacing
 
         draw.SimpleTextOutlined(name, "ax.regular.admin.bold", scr.x, scr.y + yOffset, Color(0, 255, 255), TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM, 1, Color(0, 0, 0))
         yOffset = yOffset + ySpacing
@@ -124,12 +119,12 @@ function MODULE:DrawPlayers()
         draw.SimpleTextOutlined(teamName, "ax.regular.admin", scr.x, scr.y + yOffset, team.GetColor(target:Team()) or Color(255, 255, 255), TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM, 1, Color(0, 0, 0))
         yOffset = yOffset + ySpacing
 
-        local healthText = "HP: " .. tostring(health) .. " / " .. tostring(maxHealth)
+        local healthText = "HP: " .. tostring(health)
         draw.SimpleTextOutlined(healthText, "ax.regular.admin", scr.x, scr.y + yOffset, Color(0, 255, 0), TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM, 1, Color(0, 0, 0))
         yOffset = yOffset + ySpacing
 
         if ( armor > 0 ) then
-            local armorText = "AR: " .. tostring(armor) .. " / " .. tostring(maxArmor)
+            local armorText = "AR: " .. tostring(armor)
             draw.SimpleTextOutlined(armorText, "ax.regular.admin", scr.x, scr.y + yOffset, Color(0, 150, 255), TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM, 1, Color(0, 0, 0))
             yOffset = yOffset + ySpacing
         end
