@@ -27,7 +27,11 @@ end
 -- @realm shared
 -- @return table|nil The active character instance, or nil if none is loaded.
 function ax.player.meta:GetCharacter()
-    return self:GetTable().axCharacter
+    local tbl = self:GetTable()
+    -- NULL/disconnected player entities can still have type() == "Player" but no entity table.
+    if ( !istable(tbl) ) then return nil end
+
+    return tbl.axCharacter
 end
 
 ax.player.meta.GetChar = ax.player.meta.GetCharacter
@@ -49,7 +53,10 @@ end
 -- @realm shared
 -- @return table An ordered array of character instances, or `{}` if none are loaded.
 function ax.player.meta:GetCharacters()
-    return self:GetTable().axCharacters or {}
+    local tbl = self:GetTable()
+    if ( !istable(tbl) ) then return {} end
+
+    return tbl.axCharacters or {}
 end
 
 --- Returns the player's current faction index, or nil if not in a valid faction.
