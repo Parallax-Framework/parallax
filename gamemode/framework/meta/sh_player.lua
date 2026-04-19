@@ -44,7 +44,14 @@ ax.player.meta.GetChar = ax.player.meta.GetCharacter
 ax.player.meta.GetNickInternal = ax.player.meta.GetNickInternal or ax.player.meta.Nick
 function ax.player.meta:Nick()
     local character = self:GetCharacter()
-    return character and character:GetName() or self:GetNickInternal()
+    if ( character ) then
+        local name = character:GetName()
+        if ( name and name != "" ) then return name end
+    end
+
+    if ( !IsValid(self) ) then return "" end
+
+    return self:GetNickInternal()
 end
 
 --- Returns all character instances associated with this player.
