@@ -18,11 +18,3 @@ include("framework/environment.lua")
 
 include("framework/util/boot.lua")
 include("framework/boot.lua")
-
-widgets.PlayerTick = nil
-widgets.RenderMe = nil
-
-hook.Remove("OnEntityCreated", "CreateWidgets")
-hook.Remove("PlayerTick", "TickWidgets")
-hook.Remove("PostDrawEffects", "RenderWidgets")
-hook.Remove("EntityRemoved", "RemoveWidgets")

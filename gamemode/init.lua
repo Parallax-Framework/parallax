@@ -25,27 +25,4 @@ include("framework/util/boot.lua")
 AddCSLuaFile("framework/boot.lua")
 include("framework/boot.lua")
 
-widgets.PlayerTick = nil
-widgets.RenderMe = nil
-
-hook.Remove("OnEntityCreated", "CreateWidgets")
-hook.Remove("PlayerTick", "TickWidgets")
-hook.Remove("EntityRemoved", "RemoveWidgets")
-
 resource.AddWorkshop(3479969076) -- Parallax Content
-
-resource.AddFile("materials/parallax/banners/unknown.png")
-resource.AddFile("materials/parallax/icons/armor.png")
-resource.AddFile("materials/parallax/icons/health.png")
-resource.AddFile("materials/parallax/icons/speaking.png")
-resource.AddFile("materials/parallax/icons/talking.png")
-resource.AddFile("materials/parallax/overlays/radial_gradient.png")
-resource.AddFile("materials/parallax/overlays/vignette_cinematic.png")
-resource.AddFile("materials/parallax/overlays/vignette.png")
-resource.AddFile("resources/fonts/inter-italic.ttf")
-resource.AddFile("resources/fonts/inter.ttf")
-resource.AddFile("sound/parallax/ui/error.wav")
-resource.AddFile("sound/parallax/ui/generic.wav")
-resource.AddFile("sound/parallax/ui/hint.wav")
-resource.AddFile("sound/parallax/ui/notification_in.wav")
-resource.AddFile("sound/parallax/ui/notification_out.wav")
