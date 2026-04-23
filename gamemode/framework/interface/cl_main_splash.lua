@@ -77,6 +77,7 @@ function PANEL:Init()
     local allowLoad = hook.Run("ShouldCreateLoadButton", self)
     if ( allowLoad != false ) then
         local loadButton = self.buttons:Add("ax.button")
+        self.loadButton = loadButton
         loadButton:Dock(LEFT)
         loadButton:SetText("mainmenu.load")
         loadButton.DoClick = function()
@@ -145,6 +146,14 @@ function PANEL:PerformLayout()
         button:SetWide(self.buttons:GetWide() / #children - ax.util:ScreenScale(8))
         button:DockMargin(ax.util:ScreenScale(4), 0, ax.util:ScreenScale(4), 0)
     end
+end
+
+function PANEL:Think()
+    if ( !IsValid(self.loadButton) ) then return end
+
+    local clientTable = ax.client:GetTable()
+    local hasCharacters = istable(clientTable.axCharacters) and clientTable.axCharacters[1] != nil
+    self.loadButton:SetEnabled(hasCharacters)
 end
 
 function PANEL:Paint(width, height)
