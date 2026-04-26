@@ -77,6 +77,7 @@ function PANEL:Init()
     local allowLoad = hook.Run("ShouldCreateLoadButton", self)
     if ( allowLoad != false ) then
         local loadButton = self.buttons:Add("ax.button")
+        self.loadButton = loadButton
         loadButton:Dock(LEFT)
         loadButton:SetText("mainmenu.load")
         loadButton.DoClick = function()
@@ -117,8 +118,33 @@ function PANEL:Init()
     end
 
 
+    self:UpdateLoadButton()
+
     hook.Run("PostMainMenuSplashCreated", self)
 end
+
+function PANEL:UpdateLoadButton()
+    if ( !IsValid(self.loadButton) ) then return end
+
+    local clientTable = ax.client:GetTable()
+    local hasCharacters = istable(clientTable.axCharacters) and clientTable.axCharacters[1] != nil
+    self.loadButton:SetEnabled(hasCharacters)
+end
+
+hook.Add("OnCharactersRestored", "ax.main.splash.loadbutton", function()
+    if ( !IsValid(ax.gui.main) or !IsValid(ax.gui.main.splash) ) then return end
+    ax.gui.main.splash:UpdateLoadButton()
+end)
+
+hook.Add("PlayerDeletedCharacter", "ax.main.splash.loadbutton", function()
+    if ( !IsValid(ax.gui.main) or !IsValid(ax.gui.main.splash) ) then return end
+    ax.gui.main.splash:UpdateLoadButton()
+end)
+
+hook.Add("PlayerCreatedCharacter", "ax.main.splash.loadbutton", function()
+    if ( !IsValid(ax.gui.main) or !IsValid(ax.gui.main.splash) ) then return end
+    ax.gui.main.splash:UpdateLoadButton()
+end)
 
 hook.Add("ShouldCreateLoadButton", "ax.main.splash", function()
     local clientTable = ax.client:GetTable()
