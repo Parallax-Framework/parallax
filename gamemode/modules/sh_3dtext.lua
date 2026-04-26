@@ -15,21 +15,16 @@ function MODULE:InitPostEntity()
 end
 
 if (SERVER) then
-	util.AddNetworkString("ixTextList")
-	util.AddNetworkString("ixTextAdd")
-	util.AddNetworkString("ixTextRemove")
-
 	function MODULE:PlayerInitialSpawn(client)
 		timer.Simple(1, function()
 			if (IsValid(client)) then
 				local json = util.TableToJSON(self.list)
 				local compressed = util.Compress(json)
 				local length = compressed:len()
-
-				net.Start("ixTextList")
-					net.WriteUInt(length, 32)
-					net.WriteData(compressed, length)
-				net.Send(client)
+                    
+                ax.net:Start(client, "ixTextList", {
+                    data = compressed
+                })
 			end
 		end)
 	end
@@ -40,15 +35,14 @@ if (SERVER) then
 		scale = math.Clamp((scale or 1) * 0.1, 0.001, 5)
 
 		self.list[index] = {position, angles, text, scale}
-
-		net.Start("ixTextAdd")
-			net.WriteUInt(index, 32)
-			net.WriteVector(position)
-			net.WriteAngle(angles)
-			net.WriteString(text)
-			net.WriteFloat(scale)
-		net.Broadcast()
-
+		ax.net:Start(nil, "ixTextAdd", {
+            index = index,
+            position = position,
+            angles = angles,
+            text = text,
+            scale = scale
+        })
+        
 		self:SaveText()
 		return index
 	end
@@ -71,10 +65,9 @@ if (SERVER) then
 
 			for _, v in ipairs(textDeleted) do
 				table.remove(self.list, v)
-
-				net.Start("ixTextRemove")
-					net.WriteUInt(v, 32)
-				net.Broadcast()
+				ax.net:Start(nil, "ixTextRemove", {
+                    index = v
+                })
 			end
 
 			self:SaveText()
@@ -83,20 +76,23 @@ if (SERVER) then
 		return #textDeleted
 	end
 
-	function MODULE:RemoveTextByID(id)
-		local info = self.list[id]
+    function MODULE:RemoveTextByID(id)
+        local info = self.list[id]
 
-		if (!info) then
-			return false
-		end
+        if (!info) then
+            return false
+        end
 
-		net.Start("ixTextRemove")
-			net.WriteUInt(id, 32)
-		net.Broadcast()
+        ax.net:Start(nil, "ixTextRemove", {
+            index = id
+        })
 
-		table.remove(self.list, id)
-		return true
-	end
+        table.remove(self.list, id)
+
+        self:SaveText() -- ← missing
+
+        return true
+    end
 
 	-- Called when the plugin needs to save information.
 	function MODULE:SaveText()
@@ -131,62 +127,36 @@ else
 		return object
 	end
 
-	-- Receives new text objects that need to be drawn.
-	net.Receive("ixTextAdd", function()
-		local index = net.ReadUInt(32)
-		local position = net.ReadVector()
-		local angles = net.ReadAngle()
-		local text = net.ReadString()
-		local scale = net.ReadFloat()
+    ax.net:Hook("ixTextAdd", function(payload)
+        if (payload.text != "") then
+            MODULE.list[payload.index] = {
+                payload.position,
+                payload.angles,
+                MODULE:GenerateMarkup(payload.text),
+                payload.scale
+            }
+        end
+    end)
 
-		if (text != "") then
-			MODULE.list[index] = {
-				position,
-				angles,
-				MODULE:GenerateMarkup(text),
-				scale
-			}
-		end
-	end)
+    ax.net:Hook("ixTextRemove", function(payload)
+        table.remove(MODULE.list, payload.index)
+    end)   
+    
+    ax.net:Hook("ixTextList", function(payload)
+        local uncompressed = util.Decompress(payload.data)
 
-	net.Receive("ixTextRemove", function()
-		local index = net.ReadUInt(32)
+        if (!uncompressed) then
+            ErrorNoHalt("[Parallax] Unable to decompress text data!\n")
+            return
+        end
 
-		table.remove(MODULE.list, index)
-	end)
+        MODULE.list = util.JSONToTable(uncompressed)
 
-	-- Receives a full update on ALL texts.
-	net.Receive("ixTextList", function()
-		local length = net.ReadUInt(32)
-		local data = net.ReadData(length)
-		local uncompressed = util.Decompress(data)
-
-		if (!uncompressed) then
-			ErrorNoHalt("[Parallax] Unable to decompress text data!\n")
-			return
-		end
-
-		MODULE.list = util.JSONToTable(uncompressed)
-
-		-- Will be saved, but refresh just to make sure.
-		for k, v in ipairs(MODULE.list) do
-			local object = ax.markup.Parse("<font=ax3D2DFont>"..v[3]:gsub("\\n", "\n"))
-
-			object.onDrawText = function(text, font, x, y, color, alignX, alignY, alpha)
-				draw.TextShadow({
-					pos = {x, y},
-					color = ColorAlpha(color, alpha),
-					text = text,
-					xalign = 0,
-					yalign = alignY,
-					font = font
-				}, 1, alpha)
-			end
-
-			v[3] = object
-		end
-	end)
-
+        for k, v in ipairs(MODULE.list) do
+            v[3] = MODULE:GenerateMarkup(v[3])
+        end
+    end)
+	
 	function MODULE:StartChat()
 		self.preview = nil
 	end
@@ -242,9 +212,10 @@ else
             angles:RotateAroundAxis(angles:Forward(), 90)
 
             local markup
-            pcall(function()
-                markup = self:GenerateMarkup(text)
-            end)
+            local ok, result = pcall(self.GenerateMarkup, self, text)
+            if (ok) then
+                markup = result
+            end
 
             if (markup) then
                 cam.Start3D2D(position, angles, scale)
