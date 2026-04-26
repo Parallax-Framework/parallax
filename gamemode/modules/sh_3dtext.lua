@@ -22,7 +22,7 @@ if (SERVER) then
 				local compressed = util.Compress(json)
 				local length = compressed:len()
                     
-                ax.net:Start(client, "ixTextList", {
+                ax.net:Start(client, "axTextList", {
                     data = compressed
                 })
 			end
@@ -35,7 +35,7 @@ if (SERVER) then
 		scale = math.Clamp((scale or 1) * 0.1, 0.001, 5)
 
 		self.list[index] = {position, angles, text, scale}
-		ax.net:Start(nil, "ixTextAdd", {
+		ax.net:Start(nil, "axTextAdd", {
             index = index,
             position = position,
             angles = angles,
@@ -65,7 +65,7 @@ if (SERVER) then
 
 			for _, v in ipairs(textDeleted) do
 				table.remove(self.list, v)
-				ax.net:Start(nil, "ixTextRemove", {
+				ax.net:Start(nil, "axTextRemove", {
                     index = v
                 })
 			end
@@ -83,7 +83,7 @@ if (SERVER) then
             return false
         end
 
-        ax.net:Start(nil, "ixTextRemove", {
+        ax.net:Start(nil, "axTextRemove", {
             index = id
         })
 
@@ -127,7 +127,7 @@ else
 		return object
 	end
 
-    ax.net:Hook("ixTextAdd", function(payload)
+    ax.net:Hook("axTextAdd", function(payload)
         if (payload.text != "") then
             MODULE.list[payload.index] = {
                 payload.position,
@@ -138,11 +138,11 @@ else
         end
     end)
 
-    ax.net:Hook("ixTextRemove", function(payload)
+    ax.net:Hook("axTextRemove", function(payload)
         table.remove(MODULE.list, payload.index)
     end)   
     
-    ax.net:Hook("ixTextList", function(payload)
+    ax.net:Hook("axTextList", function(payload)
         local uncompressed = util.Decompress(payload.data)
 
         if (!uncompressed) then
@@ -259,7 +259,7 @@ ax.command:Add("TextAdd", {
 
 		local index = MODULE:AddText(position + angles:Up() * 0.1, angles, text, scale)
 
-		undo.Create("ix3dText")
+		undo.Create("ax3dText")
 			undo.SetPlayer(client)
 			undo.AddFunction(function()
 				if (MODULE:RemoveTextByID(index)) then
