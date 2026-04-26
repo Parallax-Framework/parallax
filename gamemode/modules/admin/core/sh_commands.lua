@@ -263,3 +263,21 @@ ax.command:Add("PlySlay", {
         return "Killed " .. target:Nick()
     end
 })
+
+ax.command:Add("PlyExit", {
+    description = "Force a player to exit their vehicle or chair",
+    adminOnly = true,
+    arguments = {
+        { name = "player", type = ax.type.player }
+    },
+    OnRun = function(def, client, target)
+        if (!ax.util:IsValidPlayer(target)) then return end
+
+        if target:InVehicle() then
+            target:ExitVehicle()
+            return "Forced " .. target:Nick() .. " to exit their vehicle/seat."
+        end
+
+        return target:Nick() .. " is not in a vehicle or chair."
+    end
+})
