@@ -1,0 +1,46 @@
+name: Sunday merge staging to main
+
+on:
+  push:
+    branches: [staging]
+
+permissions:
+  contents: write
+
+jobs:
+  merge:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check if Sunday
+        id: check_day
+        run: |
+          DAY=$(date +%u)
+          echo "Today is $(date +%A)"
+          if [ "$DAY" = "7" ]; then
+            echo "is_sunday=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "is_sunday=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Checkout code
+        if: steps.check_day.outputs.is_sunday == 'true'
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Configure Git
+        if: steps.check_day.outputs.is_sunday == 'true'
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+
+      - name: Merge staging into main
+        if: steps.check_day.outputs.is_sunday == 'true'
+        run: |
+          git fetch origin
+          git checkout main
+          git merge origin/staging --no-edit
+          git push origin main
