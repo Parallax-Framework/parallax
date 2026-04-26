@@ -188,6 +188,7 @@ function PANEL:SetVisible(visible)
     hook.Run("ChatboxOnTextChanged", "", newType)
     if ( changed ) then
         hook.Run("ChatboxOnChatTypeChanged", newType, oldType)
+        ax.chat.context = ax.chatbox.recommendations:ResolveContext(self, "")
     end
 
     self:FlushOptionUpdates(true)

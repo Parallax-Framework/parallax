@@ -843,6 +843,8 @@ function ax.chatbox.recommendations:ProcessText(panel, text)
 
     hook.Run("ChatboxOnTextChanged", text, newType)
 
+    ax.chat.context = context
+
     if ( changed ) then
         hook.Run("ChatboxOnChatTypeChanged", newType, oldType)
     end
