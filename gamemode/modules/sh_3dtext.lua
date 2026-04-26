@@ -190,9 +190,7 @@ else
         if ( bDrawingDepth or bDrawingSkybox ) then return end
 
         local command = GetChatCommand()
-
-        -- preview: /textadd
-        if ( ax.util:FindString(command, "textadd") ) then
+        if ( command and ax.util:FindString(command, "textadd") ) then
             local args = GetChatArguments()
 
             local text = tostring(args[1] or "")
