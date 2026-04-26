@@ -1,4 +1,3 @@
-
 local MODULE = MODULE
 
 MODULE.name = "3D Text"
@@ -196,86 +195,80 @@ else
 		self.preview = nil
 	end
 
-	function MODULE:HUDPaint()
-		if (ax.chat.currentCommand != "textremove") then
-			return
-		end
+    local function GetChatCommand()
+        local ctx = ax.chat and ax.chat.context
+        if (ctx and ctx.commandData) then
+            return string.lower(ctx.commandData.name or "")
+        end
+    end
+    
+    local function GetChatArguments()
+        local ctx = ax.chat and ax.chat.context
+        if (not ctx or not ctx.commandArgs) then return {} end
 
-		local radius = tonumber(ix.chat.currentArguments[1]) or 100
+        local parts = string.Explode(" ", ctx.commandArgs)
 
-		surface.SetDrawColor(200, 30, 30)
-		surface.SetTextColor(200, 30, 30)
-		surface.SetFont("ax.regular")
+        local scale = tonumber(parts[#parts])
+        if (scale) then
+            table.remove(parts, #parts)
+        end
 
-		local i = 0
+        local text = string.Trim(table.concat(parts, " "))
 
-		for k, v in ipairs(self.list) do
-			if (v[1]:Distance(LocalPlayer():GetEyeTraceNoCursor().HitPos) <= radius) then
-				local screen = v[1]:ToScreen()
-				surface.DrawLine(
-					ScrW() * 0.5,
-					ScrH() * 0.5,
-					math.Clamp(screen.x, 0, ScrW()),
-					math.Clamp(screen.y, 0, ScrH())
-				)
+        if (text == "") then return {} end
 
-				i = i + 1
-			end
-		end
-
-		if (i > 0) then
-			local textWidth, textHeight = surface.GetTextSize(i)
-			surface.SetTextPos(ScrW() * 0.5 - textWidth * 0.5, ScrH() * 0.5 + textHeight + 8)
-			surface.DrawText(i)
-		end
-	end
+        return {text, scale}
+    end
 
 	function MODULE:PostDrawTranslucentRenderables(bDrawingDepth, bDrawingSkybox)
-		if (bDrawingDepth or bDrawingSkybox) then
-			return
-		end
+        if (bDrawingDepth or bDrawingSkybox) then return end
 
-		-- preview for textadd command
-		if (ax.chat.currentCommand == "textadd") then
-			local arguments = ax.chat.currentArguments
-			local text = tostring(arguments[1] or "")
-			local scale = math.Clamp((tonumber(arguments[2]) or 1) * 0.1, 0.001, 5)
-			local trace = LocalPlayer():GetEyeTraceNoCursor()
-			local position = trace.HitPos
-			local angles = trace.HitNormal:Angle()
-			local markup
+        local command = GetChatCommand()
 
-			angles:RotateAroundAxis(angles:Up(), 90)
-			angles:RotateAroundAxis(angles:Forward(), 90)
+        -- =========================
+        -- PREVIEW: /textadd
+        -- =========================
+        if (command == "textadd") then
+            local args = GetChatArguments()
 
-			-- markup will error with invalid fonts
-			pcall(function()
-				markup = MODULE:GenerateMarkup(text)
-			end)
+            local text = tostring(args[1] or "")
+            local scale = math.Clamp((tonumber(args[2]) or 1) * 0.1, 0.001, 5)
 
-			if (markup) then
-				cam.Start3D2D(position, angles, scale)
-					markup:draw(0, 0, 1, 1, 255)
-				cam.End3D2D()
-			end
-		end
+            local trace = LocalPlayer():GetEyeTraceNoCursor()
+            local position = trace.HitPos
+            local angles = trace.HitNormal:Angle()
 
-		local position = LocalPlayer():GetPos()
-		local texts = self.list
+            angles:RotateAroundAxis(angles:Up(), 90)
+            angles:RotateAroundAxis(angles:Forward(), 90)
 
-        for i, text in ipairs(texts) do
+            local markup
+            pcall(function()
+                markup = self:GenerateMarkup(text)
+            end)
+
+            if (markup) then
+                cam.Start3D2D(position, angles, scale)
+                    markup:draw(0, 0, 1, 1, 255)
+                cam.End3D2D()
+            end
+        end
+
+        -- =========================
+        -- NORMAL RENDER
+        -- =========================
+        local position = LocalPlayer():GetPos()
+
+        for _, text in ipairs(self.list) do
             local distance = text[1]:DistToSqr(position)
 
-            if (distance > 1048576) then
-                continue
-            end
+            if (distance > 1048576) then continue end
 
             cam.Start3D2D(text[1], text[2], text[4] or 0.1)
                 local alpha = (1 - ((distance - 65536) / 768432)) * 255
                 text[3]:draw(0, 0, 1, 1, alpha)
             cam.End3D2D()
         end
-	end
+    end
 end
 
 ax.command:Add("TextAdd", {
