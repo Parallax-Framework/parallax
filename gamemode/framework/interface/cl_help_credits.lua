@@ -37,7 +37,9 @@ local CREDITS = {
         { steamId = "76561199122803303", name = "Winkarst-cpu" },
         { steamId = "76561199208575979", name = "Flexgg13" },
         { steamId = "76561198151383580", name = "cuboxis" },
-        { steamId = "76561197996534315", name = "scotnay" }
+        { steamId = "76561198165619447", name = "KarmaLN" },
+        { steamId = "76561199522528952", name = "wilderwesten" },
+        { steamId = "76561197996534315", name = "scotnay" } -- Ngl, bro never sent a pr but he did inspire us to start the project, so we put him in here anyway
     },
     brainfuckers = {
         { steamId = "76561198882429953", name = "reallordmax" }
