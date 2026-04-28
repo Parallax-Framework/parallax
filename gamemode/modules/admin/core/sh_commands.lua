@@ -271,9 +271,9 @@ ax.command:Add("PlyExit", {
         { name = "player", type = ax.type.player }
     },
     OnRun = function(def, client, target)
-        if (!ax.util:IsValidPlayer(target)) then return end
+        if ( !ax.util:IsValidPlayer(target) ) then return end
 
-        if target:InVehicle() then
+        if ( target:InVehicle() ) then
             target:ExitVehicle()
             return "Forced " .. target:Nick() .. " to exit their vehicle/seat."
         end
