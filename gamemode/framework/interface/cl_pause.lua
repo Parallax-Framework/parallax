@@ -75,8 +75,8 @@ function PANEL:Init()
             timer.Simple(0, function()
                 if ( !IsValid(main) or !IsValid(main.splash) or !IsValid(main.options) ) then return end
 
-                main.splash:SlideLeft()
-                main.options:SlideToFront()
+                main.splash:SlideLeft(0.25)
+                main.options:SlideToFront(0.25)
             end)
         end)
     end)
@@ -123,7 +123,7 @@ function PANEL:CloseMenu(callback)
 
     parent:SetMouseInputEnabled(false)
 
-    self:SlideLeft(nil, function()
+    self:SlideLeft(0.25, function()
         if ( isfunction(callback) ) then
             callback()
         end
@@ -166,7 +166,9 @@ function PANEL:Init()
 
     self.content = self:Add("ax.pause.content")
     self.content:StartAtLeft()
-    self.content:SlideToFront()
+    self.content:SlideToFront(0.25)
+
+    surface.PlaySound("ui/hint.wav")
 
     hook.Run("PostPauseMenuCreated", self)
 end
