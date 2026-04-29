@@ -239,12 +239,18 @@ function GM:PlayerLoadout(client)
 
         local bodyGroups = character:GetData("bodygroups", {})
         for k, v in pairs(bodyGroups) do
-            client:SetBodygroup(tonumber(k), v)
+            local index = tonumber(k)
+            if ( index and tonumber(v) ) then
+                client:SetBodygroup(index, tonumber(v))
+            end
         end
 
         local materials = character:GetData("materials", {})
         for k, v in pairs(materials) do
-            client:SetSubMaterial(k - 1, v)
+            local index = tonumber(k)
+            if ( index and isstring(v) ) then
+                client:SetSubMaterial(index - 1, v)
+            end
         end
 
         if ( character:HasFlags("p") ) then
