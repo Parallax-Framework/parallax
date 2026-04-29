@@ -130,7 +130,7 @@ ax.option:Add("interface.scale", ax.type.number, 1.0, {
     bNoNetworking = true
 })
 
-ax.option:Add("inventory.columns", ax.type.number, 4, {
+ax.option:Add("inventory.columns", ax.type.number, 3, {
     category = "interface",
     subCategory = "inventory",
     description = "inventory.columns.help",

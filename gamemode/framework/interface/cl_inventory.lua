@@ -137,7 +137,7 @@ local function DrawGlassPanel(x, y, w, h, radius, blur)
 end
 
 local function GetInventoryColumnCount()
-    return math.max(math.floor(tonumber(ax.option:Get("inventory.columns", 4)) or 4), 1)
+    return math.max(math.floor(tonumber(ax.option:Get("inventory.columns", 3)) or 3), 1)
 end
 
 local function CalculateGridHeight(itemCount, columnCount)
