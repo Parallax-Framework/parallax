@@ -256,3 +256,61 @@ properties.Add("door.clearownership", {
         client:Notify("Door ownership has been cleared.")
     end
 })
+
+properties.Add("door.allowedfactions", {
+    MenuLabel = "Allowed Factions",
+    Order = 9999,
+    MenuIcon = "icon16/user_delete.png",
+
+    Filter = function(self, ent, client, teamID)
+        if ( !IsValid(ent) or !ent:IsDoor() or !client:IsAdmin() ) then return false end
+        if ( !hook.Run("CanProperty", client, "door.allowedfactions", ent) ) then return false end
+
+        return true
+    end,
+
+    MenuOpen = function(self, menu, entity, trace)
+        local subMenu = menu:AddSubMenu("Manage Factions")
+
+        local giveAccessMenu = subMenu:AddSubMenu("Give Access")
+        local takeAccessMenu = subMenu:AddSubMenu("Take Access")
+
+        local function SendMsg(teamID)
+            self:MsgStart()
+                net.WriteEntity(entity)
+                net.WriteUInt(teamID, 8)
+            self:MsgEnd()
+        end
+
+        local allowedFactions = entity:GetRelay("allowedFactions", {}) -- [teamID] = true/nil
+
+        local teams = ax.faction:GetAll()
+        for i = 1, #teams do
+            local team = teams[i]
+
+            if ( allowedFactions[team.index] ) then
+                local userSubOption = takeAccessMenu:AddOption(team.name, function() SendMsg(team.index) end)
+            else
+                local userSubOption = giveAccessMenu:AddOption(team.name, function() SendMsg(team.index) end)
+            end
+        end
+    end,
+
+    Receive = function(self, length, client)
+        local entity = net.ReadEntity()
+        if ( !properties.CanBeTargeted(entity, client) ) then return end
+
+        local teamID = net.ReadUInt(8)
+        if ( !self:Filter(entity, client, teamID) ) then return end
+
+        local factions = entity:GetRelay("allowedFactions", {})
+
+        PrintTable(factions)
+
+        factions[teamID] = factions[teamID] == nil and true or nil
+
+        PrintTable(factions)
+
+        entity:SetRelay("allowedFactions", factions)
+    end
+})

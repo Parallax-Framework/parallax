@@ -486,7 +486,6 @@ ax.net:Hook("inventory.item.remove", function(inventoryID, itemID)
 end)
 
 ax.net:Hook("relay.update", function(index, name, value)
-
     ax.relay.data[index] = ax.relay.data[index] or {}
     ax.relay.data[index][name] = value
 
