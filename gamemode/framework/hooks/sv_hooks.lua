@@ -239,7 +239,7 @@ function GM:PlayerLoadout(client)
 
         local bodyGroups = character:GetData("bodygroups", {})
         for k, v in pairs(bodyGroups) do
-            client:SetBodygroup(client:FindBodygroupByName(k), v)
+            client:SetBodygroup(tonumber(k), v)
         end
 
         local materials = character:GetData("materials", {})
