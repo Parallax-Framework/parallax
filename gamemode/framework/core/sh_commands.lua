@@ -454,7 +454,7 @@ ax.command:Add("PlyWhitelist", {
         local whitelists = target:GetData("whitelists", {})
         whitelists[factionTable.id] = true
 
-        target:SetFactionWhitelisted(factionTable.id, true)
+        target:SetFactionWhitelisted(factionTable.index, true)
         target:Save()
 
         return target:Nick() .. "( " .. target:SteamName() .. " ) has been whitelisted for " .. factionTable.name .. "."
