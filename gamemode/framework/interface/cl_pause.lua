@@ -75,8 +75,8 @@ function PANEL:Init()
             timer.Simple(0, function()
                 if ( !IsValid(main) or !IsValid(main.splash) or !IsValid(main.options) ) then return end
 
-                main.splash:SlideLeft()
-                main.options:SlideToFront()
+                main.splash:SlideLeft(0.25)
+                main.options:SlideToFront(0.25)
             end)
         end)
     end)
