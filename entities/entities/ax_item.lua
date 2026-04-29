@@ -59,7 +59,7 @@ if ( SERVER ) then
             activator:RemoveTimer("ax.item.pickup.monitor")
         end
 
-        activator:PerformAction("Picking up...", 2, function()
+        activator:PerformAction("Picking up...", 1, function()
             cancelPickup()
 
             ax.item:RunAction(activator, item, "take", {
