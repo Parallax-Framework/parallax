@@ -151,19 +151,19 @@ function ENTITY:EmitQueuedSound(soundNames, soundLevel, pitchPercent, volume, ch
     return totalDuration
 end
 
-if ( SERVER ) then
-    --- Returns whether the entity is in a locked state.
-    -- Reads the internal engine variable that tracks lock state: `VehicleLocked` for vehicle entities, `m_bLocked` for doors and other lockable props.
-    -- @realm server
-    -- @return boolean True if the entity is locked.
-    function ENTITY:IsLocked()
-        if ( self:IsVehicle() ) then
-            return self:GetInternalVariable( "VehicleLocked" )
-        end
-
-        return self:GetInternalVariable( "m_bLocked" )
+--- Returns whether the entity is in a locked state.
+-- Reads the internal engine variable that tracks lock state: `VehicleLocked` for vehicle entities, `m_bLocked` for doors and other lockable props.
+-- @realm shared
+-- @return boolean True if the entity is locked.
+function ENTITY:IsLocked()
+    if ( self:IsVehicle() ) then
+        return self:GetInternalVariable( "VehicleLocked" )
     end
 
+    return self:GetInternalVariable( "m_bLocked" )
+end
+
+if ( SERVER ) then
     function ENTITY:ToggleLock()
         if ( self:IsLocked() ) then
             self:Fire("unlock", "", 0)
