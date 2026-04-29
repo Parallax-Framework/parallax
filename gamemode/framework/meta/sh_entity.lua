@@ -157,10 +157,10 @@ end
 -- @return boolean True if the entity is locked.
 function ENTITY:IsLocked()
     if ( self:IsVehicle() ) then
-        return self:GetInternalVariable( "VehicleLocked" )
+        return self:GetInternalVariable("VehicleLocked")
     end
 
-    return self:GetInternalVariable( "m_bLocked" )
+    return self:GetInternalVariable("m_bLocked")
 end
 
 if ( SERVER ) then
