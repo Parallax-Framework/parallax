@@ -24,7 +24,7 @@ end
 local PANEL = {}
 
 local GLASS_PANEL_RADIUS = 10
-local INVENTORY_PREVIEW_WIDTH = ax.util:ScreenScale(256)
+local INVENTORY_PREVIEW_WIDTH = ax.util:ScreenScale(192)
 local INVENTORY_INFO_HEIGHT = ax.util:ScreenScaleH(128)
 local INVENTORY_CATEGORY_SPACING = ax.util:ScreenScaleH(2)
 local INVENTORY_ACTIONS_WIDTH = ax.util:ScreenScale(64)
@@ -956,7 +956,7 @@ function PANEL:PopulateItems()
                 local displayName = representativeItem:GetName() or tostring(representativeItem)
                 item:SetText(displayName, true)
                 item:SetContentAlignment(4)
-                item:SetTextInset(INVENTORY_GRID_ITEM_HEIGHT + ax.util:ScreenScale(8), 0)
+                item:SetTextInset(INVENTORY_GRID_ITEM_HEIGHT + ax.util:ScreenScale(1), 0)
 
                 item.DoClick = function()
                     self:InfoOpen()
@@ -1007,14 +1007,14 @@ function PANEL:PopulateItems()
                 if ( stack.isCurrencyStack ) then
                     local balanceLabel = item:Add("ax.text")
                     balanceLabel:Dock(RIGHT)
-                    balanceLabel:DockMargin(0, 0, ax.util:ScreenScale(8), 0)
+                    balanceLabel:DockMargin(0, 0, ax.util:ScreenScale(4), 0)
                     balanceLabel:SetFont("ax.small.italic")
                     balanceLabel:SetText(representativeItem:GetFormattedAmount(true), true)
                     balanceLabel:SetContentAlignment(6)
                 elseif ( stack.stackCount > 1 ) then
                     local stackLabel = item:Add("ax.text")
                     stackLabel:Dock(RIGHT)
-                    stackLabel:DockMargin(0, 0, ax.util:ScreenScale(8), 0)
+                    stackLabel:DockMargin(0, 0, ax.util:ScreenScale(4), 0)
                     stackLabel:SetFont("ax.small.italic")
                     stackLabel:SetText("x" .. stack.stackCount, true)
                     stackLabel:SetContentAlignment(6)
