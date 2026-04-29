@@ -123,7 +123,7 @@ function PANEL:CloseMenu(callback)
 
     parent:SetMouseInputEnabled(false)
 
-    self:SlideLeft(nil, function()
+    self:SlideLeft(0.25, function()
         if ( isfunction(callback) ) then
             callback()
         end
