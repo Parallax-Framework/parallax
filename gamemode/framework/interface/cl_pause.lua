@@ -166,7 +166,9 @@ function PANEL:Init()
 
     self.content = self:Add("ax.pause.content")
     self.content:StartAtLeft()
-    self.content:SlideToFront()
+    self.content:SlideToFront(0.25)
+
+    surface.PlaySound("ui/hint.wav")
 
     hook.Run("PostPauseMenuCreated", self)
 end
