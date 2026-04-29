@@ -500,7 +500,7 @@ ax.command:Add("PlyUnWhitelist", {
         if ( !factionTable ) then return "Invalid faction." end
         if ( factionTable.isDefault ) then return "This faction does not require whitelisting." end
 
-        target:SetFactionWhitelisted(factionTable.id, false)
+        target:SetFactionWhitelisted(factionTable.index, false)
         target:Save()
 
         return target:Nick() .. "( " .. target:SteamName() .. " ) has been unwhitelisted for " .. factionTable.name .. "."
@@ -565,7 +565,7 @@ ax.command:Add("BecomeClass", {
 
         if ( !selectedClass ) then return "Invalid class." end
 
-        if ( !ax.class:CanBecome(selectedClass.id, client) ) then
+        if ( !ax.class:CanBecome(selectedClass.index, client) ) then
             return "You cannot become this class."
         end
 
