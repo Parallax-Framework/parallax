@@ -498,9 +498,15 @@ end
 
 function GM:OnPlayerItemTake(client, entity, item)
     if ( IsValid(entity) ) then
-        entity:EmitSound("items/itempickup.wav", 70, math.Rand(95, 105), 1, CHAN_AUTO)
+        entity:EmitSound("npc/zombie/foot_slide" .. math.random(3) .. ".wav", 70, math.Rand(95, 105), 1, CHAN_AUTO)
     else
-        client:EmitSound("items/itempickup.wav", 70, math.Rand(95, 105), 1, CHAN_AUTO)
+        client:EmitSound("npc/zombie/foot_slide" .. math.random(3) .. ".wav", 70, math.Rand(95, 105), 1, CHAN_AUTO)
+    end
+end
+
+function GM:OnPlayerItemAction(client, item, action)
+    if ( action == "drop" ) then
+        client:EmitSound("npc/zombie/foot_slide" .. math.random(3) .. ".wav", 70, math.Rand(95, 105), 1, CHAN_AUTO)
     end
 end
 
@@ -680,22 +686,6 @@ end
 function GM:GetFallDamage(client, speed)
     -- https://github.com/Facepunch/garrysmod/blob/master/garrysmod/gamemodes/base/gamemode/player.lua#L756
     return ( speed - 526.5 ) * ( 100 / 396 ) -- the Source SDK value
-end
-
-function GM:OnPlayerItemPickup(client, entity, item)
-    -- Item transfers are async (DB-backed). Under heavy spam, the entity may be
-    -- removed before the callback fires, so defensively handle invalid ents.
-    if ( IsValid(entity) ) then
-        entity:EmitSound("items/itempickup.wav")
-    elseif ( ax.util:IsValidPlayer(client) ) then
-        client:EmitSound("items/itempickup.wav")
-    end
-end
-
-function GM:OnPlayerItemAction(client, item, action)
-    if ( action == "drop" ) then
-        client:EmitSound("Flesh.ImpactSoft")
-    end
 end
 
 function GM:ShouldSendDeathNotice(attacker, inflictor, victim, flags)
