@@ -1086,36 +1086,45 @@ function PANEL:PopulateInfo(stack)
     header:Dock(TOP)
     header:DockMargin(ax.util:ScreenScale(8), ax.util:ScreenScaleH(8), ax.util:ScreenScale(4), 0)
 
-    local title = header:Add("ax.text")
-    title:Dock(TOP)
-    title:SetFont("ax.large.bold")
     local titleText = representativeItem:GetName() or "Unknown Item"
     if ( stack.isCurrencyStack ) then
         titleText = representativeItem:GetFormattedAmount(false)
     elseif ( stack.stackCount > 1 ) then
         titleText = titleText .. " x" .. stack.stackCount
     end
-    title:SetText(titleText, true)
+
+    local title = header:Add("DLabel")
+    title:Dock(TOP)
+    title:SetFont("ax.large.bold")
+    title:SetText(titleText)
+    title:SetTextColor(ax.theme:GetGlass().text)
+    title:SetWrap(true)
+    title:SetAutoStretchVertical(true)
     title:SetContentAlignment(4)
 
+    local subInfo
     if ( stack.isCurrencyStack ) then
-        local currencyState = header:Add("ax.text")
-        currencyState:Dock(TOP)
-        currencyState:SetFont("ax.small.italic")
-        currencyState:SetText(representativeItem:IsPhysical() and "Physical currency" or "Non-physical currency", true)
-        currencyState:SetContentAlignment(4)
-
-        header:SetTall(title:GetTall() + currencyState:GetTall() + ax.util:ScreenScaleH(4))
+        subInfo = header:Add("ax.text")
+        subInfo:Dock(TOP)
+        subInfo:SetFont("ax.small.italic")
+        subInfo:SetText(representativeItem:IsPhysical() and "Physical currency" or "Non-physical currency", true)
+        subInfo:SetContentAlignment(4)
     elseif ( representativeItem.GetWeight and isfunction(representativeItem.GetWeight) ) then
-        local weightInfo = header:Add("ax.text")
-        weightInfo:Dock(TOP)
-        weightInfo:SetFont("ax.small.italic")
-        weightInfo:SetText("Weight: " .. representativeItem:GetWeight() .. "kg", true)
-        weightInfo:SetContentAlignment(4)
+        subInfo = header:Add("ax.text")
+        subInfo:Dock(TOP)
+        subInfo:SetFont("ax.small.italic")
+        subInfo:SetText("Weight: " .. representativeItem:GetWeight() .. "kg", true)
+        subInfo:SetContentAlignment(4)
+    end
 
-        header:SetTall(title:GetTall() + weightInfo:GetTall() + ax.util:ScreenScaleH(4))
-    else
-        header:SetTall(title:GetTall())
+    local headerVerticalPadding = ax.util:ScreenScaleH(4)
+    header.PerformLayout = function(this, _, _)
+        local total = title:GetTall()
+        if ( IsValid(subInfo) ) then
+            total = total + subInfo:GetTall()
+        end
+
+        this:SetTall(total + headerVerticalPadding)
     end
 
     local content = self.info:Add("EditablePanel")
@@ -1129,17 +1138,14 @@ function PANEL:PopulateInfo(stack)
     body.Paint = nil
 
     local description = representativeItem:GetDescription() or "No description available."
-    local availableWidth = math.max(self:GetWide() - INVENTORY_PREVIEW_WIDTH - INVENTORY_ACTIONS_WIDTH - INVENTORY_ITEMCAM_WIDTH - ax.util:ScreenScale(48), ax.util:ScreenScale(120))
-    local descriptionWrapped = ax.util:GetWrappedText(description, "ax.small", availableWidth)
-
-    for _ = 1, #descriptionWrapped do
-        local line = descriptionWrapped[_]
-        local descLine = body:Add("ax.text")
-        descLine:Dock(TOP)
-        descLine:SetFont("ax.small")
-        descLine:SetText(line, true)
-        descLine:SetContentAlignment(4)
-    end
+    local descLabel = body:Add("DLabel")
+    descLabel:Dock(TOP)
+    descLabel:SetFont("ax.small")
+    descLabel:SetText(description)
+    descLabel:SetTextColor(ax.theme:GetGlass().text)
+    descLabel:SetWrap(true)
+    descLabel:SetAutoStretchVertical(true)
+    descLabel:SetContentAlignment(7)
 
     local actionsPanel = self.info:Add("ax.scroller.vertical")
     actionsPanel:Dock(RIGHT)
