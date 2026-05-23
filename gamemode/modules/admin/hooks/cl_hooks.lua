@@ -81,9 +81,24 @@ function MODULE:DrawItems()
     end
 end
 
+local OUTLINE = Color(0, 0, 0)
+local CHARACTER_NAME_COLOR = Color(255, 255, 255)
+local STEAM_NAME_COLOR = Color(170, 215, 255)
+local STEAM_NAME_FALLBACK_COLOR = Color(255, 255, 255)
+local HEALTH_COLOR = Color(120, 235, 120)
+local ARMOR_COLOR = Color(120, 185, 255)
+local WEAPON_COLOR = Color(255, 220, 130)
+
 function MODULE:DrawPlayers()
     local client = ax.client
     if ( !ax.util:IsValidPlayer(client) or !client:IsAdmin() ) then return end
+
+    local nameFont = "ax.huge.admin.bold"
+    local subFont = "ax.regular.admin.bold"
+    local detailFont = "ax.small.admin"
+    local nameLineHeight = draw.GetFontHeight(nameFont) * 0.95
+    local subLineHeight = draw.GetFontHeight(subFont) * 1.0
+    local detailLineHeight = draw.GetFontHeight(detailFont) * 1.05
 
     for _, target in player.Iterator() do
         if ( target == client or !ax.util:IsValidPlayer(target) ) then continue end
@@ -91,12 +106,13 @@ function MODULE:DrawPlayers()
         local scr = target:GetPos():ToScreen()
         if ( !scr.visible ) then continue end
 
-        local steamID64 = target:SteamID64()
-        local name = target:SteamName()
+        local steamName = target:SteamName()
         local teamName = team.GetName(target:Team()) or "Unknown"
         local character = target:GetCharacter()
+        local characterName = nil
+
         if ( character ) then
-            name = character:GetName() .. " [" .. target:EntIndex() .. "][" .. name .. "]"
+            characterName = character:GetName()
 
             local class = character:GetClass()
             if ( class ) then
@@ -107,33 +123,57 @@ function MODULE:DrawPlayers()
             end
         end
 
-        local health = target:Health() or 0
-        local armor = target:Armor() or 0
+        local primaryName = characterName or steamName
+        local primaryColor = characterName and CHARACTER_NAME_COLOR or STEAM_NAME_FALLBACK_COLOR
+        local secondaryLine = string.format("@%s  [%d]", steamName, target:EntIndex())
 
         local yOffset = 0
-        local ySpacing = draw.GetFontHeight("ax.regular.admin.bold") / 1.25
 
-        draw.SimpleTextOutlined(name, "ax.regular.admin.bold", scr.x, scr.y + yOffset, Color(0, 255, 255), TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM, 1, Color(0, 0, 0))
-        yOffset = yOffset + ySpacing
+        draw.SimpleTextOutlined(primaryName, nameFont, scr.x, scr.y + yOffset, primaryColor, TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM, 1, OUTLINE)
+        yOffset = yOffset + nameLineHeight
 
-        draw.SimpleTextOutlined(teamName, "ax.regular.admin", scr.x, scr.y + yOffset, team.GetColor(target:Team()) or Color(255, 255, 255), TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM, 1, Color(0, 0, 0))
-        yOffset = yOffset + ySpacing
+        if ( characterName ) then
+            draw.SimpleTextOutlined(secondaryLine, subFont, scr.x, scr.y + yOffset, STEAM_NAME_COLOR, TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM, 1, OUTLINE)
+            yOffset = yOffset + subLineHeight
+        else
+            draw.SimpleTextOutlined("[" .. target:EntIndex() .. "]", subFont, scr.x, scr.y + yOffset, STEAM_NAME_COLOR, TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM, 1, OUTLINE)
+            yOffset = yOffset + subLineHeight
+        end
 
-        local healthText = "HP: " .. tostring(health)
-        draw.SimpleTextOutlined(healthText, "ax.regular.admin", scr.x, scr.y + yOffset, Color(0, 255, 0), TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM, 1, Color(0, 0, 0))
-        yOffset = yOffset + ySpacing
+        draw.SimpleTextOutlined(teamName, detailFont, scr.x, scr.y + yOffset, team.GetColor(target:Team()) or Color(255, 255, 255), TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM, 1, OUTLINE)
+        yOffset = yOffset + detailLineHeight
 
+        local health = target:Health() or 0
+        local armor = target:Armor() or 0
+        local statusParts = { { text = "HP " .. health, color = HEALTH_COLOR } }
         if ( armor > 0 ) then
-            local armorText = "AR: " .. tostring(armor)
-            draw.SimpleTextOutlined(armorText, "ax.regular.admin", scr.x, scr.y + yOffset, Color(0, 150, 255), TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM, 1, Color(0, 0, 0))
-            yOffset = yOffset + ySpacing
+            statusParts[#statusParts + 1] = { text = "AR " .. armor, color = ARMOR_COLOR }
         end
 
         local weapon = target:GetActiveWeapon()
         if ( type(weapon) == "Weapon" ) then
-            local wepName = weapon:GetPrintName() or "Unknown"
-            draw.SimpleTextOutlined(wepName, "ax.regular.admin", scr.x, scr.y + yOffset, Color(255, 255, 0), TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM, 1, Color(0, 0, 0))
-            yOffset = yOffset + ySpacing
+            statusParts[#statusParts + 1] = { text = weapon:GetPrintName() or "Unknown", color = WEAPON_COLOR }
+        end
+
+        surface.SetFont(detailFont)
+        local separator = "   "
+        local separatorWidth = surface.GetTextSize(separator)
+        local totalWidth = 0
+
+        for i = 1, #statusParts do
+            local partWidth = surface.GetTextSize(statusParts[i].text)
+            totalWidth = totalWidth + partWidth
+            if ( i < #statusParts ) then
+                totalWidth = totalWidth + separatorWidth
+            end
+        end
+
+        local cursorX = scr.x - totalWidth * 0.5
+        for i = 1, #statusParts do
+            local part = statusParts[i]
+            local partWidth = surface.GetTextSize(part.text)
+            draw.SimpleTextOutlined(part.text, detailFont, cursorX, scr.y + yOffset, part.color, TEXT_ALIGN_LEFT, TEXT_ALIGN_BOTTOM, 1, OUTLINE)
+            cursorX = cursorX + partWidth + separatorWidth
         end
     end
 end
