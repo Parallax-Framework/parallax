@@ -180,6 +180,42 @@ function item:GetInventoryID()
     return inventoryID
 end
 
+--- Grid column this item currently occupies, if placed in a grid-addressed inventory.
+-- Set at instance/placement time (`item.gridX`), not persisted on the item definition itself. Nil for items not in a grid-addressed inventory.
+-- @realm shared
+-- @return number|nil
+function item:GetGridX()
+    return self.gridX
+end
+
+--- Grid row this item currently occupies. See `GetGridX`.
+-- @realm shared
+-- @return number|nil
+function item:GetGridY()
+    return self.gridY
+end
+
+--- Named slot this item currently occupies, if placed in a slot-addressed inventory (e.g. equipment). Set at instance/placement time (`item.slotID`).
+-- @realm shared
+-- @return string|nil
+function item:GetSlotID()
+    return self.slotID
+end
+
+--- Item footprint width in grid cells. Static per item class (`ITEM.width`, inherited via the instance metatable), defaults to 1 for items that never declare it.
+-- @realm shared
+-- @return number
+function item:GetWidth()
+    return self.width or 1
+end
+
+--- Item footprint height in grid cells. See `GetWidth`.
+-- @realm shared
+-- @return number
+function item:GetHeight()
+    return self.height or 1
+end
+
 --- Returns a value from this item's data store, with an optional fallback.
 -- Initialises `self.data` to an empty table if it is not already a table. Returns `default` when the key is nil; returns the stored value otherwise.
 -- Use `SetData` to write values that should be persisted to the database.

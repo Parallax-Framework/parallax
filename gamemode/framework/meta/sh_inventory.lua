@@ -63,6 +63,109 @@ function inventory:GetID()
     return self.id
 end
 
+--- Returns this inventory's registered type id.
+-- Inventories with no `typeID` set default to `"weight"` (see `ax.inventory:GetType`), matching pre-registry behaviour.
+-- @realm shared
+-- @return string The type id.
+function inventory:GetTypeID()
+    return self.typeID or "weight"
+end
+
+--- Returns the owner kind of this inventory (`"character"` / `"entity"` / `"item"`), or nil if unset (e.g. legacy weight inventories created before ownership columns existed).
+-- @realm shared
+-- @return string|nil
+function inventory:GetOwnerKind()
+    return self.ownerKind
+end
+
+--- Returns the owner id of this inventory. Meaning depends on `GetOwnerKind()`.
+-- @realm shared
+-- @return number|nil
+function inventory:GetOwnerID()
+    return self.ownerID
+end
+
+--- Returns an instance data value (e.g. grid size, slot set), or `default` if unset.
+-- Instance data holds per-inventory parameters that vary within a single type (grid width/height, valid slot set) - see `ax.inventory:RegisterType`.
+-- @realm shared
+-- @param key string The data key to read.
+-- @param default any Fallback value when the key is unset.
+-- @return any
+function inventory:GetData(key, default)
+    if ( !istable(self.data) ) then return default end
+
+    local value = self.data[key]
+    if ( value == nil ) then return default end
+
+    return value
+end
+
+--- Sets an instance data value. Not persisted automatically - callers that need
+-- durability write the inventory row back to the database.
+-- @realm shared
+-- @param key string
+-- @param value any
+function inventory:SetData(key, value)
+    if ( !istable(self.data) ) then self.data = {} end
+
+    self.data[key] = value
+end
+
+--- Returns the inventory's grid width, if its type supports coordinate addressing - nil otherwise.
+-- @realm shared
+-- @return number|nil
+function inventory:GetWidth()
+    local typeDef = ax.inventory:GetType(self)
+    if ( !typeDef or !typeDef.GetWidth ) then return nil end
+
+    return typeDef.GetWidth(self)
+end
+
+--- Returns the inventory's grid height, if its type supports coordinate addressing - nil otherwise.
+-- @realm shared
+-- @return number|nil
+function inventory:GetHeight()
+    local typeDef = ax.inventory:GetType(self)
+    if ( !typeDef or !typeDef.GetHeight ) then return nil end
+
+    return typeDef.GetHeight(self)
+end
+
+--- Returns the item occupying a given position, per the inventory's type.
+-- Addressing scheme depends on the type: grid-addressed types read this as (x, y), slot-addressed types read it as (slotID). Passed through as-is so either shape works through the same method name.
+-- @realm shared
+-- @return table|nil
+function inventory:GetItemAt(...)
+    local typeDef = ax.inventory:GetType(self)
+    if ( !typeDef or !typeDef.GetItemAt ) then return nil end
+
+    return typeDef.GetItemAt(self, ...)
+end
+
+--- Returns whether an item can occupy the given position/slot, per the inventory's type.
+-- Grid-addressed types expect (x, y, w, h, ignoreItem); slot-addressed types expect (slotID, ignoreItem).
+-- @realm shared
+-- @return boolean
+function inventory:CanItemFit(...)
+    local typeDef = ax.inventory:GetType(self)
+    if ( !typeDef or !typeDef.CanItemFit ) then return false end
+
+    return typeDef.CanItemFit(self, ...)
+end
+
+--- Finds the first free (x, y) that fits an item of the given size. Grid-addressed types only.
+-- @realm shared
+-- @param w number
+-- @param h number
+-- @param ignoreItem table|nil
+-- @return number|nil, number|nil
+function inventory:FindEmptySlot(w, h, ignoreItem)
+    local typeDef = ax.inventory:GetType(self)
+    if ( !typeDef or !typeDef.FindEmptySlot ) then return nil end
+
+    return typeDef.FindEmptySlot(self, w, h, ignoreItem)
+end
+
 --- Returns the items table for this inventory.
 -- The returned table is keyed by item ID (number) and valued by item instance tables. Returns an empty table when the inventory has no items loaded.
 -- @realm shared

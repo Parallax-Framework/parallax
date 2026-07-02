@@ -137,6 +137,9 @@ function ax.database:CreateTables()
         query:Create("id", "INT(11) UNSIGNED NOT NULL AUTO_INCREMENT")
         query:Create("max_weight", "FLOAT NOT NULL DEFAULT 30.0")
         query:Create("data", "LONGTEXT NOT NULL")
+        query:Create("type_id", "VARCHAR(64) NOT NULL DEFAULT 'weight'")
+        query:Create("owner_kind", "VARCHAR(32) DEFAULT NULL")
+        query:Create("owner_id", "INT(11) UNSIGNED DEFAULT NULL")
         query:PrimaryKey("id")
     query:Execute()
 
@@ -145,8 +148,23 @@ function ax.database:CreateTables()
         query:Create("class", "VARCHAR(64) NOT NULL")
         query:Create("inventory_id", "INT(11) UNSIGNED NOT NULL")
         query:Create("data", "LONGTEXT NOT NULL")
+        query:Create("grid_x", "INT(11) DEFAULT NULL")
+        query:Create("grid_y", "INT(11) DEFAULT NULL")
+        query:Create("slot_id", "VARCHAR(64) DEFAULT NULL")
         query:PrimaryKey("id")
     query:Execute()
+
+    -- Additive columns for installs whose ax_inventories/ax_items tables predate the
+    -- type registry (D1 rewrite). Queued through the schema tracker (ALTER ... ADD
+    -- COLUMN, never DROP/MODIFY) so existing rows and data are untouched; every
+    -- existing inventory row implicitly resolves to the "weight" type via
+    -- ax.inventory:GetType()'s default, so this is pure back-compat, not a migration.
+    self:AddToSchema("ax_inventories", "type_id", ax.type.string)
+    self:AddToSchema("ax_inventories", "owner_kind", ax.type.string)
+    self:AddToSchema("ax_inventories", "owner_id", ax.type.number)
+    self:AddToSchema("ax_items", "grid_x", ax.type.number)
+    self:AddToSchema("ax_items", "grid_y", ax.type.number)
+    self:AddToSchema("ax_items", "slot_id", ax.type.string)
 
     query = mysql:InsertIgnore("ax_schema")
         query:Insert("table", "ax_characters")
@@ -155,6 +173,20 @@ function ax.database:CreateTables()
 
     query = mysql:InsertIgnore("ax_schema")
         query:Insert("table", "ax_players")
+        query:Insert("columns", util.TableToJSON({}))
+    query:Execute()
+
+    -- ax_inventories/ax_items need schema-tracker rows too, otherwise the
+    -- AddToSchema() calls above have nothing to register their queued columns
+    -- against once the SELECT below populates self.schema (InsertSchema errors on
+    -- an untracked table).
+    query = mysql:InsertIgnore("ax_schema")
+        query:Insert("table", "ax_inventories")
+        query:Insert("columns", util.TableToJSON({}))
+    query:Execute()
+
+    query = mysql:InsertIgnore("ax_schema")
+        query:Insert("table", "ax_items")
         query:Insert("columns", util.TableToJSON({}))
     query:Execute()
 
