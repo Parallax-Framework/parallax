@@ -503,21 +503,77 @@ local owner = character:GetOwner()
 
 ## Inventory System (`ax.inventory`)
 
-Inventories store items for characters, containers, or the world.
+Inventories store items for characters, containers, item-owned bags, or the world
+(inventory ID `0`). Every inventory instance has a **type** (`typeID`) that decides
+how items are addressed and how capacity is checked, and an **owner** (`ownerKind` +
+`ownerID`) that decides who's allowed to modify it.
 
 ### Inventory Structure
 
 ```lua
 inventory = {
     id = 1,
+    typeID = "weight",       -- registry key; decides addressing + capacity rules
+    ownerKind = "character", -- "character", "item", "entity", or nil (legacy/ownerless)
+    ownerID = 4,
+    data = {},               -- per-instance type parameters (e.g. grid size, slot set)
     items = {
         [123] = itemInstance1,
         [124] = itemInstance2,
     },
-    maxWeight = 30.0,
+    maxWeight = 30.0,        -- only meaningful for the "weight" type
     receivers = {player1, player2}
 }
 ```
+
+### Type Registry
+
+Every inventory is created against a registered type. The default `weight` type
+reproduces the framework's original behavior (a flat list capped by total weight,
+no addressing) so untouched schemas keep working unmodified. Other types (grid,
+slot, ...) add coordinate/slot addressing and their own capacity rule on top:
+
+```lua
+ax.inventory:RegisterType("weight", {
+    CanReceiveItem = function(inventory, item, placement) ... end,
+    CanRemoveItem = function(inventory, item) ... end,
+    -- Addressed types (grid/slot) additionally implement:
+    -- CanItemFit(...), FindEmptySlot(...), ResolvePlacement(self, w, h, explicitPlacement, ignoreItem)
+})
+
+-- Get the type definition backing an inventory instance
+local typeDef = ax.inventory:GetType(inventory)
+```
+
+A type with no addressing (the default) skips placement validation entirely in
+`Transfer` and keeps writing an empty placement blob - this is what makes the
+`weight` type back-compatible.
+
+### Ownership and Access
+
+`ownerKind`/`ownerID` are never hand-typed strings above the database layer -
+they're resolved through registered owner resolvers:
+
+```lua
+ax.inventory:RegisterOwnerResolver({
+    kind = "character",
+    checkOwner = function(owner) return istable(owner) and owner.GetID != nil end,
+    getOwner = function(owner) return owner:GetID() end,
+})
+```
+
+The core enforces exactly one built-in access rule - **an owner-character may
+modify their own inventories** - and otherwise defers to the type's own
+`CanAccess` rule (distance, locks, faction/rank, ...):
+
+```lua
+if ax.inventory:CanAccess(inventory, client) then
+    -- client may Transfer items into/out of this inventory
+end
+```
+
+"Can access" (may modify) and "is a receiver" (gets synced state) are separate
+concepts - a player can see an inventory without being allowed to change it.
 
 ### Inventory API
 
@@ -546,27 +602,70 @@ end
 local receivers = inventory:GetReceivers()
 ```
 
+### Transferring Items
+
+`ax.item:Transfer` is the single transaction that moves or repositions an item -
+drag-and-drop, equip, world drop/pickup, and reward grants all go through it.
+There is no other way to change where an item lives.
+
+```lua
+-- Transfer(item, fromInventory, toInventory, placement, client, callback)
+-- fromInventory/toInventory: instance, id, or 0/nil for the world
+-- placement: nil to auto-place (addressed types only), or { gridX, gridY } / { slotID }
+-- client: the player initiating the transfer, or nil for a trusted/system call
+--         (reward grants, admin commands) - nil skips the access gate
+ax.item:Transfer(item, fromInventory, toInventory, nil, client, function(success, reasonCode)
+    if !success then
+        -- reasonCode is a phrase key, e.g. "inventory.reason.no_space" - map it
+        -- through ax.localization:GetPhrase for player-facing text, don't show
+        -- reasonCode raw
+        return
+    end
+end)
+```
+
+Checks run in a fixed order: client access to both endpoints -> anti-dupe lock on
+the item -> item-level `CanTransferItem` hook -> source type's `CanRemoveItem` ->
+destination type's `CanReceiveItem` (plus weight capacity as a universal
+baseline) -> placement resolution (skipped for non-addressed types) -> depth-1
+nesting (an item that owns an inventory can never end up inside another
+item-owned inventory). The database write happens before any in-memory state
+changes, so a DB failure never leaves memory and DB diverged.
+
 ### World Inventory
 
 Inventory ID `0` represents the world (dropped items):
 
 ```lua
 -- Transfer to world (drop item)
-ax.item:Transfer(item, playerInv, 0, function(success)
+ax.item:Transfer(item, playerInv, 0, nil, client, function(success)
     if success then
         print("Item dropped")
     end
 end)
 
 -- Transfer from world (pickup item)
-ax.item:Transfer(item, 0, playerInv, function(success)
+ax.item:Transfer(item, 0, playerInv, nil, client, function(success)
     if success then
         print("Item picked up")
     end
 end)
 ```
 
+### Reason Codes
+
+A failed access check or `Transfer` never returns a raw English string - it
+returns a phrase key from a small, growing set (`inventory.reason.no_space`,
+`wrong_slot`, `no_access`, `locked`, `nesting`, `too_far`, `invalid`, ...).
+Schemas map these through `ax.localization:GetPhrase` for player-facing text;
+treat the key itself as an enum, not display copy.
+
 ### Inventory Synchronization
+
+A full snapshot of the inventory is sent on every change - there is no delta
+protocol. The payload includes the type and owner fields as additive tail
+arguments, so a receiver that predates the type registry still gets a working
+default (`weight`, `{}`) sync:
 
 ```lua
 -- Sync inventory to all receivers (server)
@@ -580,6 +679,8 @@ ax.inventory:Sync(inventoryID, {client1, client2})
 
 ```lua
 ax.inventory:Create({
+    owner = character,   -- resolved to (ownerKind, ownerID) via the registered resolvers
+    typeID = "weight",    -- defaults to "weight" if omitted (back-compat)
     maxWeight = 50.0
 }, function(inventory)
     print("Created inventory:", inventory.id)
