@@ -255,6 +255,7 @@ function ax.item:Spawn(class, pos, ang, callback, data)
         query:Insert("class", class)
         query:Insert("inventory_id", 0)
         query:Insert("data", util.TableToJSON(data))
+        query:Insert("placement", "{}")
         query:Callback(function(result, status, lastID)
             if ( result == false ) then
                 ax.util:PrintError("Failed to insert item into database for world spawn.")

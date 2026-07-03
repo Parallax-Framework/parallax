@@ -81,7 +81,10 @@ function ax.character:Create(payload, callback)
 
         ax.character.instances[character.id] = character
 
-        ax.inventory:Create(nil, function(inventory)
+        -- owner = character is additive metadata (D1) - the legacy `ax_characters.inventory`
+        -- column below remains the source of truth for the primary inventory, this just
+        -- makes it also discoverable via ax.inventory:RestoreOwner(character).
+        ax.inventory:Create({ owner = character }, function(inventory)
             if ( inventory == false ) then
                 ax.util:PrintError("Failed to create inventory for character " .. lastID)
                 return

@@ -360,7 +360,17 @@ ax.net:Hook("player.data", function(client, nameOrKey, keyOrValue, valueMaybe)
     hook.Run("PlayerDataChanged", client, varName, key, value)
 end)
 
-ax.net:Hook("inventory.sync", function(inventoryID, inventoryItems, inventoryMaxWeight, inventoryReceivers)
+-- inventoryTypeID/inventoryData are additive tail args (E1) - absent from a sender that
+-- predates the type registry, in which case this falls back to exactly the old
+-- weight-type shape ("weight", {}).
+ax.net:Hook("inventory.sync", function(inventoryID, inventoryItems, inventoryMaxWeight, inventoryReceivers, inventoryTypeID, inventoryData, inventoryOwnerKind, inventoryOwnerID)
+    inventoryTypeID = inventoryTypeID or "weight"
+
+    -- Extra per-item fields (grid position, slot id, ...) are applied by the inventory's
+    -- own type via ApplySyncFields, so this hook never has to know what any given
+    -- type's addressing looks like. Goes through GetType() (not a direct ax.inventory.types
+    -- index) so an unregistered/typo'd typeID logs the same diagnostic it would server-side.
+    local typeDef = ax.inventory:GetType({ typeID = inventoryTypeID })
 
     -- Convert the items into objects
     local items = {}
@@ -370,6 +380,10 @@ ax.net:Hook("inventory.sync", function(inventoryID, inventoryItems, inventoryMax
             local itemObject = ax.item:Instance(itemData.id, itemData.class)
             itemObject.invID = inventoryID
             itemObject.data = itemData.data or {}
+
+            if ( istable(typeDef) and isfunction(typeDef.ApplySyncFields) ) then
+                typeDef.ApplySyncFields(itemObject, itemData)
+            end
 
             ax.item.instances[itemObject.id] = itemObject
             items[itemObject.id] = itemObject
@@ -382,7 +396,11 @@ ax.net:Hook("inventory.sync", function(inventoryID, inventoryItems, inventoryMax
         id = inventoryID,
         items = items,
         maxWeight = inventoryMaxWeight,
-        receivers = inventoryReceivers
+        receivers = inventoryReceivers,
+        typeID = inventoryTypeID,
+        data = istable(inventoryData) and inventoryData or {},
+        ownerKind = inventoryOwnerKind,
+        ownerID = inventoryOwnerID
     }, ax.inventory.meta)
 
     if ( IsValid(ax.gui.inventory) and ax.gui.inventory.inventory and ax.gui.inventory.inventory.id == inventoryID ) then

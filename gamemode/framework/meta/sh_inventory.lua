@@ -535,6 +535,7 @@ if ( SERVER ) then
             query:Insert("class", class)
             query:Insert("inventory_id", self.id)
             query:Insert("data", util.TableToJSON(data))
+            query:Insert("placement", "{}")
             query:Callback(function(result, status, lastID)
                 if ( result == false ) then
                     ax.util:PrintError("Failed to insert item into database for inventory " .. self.id)

@@ -148,9 +148,7 @@ function ax.database:CreateTables()
         query:Create("class", "VARCHAR(64) NOT NULL")
         query:Create("inventory_id", "INT(11) UNSIGNED NOT NULL")
         query:Create("data", "LONGTEXT NOT NULL")
-        query:Create("grid_x", "INT(11) DEFAULT NULL")
-        query:Create("grid_y", "INT(11) DEFAULT NULL")
-        query:Create("slot_id", "VARCHAR(64) DEFAULT NULL")
+        query:Create("placement", "TEXT NOT NULL")
         query:PrimaryKey("id")
     query:Execute()
 
@@ -159,12 +157,16 @@ function ax.database:CreateTables()
     -- COLUMN, never DROP/MODIFY) so existing rows and data are untouched; every
     -- existing inventory row implicitly resolves to the "weight" type via
     -- ax.inventory:GetType()'s default, so this is pure back-compat, not a migration.
+    -- `placement` is a single type-owned JSON blob (keys like `gridX`/`gridY`/`slotID`
+    -- - whatever the inventory's type puts in GetSyncFields, see sh_inventory_types.lua)
+    -- rather than one dedicated column per addressing scheme, so a new inventory type
+    -- never needs its own schema migration to store its placement data. Kept separate
+    -- from the item's own `data` column (item-class-owned, arbitrary keys) so the two
+    -- namespaces can never collide.
     self:AddToSchema("ax_inventories", "type_id", ax.type.string)
     self:AddToSchema("ax_inventories", "owner_kind", ax.type.string)
     self:AddToSchema("ax_inventories", "owner_id", ax.type.number)
-    self:AddToSchema("ax_items", "grid_x", ax.type.number)
-    self:AddToSchema("ax_items", "grid_y", ax.type.number)
-    self:AddToSchema("ax_items", "slot_id", ax.type.string)
+    self:AddToSchema("ax_items", "placement", ax.type.text)
 
     query = mysql:InsertIgnore("ax_schema")
         query:Insert("table", "ax_characters")
@@ -179,15 +181,21 @@ function ax.database:CreateTables()
     -- ax_inventories/ax_items need schema-tracker rows too, otherwise the
     -- AddToSchema() calls above have nothing to register their queued columns
     -- against once the SELECT below populates self.schema (InsertSchema errors on
-    -- an untracked table).
+    -- an untracked table). Seeded with the columns the CREATE TABLE calls above
+    -- already define (not `{}`) - INSERT IGNORE only applies this default on a
+    -- genuinely fresh table, so on a fresh install the tracker already matches
+    -- reality and AddToSchema's queued entries no-op instead of re-ALTERing a
+    -- column CREATE TABLE just added. On an existing install the row (and its
+    -- real, possibly-incomplete tracked list) already exists, so this insert is
+    -- ignored and the additive ALTER still fires for whatever's genuinely missing.
     query = mysql:InsertIgnore("ax_schema")
         query:Insert("table", "ax_inventories")
-        query:Insert("columns", util.TableToJSON({}))
+        query:Insert("columns", util.TableToJSON({ type_id = true, owner_kind = true, owner_id = true }))
     query:Execute()
 
     query = mysql:InsertIgnore("ax_schema")
         query:Insert("table", "ax_items")
-        query:Insert("columns", util.TableToJSON({}))
+        query:Insert("columns", util.TableToJSON({ placement = true }))
     query:Execute()
 
     -- load schema from database

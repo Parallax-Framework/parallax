@@ -16,7 +16,6 @@
 ax.inventory = ax.inventory or {}
 ax.inventory.meta = ax.inventory.meta or {}
 ax.inventory.instances = ax.inventory.instances or {}
-ax.inventory.types = ax.inventory.types or {}
 
 --- Reason codes for a failed access/transfer check. An enum for localisation
 -- (schemas map these to UI copy), not human-readable strings. Grown on demand as
@@ -32,145 +31,77 @@ ax.inventory.REASON = {
     INVALID = "INVALID",
 }
 
---- Registers an inventory type definition.
--- A type defines how items are addressed within an inventory (grid `x,y`, named
--- `slotID`, or no addressing at all) plus optional access rules and a UI renderer
--- id. Concrete types register themselves from their own schema/module, reusing the
--- shared `ax.inventory.gridBehavior`/`ax.inventory.slotBehavior` primitives as-is or
--- merged with their own `CanReceiveItem`/`CanRemoveItem` rules.
+--- Registry of owner resolvers. `owner_kind`/`owner_id` are unavoidably strings/numbers
+-- in the database, but nothing above the database layer should ever type one of those
+-- strings by hand - a typo'd `"charcter"` would silently create an unreachable
+-- inventory. Instead, every owner-facing API (`Create`, `RestoreOwner`) takes the
+-- actual owner object (a character, an item, an entity, ...)
+-- and resolves it through this registry via metatable identity, the same way
+-- `ax.type:Detect` resolves Lua values to type IDs.
 -- @realm shared
--- @param id string Unique type identifier (e.g. "weight", "bag", "equipment")
--- @param data table Type definition. Recognised keys: `GetWidth`, `GetHeight`,
--- `GetItemAt`, `CanItemFit`, `FindEmptySlot` (grid-capable types only),
--- `CanReceiveItem`, `CanRemoveItem`. Addressing is optional - a type with none of
--- these keys is a non-addressed type (e.g. the default `weight` type below), and
--- placement validation is simply skipped for it.
-function ax.inventory:RegisterType(id, data)
-    self.types[id] = data
-end
+ax.inventory.ownerResolvers = ax.inventory.ownerResolvers or {}
 
---- Returns the registered type definition for an inventory instance.
--- Inventories created before the type registry existed (or by code that never set
--- `typeID`) default to `"weight"` for back-compat - the same weight-limited-list
--- behaviour `ax.inventory` has always had.
+--- Registers an owner resolver.
 -- @realm shared
--- @param inventory table The inventory instance
--- @return table|nil The type definition, or nil if the inventory's typeID is set but unregistered
-function ax.inventory:GetType(inventory)
-    if ( !istable(inventory) ) then return nil end
-
-    local typeID = inventory.typeID or "weight"
-    local typeDef = self.types[typeID]
-    if ( !typeDef ) then
-        ax.util:PrintError("Inventory typeID '" .. tostring(typeID) .. "' is not registered!")
-        return nil
+-- @param def table `{ kind = string, checkOwner = function(owner) -> boolean, getOwner = function(owner) -> number }`. `kind` is the `owner_kind` string this resolver produces (e.g. `"character"`, `"item"`, `"entity"`); `checkOwner` recognises whether a value is this kind of owner; `getOwner` extracts the stable id to persist as `owner_id`. For entity owners this must be a persistent id (survives a restart), never `Entity:EntIndex()`.
+function ax.inventory:RegisterOwnerResolver(def)
+    if ( !istable(def) or !isstring(def.kind) or def.kind == "" or !isfunction(def.checkOwner) or !isfunction(def.getOwner) ) then
+        ax.util:PrintError("Invalid owner resolver registration for kind '" .. tostring(def and def.kind) .. "'.")
+        return
     end
 
-    return typeDef
+    self.ownerResolvers[def.kind] = def
 end
 
---- Positional (grid/x,y-addressed) behaviour primitive. Reusable as-is by any
--- grid-addressed type (e.g. a personal grid, a bag), or merged with type-specific
--- `CanReceiveItem`/`CanRemoveItem` rules.
+--- Resolves an owner object to its `(ownerKind, ownerID)` pair via the registered
+-- resolvers. Passing `nil` is valid and yields `nil, nil` (an ownerless/legacy
+-- inventory - back-compat for code that never had an owner concept).
 -- @realm shared
-ax.inventory.gridBehavior = {
-    GetWidth = function(self)
-        return self:GetData("width", 5)
-    end,
+-- @param owner any A character, item, entity, or anything a registered resolver recognises.
+-- @return string|nil ownerKind
+-- @return number|nil ownerID
+-- @usage local kind, id = ax.inventory:ResolveOwner(character) -- "character", character:GetID()
+function ax.inventory:ResolveOwner(owner)
+    if ( owner == nil ) then return nil, nil end
 
-    GetHeight = function(self)
-        return self:GetData("height", 5)
-    end,
-
-    GetItemAt = function(self, x, y)
-        for _, item in pairs(self:GetItems()) do
-            local ix, iy = item:GetGridX(), item:GetGridY()
-            local iw, ih = item:GetWidth(), item:GetHeight()
-
-            if ( ix == nil or iy == nil ) then continue end
-
-            if ( x >= ix and x < ix + iw and y >= iy and y < iy + ih ) then
-                return item
-            end
+    for kind, resolver in pairs(self.ownerResolvers) do
+        if ( resolver.checkOwner(owner) ) then
+            return kind, resolver.getOwner(owner)
         end
+    end
 
-        return nil
+    ax.util:PrintError("ax.inventory:ResolveOwner() could not resolve an owner kind for " .. tostring(owner) .. " - no resolver recognised it.")
+
+    return nil, nil
+end
+
+-- Built-in resolvers for the two owner kinds the core itself knows about. Entity-backed
+-- owners (world containers, ...) are deliberately not covered here - only the module that
+-- creates those entities knows how to derive a persistent id for one, so it registers its
+-- own "entity" resolver (see modules/containers).
+ax.inventory:RegisterOwnerResolver({
+    kind = "character",
+    checkOwner = function(owner)
+        return istable(owner) and getmetatable(owner) == ax.character.meta
     end,
-
-    CanItemFit = function(self, x, y, w, h, ignoreItem)
-        local invW, invH = self:GetWidth(), self:GetHeight()
-
-        if ( x < 1 or y < 1 or x + w - 1 > invW or y + h - 1 > invH ) then
-            return false
-        end
-
-        for _, item in pairs(self:GetItems()) do
-            if ( ignoreItem and item.id == ignoreItem.id ) then continue end
-
-            local ix, iy = item:GetGridX(), item:GetGridY()
-            if ( ix == nil or iy == nil ) then continue end
-
-            local iw, ih = item:GetWidth(), item:GetHeight()
-
-            if ( x < ix + iw and x + w > ix and y < iy + ih and y + h > iy ) then
-                return false
-            end
-        end
-
-        return true
+    getOwner = function(owner)
+        return owner:GetID()
     end,
+})
 
-    FindEmptySlot = function(self, w, h, ignoreItem)
-        local invW, invH = self:GetWidth(), self:GetHeight()
-
-        for y = 1, invH - h + 1 do
-            for x = 1, invW - w + 1 do
-                if ( self:CanItemFit(x, y, w, h, ignoreItem) ) then
-                    return x, y
-                end
-            end
-        end
-
-        return nil
+-- Item instances don't sit directly on ax.item.meta - ax.item:Instance() wraps them in
+-- their own {__index = storedClass} table, and base-inherited classes chain to
+-- ax.item.meta through a function __index, so metatable identity can't be checked
+-- directly. Instead this confirms `owner` is the exact tracked instance for its id.
+ax.inventory:RegisterOwnerResolver({
+    kind = "item",
+    checkOwner = function(owner)
+        return istable(owner) and isnumber(owner.id) and ax.item.instances[owner.id] == owner
     end,
-}
-
---- Non-positional (named-slot-addressed) behaviour primitive. Used by equipment-like
--- types - occupancy is by a unique slot key rather than x/y coordinates, so there is
--- only ever one item per slot and no width/height concept. Deliberately has no
--- `FindEmptySlot`: an item's target slot is always its own `GetSlotID()`, never a
--- free choice among several.
--- @realm shared
-ax.inventory.slotBehavior = {
-    GetItemAt = function(self, slotID)
-        if ( slotID == nil ) then return nil end
-
-        for _, item in pairs(self:GetItems()) do
-            if ( item:GetSlotID() == slotID ) then
-                return item
-            end
-        end
-
-        return nil
+    getOwner = function(owner)
+        return owner:GetID()
     end,
-
-    CanItemFit = function(self, slotID, ignoreItem)
-        if ( slotID == nil ) then return false end
-
-        local occupant = self:GetItemAt(slotID)
-        if ( !occupant ) then return true end
-
-        return ignoreItem != nil and occupant.id == ignoreItem.id
-    end,
-}
-
---- The default inventory type: a weight-limited list with no positional addressing,
--- i.e. exactly current `ax.inventory` behaviour (`GetWeight`/`CanStoreWeight`/
--- `CanStoreItem` on the meta already implement this). Every inventory without an
--- explicit `typeID` resolves to this type (see `GetType` above) so existing schemas
--- and the containers module see no behaviour change.
--- @realm shared
-ax.inventory:RegisterType("weight", {})
+})
 
 ax.inventory.instances[0] = setmetatable({
     id = 0,
@@ -193,7 +124,9 @@ ax.inventory.instances[0] = setmetatable({
 if ( SERVER ) then
     --- Creates a temporary in-memory inventory instance (no database persistence).
     -- @realm server
-    -- @param data table Optional data table containing inventory properties (`id`, `maxWeight`).
+    -- @param data table Optional data table. Recognised keys: `id`, `maxWeight`, `typeID`
+    -- (defaults to `"weight"`), `owner` (resolved via `ax.inventory:ResolveOwner`), `data`
+    -- (instance data).
     -- @param callback function|nil Optional callback function called with the created inventory.
     function ax.inventory:CreateTemporary(data, callback)
         data = data or {}
@@ -222,6 +155,8 @@ if ( SERVER ) then
             defaultWeight = tonumber(ax.config:Get("inventory.weight.max", defaultWeight)) or defaultWeight
         end
 
+        local ownerKind, ownerID = self:ResolveOwner(data.owner)
+
         local inventory = setmetatable({}, ax.inventory.meta)
         inventory.id = inventoryID
         inventory.items = {}
@@ -229,6 +164,10 @@ if ( SERVER ) then
         inventory.receivers = {}
         inventory.isTemporary = true
         inventory.noSave = true
+        inventory.typeID = data.typeID or "weight"
+        inventory.ownerKind = ownerKind
+        inventory.ownerID = ownerID
+        inventory.data = istable(data.data) and data.data or {}
 
         self.instances[inventoryID] = inventory
 
@@ -240,18 +179,30 @@ if ( SERVER ) then
     end
 
     --- Creates a new inventory in the database and returns the inventory object via callback.
+    -- Back-compat: called with no `typeID`/`owner` (or `data` at all), this creates
+    -- exactly the weight-limited, ownerless inventory `ax.inventory:Create` has always
+    -- created. `typeID`/`owner`/instance `data` are additive - existing callers are
+    -- unaffected.
     -- @realm server
-    -- @param data table Optional data table containing inventory properties.
+    -- @param data table Optional data table. Recognised keys: `maxWeight`, `typeID`
+    -- (defaults to `"weight"`), `owner` (a character/item/entity object - resolved via
+    -- `ax.inventory:ResolveOwner`, never pass a raw owner_kind string), `data` (instance
+    -- data - grid size, slot set - stored on the inventory, see `GetData`).
     -- @param callback function|nil Optional callback function called with the created inventory or false on failure.
     function ax.inventory:Create(data, callback)
         data = data or {}
 
         local maxWeight = data.maxWeight or 30.0
-        data.maxWeight = maxWeight
+        local typeID = data.typeID or "weight"
+        local ownerKind, ownerID = self:ResolveOwner(data.owner)
+        local instanceData = istable(data.data) and data.data or {}
 
         local query = mysql:Insert("ax_inventories")
             query:Insert("max_weight", maxWeight)
-            query:Insert("data", "[]")
+            query:Insert("data", util.TableToJSON(instanceData))
+            query:Insert("type_id", typeID)
+            query:Insert("owner_kind", ownerKind)
+            query:Insert("owner_id", ownerID)
             query:Callback(function(result, status, lastInvId)
                 if ( result == false ) then
                     if ( isfunction(callback) ) then
@@ -266,6 +217,10 @@ if ( SERVER ) then
                 inventory.items = {}
                 inventory.maxWeight = maxWeight
                 inventory.receivers = {}
+                inventory.typeID = typeID
+                inventory.ownerKind = ownerKind
+                inventory.ownerID = ownerID
+                inventory.data = instanceData
 
                 ax.inventory.instances[lastInvId] = inventory
 
@@ -276,20 +231,147 @@ if ( SERVER ) then
         query:Execute()
     end
 
+    --- Restores every inventory owned by `owner` from the database, items included. A
+    -- character has as many owned inventories as it was created with (main grid,
+    -- equipment, ...) - this is how they're all found again on load, regardless of how
+    -- many there are or what types they are.
+    -- @realm server
+    -- @param owner any A character/item/entity object - resolved via `ax.inventory:ResolveOwner`.
+    -- @param callback function|nil Called with an array of restored inventories (possibly empty).
+    function ax.inventory:RestoreOwner(owner, callback)
+        local ownerKind, ownerID = self:ResolveOwner(owner)
+        if ( ownerKind == nil or ownerID == nil ) then
+            if ( isfunction(callback) ) then callback({}) end
+            return
+        end
+
+        local query = mysql:Select("ax_inventories")
+            query:Where("owner_kind", ownerKind)
+            query:Where("owner_id", ownerID)
+            query:Callback(function(result, status)
+                if ( result == nil or status == false or result[1] == nil ) then
+                    if ( isfunction(callback) ) then callback({}) end
+                    return
+                end
+
+                local restored = {}
+                local remaining = #result
+
+                for i = 1, #result do
+                    self:RestoreRow(result[i], function(inventory)
+                        if ( inventory != false ) then
+                            restored[#restored + 1] = inventory
+                        end
+
+                        remaining = remaining - 1
+
+                        if ( remaining <= 0 and isfunction(callback) ) then
+                            callback(restored)
+                        end
+                    end)
+                end
+            end)
+        query:Execute()
+    end
+
+    --- Restores a single `ax_inventories` row (plus its items) into a live inventory
+    -- instance. Shared by `RestoreOwner`/`Restore` so the row-to-instance shape
+    -- (type/owner/data columns, item placement columns) is defined once.
+    -- @realm server
+    -- @param row table A row from `ax_inventories` (as returned by the mysql library).
+    -- @param callback function Called with the restored inventory instance, or `false`
+    -- if the item fetch failed - always called exactly once so callers that count down
+    -- across multiple rows (e.g. `RestoreOwner`) can rely on it, success or failure.
+    function ax.inventory:RestoreRow(row, callback)
+        local inventoryID = tonumber(row.id)
+
+        local existing = self.instances[inventoryID]
+        if ( istable(existing) and getmetatable(existing) == self.meta ) then
+            if ( isfunction(callback) ) then callback(existing) end
+            return
+        end
+
+        local inventory = setmetatable({}, self.meta)
+        inventory.id = inventoryID
+        inventory.maxWeight = tonumber(row.max_weight) or 30.0
+        inventory.receivers = {}
+        inventory.typeID = row.type_id or "weight"
+        inventory.ownerKind = row.owner_kind
+        inventory.ownerID = row.owner_id != nil and tonumber(row.owner_id) or nil
+        inventory.data = ax.util:SafeParseTable(row.data) or {}
+
+        -- Placement columns are only meaningful to addressed types - the type resolved
+        -- once here and handed to ApplyItemRow so this function never has to know what
+        -- a given type's placement shape looks like.
+        local typeDef = self:GetType(inventory)
+
+        local itemQuery = mysql:Select("ax_items")
+            itemQuery:Where("inventory_id", inventoryID)
+            itemQuery:Callback(function(itemsResult, itemsStatus)
+                if ( itemsResult == nil or itemsStatus == false ) then
+                    ax.util:PrintError(string.format("Failed to restore items for inventory %d, aborting restore.", inventoryID))
+
+                    if ( isfunction(callback) ) then callback(false) end
+
+                    return
+                end
+
+                local items = {}
+
+                for i = 1, #itemsResult do
+                    local itemRow = itemsResult[i]
+                    if ( ax.item.stored[itemRow.class] ) then
+                        local itemObject = ax.item:Instance(tonumber(itemRow.id), itemRow.class)
+                        itemObject.invID = inventoryID
+                        itemObject.data = ax.util:SafeParseTable(itemRow.data) or {}
+
+                        if ( istable(typeDef) and isfunction(typeDef.ApplyItemRow) ) then
+                            typeDef.ApplyItemRow(itemObject, ax.util:SafeParseTable(itemRow.placement) or {})
+                        end
+
+                        items[itemObject.id] = itemObject
+                    end
+                end
+
+                inventory.items = items
+
+                self.instances[inventoryID] = inventory
+
+                if ( isfunction(callback) ) then
+                    callback(inventory)
+                end
+            end)
+        itemQuery:Execute()
+    end
+
     local function SyncInventoryNow(self, inventory)
+        -- Base entry shape is exactly the pre-registry payload (id/class/data/inventoryID).
+        -- Any additional fields (grid position, slot id, ...) are contributed by the
+        -- inventory's own type via GetSyncFields, so this function never has to know
+        -- what any given type's addressing looks like.
+        local typeDef = ax.inventory:GetType(inventory)
+
         local items = {}
         if ( istable(inventory.items) ) then
             for _, v in pairs(inventory.items) do
-                items[#items + 1] = {
+                local entry = {
                     id = v.id,
                     class = v.class,
                     data = v.data or {},
-                    inventoryID = v.invID
+                    inventoryID = v.invID,
                 }
+
+                if ( istable(typeDef) and isfunction(typeDef.GetSyncFields) ) then
+                    table.Merge(entry, typeDef.GetSyncFields(v) or {})
+                end
+
+                items[#items + 1] = entry
             end
         end
 
-        ax.net:Start(inventory:GetReceivers(), "inventory.sync", inventory.id, items, inventory.maxWeight, inventory.receivers or {})
+        -- typeID/instance data/owner fields are additive tail arguments (E1) - a receiver
+        -- that never reads them (old client build) still gets a working weight-type sync.
+        ax.net:Start(inventory:GetReceivers(), "inventory.sync", inventory.id, items, inventory.maxWeight, inventory.receivers or {}, inventory:GetTypeID(), inventory.data or {}, inventory.ownerKind, inventory.ownerID)
 
         self._syncState = self._syncState or {}
         local state = self._syncState[inventory.id] or {}
@@ -393,89 +475,46 @@ if ( SERVER ) then
 
         ax.util:PrintDebug(string.format("Synced world items to %s", client:SteamID64()))
 
-        -- TODO: Find a way to optimize this to use fewer pyramids
-        local inventoryIDs = {}
         if ( characterIDs[1] == nil ) then return end
 
-        for _, characterID in pairs(characterIDs) do
-            local characterQuery = mysql:Select("ax_characters")
-            characterQuery:Where("id", characterID)
-            characterQuery:Callback(function(result, status)
-                if ( result == nil or status == false ) then
-                    return
-                end
+        -- All inventories owned by any of this client's characters (primary plus any
+        -- extra ones a schema/module created via ax.inventory:Create({ owner = character }))
+        -- are addressed uniformly via owner_kind/owner_id - a single batched query here
+        -- restores all of them without a separate legacy `.inventory` column lookup.
+        local inventoryQuery = mysql:Select("ax_inventories")
+        inventoryQuery:Where("owner_kind", "character")
+        inventoryQuery:WhereIn("owner_id", characterIDs)
+        inventoryQuery:Callback(function(invResult, invStatus)
+            if ( invResult == nil or invStatus == false ) then return end
 
-                for i = 1, #result do
-                    if ( result[i].inventory != nil ) then
-                        inventoryIDs[#inventoryIDs + 1] = result[i].inventory
+            ax.util:PrintDebug(string.format("Restoring %d inventories for %s", #invResult, client:SteamID64()))
+
+            local clientChar = client:GetCharacter()
+            local activeCharacterID = clientChar and clientChar.id
+
+            for i = 1, #invResult do
+                local data = invResult[i]
+
+                data.id = tonumber(data.id)
+
+                self:RestoreRow(data, function(inventory)
+                    if ( inventory == false ) then return end
+
+                    self:Sync(inventory)
+
+                    if ( tostring(inventory.ownerID) == tostring(activeCharacterID) ) then
+                        inventory:AddReceiver(client)
+                        ax.util:PrintDebug(string.format("Added %s as a receiver to inventory %d", client:SteamID64(), inventory.id))
                     end
-                end
 
-                ax.util:PrintDebug(string.format("Found %d inventories for %s", #inventoryIDs, client:SteamID64()))
-
-                for _, inventoryID in pairs(inventoryIDs) do
-                    local inventoryQuery = mysql:Select("ax_inventories")
-                    inventoryQuery:Where("id", inventoryID)
-                    inventoryQuery:Callback(function(result, status)
-                        if ( result == nil or status == false ) then return end
-
-                        ax.util:PrintDebug(string.format("Restoring %d inventories for %s", #result, client:SteamID64()))
-
-                        for i = 1, #result do
-                            local data = result[i]
-                            local inventory = setmetatable({}, ax.inventory.meta)
-
-                            data.id = tonumber(data.id)
-                            inventory.id = data.id
-
-                            local maxWeight = data.maxWeight or 30.0
-                            inventory.maxWeight = maxWeight
-                            inventory.receivers = {}
-
-                            local itemFetchQuery = mysql:Select("ax_items")
-                            itemFetchQuery:Where("inventory_id", data.id)
-                            itemFetchQuery:Callback(function(itemsResult, itemsStatus)
-                                if ( itemsResult == nil or itemsStatus == false ) then return end
-
-                                local itemsInInv = {}
-                                for j = 1, #itemsResult do
-                                    local itemData = itemsResult[j]
-                                    local item = ax.item.stored[itemData.class]
-                                    if ( !item ) then continue end
-
-                                    local itemObject = ax.item:Instance(itemData.id, itemData.class)
-                                    itemObject.invID = itemData.inventory_id
-                                    itemObject.data = util.JSONToTable(itemData.data) or {}
-
-                                    ax.item.instances[itemObject.id] = itemObject
-                                    itemsInInv[itemObject.id] = itemObject
-                                end
-
-                                inventory.items = itemsInInv
-
-                                self.instances[inventory.id] = inventory
-                                self:Sync(inventory)
-
-                                local clientChar = client:GetCharacter()
-                                local charInv = clientChar and clientChar.vars and clientChar.vars.inventory
-                                if ( charInv == inventory.id ) then
-                                    inventory:AddReceiver(client)
-                                    ax.util:PrintDebug(string.format("Added %s as a receiver to inventory %d", client:SteamID64(), inventory.id))
-                                end
-
-                                -- and finally, call the callback if provided
-                                if ( isfunction(callback) ) then
-                                    callback(inventory)
-                                end
-                            end)
-                            itemFetchQuery:Execute()
-                        end
-                    end)
-                    inventoryQuery:Execute()
-                end
-            end)
-            characterQuery:Execute()
-        end
+                    -- and finally, call the callback if provided
+                    if ( isfunction(callback) ) then
+                        callback(inventory)
+                    end
+                end)
+            end
+        end)
+        inventoryQuery:Execute()
     end
 end
 
