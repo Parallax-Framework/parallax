@@ -225,7 +225,7 @@ function ax.item:CreateDefaultDropAction()
                 return false
             end
 
-            local transferSuccess, transferReason = ax.item:Transfer(item, inventoryID, 0, function(asyncSuccess, asyncReason)
+            local transferSuccess, transferReason = ax.item:Transfer(item, inventoryID, 0, nil, client, function(asyncSuccess, asyncReason)
                 if ( asyncSuccess ) then
                     ax.util:PrintDebug(color_success, string.format(
                         "Player %s dropped item %s from inventory %s to world inventory.",
@@ -245,7 +245,7 @@ function ax.item:CreateDefaultDropAction()
             end)
 
             if ( transferSuccess == false ) then
-                client:Notify(string.format("Failed to drop item: %s", transferReason or "Unknown Reason"))
+                ax.notification:Send(client, ax.localization:GetPhrase(transferReason or "inventory.reason.invalid"), "error")
             end
 
             return false
@@ -303,7 +303,7 @@ function ax.item:CreateDefaultTakeAction()
             local inventory = character:GetInventory()
             entity:GetTable().axTakeInProgress = true
 
-            local transferOk, transferReason = ax.item:Transfer(item, 0, inventory, function(didTransfer, asyncReason)
+            local transferOk, transferReason = ax.item:Transfer(item, 0, inventory, nil, client, function(didTransfer, asyncReason)
                 if ( didTransfer ) then
                     ax.util:PrintDebug(color_success, string.format(
                         "Player %s picked up item %s from world inventory to inventory %s.",
@@ -340,7 +340,7 @@ function ax.item:CreateDefaultTakeAction()
 
             if ( transferOk == false ) then
                 entity:GetTable().axTakeInProgress = nil
-                client:Notify(transferReason or "You cannot pick up this item.")
+                ax.notification:Send(client, ax.localization:GetPhrase(transferReason or "inventory.reason.invalid"), "error")
             end
 
             return false

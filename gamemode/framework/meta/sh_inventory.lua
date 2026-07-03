@@ -501,6 +501,30 @@ if ( SERVER ) then
 
         data = data or {}
 
+        -- `data.placement` (if given) requests a specific position/slot rather than
+        -- being item-owned data - strip it before it reaches item.data/ax_items.data.
+        -- Only addressed types (grid/slot) resolve a placement at all; the default
+        -- weight type has no ResolvePlacement and keeps writing "{}" (back-compat).
+        local explicitPlacement = data.placement
+        if ( explicitPlacement != nil ) then
+            data = table.Copy(data)
+            data.placement = nil
+        end
+
+        local placement = {}
+        local typeDef = ax.inventory:GetType(self)
+        if ( istable(typeDef) and isfunction(typeDef.ResolvePlacement) ) then
+            local itemWidth = tonumber(item.width) or 1
+            local itemHeight = tonumber(item.height) or 1
+
+            local resolved, placementReason = typeDef.ResolvePlacement(self, itemWidth, itemHeight, explicitPlacement)
+            if ( !istable(resolved) ) then
+                return false, placementReason or "inventory.reason.no_space"
+            end
+
+            placement = resolved
+        end
+
         if ( self.isTemporary or self.noSave ) then
             ax.item._nextTemporaryID = ax.item._nextTemporaryID or -1
 
@@ -521,6 +545,10 @@ if ( SERVER ) then
             itemObject.isTemporary = true
             itemObject.noSave = true
 
+            if ( istable(typeDef) and isfunction(typeDef.ApplyItemRow) ) then
+                typeDef.ApplyItemRow(itemObject, placement)
+            end
+
             ax.item.instances[temporaryItemID] = itemObject
             self.items[temporaryItemID] = itemObject
 
@@ -535,7 +563,7 @@ if ( SERVER ) then
             query:Insert("class", class)
             query:Insert("inventory_id", self.id)
             query:Insert("data", util.TableToJSON(data))
-            query:Insert("placement", "{}")
+            query:Insert("placement", util.TableToJSON(placement))
             query:Callback(function(result, status, lastID)
                 if ( result == false ) then
                     ax.util:PrintError("Failed to insert item into database for inventory " .. self.id)
@@ -545,6 +573,10 @@ if ( SERVER ) then
                 local itemObject = ax.item:Instance(lastID, class)
                 itemObject.data = data or {}
                 itemObject.invID = self.id
+
+                if ( istable(typeDef) and isfunction(typeDef.ApplyItemRow) ) then
+                    typeDef.ApplyItemRow(itemObject, placement)
+                end
 
                 ax.item.instances[lastID] = itemObject
 

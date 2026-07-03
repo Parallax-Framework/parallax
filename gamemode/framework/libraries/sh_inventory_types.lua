@@ -120,8 +120,34 @@ ax.inventory.gridBehavior = {
         return nil
     end,
 
-    -- Extra per-item fields this type wants included in the "inventory.sync" payload
-    -- (E1) - core sync code never references gridX/gridY by name, it just merges
+    -- Resolves the placement blob a new/incoming item should get: an explicit
+    -- `{ gridX, gridY }` request is validated with CanItemFit, an omitted one is
+    -- auto-placed via FindEmptySlot. Shared by ax.inventory:AddItem and :Transfer so
+    -- neither has to know this type addresses by coordinates rather than slot id.
+    ResolvePlacement = function(self, w, h, explicitPlacement, ignoreItem)
+        if ( istable(explicitPlacement) and explicitPlacement.gridX != nil and explicitPlacement.gridY != nil ) then
+            local x, y = tonumber(explicitPlacement.gridX), tonumber(explicitPlacement.gridY)
+            if ( !isnumber(x) or !isnumber(y) ) then
+                return nil, "inventory.reason.invalid"
+            end
+
+            if ( !self:CanItemFit(x, y, w, h, ignoreItem) ) then
+                return nil, "inventory.reason.no_space"
+            end
+
+            return { gridX = x, gridY = y }
+        end
+
+        local x, y = self:FindEmptySlot(w, h, ignoreItem)
+        if ( x == nil ) then
+            return nil, "inventory.reason.no_space"
+        end
+
+        return { gridX = x, gridY = y }
+    end,
+
+    -- Extra per-item fields this type wants included in the "inventory.sync" payload -
+    -- core sync code never references gridX/gridY by name, it just merges
     -- whatever the inventory's own type contributes here. width/height aren't included -
     -- they're static per item class (see item:GetWidth/GetHeight), already known
     -- client-side from the shared item class definition, so networking them per sync
@@ -173,6 +199,21 @@ ax.inventory.slotBehavior = {
         if ( !occupant ) then return true end
 
         return ignoreItem != nil and occupant.id == ignoreItem.id
+    end,
+
+    -- See gridBehavior.ResolvePlacement. No auto-choice here (deliberately, see the
+    -- module doc above) - the caller must always name the target slotID explicitly.
+    ResolvePlacement = function(self, w, h, explicitPlacement, ignoreItem)
+        local slotID = istable(explicitPlacement) and explicitPlacement.slotID or nil
+        if ( !isstring(slotID) or slotID == "" ) then
+            return nil, "inventory.reason.wrong_slot"
+        end
+
+        if ( !self:CanItemFit(slotID, ignoreItem) ) then
+            return nil, "inventory.reason.no_space"
+        end
+
+        return { slotID = slotID }
     end,
 
     -- See ax.inventory.gridBehavior.GetSyncFields/ApplySyncFields.

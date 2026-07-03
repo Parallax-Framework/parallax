@@ -360,7 +360,7 @@ ax.net:Hook("player.data", function(client, nameOrKey, keyOrValue, valueMaybe)
     hook.Run("PlayerDataChanged", client, varName, key, value)
 end)
 
--- inventoryTypeID/inventoryData are additive tail args (E1) - absent from a sender that
+-- inventoryTypeID/inventoryData are additive tail args - absent from a sender that
 -- predates the type registry, in which case this falls back to exactly the old
 -- weight-type shape ("weight", {}).
 ax.net:Hook("inventory.sync", function(inventoryID, inventoryItems, inventoryMaxWeight, inventoryReceivers, inventoryTypeID, inventoryData, inventoryOwnerKind, inventoryOwnerID)

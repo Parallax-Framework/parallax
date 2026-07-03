@@ -202,6 +202,34 @@ function item:GetSlotID()
     return self.slotID
 end
 
+--- Returns whether this item is locked by an in-progress transfer transaction.
+-- Set by `ax.inventory:Transfer` for the duration of a single transfer to close the race
+-- where two players act on the same item (e.g. a shared container) before the first
+-- transfer's database write returns. Purely an in-memory flag - never persisted, never
+-- true across a restart.
+-- @realm server
+-- @return boolean
+function item:IsLocked()
+    return self.locked == true
+end
+
+--- Locks this item, blocking further transfers until `Unlock` is called.
+-- Internal - called by `ax.inventory:Transfer` at the start of a transaction. Not
+-- meant to be called directly by gameplay code.
+-- @realm server
+-- @internal
+function item:Lock()
+    self.locked = true
+end
+
+--- Unlocks this item after its in-progress transfer transaction finishes, successfully or not.
+-- Internal - called by `ax.inventory:Transfer`. Not meant to be called directly by gameplay code.
+-- @realm server
+-- @internal
+function item:Unlock()
+    self.locked = false
+end
+
 --- Item footprint width in grid cells. Static per item class (`ITEM.width`, inherited via the instance metatable), defaults to 1 for items that never declare it.
 -- @realm shared
 -- @return number

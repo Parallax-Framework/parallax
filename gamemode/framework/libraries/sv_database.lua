@@ -153,7 +153,7 @@ function ax.database:CreateTables()
     query:Execute()
 
     -- Additive columns for installs whose ax_inventories/ax_items tables predate the
-    -- type registry (D1 rewrite). Queued through the schema tracker (ALTER ... ADD
+    -- type registry. Queued through the schema tracker (ALTER ... ADD
     -- COLUMN, never DROP/MODIFY) so existing rows and data are untouched; every
     -- existing inventory row implicitly resolves to the "weight" type via
     -- ax.inventory:GetType()'s default, so this is pure back-compat, not a migration.

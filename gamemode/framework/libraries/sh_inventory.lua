@@ -17,20 +17,6 @@ ax.inventory = ax.inventory or {}
 ax.inventory.meta = ax.inventory.meta or {}
 ax.inventory.instances = ax.inventory.instances or {}
 
---- Reason codes for a failed access/transfer check. An enum for localisation
--- (schemas map these to UI copy), not human-readable strings. Grown on demand as
--- new failure cases are introduced.
--- @realm shared
-ax.inventory.REASON = {
-    NO_SPACE = "NO_SPACE",
-    WRONG_SLOT = "WRONG_SLOT",
-    NO_ACCESS = "NO_ACCESS",
-    LOCKED = "LOCKED",
-    NESTING = "NESTING",
-    TOO_FAR = "TOO_FAR",
-    INVALID = "INVALID",
-}
-
 --- Registry of owner resolvers. `owner_kind`/`owner_id` are unavoidably strings/numbers
 -- in the database, but nothing above the database layer should ever type one of those
 -- strings by hand - a typo'd `"charcter"` would silently create an unreachable
@@ -102,6 +88,59 @@ ax.inventory:RegisterOwnerResolver({
         return owner:GetID()
     end,
 })
+
+--- Whether `client` may modify (not merely view/receive sync for) `inventory`, per the
+-- core's one built-in rule (an owner-character may modify their own inventories) plus
+-- the inventory type's own `CanAccess` rule (distance, locks, faction/rank, ...).
+-- Called by `ax.item:Transfer` on both transfer endpoints. Receiver/sync visibility is
+-- a separate concept and does not go through this.
+-- @realm shared
+-- @param inventory table
+-- @param client Player
+-- @return boolean
+function ax.inventory:CanAccess(inventory, client)
+    if ( !istable(inventory) ) then return false end
+    if ( inventory.id == 0 ) then return true end -- World: Transfer's own callers gate this (entity validity/distance).
+    if ( !ax.util:IsValidPlayer(client) ) then return false end
+
+    if ( inventory.ownerKind == "character" ) then
+        local character = client:GetCharacter()
+        if ( istable(character) and tostring(character:GetID()) == tostring(inventory.ownerID) ) then
+            return true
+        end
+    elseif ( inventory.ownerKind == nil ) then
+        -- No owner_kind recorded yet (pre-backfill) - fall back to the legacy
+        -- primary-inventory column instead of allowing unconditionally.
+        local character = client:GetCharacter()
+        if ( istable(character) and character:GetInventoryID() == inventory.id ) then
+            return true
+        end
+    end
+
+    local typeDef = self:GetType(inventory)
+    if ( istable(typeDef) and isfunction(typeDef.CanAccess) ) then
+        return typeDef.CanAccess(inventory, client) == true
+    end
+
+    return false
+end
+
+--- Whether `itemID` owns an inventory (e.g. a bag/container item) - i.e. some
+-- inventory instance has `ownerKind == "item"` and `ownerID == itemID`. Used by
+-- `ax.item:Transfer` to enforce the depth-1 nesting rule: a bag can never end up
+-- inside another inventory that is itself nested inside an item.
+-- @realm shared
+-- @param itemID number
+-- @return boolean
+function ax.inventory:ItemOwnsInventory(itemID)
+    for _, inventory in pairs(self.instances) do
+        if ( inventory.ownerKind == "item" and tostring(inventory.ownerID) == tostring(itemID) ) then
+            return true
+        end
+    end
+
+    return false
+end
 
 ax.inventory.instances[0] = setmetatable({
     id = 0,
@@ -369,7 +408,7 @@ if ( SERVER ) then
             end
         end
 
-        -- typeID/instance data/owner fields are additive tail arguments (E1) - a receiver
+        -- typeID/instance data/owner fields are additive tail arguments - a receiver
         -- that never reads them (old client build) still gets a working weight-type sync.
         ax.net:Start(inventory:GetReceivers(), "inventory.sync", inventory.id, items, inventory.maxWeight, inventory.receivers or {}, inventory:GetTypeID(), inventory.data or {}, inventory.ownerKind, inventory.ownerID)
 

@@ -316,6 +316,13 @@ ax.localization:Register("en", {
 
     -- Inventory Translations
     ["inventory.weight.abbreviation"] = "kg",
+    ["inventory.reason.no_space"] = "There is no space for that item.",
+    ["inventory.reason.wrong_slot"] = "That item cannot go in that slot.",
+    ["inventory.reason.no_access"] = "You do not have access to that inventory.",
+    ["inventory.reason.locked"] = "That inventory is locked.",
+    ["inventory.reason.nesting"] = "You cannot place that item there.",
+    ["inventory.reason.too_far"] = "You are too far away.",
+    ["inventory.reason.invalid"] = "That action is invalid.",
 
     -- OOC / Notification Translations
     ["notify.chat.ooc.disabled"] = "OOC chat is currently disabled on this server.",
