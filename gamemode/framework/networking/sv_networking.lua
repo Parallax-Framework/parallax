@@ -65,7 +65,7 @@ ax.net:Hook("chat.text.changed", function(client, text, chatType)
 end)
 
 
-ax.net:Hook("item.transfer", function(client, itemID, targetInventoryID)
+ax.net:Hook("item.transfer", function(client, itemID, targetInventoryID, placement)
     local character = client:GetCharacter()
     if ( !character ) then return end
 
@@ -111,7 +111,26 @@ ax.net:Hook("item.transfer", function(client, itemID, targetInventoryID)
         return
     end
 
-    ax.item:Transfer(item, sourceInventoryID, targetInventoryID, function() print("Item transferred") end)
+    -- Never forward an arbitrary client-supplied table into the transaction -
+    -- only the two recognised placement shapes survive sanitization.
+    local sanitizedPlacement
+    if ( istable(placement) ) then
+        if ( isnumber(placement.gridX) and isnumber(placement.gridY) ) then
+            sanitizedPlacement = { gridX = math.floor(placement.gridX), gridY = math.floor(placement.gridY) }
+        elseif ( isstring(placement.slotID) and placement.slotID != "" ) then
+            sanitizedPlacement = { slotID = placement.slotID }
+        end
+    end
+
+    local ok, reason = ax.item:Transfer(item, sourceInventoryID, targetInventoryID, sanitizedPlacement, client, function(success, failReason)
+        if ( success == false ) then
+            ax.notification:Send(client, ax.localization:GetPhrase(failReason or "inventory.reason.invalid"), "error")
+        end
+    end)
+
+    if ( ok == false ) then
+        ax.notification:Send(client, ax.localization:GetPhrase(reason or "inventory.reason.invalid"), "error")
+    end
 end)
 
 ax.net:Hook("item.transfer.batch", function(client, itemIDs, targetInventoryID)
@@ -119,12 +138,21 @@ ax.net:Hook("item.transfer.batch", function(client, itemIDs, targetInventoryID)
     if ( !character ) then return end
 
     if ( client:IsRagdolled() ) then
-        client:Notify(ax.localization:GetPhrase("error.ragdolled.inventory"), "error")
+        ax.notification:Send(client, ax.localization:GetPhrase("error.ragdolled.inventory"), "error")
         return
     end
 
+    local transferRateLimit = math.max(tonumber(ax.config:Get("inventory.transfer.rate_limit", 0.1)) or 0.1, 0)
+    if ( !client:RateLimit("item.transfer.batch", transferRateLimit) ) then return end
+
     if ( !istable(itemIDs) or !isnumber(targetInventoryID) or targetInventoryID < 1 ) then
         ax.util:Error("Invalid payload received for item.transfer.batch.")
+        return
+    end
+
+    -- Cap batch size so a single request can't fan out into an unbounded number of transfers.
+    if ( #itemIDs > 64 ) then
+        ax.util:Error("Oversized payload received for item.transfer.batch.")
         return
     end
 
@@ -156,8 +184,53 @@ ax.net:Hook("item.transfer.batch", function(client, itemIDs, targetInventoryID)
             continue
         end
 
-        ax.item:Transfer(item, sourceInventoryID, targetInventoryID, function() end)
+        ax.item:Transfer(item, sourceInventoryID, targetInventoryID, nil, client, function(success, failReason)
+            if ( success == false ) then
+                ax.notification:Send(client, ax.localization:GetPhrase(failReason or "inventory.reason.invalid"), "error")
+            end
+        end)
     end
+end)
+
+-- Legacy net message (superseded by "item.transfer").
+-- Only the "weight" type is safe to move through this.
+ax.net:Hook("inventory.move", function(client, itemID, targetInventoryID)
+    ax.util:PrintWarning("The 'inventory.move' net message is deprecated - use 'item.transfer' instead.")
+
+    local character = client:GetCharacter()
+    if ( !character ) then return end
+
+    local transferRateLimit = math.max(tonumber(ax.config:Get("inventory.transfer.rate_limit", 0.1)) or 0.1, 0)
+    if ( !client:RateLimit("inventory.move", transferRateLimit) ) then return end
+
+    if ( !isnumber(itemID) or itemID < 1 or !isnumber(targetInventoryID) or targetInventoryID < 1 ) then
+        ax.util:Error("Invalid payload received for inventory.move.")
+        return
+    end
+
+    local item = ax.item.instances[itemID]
+    if ( !istable(item) ) then return end
+
+    local sourceInventoryID = item:GetInventoryID()
+    local sourceInventory = ax.inventory.instances[sourceInventoryID]
+    local targetInventory = ax.inventory.instances[targetInventoryID]
+    if ( !istable(sourceInventory) or !istable(targetInventory) ) then return end
+
+    if ( sourceInventory:GetTypeID() != "weight" or targetInventory:GetTypeID() != "weight" ) then
+        ax.notification:Send(client, ax.localization:GetPhrase("inventory.reason.invalid"), "error")
+        return
+    end
+
+    if ( !sourceInventory:IsReceiver(client) ) then
+        ax.util:PrintError("Player " .. client:SteamID() .. " attempted to move item ID " .. itemID .. " which they do not possess.")
+        return
+    end
+
+    ax.item:Transfer(item, sourceInventoryID, targetInventoryID, nil, client, function(success, failReason)
+        if ( success == false ) then
+            ax.notification:Send(client, ax.localization:GetPhrase(failReason or "inventory.reason.invalid"), "error")
+        end
+    end)
 end)
 
 ax.net:Hook("inventory.item.action", function(client, itemID, action)
