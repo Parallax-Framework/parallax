@@ -137,9 +137,6 @@ function ax.database:CreateTables()
         query:Create("id", "INT(11) UNSIGNED NOT NULL AUTO_INCREMENT")
         query:Create("max_weight", "FLOAT NOT NULL DEFAULT 30.0")
         query:Create("data", "LONGTEXT NOT NULL")
-        query:Create("type_id", "VARCHAR(64) NOT NULL DEFAULT 'weight'")
-        query:Create("owner_kind", "VARCHAR(32) DEFAULT NULL")
-        query:Create("owner_id", "INT(11) UNSIGNED DEFAULT NULL")
         query:PrimaryKey("id")
     query:Execute()
 
@@ -148,14 +145,18 @@ function ax.database:CreateTables()
         query:Create("class", "VARCHAR(64) NOT NULL")
         query:Create("inventory_id", "INT(11) UNSIGNED NOT NULL")
         query:Create("data", "LONGTEXT NOT NULL")
-        query:Create("placement", "TEXT NOT NULL")
         query:PrimaryKey("id")
     query:Execute()
 
-    -- Additive columns for installs whose ax_inventories/ax_items tables predate the
-    -- type registry. Queued through the schema tracker (ALTER ... ADD
-    -- COLUMN, never DROP/MODIFY) so existing rows and data are untouched; every
-    -- existing inventory row implicitly resolves to the "weight" type via
+    -- type_id/owner_kind/owner_id (ax_inventories) and placement (ax_items) are purely
+    -- additive columns, defined ONLY here through the schema tracker (never in the
+    -- CREATE TABLE above). Queued as ALTER ... ADD COLUMN (never DROP/MODIFY) so both
+    -- fresh and pre-existing tables converge on the same schema through a single code
+    -- path - a fresh table gets the base columns from CREATE and these via the ALTER,
+    -- exactly like an existing table that predates them. Every insert supplies these
+    -- columns explicitly (see sh_inventory.lua / sv_item.lua), so the SQL-level DEFAULTs
+    -- they used to carry are not load-bearing. Existing rows and data are untouched;
+    -- every legacy inventory row implicitly resolves to the "weight" type via
     -- ax.inventory:GetType()'s default, so this is pure back-compat, not a migration.
     -- `placement` is a single type-owned JSON blob (keys like `gridX`/`gridY`/`slotID`
     -- - whatever the inventory's type puts in GetSyncFields, see sh_inventory_types.lua)
@@ -181,21 +182,20 @@ function ax.database:CreateTables()
     -- ax_inventories/ax_items need schema-tracker rows too, otherwise the
     -- AddToSchema() calls above have nothing to register their queued columns
     -- against once the SELECT below populates self.schema (InsertSchema errors on
-    -- an untracked table). Seeded with the columns the CREATE TABLE calls above
-    -- already define (not `{}`) - INSERT IGNORE only applies this default on a
-    -- genuinely fresh table, so on a fresh install the tracker already matches
-    -- reality and AddToSchema's queued entries no-op instead of re-ALTERing a
-    -- column CREATE TABLE just added. On an existing install the row (and its
-    -- real, possibly-incomplete tracked list) already exists, so this insert is
-    -- ignored and the additive ALTER still fires for whatever's genuinely missing.
+    -- an untracked table). Seeded EMPTY (`{}`) - the additive columns must NOT be
+    -- pre-listed here, or InsertSchema sees them as already-present and skips the
+    -- ALTER, leaving the physical table without the column. On a fresh install the
+    -- tracker starts empty and every AddToSchema entry ALTERs its column in; on a
+    -- pre-existing install (which never had a tracker row before) this INSERT seeds
+    -- the empty row and the same ALTERs add whatever columns are genuinely missing.
     query = mysql:InsertIgnore("ax_schema")
         query:Insert("table", "ax_inventories")
-        query:Insert("columns", util.TableToJSON({ type_id = true, owner_kind = true, owner_id = true }))
+        query:Insert("columns", util.TableToJSON({}))
     query:Execute()
 
     query = mysql:InsertIgnore("ax_schema")
         query:Insert("table", "ax_items")
-        query:Insert("columns", util.TableToJSON({ placement = true }))
+        query:Insert("columns", util.TableToJSON({}))
     query:Execute()
 
     -- load schema from database
