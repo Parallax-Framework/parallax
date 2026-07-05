@@ -160,12 +160,23 @@ end
 local SEQ_SIT_ROLLERCOASTER = nil
 local SEQ_SIT = nil
 
+-- LVS installs its own "!!!lvs_playeranimations" CalcMainActivity hook that returns ACT_STAND with LookupSequence("drive_jeep"); on player models lacking that sequence LookupSequence returns -1 (which is truthy), so the hook wins over our handler and leaves the driver in the reference/T-pose while passengers animate fine. We already drive LVS ourselves through vehicle:CalcMainActivity() in HandlePlayerDriving (with a sit fallback), so its CalcMainActivity hook is redundant here — remove it so our handler runs for drivers too. LVS's UpdateAnimation hook is left intact for the steering/mouseaim pose parameters.
+local function RemoveLVSCalcMainActivityHook()
+    hook.Remove("CalcMainActivity", "!!!lvs_playeranimations")
+end
+
+-- Run after all addons have registered their hooks, and immediately for hot reloads where LVS is already loaded.
+hook.Add("InitPostEntity", "ax.animations.RemoveLVSCalcMainActivityHook", RemoveLVSCalcMainActivityHook)
+RemoveLVSCalcMainActivityHook()
+
 function MODULE:HandlePlayerDriving(client, velocity, clientTable)
     if ( !istable(clientTable) ) then
         clientTable = client:GetTable()
     end
 
-    if ( !client:InVehicle() or !IsValid(client:GetParent()) ) then
+    -- Players seated in a Source vehicle (including LVS pods, which are prop_vehicle_prisoner_pod seats) are not move-parented to the vehicle, so InVehicle() is the correct predicate here — do not require a valid parent or LVS drivers T-pose.
+    if ( !client:InVehicle() ) then
+        ax.util:PrintDebug("[ANIMATIONS] HandlePlayerDriving: client not in vehicle.")
         return false
     end
 
@@ -236,11 +247,17 @@ function MODULE:HandlePlayerDriving(client, velocity, clientTable)
 
     if ( isfunction(vehicle.CalcMainActivity) ) then
         local act, seq = vehicle:CalcMainActivity(client, velocity)
+        ax.util:PrintDebug("[ANIMATIONS] HandlePlayerDriving: vehicle.CalcMainActivity returned act=" .. tostring(act) .. ", seq=" .. tostring(seq) .. ".")
         if ( act != nil and act != -1 ) then
             clientTable.CalcIdeal = act
         end
 
+        -- LVS bases hand back an activity paired with a driving sequence (e.g. ACT_STAND + "drive_jeep"). ACT_STAND is an NPC activity that player models cannot resolve, so it is only safe to adopt alongside a valid sequence; when the model lacks that sequence (LookupSequence returned -1) we keep our own player-valid fallback (ACT_MP_STAND_IDLE) instead of leaving the driver stuck in the reference/T-pose.
         if ( seq != nil and seq != -1 ) then
+            if ( act != nil and act != -1 ) then
+                clientTable.CalcIdeal = act
+            end
+
             clientTable.CalcSeqOverride = seq
         end
 
