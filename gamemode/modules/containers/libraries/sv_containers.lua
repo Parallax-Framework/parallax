@@ -25,6 +25,12 @@ function ax.container:ApplyInventoryData(inventory, definition)
 		return
 	end
 
+	-- Container inventories resolve to the "container" type (receiver-based CanAccess);
+	-- both the create and restore paths funnel through here, so this is the one place the
+	-- type is stamped. Applied in-memory every load and persisted below so a generic
+	-- ax.inventory:GetType() on the row also reports it.
+	inventory.typeID = "container"
+
 	local defaultMaxWeight = math.max(tonumber(ax.config:Get("container.default.max_weight", 16)) or 16, 1)
 	local maxWeight = self:GetMaxWeight(definition, inventory.maxWeight or defaultMaxWeight)
 
@@ -41,6 +47,7 @@ function ax.container:ApplyInventoryData(inventory, definition)
 	local query = mysql:Update("ax_inventories")
 		query:Update("max_weight", inventory.maxWeight)
 		query:Update("data", util.TableToJSON(inventory.data or {}))
+		query:Update("type_id", "container")
 		query:Where("id", inventory.id)
 	query:Execute()
 end

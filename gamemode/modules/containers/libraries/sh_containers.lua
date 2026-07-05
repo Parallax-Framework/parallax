@@ -17,6 +17,19 @@ ax.container.module = MODULE
 
 ax.item.inventories = ax.item.inventories or ax.inventory.instances
 
+-- Container inventories are receiver-addressed, not owned: a client may modify one
+-- exactly while they have it open (ENT:OpenInventory -> AddReceiver, close -> RemoveReceiver).
+-- The framework's ax.inventory:CanAccess only grants modify access through ownership or a
+-- type's own CanAccess and treats receivers as view-only, so without this type every
+-- container store/take goes through ax.item:Transfer and is denied with "no_access".
+-- Otherwise non-addressed (weight-style), so container contents stay a flat weight-limited
+-- list exactly like the default type.
+ax.inventory:RegisterType("container", {
+	CanAccess = function(inventory, client)
+		return isfunction(inventory.IsReceiver) and inventory:IsReceiver(client) == true
+	end,
+})
+
 local DATA_OPTIONS = {
 	scope = "map",
 	human = true,
