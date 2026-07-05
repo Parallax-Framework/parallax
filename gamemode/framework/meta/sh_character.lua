@@ -48,6 +48,43 @@ end
 
 character.GetInv = character.GetInventory
 
+--- Returns every loaded inventory owned by this character (the legacy primary
+-- inventory plus any others created with `owner = character`, e.g. a
+-- schema-registered equipment inventory). Only inventories already loaded into
+-- `ax.inventory.instances` are returned - call `ax.inventory:RestoreOwner(character, ...)`
+-- first if this character was just loaded and its extra inventories haven't synced yet.
+-- @realm shared
+-- @return table An array of inventory instances.
+function character:GetInventories()
+    local owned = {}
+
+    local ownerKind, ownerID = ax.inventory:ResolveOwner(self)
+    if ( ownerKind == nil or ownerID == nil ) then return owned end
+
+    for _, inventory in pairs(ax.inventory.instances) do
+        if ( istable(inventory) and inventory.ownerKind == ownerKind and tostring(inventory.ownerID) == tostring(ownerID) ) then
+            owned[#owned + 1] = inventory
+        end
+    end
+
+    return owned
+end
+
+--- Returns this character's inventory of the given type (e.g. `"equipment"`), or nil
+-- if it doesn't have one loaded. See `GetInventories`.
+-- @realm shared
+-- @param typeID string The inventory type id to look for.
+-- @return table|nil
+function character:GetInventoryByType(typeID)
+    for _, inventory in pairs(self:GetInventories()) do
+        if ( inventory:GetTypeID() == typeID ) then
+            return inventory
+        end
+    end
+
+    return nil
+end
+
 --- Returns the numeric ID of the character's inventory.
 -- This is the database ID of the associated inventory row. Returns 0 when no inventory has been assigned (e.g. freshly created characters before an inventory is allocated). Aliased as `character.GetInvID`.
 -- @realm shared

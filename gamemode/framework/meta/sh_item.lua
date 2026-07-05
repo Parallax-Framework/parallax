@@ -180,6 +180,109 @@ function item:GetInventoryID()
     return inventoryID
 end
 
+--- Returns every loaded inventory owned by this item (e.g. a bag's contents) - the reverse of
+-- `GetInventoryID()`, which is the inventory this item sits *in*. An item only has owned
+-- inventories if something created one via `ax.inventory:Create({ owner = itemInstance, ... })`
+-- (see `ax.inventory:RegisterOwnerResolver`'s built-in `"item"` kind) - most items have none, so
+-- this returns an empty table for them. Only inventories already loaded into
+-- `ax.inventory.instances` are returned - call `ax.inventory:RestoreOwner(itemInstance, ...)`
+-- first if this item was just loaded and its owned inventories haven't synced yet.
+-- @realm shared
+-- @return table An array of inventory instances.
+function item:GetInventories()
+    local owned = {}
+
+    local ownerKind, ownerID = ax.inventory:ResolveOwner(self)
+    if ( ownerKind == nil or ownerID == nil ) then return owned end
+
+    for _, inventory in pairs(ax.inventory.instances) do
+        if ( istable(inventory) and inventory.ownerKind == ownerKind and tostring(inventory.ownerID) == tostring(ownerID) ) then
+            owned[#owned + 1] = inventory
+        end
+    end
+
+    return owned
+end
+
+--- Returns this item's owned inventory of the given type (e.g. `"bag"`), or nil if it doesn't
+-- have one loaded. See `GetInventories`.
+-- @realm shared
+-- @param typeID string The inventory type id to look for.
+-- @return table|nil
+function item:GetInventoryByType(typeID)
+    for _, inventory in pairs(self:GetInventories()) do
+        if ( inventory:GetTypeID() == typeID ) then
+            return inventory
+        end
+    end
+
+    return nil
+end
+
+--- Grid column this item currently occupies, if placed in a grid-addressed inventory.
+-- Set at instance/placement time (`item.gridX`), not persisted on the item definition itself. Nil for items not in a grid-addressed inventory.
+-- @realm shared
+-- @return number|nil
+function item:GetGridX()
+    return self.gridX
+end
+
+--- Grid row this item currently occupies. See `GetGridX`.
+-- @realm shared
+-- @return number|nil
+function item:GetGridY()
+    return self.gridY
+end
+
+--- Named slot this item currently occupies, if placed in a slot-addressed inventory (e.g. equipment). Set at instance/placement time (`item.slotID`).
+-- @realm shared
+-- @return string|nil
+function item:GetSlotID()
+    return self.slotID
+end
+
+--- Returns whether this item is locked by an in-progress transfer transaction.
+-- Set by `ax.inventory:Transfer` for the duration of a single transfer to close the race
+-- where two players act on the same item (e.g. a shared container) before the first
+-- transfer's database write returns. Purely an in-memory flag - never persisted, never
+-- true across a restart.
+-- @realm server
+-- @return boolean
+function item:IsLocked()
+    return self.locked == true
+end
+
+--- Locks this item, blocking further transfers until `Unlock` is called.
+-- Internal - called by `ax.inventory:Transfer` at the start of a transaction. Not
+-- meant to be called directly by gameplay code.
+-- @realm server
+-- @internal
+function item:Lock()
+    self.locked = true
+end
+
+--- Unlocks this item after its in-progress transfer transaction finishes, successfully or not.
+-- Internal - called by `ax.inventory:Transfer`. Not meant to be called directly by gameplay code.
+-- @realm server
+-- @internal
+function item:Unlock()
+    self.locked = false
+end
+
+--- Item footprint width in grid cells. Static per item class (`ITEM.width`, inherited via the instance metatable), defaults to 1 for items that never declare it.
+-- @realm shared
+-- @return number
+function item:GetWidth()
+    return self.width or 1
+end
+
+--- Item footprint height in grid cells. See `GetWidth`.
+-- @realm shared
+-- @return number
+function item:GetHeight()
+    return self.height or 1
+end
+
 --- Returns a value from this item's data store, with an optional fallback.
 -- Initialises `self.data` to an empty table if it is not already a table. Returns `default` when the key is nil; returns the stored value otherwise.
 -- Use `SetData` to write values that should be persisted to the database.
@@ -232,7 +335,7 @@ function item:Call(method, client, entity, ...)
 end
 
 --- Sets a value in this item's data store and persists the change to the database.
--- Writes `value` to `self.data[key]`. On the server, skips persistence for temporary or no-save items (and inventories). For persistent items, issues a MySQL UPDATE to `ax_items` serialising the entire data table as JSON. After the write, calls `ax.inventory:Sync` to push the change to all receivers of the owning inventory.
+-- Writes `value` to `self.data[key]`. On the server, skips persistence for temporary or no-save items (and inventories). For persistent items, issues a MySQL UPDATE to `ax_items` serialising the entire data table as JSON. After the write, broadcasts the single changed `(key, value)` pair to the owning inventory's receivers - not a full `ax.inventory:Sync` (this is the hottest call site of the two, since any item stat/durability/ammo change goes through here).
 -- This function is safe to call on the client (does not issue queries client-side).
 -- @realm shared
 -- @param key string The data key to write.
@@ -269,9 +372,11 @@ function item:SetData(key, value, bNoDBUpdate)
             query:Execute()
         end
 
-        -- Sync changes to relevant receivers
+        -- Sync changes to relevant receivers - a single (key, value) pair, not a full
+        -- inventory resync (every item, every field) just to communicate one item's
+        -- one changed key.
         if ( istable(inventory) and inventoryID != 0 ) then
-            ax.inventory:Sync(inventory)
+            ax.net:Start(inventory:GetReceivers(), "item.set_data", self.id, key, value)
         end
     end
 end

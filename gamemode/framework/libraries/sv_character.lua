@@ -19,6 +19,67 @@ ax.character.meta = ax.character.meta or {}
 ax.character.vars = ax.character.vars or {}
 ax.character.loaded = ax.character.loaded or {}
 
+-- Deletes every inventory owned by character `characterID` (owner_kind ==
+-- "character"), unioned with `legacyInventoryID` (the ax_characters.inventory
+-- column may point at a pre-registry row with no owner_kind recorded at all).
+-- One row at a time - firing several independent mysql:Delete objects in the same
+-- tick has been observed to silently drop all but one of them.
+local function deleteCharacterInventories(characterID, legacyInventoryID, callback)
+    local ownedQuery = mysql:Select("ax_inventories")
+    ownedQuery:Select("id")
+    ownedQuery:Where("owner_kind", "character")
+    ownedQuery:Where("owner_id", characterID)
+    ownedQuery:Callback(function(rows)
+        local ids, seen = {}, {}
+
+        if ( istable(rows) ) then
+            for i = 1, #rows do
+                local invID = tonumber(rows[i].id)
+                if ( invID and !seen[invID] ) then
+                    seen[invID] = true
+                    ids[#ids + 1] = invID
+                end
+            end
+        end
+
+        if ( legacyInventoryID and legacyInventoryID > 0 and !seen[legacyInventoryID] ) then
+            ids[#ids + 1] = legacyInventoryID
+        end
+
+        local function step(index)
+            if ( index > #ids ) then
+                if ( isfunction(callback) ) then
+                    callback()
+                end
+
+                return
+            end
+
+            local invID = ids[index]
+
+            local itemsQuery = mysql:Delete("ax_items")
+            itemsQuery:Where("inventory_id", invID)
+            itemsQuery:Callback(function()
+                local invQuery = mysql:Delete("ax_inventories")
+                invQuery:Where("id", invID)
+                invQuery:Callback(function()
+                    if ( ax.inventory and ax.inventory.instances and ax.inventory.instances[invID] ) then
+                        ax.inventory.instances[invID]:RemoveReceivers()
+                        ax.inventory.instances[invID] = nil
+                    end
+
+                    step(index + 1)
+                end)
+                invQuery:Execute()
+            end)
+            itemsQuery:Execute()
+        end
+
+        step(1)
+    end)
+    ownedQuery:Execute()
+end
+
 --- Create a new character in the database.
 -- Creates a character with the provided payload data and automatically creates an inventory.
 -- Calls the callback with the character and inventory objects upon completion.
@@ -81,7 +142,10 @@ function ax.character:Create(payload, callback)
 
         ax.character.instances[character.id] = character
 
-        ax.inventory:Create(nil, function(inventory)
+        -- owner = character is additive metadata - the legacy `ax_characters.inventory`
+        -- column below remains the source of truth for the primary inventory, this just
+        -- makes it also discoverable via ax.inventory:RestoreOwner(character).
+        ax.inventory:Create({ owner = character }, function(inventory)
             if ( inventory == false ) then
                 ax.util:PrintError("Failed to create inventory for character " .. lastID)
                 return
@@ -373,26 +437,11 @@ function ax.character:Delete(id, callback)
                 -- Remove runtime character instance
                 ax.character.instances[id] = nil
 
-                -- Attempt to delete the associated inventory row if present
-                if ( invID and invID > 0 ) then
-                    ax.util:PrintDebug("Attempting to delete inventory ID " .. tostring(invID) .. " for missing character row")
-                    local inventoryQuery = mysql:Delete("ax_inventories")
-                    inventoryQuery:Where("id", invID)
-                    inventoryQuery:Execute()
-
-                    local result = mysql:Delete("ax_items")
-                    result:Where("inventory_id", invID)
-                    result:Execute()
-
-                    if ( ax.inventory and ax.inventory.instances and ax.inventory.instances[invID] ) then
-                        ax.inventory.instances[invID]:RemoveReceivers()
-                        ax.inventory.instances[invID] = nil
+                deleteCharacterInventories(id, invID, function()
+                    if ( isfunction(callback) ) then
+                        callback(true)
                     end
-                end
-
-                if ( isfunction(callback) ) then
-                    callback(true)
-                end
+                end)
 
                 return
             end
@@ -441,27 +490,11 @@ function ax.character:Delete(id, callback)
 
             ax.util:PrintDebug(color_success, "Character with ID " .. id .. " deleted successfully")
 
-            -- Delete the associated inventory if present
-            if ( row.inventory and tonumber(row.inventory) and tonumber(row.inventory) > 0 ) then
-                local inventoryQuery = mysql:Delete("ax_inventories")
-                inventoryQuery:Where("id", tonumber(row.inventory))
-                inventoryQuery:Execute()
-
-                local result = mysql:Delete("ax_items")
-                result:Where("inventory_id", tonumber(row.inventory))
-                result:Execute()
-
-                -- Also remove runtime inventory instance if loaded
-                local invToNum = tonumber(row.inventory)
-                if ( ax.inventory and ax.inventory.instances and ax.inventory.instances[invToNum] ) then
-                    ax.inventory.instances[invToNum]:RemoveReceivers()
-                    ax.inventory.instances[invToNum] = nil
+            deleteCharacterInventories(id, tonumber(row.inventory), function()
+                if ( isfunction(callback) ) then
+                    callback(true)
                 end
-            end
-
-            if ( isfunction(callback) ) then
-                callback(true)
-            end
+            end)
         end)
         del:Execute()
     end)

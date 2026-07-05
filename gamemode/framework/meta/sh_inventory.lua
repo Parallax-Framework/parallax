@@ -63,6 +63,109 @@ function inventory:GetID()
     return self.id
 end
 
+--- Returns this inventory's registered type id.
+-- Inventories with no `typeID` set default to `"weight"` (see `ax.inventory:GetType`), matching pre-registry behaviour.
+-- @realm shared
+-- @return string The type id.
+function inventory:GetTypeID()
+    return self.typeID or "weight"
+end
+
+--- Returns the owner kind of this inventory (`"character"` / `"entity"` / `"item"`), or nil if unset (e.g. legacy weight inventories created before ownership columns existed).
+-- @realm shared
+-- @return string|nil
+function inventory:GetOwnerKind()
+    return self.ownerKind
+end
+
+--- Returns the owner id of this inventory. Meaning depends on `GetOwnerKind()`.
+-- @realm shared
+-- @return number|nil
+function inventory:GetOwnerID()
+    return self.ownerID
+end
+
+--- Returns an instance data value (e.g. grid size, slot set), or `default` if unset.
+-- Instance data holds per-inventory parameters that vary within a single type (grid width/height, valid slot set) - see `ax.inventory:RegisterType`.
+-- @realm shared
+-- @param key string The data key to read.
+-- @param default any Fallback value when the key is unset.
+-- @return any
+function inventory:GetData(key, default)
+    if ( !istable(self.data) ) then return default end
+
+    local value = self.data[key]
+    if ( value == nil ) then return default end
+
+    return value
+end
+
+--- Sets an instance data value. Not persisted automatically - callers that need
+-- durability write the inventory row back to the database.
+-- @realm shared
+-- @param key string
+-- @param value any
+function inventory:SetData(key, value)
+    if ( !istable(self.data) ) then self.data = {} end
+
+    self.data[key] = value
+end
+
+--- Returns the inventory's grid width, if its type supports coordinate addressing - nil otherwise.
+-- @realm shared
+-- @return number|nil
+function inventory:GetWidth()
+    local typeDef = ax.inventory:GetType(self)
+    if ( !typeDef or !typeDef.GetWidth ) then return nil end
+
+    return typeDef.GetWidth(self)
+end
+
+--- Returns the inventory's grid height, if its type supports coordinate addressing - nil otherwise.
+-- @realm shared
+-- @return number|nil
+function inventory:GetHeight()
+    local typeDef = ax.inventory:GetType(self)
+    if ( !typeDef or !typeDef.GetHeight ) then return nil end
+
+    return typeDef.GetHeight(self)
+end
+
+--- Returns the item occupying a given position, per the inventory's type.
+-- Addressing scheme depends on the type: grid-addressed types read this as (x, y), slot-addressed types read it as (slotID). Passed through as-is so either shape works through the same method name.
+-- @realm shared
+-- @return table|nil
+function inventory:GetItemAt(...)
+    local typeDef = ax.inventory:GetType(self)
+    if ( !typeDef or !typeDef.GetItemAt ) then return nil end
+
+    return typeDef.GetItemAt(self, ...)
+end
+
+--- Returns whether an item can occupy the given position/slot, per the inventory's type.
+-- Grid-addressed types expect (x, y, w, h, ignoreItem); slot-addressed types expect (slotID, ignoreItem).
+-- @realm shared
+-- @return boolean
+function inventory:CanItemFit(...)
+    local typeDef = ax.inventory:GetType(self)
+    if ( !typeDef or !typeDef.CanItemFit ) then return false end
+
+    return typeDef.CanItemFit(self, ...)
+end
+
+--- Finds the first free (x, y) that fits an item of the given size. Grid-addressed types only.
+-- @realm shared
+-- @param w number
+-- @param h number
+-- @param ignoreItem table|nil
+-- @return number|nil, number|nil
+function inventory:FindEmptySlot(w, h, ignoreItem)
+    local typeDef = ax.inventory:GetType(self)
+    if ( !typeDef or !typeDef.FindEmptySlot ) then return nil end
+
+    return typeDef.FindEmptySlot(self, w, h, ignoreItem)
+end
+
 --- Returns the items table for this inventory.
 -- The returned table is keyed by item ID (number) and valued by item instance tables. Returns an empty table when the inventory has no items loaded.
 -- @realm shared
@@ -156,11 +259,23 @@ function inventory:GetReceivers()
     return self.receivers or {}
 end
 
---- Returns the character that owns this inventory.
--- Searches all loaded character instances in `ax.character.instances` for one whose `vars.inventory` matches this inventory's ID. Returns the first match, or nil if no character claims this inventory (e.g. unassigned or temporary inventories).
+--- Returns the object that owns this inventory - a character, item, or entity, depending on
+-- `GetOwnerKind()`.
+-- Resolves `ownerKind`/`ownerID` (set for any inventory created with `owner = ...`, e.g.
+-- `character_grid`/`character_equipment`, a bag item's inventory) via
+-- `ax.inventory:ResolveOwnerObject`, which dispatches to the `resolveOwner` callback of
+-- whichever resolver registered that kind (see `ax.inventory:RegisterOwnerResolver`). Falls
+-- back to searching for a character whose legacy `vars.inventory` matches this inventory's ID,
+-- for inventories created before ownership columns existed. Returns nil if no owner can be
+-- resolved (e.g. unassigned/temporary inventories, or an owner kind with no `resolveOwner`
+-- callback registered, e.g. some `"entity"` resolvers).
 -- @realm shared
--- @return table|nil The owning character instance, or nil if not found.
+-- @return table|nil The owner object, or nil if not found.
 function inventory:GetOwner()
+    if ( self.ownerKind != nil ) then
+        return ax.inventory:ResolveOwnerObject(self.ownerKind, self.ownerID)
+    end
+
     for k, v in pairs(ax.character.instances) do
         local characterInventoryID = v and v.vars and v.vars.inventory
         if ( characterInventoryID != nil and tostring(characterInventoryID) == tostring(self.id) ) then
@@ -398,6 +513,30 @@ if ( SERVER ) then
 
         data = data or {}
 
+        -- `data.placement` (if given) requests a specific position/slot rather than
+        -- being item-owned data - strip it before it reaches item.data/ax_items.data.
+        -- Only addressed types (grid/slot) resolve a placement at all; the default
+        -- weight type has no ResolvePlacement and keeps writing "{}" (back-compat).
+        local explicitPlacement = data.placement
+        if ( explicitPlacement != nil ) then
+            data = table.Copy(data)
+            data.placement = nil
+        end
+
+        local placement = {}
+        local typeDef = ax.inventory:GetType(self)
+        if ( istable(typeDef) and isfunction(typeDef.ResolvePlacement) ) then
+            local itemWidth = tonumber(item.width) or 1
+            local itemHeight = tonumber(item.height) or 1
+
+            local resolved, placementReason = typeDef.ResolvePlacement(self, itemWidth, itemHeight, explicitPlacement)
+            if ( !istable(resolved) ) then
+                return false, placementReason or "inventory.reason.no_space"
+            end
+
+            placement = resolved
+        end
+
         if ( self.isTemporary or self.noSave ) then
             ax.item._nextTemporaryID = ax.item._nextTemporaryID or -1
 
@@ -418,6 +557,10 @@ if ( SERVER ) then
             itemObject.isTemporary = true
             itemObject.noSave = true
 
+            if ( istable(typeDef) and isfunction(typeDef.ApplyItemRow) ) then
+                typeDef.ApplyItemRow(itemObject, placement)
+            end
+
             ax.item.instances[temporaryItemID] = itemObject
             self.items[temporaryItemID] = itemObject
 
@@ -432,6 +575,7 @@ if ( SERVER ) then
             query:Insert("class", class)
             query:Insert("inventory_id", self.id)
             query:Insert("data", util.TableToJSON(data))
+            query:Insert("placement", util.TableToJSON(placement))
             query:Callback(function(result, status, lastID)
                 if ( result == false ) then
                     ax.util:PrintError("Failed to insert item into database for inventory " .. self.id)
@@ -441,6 +585,10 @@ if ( SERVER ) then
                 local itemObject = ax.item:Instance(lastID, class)
                 itemObject.data = data or {}
                 itemObject.invID = self.id
+
+                if ( istable(typeDef) and isfunction(typeDef.ApplyItemRow) ) then
+                    typeDef.ApplyItemRow(itemObject, placement)
+                end
 
                 ax.item.instances[lastID] = itemObject
 

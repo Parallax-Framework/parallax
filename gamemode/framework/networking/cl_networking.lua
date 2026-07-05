@@ -360,7 +360,17 @@ ax.net:Hook("player.data", function(client, nameOrKey, keyOrValue, valueMaybe)
     hook.Run("PlayerDataChanged", client, varName, key, value)
 end)
 
-ax.net:Hook("inventory.sync", function(inventoryID, inventoryItems, inventoryMaxWeight, inventoryReceivers)
+-- inventoryTypeID/inventoryData are additive tail args - absent from a sender that
+-- predates the type registry, in which case this falls back to exactly the old
+-- weight-type shape ("weight", {}).
+ax.net:Hook("inventory.sync", function(inventoryID, inventoryItems, inventoryMaxWeight, inventoryReceivers, inventoryTypeID, inventoryData, inventoryOwnerKind, inventoryOwnerID)
+    inventoryTypeID = inventoryTypeID or "weight"
+
+    -- Extra per-item fields (grid position, slot id, ...) are applied by the inventory's
+    -- own type via ApplySyncFields, so this hook never has to know what any given
+    -- type's addressing looks like. Goes through GetType() (not a direct ax.inventory.types
+    -- index) so an unregistered/typo'd typeID logs the same diagnostic it would server-side.
+    local typeDef = ax.inventory:GetType({ typeID = inventoryTypeID })
 
     -- Convert the items into objects
     local items = {}
@@ -370,6 +380,10 @@ ax.net:Hook("inventory.sync", function(inventoryID, inventoryItems, inventoryMax
             local itemObject = ax.item:Instance(itemData.id, itemData.class)
             itemObject.invID = inventoryID
             itemObject.data = itemData.data or {}
+
+            if ( istable(typeDef) and isfunction(typeDef.ApplySyncFields) ) then
+                typeDef.ApplySyncFields(itemObject, itemData)
+            end
 
             ax.item.instances[itemObject.id] = itemObject
             items[itemObject.id] = itemObject
@@ -382,7 +396,11 @@ ax.net:Hook("inventory.sync", function(inventoryID, inventoryItems, inventoryMax
         id = inventoryID,
         items = items,
         maxWeight = inventoryMaxWeight,
-        receivers = inventoryReceivers
+        receivers = inventoryReceivers,
+        typeID = inventoryTypeID,
+        data = istable(inventoryData) and inventoryData or {},
+        ownerKind = inventoryOwnerKind,
+        ownerID = inventoryOwnerID
     }, ax.inventory.meta)
 
     if ( IsValid(ax.gui.inventory) and ax.gui.inventory.inventory and ax.gui.inventory.inventory.id == inventoryID ) then
@@ -433,7 +451,7 @@ ax.net:Hook("inventory.receiver.remove", function(inventoryID, receiver)
     inventory:RemoveReceiver(receiver)
 end)
 
-ax.net:Hook("inventory.item.add", function(inventoryID, itemID, itemClass, itemData)
+ax.net:Hook("inventory.item.add", function(inventoryID, itemID, itemClass, itemData, placement)
 
     -- If inventory 0 (world) isn't tracked clientside, still create the item instance so it exists clientside
     local inventory = ax.inventory.instances[inventoryID]
@@ -458,6 +476,36 @@ ax.net:Hook("inventory.item.add", function(inventoryID, itemID, itemClass, itemD
 
     inventory.items[itemID] = itemObject
     ax.item.instances[itemID] = itemObject
+
+    if ( istable(placement) and next(placement) != nil ) then
+        local typeDef = ax.inventory:GetType(inventory)
+        if ( istable(typeDef) and isfunction(typeDef.ApplyItemRow) ) then
+            typeDef.ApplyItemRow(itemObject, placement)
+        end
+    end
+
+    if ( IsValid(ax.gui.inventory) ) then
+        ax.gui.inventory:PopulateItems()
+    end
+end)
+
+-- "item.transfer" fires when an item's inventoryID changes (it left one inventory and
+-- entered another); "inventory.item.moved" fires instead when an item is repositioned
+-- within the SAME inventory (inventoryID unchanged, only its placement - gridX/gridY,
+-- slotID, ... - changed). Never repurpose one for the other's case.
+ax.net:Hook("inventory.item.moved", function(inventoryID, itemID, placement)
+    local inventory = ax.inventory.instances[inventoryID]
+    if ( !istable(inventory) ) then return end
+
+    local item = ax.item.instances[itemID]
+    if ( !istable(item) ) then return end
+
+    if ( istable(placement) and next(placement) != nil ) then
+        local typeDef = ax.inventory:GetType(inventory)
+        if ( istable(typeDef) and isfunction(typeDef.ApplyItemRow) ) then
+            typeDef.ApplyItemRow(item, placement)
+        end
+    end
 
     if ( IsValid(ax.gui.inventory) ) then
         ax.gui.inventory:PopulateItems()
@@ -500,7 +548,7 @@ ax.net:Hook("relay.sync", function(data)
     ax.relay.data = data
 end)
 
-ax.net:Hook("item.transfer", function(itemID, fromInventoryID, toInventoryID)
+ax.net:Hook("item.transfer", function(itemID, fromInventoryID, toInventoryID, placement)
 
     local item = ax.item.instances[itemID]
     if ( !istable(item) ) then
@@ -542,7 +590,28 @@ ax.net:Hook("item.transfer", function(itemID, fromInventoryID, toInventoryID)
     -- Add to the new inventory, if applicable
     if ( toInventoryID != 0 ) then
         toInventory.items[item.id] = item
+
+        if ( istable(placement) and next(placement) != nil ) then
+            local typeDef = ax.inventory:GetType(toInventory)
+            if ( istable(typeDef) and isfunction(typeDef.ApplyItemRow) ) then
+                typeDef.ApplyItemRow(item, placement)
+            end
+        end
     end
+
+    if ( IsValid(ax.gui.inventory) ) then
+        ax.gui.inventory:PopulateItems()
+    end
+end)
+
+-- Counterpart to item:SetData()'s targeted broadcast - one changed (key, value) pair,
+-- not a full "inventory.sync" of every item the owning inventory holds.
+ax.net:Hook("item.set_data", function(itemID, key, value)
+    local item = ax.item.instances[itemID]
+    if ( !istable(item) ) then return end
+
+    if ( !istable(item.data) ) then item.data = {} end
+    item.data[key] = value
 
     if ( IsValid(ax.gui.inventory) ) then
         ax.gui.inventory:PopulateItems()

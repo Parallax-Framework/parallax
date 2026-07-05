@@ -148,6 +148,27 @@ function ax.database:CreateTables()
         query:PrimaryKey("id")
     query:Execute()
 
+    -- type_id/owner_kind/owner_id (ax_inventories) and placement (ax_items) are purely
+    -- additive columns, defined ONLY here through the schema tracker (never in the
+    -- CREATE TABLE above). Queued as ALTER ... ADD COLUMN (never DROP/MODIFY) so both
+    -- fresh and pre-existing tables converge on the same schema through a single code
+    -- path - a fresh table gets the base columns from CREATE and these via the ALTER,
+    -- exactly like an existing table that predates them. Every insert supplies these
+    -- columns explicitly (see sh_inventory.lua / sv_item.lua), so the SQL-level DEFAULTs
+    -- they used to carry are not load-bearing. Existing rows and data are untouched;
+    -- every legacy inventory row implicitly resolves to the "weight" type via
+    -- ax.inventory:GetType()'s default, so this is pure back-compat, not a migration.
+    -- `placement` is a single type-owned JSON blob (keys like `gridX`/`gridY`/`slotID`
+    -- - whatever the inventory's type puts in GetSyncFields, see sh_inventory_types.lua)
+    -- rather than one dedicated column per addressing scheme, so a new inventory type
+    -- never needs its own schema migration to store its placement data. Kept separate
+    -- from the item's own `data` column (item-class-owned, arbitrary keys) so the two
+    -- namespaces can never collide.
+    self:AddToSchema("ax_inventories", "type_id", ax.type.string)
+    self:AddToSchema("ax_inventories", "owner_kind", ax.type.string)
+    self:AddToSchema("ax_inventories", "owner_id", ax.type.number)
+    self:AddToSchema("ax_items", "placement", ax.type.text)
+
     query = mysql:InsertIgnore("ax_schema")
         query:Insert("table", "ax_characters")
         query:Insert("columns", util.TableToJSON({}))
@@ -155,6 +176,25 @@ function ax.database:CreateTables()
 
     query = mysql:InsertIgnore("ax_schema")
         query:Insert("table", "ax_players")
+        query:Insert("columns", util.TableToJSON({}))
+    query:Execute()
+
+    -- ax_inventories/ax_items need schema-tracker rows too, otherwise the
+    -- AddToSchema() calls above have nothing to register their queued columns
+    -- against once the SELECT below populates self.schema (InsertSchema errors on
+    -- an untracked table). Seeded EMPTY (`{}`) - the additive columns must NOT be
+    -- pre-listed here, or InsertSchema sees them as already-present and skips the
+    -- ALTER, leaving the physical table without the column. On a fresh install the
+    -- tracker starts empty and every AddToSchema entry ALTERs its column in; on a
+    -- pre-existing install (which never had a tracker row before) this INSERT seeds
+    -- the empty row and the same ALTERs add whatever columns are genuinely missing.
+    query = mysql:InsertIgnore("ax_schema")
+        query:Insert("table", "ax_inventories")
+        query:Insert("columns", util.TableToJSON({}))
+    query:Execute()
+
+    query = mysql:InsertIgnore("ax_schema")
+        query:Insert("table", "ax_items")
         query:Insert("columns", util.TableToJSON({}))
     query:Execute()
 
@@ -167,11 +207,21 @@ function ax.database:CreateTables()
                 self.schema[v.table] = ax.util:SafeParseTable(v.columns)
             end
 
+            -- Runs after the additive columns are guaranteed to exist (freshly ALTERed in
+            -- this same callback, or already present) - the owner backfill reads/writes
+            -- owner_kind/owner_id, so it can't run until they're there. OnDatabaseTablesCreated
+            -- fires only after it so consumers see a fully-migrated schema.
+            local function finalize()
+                self:MigrateLegacyInventoryOwners(function()
+                    hook.Run("OnDatabaseTablesCreated")
+                end)
+            end
+
             -- update schema if needed
             local queueCount = #self.schemaQueue
             if ( queueCount == 0 ) then
-                -- No schema updates needed, fire hook immediately
-                hook.Run("OnDatabaseTablesCreated")
+                -- No schema updates needed, run the migration and fire the hook.
+                finalize()
                 return
             end
 
@@ -181,12 +231,54 @@ function ax.database:CreateTables()
                 self:InsertSchema(entry[1], entry[2], entry[3], function()
                     completedCount = completedCount + 1
 
-                    -- Only run the hook after all schema insertions are complete
+                    -- Only migrate + fire the hook once every schema insertion is complete
                     if ( completedCount >= queueCount ) then
-                        hook.Run("OnDatabaseTablesCreated")
+                        finalize()
                     end
                 end)
             end
+        end)
+    query:Execute()
+end
+
+--- Back-compat migration: populate owner_kind/owner_id on inventory rows that predate the
+-- ownership model. Older installs linked a character to its inventory only through the legacy
+-- `ax_characters.inventory` column; the type/ownership rewrite loads inventories by
+-- owner_kind/owner_id instead (see ax.inventory:Restore/RestoreOwner), so those pre-existing
+-- rows - owner columns NULL after the additive ALTER - would never load and every character
+-- would report no valid inventory. This copies each character's legacy link into the owner
+-- columns.
+-- @realm server
+-- @param callback function Optional callback run once when the migration has finished dispatching.
+-- @usage ax.database:MigrateLegacyInventoryOwners()
+function ax.database:MigrateLegacyInventoryOwners(callback)
+    local query = mysql:Select("ax_characters")
+        query:Select("id")
+        query:Select("inventory")
+        query:Callback(function(result, status)
+            if ( !istable(result) or status == false or result[1] == nil ) then
+                if ( isfunction(callback) ) then callback() end
+                return
+            end
+
+            for i = 1, #result do
+                local characterID = tonumber(result[i].id)
+                local inventoryID = tonumber(result[i].inventory)
+                if ( characterID == nil or inventoryID == nil or inventoryID < 1 ) then continue end
+
+                -- The `owner_kind IS NULL` guard (a Where with a nil value, see sv_mysql)
+                -- makes this a one-time backfill - an already-owned or reassigned inventory
+                -- is left untouched no matter how many times this runs, so it is safe on
+                -- every boot and no-ops on already-migrated and freshly-created installs.
+                local update = mysql:Update("ax_inventories")
+                    update:Update("owner_kind", "character")
+                    update:Update("owner_id", characterID)
+                    update:Where("id", inventoryID)
+                    update:Where("owner_kind", nil)
+                update:Execute()
+            end
+
+            if ( isfunction(callback) ) then callback() end
         end)
     query:Execute()
 end
