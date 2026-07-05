@@ -17,6 +17,14 @@ ax.inventory = ax.inventory or {}
 ax.inventory.meta = ax.inventory.meta or {}
 ax.inventory.instances = ax.inventory.instances or {}
 
+--- Candidate index for `ItemOwnsInventory`: `itemID -> inventoryID` for inventories
+-- with `ownerKind == "item"`. A candidate only - entries are never actively removed
+-- when an inventory is disposed of (disposal happens from many call sites, several
+-- of them client-only, and this stays a shared-realm file), so every read re-verifies
+-- the candidate against the live instance and self-heals by dropping stale entries.
+-- @realm shared
+ax.inventory.itemOwnerIndex = ax.inventory.itemOwnerIndex or {}
+
 --- Registry of owner resolvers. `owner_kind`/`owner_id` are unavoidably strings/numbers
 -- in the database, but nothing above the database layer should ever type one of those
 -- strings by hand - a typo'd `"charcter"` would silently create an unreachable
@@ -129,17 +137,25 @@ end
 -- inventory instance has `ownerKind == "item"` and `ownerID == itemID`. Used by
 -- `ax.item:Transfer` to enforce the depth-1 nesting rule: a bag can never end up
 -- inside another inventory that is itself nested inside an item.
+--
+-- O(1) via `itemOwnerIndex` instead of scanning every live inventory - this is
+-- called on every Transfer into an item-owned inventory, so its cost must not
+-- scale with how many inventories exist on the server.
 -- @realm shared
 -- @param itemID number
 -- @return boolean
 function ax.inventory:ItemOwnsInventory(itemID)
-    for _, inventory in pairs(self.instances) do
-        if ( inventory.ownerKind == "item" and tostring(inventory.ownerID) == tostring(itemID) ) then
-            return true
-        end
+    local inventoryID = self.itemOwnerIndex[itemID]
+    if ( inventoryID == nil ) then return false end
+
+    local inventory = self.instances[inventoryID]
+    if ( !istable(inventory) or inventory.ownerKind != "item" or tostring(inventory.ownerID) != tostring(itemID) ) then
+        self.itemOwnerIndex[itemID] = nil
+
+        return false
     end
 
-    return false
+    return true
 end
 
 ax.inventory.instances[0] = setmetatable({
@@ -263,6 +279,10 @@ if ( SERVER ) then
 
                 ax.inventory.instances[lastInvId] = inventory
 
+                if ( ownerKind == "item" and ownerID != nil ) then
+                    ax.inventory.itemOwnerIndex[ownerID] = lastInvId
+                end
+
                 if ( isfunction(callback) ) then
                     callback(inventory)
                 end
@@ -313,6 +333,62 @@ if ( SERVER ) then
         query:Execute()
     end
 
+    --- Builds a live inventory instance (without items) from an `ax_inventories` row.
+    -- Shared by `RestoreRow`/`RestoreRows` so the row-to-instance shape (type/owner/data
+    -- columns) is defined once.
+    -- @realm server
+    -- @param row table A row from `ax_inventories` (as returned by the mysql library).
+    -- @return table inventory The shell instance (`.items` not yet populated).
+    -- @return table|nil typeDef The inventory's resolved type definition.
+    local function BuildInventoryShell(row)
+        local inventory = setmetatable({}, ax.inventory.meta)
+        inventory.id = tonumber(row.id)
+        inventory.maxWeight = tonumber(row.max_weight) or 30.0
+        inventory.receivers = {}
+        inventory.typeID = row.type_id or "weight"
+        inventory.ownerKind = row.owner_kind
+        inventory.ownerID = row.owner_id != nil and tonumber(row.owner_id) or nil
+        inventory.data = ax.util:SafeParseTable(row.data) or {}
+
+        return inventory, ax.inventory:GetType(inventory)
+    end
+
+    --- Populates an inventory shell's `.items` from a set of `ax_items` rows and
+    -- publishes it to `self.instances`. Shared by `RestoreRow`/`RestoreRows` so the
+    -- item-row-to-object shape (placement columns via the type's `ApplyItemRow`) is
+    -- defined once regardless of whether the rows came from a per-inventory or a
+    -- batched `WhereIn` query.
+    -- @realm server
+    -- @param inventory table The inventory shell from `BuildInventoryShell`.
+    -- @param typeDef table|nil The inventory's resolved type definition.
+    -- @param itemsResult table Rows from `ax_items` belonging to this inventory.
+    local function ApplyItemRows(inventory, typeDef, itemsResult)
+        local items = {}
+
+        for i = 1, #itemsResult do
+            local itemRow = itemsResult[i]
+            if ( ax.item.stored[itemRow.class] ) then
+                local itemObject = ax.item:Instance(tonumber(itemRow.id), itemRow.class)
+                itemObject.invID = inventory.id
+                itemObject.data = ax.util:SafeParseTable(itemRow.data) or {}
+
+                if ( istable(typeDef) and isfunction(typeDef.ApplyItemRow) ) then
+                    typeDef.ApplyItemRow(itemObject, ax.util:SafeParseTable(itemRow.placement) or {})
+                end
+
+                items[itemObject.id] = itemObject
+            end
+        end
+
+        inventory.items = items
+
+        ax.inventory.instances[inventory.id] = inventory
+
+        if ( inventory.ownerKind == "item" and inventory.ownerID != nil ) then
+            ax.inventory.itemOwnerIndex[inventory.ownerID] = inventory.id
+        end
+    end
+
     --- Restores a single `ax_inventories` row (plus its items) into a live inventory
     -- instance. Shared by `RestoreOwner`/`Restore` so the row-to-instance shape
     -- (type/owner/data columns, item placement columns) is defined once.
@@ -330,19 +406,7 @@ if ( SERVER ) then
             return
         end
 
-        local inventory = setmetatable({}, self.meta)
-        inventory.id = inventoryID
-        inventory.maxWeight = tonumber(row.max_weight) or 30.0
-        inventory.receivers = {}
-        inventory.typeID = row.type_id or "weight"
-        inventory.ownerKind = row.owner_kind
-        inventory.ownerID = row.owner_id != nil and tonumber(row.owner_id) or nil
-        inventory.data = ax.util:SafeParseTable(row.data) or {}
-
-        -- Placement columns are only meaningful to addressed types - the type resolved
-        -- once here and handed to ApplyItemRow so this function never has to know what
-        -- a given type's placement shape looks like.
-        local typeDef = self:GetType(inventory)
+        local inventory, typeDef = BuildInventoryShell(row)
 
         local itemQuery = mysql:Select("ax_items")
             itemQuery:Where("inventory_id", inventoryID)
@@ -355,30 +419,89 @@ if ( SERVER ) then
                     return
                 end
 
-                local items = {}
-
-                for i = 1, #itemsResult do
-                    local itemRow = itemsResult[i]
-                    if ( ax.item.stored[itemRow.class] ) then
-                        local itemObject = ax.item:Instance(tonumber(itemRow.id), itemRow.class)
-                        itemObject.invID = inventoryID
-                        itemObject.data = ax.util:SafeParseTable(itemRow.data) or {}
-
-                        if ( istable(typeDef) and isfunction(typeDef.ApplyItemRow) ) then
-                            typeDef.ApplyItemRow(itemObject, ax.util:SafeParseTable(itemRow.placement) or {})
-                        end
-
-                        items[itemObject.id] = itemObject
-                    end
-                end
-
-                inventory.items = items
-
-                self.instances[inventoryID] = inventory
+                ApplyItemRows(inventory, typeDef, itemsResult)
 
                 if ( isfunction(callback) ) then
                     callback(inventory)
                 end
+            end)
+        itemQuery:Execute()
+    end
+
+    --- Batch-restores multiple `ax_inventories` rows (plus their items) using a single
+    -- `WhereIn` items query instead of one items query per row. Used by `Restore` to
+    -- load every inventory owned by any of a client's characters without the query
+    -- count scaling with the number of inventories found.
+    -- @realm server
+    -- @param rows table Array of `ax_inventories` rows (as returned by the mysql library).
+    -- @param callback function|nil Called once with an array of restored inventory
+    -- instances (order not guaranteed to match `rows`). Already-live instances are
+    -- resolved instantly and included without issuing any query for them.
+    function ax.inventory:RestoreRows(rows, callback)
+        if ( !istable(rows) or rows[1] == nil ) then
+            if ( isfunction(callback) ) then callback({}) end
+            return
+        end
+
+        local restored = {}
+        local shells = {}
+        local pendingIDs = {}
+
+        for i = 1, #rows do
+            local row = rows[i]
+            local inventoryID = tonumber(row.id)
+
+            local existing = self.instances[inventoryID]
+            if ( istable(existing) and getmetatable(existing) == self.meta ) then
+                restored[#restored + 1] = existing
+            else
+                local inventory, typeDef = BuildInventoryShell(row)
+
+                shells[inventoryID] = { inventory = inventory, typeDef = typeDef }
+                pendingIDs[#pendingIDs + 1] = inventoryID
+            end
+        end
+
+        if ( pendingIDs[1] == nil ) then
+            if ( isfunction(callback) ) then callback(restored) end
+            return
+        end
+
+        local itemQuery = mysql:Select("ax_items")
+            itemQuery:WhereIn("inventory_id", pendingIDs)
+            itemQuery:Callback(function(itemsResult, itemsStatus)
+                if ( itemsResult == nil or itemsStatus == false ) then
+                    ax.util:PrintError(string.format("Failed to batch-restore items for %d inventories, aborting restore.", #pendingIDs))
+
+                    if ( isfunction(callback) ) then callback(restored) end
+
+                    return
+                end
+
+                local itemsByInventory = {}
+                for i = 1, #itemsResult do
+                    local itemRow = itemsResult[i]
+                    local inventoryID = tonumber(itemRow.inventory_id)
+
+                    local bucket = itemsByInventory[inventoryID]
+                    if ( bucket == nil ) then
+                        bucket = {}
+                        itemsByInventory[inventoryID] = bucket
+                    end
+
+                    bucket[#bucket + 1] = itemRow
+                end
+
+                for i = 1, #pendingIDs do
+                    local inventoryID = pendingIDs[i]
+                    local shell = shells[inventoryID]
+
+                    ApplyItemRows(shell.inventory, shell.typeDef, itemsByInventory[inventoryID] or {})
+
+                    restored[#restored + 1] = shell.inventory
+                end
+
+                if ( isfunction(callback) ) then callback(restored) end
             end)
         itemQuery:Execute()
     end
@@ -401,7 +524,7 @@ if ( SERVER ) then
                 }
 
                 if ( istable(typeDef) and isfunction(typeDef.GetSyncFields) ) then
-                    table.Merge(entry, typeDef.GetSyncFields(v) or {})
+                    typeDef.GetSyncFields(v, entry)
                 end
 
                 items[#items + 1] = entry
@@ -531,13 +654,9 @@ if ( SERVER ) then
             local clientChar = client:GetCharacter()
             local activeCharacterID = clientChar and clientChar.id
 
-            for i = 1, #invResult do
-                local data = invResult[i]
-
-                data.id = tonumber(data.id)
-
-                self:RestoreRow(data, function(inventory)
-                    if ( inventory == false ) then return end
+            self:RestoreRows(invResult, function(inventories)
+                for i = 1, #inventories do
+                    local inventory = inventories[i]
 
                     self:Sync(inventory)
 
@@ -550,8 +669,8 @@ if ( SERVER ) then
                     if ( isfunction(callback) ) then
                         callback(inventory)
                     end
-                end)
-            end
+                end
+            end)
         end)
         inventoryQuery:Execute()
     end

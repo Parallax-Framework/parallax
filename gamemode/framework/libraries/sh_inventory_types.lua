@@ -147,13 +147,15 @@ ax.inventory.gridBehavior = {
     end,
 
     -- Extra per-item fields this type wants included in the "inventory.sync" payload -
-    -- core sync code never references gridX/gridY by name, it just merges
-    -- whatever the inventory's own type contributes here. width/height aren't included -
-    -- they're static per item class (see item:GetWidth/GetHeight), already known
-    -- client-side from the shared item class definition, so networking them per sync
-    -- would just be a wasted payload.
-    GetSyncFields = function(item)
-        return { gridX = item:GetGridX(), gridY = item:GetGridY() }
+    -- core sync code never references gridX/gridY by name, it just writes whatever
+    -- the inventory's own type contributes here directly onto the shared per-item
+    -- `entry` table (no intermediate table/merge - this runs once per item per sync).
+    -- width/height aren't included - they're static per item class (see
+    -- item:GetWidth/GetHeight), already known client-side from the shared item class
+    -- definition, so networking them per sync would just be a wasted payload.
+    GetSyncFields = function(item, entry)
+        entry.gridX = item:GetGridX()
+        entry.gridY = item:GetGridY()
     end,
 
     -- Client-side counterpart: applies fields produced by GetSyncFields back onto the
@@ -217,8 +219,8 @@ ax.inventory.slotBehavior = {
     end,
 
     -- See ax.inventory.gridBehavior.GetSyncFields/ApplySyncFields.
-    GetSyncFields = function(item)
-        return { slotID = item:GetSlotID() }
+    GetSyncFields = function(item, entry)
+        entry.slotID = item:GetSlotID()
     end,
 
     ApplySyncFields = function(itemObject, fields)
