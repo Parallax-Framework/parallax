@@ -131,6 +131,12 @@ ax.inventory.gridBehavior = {
                 return nil, "inventory.reason.invalid"
             end
 
+            -- Cells are integer coordinates. The net path floors these (see sv_networking),
+            -- but direct/system callers of AddItem/Transfer don't, so normalise here at the
+            -- source - CanItemFit/GetItemAt/FindEmptySlot all assume integers, and a
+            -- fractional value would otherwise be validated loosely then persisted/synced.
+            x, y = math.floor(x), math.floor(y)
+
             if ( !self:CanItemFit(x, y, w, h, ignoreItem) ) then
                 return nil, "inventory.reason.no_space"
             end

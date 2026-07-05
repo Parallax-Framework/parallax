@@ -241,11 +241,18 @@ function ax.item:Transfer(item, fromInventory, toInventory, placement, client, c
     end
 
     local dropPos
+    local worldItemEntity
     if ( fromInventoryID != 0 and toInventoryID == 0 ) then
         local dropPlayer = client
         if ( !ax.util:IsValidPlayer(dropPlayer) ) then
+            -- fromInventory:GetOwner() resolves to a character (which has GetOwner -> player)
+            -- for a character-owned inventory, but to a bare item/entity table with no
+            -- GetOwner method for item-/entity-owned ones - guard the call so a
+            -- system-initiated drop (nil client) never errors on those.
             local owner = fromInventory:GetOwner()
-            dropPlayer = istable(owner) and owner:GetOwner() or nil
+            if ( istable(owner) and isfunction(owner.GetOwner) ) then
+                dropPlayer = owner:GetOwner()
+            end
         end
 
         if ( ax.util:IsValidPlayer(dropPlayer) ) then
@@ -259,6 +266,17 @@ function ax.item:Transfer(item, fromInventory, toInventory, placement, client, c
         end
 
         if ( !isvector(dropPos) ) then
+            return fail("inventory.reason.invalid")
+        end
+
+        -- Create the world entity BEFORE the DB write so a failed ents.Create (e.g. at the
+        -- edict limit) aborts the whole transfer cleanly - synchronous fail(), item still in
+        -- its source inventory, nothing written. It's only spawned in the success callback,
+        -- and removed there if the DB write fails, so there is no window where memory/DB are
+        -- mutated to "in world" with no entity backing the item.
+        worldItemEntity = ents.Create("ax_item")
+        if ( !IsValid(worldItemEntity) ) then
+            ax.util:PrintError("Failed to create item entity during transfer to world inventory.")
             return fail("inventory.reason.invalid")
         end
     end
@@ -286,6 +304,13 @@ function ax.item:Transfer(item, fromInventory, toInventory, placement, client, c
 
             if ( result == false ) then
                 ax.util:PrintError("Failed to update item in database during transfer.")
+
+                -- Nothing was committed, so drop the entity we pre-created for the world
+                -- drop rather than leave it orphaned in the world.
+                if ( IsValid(worldItemEntity) ) then
+                    SafeRemoveEntity(worldItemEntity)
+                end
+
                 return finish("inventory.reason.invalid")
             end
 
@@ -307,17 +332,13 @@ function ax.item:Transfer(item, fromInventory, toInventory, placement, client, c
             ax.util:PrintDebug(string.format("Transferred item %s from inventory %s to inventory %s", item.id, tostring(fromInventoryID), tostring(toInventoryID)))
 
             if ( toInventoryID == 0 ) then
-                local itemEntity = ents.Create("ax_item")
-                if ( !IsValid(itemEntity) ) then
-                    ax.util:PrintError("Failed to create item entity during transfer to world inventory.")
-                    return finish("inventory.reason.invalid")
-                end
-
-                itemEntity:SetItemID(item.id)
-                itemEntity:SetItemClass(item.class)
-                itemEntity:SetPos(dropPos or vector_origin)
-                itemEntity:Spawn()
-                itemEntity:Activate()
+                -- Entity was created (and validated) before the DB write above - only spawn
+                -- it now that the transfer is committed.
+                worldItemEntity:SetItemID(item.id)
+                worldItemEntity:SetItemClass(item.class)
+                worldItemEntity:SetPos(dropPos or vector_origin)
+                worldItemEntity:Spawn()
+                worldItemEntity:Activate()
 
                 -- Clients outside the source inventory never had this instance clientside,
                 -- so seed the world item before broadcasting the transfer. Broadcast to
