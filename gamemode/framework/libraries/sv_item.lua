@@ -320,30 +320,62 @@ function ax.item:Transfer(item, fromInventory, toInventory, placement, client, c
                 itemEntity:Activate()
 
                 -- Clients outside the source inventory never had this instance clientside,
-                -- so seed the world item before broadcasting the transfer.
+                -- so seed the world item before broadcasting the transfer. Broadcast to
+                -- everyone, same as "item.spawn" - a targeted Sync of either endpoint
+                -- would be strictly redundant with this.
                 ax.net:Start(nil, "item.spawn", item.id, item.class, item.data or {})
-                ax.net:Start(nil, "item.transfer", item.id, fromInventoryID, toInventoryID)
-            elseif ( !repositioning ) then
-                local targetReceivers = toInventory:GetReceivers() or {}
-                for i = 1, #targetReceivers do
-                    local receiver = targetReceivers[i]
+                ax.net:Start(nil, "item.transfer", item.id, fromInventoryID, toInventoryID, resolvedPlacement)
+            elseif ( repositioning ) then
+                -- Same-inventory reposition - only the placement changed, so a full
+                -- inventory:Sync() (every item, every field) would be wildly disproportionate
+                -- to a single placement blob. "item.transfer" fires only when inventoryID
+                -- changes (see its client hook doc), so it doesn't fit here - this is its
+                -- same-inventory counterpart.
+                ax.net:Start(toInventory:GetReceivers(), "inventory.item.moved", toInventoryID, item.id, resolvedPlacement)
+            else
+                -- Cross-inventory move. "item.transfer" now carries the resolved placement
+                -- directly, so receivers no longer need a trailing full Sync() of either
+                -- endpoint to learn the item's position - that would resend every other
+                -- item in both inventories just to communicate one placement blob.
+                local toReceivers = toInventory:GetReceivers() or {}
+                for i = 1, #toReceivers do
+                    local receiver = toReceivers[i]
                     if ( !ax.util:IsValidPlayer(receiver) ) then
                         continue
                     end
 
                     local alreadyKnowsItem = fromInventory:IsReceiver(receiver)
                     if ( !alreadyKnowsItem ) then
-                        ax.net:Start(receiver, "inventory.item.add", toInventoryID, item.id, item.class, item.data or {})
+                        ax.net:Start(receiver, "inventory.item.add", toInventoryID, item.id, item.class, item.data or {}, resolvedPlacement)
                     end
                 end
 
-                ax.net:Start(toInventory:GetReceivers(), "item.transfer", item.id, fromInventoryID, toInventoryID)
-            end
+                -- "item.transfer" must also reach any fromInventory receiver who isn't a
+                -- toInventory receiver (e.g. someone else viewing the source container) -
+                -- otherwise only the full Sync(fromInventory) this replaces would have told
+                -- them the item left. The client-side handler is IsReceiver-gated and
+                -- idempotent, so a receiver present in both sets is deduped here rather than
+                -- relying on that (avoids a wasted duplicate send, not a correctness need).
+                local fromReceivers = fromInventory:GetReceivers() or {}
+                local seen = {}
+                local combinedReceivers = {}
+                for i = 1, #toReceivers do
+                    local receiver = toReceivers[i]
+                    if ( ax.util:IsValidPlayer(receiver) and !seen[receiver] ) then
+                        seen[receiver] = true
+                        combinedReceivers[#combinedReceivers + 1] = receiver
+                    end
+                end
 
-            ax.inventory:Sync(toInventory)
+                for i = 1, #fromReceivers do
+                    local receiver = fromReceivers[i]
+                    if ( ax.util:IsValidPlayer(receiver) and !seen[receiver] ) then
+                        seen[receiver] = true
+                        combinedReceivers[#combinedReceivers + 1] = receiver
+                    end
+                end
 
-            if ( !repositioning and fromInventoryID != 0 ) then
-                ax.inventory:Sync(fromInventory)
+                ax.net:Start(combinedReceivers, "item.transfer", item.id, fromInventoryID, toInventoryID, resolvedPlacement)
             end
 
             item:Unlock()

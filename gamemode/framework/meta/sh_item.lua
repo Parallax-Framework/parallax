@@ -296,7 +296,7 @@ function item:Call(method, client, entity, ...)
 end
 
 --- Sets a value in this item's data store and persists the change to the database.
--- Writes `value` to `self.data[key]`. On the server, skips persistence for temporary or no-save items (and inventories). For persistent items, issues a MySQL UPDATE to `ax_items` serialising the entire data table as JSON. After the write, calls `ax.inventory:Sync` to push the change to all receivers of the owning inventory.
+-- Writes `value` to `self.data[key]`. On the server, skips persistence for temporary or no-save items (and inventories). For persistent items, issues a MySQL UPDATE to `ax_items` serialising the entire data table as JSON. After the write, broadcasts the single changed `(key, value)` pair to the owning inventory's receivers - not a full `ax.inventory:Sync` (this is the hottest call site of the two, since any item stat/durability/ammo change goes through here).
 -- This function is safe to call on the client (does not issue queries client-side).
 -- @realm shared
 -- @param key string The data key to write.
@@ -333,9 +333,11 @@ function item:SetData(key, value, bNoDBUpdate)
             query:Execute()
         end
 
-        -- Sync changes to relevant receivers
+        -- Sync changes to relevant receivers - a single (key, value) pair, not a full
+        -- inventory resync (every item, every field) just to communicate one item's
+        -- one changed key.
         if ( istable(inventory) and inventoryID != 0 ) then
-            ax.inventory:Sync(inventory)
+            ax.net:Start(inventory:GetReceivers(), "item.set_data", self.id, key, value)
         end
     end
 end
