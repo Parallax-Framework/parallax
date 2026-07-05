@@ -180,6 +180,45 @@ function item:GetInventoryID()
     return inventoryID
 end
 
+--- Returns every loaded inventory owned by this item (e.g. a bag's contents) - the reverse of
+-- `GetInventoryID()`, which is the inventory this item sits *in*. An item only has owned
+-- inventories if something created one via `ax.inventory:Create({ owner = itemInstance, ... })`
+-- (see `ax.inventory:RegisterOwnerResolver`'s built-in `"item"` kind) - most items have none, so
+-- this returns an empty table for them. Only inventories already loaded into
+-- `ax.inventory.instances` are returned - call `ax.inventory:RestoreOwner(itemInstance, ...)`
+-- first if this item was just loaded and its owned inventories haven't synced yet.
+-- @realm shared
+-- @return table An array of inventory instances.
+function item:GetInventories()
+    local owned = {}
+
+    local ownerKind, ownerID = ax.inventory:ResolveOwner(self)
+    if ( ownerKind == nil or ownerID == nil ) then return owned end
+
+    for _, inventory in pairs(ax.inventory.instances) do
+        if ( istable(inventory) and inventory.ownerKind == ownerKind and tostring(inventory.ownerID) == tostring(ownerID) ) then
+            owned[#owned + 1] = inventory
+        end
+    end
+
+    return owned
+end
+
+--- Returns this item's owned inventory of the given type (e.g. `"bag"`), or nil if it doesn't
+-- have one loaded. See `GetInventories`.
+-- @realm shared
+-- @param typeID string The inventory type id to look for.
+-- @return table|nil
+function item:GetInventoryByType(typeID)
+    for _, inventory in pairs(self:GetInventories()) do
+        if ( inventory:GetTypeID() == typeID ) then
+            return inventory
+        end
+    end
+
+    return nil
+end
+
 --- Grid column this item currently occupies, if placed in a grid-addressed inventory.
 -- Set at instance/placement time (`item.gridX`), not persisted on the item definition itself. Nil for items not in a grid-addressed inventory.
 -- @realm shared

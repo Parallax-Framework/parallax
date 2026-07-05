@@ -259,11 +259,23 @@ function inventory:GetReceivers()
     return self.receivers or {}
 end
 
---- Returns the character that owns this inventory.
--- Searches all loaded character instances in `ax.character.instances` for one whose `vars.inventory` matches this inventory's ID. Returns the first match, or nil if no character claims this inventory (e.g. unassigned or temporary inventories).
+--- Returns the object that owns this inventory - a character, item, or entity, depending on
+-- `GetOwnerKind()`.
+-- Resolves `ownerKind`/`ownerID` (set for any inventory created with `owner = ...`, e.g.
+-- `character_grid`/`character_equipment`, a bag item's inventory) via
+-- `ax.inventory:ResolveOwnerObject`, which dispatches to the `resolveOwner` callback of
+-- whichever resolver registered that kind (see `ax.inventory:RegisterOwnerResolver`). Falls
+-- back to searching for a character whose legacy `vars.inventory` matches this inventory's ID,
+-- for inventories created before ownership columns existed. Returns nil if no owner can be
+-- resolved (e.g. unassigned/temporary inventories, or an owner kind with no `resolveOwner`
+-- callback registered, e.g. some `"entity"` resolvers).
 -- @realm shared
--- @return table|nil The owning character instance, or nil if not found.
+-- @return table|nil The owner object, or nil if not found.
 function inventory:GetOwner()
+    if ( self.ownerKind != nil ) then
+        return ax.inventory:ResolveOwnerObject(self.ownerKind, self.ownerID)
+    end
+
     for k, v in pairs(ax.character.instances) do
         local characterInventoryID = v and v.vars and v.vars.inventory
         if ( characterInventoryID != nil and tostring(characterInventoryID) == tostring(self.id) ) then

@@ -37,7 +37,7 @@ ax.inventory.ownerResolvers = ax.inventory.ownerResolvers or {}
 
 --- Registers an owner resolver.
 -- @realm shared
--- @param def table `{ kind = string, checkOwner = function(owner) -> boolean, getOwner = function(owner) -> number }`. `kind` is the `owner_kind` string this resolver produces (e.g. `"character"`, `"item"`, `"entity"`); `checkOwner` recognises whether a value is this kind of owner; `getOwner` extracts the stable id to persist as `owner_id`. For entity owners this must be a persistent id (survives a restart), never `Entity:EntIndex()`.
+-- @param def table `{ kind = string, checkOwner = function(owner) -> boolean, getOwner = function(owner) -> number, resolveOwner = function(ownerID) -> any }`. `kind` is the `owner_kind` string this resolver produces (e.g. `"character"`, `"item"`, `"entity"`); `checkOwner` recognises whether a value is this kind of owner; `getOwner` extracts the stable id to persist as `owner_id`. For entity owners this must be a persistent id (survives a restart), never `Entity:EntIndex()`. `resolveOwner` is the inverse - given that id, returns the live owner object again (or nil if it isn't loaded) - it powers `inventory:GetOwner()`. Optional: omitting it just means `GetOwner()` can't resolve that kind back to an object.
 function ax.inventory:RegisterOwnerResolver(def)
     if ( !istable(def) or !isstring(def.kind) or def.kind == "" or !isfunction(def.checkOwner) or !isfunction(def.getOwner) ) then
         ax.util:PrintError("Invalid owner resolver registration for kind '" .. tostring(def and def.kind) .. "'.")
@@ -45,6 +45,24 @@ function ax.inventory:RegisterOwnerResolver(def)
     end
 
     self.ownerResolvers[def.kind] = def
+end
+
+--- Resolves an `(ownerKind, ownerID)` pair back to the live owner object, via the
+-- `resolveOwner` callback of the resolver registered for `ownerKind` - the inverse of
+-- `ResolveOwner`. Returns nil if `ownerKind` is nil, unregistered, or its resolver didn't
+-- provide a `resolveOwner` callback (e.g. some `"entity"` resolvers, where the owner may
+-- no longer exist in the world).
+-- @realm shared
+-- @param ownerKind string|nil
+-- @param ownerID number|nil
+-- @return any|nil The owner object, or nil if it can't be resolved.
+function ax.inventory:ResolveOwnerObject(ownerKind, ownerID)
+    if ( ownerKind == nil or ownerID == nil ) then return nil end
+
+    local resolver = self.ownerResolvers[ownerKind]
+    if ( !istable(resolver) or !isfunction(resolver.resolveOwner) ) then return nil end
+
+    return resolver.resolveOwner(ownerID)
 end
 
 --- Resolves an owner object to its `(ownerKind, ownerID)` pair via the registered
@@ -81,6 +99,9 @@ ax.inventory:RegisterOwnerResolver({
     getOwner = function(owner)
         return owner:GetID()
     end,
+    resolveOwner = function(ownerID)
+        return ax.character.instances[ownerID]
+    end,
 })
 
 -- Item instances don't sit directly on ax.item.meta - ax.item:Instance() wraps them in
@@ -94,6 +115,9 @@ ax.inventory:RegisterOwnerResolver({
     end,
     getOwner = function(owner)
         return owner:GetID()
+    end,
+    resolveOwner = function(ownerID)
+        return ax.item.instances[ownerID]
     end,
 })
 
@@ -175,6 +199,35 @@ ax.inventory.instances[0] = setmetatable({
     end,
 }, ax.inventory.meta)
 
+--- Returns the inventory type (and its instance data) new inventories are created with when
+-- `ax.inventory:Create`/`CreateTemporary` is called without an explicit `typeID` - e.g. a
+-- character's primary inventory (`vars.inventory`, created via `ax.inventory:Create({ owner =
+-- character })`). Reads `SCHEMA.defaultInventoryType`/`SCHEMA.defaultInventoryData` - declare
+-- these once in `schema/boot.lua`, the same convention as `SCHEMA.name`/`SCHEMA.author` - falling
+-- back to `"weight"`/`{}` if the schema never sets them, so schemas that never opt in see zero
+-- behaviour change.
+-- @realm shared
+-- @return string typeID
+-- @return table data Instance data (e.g. `{ width = 8, height = 6 }`), may include `maxWeight`.
+-- Falls back to `"weight"` with a warning if `SCHEMA.defaultInventoryType` names a type that was
+-- never registered via `ax.inventory:RegisterType` (e.g. a typo, or the registering file hasn't
+-- loaded yet) - never silently creates inventories of a type that doesn't exist.
+-- @usage -- schema/boot.lua
+-- @usage SCHEMA.defaultInventoryType = "character_grid"
+-- @usage SCHEMA.defaultInventoryData = { width = 8, height = 6 }
+function ax.inventory:GetDefaultType()
+    local data = ( SCHEMA and istable(SCHEMA.defaultInventoryData) ) and SCHEMA.defaultInventoryData or {}
+    local typeID = ( SCHEMA and SCHEMA.defaultInventoryType ) or "weight"
+
+    if ( !self.types[typeID] ) then
+        ax.util:PrintWarning("SCHEMA.defaultInventoryType '" .. tostring(typeID) .. "' is not a registered inventory type, falling back to \"weight\"!")
+
+        typeID = "weight"
+        data = {}
+    end
+
+    return typeID, data
+end
 
 if ( SERVER ) then
     --- Creates a temporary in-memory inventory instance (no database persistence).
@@ -205,9 +258,18 @@ if ( SERVER ) then
             end
         end
 
+        local usingDefaultType = data.typeID == nil
+        local schemaTypeID, schemaTypeData = self:GetDefaultType()
+        local typeID = data.typeID or schemaTypeID
+        local instanceData = istable(data.data) and data.data or (usingDefaultType and table.Copy(schemaTypeData) or {})
+
         local defaultWeight = 30.0
         if ( ax.config and isfunction(ax.config.Get) ) then
             defaultWeight = tonumber(ax.config:Get("inventory.weight.max", defaultWeight)) or defaultWeight
+        end
+
+        if ( usingDefaultType and isnumber(schemaTypeData.maxWeight) ) then
+            defaultWeight = schemaTypeData.maxWeight
         end
 
         local ownerKind, ownerID = self:ResolveOwner(data.owner)
@@ -219,10 +281,10 @@ if ( SERVER ) then
         inventory.receivers = {}
         inventory.isTemporary = true
         inventory.noSave = true
-        inventory.typeID = data.typeID or "weight"
+        inventory.typeID = typeID
         inventory.ownerKind = ownerKind
         inventory.ownerID = ownerID
-        inventory.data = istable(data.data) and data.data or {}
+        inventory.data = instanceData
 
         self.instances[inventoryID] = inventory
 
@@ -240,17 +302,20 @@ if ( SERVER ) then
     -- unaffected.
     -- @realm server
     -- @param data table Optional data table. Recognised keys: `maxWeight`, `typeID`
-    -- (defaults to `"weight"`), `owner` (a character/item/entity object - resolved via
+    -- (defaults to `SCHEMA.defaultInventoryType`, itself `"weight"` unless the schema sets it -
+    -- see `ax.inventory:GetDefaultType`), `owner` (a character/item/entity object - resolved via
     -- `ax.inventory:ResolveOwner`, never pass a raw owner_kind string), `data` (instance
     -- data - grid size, slot set - stored on the inventory, see `GetData`).
     -- @param callback function|nil Optional callback function called with the created inventory or false on failure.
     function ax.inventory:Create(data, callback)
         data = data or {}
 
-        local maxWeight = data.maxWeight or 30.0
-        local typeID = data.typeID or "weight"
+        local usingDefaultType = data.typeID == nil
+        local schemaTypeID, schemaTypeData = self:GetDefaultType()
+        local typeID = data.typeID or schemaTypeID
+        local instanceData = istable(data.data) and data.data or (usingDefaultType and table.Copy(schemaTypeData) or {})
+        local maxWeight = data.maxWeight or (usingDefaultType and schemaTypeData.maxWeight) or 30.0
         local ownerKind, ownerID = self:ResolveOwner(data.owner)
-        local instanceData = istable(data.data) and data.data or {}
 
         local query = mysql:Insert("ax_inventories")
             query:Insert("max_weight", maxWeight)
