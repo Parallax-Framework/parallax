@@ -18,6 +18,10 @@ local editor = ax.zones.editor
 
 editor.active = editor.active or false
 editor.contextOpen = editor.contextOpen or false
+editor.contextToggled = editor.contextToggled or false
+editor.contextPressTime = editor.contextPressTime or 0
+editor.contextSkipRelease = editor.contextSkipRelease or false
+editor.contextToggleWindow = editor.contextToggleWindow or 0.25
 editor.selectedId = editor.selectedId or nil
 editor.lookTargetId = editor.lookTargetId or nil
 editor.draft = editor.draft or nil
@@ -414,6 +418,8 @@ end
 function editor:Close()
     self.active = false
     self.contextOpen = false
+    self.contextToggled = false
+    self.contextSkipRelease = false
     self.lookTargetId = nil
     self.selectedId = nil
     self.draft = nil
@@ -427,6 +433,8 @@ end
 function editor:Open()
     self.active = true
     self.contextOpen = false
+    self.contextToggled = false
+    self.contextSkipRelease = false
     self:EnsurePanel()
     self:RefreshPanel()
 end
@@ -445,6 +453,10 @@ end
 function editor:SetContextOpen(enabled)
     enabled = enabled == true
 
+    if ( !enabled ) then
+        self.contextToggled = false
+    end
+
     if ( self.contextOpen == enabled ) then
         self:UpdatePanelInputState()
         return
@@ -453,6 +465,38 @@ function editor:SetContextOpen(enabled)
     self.contextOpen = enabled
     gui.EnableScreenClicker(enabled)
     self:UpdatePanelInputState()
+end
+
+--- Handles the context menu bind while the editor is active: holding works as before, but a quick tap latches the cursor open until the key is pressed again (spawnmenu-style toggle, open only).
+---@realm client
+---@param pressed boolean Whether the bind was pressed (true) or released (false).
+function editor:HandleContextBind(pressed)
+    if ( pressed ) then
+        if ( self.contextToggled ) then
+            self.contextSkipRelease = true
+            self:SetContextOpen(false)
+            return
+        end
+
+        self.contextSkipRelease = false
+        self.contextPressTime = RealTime()
+        self:SetContextOpen(true)
+        return
+    end
+
+    if ( self.contextSkipRelease ) then
+        self.contextSkipRelease = false
+        return
+    end
+
+    if ( !self.contextOpen ) then return end
+
+    if ( RealTime() - self.contextPressTime <= self.contextToggleWindow ) then
+        self.contextToggled = true
+        return
+    end
+
+    self:SetContextOpen(false)
 end
 
 function editor:ConfirmDiscard(callback)
@@ -1310,7 +1354,7 @@ hook.Add("OverrideBuildMenuBind", "ax.zones.editor.context", function(client, bi
     if ( !editor.active ) then return end
     if ( bind != "+menu_context" ) then return end
 
-    editor:SetContextOpen(pressed)
+    editor:HandleContextBind(pressed)
 
     return true
 end)
