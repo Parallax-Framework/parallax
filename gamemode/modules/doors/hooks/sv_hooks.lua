@@ -30,7 +30,7 @@ function MODULE:InitPostEntity()
 	if ( !bInitialized ) then
 		local unownableData = {}
 
-		for _, ent in ipairs(ents.GetAll()) do
+		for _, ent in ents.Iterator() do
 			if ( ent:IsDoor() ) then
 				ent:SetRelay("ownable", false)
 				unownableData[ent:MapCreationID()] = true
@@ -53,7 +53,7 @@ function MODULE:InitPostEntity()
 		end
 	end
 
-	for _, ent in ipairs(ents.GetAll()) do
+	for _, ent in ents.Iterator() do
 		if ( ent:IsDoor() ) then
 			ent:SetRelay("locked", ent:IsLocked())
 		end

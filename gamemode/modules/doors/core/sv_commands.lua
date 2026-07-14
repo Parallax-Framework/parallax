@@ -2,7 +2,7 @@ local MODULE = MODULE
 
 local function GetAllDoors()
     local doors = {}
-    for _, ent in ipairs(ents.GetAll()) do
+    for _, ent in ents.Iterator() do
         if ( ent:IsDoor() ) then
             doors[#doors + 1] = ent
         end
