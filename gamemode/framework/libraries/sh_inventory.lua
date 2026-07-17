@@ -149,6 +149,11 @@ function ax.inventory:CanAccess(inventory, client)
         end
     end
 
+    -- Modules may grant additional modify access (e.g. an active search session on a restrained player's inventory) without the inventory type knowing; grant-only, a falsy return changes nothing.
+    if ( hook.Run("CanPlayerAccessInventory", client, inventory) == true ) then
+        return true
+    end
+
     local typeDef = self:GetType(inventory)
     if ( istable(typeDef) and isfunction(typeDef.CanAccess) ) then
         return typeDef.CanAccess(inventory, client) == true
