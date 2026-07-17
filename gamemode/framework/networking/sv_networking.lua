@@ -77,8 +77,9 @@ ax.net:Hook("item.transfer", function(client, itemID, targetInventoryID, placeme
     local transferRateLimit = math.max(tonumber(ax.config:Get("inventory.transfer.rate_limit", 0.1)) or 0.1, 0)
     if ( !client:RateLimit("item.transfer", transferRateLimit) ) then return end
 
-    if ( !isnumber(itemID) or itemID < 1 ) then
-        ax.util:Error("Invalid payload received for item transfer.")
+    -- Temporary items (e.g. inside a bot's searched inventory) use negative IDs; only 0 is invalid.
+    if ( !isnumber(itemID) or itemID == 0 ) then
+        ax.util:PrintError("Invalid payload received for item transfer.")
         return
     end
 
@@ -88,8 +89,9 @@ ax.net:Hook("item.transfer", function(client, itemID, targetInventoryID, placeme
         return
     end
 
+    -- Temporary inventories (bots, session containers) use negative IDs, so only the world (0) is excluded here; the instance lookup below rejects anything that does not resolve.
     local sourceInventoryID = item:GetInventoryID()
-    if ( !isnumber(sourceInventoryID) or sourceInventoryID < 1 ) then
+    if ( !isnumber(sourceInventoryID) or sourceInventoryID == 0 ) then
         ax.util:PrintError("Item with ID " .. itemID .. " does not have a valid source inventory.")
         return
     end
@@ -100,8 +102,8 @@ ax.net:Hook("item.transfer", function(client, itemID, targetInventoryID, placeme
         return
     end
 
-    if ( !isnumber(targetInventoryID) or targetInventoryID < 1 ) then
-        ax.util:Error("Invalid payload received for item transfer.")
+    if ( !isnumber(targetInventoryID) or targetInventoryID == 0 ) then
+        ax.util:PrintError("Invalid payload received for item transfer.")
         return
     end
 
