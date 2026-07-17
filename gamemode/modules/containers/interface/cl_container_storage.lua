@@ -788,8 +788,8 @@ function PANEL:UpdateButtons()
 end
 
 function PANEL:RefreshInventories(force)
-	if ( self.bVirtualContainer != true
-	and !IsValid(self.entity) or self.entity:GetClass() != "ax_container" ) then
+	-- Virtual containers (no backing entity, e.g. a player search) skip the entity check entirely.
+	if ( self.bVirtualContainer != true and (!IsValid(self.entity) or self.entity:GetClass() != "ax_container") ) then
 		self:Close()
 		return
 	end
