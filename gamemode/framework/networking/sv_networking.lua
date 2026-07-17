@@ -147,14 +147,15 @@ ax.net:Hook("item.transfer.batch", function(client, itemIDs, targetInventoryID)
     local transferRateLimit = math.max(tonumber(ax.config:Get("inventory.transfer.rate_limit", 0.1)) or 0.1, 0)
     if ( !client:RateLimit("item.transfer.batch", transferRateLimit) ) then return end
 
-    if ( !istable(itemIDs) or !isnumber(targetInventoryID) or targetInventoryID < 1 ) then
-        ax.util:Error("Invalid payload received for item.transfer.batch.")
+    -- Temporary inventories (bots, session containers) use negative IDs, so only the world (0) is excluded; the instance lookup below rejects anything that does not resolve.
+    if ( !istable(itemIDs) or !isnumber(targetInventoryID) or targetInventoryID == 0 ) then
+        ax.util:PrintError("Invalid payload received for item.transfer.batch.")
         return
     end
 
     -- Cap batch size so a single request can't fan out into an unbounded number of transfers.
     if ( #itemIDs > 64 ) then
-        ax.util:Error("Oversized payload received for item.transfer.batch.")
+        ax.util:PrintError("Oversized payload received for item.transfer.batch.")
         return
     end
 
@@ -166,7 +167,7 @@ ax.net:Hook("item.transfer.batch", function(client, itemIDs, targetInventoryID)
 
     for _ = 1, #itemIDs do
         local itemID = itemIDs[_]
-        if ( !isnumber(itemID) or itemID < 1 ) then
+        if ( !isnumber(itemID) or itemID == 0 ) then
             continue
         end
 
@@ -176,7 +177,7 @@ ax.net:Hook("item.transfer.batch", function(client, itemIDs, targetInventoryID)
         end
 
         local sourceInventoryID = item:GetInventoryID()
-        if ( !isnumber(sourceInventoryID) or sourceInventoryID < 1 ) then
+        if ( !isnumber(sourceInventoryID) or sourceInventoryID == 0 ) then
             continue
         end
 
