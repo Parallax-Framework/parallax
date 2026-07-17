@@ -153,8 +153,15 @@ function ax.util:CreateBotCharacter(client)
     character.vars.data = {}
     local botInventory
     if ( ax.inventory and isfunction(ax.inventory.CreateTemporary) ) then
+        -- Bot inventories must use the standard numeric temporary IDs: a SteamID64 string breaks every numeric ID path (tonumber round-trips lose precision past 2^53, and the container UI rejects non-number IDs). Reuse the previous temporary ID when re-creating this bot's character so CreateTemporary cleans up the old instance.
+        local previousInventoryID
+        local previousCharacter = ax.character.instances[character.id]
+        if ( istable(previousCharacter) and istable(previousCharacter.vars) and isnumber(previousCharacter.vars.inventory) and previousCharacter.vars.inventory < 0 ) then
+            previousInventoryID = previousCharacter.vars.inventory
+        end
+
         botInventory = ax.inventory:CreateTemporary({
-            id = character.id
+            id = previousInventoryID
         })
     end
 
