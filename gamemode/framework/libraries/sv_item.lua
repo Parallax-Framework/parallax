@@ -138,10 +138,6 @@ function ax.item:Transfer(item, fromInventory, toInventory, placement, client, c
         if ( fromInventoryID == 0 or toInventoryID == 0 ) then
             return false, "inventory.reason.invalid" -- Temporary items cannot be transferred to/from the world inventory.
         end
-
-        if ( !fromIsTemporary or !toIsTemporary ) then
-            return false, "inventory.reason.invalid" -- Temporary inventory transfers are only supported between temporary inventories.
-        end
     end
 
     -- Client access to both endpoints. World is always reachable
@@ -223,19 +219,74 @@ function ax.item:Transfer(item, fromInventory, toInventory, placement, client, c
     end
 
     if ( itemIsTemporary or fromIsTemporary or toIsTemporary ) then
-        toInventory.items[item.id] = item
-        item.invID = toInventoryID
+        -- Both sides temporary: a pure in-memory move.
+        if ( fromIsTemporary and toIsTemporary ) then
+            toInventory.items[item.id] = item
+            item.invID = toInventoryID
 
-        fromInventory.items[item.id] = nil
+            fromInventory.items[item.id] = nil
 
-        if ( istable(toTypeDef) and isfunction(toTypeDef.ApplyItemRow) ) then
-            toTypeDef.ApplyItemRow(item, resolvedPlacement)
+            if ( istable(toTypeDef) and isfunction(toTypeDef.ApplyItemRow) ) then
+                toTypeDef.ApplyItemRow(item, resolvedPlacement)
+            end
+
+            item:Unlock()
+
+            if ( isfunction(callback) ) then
+                callback(true)
+            end
+
+            return true
         end
 
-        item:Unlock()
+        -- Mixed persistence boundary (e.g. searching a bot's temporary inventory): an item cannot keep a database row inside a temporary inventory or lack one inside a persistent inventory, so it is recreated on the destination side and removed from the source. The instance ID changes; AddItem/RemoveItem broadcasts plus a Sync of the temporary side keep receivers' views correct.
+        local itemClass = item.class
+        local itemData = istable(item.data) and table.Copy(item.data) or {}
 
-        if ( isfunction(callback) ) then
-            callback(true)
+        if ( toIsTemporary ) then
+            -- Persistent -> temporary: the memory copy is created synchronously, then the source row is deleted.
+            local bAdded = false
+            toInventory:AddItem(itemClass, itemData, function(newItem)
+                bAdded = istable(newItem)
+            end)
+
+            if ( !bAdded ) then
+                return fail("inventory.reason.invalid")
+            end
+
+            item:Unlock()
+            fromInventory:RemoveItem(item.id)
+            ax.inventory:Sync(toInventory)
+
+            if ( isfunction(callback) ) then
+                callback(true)
+            end
+
+            return true
+        end
+
+        -- Temporary -> persistent: the database copy is inserted first; the temporary original is only removed once the insert succeeds, and the item stays locked until then to prevent double-takes.
+        local bStarted, addReason = toInventory:AddItem(itemClass, itemData, function(newItem)
+            item:Unlock()
+
+            if ( !istable(newItem) ) then
+                if ( isfunction(callback) ) then
+                    callback(false, "inventory.reason.invalid")
+                end
+
+                return
+            end
+
+            fromInventory:RemoveItem(item.id)
+            ax.inventory:Sync(fromInventory)
+
+            if ( isfunction(callback) ) then
+                callback(true)
+            end
+        end)
+
+        if ( bStarted == false ) then
+            return fail(addReason or "inventory.reason.invalid")
         end
 
         return true
