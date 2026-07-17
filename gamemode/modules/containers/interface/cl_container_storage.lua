@@ -295,7 +295,7 @@ function INVENTORY_PANE:Init()
 		if ( !dropped or !isfunction(self.OnDropReceived) ) then return end
 
 		local itemPanel = panels and panels[1]
-		if ( !IsValid(itemPanel) or !isnumber(itemPanel.itemID) or itemPanel.itemID < 1 ) then return end
+		if ( !IsValid(itemPanel) or !isnumber(itemPanel.itemID) or itemPanel.itemID == 0 ) then return end
 
 		self:OnDropReceived(itemPanel)
 	end)
@@ -715,7 +715,7 @@ function PANEL:GetContainerInventory()
 end
 
 function PANEL:HandleDroppedItem(itemPanel, targetInventoryID)
-	if ( !IsValid(itemPanel) or !isnumber(itemPanel.itemID) or itemPanel.itemID < 1 ) then
+	if ( !IsValid(itemPanel) or !isnumber(itemPanel.itemID) or itemPanel.itemID == 0 ) then
 		return
 	end
 
