@@ -572,6 +572,21 @@ if ax.inventory:CanAccess(inventory, client) then
 end
 ```
 
+Between the built-in owner rule and the type's `CanAccess`, the
+`CanPlayerAccessInventory` hook fires - a module may `return true` to grant a
+client modify access to an inventory the type would otherwise refuse (e.g. an
+active search session on a restrained player's character inventory). The hook is
+grant-only: returning `false`/`nil` changes nothing, so it can never revoke
+owner or type-granted access.
+
+```lua
+function MODULE:CanPlayerAccessInventory(client, inventory)
+    if ( self.sessions[client] and self.sessions[client].inventoryID == inventory.id ) then
+        return true
+    end
+end
+```
+
 "Can access" (may modify) and "is a receiver" (gets synced state) are separate
 concepts - a player can see an inventory without being allowed to change it.
 
