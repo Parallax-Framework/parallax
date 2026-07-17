@@ -207,7 +207,7 @@ ax.net:Hook("inventory.move", function(client, itemID, targetInventoryID)
     if ( !client:RateLimit("inventory.move", transferRateLimit) ) then return end
 
     if ( !isnumber(itemID) or itemID < 1 or !isnumber(targetInventoryID) or targetInventoryID < 1 ) then
-        ax.util:Error("Invalid payload received for inventory.move.")
+        ax.util:PrintError("Invalid payload received for inventory.move.")
         return
     end
 
@@ -246,7 +246,7 @@ ax.net:Hook("inventory.item.action", function(client, itemID, action)
     if ( !client:RateLimit("inventory.action", actionRateLimit) ) then return end
 
     if ( !isnumber(itemID) or itemID < 1 or !isstring(action) or #action < 1 ) then
-        ax.util:Error("Invalid payload received for item action.")
+        ax.util:PrintError("Invalid payload received for item action.")
         return
     end
 
@@ -288,7 +288,7 @@ end)
 
 ax.net:Hook("character.create", function(client, payload)
     if ( !istable(payload) ) then
-        ax.util:Error("Invalid payload received for character creation.")
+        ax.util:PrintError("Invalid payload received for character creation.")
         return
     end
 
@@ -296,7 +296,7 @@ ax.net:Hook("character.create", function(client, payload)
     if ( try == false ) then
         if ( isstring(catch) and #catch > 0 ) then
             client:Notify(catch, "error")
-            ax.util:Error("Character creation failed for " .. client:SteamID64() .. ": " .. catch)
+            ax.util:PrintError("Character creation failed for " .. client:SteamID64() .. ": " .. catch)
         end
 
         return
@@ -391,7 +391,7 @@ end)
 
 ax.net:Hook("character.load", function(client, charID)
     if ( !isnumber(charID) or charID < 1 ) then
-        ax.util:Error("Invalid character ID received for loading.")
+        ax.util:PrintError("Invalid character ID received for loading.")
         return
     end
 
