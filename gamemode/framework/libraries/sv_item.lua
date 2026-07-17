@@ -94,10 +94,11 @@ function ax.item:Transfer(item, fromInventory, toInventory, placement, client, c
         return false, "inventory.reason.invalid"
     end
 
+    -- Temporary inventories use negative IDs, so only 0/nil resolves to the world here - a negative ID must never fall through to the world fallback (that would turn a transfer into a drop).
     local fromInventoryID = 0
     if ( istable(fromInventory) ) then
         fromInventoryID = fromInventory.id
-    elseif ( isnumber(fromInventory) and fromInventory > 0 ) then
+    elseif ( isnumber(fromInventory) and fromInventory != 0 ) then
         fromInventoryID = fromInventory
         fromInventory = ax.inventory.instances[fromInventoryID]
 
@@ -111,7 +112,7 @@ function ax.item:Transfer(item, fromInventory, toInventory, placement, client, c
     local toInventoryID = 0
     if ( istable(toInventory) ) then
         toInventoryID = toInventory.id
-    elseif ( isnumber(toInventory) and toInventory > 0 ) then
+    elseif ( isnumber(toInventory) and toInventory != 0 ) then
         toInventoryID = toInventory
         toInventory = ax.inventory.instances[toInventoryID]
 
