@@ -120,7 +120,7 @@ ax.command:Add("CharSetModel", {
         { name = "model", type = ax.type.text }
     },
     OnRun = function(def, client, target, model)
-        if ( !target) then return "Invalid character." end
+        if ( !target ) then return "Invalid character." end
 
         target:SetModel(model)
         target:Save()

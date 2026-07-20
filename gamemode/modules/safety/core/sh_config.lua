@@ -32,6 +32,14 @@ ax.localization:Register("en", {
     ["config.weapon.raise.alwaysraised.help"] = "When enabled, all players will always have their weapon raised regardless of individual state.",
 })
 
+ax.localization:Register("fr", {
+    ["subcategory.weapon_safety"] = "Sécurité des armes",
+    ["config.weapon.raise.time"] = "Temps de maintien pour lever l'arme",
+    ["config.weapon.raise.alwaysraised"] = "Arme toujours levée",
+    ["config.weapon.raise.time.help"] = "Durée pendant laquelle la touche de rechargement doit être maintenue (en secondes) avant de basculer le levé d'arme.",
+    ["config.weapon.raise.alwaysraised.help"] = "Lorsque activé, tous les joueurs auront toujours leur arme levée quel que soit leur état individuel."
+})
+
 ax.localization:Register("tr", {
     ["subcategory.weapon_safety"] = "Silah Güvenliği",
     ["config.weapon.raise.time"] = "Silah Kaldırma Basılı Tutma Süresi",

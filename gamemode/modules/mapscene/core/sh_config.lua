@@ -213,6 +213,50 @@ ax.localization:Register("en", {
     ["config.map.scene.tags.allowed.help"] = "Optional allowlist for scene tags."
 })
 
+ax.localization:Register("fr", {
+    ["category.camera"] = "Caméra",
+    ["subcategory.mapscene"] = "Scènes de carte",
+
+    ["config.map.scene.fov"] = "Champ de vision (FOV)",
+    ["config.map.scene.fov.help"] = "Champ de vision utilisé pour les scènes de carte.",
+    ["config.map.scene.smooth"] = "Fluidité",
+    ["config.map.scene.smooth.help"] = "Facteur de fluidité pour l'interpolation de la caméra.",
+    ["config.map.scene.time"] = "Temps de transition",
+    ["config.map.scene.time.help"] = "Temps en secondes pour les transitions de scènes.",
+    ["config.map.scene.snap"] = "Passage instantané entre les scènes",
+    ["config.map.scene.snap.help"] = "Passer instantanément entre les scènes au lieu d'utiliser une transition fluide.",
+    ["config.map.scene.linear"] = "Mouvement linéaire",
+    ["config.map.scene.linear.help"] = "Utiliser un mouvement linéaire pour les scènes de carte au lieu du lerp.",
+    ["config.map.scene.input"] = "Entrée souris",
+    ["config.map.scene.input.help"] = "Activer le décalage de caméra basé sur la souris pendant les scènes de carte.",
+    ["config.map.scene.music.path"] = "Chemin de la musique des scènes de carte",
+    ["config.map.scene.music.path.help"] = "Chemin du son à jouer pendant les scènes de carte (laisser vide pour désactiver).",
+    ["config.map.scene.music.volume"] = "Volume de la musique des scènes de carte",
+    ["config.map.scene.music.volume.help"] = "Volume de la musique des scènes de carte (0-1).",
+    ["config.map.scene.music.loopDelay"] = "Délai de boucle de la musique des scènes de carte",
+    ["config.map.scene.music.loopDelay.help"] = "Secondes à attendre avant de redémarrer le morceau après sa fin.",
+    ["config.map.scene.music.fadeIn"] = "Fondu d'entrée de la musique des scènes de carte",
+    ["config.map.scene.music.fadeIn.help"] = "Secondes pour le fondu d'entrée quand la musique commence (0 pour instantané).",
+    ["config.map.scene.music.fadeOut"] = "Fondu de sortie de la musique des scènes de carte",
+    ["config.map.scene.music.fadeOut.help"] = "Secondes pour le fondu de sortie quand la musique s'arrête (0 pour instantané).",
+    ["config.map.scene.strength"] = "Force d'entrée",
+    ["config.map.scene.strength.help"] = "Force du décalage de caméra basé sur la souris.",
+    ["config.map.scene.roll"] = "Roulis d'entrée",
+    ["config.map.scene.roll.help"] = "Roulis maximal appliqué depuis le décalage souris (0 pour désactiver).",
+    ["config.map.scene.randomize"] = "Randomiser la sélection de scènes",
+    ["config.map.scene.randomize.help"] = "Randomiser la sélection des scènes quand elles ne sont pas ordonnées.",
+    ["config.map.scene.order"] = "Mode d'ordre des scènes",
+    ["config.map.scene.order.help"] = "Ordre de sélection des scènes pour les scènes de carte.",
+    ["config.map.scene.transition"] = "Mode de transition",
+    ["config.map.scene.transition.help"] = "Mode d'interpolation des transitions.",
+    ["config.map.scene.max"] = "Nombre maximal de scènes stockées",
+    ["config.map.scene.max.help"] = "Nombre maximal de scènes de carte autorisées à être stockées sur le serveur.",
+    ["config.map.scene.scope"] = "Portée de persistance des scènes",
+    ["config.map.scene.scope.help"] = "Portée de persistance pour les scènes de carte stockées.",
+    ["config.map.scene.tags.allowed"] = "Tags de scènes autorisés",
+    ["config.map.scene.tags.allowed.help"] = "Liste d'autorisation optionnelle pour les tags de scènes."
+})
+
 ax.localization:Register("tr", {
     ["category.camera"] = "Kamera",
     ["subcategory.mapscene"] = "Harita Sahneleri",

@@ -137,6 +137,33 @@ ax.localization:Register("en", {
     ["option.thirdperson.desired.lerp.fov.help"] = "Interpolation speed for the third-person camera desired FOV. Lower values will be more smooth but also more slower to respond. Set to 0 to disable interpolation."
 })
 
+ax.localization:Register("fr", {
+    ["category.camera"] = "Caméra",
+    ["subcategory.thirdperson"] = "Troisième personne",
+    ["config.thirdperson"] = "Activer la troisième personne",
+    ["config.thirdperson.help"] = "Détermine si le serveur autorise la fonctionnalité de caméra en troisième personne.",
+    ["option.thirdperson"] = "Activer la troisième personne",
+    ["option.thirdperson.help"] = "Activer/désactiver le mode caméra en troisième personne.",
+    ["option.thirdperson.x"] = "Décalage X",
+    ["option.thirdperson.x.help"] = "Décalage X pour la caméra en troisième personne.",
+    ["option.thirdperson.y"] = "Décalage Y",
+    ["option.thirdperson.y.help"] = "Décalage Y pour la caméra en troisième personne.",
+    ["option.thirdperson.z"] = "Décalage Z",
+    ["option.thirdperson.z.help"] = "Décalage Z pour la caméra en troisième personne.",
+    ["option.thirdperson.follow.head"] = "Suivre la tête",
+    ["option.thirdperson.follow.head.help"] = "Faire suivre les mouvements de la tête du modèle du joueur par la caméra en troisième personne.",
+    ["option.thirdperson.follow.angles"] = "Suivre les angles",
+    ["option.thirdperson.follow.angles.help"] = "Faire suivre la direction de visée du joueur par la caméra au lieu des angles de vue.",
+    ["option.thirdperson.follow.fov"] = "Suivre le champ de vision",
+    ["option.thirdperson.follow.fov.help"] = "Calculer le FOV de la caméra en troisième personne en fonction de la distance entre le point final du trace et le joueur.",
+    ["option.thirdperson.desired.lerp.pos"] = "Vitesse d'interpolation de la position désirée",
+    ["option.thirdperson.desired.lerp.pos.help"] = "Vitesse d'interpolation pour la position désirée de la caméra en troisième personne. Des valeurs plus basses seront plus fluides mais plus lentes à répondre. Mettre à 0 pour désactiver l'interpolation.",
+    ["option.thirdperson.desired.lerp.angle"] = "Vitesse d'interpolation de l'angle désiré",
+    ["option.thirdperson.desired.lerp.angle.help"] = "Vitesse d'interpolation pour l'angle désiré de la caméra en troisième personne. Des valeurs plus basses seront plus fluides mais plus lentes à répondre. Mettre à 0 pour désactiver l'interpolation.",
+    ["option.thirdperson.desired.lerp.fov"] = "Vitesse d'interpolation du FOV désiré",
+    ["option.thirdperson.desired.lerp.fov.help"] = "Vitesse d'interpolation pour le FOV désiré de la caméra en troisième personne. Des valeurs plus basses seront plus fluides mais plus lentes à répondre. Mettre à 0 pour désactiver l'interpolation."
+})
+
 ax.localization:Register("tr", {
     ["category.camera"] = "Kamera",
     ["subcategory.thirdperson"] = "Üçüncü Şahıs",

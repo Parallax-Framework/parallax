@@ -187,6 +187,47 @@ ax.localization:Register("en", {
     ["option.intro.sound.path.help"] = "Sound path used for the typewriter effect."
 })
 
+ax.localization:Register("fr", {
+    ["category.interface"] = "Interface",
+    ["subcategory.intro"] = "Intro",
+    ["config.intro.enabled"] = "Activer l'intro",
+    ["config.intro.enabled.help"] = "Permettre la lecture de l'intro de bienvenue pour les clients.",
+    ["config.intro.location.show"] = "Afficher la ligne de localisation",
+    ["config.intro.location.show.help"] = "Afficher la ligne principale de localisation dans l'intro.",
+    ["config.intro.location.text"] = "Texte de localisation",
+    ["config.intro.location.text.help"] = "Texte pour la ligne principale de localisation.",
+    ["config.intro.framework.show"] = "Afficher les crédits du framework",
+    ["config.intro.framework.show.help"] = "Afficher la ligne des crédits du framework.",
+    ["config.intro.framework.template"] = "Modèle des crédits du framework",
+    ["config.intro.framework.template.help"] = "Modèle pour les crédits du framework. Utilisez {author} et {framework}.",
+    ["config.intro.schema.show"] = "Afficher les crédits du schéma",
+    ["config.intro.schema.show.help"] = "Afficher la ligne des crédits du schéma.",
+    ["config.intro.schema.template"] = "Modèle des crédits du schéma",
+    ["config.intro.schema.template.help"] = "Modèle pour les crédits du schéma. Utilisez {schema} et {schema_author}.",
+    ["config.intro.text.color"] = "Couleur du texte de l'intro",
+    ["config.intro.text.color.help"] = "Couleur de base du texte pour les lignes de l'intro.",
+    ["config.intro.font.title"] = "Police du titre",
+    ["config.intro.font.title.help"] = "Police pour la ligne principale de l'intro.",
+    ["config.intro.font.credits"] = "Police des crédits",
+    ["config.intro.font.credits.help"] = "Police pour les lignes de crédits.",
+    ["option.intro.enabled"] = "Afficher l'intro",
+    ["option.intro.enabled.help"] = "Afficher l'intro de bienvenue sur votre client.",
+    ["option.intro.hold.time"] = "Durée d'affichage des lignes",
+    ["option.intro.hold.time.help"] = "Durée pendant laquelle chaque ligne de l'intro reste à l'écran.",
+    ["option.intro.fade.speed"] = "Vitesse de fondu",
+    ["option.intro.fade.speed.help"] = "Vitesse de fondu pour les lignes de l'intro (plus élevé = plus rapide).",
+    ["option.intro.fade.out.delay"] = "Délai de fondu de sortie",
+    ["option.intro.fade.out.delay.help"] = "Secondes avant la fin pour commencer le fondu de sortie.",
+    ["option.intro.typewriter.enabled"] = "Effet machine à écrire",
+    ["option.intro.typewriter.enabled.help"] = "Activer l'effet machine à écrire.",
+    ["option.intro.typewriter.delay"] = "Délai machine à écrire",
+    ["option.intro.typewriter.delay.help"] = "Délai entre chaque caractère tapé.",
+    ["option.intro.sound.enabled"] = "Son machine à écrire",
+    ["option.intro.sound.enabled.help"] = "Jouer un son pour chaque caractère tapé.",
+    ["option.intro.sound.path"] = "Chemin du son machine à écrire",
+    ["option.intro.sound.path.help"] = "Chemin du son utilisé pour l'effet machine à écrire."
+})
+
 ax.localization:Register("de", {
     ["category.interface"] = "Oberfläche",
     ["subcategory.intro"] = "Intro",

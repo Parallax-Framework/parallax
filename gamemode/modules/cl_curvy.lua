@@ -47,6 +47,14 @@ ax.localization:Register("en", {
     ["option.curvy.edge_fade"] = "Edge Fade"
 })
 
+ax.localization:Register("fr", {
+    ["category.interface"] = "Interface",
+    ["subcategory.effects"] = "Effets",
+    ["option.curvy"] = "HUD courbé",
+    ["option.curvy.intensity"] = "Courbure",
+    ["option.curvy.edge_fade"] = "Fondu des bords"
+})
+
 ax.localization:Register("de", {
     ["category.interface"] = "Oberfläche",
     ["subcategory.effects"] = "Effekte",
