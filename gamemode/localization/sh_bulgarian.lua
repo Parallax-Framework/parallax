@@ -144,6 +144,7 @@ ax.localization:Register("bg", {
     ---- Characters
     ["config.autosave.interval"] = "Интервал на Автоматично Запазване",
     ["config.characters.max"] = "Максимален Брой Персонажи",
+    ["error.character.max_reached"] = "Достигнахте максималния брой персонажи.",
 
     -- Audio
     ["config.proximity"] = "Включи гласов чат по близост",

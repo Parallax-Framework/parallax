@@ -151,6 +151,7 @@ ax.localization:Register("es", {
     ---- Characters
     ["config.autosave.interval"] = "Intervalo de Guardado Automático de Personajes",
     ["config.characters.max"] = "Máximo de Personajes",
+    ["error.character.max_reached"] = "Has alcanzado el número máximo de personajes.",
 
     -- Audio
     ["config.proximity"] = "Habilitar sistema de voz por proximidad",

@@ -174,6 +174,7 @@ ax.localization:Register("en", {
     ---- Characters
     ["config.autosave.interval"] = "Character Autosave Interval",
     ["config.characters.max"] = "Max Characters",
+    ["error.character.max_reached"] = "You have reached the maximum number of characters.",
 
     -- Audio
     ["config.proximity"] = "Enable Proximity Voice",

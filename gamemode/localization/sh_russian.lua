@@ -153,6 +153,7 @@ ax.localization:Register("ru", {
     ---- Characters
     ["config.autosave.interval"] = "Интервал Сохранения Персонажей",
     ["config.characters.max"] = "Максимально Персонажей",
+    ["error.character.max_reached"] = "Вы достигли максимального количества персонажей.",
 
     -- Audio
     ["config.proximity"] = "Включить голосовой чат по близости",

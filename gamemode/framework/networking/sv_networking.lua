@@ -292,6 +292,13 @@ ax.net:Hook("character.create", function(client, payload)
         return
     end
 
+    local clientData = client:GetTable()
+    local maxCharacters = ax.config:Get("characters.max", 3)
+    if ( istable(clientData.axCharacters) and #clientData.axCharacters >= maxCharacters ) then
+        client:Notify(ax.localization:GetPhrase("error.character.max_reached"), "error")
+        return
+    end
+
     local try, catch = hook.Run("CanCreateCharacter", client, payload)
     if ( try == false ) then
         if ( isstring(catch) and #catch > 0 ) then

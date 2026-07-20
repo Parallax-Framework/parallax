@@ -174,6 +174,7 @@ ax.localization:Register("fr", {
     ---- Characters
     ["config.autosave.interval"] = "Intervalle de sauvegarde automatique des personnages",
     ["config.characters.max"] = "Nombre maximal de personnages",
+    ["error.character.max_reached"] = "Vous avez atteint le nombre maximal de personnages.",
 
     -- Audio
     ["config.proximity"] = "Activer la voix de proximité",

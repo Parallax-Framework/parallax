@@ -152,6 +152,7 @@ ax.localization:Register("de", {
     ---- Characters
     ["config.autosave.interval"] = "Charakter-Autospeicherintervall",
     ["config.characters.max"] = "Max. Charaktere",
+    ["error.character.max_reached"] = "Du hast die maximale Anzahl an Charakteren erreicht.",
 
     -- Audio
     ["config.proximity"] = "Sprachchat nach Nähe aktivieren",

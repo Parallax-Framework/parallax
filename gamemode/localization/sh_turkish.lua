@@ -152,6 +152,7 @@ ax.localization:Register("tr", {
     ---- Characters
     ["config.autosave.interval"] = "Karakteri Otomatik Kaydetme Sıklığı",
     ["config.characters.max"] = "Maksimum Karakter Sayısı",
+    ["error.character.max_reached"] = "Maksimum karakter sayısına ulaştınız.",
 
     -- Audio
     ["config.proximity"] = "Yakınlık Sesli Sohbetini Etkinleştir",
