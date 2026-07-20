@@ -28,6 +28,13 @@ LANG["category.animations"] = "Animations"
 
 ax.localization:Register("en", LANG)
 
+local LANG = {}
+LANG["config.animations.ik"] = "Cinématique Inverse (IK)"
+LANG["config.animations.ik.help"] = "Lorsque activé, les pieds du joueur s'ajusteront au terrain irrégulier pour un mouvement plus réaliste."
+LANG["category.animations"] = "Animations"
+
+ax.localization:Register("fr", LANG)
+
 LANG = {}
 LANG["config.animations.ik"] = "Ters Kinematik (IK)"
 LANG["config.animations.ik.help"] = "Etkinleştirildiğinde, oyuncunun ayakları daha gerçekçi hareket için engebeli zemine uyum sağlar."
