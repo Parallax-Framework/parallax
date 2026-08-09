@@ -601,16 +601,13 @@ ax.character:RegisterVar("model", {
         end
 
         local valid = false
-        local models = factionData:GetModels()
-        for i = 1, #models do
-            local v = models[i]
 
-            if ( istable(v) ) then
-                if ( utf8.lower(v[1]) == utf8.lower(value) ) then
-                    valid = true
-                    break
-                end
-            elseif ( utf8.lower(v) == utf8.lower(value) ) then
+        -- Flattened rather than read directly: a faction declaring a gendered pool returns a { male, female } table, which has no array part and would reject every model.
+        local models = ax.faction:FlattenModels(factionData)
+        for i = 1, #models do
+            local path = ax.faction:GetModelPath(models[i])
+
+            if ( path and utf8.lower(path) == utf8.lower(value) ) then
                 valid = true
                 break
             end
