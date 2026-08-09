@@ -718,7 +718,9 @@ ax.character:RegisterVar("model", {
             end
         end
 
-        layout:SizeToChildren(layout:GetStretchWidth(), layout:GetStretchHeight())
+        -- The layout has to run once before it can be measured, otherwise the docked grid keeps a zero height and the icons are clipped to a sliver.
+        layout:InvalidateLayout(true)
+        layout:SizeToChildren(false, true)
     end,
     changed = function(character, value, previousValue, isNetworked, recipients)
         local client = character:GetOwner()
