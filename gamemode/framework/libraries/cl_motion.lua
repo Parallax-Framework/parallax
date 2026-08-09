@@ -9,16 +9,17 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
---- Advanced panel animation handler using easing for custom fields. Supports delays, per-field animation isolation, and cancelation.
--- @module ax.motion
-
+---@class ax.motion
+--- Panel animation handler that eases arbitrary numeric, Color, Vector and Angle fields on a panel rather than only the geometry Derma knows about. Supports delays, per-field isolation and cancellation, and collapses to an instant assignment when the player has interface animations switched off.
+---@field active table Animations currently in flight.
 ax.motion = ax.motion or {}
 ax.motion.active = ax.motion.active or {}
 
---- Starts a property animation on a panel.
--- @tparam Panel panel The target panel.
--- @tparam number duration Duration in seconds.
--- @tparam table data Contains Target, Easing, optional Delay, Think, OnComplete.
+--- Starts a property animation on a panel. Any animation already running on the same panel that touches one of the same keys is dropped first, so a re-triggered transition supersedes the one in flight instead of fighting it.
+---@realm client
+---@param panel Panel The target panel.
+---@param duration number Duration in seconds.
+---@param data table `Target` map of field to final value, plus optional `Easing`, `Delay`, `Think(values)` and `OnComplete(panel)`.
 function ax.motion:Motion(panel, duration, data)
     if ( !IsValid(panel) or !istable(data) or !istable(data.Target) ) then return end
 
@@ -98,9 +99,10 @@ function ax.motion:Motion(panel, duration, data)
     }
 end
 
---- Cancels a specific animation on a panel.
--- @tparam Panel panel The panel whose animation to cancel.
--- @tparam string key The custom property key to cancel.
+--- Cancels the animation of a single field on a panel, leaving any other fields still animating.
+---@realm client
+---@param panel Panel The panel whose animation to cancel.
+---@param key string The property key to stop animating.
 function ax.motion:Cancel(panel, key)
     for i = #self.active, 1, -1 do
         local a = self.active[i]
@@ -116,8 +118,9 @@ function ax.motion:Cancel(panel, key)
     end
 end
 
---- Cancels all animations on a panel.
--- @tparam Panel panel The panel to cancel all animations for.
+--- Cancels every animation running on a panel.
+---@realm client
+---@param panel Panel The panel to cancel all animations for.
 function ax.motion:CancelAll(panel)
     for i = #self.active, 1, -1 do
         if ( self.active[i].panel == panel ) then
@@ -175,20 +178,23 @@ end)
 do
     local PANEL = FindMetaTable("Panel")
 
-    --- Animate custom properties with easing.
-    -- @tparam number duration Duration in seconds.
-    -- @tparam table data Table with Target, Easing, Delay, Think, OnComplete.
+    --- Animates arbitrary properties on this panel with easing.
+    ---@realm client
+    ---@param duration number Duration in seconds.
+    ---@param data table `Target` map of field to final value, plus optional `Easing`, `Delay`, `Think` and `OnComplete`.
     function PANEL:Motion(duration, data)
         ax.motion:Motion(self, duration, data)
     end
 
-    --- Cancel a specific animation on this panel.
-    -- @tparam string key The property key to cancel.
+    --- Cancels the animation of a single property on this panel.
+    ---@realm client
+    ---@param key string The property key to cancel.
     function PANEL:CancelAnimation(key)
         ax.motion:Cancel(self, key)
     end
 
-    --- Cancel all animations on this panel.
+    --- Cancels every animation running on this panel.
+    ---@realm client
     function PANEL:CancelAllAnimations()
         ax.motion:CancelAll(self)
     end
