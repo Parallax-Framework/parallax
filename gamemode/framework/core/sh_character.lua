@@ -622,15 +622,18 @@ ax.character:RegisterVar("model", {
     populate = function(this, container, payload)
         local option = container:Add("ax.text")
         option:SetFont("ax.regular.bold")
+        option:SetTracking(ax.util:ScreenScale(2))
+        option:SetTextColor(ax.color.textMuted)
         option:SetText(utf8.upper(ax.localization:GetPhrase("model")), true)
         option:SetZPos(this.sortOrder - 1)
         option:Dock(TOP)
+        option:DockMargin(0, 0, 0, ax.ui:Space("sm"))
 
         local layout = container:Add("DIconLayout")
         layout:SetStretchHeight(true)
         layout:SetZPos(this.sortOrder)
         layout:Dock(TOP)
-        layout:DockMargin(0, 0, 0, ax.util:ScreenScaleH(16))
+        layout:DockMargin(0, 0, 0, ax.util:ScreenScale(12))
 
         local factionID = payload.faction
         if ( !factionID or ax.faction:Get(factionID) == nil ) then
