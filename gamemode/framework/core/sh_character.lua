@@ -491,7 +491,87 @@ ax.character:RegisterVar("description", {
             -- Re-dock the entry after hints
             entry:SetZPos(this.sortOrder + 5)
             entry:Dock(TOP)
-            entry:DockMargin(0, ax.util:ScreenScaleH(8), 0, ax.util:ScreenScaleH(16))
+            entry:DockMargin(0, ax.util:ScreenScale(6), 0, ax.util:ScreenScale(12))
+        end
+    end
+})
+
+ax.character:RegisterVar("gender", {
+    field = "gender",
+    fieldType = ax.type.string,
+    default = "male",
+    sortOrder = 20,
+    category = "01_appearance",
+    validate = function(this, value, payload, client)
+        if ( !isstring(value) or ( value != "male" and value != "female" ) ) then
+            return false, "Please choose a gender for your character before continuing."
+        end
+
+        return true
+    end,
+    populate = function(this, container, payload)
+        -- Choosing a faction empties the payload, so the registered default is gone by the time this runs; seeded here so a tile is always selected and the step can validate without the player touching it.
+        if ( payload.gender != "male" and payload.gender != "female" ) then
+            payload.gender = this.default
+        end
+
+        local option = container:Add("ax.text")
+        option:SetFont("ax.regular.bold")
+        option:SetTracking(ax.util:ScreenScale(2))
+        option:SetTextColor(ax.color.textMuted)
+        option:SetText(utf8.upper(ax.localization:GetPhrase("gender")), true)
+        option:SetZPos(this.sortOrder - 1)
+        option:Dock(TOP)
+        option:DockMargin(0, 0, 0, ax.ui:Space("sm"))
+
+        local row = container:Add("EditablePanel")
+        row:SetZPos(this.sortOrder)
+        row:SetTall(ax.util:ScreenScale(18))
+        row:Dock(TOP)
+        row:DockMargin(0, 0, ax.ui:Space("md"), ax.ui:Space("lg"))
+
+        for i = 1, #AX_GENDERS do
+            local gender = AX_GENDERS[i]
+
+            local tile = row:Add("ax.button")
+            tile:Dock(LEFT)
+            tile:SetWide(ax.util:ScreenScale(72))
+            tile:DockMargin(0, 0, ax.ui:Space("sm"), 0)
+            tile:SetLabel(ax.localization:GetPhrase("gender." .. gender))
+            tile:SetAlign(TEXT_ALIGN_CENTER)
+            tile.DoClick = function()
+                if ( payload.gender == gender ) then return end
+
+                payload.gender = gender
+
+                -- The model pool differs per gender, so the previous pick may no longer be offered; clearing it lets the model var reseed from the new list.
+                payload.model = nil
+                payload.skin = nil
+
+                local create = ax.gui.main and ax.gui.main.create
+                if ( !IsValid(create) ) then return end
+
+                create:OnPayloadChanged(payload)
+                hook.Run("OnPayloadChanged", payload)
+
+                -- Rebuilds the step so the model grid below reflects the new pool. Deferred a frame because the rebuild clears the container this very button lives in, and freeing it mid-click is asking for trouble.
+                timer.Simple(0, function()
+                    if ( !IsValid(create) ) then return end
+
+                    create:RefreshStep()
+                end)
+            end
+
+            -- Selection is a persistent left rule rather than a hover tint, matching how the rest of the interface marks a current choice.
+            local basePaint = tile.Paint
+            tile.Paint = function(this2, width, height)
+                basePaint(this2, width, height)
+
+                if ( payload.gender != gender ) then return end
+
+                ax.draw:Edge(0, 0, width, height, "left", ax.color.accent)
+                ax.draw:Hairline(0, 0, width, height, ax.color.lineFocus)
+            end
         end
     end
 })
