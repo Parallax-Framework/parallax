@@ -55,16 +55,8 @@ ax.character:RegisterVar("faction", {
             return
         end
 
+        -- Choosing a faction is itself the advance, so this step carries no next button.
         parent:DeleteNavigationButtonByText("next")
-
-        local factionList = container:Add("ax.scroller.horizontal")
-        factionList:Dock(FILL)
-        factionList:DockMargin(0, ax.util:ScreenScaleH(32), 0, 0)
-        factionList:InvalidateParent(true)
-        factionList.Paint = nil
-
-        factionList.btnLeft:SetAlpha(0)
-        factionList.btnRight:SetAlpha(0)
 
         local factions = table.Copy(ax.faction:GetAll())
         table.sort(factions, function(a, b)
