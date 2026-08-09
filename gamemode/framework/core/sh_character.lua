@@ -124,65 +124,52 @@ ax.character:RegisterVar("faction", {
 
                 ax.gui.main.create:NavigateToNextTab(parent)
             end
-            factionButton.Paint = nil
 
-            local banner = v.image or hook.Run("GetFactionBanner", v.index) or "parallax/banners/unknown.png"
-            if ( isstring(banner) ) then
-                banner = ax.util:GetMaterial(banner)
+            factionButton.Paint = function(this2, width, height)
+                local fraction = this2:GetHoverFraction()
+
+                ax.draw:Rect(0, 0, width, height, ax.color.panel)
+
+                -- Here the banner is the point of the card, not texture behind type, so it is drawn at full strength and lifts to fully lit as the card takes focus. The scrim starts high because surface alpha composites steeply: below roughly 200 it makes no visible difference at all. (Faction banners are UnlitGeneric without $vertexalpha, so the knock-back has to be a scrim over the top -- a draw-colour tint does nothing to them.)
+                if ( banner ) then
+                    surface.SetDrawColor(255, 255, 255, 255)
+                    surface.SetMaterial(banner)
+                    surface.DrawTexturedRect(0, 0, width, height)
+
+                    ax.draw:Rect(0, 0, width, height, ColorAlpha(ax.color.void, 210 * (1 - fraction)))
+                end
+
+                local padding = ax.ui:Space("md")
+                local font = v.Font or "ax.regular.bold"
+
+                -- The plate grows to make room for the description as the card takes focus.
+                local titleHeight = ax.util:ScreenScale(20)
+                local wrapped = description != "" and ax.util:GetWrappedText(description, "ax.small", width - padding * 2) or {}
+                local lineHeight = ax.util:GetTextHeight("ax.small")
+                local lines = math.min(#wrapped, 3)
+                local plateHeight = titleHeight + (lines * lineHeight + padding) * fraction
+                local plateY = height - plateHeight
+
+                -- Inverts to a light plate on focus, the way the reference chapter picker marks its selection; the fill carries it, so no hue is spent.
+                local plate = ax.ui:Mix(ColorAlpha(ax.color.void, 225), ax.color.textBright, fraction)
+                local title = ax.ui:Mix(ax.color.textBright, ax.color.void, fraction)
+
+                ax.draw:Rect(0, plateY, width, plateHeight, plate)
+
+                ax.draw:TextTracked(name, font, padding, plateY + titleHeight / 2, title, ax.util:ScreenScale(2), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+
+                if ( lines > 0 and fraction > 0.01 ) then
+                    local body = ColorAlpha(ax.ui:Mix(ax.color.textMuted, ax.color.base, fraction), 255 * fraction)
+
+                    for d = 1, lines do
+                        draw.SimpleText(wrapped[d], "ax.small", padding, plateY + titleHeight + (d - 1) * lineHeight, body, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+                    end
+                end
+
+                ax.draw:Hairline(0, 0, width, height, ax.ui:Mix(ax.color.line, ax.color.lineFocus, fraction))
             end
 
-            local image = factionButton:Add("EditablePanel")
-            image:SetMouseInputEnabled(false)
-            image:SetSize(factionButton:GetTall(), factionButton:GetTall())
-            image:Dock(FILL)
-            image.Paint = function(_, width, height)
-                local glass = ax.theme:GetGlass()
-
-                local imageHeight = height * 0.8
-                imageHeight = math.Round(imageHeight)
-
-                ax.theme:DrawGlassButton(0, 0, width, imageHeight - 8, {
-                    material = banner
-                })
-
-                local inertia = factionButton:GetInertia()
-                local boxHeightStatic = (height * 0.2)
-                boxHeightStatic = math.Round(boxHeightStatic)
-
-                local boxHeight = boxHeightStatic + boxHeightStatic * inertia
-                boxHeight = math.Round(boxHeight)
-
-                ax.theme:DrawGlassPanel(0, height - boxHeight, width, boxHeight, {
-                    radius = 12,
-                    blur = 3,
-                    flags = ax.render.SHAPE_IOS,
-                    fill = glass.panel,
-                    border = glass.panelBorder
-                })
-
-                local hovered = factionButton:IsHovered()
-                local textColor = hovered and glass.textHover or glass.text
-                local font = "ax.huge"
-                if ( v.Font ) then
-                    font = v.Font
-                elseif ( name:len() > 22 ) then
-                    font = "ax.large"
-                end
-
-                if ( hovered ) then
-                    font = font .. ".bold"
-                end
-
-                draw.SimpleText(name, font, ax.util:ScreenScale(8), height - boxHeight + boxHeightStatic / 2, textColor, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
-
-                local textHeight = ax.util:GetTextHeight("ax.regular.italic") / 1.5
-                local descColor = ColorAlpha(textColor, 255 * inertia)
-                for d = 1, #descriptionWrapped do
-                    draw.SimpleText(descriptionWrapped[d], "ax.regular.italic", ax.util:ScreenScale(8), height - boxHeight + boxHeightStatic + (d - 1) * textHeight, descColor, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
-                end
-            end
-
-            factionList:AddPanel(factionButton)
+            rail:AddPanel(factionButton)
         end
     end,
     changed = function(character, value, previousValue, isNetworked, recipients)
