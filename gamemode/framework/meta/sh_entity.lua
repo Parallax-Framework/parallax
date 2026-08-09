@@ -16,11 +16,20 @@ function entity:IsChair()
     return MODEL_CHAIRS[model]
 end
 
---- Returns true if the entity's model class contains the substring "female".
--- The model class is retrieved via `ax.animations:GetModelClass(model)`. If the model class is not a valid non-empty string, the function returns false. Otherwise, it performs a case-insensitive substring search for "female" within the model class name.
+--- Returns true when this entity is female. A player carrying a character uses the gender chosen at creation, which is the character's identity and so has to outlive any model change -- a faction whose roster is masked or uniformed may put every member on the same body. Everything else falls back to the model's animation class containing "female".
 -- @realm shared
--- @return boolean True if the model class contains "female", false otherwise.
+-- @return boolean True if the entity is female, false otherwise.
 function entity:IsFemale()
+    if ( ax.util:IsValidPlayer(self) ) then
+        local character = self:GetCharacter()
+        if ( istable(character) and isfunction(character.GetGender) ) then
+            local gender = character:GetGender()
+            if ( gender == "male" or gender == "female" ) then
+                return gender == "female"
+            end
+        end
+    end
+
     local modelClass = ax.animations:GetModelClass(self:GetModel())
     if ( !isstring(modelClass) or modelClass == "" ) then return false end
 
