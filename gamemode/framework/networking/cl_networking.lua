@@ -15,7 +15,10 @@ function GM:OnClientCached()
 
     clientTable.axReady = true
 
-    vgui.Create("ax.main")
+    -- Deferred behind the boot curtain: this fires as soon as the local player entity exists, which is in the middle of the join freeze and before the character list has arrived.
+    ax.boot:WhenReady(function()
+        vgui.Create("ax.main")
+    end)
 
     if ( istable(clientTable.axEnsureCallbacks) ) then
         for i = 1, #clientTable.axEnsureCallbacks do
