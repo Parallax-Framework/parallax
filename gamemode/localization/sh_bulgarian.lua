@@ -9,6 +9,9 @@ ax.localization:Register("bg", {
     ["back"] = "Назад",
     ["next"] = "Напред",
     ["unknown"] = "Неизвестно",
+    ["gender"] = "Пол",
+    ["gender.male"] = "Мъж",
+    ["gender.female"] = "Жена",
 
     -- Main Menu Translations
     ["mainmenu.category.00_faction"] = "Фракции",

@@ -9,6 +9,9 @@ ax.localization:Register("es", {
     ["back"] = "Atrás",
     ["next"] = "Siguiente",
     ["unknown"] = "Desconocido",
+    ["gender"] = "Género",
+    ["gender.male"] = "Hombre",
+    ["gender.female"] = "Mujer",
 
     -- Main Menu Translations
     ["mainmenu.category.00_faction"] = "Facciones",

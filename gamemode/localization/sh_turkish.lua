@@ -9,6 +9,9 @@ ax.localization:Register("tr", {
     ["back"] = "Geri",
     ["next"] = "İleri",
     ["unknown"] = "Bilinmeyen",
+    ["gender"] = "Cinsiyet",
+    ["gender.male"] = "Erkek",
+    ["gender.female"] = "Kadın",
 
     -- Main Menu Translations
     ["mainmenu.category.00_faction"] = "Fraksiyonlar",

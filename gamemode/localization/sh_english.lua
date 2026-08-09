@@ -12,6 +12,9 @@ ax.localization:Register("en", {
 
     ["skin"] = "Skin",
     ["model"] = "Model",
+    ["gender"] = "Gender",
+    ["gender.male"] = "Male",
+    ["gender.female"] = "Female",
     ["name"] = "Name",
     ["description"] = "Description",
 

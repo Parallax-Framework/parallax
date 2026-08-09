@@ -9,6 +9,9 @@ ax.localization:Register("de", {
     ["back"] = "Zurück",
     ["next"] = "Weiter",
     ["unknown"] = "Unbekannt",
+    ["gender"] = "Geschlecht",
+    ["gender.male"] = "Männlich",
+    ["gender.female"] = "Weiblich",
 
     -- Main Menu Translations
     ["mainmenu.category.00_faction"] = "Fraktionen",
