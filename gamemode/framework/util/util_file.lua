@@ -126,18 +126,19 @@ function ax.util:Include(path, realm)
     end
 end
 
---- Recursively includes all `.lua` files found under a directory.
--- On the first call (not from recursion), the calling file's directory is detected via `debug.getinfo` and prepended to `directory` to resolve relative paths correctly. Subsequent recursive calls pass `fromLua = true` to skip that detection step.
--- Each `.lua` file is passed to `Include`, which handles realm detection and `AddCSLuaFile`/`include` routing. Subdirectories are processed depth-first.
--- Files and directories listed in `toSkip` (as keys, e.g. `{ ["boot.lua"] = true }`) are silently skipped. The optional `timeFilter` (in seconds) skips files that have not been modified within that time window — useful for selective hot-reload workflows.
--- @realm shared
--- @param directory string Path to the directory to scan, relative to the LUA mount or the calling file's directory.
--- @param fromLua boolean|nil Internal recursion flag. Pass nil or false on the first call; true is set automatically during recursion.
--- @param toSkip table|nil Table of filenames/directory names to skip, keyed by name (e.g. `{ ["ignore_me.lua"] = true }`).
--- @param timeFilter number|nil When provided, files modified more than this many seconds ago are skipped.
--- @return boolean True after the directory has been processed, false on invalid input.
--- @usage ax.util:IncludeDirectory("framework/libraries/")
--- ax.util:IncludeDirectory("modules/", nil, { ["old_module.lua"] = true })
+--- Recursively includes all `.lua` files found under a directory, treating a directory that does not exist as an empty one so callers can point at a folder before it has any files in it.
+---
+--- On the first call (not from recursion), the calling file's directory is detected via `debug.getinfo` and prepended to `directory` to resolve relative paths correctly. Subsequent recursive calls pass `fromLua = true` to skip that detection step.
+---
+--- Each `.lua` file is passed to `Include`, which handles realm detection and `AddCSLuaFile`/`include` routing. Subdirectories are processed depth-first.
+---
+--- Files and directories listed in `toSkip` (as keys, e.g. `{ ["boot.lua"] = true }`) are silently skipped. The optional `timeFilter` (in seconds) skips files that have not been modified within that time window — useful for selective hot-reload workflows.
+---@realm shared
+---@param directory string Path to the directory to scan, relative to the LUA mount or the calling file's directory.
+---@param fromLua? boolean Internal recursion flag. Pass nil or false on the first call; true is set automatically during recursion.
+---@param toSkip? table Table of filenames/directory names to skip, keyed by name (e.g. `{ ["ignore_me.lua"] = true }`).
+---@param timeFilter? number When provided, files modified more than this many seconds ago are skipped.
+---@return boolean processed True after the directory has been processed (including when it was missing or empty), false on invalid input.
 function ax.util:IncludeDirectory(directory, fromLua, toSkip, timeFilter)
     if ( !isstring(directory) or directory == "" ) then
         ax.util:PrintError("IncludeDirectory: Invalid directory parameter provided")
@@ -165,8 +166,10 @@ function ax.util:IncludeDirectory(directory, fromLua, toSkip, timeFilter)
         directory = directory .. "/"
     end
 
-    -- Get all files in the directory
+    -- Get all files in the directory, tolerating a directory that does not exist yet
     local files, directories = file.Find(directory .. "*", "LUA")
+    files = files or {}
+    directories = directories or {}
 
     -- Include all files found in the directory
     for i = 1, #files do
