@@ -483,7 +483,7 @@ ax.character:RegisterVar("description", {
                 local hint = container:Add("ax.text")
                 hint:SetFont("ax.small.italic")
                 hint:SetText("• " .. ax.localization:GetPhrase("mainmenu.category." .. this.category .. ".hint_" .. this.field .. "_" .. i), true)
-                hint:SetTextColor(glass.textMuted)
+                hint:SetTextColor(ax.color.textMuted)
                 hint:SetZPos(hintZPos + i * 0.1)
                 hint:Dock(TOP)
             end
