@@ -387,7 +387,7 @@ ax.character:RegisterVar("name", {
             -- Re-dock the entry after hints
             entry:SetZPos(this.sortOrder + 5)
             entry:Dock(TOP)
-            entry:DockMargin(0, ax.util:ScreenScaleH(8), 0, ax.util:ScreenScaleH(16))
+            entry:DockMargin(0, ax.util:ScreenScale(6), 0, ax.util:ScreenScale(12))
         end
     end
 })
