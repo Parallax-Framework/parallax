@@ -237,8 +237,8 @@ ax.net:Hook("character.delete", function(id)
 
     ax.character.instances[ id ] = nil
 
-    if ( IsValid( ax.gui.main ) and IsValid( ax.gui.main.load ) ) then
-        ax.gui.main.load:PopulateCharacterList()
+    if ( IsValid(ax.gui.main) ) then
+        ax.gui.main:RefreshCharacters()
     end
 end)
 
