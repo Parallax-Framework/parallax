@@ -200,6 +200,18 @@ function GM:PostRenderCurvy()
     end
 end
 
+-- Runs after every `hook.Add` handler for this event, which puts it after the curvy module's blit and above all VGUI, so it is the correct place for anything that must cover the entire screen. Nil-guarded because framework/hooks is included before framework/interface.
+function GM:PostRenderVGUI()
+    if ( ax.fade ) then
+        ax.fade:Render()
+    end
+
+    -- After the black, so the boot wordmark sits on top of it rather than under it.
+    if ( ax.boot ) then
+        ax.boot:Render()
+    end
+end
+
 function GM:HUDDrawTargetID()
     return false
 end
@@ -304,11 +316,16 @@ function GM:HUDPaintCurvy()
     end
 end
 
+-- `ax.elements` is part of the interface rewrite and does not exist yet; both call sites run every frame, so they are guarded rather than removed.
 function GM:HUDPaint()
+    if ( !ax.elements ) then return end
+
     ax.elements:PaintHUD()
 end
 
 function GM:GetEntityDisplayText(entity)
+    if ( !ax.elements ) then return end
+
     return ax.elements:GetEntityDisplayText(entity)
 end
 
