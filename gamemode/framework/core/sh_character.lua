@@ -71,7 +71,26 @@ ax.character:RegisterVar("faction", {
             return aSort < bSort
         end)
 
-        local buttonWidth = ax.util:ScreenScale(256)
+        -- This step holds one block of content, so it sits in the middle of the step rather than pinned under the heading.
+        if ( isfunction(container.SetCenterVertically) ) then
+            container:SetCenterVertically(true)
+        end
+
+        -- A horizontal rail of banner cards rather than a list: the faction banners are the point of this step, so they get the space and the type sits on a plate over them.
+        -- Width is derived from the height at 16:9 rather than set independently, so retuning the height keeps the banners at their native aspect instead of quietly stretching them.
+        local cardHeight = ax.util:ScreenScale(94)
+        local cardWidth = cardHeight * (16 / 9)
+        local cardGap = ax.util:ScreenScale(3)
+
+        local rail = container:Add("ax.scroller.horizontal")
+        rail:SetZPos(this.sortOrder)
+        rail:SetTall(cardHeight)
+        rail:Dock(TOP)
+        rail:DockMargin(0, ax.ui:Space("md"), ax.ui:Space("md"), ax.ui:Space("lg"))
+
+        -- Negative overlap is how DHorizontalScroller spaces its children apart.
+        rail:SetOverlap(-cardGap)
+
         for i = 1, #factions do
             local v = factions[i]
             local can, reason = ax.faction:CanBecome(v.index, ax.client)
