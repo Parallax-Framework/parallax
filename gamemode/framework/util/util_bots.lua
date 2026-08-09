@@ -82,7 +82,8 @@ function ax.util:GetRandomFactionModel(faction)
         return nil
     end
 
-    local models = faction:GetModels()
+    -- Flattened so a faction declaring a gendered `{ male, female }` pool still yields a pick; read directly it has no array part and would look empty.
+    local models = ax.faction:FlattenModels(faction)
     if ( !models or #models == 0 ) then
         return nil
     end
