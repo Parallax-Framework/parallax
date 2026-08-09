@@ -671,18 +671,13 @@ ax.character:RegisterVar("model", {
                 hook.Run("OnPayloadChanged", payload)
             end
 
-            modelButton.PaintOver = function(_, width, height)
-                if ( payload.model == model ) then
-                    local glass = ax.theme:GetGlass()
-                    local metrics = ax.theme:GetMetrics()
+            modelButton.PaintOver = function(this2, width, height)
+                local bSelected = payload.model == model
 
-                    -- Glass highlight border for selected model
-                    local borderColor = glass.highlight or Color(90, 140, 200, 120)
-                    ax.render.DrawOutlined(metrics.roundness * 0.5, 0, 0, width, height, borderColor, 2)
+                ax.draw:Hairline(0, 0, width, height, bSelected and ax.color.lineFocus or (this2:IsHovered() and ax.color.lineStrong or ax.color.line))
 
-                    -- Subtle fill overlay
-                    local fillColor = ColorAlpha(glass.highlight, (glass.highlight.a or 120) * 0.4)
-                    ax.render.Draw(metrics.roundness * 0.5, 0, 0, width, height, fillColor)
+                if ( bSelected ) then
+                    ax.draw:Edge(0, 0, width, height, "bottom", ax.color.accent)
                 end
             end
         end
