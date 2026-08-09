@@ -215,4 +215,4 @@ function ax.chatbox:OverrideChatAddText()
 end
 
 -- Apply the override initially
-ax.chatbox:OverrideChatAddText()
+-- ax.chatbox:OverrideChatAddText()
