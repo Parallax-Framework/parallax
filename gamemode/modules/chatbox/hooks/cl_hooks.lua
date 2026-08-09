@@ -42,19 +42,19 @@ function MODULE:OnOptionChanged(optionName, oldValue, newValue)
     end
 end
 
-function MODULE:PlayerBindPress(client, bind, pressed)
-    bind = utf8.lower(bind)
-
-    if ( ax.util:FindString(bind, "messagemode") and pressed ) then
-        if ( !IsValid(ax.gui.chatbox) ) then
-            ax.gui.chatbox = vgui.Create("ax.chatbox")
-        end
-
-        ax.gui.chatbox:SetVisible(true)
-
-        return true
-    end
-end
+-- function MODULE:PlayerBindPress(client, bind, pressed)
+--     bind = utf8.lower(bind)
+--
+--     if ( ax.util:FindString(bind, "messagemode") and pressed ) then
+--         if ( !IsValid(ax.gui.chatbox) ) then
+--             ax.gui.chatbox = vgui.Create("ax.chatbox")
+--         end
+--
+--         ax.gui.chatbox:SetVisible(true)
+--
+--         return true
+--     end
+-- end
 
 function MODULE:StartChat()
 end
