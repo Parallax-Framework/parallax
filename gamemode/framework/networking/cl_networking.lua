@@ -28,7 +28,7 @@ function GM:OnClientCached()
             end
         end
 
-        t.axEnsureCallbacks = nil
+        clientTable.axEnsureCallbacks = nil
     end
 end
 
