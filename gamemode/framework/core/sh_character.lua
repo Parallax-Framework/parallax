@@ -373,14 +373,13 @@ ax.character:RegisterVar("name", {
             -- Clear docking to insert hints before re-docking
             entry:Dock(NODOCK)
 
-            local glass = ax.theme:GetGlass()
             local hintZPos = this.sortOrder + 0.5
             for i = 1, #this.hints do
                 local hintText = this.hints[i]
                 local hint = container:Add("ax.text")
                 hint:SetFont("ax.small.italic")
                 hint:SetText("• " .. ax.localization:GetPhrase("mainmenu.category." .. this.category .. ".hint_" .. this.field .. "_" .. i), true)
-                hint:SetTextColor(glass.textMuted)
+                hint:SetTextColor(ax.color.textMuted)
                 hint:SetZPos(hintZPos + i * 0.1)
                 hint:Dock(TOP)
             end
