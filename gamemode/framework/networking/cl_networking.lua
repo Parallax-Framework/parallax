@@ -121,9 +121,12 @@ ax.net:Hook("character.load", function(characterID)
         ax.gui.main:Remove()
     end
 
-    client:ScreenFade(SCREENFADE.IN, color_black, 4, 1)
+    -- `ax.fade` owns the black end to end; an engine `ScreenFade` here would composite with it and the two timelines could not be kept in sync. The select screen raises the black before it sends, so this snap is usually a no-op and only bites when the load was forced from the server.
+    ax.fade:Set(255)
 
     hook.Run("PlayerLoadedCharacter", client, character, clientData.axCharacterPrevious)
+
+    ax.fade:To(0, AX_FADE_REVEAL_TIME, AX_FADE_HOLD_TIME)
 end)
 
 ax.net:Hook("character.sync", function(client, character)
