@@ -15,7 +15,7 @@ The original paths are mirrored so a moved file maps back one-to-one:
 ## What moved
 
 - **`framework/interface/`** — all 31 panel files (main menu, character create/load, tab menu, inventory, store/settings widgets, radial menu, scoreboard, help pages, tooltips, transitions, buttons, comboboxes, scrollers, text entries, frames).
-- **`framework/libraries/`** — `cl_skin.lua` (the derma `SKIN` table), `cl_theme.lua` (`ax.theme` glass palette + drawing helpers), `cl_font.lua` (`ax.font`), `cl_markup.lua` (`ax.markup`), `cl_motion.lua` (`ax.motion`), `cl_elements.lua` (`ax.elements` HUD registry).
+- **`framework/libraries/`** — `cl_skin.lua` (the derma `SKIN` table), `cl_theme.lua` (`ax.theme` glass palette + drawing helpers), `cl_font.lua` (`ax.font`), `cl_markup.lua` (`ax.markup`), `cl_elements.lua` (`ax.elements` HUD registry).
 - **`modules/*/interface/`** — panels for the `admin`, `chatbox`, `containers`, `doors` and `zones` modules.
 
 ## What deliberately stayed put
@@ -25,6 +25,7 @@ These are drawing/input substrate rather than UI design, and the new interface i
 - `framework/libraries/thirdparty/cl_rndx.lua` — `ax.render` (rounded boxes, blur, materials), used by non-UI code too.
 - `framework/libraries/thirdparty/` — `cl_imgui`, `cl_mmask`, `cl_outline`, `cl_gfonts`, `cl_scrcache`, `cl_viewstack`.
 - `framework/libraries/cl_bind.lua` — `ax.bind` key binding registry.
+- `framework/libraries/cl_motion.lua` — `ax.motion`. Moved here in the first pass and since **restored** to the live tree: it eases arbitrary panel fields and depends only on `ax.ease` and the `performance.animations` option, so it is animation substrate rather than visual style. The new interface drives its hover and page transitions through it.
 - `framework/libraries/sh_notification.lua` — `ax.notification` (draws directly, no panels).
 - `framework/hooks/cl_hooks.lua` — HUD/menu hook bodies, view modifiers, `ax.client` caching.
 - `modules/cl_ammo_counter.lua`, `modules/cl_curvy.lua`, `modules/cl_intro.lua`.
