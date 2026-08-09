@@ -476,7 +476,6 @@ ax.character:RegisterVar("description", {
             -- Clear docking to insert hints before re-docking
             entry:Dock(NODOCK)
 
-            local glass = ax.theme:GetGlass()
             local hintZPos = this.sortOrder + 0.5
             for i = 1, #this.hints do
                 local hintText = this.hints[i]
