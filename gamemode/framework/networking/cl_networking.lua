@@ -89,13 +89,8 @@ ax.net:Hook("character.create", function(characterID, characters)
         if ( IsValid(main) ) then
             main:Remove()
         end
-    else
-        if ( IsValid(main) ) then
-            main.create:SlideDown(nil, function()
-                main.create:Reset()
-            end)
-            main.splash:SlideToFront()
-        end
+    elseif ( IsValid(main) ) then
+        main:OnCharacterCreated(character)
     end
 
     hook.Run("PlayerCreatedCharacter", client, character)
