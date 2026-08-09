@@ -64,6 +64,131 @@ FACTION_DEFAULT_MODELS = {
     "models/humans/group02/male_09.mdl"
 }
 
+--- The genders a character may be created as, in the order they are offered.
+AX_GENDERS = { "male", "female" }
+
+--- Returns true when a faction declares its model pool split by gender, as `models = { male = {...}, female = {...} }` rather than as one flat array.
+---@realm shared
+---@param faction table|nil A registered faction table.
+---@return boolean bGendered Whether the pool is split per gender.
+function ax.faction:HasGenderedModels(faction)
+    if ( !istable(faction) ) then return false end
+
+    local models = isfunction(faction.GetModels) and faction:GetModels() or faction.models
+    if ( !istable(models) ) then return false end
+
+    return istable(models.male) or istable(models.female)
+end
+
+--- Collapses a faction's model pool into a single ordered array, accepting either the flat form or the gendered `{ male = {...}, female = {...} }` form. Use this for every "is this model in the pool at all" question -- validation, precaching, random picks -- so a gendered pool never reads as empty.
+---@realm shared
+---@param faction table|nil A registered faction table.
+---@return table models Flat array of model entries; empty when the faction has no pool.
+function ax.faction:FlattenModels(faction)
+    if ( !istable(faction) ) then return {} end
+
+    local models = isfunction(faction.GetModels) and faction:GetModels() or faction.models
+    if ( !istable(models) ) then return {} end
+
+    if ( !self:HasGenderedModels(faction) ) then
+        local flat = {}
+        for i = 1, #models do
+            flat[i] = models[i]
+        end
+
+        return flat
+    end
+
+    local flat = {}
+    for i = 1, #AX_GENDERS do
+        local list = models[ AX_GENDERS[i] ]
+        if ( !istable(list) ) then continue end
+
+        for j = 1, #list do
+            flat[#flat + 1] = list[j]
+        end
+    end
+
+    return flat
+end
+
+--- Resolves a model entry, which may be a plain path or a `{ path, skin }` pair, to its path.
+---@realm shared
+---@param entry string|table A model pool entry.
+---@return string|nil path The model path, or nil when the entry is malformed.
+function ax.faction:GetModelPath(entry)
+    if ( isstring(entry) ) then return entry end
+    if ( istable(entry) and isstring(entry[1]) ) then return entry[1] end
+
+    return nil
+end
+
+--- Returns true when a model belongs to the female half of a faction's pool. A faction that declares gendered lists is authoritative; a flat pool falls back to matching "female" in the path, which is how the stock Half-Life 2 citizen models encode it, so the common case needs no schema changes at all.
+---@realm shared
+---@param model string Model path to test.
+---@param faction? table Faction whose declared lists take precedence.
+---@return boolean bFemale Whether the model is female.
+function ax.faction:IsFemaleModel(model, faction)
+    if ( !isstring(model) or model == "" ) then return false end
+
+    if ( self:HasGenderedModels(faction) ) then
+        local models = isfunction(faction.GetModels) and faction:GetModels() or faction.models
+
+        for i = 1, #AX_GENDERS do
+            local gender = AX_GENDERS[i]
+            local list = models[gender]
+            if ( !istable(list) ) then continue end
+
+            for j = 1, #list do
+                if ( self:GetModelPath(list[j]) == model ) then
+                    return gender == "female"
+                end
+            end
+        end
+    end
+
+    -- Checked before "male" because "female" contains it as a substring.
+    return string.find(string.lower(model), "female", 1, true) != nil
+end
+
+--- Returns the models a faction offers for one gender. A gendered pool returns that gender's list; a flat pool is filtered by `IsFemaleModel`. When the filter leaves nothing -- a masked or uniformed roster that ships one body for everyone -- the whole pool is returned, so gender stays a roleplay attribute rather than blocking creation.
+---@realm shared
+---@param faction table|nil A registered faction table.
+---@param gender? string `"male"` or `"female"`. Defaults to `"male"`.
+---@return table models Ordered array of model entries.
+function ax.faction:GetModelsForGender(faction, gender)
+    if ( !istable(faction) ) then return {} end
+
+    gender = (gender == "female") and "female" or "male"
+
+    if ( self:HasGenderedModels(faction) ) then
+        local models = isfunction(faction.GetModels) and faction:GetModels() or faction.models
+        local list = models[gender]
+
+        if ( istable(list) and list[1] != nil ) then
+            return list
+        end
+
+        return self:FlattenModels(faction)
+    end
+
+    local flat = self:FlattenModels(faction)
+    local filtered = {}
+
+    for i = 1, #flat do
+        local path = self:GetModelPath(flat[i])
+        if ( path and self:IsFemaleModel(path, faction) == (gender == "female") ) then
+            filtered[#filtered + 1] = flat[i]
+        end
+    end
+
+    if ( filtered[1] == nil ) then
+        return flat
+    end
+
+    return filtered
+end
+
 --- Include and load faction files from a directory.
 -- Recursively searches for faction .lua files and loads them into the faction system.
 -- Automatically handles shared/client/server file prefixes and sets up team data.
