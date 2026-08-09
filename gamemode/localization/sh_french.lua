@@ -220,18 +220,6 @@ ax.localization:Register("fr", {
 
     ---- Display
     ["option.interface.scale"] = "Échelle de l'interface",
-    ["option.interface.theme"] = "Thème de l'interface",
-    ["option.interface.theme.help"] = "Choisissez le thème de couleurs pour l'interface.",
-    ["option.interface.glass.roundness"] = "Arrondi des éléments en verre",
-    ["option.interface.glass.roundness.help"] = "Ajustez le rayon des coins des éléments d'interface en verre.",
-    ["option.interface.glass.blur"] = "Intensité du flou en verre",
-    ["option.interface.glass.blur.help"] = "Contrôlez l'intensité du flou derrière les éléments d'interface en verre.",
-    ["option.interface.glass.opacity"] = "Opacité du verre",
-    ["option.interface.glass.opacity.help"] = "Ajustez l'opacité des panneaux d'interface en verre.",
-    ["option.interface.glass.borderOpacity"] = "Opacité de la bordure en verre",
-    ["option.interface.glass.borderOpacity.help"] = "Contrôlez la visibilité des bordures d'interface en verre.",
-    ["option.interface.glass.gradientOpacity"] = "Opacité du dégradé en verre",
-    ["option.interface.glass.gradientOpacity.help"] = "Ajustez l'intensité des superpositions de dégradé sur les panneaux en verre.",
     ["option.performance.animations"] = "Activer les animations d'interface",
     ["option.performance.animations.help"] = "Activer/désactiver les interpolations et transitions d'animation de l'interface.",
     ["option.performance.blur"] = "Activer le flou d'interface",
@@ -240,15 +228,6 @@ ax.localization:Register("fr", {
     ["option.performance.vignette.trace.help"] = "Contrôle la trace près des murs utilisée pour ajuster l'intensité du vignettage.",
     ["option.performance.voice.indicators"] = "Activer les indicateurs vocaux",
     ["option.performance.voice.indicators.help"] = "Activer/désactiver les indicateurs HUD et vocaux dans le monde pour les joueurs.",
-
-    -- Theme Names
-    ["theme.dark"] = "Sombre",
-    ["theme.light"] = "Clair",
-    ["theme.blue"] = "Bleu",
-    ["theme.purple"] = "Violet",
-    ["theme.green"] = "Vert",
-    ["theme.red"] = "Rouge",
-    ["theme.orange"] = "Orange",
 
     ---- Fonts
     ["option.fontScaleGeneral"] = "Échelle de police générale",

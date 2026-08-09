@@ -193,18 +193,6 @@ ax.localization:Register("ru", {
 
     ---- Display
     ["option.interface.scale"] = "Размер Интерфейса",
-    ["option.interface.theme"] = "Тема интерфейса",
-    ["option.interface.theme.help"] = "Выберите цветовую тему для интерфейса.",
-    ["option.interface.glass.roundness"] = "Округлость стекла",
-    ["option.interface.glass.roundness.help"] = "Настройте радиус углов стеклянных элементов интерфейса.",
-    ["option.interface.glass.blur"] = "Интенсивность размытия стекла",
-    ["option.interface.glass.blur.help"] = "Управляйте силой размытия за стеклянными элементами интерфейса.",
-    ["option.interface.glass.opacity"] = "Непрозрачность стекла",
-    ["option.interface.glass.opacity.help"] = "Настройте непрозрачность стеклянных панелей интерфейса.",
-    ["option.interface.glass.borderOpacity"] = "Непрозрачность границ стекла",
-    ["option.interface.glass.borderOpacity.help"] = "Управляйте видимостью границ стеклянного интерфейса.",
-    ["option.interface.glass.gradientOpacity"] = "Непрозрачность градиента стекла",
-    ["option.interface.glass.gradientOpacity.help"] = "Настройте силу градиентных наложений на стеклянных панелях.",
     ["option.performance.animations"] = "Включить анимацию интерфейса",
     ["option.performance.animations.help"] = "Включает или отключает анимации интерполяции и переходов интерфейса.",
     ["option.performance.blur"] = "Включить размытие интерфейса",
@@ -213,15 +201,6 @@ ax.localization:Register("ru", {
     ["option.performance.vignette.trace.help"] = "Управляет трассировкой рядом со стенами для изменения интенсивности виньетки.",
     ["option.performance.voice.indicators"] = "Включить голосовые индикаторы",
     ["option.performance.voice.indicators.help"] = "Включает или отключает HUD и мировые индикаторы голосовой активности игроков.",
-
-    -- Theme Names
-    ["theme.dark"] = "Тёмная",
-    ["theme.light"] = "Светлая",
-    ["theme.blue"] = "Синяя",
-    ["theme.purple"] = "Фиолетовая",
-    ["theme.green"] = "Зелёная",
-    ["theme.red"] = "Красная",
-    ["theme.orange"] = "Оранжевая",
 
     ---- Fonts
     ["option.fontScaleGeneral"] = "Размер основного шрифта",

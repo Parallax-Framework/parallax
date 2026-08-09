@@ -192,18 +192,6 @@ ax.localization:Register("tr", {
 
     ---- Display
     ["option.interface.scale"] = "Arayüz Ölçeği",
-    ["option.interface.theme"] = "Arayüz Teması",
-    ["option.interface.theme.help"] = "Arayüz için renk temasını seçin.",
-    ["option.interface.glass.roundness"] = "Cam Yuvarlaklığı",
-    ["option.interface.glass.roundness.help"] = "Cam arayüz öğelerinin köşe yarıçapını ayarlayın.",
-    ["option.interface.glass.blur"] = "Cam Bulanıklık Yoğunluğu",
-    ["option.interface.glass.blur.help"] = "Cam arayüz öğelerinin arkasındaki bulanıklık gücünü kontrol edin.",
-    ["option.interface.glass.opacity"] = "Cam Opaklığı",
-    ["option.interface.glass.opacity.help"] = "Cam arayüz panellerinin opaklığını ayarlayın.",
-    ["option.interface.glass.borderOpacity"] = "Cam Kenarlık Opaklığı",
-    ["option.interface.glass.borderOpacity.help"] = "Cam arayüz kenarlıklarının görünürlüğünü kontrol edin.",
-    ["option.interface.glass.gradientOpacity"] = "Cam Gradyan Opaklığı",
-    ["option.interface.glass.gradientOpacity.help"] = "Cam panellerdeki gradyan katmanlarının gücünü ayarlayın.",
     ["option.performance.animations"] = "Arayüz Animasyonlarını Etkinleştir",
     ["option.performance.animations.help"] = "Arayüz interpolasyon ve geçiş animasyonlarını açıp kapatır.",
     ["option.performance.blur"] = "Arayüz Bulanıklığını Etkinleştir",
@@ -212,15 +200,6 @@ ax.localization:Register("tr", {
     ["option.performance.vignette.trace.help"] = "Vinyet yoğunluğunu ayarlamak için kullanılan yakın duvar izini kontrol eder.",
     ["option.performance.voice.indicators"] = "Ses Göstergelerini Etkinleştir",
     ["option.performance.voice.indicators.help"] = "Oyuncular için HUD ve dünya ses etkinliği göstergelerini açıp kapatır.",
-
-    -- Theme Names
-    ["theme.dark"] = "Koyu",
-    ["theme.light"] = "Açık",
-    ["theme.blue"] = "Mavi",
-    ["theme.purple"] = "Mor",
-    ["theme.green"] = "Yeşil",
-    ["theme.red"] = "Kırmızı",
-    ["theme.orange"] = "Turuncu",
 
     ---- Fonts
     ["option.fontScaleGeneral"] = "Genel Yazı Tipi Ölçeği",

@@ -191,18 +191,6 @@ ax.localization:Register("es", {
 
     ---- Display
     ["option.interface.scale"] = "Escala de la Interfaz",
-    ["option.interface.theme"] = "Tema de la Interfaz",
-    ["option.interface.theme.help"] = "Elige el tema de color para la interfaz.",
-    ["option.interface.glass.roundness"] = "Redondez del Cristal",
-    ["option.interface.glass.roundness.help"] = "Ajusta el radio de las esquinas de los elementos de la interfaz de cristal.",
-    ["option.interface.glass.blur"] = "Intensidad del Desenfoque del Cristal",
-    ["option.interface.glass.blur.help"] = "Controla la intensidad del desenfoque detrás de los elementos de la interfaz de cristal.",
-    ["option.interface.glass.opacity"] = "Opacidad del Cristal",
-    ["option.interface.glass.opacity.help"] = "Ajusta la opacidad de los paneles de la interfaz de cristal.",
-    ["option.interface.glass.borderOpacity"] = "Opacidad del Borde del Cristal",
-    ["option.interface.glass.borderOpacity.help"] = "Controla la visibilidad de los bordes de los paneles de cristal.",
-    ["option.interface.glass.gradientOpacity"] = "Opacidad del Gradiente del Cristal",
-    ["option.interface.glass.gradientOpacity.help"] = "Ajusta la intensidad de las superposiciones de gradiente en los paneles de cristal.",
     ["option.performance.animations"] = "Habilitar Animaciones de la Interfaz",
     ["option.performance.animations.help"] = "Activa o desactiva las animaciones de interpolación y transición de la interfaz.",
     ["option.performance.blur"] = "Habilitar Desenfoque de la Interfaz",
@@ -211,15 +199,6 @@ ax.localization:Register("es", {
     ["option.performance.vignette.trace.help"] = "Controla la traza de cercanía a paredes usada para ajustar la intensidad de la viñeta.",
     ["option.performance.voice.indicators"] = "Habilitar Indicadores de Voz",
     ["option.performance.voice.indicators.help"] = "Activa o desactiva los indicadores de actividad de voz en HUD y mundo para jugadores.",
-
-    -- Theme Names
-    ["theme.dark"] = "Oscuro",
-    ["theme.light"] = "Claro",
-    ["theme.blue"] = "Azul",
-    ["theme.purple"] = "Morado",
-    ["theme.green"] = "Verde",
-    ["theme.red"] = "Rojo",
-    ["theme.orange"] = "Naranja",
 
     ---- Fonts
     ["option.fontScaleGeneral"] = "Escala de Fuente General",

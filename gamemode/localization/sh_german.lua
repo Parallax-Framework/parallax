@@ -192,18 +192,6 @@ ax.localization:Register("de", {
 
     ---- Display
     ["option.interface.scale"] = "UI-Skalierung",
-    ["option.interface.theme"] = "UI-Thema",
-    ["option.interface.theme.help"] = "Wähle das Farbthema fuer die Oberfläche.",
-    ["option.interface.glass.roundness"] = "Glas-Rundung",
-    ["option.interface.glass.roundness.help"] = "Passe den Eckenradius von UI-Elementen im Glasstil an.",
-    ["option.interface.glass.blur"] = "Glas-Unschärfeintensität",
-    ["option.interface.glass.blur.help"] = "Steuert die Unschärfe hinter UI-Elementen im Glasstil.",
-    ["option.interface.glass.opacity"] = "Glas-Deckkraft",
-    ["option.interface.glass.opacity.help"] = "Passe die Deckkraft von UI-Panels im Glasstil an.",
-    ["option.interface.glass.borderOpacity"] = "Glas-Rand-Deckkraft",
-    ["option.interface.glass.borderOpacity.help"] = "Steuert die Sichtbarkeit der UI-Ränder im Glasstil.",
-    ["option.interface.glass.gradientOpacity"] = "Glas-Verlaufsdeckkraft",
-    ["option.interface.glass.gradientOpacity.help"] = "Passe die Stärke von Verlaufs-Overlays auf Glas-Panels an.",
     ["option.performance.animations"] = "Oberflächenanimationen aktivieren",
     ["option.performance.animations.help"] = "Schaltet Interpolations- und Übergangsanimationen der Oberfläche um.",
     ["option.performance.blur"] = "Oberflächen-Unschärfe aktivieren",
@@ -212,15 +200,6 @@ ax.localization:Register("de", {
     ["option.performance.vignette.trace.help"] = "Steuert den Nahwand-Trace zur Anpassung der Vignettenintensität.",
     ["option.performance.voice.indicators"] = "Sprachindikatoren aktivieren",
     ["option.performance.voice.indicators.help"] = "Schaltet HUD- und Welt-Sprachaktivitätsanzeigen für Spieler um.",
-
-    -- Theme Names
-    ["theme.dark"] = "Dunkel",
-    ["theme.light"] = "Hell",
-    ["theme.blue"] = "Blau",
-    ["theme.purple"] = "Lila",
-    ["theme.green"] = "Gruen",
-    ["theme.red"] = "Rot",
-    ["theme.orange"] = "Orange",
 
     ---- Fonts
     ["option.fontScaleGeneral"] = "Allgemeine Schriftskalierung",

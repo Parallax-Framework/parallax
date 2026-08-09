@@ -184,18 +184,6 @@ ax.localization:Register("bg", {
 
     ---- Display
     ["option.interface.scale"] = "Мащаб на Интерфейса",
-    ["option.interface.theme"] = "Тема на интерфейса",
-    ["option.interface.theme.help"] = "Изберете цветова тема за интерфейса.",
-    ["option.interface.glass.roundness"] = "Закръгленост на стъклото",
-    ["option.interface.glass.roundness.help"] = "Регулирайте радиуса на ъглите на стъклените елементи на интерфейса.",
-    ["option.interface.glass.blur"] = "Интензивност на замъгляването на стъклото",
-    ["option.interface.glass.blur.help"] = "Контролирайте силата на замъгляването зад стъклените елементи на интерфейса.",
-    ["option.interface.glass.opacity"] = "Непрозрачност на стъклото",
-    ["option.interface.glass.opacity.help"] = "Регулирайте непрозрачността на стъклените панели на интерфейса.",
-    ["option.interface.glass.borderOpacity"] = "Непрозрачност на границите на стъклото",
-    ["option.interface.glass.borderOpacity.help"] = "Контролирайте видимостта на границите на стъклените интерфейси.",
-    ["option.interface.glass.gradientOpacity"] = "Непрозрачност на градиента на стъклото",
-    ["option.interface.glass.gradientOpacity.help"] = "Регулирайте силата на градиентните наслагвания върху стъклените панели.",
     ["option.performance.animations"] = "Включи Анимации на Интерфейса",
     ["option.performance.animations.help"] = "Включва или изключва интерполационните и преходните анимации на интерфейса.",
     ["option.performance.blur"] = "Включи Замъгляване на Интерфейса",
@@ -204,15 +192,6 @@ ax.localization:Register("bg", {
     ["option.performance.vignette.trace.help"] = "Контролира трасировката близо до стени за промяна на интензитета на винетката.",
     ["option.performance.voice.indicators"] = "Включи Гласови Индикатори",
     ["option.performance.voice.indicators.help"] = "Включва или изключва HUD и световните индикатори за гласова активност на играчите.",
-
-    -- Theme Names
-    ["theme.dark"] = "Тъмна",
-    ["theme.light"] = "Светла",
-    ["theme.blue"] = "Синя",
-    ["theme.purple"] = "Лилава",
-    ["theme.green"] = "Зелена",
-    ["theme.red"] = "Червена",
-    ["theme.orange"] = "Оранжева",
 
     ---- Fonts
     ["option.fontScaleGeneral"] = "Общ Мащаб на Шрифта",
