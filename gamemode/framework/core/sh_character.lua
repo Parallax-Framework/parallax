@@ -100,18 +100,19 @@ ax.character:RegisterVar("faction", {
             end
 
             local name = (v.name and utf8.upper(v.name)) or "UNKNOWN FACTION"
-            local description = v.description or "UNKNOWN FACTION DESCRIPTION"
-            description = ax.util:CapTextWord(description, buttonWidth / 2) -- Unreliable, but it works for now
+            local description = v.description or ""
 
-            local descriptionWrapped = ax.util:GetWrappedText(description, "ax.regular.bold", buttonWidth - ax.util:ScreenScale(16))
+            local banner = v.image or hook.Run("GetFactionBanner", v.index) or "parallax/banners/unknown.png"
+            if ( isstring(banner) ) then
+                banner = ax.util:GetMaterial(banner)
+            end
 
-            local factionButton = factionList:Add("ax.button")
-            factionButton:Dock(LEFT)
-            factionButton:DockMargin(ax.util:ScreenScale(2), 0, ax.util:ScreenScale(2), 0)
-            factionButton:SetText("", true, true)
-            factionButton:SetWide(buttonWidth)
-            factionButton:SetBlur(3)
+            local factionButton = vgui.Create("ax.button", rail)
+            factionButton:SetWide(cardWidth)
+            factionButton:SetLabel("")
+            factionButton:SetAccent(false)
             factionButton.DoClick = function()
+                -- Every field downstream of the faction is faction-dependent, so switching faction restarts the payload rather than carrying stale choices forward.
                 table.Empty(payload or {})
                 payload.faction = v.index
 
