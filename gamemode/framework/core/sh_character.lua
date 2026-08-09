@@ -641,8 +641,11 @@ ax.character:RegisterVar("model", {
             return
         end
 
-        local size = math.min(container:GetWide() / 8, 128)
-        local models = ax.faction:Get(factionID):GetModels()
+        -- Derived from the screen rather than the container. The container is still settling when this first runs -- the wizard sets its preview column width in a later layout pass, which resizes everything to its right -- so a proportional size comes out smaller on the first populate than on every rebuild after it.
+        local size = ax.util:ScreenScale(46)
+
+        -- Only the models this faction offers for the chosen gender; a faction with no split, or none matching, falls back to its whole pool.
+        local models = ax.faction:GetModelsForGender(ax.faction:Get(factionID), payload.gender)
         for i = 1, #models do
             local v = models[i]
             local model = v
