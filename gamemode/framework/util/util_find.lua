@@ -178,6 +178,75 @@ function ax.util:FindPlayer(identifier)
     return nil
 end
 
+--- Finds every connected player matching an identifier, the plural counterpart to `FindPlayer` - use it when a partial name may legitimately match more than one player and the caller needs to disambiguate rather than silently take the first hit.
+-- An exact SteamID or SteamID64 can only ever identify one player, so those lookups return at most one entry; a name substring returns every match. A nil or empty identifier returns every player, which is what makes it usable as the "no filter" case of a search box. Duplicate matches are collapsed, so a table of identifiers naming the same player yields one entry.
+---@realm shared
+---@param identifier? number|string|Player|table An entity index, SteamID, SteamID64, name substring, a Player entity, a table of any of these, or nil for every player.
+---@return table players An array of matched players, empty when nothing matched.
+---@usage local matches = ax.util:FindPlayers("john")
+function ax.util:FindPlayers(identifier)
+    local results = {}
+    local seen = {}
+
+    local function Push(client)
+        if ( !self:IsValidPlayer(client) or seen[client] ) then return end
+
+        seen[client] = true
+        results[#results + 1] = client
+    end
+
+    if ( identifier == nil or identifier == "" ) then
+        for _, client in player.Iterator() do
+            Push(client)
+        end
+
+        return results
+    end
+
+    if ( self:IsValidPlayer(identifier) ) then
+        Push(identifier)
+        return results
+    end
+
+    if ( isnumber(identifier) ) then
+        Push(Entity(identifier))
+        return results
+    end
+
+    if ( istable(identifier) ) then
+        for i = 1, #identifier do
+            local matches = self:FindPlayers(identifier[i])
+            for j = 1, #matches do
+                Push(matches[j])
+            end
+        end
+
+        return results
+    end
+
+    if ( !isstring(identifier) ) then
+        return results
+    end
+
+    if ( ax.type:Sanitise(ax.type.steamid, identifier) ) then
+        Push(player.GetBySteamID(identifier))
+        return results
+    end
+
+    if ( ax.type:Sanitise(ax.type.steamid64, identifier) ) then
+        Push(player.GetBySteamID64(identifier))
+        return results
+    end
+
+    for _, client in player.Iterator() do
+        if ( self:FindString(client:Nick(), identifier, false) or self:FindString(client:SteamName(), identifier, false) or self:FindString(client:SteamID(), identifier, false) or self:FindString(client:SteamID64(), identifier, false) ) then
+            Push(client)
+        end
+    end
+
+    return results
+end
+
 -- Local helper to check if a character matches by name
 local function matchesByName(char, identifier)
     local name = char:GetName()

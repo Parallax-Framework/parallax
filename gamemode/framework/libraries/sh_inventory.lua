@@ -204,6 +204,23 @@ ax.inventory.instances[0] = setmetatable({
     end,
 }, ax.inventory.meta)
 
+--- Returns a live inventory instance by ID, the canonical read-side counterpart to `ax.inventory:Create` - ID `0` is the world (dropped items) and always resolves, temporary inventories use negative IDs, and an inventory that exists in the database but has not been restored yet resolves to nil.
+-- An inventory instance passed straight through is returned as-is, so callers holding either an ID or an instance can normalise with one call.
+---@realm shared
+---@param id number|table The inventory ID, or an inventory instance to pass through.
+---@return table|nil inventory The inventory instance, or nil when it is not loaded.
+---@usage local inventory = ax.inventory:Get(character:GetInventoryID())
+function ax.inventory:Get(id)
+    if ( istable(id) ) then
+        return getmetatable(id) == self.meta and id or nil
+    end
+
+    id = tonumber(id)
+    if ( id == nil ) then return nil end
+
+    return self.instances[id]
+end
+
 --- Returns the inventory type (and its instance data) new inventories are created with when
 -- `ax.inventory:Create`/`CreateTemporary` is called without an explicit `typeID` - e.g. a
 -- character's primary inventory (`vars.inventory`, created via `ax.inventory:Create({ owner =

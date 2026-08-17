@@ -41,6 +41,52 @@ function ax.character:Get(id)
     return ax.character.instances[id]
 end
 
+--- Builds a character instance from a table of variable values and registers it in `ax.character.instances`.
+-- Every registered variable is filled in: a key absent from `data` falls back to that variable's `default`, and `ax.type.data` variables are normalised into tables so a JSON string straight out of the database is usable immediately. This is the shared constructor behind `ax.character:Create` and `ax.character:Restore` - schemas should go through those rather than calling this directly, since neither the database row nor the player's character list is written here.
+---@realm shared
+---@param data table Variable values keyed by variable name (not by database column).
+---@param id number|string The character ID to register the instance under. Bot characters key off their owner's SteamID64 instead of a database ID, so strings are accepted.
+---@param client? Player The owning player, assigned to `character.player`. Leave nil for a character that is merely loaded, not active.
+---@param steamID? string SteamID64 used to seed the `steamID64` variable when `data` does not carry one.
+---@return table|nil character The registered character instance, or nil when `id` is missing.
+function ax.character:New(data, id, client, steamID)
+    if ( !isnumber(id) and ( !isstring(id) or id == "" ) ) then
+        ax.util:PrintError("Invalid character ID provided to ax.character:New() (" .. tostring(id) .. ")")
+        return nil
+    end
+
+    data = istable(data) and data or {}
+
+    local character = setmetatable({}, self.meta)
+    character.id = id
+    character.vars = {}
+
+    for name, varTable in pairs(self.vars) do
+        local value = data[name]
+        if ( value == nil ) then
+            value = varTable.default
+        end
+
+        if ( varTable.fieldType == ax.type.data ) then
+            value = ax.util:SafeParseTable(value) or {}
+        end
+
+        character.vars[name] = value
+    end
+
+    if ( isstring(steamID) and steamID != "" and ( character.vars.steamID64 == nil or character.vars.steamID64 == "" ) ) then
+        character.vars.steamID64 = steamID
+    end
+
+    if ( ax.util:IsValidPlayer(client) ) then
+        character.player = client
+    end
+
+    self.instances[id] = character
+
+    return character
+end
+
 --- Get a character variable's value.
 -- Retrieves a character variable with fallback to default or provided fallback value.
 -- For `ax.type.data` variables, passing `fallback` reads a nested key and

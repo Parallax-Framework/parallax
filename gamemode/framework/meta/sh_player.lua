@@ -814,6 +814,45 @@ function player:Notify(text, type, length)
     end
 end
 
+--- Returns the language code this player's client is running, used to pick which localisation table to read for text addressed to them specifically.
+-- Clientside this is the active language resolved by `ax.localization:GetCurrentLanguage`. Serverside it comes from the player's own `gmod_language` convar, since the server's language is not theirs; it falls back to the `language` config and finally `"en"` when the convar is unavailable.
+-- @realm shared
+-- @return string The two-letter language code, e.g. `"en"`.
+function player:GetLanguage()
+    if ( CLIENT ) then
+        return ax.localization:GetCurrentLanguage()
+    end
+
+    local language = self:GetInfo("gmod_language")
+    if ( !isstring(language) or language == "" ) then
+        language = ax.config:Get("language", "en")
+    end
+
+    return language
+end
+
+--- Loads a character onto this player, making it their active character and respawning them into the world.
+-- Accepts either a character object or a character ID, resolved through `ax.character:Get`. Delegates to `ax.character:Load`, which performs the schema and ownership validation, so a character belonging to another player or another schema is rejected there rather than here.
+-- @realm server
+-- @param character table|number The character object, or a character ID.
+-- @return boolean True when the character was resolved and handed to `ax.character:Load`.
+function player:SpawnCharacter(character)
+    if ( CLIENT ) then return false end
+
+    if ( isnumber(character) ) then
+        character = ax.character:Get(character)
+    end
+
+    if ( !istable(character) or character.id == nil ) then
+        ax.util:PrintError("Invalid character provided to player:SpawnCharacter() for " .. tostring(self))
+        return false
+    end
+
+    ax.character:Load(self, character)
+
+    return true
+end
+
 --- Syncs all relay data to this player.
 -- Iterates `ax.relay.data` and calls `SetRelay` for every key/value pair in the `"global"` scope, then for every per-entity scope whose entity is still valid.
 -- The `false` third argument to `SetRelay` suppresses the normal broadcast so each value is sent only to this player rather than all receivers.

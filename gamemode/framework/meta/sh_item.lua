@@ -14,6 +14,16 @@ item.__index = item
 item.id = item.id
 item.class = item.class
 
+-- Optional lifecycle callbacks an item definition (or its base) may declare as `function ITEM:<Name>(...)`, all server-side because every event that raises one is a server transaction; they are dispatched through `item:Call`, so `self.player` and `self.entity` are bound for the duration of the call wherever a player or entity is involved. Anything that should react to an action being *invoked*, rather than to a transaction completing, belongs in that action's own `OnRun`/`CanUse` instead.
+--
+-- `CanUse(client, action, context)` - one item-wide gate applied to every action before the action's own `CanUse`; return `false, reason` to block. See `item:CanInteract`.
+-- `OnDrop(client, position)` - the item was moved into the world; raised by `ax.item:Transfer` once the move has committed, so it covers programmatic drops too, and `client` is nil for a system transfer.
+-- `OnPickup(client)` - the item was moved out of the world into an inventory; raised by `ax.item:Transfer` under the same conditions as `OnDrop`.
+-- `OnEquip(client)` / `OnUnequip(client)` - the item's `"equip"` / `"unequip"` action ran successfully.
+-- `OnInstanced()` - a brand new instance was created and populated, the place to seed per-instance data; deliberately not raised when an existing item is restored from the database, so seeding side effects run once in the item's life rather than on every boot.
+-- `OnRemoved()` - the item is being destroyed; raised after the database delete succeeds, so it never fires for a removal that failed.
+-- `OnSave()` - the item's data is about to be written, the place to fold runtime state into `self.data`; calling `SetData` from here is safe (re-entry is guarded) but will not raise `OnSave` again.
+
 --- Returns a human-readable string representation of the item.
 -- Format: `"Item [id][name][class]"`. Useful for debug output and logging.
 -- @realm shared
@@ -356,6 +366,19 @@ function item:SetData(key, value, bNoDBUpdate)
             return
         end
 
+        -- Last chance for an item to fold runtime state into self.data before it is written. Re-entrancy guarded because handlers routinely call SetData themselves, which would otherwise recurse until the stack gave out, and protected so a broken handler cannot leave the flag stuck (permanently muting the callback) or abort the write it was only meant to decorate.
+        if ( !bNoDBUpdate and !self.bSaving ) then
+            self.bSaving = true
+
+            local ok, err = pcall(self.Call, self, "OnSave")
+
+            self.bSaving = nil
+
+            if ( !ok ) then
+                ax.util:PrintError("Error in OnSave for item ID " .. tostring(self.id) .. ": " .. tostring(err))
+            end
+        end
+
         -- Persist changes to database
         if ( !bNoDBUpdate ) then
             local query = mysql:Update("ax_items")
@@ -423,9 +446,11 @@ function item:AddAction(name, actionData)
 end
 
 --- Returns whether a player is allowed to perform a named action on this item.
--- Runs two checks in order:
+-- Runs three checks in order:
 -- 1. Fires `"CanPlayerInteractItem"` hook — returning false blocks the action and optionally sends `catch` as an error notification to the client (unless `silent`).
--- 2. Calls `actionTable:CanUse(client, self, context)` if the action defines it — returning false similarly blocks the action with an optional notification.
+-- 2. Calls `self:CanUse(client, action, context)` if the item (or its base) defines it — a single item-wide gate that applies to every action, so a base item can lock all of its interactions behind one condition instead of repeating it per action.
+-- 3. Calls `actionTable:CanUse(client, self, context)` if the action defines it — returning false similarly blocks the action with an optional notification.
+-- Only an explicit `false` blocks; returning nothing is treated as "no opinion" so items that only guard some cases keep working.
 -- Returns true and no second value when all checks pass.
 -- @realm shared
 -- @param client Player The player attempting the interaction.
@@ -442,6 +467,17 @@ function item:CanInteract(client, action, silent, context)
         end
 
         return false, catch
+    end
+
+    if ( isfunction(self.CanUse) ) then
+        local canUse, useReason = self:CanUse(client, action, context)
+        if ( canUse == false ) then
+            if ( isstring(useReason) and #useReason > 0 and !silent ) then
+                client:Notify(useReason, "error")
+            end
+
+            return false, useReason
+        end
     end
 
     local actions = self:GetActions()

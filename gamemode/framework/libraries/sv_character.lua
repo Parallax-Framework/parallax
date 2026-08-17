@@ -124,23 +124,11 @@ function ax.character:Create(payload, callback)
             return
         end
 
-        local character = setmetatable({}, ax.character.meta)
-        character.id = lastID
-        character.vars = {}
-
-        for k, v in pairs(self.vars) do
-            character.vars[k] = payload[k] or v.default
-
-            if ( v.fieldType == ax.type.data ) then
-                character.vars[k] = ax.util:SafeParseTable(character.vars[k]) or {}
-            end
-        end
+        local character = self:New(payload, lastID, nil, payload.steamID64)
 
         -- Override creationTime
         character:SetCreationTime(creationTime)
         character:SetLastPlayed(creationTime)
-
-        ax.character.instances[character.id] = character
 
         -- owner = character is additive metadata - the legacy `ax_characters.inventory`
         -- column below remains the source of truth for the primary inventory, this just
@@ -358,22 +346,18 @@ function ax.character:Restore(client, callback)
                 continue
             end
 
-            local character = setmetatable({}, ax.character.meta)
-            character.id = result[i].id
-            character.vars = {}
-
+            -- Rows are keyed by database column, ax.character:New by variable name, so the
+            -- row is remapped before construction.
+            local vars = {}
             for k, v in pairs(self.vars) do
-                local field = v.field
-                local var = result[i][field] or v.default
-
-                if ( v.fieldType == ax.type.data ) then
-                    var = ax.util:SafeParseTable(var) or {}
-                end
-
-                character.vars[k] = var
+                vars[k] = result[i][v.field]
             end
 
-            ax.character.instances[character.id] = character
+            -- Deliberately no client argument: only the character the player actually selects
+            -- becomes active, and ax.util:FindCharacter treats a set `player` field as exactly
+            -- that. Restoring the list must not make every character look active.
+            local character = self:New(vars, result[i].id, nil, steamID64)
+
             clientData.axCharacters[ #clientData.axCharacters + 1 ] = character
         end
 

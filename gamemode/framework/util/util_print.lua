@@ -181,3 +181,25 @@ function ax.util:PrintDebug(...)
 
     return args
 end
+
+--- Sends a notification to one or more players, the function form of `Player:Notify` - it takes the target as its first argument, so generic code that already has a "who" reference (a command's `caller`, a hook's `client`) can notify without first proving the value is a player entity.
+-- On the server this dispatches through `ax.notification:Send`, which accepts a single player, an array of players, or nil to broadcast. On the client the target is ignored and the notification is added locally.
+---@realm shared
+---@param target Player|table|nil A player, an array of players, or nil to broadcast (server only).
+---@param text string The message text.
+---@param type? number|string A value from `ax.notification.enums`. Defaults to the info type.
+---@param length? number Seconds to display for. Falls back to the configured default.
+---@usage ax.util:Notify(caller, "You cannot use that here.", ax.notification.enums.TYPE_ERROR)
+function ax.util:Notify(target, text, type, length)
+    if ( !istable(ax.notification) ) then
+        self:PrintWarning("ax.util:Notify called before the notification library loaded: " .. tostring(text))
+        return
+    end
+
+    if ( SERVER ) then
+        ax.notification:Send(target, text, type, length)
+        return
+    end
+
+    ax.notification:Add(text, type, length)
+end

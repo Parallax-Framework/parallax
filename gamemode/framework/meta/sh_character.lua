@@ -36,6 +36,29 @@ function character:GetVars()
     return self.vars
 end
 
+--- Reads a registered character variable by name, the generic form of the `Get<Name>` accessor `ax.character:RegisterVar` generates - useful when the variable name is only known at runtime, or from generic code that should not hardcode one accessor.
+-- For an `ax.type.data` variable, `fallback` is read as the nested key and `dataFallback` supplies the value when that key is absent.
+---@realm shared
+---@param name string The registered variable name.
+---@param fallback? any Value returned when the variable is unset, or the nested key for `ax.type.data` variables.
+---@param dataFallback? any Fallback for nested `ax.type.data` lookups.
+---@return any value The stored value, the variable's default, or `fallback`.
+---@usage local reputation = character:GetVar("reputation", 0)
+function character:GetVar(name, fallback, dataFallback)
+    return ax.character:GetVar(self, name, fallback, dataFallback)
+end
+
+--- Writes a registered character variable by name, the generic form of the `Set<Name>` mutator `ax.character:RegisterVar` generates - it runs the same `changed` callback, networking, and database write.
+-- For an `ax.type.data` variable, pass the nested key as `value` and the stored value as `options.dataValue`.
+---@realm shared
+---@param name string The registered variable name.
+---@param value any The new value, or the nested key for `ax.type.data` variables.
+---@param options? table Options - `dataValue`, `bNoNetworking`, `recipients`, `bNoDBUpdate`.
+---@usage character:SetVar("reputation", 25)
+function character:SetVar(name, value, options)
+    return ax.character:SetVar(self, name, value, options)
+end
+
 --- Returns the inventory instance associated with this character.
 -- Looks up `ax.inventory.instances` using the character's stored inventory ID.
 -- Returns nil when the inventory has not been loaded or the ID is 0.
@@ -149,6 +172,8 @@ function character:HasFlags(flags)
 
     return true
 end
+
+character.HasFlag = character.HasFlags
 
 --- Returns the value of a bodygroup index for this character.
 -- Looks up the bodygroup value in the character's data table under `"bodygroups"` keyed by the index as a string. Returns 0 if no value is set for that index.
@@ -297,6 +322,9 @@ if ( SERVER ) then
             self:Save()
         end
     end
+
+    character.GiveFlag = character.GiveFlags
+    character.TakeFlag = character.TakeFlags
 
     --- Replaces the character's entire flag set with the given flags.
     -- Diffs the current flags against `flags`: letters present in the current set but absent from `flags` are removed via `TakeFlags` (triggering their `OnTaken` callbacks). The stored flags are then set to the new string and saved. Finally, `GiveFlags` is called for each letter in `flags` to trigger `OnGiven` callbacks for newly granted flags. Returns immediately for non-string input.

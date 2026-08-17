@@ -92,6 +92,9 @@ function ax.schema:Initialize(timeFilter)
     -- Attach schema hooks once every SCHEMA:HookName method is defined
     ax.hook:AttachHooks(SCHEMA, "schema")
 
+    -- Same deal for any custom hook family a schema or module declared via ax.hook:Register - their methods are usually written after the Register call, so they only become dispatchable here.
+    ax.hook:RefreshRegistered()
+
     -- Initialize the schema
     ax.util:PrintSuccess("Schema \"" .. active .. "\" initialized successfully.")
 

@@ -354,6 +354,8 @@ function inventory:IsReceiver(client)
     return false
 end
 
+inventory.HasReceiver = inventory.IsReceiver
+
 --- Registers a player (or table of players) to receive network updates for this inventory.
 -- When `receiver` is a table, iterates it in reverse order and adds each player individually, validating each entry via `ax.util:IsValidPlayer`. When `receiver` is a single player, it is resolved through `ax.util:FindPlayer` first. Duplicate entries are silently rejected (idempotent). On the server, broadcasts an `"inventory.receiver.add"` net message to all current receivers after each addition.
 -- Returns false if the receiver is already registered, invalid, or cannot be resolved.
@@ -487,7 +489,111 @@ function inventory:CanStoreItem(itemClass)
     return true
 end
 
+--- Returns whether this inventory can no longer take anything: its weight capacity is exhausted, or - for an addressed type (grid/slot) - it has no free space left for even a 1x1 item.
+-- This is a coarse "nothing else fits at all" answer; use `CanStoreItem`/`CanStoreWeight` when asking about one specific item, since a heavy item can fail to fit in an inventory that is not full.
+---@realm shared
+---@return boolean bFull True when nothing further can be stored.
+---@usage if ( inventory:IsFull() ) then client:Notify("Your inventory is full.") end
+function inventory:IsFull()
+    if ( self.id == 0 ) then return false end
+
+    if ( self:GetWeight() >= self:GetMaxWeight() ) then
+        return true
+    end
+
+    local typeDef = ax.inventory:GetType(self)
+    if ( istable(typeDef) and isfunction(typeDef.FindEmptySlot) ) then
+        return typeDef.FindEmptySlot(self, 1, 1) == nil
+    end
+
+    return false
+end
+
 if ( SERVER ) then
+    --- Reassigns which object owns this inventory, resolving `owner` through the registered owner resolvers (never pass a raw `owner_kind` string) and persisting the new `owner_kind`/`owner_id` pair, then re-syncing so receivers see the change.
+    -- Passing nil detaches the inventory from any owner, which is the ownerless/legacy shape.
+    ---@realm server
+    ---@param owner any A character, item, entity, or anything a registered resolver recognises - or nil to clear ownership.
+    ---@return boolean bSuccess True once the update has been dispatched.
+    ---@usage inventory:SetOwner(character)
+    function inventory:SetOwner(owner)
+        local ownerKind, ownerID = ax.inventory:ResolveOwner(owner)
+        if ( owner != nil and ownerKind == nil ) then
+            return false
+        end
+
+        if ( self.ownerKind == "item" and self.ownerID != nil ) then
+            ax.inventory.itemOwnerIndex[self.ownerID] = nil
+        end
+
+        self.ownerKind = ownerKind
+        self.ownerID = ownerID
+
+        if ( ownerKind == "item" and ownerID != nil ) then
+            ax.inventory.itemOwnerIndex[ownerID] = self.id
+        end
+
+        if ( !self.isTemporary and !self.noSave ) then
+            local query = mysql:Update("ax_inventories")
+                query:Update("owner_kind", ownerKind)
+                query:Update("owner_id", ownerID)
+                query:Where("id", self.id)
+                query:Callback(function(result)
+                    if ( result == false ) then
+                        ax.util:PrintError("Failed to update owner for inventory " .. tostring(self.id))
+                    end
+                end)
+            query:Execute()
+        end
+
+        ax.inventory:Sync(self)
+
+        return true
+    end
+
+    --- Adds `quantity` items of the given class to this inventory, the plural convenience form of `AddItem` - items are instances rather than stacks, so each unit is inserted individually and `callback` fires once per created item.
+    -- Units are chained one after another rather than issued in a batch, because `AddItem` only commits an item to `self.items` in its database callback: firing them all at once would run every capacity check against the pre-insert weight and happily overfill the inventory. A unit that fails its capacity check ends the sequence, so a grant that only partially fits stops instead of overflowing.
+    ---@realm server
+    ---@param class string The item class name to instantiate.
+    ---@param quantity? number How many to add. Defaults to 1.
+    ---@param data? table Initial item data applied to every created item.
+    ---@param callback? function Called as `callback(itemObject, index)` for each item created.
+    ---@return boolean bStarted False when the first unit failed validation outright, true once the sequence is under way.
+    ---@return string|nil reason A human-readable reason when returning false.
+    ---@usage inventory:Add("ration", 3)
+    function inventory:Add(class, quantity, data, callback)
+        quantity = math.max(math.floor(tonumber(quantity) or 1), 1)
+
+        local added = 0
+
+        local function AddNext()
+            local ok, reason = self:AddItem(class, data, function(itemObject)
+                added = added + 1
+
+                if ( isfunction(callback) ) then
+                    callback(itemObject, added)
+                end
+
+                if ( added < quantity ) then
+                    AddNext()
+                end
+            end)
+
+            if ( ok == false and added > 0 ) then
+                ax.util:PrintDebug(string.format("inventory:Add stopped after %d/%d \"%s\" in inventory %s: %s", added, quantity, tostring(class), tostring(self.id), tostring(reason)))
+            end
+
+            return ok, reason
+        end
+
+        local ok, reason = AddNext()
+        if ( ok == false ) then
+            return false, reason
+        end
+
+        return true
+    end
+
     --- Adds a new item of the given class to this inventory and persists it to the database.
     -- Validates that `class` exists in `ax.item.stored` and passes `CanStoreItem` before proceeding. For temporary or no-save inventories (`self.isTemporary` or `self.noSave`), the item is created in memory only with a negative auto-decrementing ID and is never written to the database. For persistent inventories, an INSERT query is issued to `ax_items`; the `callback` is invoked with the new item instance once the query completes. On success, broadcasts `"inventory.item.add"` to all receivers.
     -- Returns false and a reason string on validation failure.
@@ -564,6 +670,8 @@ if ( SERVER ) then
             ax.item.instances[temporaryItemID] = itemObject
             self.items[temporaryItemID] = itemObject
 
+            itemObject:Call("OnInstanced")
+
             if ( isfunction(callback) ) then
                 callback(itemObject)
             end
@@ -595,6 +703,8 @@ if ( SERVER ) then
                 self.items[lastID] = itemObject
 
                 ax.net:Start(self:GetReceivers(), "inventory.item.add", self.id, itemObject.id, itemObject.class, itemObject.data)
+
+                itemObject:Call("OnInstanced")
 
                 if ( isfunction(callback) ) then
                     callback(itemObject)
@@ -630,7 +740,13 @@ if ( SERVER ) then
 
         for item_id, item_data in pairs(self.items) do
             if ( item_id == itemID ) then
+                local bRemovable = istable(item_data) and isfunction(item_data.Call)
+
                 if ( self.isTemporary or self.noSave or ( istable(item_data) and (item_data.isTemporary or item_data.noSave) ) ) then
+                    if ( bRemovable ) then
+                        item_data:Call("OnRemoved")
+                    end
+
                     self.items[item_id] = nil
                     ax.item.instances[itemID] = nil
 
@@ -647,6 +763,10 @@ if ( SERVER ) then
                             return false, "Failed to remove item from inventory, DB error."
                         end
 
+                        if ( bRemovable ) then
+                            item_data:Call("OnRemoved")
+                        end
+
                         self.items[item_id] = nil
                         ax.item.instances[itemID] = nil
 
@@ -658,12 +778,14 @@ if ( SERVER ) then
                     end)
                 query:Execute()
 
-                break
+                return true
             end
         end
 
         return false
     end
+
+    inventory.Remove = inventory.RemoveItem
 end
 
 ax.inventory.meta = inventory

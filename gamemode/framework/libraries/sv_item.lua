@@ -11,6 +11,62 @@
 
 ax.item = ax.item or {}
 
+-- Item-level lifecycle callbacks for the built-in actions that have one. "drop" and "take" are deliberately absent: their events are OnDrop/OnPickup, and they fire from ax.item:Transfer once the move has actually committed rather than when the action is invoked.
+local ACTION_CALLBACKS = {
+    equip = "OnEquip",
+    unequip = "OnUnequip",
+}
+
+--- Destroys an item instance outright - the Parallax counterpart to Helix's `item:Remove()`.
+-- An item held in an inventory is removed through that inventory, so receivers are notified and the database row is deleted along the same path as any other removal. An item lying in the world has its `ax_item` entity removed instead, which is what deletes its row (see `ENT:OnRemove`), and the removal is broadcast so clients drop their copy of the instance.
+-- The item's `OnRemoved` callback fires either way.
+---@realm server
+---@param item table|number The item instance, or an item ID.
+---@param callback? function Called as `callback(bSuccess)` once removal has been attempted.
+---@return boolean bStarted False when `item` could not be resolved, true once removal is under way.
+---@usage ax.item:Remove(item)
+function ax.item:Remove(item, callback)
+    if ( isnumber(item) ) then
+        item = self.instances[item]
+    end
+
+    if ( !istable(item) or item.id == nil ) then
+        ax.util:PrintError("Invalid item provided to ax.item:Remove()")
+
+        if ( isfunction(callback) ) then callback(false) end
+
+        return false
+    end
+
+    local inventoryID = item:GetInventoryID()
+    local inventory = inventoryID != 0 and ax.inventory:Get(inventoryID) or nil
+    if ( istable(inventory) ) then
+        local bRemoved = inventory:RemoveItem(item.id) != false
+
+        if ( isfunction(callback) ) then callback(bRemoved) end
+
+        return true
+    end
+
+    item:Call("OnRemoved")
+
+    local worldEntities = ents.FindByClass("ax_item")
+    for i = 1, #worldEntities do
+        local entity = worldEntities[i]
+        if ( entity:GetItemID() == item.id ) then
+            SafeRemoveEntity(entity)
+        end
+    end
+
+    self.instances[item.id] = nil
+
+    ax.net:Start(nil, "inventory.item.remove", 0, item.id)
+
+    if ( isfunction(callback) ) then callback(true) end
+
+    return true
+end
+
 function ax.item:RunAction(client, item, action, context, callback)
     if ( !ax.util:IsValidPlayer(client) ) then
         if ( isfunction(callback) ) then callback(false, "Invalid player.") end
@@ -40,7 +96,15 @@ function ax.item:RunAction(client, item, action, context, callback)
         return false, reason
     end
 
+    local lower = ( utf8 and utf8.lower ) or string.lower
+
     local bRemoveAfter = actionTable:OnRun(client, item, context)
+
+    local lifecycle = ACTION_CALLBACKS[lower(action)]
+    if ( lifecycle != nil ) then
+        item:Call(lifecycle, client, istable(context) and context.entity or nil, client)
+    end
+
     if ( bRemoveAfter == true ) then
         local inventory = ax.inventory.instances[item:GetInventoryID()]
         if ( istable(inventory) ) then
@@ -50,7 +114,6 @@ function ax.item:RunAction(client, item, action, context, callback)
         end
     end
 
-    local lower = ( utf8 and utf8.lower ) or string.lower
     local soundVar = "sound_" .. lower(action)
     if ( actionTable[soundVar] ) then
         client:EmitSound(Sound(actionTable[soundVar]))
@@ -451,6 +514,16 @@ function ax.item:Transfer(item, fromInventory, toInventory, placement, client, c
                 ax.net:Start(combinedReceivers, "item.transfer", item.id, fromInventoryID, toInventoryID, resolvedPlacement)
             end
 
+            -- The item-level placement events. They belong here rather than on the drop/take
+            -- actions because this is the only point at which the move is committed, and
+            -- because a programmatic Transfer (a death drop, an admin command) has to raise
+            -- them too. `client` is nil for a trusted/system transfer.
+            if ( toInventoryID == 0 ) then
+                item:Call("OnDrop", client, worldItemEntity, client, dropPos)
+            elseif ( fromInventoryID == 0 ) then
+                item:Call("OnPickup", client, nil, client)
+            end
+
             item:Unlock()
 
             if ( isfunction(callback) ) then
@@ -485,6 +558,7 @@ function ax.item:Spawn(class, pos, ang, callback, data)
             end
 
             local itemObject = ax.item:Instance(lastID, class)
+            itemObject.data = data
             itemObject.invID = 0
 
             local entity = ents.Create("ax_item")
@@ -496,6 +570,8 @@ function ax.item:Spawn(class, pos, ang, callback, data)
             entity:Activate()
 
             ax.net:Start(nil, "item.spawn", lastID, class, data or {})
+
+            itemObject:Call("OnInstanced", nil, entity)
 
             if ( isfunction(callback) ) then
                 callback(entity, itemObject)

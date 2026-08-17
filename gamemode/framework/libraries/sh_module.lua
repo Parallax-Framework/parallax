@@ -67,6 +67,18 @@ function ax.module:Include(path, timeFilter)
             ax.util:Include(filePath)
             ax.module.stored[moduleName] = MODULE
 
+            -- Modules are loaded from inside GM:Initialize, by which point hook.Call has already
+            -- walked the Initialize hook table - so the handler AttachHooks registers below can
+            -- never dispatch this, and a hot reload has no Initialize pass at all. Calling it
+            -- here is what makes the documented MODULE:Initialize lifecycle actually run.
+            if ( isfunction(MODULE.Initialize) ) then
+                MODULE:Initialize()
+            end
+
+            if ( isfunction(MODULE.OnLoaded) ) then
+                MODULE:OnLoaded()
+            end
+
             ax.hook:AttachHooks(MODULE, "module." .. tostring(MODULE.uniqueID))
 
             ax.util:PrintSuccess("Module \"" .. tostring(MODULE.name) .. "\" initialized successfully.")
@@ -156,6 +168,12 @@ function ax.module:Include(path, timeFilter)
                     ax.util:LoadEntities(path .. "/" .. dirName .. "/entities", timeFilter)
                     ax.util:PrintSuccess("Module \"" .. tostring(MODULE.name) .. "\" initialized successfully.")
                     ax.module.stored[MODULE.uniqueID] = MODULE
+
+                    -- See the single-file branch above for why Initialize has to be called
+                    -- explicitly rather than left to the Initialize hook.
+                    if ( isfunction(MODULE.Initialize) ) then
+                        MODULE:Initialize()
+                    end
 
                     if ( isfunction(MODULE.OnLoaded) ) then
                         MODULE:OnLoaded()

@@ -17,6 +17,14 @@
 ax.hook = ax.hook or {}
 ax.hook.attached = ax.hook.attached or {}
 
+--- Hook families registered through `ax.hook:Register`, mapping the global table name (`"SCHEMA"`, `"MYSCHEMA"`) to the `AttachHooks` identifier it is attached under.
+---@realm shared
+---@type table<string, string>
+ax.hook.registered = ax.hook.registered or {}
+
+-- SCHEMA is attached by ax.schema:Initialize under its own identifier, so it is seeded here to keep a manual ax.hook:Register("SCHEMA") a no-op instead of a second attachment that would dispatch every schema hook twice.
+ax.hook.registered.SCHEMA = ax.hook.registered.SCHEMA or "schema"
+
 --- Attach every function member of the given table as an individual `hook.Add` handler.
 -- Any existing attachment under the same identifier is removed first, so this is safe
 -- to call again on hot reload.
@@ -51,6 +59,49 @@ function ax.hook:AttachHooks(tbl, identifier)
 
             return resolved(tbl, ...)
         end)
+    end
+end
+
+--- Registers a global table as a hook family, so every `<NAME>:HookName(...)` method declared on it is dispatched exactly like `SCHEMA:HookName` and `MODULE:HookName` - the global is created when it does not exist yet, and registering a name that is already registered is a no-op (which is why `ax.hook:Register("SCHEMA")` from schema code is harmless).
+---@realm shared
+---@param name string The global table name to register, e.g. `"MYSCHEMA"`.
+---@return table|nil family The registered table, or nil when `name` is not a non-empty string.
+function ax.hook:Register(name)
+    if ( !isstring(name) or name == "" ) then
+        ax.util:PrintError("ax.hook:Register expected a non-empty string name.\n")
+        return nil
+    end
+
+    if ( self.registered[name] != nil ) then
+        return _G[name]
+    end
+
+    local family = _G[name]
+    if ( !istable(family) ) then
+        family = {}
+        _G[name] = family
+    end
+
+    local identifier = "registered." .. name
+    self.registered[name] = identifier
+
+    self:AttachHooks(family, identifier)
+
+    return family
+end
+
+--- Re-attaches every family registered through `ax.hook:Register` so methods declared after the `Register` call are picked up as well, since `AttachHooks` only sees the functions present at the moment it runs; `ax.schema:Initialize` calls this once loading has finished, which is what makes the register-then-declare order work.
+---@realm shared
+function ax.hook:RefreshRegistered()
+    for name, identifier in pairs(self.registered) do
+        local family = _G[name]
+        if ( !istable(family) ) then
+            self:DetachHooks(identifier)
+            self.registered[name] = nil
+            continue
+        end
+
+        self:AttachHooks(family, identifier)
     end
 end
 
