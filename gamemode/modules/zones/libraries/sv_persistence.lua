@@ -9,12 +9,12 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
--- @module ax.zones
+---@class ax.zones
 
 ax.zones = ax.zones or {}
 
 --- Load zones from disk for the current map.
--- @realm server
+---@realm server
 function ax.zones:Load()
     local mapName = game.GetMap()
     local dataKey = "zones"
@@ -51,7 +51,7 @@ function ax.zones:Load()
 end
 
 --- Save runtime zones to disk for the current map.
--- @realm server
+---@realm server
 function ax.zones:Save()
     local mapName = game.GetMap()
     local dataKey = "zones"
@@ -76,8 +76,8 @@ function ax.zones:Save()
 end
 
 --- Load static zones from a list (not persisted).
--- @realm server
--- @tparam table zoneList Array of zone specs
+---@realm server
+---@param zoneList table Array of zone specs
 function ax.zones:LoadStatic(zoneList)
     if ( !zoneList ) then return end
 

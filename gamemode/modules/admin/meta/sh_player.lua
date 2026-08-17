@@ -25,10 +25,9 @@ local function HasUsergroupAccess(client, usergroup)
     return ax.admin:UsergroupInherits(playerUsergroup, usergroup)
 end
 
---- Returns whether this player has administrator access through Parallax usergroups.
--- Overrides Garry's Mod's native Player:IsAdmin so custom usergroups inheriting from `admin` are supported.
--- @realm shared
--- @return boolean isAdmin Whether the player is an administrator
+--- Returns whether this player has administrator access through Parallax usergroups. Overrides Garry's Mod's native Player:IsAdmin so custom usergroups inheriting from `admin` are supported.
+---@realm shared
+---@return boolean isAdmin Whether the player is an administrator
 function player:IsAdmin()
     local hasAccess = HasUsergroupAccess(self, "admin")
     if ( hasAccess != nil ) then return hasAccess end
@@ -40,10 +39,9 @@ function player:IsAdmin()
     return false
 end
 
---- Returns whether this player has super administrator access through Parallax usergroups.
--- Overrides Garry's Mod's native Player:IsSuperAdmin so custom usergroups inheriting from `superadmin` are supported.
--- @realm shared
--- @return boolean isSuperAdmin Whether the player is a super administrator
+--- Returns whether this player has super administrator access through Parallax usergroups. Overrides Garry's Mod's native Player:IsSuperAdmin so custom usergroups inheriting from `superadmin` are supported.
+---@realm shared
+---@return boolean isSuperAdmin Whether the player is a super administrator
 function player:IsSuperAdmin()
     local hasAccess = HasUsergroupAccess(self, "superadmin")
     if ( hasAccess != nil ) then return hasAccess end
@@ -56,14 +54,13 @@ function player:IsSuperAdmin()
 end
 
 if ( SERVER ) then
-    --- Creates a Parallax-managed ban for this player.
-    -- Overrides Garry's Mod's native Player:Ban so every ban is persisted in ax_bans.
-    -- @realm server
-    -- @param minutes number Ban duration in minutes. Use 0 for permanent.
-    -- @param bKick boolean Whether to kick the player after creating the ban.
-    -- @param reason string Optional ban reason.
-    -- @param admin Player|nil Optional admin responsible for the ban.
-    -- @param callback function|nil Optional callback receiving (ok, banData, err).
+    --- Creates a Parallax-managed ban for this player. Overrides Garry's Mod's native Player:Ban so every ban is persisted in ax_bans.
+    ---@realm server
+    ---@param minutes number Ban duration in minutes. Use 0 for permanent.
+    ---@param bKick boolean Whether to kick the player after creating the ban.
+    ---@param reason? string Optional ban reason.
+    ---@param admin? Player|nil Optional admin responsible for the ban.
+    ---@param callback? function|nil Optional callback receiving (ok, banData, err).
     function player:Ban(minutes, bKick, reason, admin, callback)
         if ( !ax.util:IsValidPlayer(self) ) then return false end
 

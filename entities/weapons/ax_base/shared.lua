@@ -647,8 +647,8 @@ function SWEP:FinishShotgunReload()
 end
 
 --- Determines the current movement state based on player velocity and input.
--- @realm shared
--- @treturn string "idle", "walk", or "sprint"
+---@realm shared
+---@return string # "idle", "walk", or "sprint"
 function SWEP:GetMovementState()
     local owner = self:GetOwner()
     if ( !ax.util:IsValidPlayer(owner) ) then return "idle" end
@@ -669,10 +669,8 @@ function SWEP:GetMovementState()
     return "walk"
 end
 
---- Updates movement animation based on current player state.
--- Called from Think, handles transitions between idle/walk/sprint.
--- Checks for ironsight variants when aiming down sights.
--- @realm shared
+--- Updates movement animation based on current player state. Called from Think, handles transitions between idle/walk/sprint. Checks for ironsight variants when aiming down sights.
+---@realm shared
 function SWEP:UpdateMovementAnimation()
     if ( self:GetReloading() ) then return end
 

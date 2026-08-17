@@ -9,9 +9,8 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
---- Schema management system for initializing and loading schemas.
--- Handles inclusion of schema-specific files and directories.
--- @module ax.schema
+---@class ax.schema
+--- Schema management system for initializing and loading schemas. Handles inclusion of schema-specific files and directories.
 
 ax.schema = ax.schema or {}
 
@@ -37,12 +36,10 @@ local function LoadSchemaConfig(active, timeFilter)
     end
 end
 
---- Initialize the active schema and load all its components.
--- Loads the schema's boot file, includes all directories in proper order,
--- and initializes factions, classes, items, and modules.
--- @realm shared
--- @return boolean True if initialization succeeded, false if boot file failed to load
--- @usage ax.schema:Initialize()
+--- Initialize the active schema and load all its components. Loads the schema's boot file, includes all directories in proper order, and initializes factions, classes, items, and modules.
+---@realm shared
+---@return boolean # True if initialization succeeded, false if boot file failed to load
+---@usage ax.schema:Initialize()
 function ax.schema:Initialize(timeFilter)
     SCHEMA = SCHEMA or {}
 

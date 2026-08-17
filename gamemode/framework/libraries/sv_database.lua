@@ -9,10 +9,8 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
---- Database management system for handling connections, schema definitions, and table creation.
--- Utilizes the mysqloo module for MySQL connectivity and operations.
--- Originally adapted from the Helix framework with modifications for the Parallax framework.
--- @module ax.database
+---@class ax.database
+--- Database management system for handling connections, schema definitions, and table creation. Utilizes the mysqloo module for MySQL connectivity and operations. Originally adapted from the Helix framework with modifications for the Parallax framework.
 
 ax.database = ax.database or {
     schema = {},
@@ -28,16 +26,15 @@ ax.database = ax.database or {
     }
 }
 
---- Connect to the database using specified parameters.
--- Establishes connection using mysqloo module with configurable database settings.
--- @realm server
--- @param module string Database module type (default: "sqlite")
--- @param hostname string Database hostname (default: "localhost")
--- @param user string Database username (default: "root")
--- @param password string Database password (default: "")
--- @param database string Database name (default: "parallax")
--- @param port number Database port (default: 3306)
--- @usage ax.database:Connect("mysql", "localhost", "user", "pass", "gamedb")
+--- Connect to the database using specified parameters. Establishes connection using mysqloo module with configurable database settings.
+---@realm server
+---@param module string Database module type (default: "sqlite")
+---@param hostname string Database hostname (default: "localhost")
+---@param user string Database username (default: "root")
+---@param password string Database password (default: "")
+---@param database string Database name (default: "parallax")
+---@param port number Database port (default: 3306)
+---@usage ax.database:Connect("mysql", "localhost", "user", "pass", "gamedb")
 function ax.database:Connect(module, hostname, user, password, database, port)
     module = module or "sqlite"
     hostname = hostname or "localhost"
@@ -50,13 +47,12 @@ function ax.database:Connect(module, hostname, user, password, database, port)
     mysql:Connect(hostname, user, password, database, port)
 end
 
---- Add a field to the database schema.
--- Adds a new field to a specified table schema, handling queuing if database isn't ready.
--- @realm server
--- @param schemaType string The table name to add the field to
--- @param field string The field name to add
--- @param fieldType number The ax.type constant for the field type
--- @usage ax.database:AddToSchema("ax_characters", "description", ax.type.text)
+--- Add a field to the database schema. Adds a new field to a specified table schema, handling queuing if database isn't ready.
+---@realm server
+---@param schemaType string The table name to add the field to
+---@param field string The field name to add
+---@param fieldType number The ax.type constant for the field type
+---@usage ax.database:AddToSchema("ax_characters", "description", ax.type.text)
 function ax.database:AddToSchema(schemaType, field, fieldType)
     if ( !self.type[fieldType] ) then
         error(string.format("attempted to add field in schema with invalid type '%s'", fieldType))
@@ -71,14 +67,13 @@ function ax.database:AddToSchema(schemaType, field, fieldType)
     self:InsertSchema(schemaType, field, fieldType)
 end
 
---- Insert a field into the database schema (internal use).
--- Directly modifies database schema and table structure.
--- @realm server
--- @param schemaType string The table name
--- @param field string The field name
--- @param fieldType number The ax.type constant for the field type
--- @param callback function Optional callback to run when schema insert completes
--- @usage ax.database:InsertSchema("ax_characters", "description", ax.type.text)
+--- Insert a field into the database schema (internal use). Directly modifies database schema and table structure.
+---@realm server
+---@param schemaType string The table name
+---@param field string The field name
+---@param fieldType number The ax.type constant for the field type
+---@param callback? function Optional callback to run when schema insert completes
+---@usage ax.database:InsertSchema("ax_characters", "description", ax.type.text)
 function ax.database:InsertSchema(schemaType, field, fieldType, callback)
     local schema = self.schema[schemaType]
     if ( !schema ) then
@@ -110,10 +105,9 @@ function ax.database:InsertSchema(schemaType, field, fieldType, callback)
     end
 end
 
---- Create the default database tables for the framework.
--- Sets up schema tracking, players, characters, and inventories tables.
--- @realm server
--- @usage ax.database:CreateTables()
+--- Create the default database tables for the framework. Sets up schema tracking, players, characters, and inventories tables.
+---@realm server
+---@usage ax.database:CreateTables()
 function ax.database:CreateTables()
     local query
 
@@ -241,16 +235,10 @@ function ax.database:CreateTables()
     query:Execute()
 end
 
---- Back-compat migration: populate owner_kind/owner_id on inventory rows that predate the
--- ownership model. Older installs linked a character to its inventory only through the legacy
--- `ax_characters.inventory` column; the type/ownership rewrite loads inventories by
--- owner_kind/owner_id instead (see ax.inventory:Restore/RestoreOwner), so those pre-existing
--- rows - owner columns NULL after the additive ALTER - would never load and every character
--- would report no valid inventory. This copies each character's legacy link into the owner
--- columns.
--- @realm server
--- @param callback function Optional callback run once when the migration has finished dispatching.
--- @usage ax.database:MigrateLegacyInventoryOwners()
+--- Back-compat migration: populate owner_kind/owner_id on inventory rows that predate the ownership model. Older installs linked a character to its inventory only through the legacy `ax_characters.inventory` column; the type/ownership rewrite loads inventories by owner_kind/owner_id instead (see ax.inventory:Restore/RestoreOwner), so those pre-existing rows - owner columns NULL after the additive ALTER - would never load and every character would report no valid inventory. This copies each character's legacy link into the owner columns.
+---@realm server
+---@param callback? function Optional callback run once when the migration has finished dispatching.
+---@usage ax.database:MigrateLegacyInventoryOwners()
 function ax.database:MigrateLegacyInventoryOwners(callback)
     local query = mysql:Select("ax_characters")
         query:Select("id")

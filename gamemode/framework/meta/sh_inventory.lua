@@ -12,28 +12,23 @@
 local inventory = ax.inventory.meta or {}
 inventory.__index = inventory
 
---- Returns a human-readable string representation of the inventory.
--- Format: `"Inventory [id]"`. Useful for debug output and logging.
--- @realm shared
--- @return string A formatted string identifying this inventory.
+--- Returns a human-readable string representation of the inventory. Format: `"Inventory [id]"`. Useful for debug output and logging.
+---@realm shared
+---@return string # A formatted string identifying this inventory.
 function inventory:__tostring()
     return string.format("Inventory [%s]", tostring(self.id or 0))
 end
 
---- Returns the maximum weight capacity of this inventory.
--- This is the value set when the inventory was created or loaded.
--- Items cannot be added when `GetWeight() + item.weight > GetMaxWeight()`.
--- @realm shared
--- @return number The maximum weight this inventory can hold.
+--- Returns the maximum weight capacity of this inventory. This is the value set when the inventory was created or loaded. Items cannot be added when `GetWeight() + item.weight > GetMaxWeight()`.
+---@realm shared
+---@return number # The maximum weight this inventory can hold.
 function inventory:GetMaxWeight()
     return self.maxWeight
 end
 
---- Calculates and returns the total weight of all items currently in the inventory.
--- Iterates `self.items` and sums the weight of each item by calling `item:GetWeight()` if it exists, otherwise reading `item.weight` directly.
--- Only positive weight values are counted; items with no weight or negative weight contribute 0. Returns 0 for an empty inventory.
--- @realm shared
--- @return number The total weight of all items in the inventory.
+--- Calculates and returns the total weight of all items currently in the inventory. Iterates `self.items` and sums the weight of each item by calling `item:GetWeight()` if it exists, otherwise reading `item.weight` directly. Only positive weight values are counted; items with no weight or negative weight contribute 0. Returns 0 for an empty inventory.
+---@realm shared
+---@return number # The total weight of all items in the inventory.
 function inventory:GetWeight()
     local weight = 0
     for k, v in pairs(self.items) do
@@ -55,42 +50,39 @@ function inventory:GetWeight()
     return weight
 end
 
---- Returns the unique ID of this inventory.
--- This is the primary key from the `ax_inventories` table (or a negative temporary ID for in-memory-only inventories).
--- @realm shared
--- @return number The inventory's numeric ID.
+--- Returns the unique ID of this inventory. This is the primary key from the `ax_inventories` table (or a negative temporary ID for in-memory-only inventories).
+---@realm shared
+---@return number # The inventory's numeric ID.
 function inventory:GetID()
     return self.id
 end
 
---- Returns this inventory's registered type id.
--- Inventories with no `typeID` set default to `"weight"` (see `ax.inventory:GetType`), matching pre-registry behaviour.
--- @realm shared
--- @return string The type id.
+--- Returns this inventory's registered type id. Inventories with no `typeID` set default to `"weight"` (see `ax.inventory:GetType`), matching pre-registry behaviour.
+---@realm shared
+---@return string # The type id.
 function inventory:GetTypeID()
     return self.typeID or "weight"
 end
 
 --- Returns the owner kind of this inventory (`"character"` / `"entity"` / `"item"`), or nil if unset (e.g. legacy weight inventories created before ownership columns existed).
--- @realm shared
--- @return string|nil
+---@realm shared
+---@return string|nil
 function inventory:GetOwnerKind()
     return self.ownerKind
 end
 
 --- Returns the owner id of this inventory. Meaning depends on `GetOwnerKind()`.
--- @realm shared
--- @return number|nil
+---@realm shared
+---@return number|nil
 function inventory:GetOwnerID()
     return self.ownerID
 end
 
---- Returns an instance data value (e.g. grid size, slot set), or `default` if unset.
--- Instance data holds per-inventory parameters that vary within a single type (grid width/height, valid slot set) - see `ax.inventory:RegisterType`.
--- @realm shared
--- @param key string The data key to read.
--- @param default any Fallback value when the key is unset.
--- @return any
+--- Returns an instance data value (e.g. grid size, slot set), or `default` if unset. Instance data holds per-inventory parameters that vary within a single type (grid width/height, valid slot set) - see `ax.inventory:RegisterType`.
+---@realm shared
+---@param key string The data key to read.
+---@param default any Fallback value when the key is unset.
+---@return any
 function inventory:GetData(key, default)
     if ( !istable(self.data) ) then return default end
 
@@ -100,11 +92,10 @@ function inventory:GetData(key, default)
     return value
 end
 
---- Sets an instance data value. Not persisted automatically - callers that need
--- durability write the inventory row back to the database.
--- @realm shared
--- @param key string
--- @param value any
+--- Sets an instance data value. Not persisted automatically - callers that need durability write the inventory row back to the database.
+---@realm shared
+---@param key string
+---@param value any
 function inventory:SetData(key, value)
     if ( !istable(self.data) ) then self.data = {} end
 
@@ -112,8 +103,8 @@ function inventory:SetData(key, value)
 end
 
 --- Returns the inventory's grid width, if its type supports coordinate addressing - nil otherwise.
--- @realm shared
--- @return number|nil
+---@realm shared
+---@return number|nil
 function inventory:GetWidth()
     local typeDef = ax.inventory:GetType(self)
     if ( !typeDef or !typeDef.GetWidth ) then return nil end
@@ -122,8 +113,8 @@ function inventory:GetWidth()
 end
 
 --- Returns the inventory's grid height, if its type supports coordinate addressing - nil otherwise.
--- @realm shared
--- @return number|nil
+---@realm shared
+---@return number|nil
 function inventory:GetHeight()
     local typeDef = ax.inventory:GetType(self)
     if ( !typeDef or !typeDef.GetHeight ) then return nil end
@@ -131,10 +122,9 @@ function inventory:GetHeight()
     return typeDef.GetHeight(self)
 end
 
---- Returns the item occupying a given position, per the inventory's type.
--- Addressing scheme depends on the type: grid-addressed types read this as (x, y), slot-addressed types read it as (slotID). Passed through as-is so either shape works through the same method name.
--- @realm shared
--- @return table|nil
+--- Returns the item occupying a given position, per the inventory's type. Addressing scheme depends on the type: grid-addressed types read this as (x, y), slot-addressed types read it as (slotID). Passed through as-is so either shape works through the same method name.
+---@realm shared
+---@return table|nil
 function inventory:GetItemAt(...)
     local typeDef = ax.inventory:GetType(self)
     if ( !typeDef or !typeDef.GetItemAt ) then return nil end
@@ -142,10 +132,9 @@ function inventory:GetItemAt(...)
     return typeDef.GetItemAt(self, ...)
 end
 
---- Returns whether an item can occupy the given position/slot, per the inventory's type.
--- Grid-addressed types expect (x, y, w, h, ignoreItem); slot-addressed types expect (slotID, ignoreItem).
--- @realm shared
--- @return boolean
+--- Returns whether an item can occupy the given position/slot, per the inventory's type. Grid-addressed types expect (x, y, w, h, ignoreItem); slot-addressed types expect (slotID, ignoreItem).
+---@realm shared
+---@return boolean
 function inventory:CanItemFit(...)
     local typeDef = ax.inventory:GetType(self)
     if ( !typeDef or !typeDef.CanItemFit ) then return false end
@@ -154,11 +143,12 @@ function inventory:CanItemFit(...)
 end
 
 --- Finds the first free (x, y) that fits an item of the given size. Grid-addressed types only.
--- @realm shared
--- @param w number
--- @param h number
--- @param ignoreItem table|nil
--- @return number|nil, number|nil
+---@realm shared
+---@param w number
+---@param h number
+---@param ignoreItem table|nil
+---@return number|nil
+---@return number|nil
 function inventory:FindEmptySlot(w, h, ignoreItem)
     local typeDef = ax.inventory:GetType(self)
     if ( !typeDef or !typeDef.FindEmptySlot ) then return nil end
@@ -166,21 +156,18 @@ function inventory:FindEmptySlot(w, h, ignoreItem)
     return typeDef.FindEmptySlot(self, w, h, ignoreItem)
 end
 
---- Returns the items table for this inventory.
--- The returned table is keyed by item ID (number) and valued by item instance tables. Returns an empty table when the inventory has no items loaded.
--- @realm shared
--- @return table The `{ [itemID] = itemObject }` items table.
+--- Returns the items table for this inventory. The returned table is keyed by item ID (number) and valued by item instance tables. Returns an empty table when the inventory has no items loaded.
+---@realm shared
+---@return table # The `{ [itemID] = itemObject }` items table.
 function inventory:GetItems()
     return self.items or {}
 end
 
---- Returns all items in the inventory that match a given base class name.
--- Checks each item's registered class entry in `ax.item.stored` for either a `base` field or `class` field matching `baseName`. When `includeInactive` is explicitly `false`, items with `data.inactive == true` are excluded.
--- Returns an empty table when no matches are found or `baseName` is invalid.
--- @realm shared
--- @param baseName string The base class name to filter by.
--- @param includeInactive boolean|nil When false, inactive items are excluded. Defaults to including all items regardless of active state.
--- @return table An ordered array of matching item instances.
+--- Returns all items in the inventory that match a given base class name. Checks each item's registered class entry in `ax.item.stored` for either a `base` field or `class` field matching `baseName`. When `includeInactive` is explicitly `false`, items with `data.inactive == true` are excluded. Returns an empty table when no matches are found or `baseName` is invalid.
+---@realm shared
+---@param baseName string The base class name to filter by.
+---@param includeInactive boolean|nil When false, inactive items are excluded. Defaults to including all items regardless of active state.
+---@return table # An ordered array of matching item instances.
 function inventory:GetItemsByBase(baseName, includeInactive)
     if ( !isstring(baseName) or baseName == "" ) then return {} end
 
@@ -217,11 +204,10 @@ function inventory:GetItemsByBase(baseName, includeInactive)
     return results
 end
 
---- Returns the item instance with the given ID, or nil if not found.
--- Performs a linear search through `self.items`. For large inventories, consider caching the result. Returns nil when no item with that ID exists.
--- @realm shared
--- @param itemID number The numeric item ID to look up.
--- @return table|nil The item instance, or nil if not found.
+--- Returns the item instance with the given ID, or nil if not found. Performs a linear search through `self.items`. For large inventories, consider caching the result. Returns nil when no item with that ID exists.
+---@realm shared
+---@param itemID number The numeric item ID to look up.
+---@return table|nil # The item instance, or nil if not found.
 function inventory:GetItemByID(itemID)
     for id, v in pairs(self.items) do
         if ( id == itemID ) then
@@ -232,12 +218,10 @@ function inventory:GetItemByID(itemID)
     return nil
 end
 
---- Counts items in the inventory matching an ID or class name.
--- When `itemID` is a number, counts items whose key matches that ID (0 or 1).
--- When `itemID` is a string, counts all items whose `class` field matches it (useful for stackable or multi-instance items sharing the same class).
--- @realm shared
--- @param itemID number|string The item ID (number) or class name (string) to count.
--- @return number The number of matching items.
+--- Counts items in the inventory matching an ID or class name. When `itemID` is a number, counts items whose key matches that ID (0 or 1). When `itemID` is a string, counts all items whose `class` field matches it (useful for stackable or multi-instance items sharing the same class).
+---@realm shared
+---@param itemID number|string The item ID (number) or class name (string) to count.
+---@return number # The number of matching items.
 function inventory:GetItemCount(itemID)
     local count = 0
     for id, v in pairs(self.items) do
@@ -251,26 +235,16 @@ function inventory:GetItemCount(itemID)
     return count
 end
 
---- Returns the list of players who receive inventory network updates.
--- Receivers are players who should be notified of item additions, removals, and data changes (e.g. the character owner and any observers). Returns an empty table when no receivers have been registered.
--- @realm shared
--- @return table An ordered array of player entities.
+--- Returns the list of players who receive inventory network updates. Receivers are players who should be notified of item additions, removals, and data changes (e.g. the character owner and any observers). Returns an empty table when no receivers have been registered.
+---@realm shared
+---@return table # An ordered array of player entities.
 function inventory:GetReceivers()
     return self.receivers or {}
 end
 
---- Returns the object that owns this inventory - a character, item, or entity, depending on
--- `GetOwnerKind()`.
--- Resolves `ownerKind`/`ownerID` (set for any inventory created with `owner = ...`, e.g.
--- `character_grid`/`character_equipment`, a bag item's inventory) via
--- `ax.inventory:ResolveOwnerObject`, which dispatches to the `resolveOwner` callback of
--- whichever resolver registered that kind (see `ax.inventory:RegisterOwnerResolver`). Falls
--- back to searching for a character whose legacy `vars.inventory` matches this inventory's ID,
--- for inventories created before ownership columns existed. Returns nil if no owner can be
--- resolved (e.g. unassigned/temporary inventories, or an owner kind with no `resolveOwner`
--- callback registered, e.g. some `"entity"` resolvers).
--- @realm shared
--- @return table|nil The owner object, or nil if not found.
+--- Returns the object that owns this inventory - a character, item, or entity, depending on `GetOwnerKind()`. Resolves `ownerKind`/`ownerID` (set for any inventory created with `owner = ...`, e.g. `character_grid`/`character_equipment`, a bag item's inventory) via `ax.inventory:ResolveOwnerObject`, which dispatches to the `resolveOwner` callback of whichever resolver registered that kind (see `ax.inventory:RegisterOwnerResolver`). Falls back to searching for a character whose legacy `vars.inventory` matches this inventory's ID, for inventories created before ownership columns existed. Returns nil if no owner can be resolved (e.g. unassigned/temporary inventories, or an owner kind with no `resolveOwner` callback registered, e.g. some `"entity"` resolvers).
+---@realm shared
+---@return table|nil # The owner object, or nil if not found.
 function inventory:GetOwner()
     if ( self.ownerKind != nil ) then
         return ax.inventory:ResolveOwnerObject(self.ownerKind, self.ownerID)
@@ -286,13 +260,12 @@ function inventory:GetOwner()
     return nil
 end
 
---- Returns the first item matching the given ID or class name, or false if none found.
--- Accepts either a numeric item ID (matches the inventory key directly) or a string class name (matches `item.class` on each entry). Returns the item instance table on success so callers can immediately act on it without a second lookup. Returns false when no item matches, making it safe to use in boolean conditions.
--- @realm shared
--- @param identifier number|string The item ID (number) or class name (string) to find.
--- @return table|false The matching item instance, or false if not found.
--- @usage if ( inventory:HasItem("weapon_pistol") ) then ... end
--- @usage local item = inventory:HasItem(42)
+--- Returns the first item matching the given ID or class name, or false if none found. Accepts either a numeric item ID (matches the inventory key directly) or a string class name (matches `item.class` on each entry). Returns the item instance table on success so callers can immediately act on it without a second lookup. Returns false when no item matches, making it safe to use in boolean conditions.
+---@realm shared
+---@param identifier number|string The item ID (number) or class name (string) to find.
+---@return table|false # The matching item instance, or false if not found.
+---@usage if ( inventory:HasItem("weapon_pistol") ) then ... end
+---@usage local item = inventory:HasItem(42)
 function inventory:HasItem(identifier)
     for id, v in pairs(self.items) do
         if ( isnumber(identifier) and id == identifier ) then
@@ -305,12 +278,11 @@ function inventory:HasItem(identifier)
     return false
 end
 
---- Returns the first item whose class matches the given base name, or false if none found.
--- Checks each item's registered class entry in `ax.item.stored` for either a `base` field or `class` field equal to `baseName`. Unlike `GetItemsByBase`, this stops at the first match and is intended for simple existence checks rather than collecting all matches. Returns false immediately when `baseName` is empty or non-string.
--- @realm shared
--- @param baseName string The base class name to check against.
--- @return table|false The first matching item instance, or false if none found.
--- @usage if ( inventory:HasItemOfBase("base_weapon") ) then ... end
+--- Returns the first item whose class matches the given base name, or false if none found. Checks each item's registered class entry in `ax.item.stored` for either a `base` field or `class` field equal to `baseName`. Unlike `GetItemsByBase`, this stops at the first match and is intended for simple existence checks rather than collecting all matches. Returns false immediately when `baseName` is empty or non-string.
+---@realm shared
+---@param baseName string The base class name to check against.
+---@return table|false # The first matching item instance, or false if none found.
+---@usage if ( inventory:HasItemOfBase("base_weapon") ) then ... end
 function inventory:HasItemOfBase(baseName)
     if ( !isstring(baseName) or baseName == "" ) then return false end
 
@@ -327,11 +299,10 @@ function inventory:HasItemOfBase(baseName)
     return false
 end
 
---- Returns whether the given player is registered as a receiver for this inventory.
--- If `self.receivers` has not been initialised, it is created and the owning character's player is automatically added as the first receiver before the check runs. This lazy-init behaviour ensures that the owner always receives updates even if `AddReceiver` was never called explicitly. Returns true if `client` is found in the receivers list, false otherwise.
--- @realm shared
--- @param client Player The player entity to test.
--- @return boolean True if `client` is in the receiver list.
+--- Returns whether the given player is registered as a receiver for this inventory. If `self.receivers` has not been initialised, it is created and the owning character's player is automatically added as the first receiver before the check runs. This lazy-init behaviour ensures that the owner always receives updates even if `AddReceiver` was never called explicitly. Returns true if `client` is found in the receivers list, false otherwise.
+---@realm shared
+---@param client Player The player entity to test.
+---@return boolean # True if `client` is in the receiver list.
 function inventory:IsReceiver(client)
     if ( !istable(self.receivers) ) then
         self.receivers = {}
@@ -356,12 +327,10 @@ end
 
 inventory.HasReceiver = inventory.IsReceiver
 
---- Registers a player (or table of players) to receive network updates for this inventory.
--- When `receiver` is a table, iterates it in reverse order and adds each player individually, validating each entry via `ax.util:IsValidPlayer`. When `receiver` is a single player, it is resolved through `ax.util:FindPlayer` first. Duplicate entries are silently rejected (idempotent). On the server, broadcasts an `"inventory.receiver.add"` net message to all current receivers after each addition.
--- Returns false if the receiver is already registered, invalid, or cannot be resolved.
--- @realm shared
--- @param receiver Player|table A player entity or an array of player entities to add.
--- @return boolean True on success, false if the receiver was already present or invalid.
+--- Registers a player (or table of players) to receive network updates for this inventory. When `receiver` is a table, iterates it in reverse order and adds each player individually, validating each entry via `ax.util:IsValidPlayer`. When `receiver` is a single player, it is resolved through `ax.util:FindPlayer` first. Duplicate entries are silently rejected (idempotent). On the server, broadcasts an `"inventory.receiver.add"` net message to all current receivers after each addition. Returns false if the receiver is already registered, invalid, or cannot be resolved.
+---@realm shared
+---@param receiver Player|table A player entity or an array of player entities to add.
+---@return boolean # True on success, false if the receiver was already present or invalid.
 function inventory:AddReceiver(receiver)
     if ( !istable(self.receivers) ) then self.receivers = {} end
 
@@ -401,11 +370,10 @@ function inventory:AddReceiver(receiver)
     return false
 end
 
---- Removes a single player from the inventory's receiver list.
--- Searches the receivers array for `receiver` and removes it. On the server, broadcasts an `"inventory.receiver.remove"` net message to all remaining receivers before removing the entry. Returns false if the receivers list is empty or `receiver` is not found; returns true on successful removal.
--- @realm shared
--- @param receiver Player The player entity to remove from the receiver list.
--- @return boolean True on successful removal, false if not found.
+--- Removes a single player from the inventory's receiver list. Searches the receivers array for `receiver` and removes it. On the server, broadcasts an `"inventory.receiver.remove"` net message to all remaining receivers before removing the entry. Returns false if the receivers list is empty or `receiver` is not found; returns true on successful removal.
+---@realm shared
+---@param receiver Player The player entity to remove from the receiver list.
+---@return boolean # True on successful removal, false if not found.
 function inventory:RemoveReceiver(receiver)
     if ( !istable(self.receivers) ) then self.receivers = {} return end
     if ( self.receivers[1] == nil ) then return false end
@@ -425,10 +393,9 @@ function inventory:RemoveReceiver(receiver)
     return false
 end
 
---- Removes all players from the inventory's receiver list.
--- On the server, broadcasts an `"inventory.receiver.remove"` net message for each current receiver before clearing the list. After the call `self.receivers` is reset to an empty table. Returns false immediately if the list is already empty; returns true after a successful clear.
--- @realm shared
--- @return boolean True after clearing, false if the list was already empty.
+--- Removes all players from the inventory's receiver list. On the server, broadcasts an `"inventory.receiver.remove"` net message for each current receiver before clearing the list. After the call `self.receivers` is reset to an empty table. Returns false immediately if the list is already empty; returns true after a successful clear.
+---@realm shared
+---@return boolean # True after clearing, false if the list was already empty.
 function inventory:RemoveReceivers()
     if ( !istable(self.receivers) ) then self.receivers = {} return end
     if ( self.receivers[1] == nil ) then return false end
@@ -443,13 +410,11 @@ function inventory:RemoveReceivers()
     return true
 end
 
---- Returns whether the given weight can be added without exceeding capacity.
--- Computes `GetWeight() + weight` and compares it against `GetMaxWeight()`. Returns true when the addition fits, or false and an error string when it would overflow.
--- Use this before manually adjusting weights; `CanStoreItem` already calls this internally when an item has a weight field.
--- @realm shared
--- @param weight number The additional weight to test against remaining capacity.
--- @return boolean True if the weight fits, false otherwise.
--- @return string|nil A human-readable reason string when returning false.
+--- Returns whether the given weight can be added without exceeding capacity. Computes `GetWeight() + weight` and compares it against `GetMaxWeight()`. Returns true when the addition fits, or false and an error string when it would overflow. Use this before manually adjusting weights; `CanStoreItem` already calls this internally when an item has a weight field.
+---@realm shared
+---@param weight number The additional weight to test against remaining capacity.
+---@return boolean # True if the weight fits, false otherwise.
+---@return string|nil # A human-readable reason string when returning false.
 function inventory:CanStoreWeight(weight)
     local currentWeight = self:GetWeight()
     local maxWeight = self:GetMaxWeight()
@@ -461,17 +426,15 @@ function inventory:CanStoreWeight(weight)
     return true
 end
 
---- Returns whether an item of the given class can be stored in this inventory.
--- Performs three checks in order:
--- 1. Validates that `itemClass` is registered in `ax.item.stored`.
--- 2. Checks weight capacity if `itemData.weight` is set (delegates to `CanStoreWeight`).
--- 3. Calls `itemData:CanAddToInventory(self)` if defined — returning false from that hook blocks storage regardless of weight.
--- Returns true on success, or false and a descriptive reason string on failure.
--- Called automatically by `AddItem` before any database operations.
--- @realm shared
--- @param itemClass string The item class name to test (must exist in `ax.item.stored`).
--- @return boolean True if the item can be stored, false otherwise.
--- @return string|nil A human-readable reason string when returning false.
+--- Returns whether an item of the given class can be stored in this inventory. Performs three checks in order:
+--- 1. Validates that `itemClass` is registered in `ax.item.stored`.
+--- 2. Checks weight capacity if `itemData.weight` is set (delegates to `CanStoreWeight`).
+--- 3. Calls `itemData:CanAddToInventory(self)` if defined — returning false from that hook blocks storage regardless of weight.
+--- Returns true on success, or false and a descriptive reason string on failure. Called automatically by `AddItem` before any database operations.
+---@realm shared
+---@param itemClass string The item class name to test (must exist in `ax.item.stored`).
+---@return boolean # True if the item can be stored, false otherwise.
+---@return string|nil # A human-readable reason string when returning false.
 function inventory:CanStoreItem(itemClass)
     local itemData = ax.item.stored[itemClass]
     if ( !istable(itemData) ) then
@@ -490,7 +453,7 @@ function inventory:CanStoreItem(itemClass)
 end
 
 --- Returns whether this inventory can no longer take anything: its weight capacity is exhausted, or - for an addressed type (grid/slot) - it has no free space left for even a 1x1 item.
--- This is a coarse "nothing else fits at all" answer; use `CanStoreItem`/`CanStoreWeight` when asking about one specific item, since a heavy item can fail to fit in an inventory that is not full.
+--- This is a coarse "nothing else fits at all" answer; use `CanStoreItem`/`CanStoreWeight` when asking about one specific item, since a heavy item can fail to fit in an inventory that is not full.
 ---@realm shared
 ---@return boolean bFull True when nothing further can be stored.
 ---@usage if ( inventory:IsFull() ) then client:Notify("Your inventory is full.") end
@@ -511,7 +474,7 @@ end
 
 if ( SERVER ) then
     --- Reassigns which object owns this inventory, resolving `owner` through the registered owner resolvers (never pass a raw `owner_kind` string) and persisting the new `owner_kind`/`owner_id` pair, then re-syncing so receivers see the change.
-    -- Passing nil detaches the inventory from any owner, which is the ownerless/legacy shape.
+    --- Passing nil detaches the inventory from any owner, which is the ownerless/legacy shape.
     ---@realm server
     ---@param owner any A character, item, entity, or anything a registered resolver recognises - or nil to clear ownership.
     ---@return boolean bSuccess True once the update has been dispatched.
@@ -552,7 +515,7 @@ if ( SERVER ) then
     end
 
     --- Adds `quantity` items of the given class to this inventory, the plural convenience form of `AddItem` - items are instances rather than stacks, so each unit is inserted individually and `callback` fires once per created item.
-    -- Units are chained one after another rather than issued in a batch, because `AddItem` only commits an item to `self.items` in its database callback: firing them all at once would run every capacity check against the pre-insert weight and happily overfill the inventory. A unit that fails its capacity check ends the sequence, so a grant that only partially fits stops instead of overflowing.
+    --- Units are chained one after another rather than issued in a batch, because `AddItem` only commits an item to `self.items` in its database callback: firing them all at once would run every capacity check against the pre-insert weight and happily overfill the inventory. A unit that fails its capacity check ends the sequence, so a grant that only partially fits stops instead of overflowing.
     ---@realm server
     ---@param class string The item class name to instantiate.
     ---@param quantity? number How many to add. Defaults to 1.
@@ -594,15 +557,13 @@ if ( SERVER ) then
         return true
     end
 
-    --- Adds a new item of the given class to this inventory and persists it to the database.
-    -- Validates that `class` exists in `ax.item.stored` and passes `CanStoreItem` before proceeding. For temporary or no-save inventories (`self.isTemporary` or `self.noSave`), the item is created in memory only with a negative auto-decrementing ID and is never written to the database. For persistent inventories, an INSERT query is issued to `ax_items`; the `callback` is invoked with the new item instance once the query completes. On success, broadcasts `"inventory.item.add"` to all receivers.
-    -- Returns false and a reason string on validation failure.
-    -- @realm server
-    -- @param class string The item class name to instantiate (must exist in `ax.item.stored`).
-    -- @param data table|nil Initial item data to store in `itemObject.data`. Defaults to `{}`.
-    -- @param callback function|nil Called as `callback(itemObject)` after the item is created.
-    -- @return boolean|nil False on validation failure; nil on async DB path (result via callback).
-    -- @return string|nil A human-readable reason string when returning false.
+    --- Adds a new item of the given class to this inventory and persists it to the database. Validates that `class` exists in `ax.item.stored` and passes `CanStoreItem` before proceeding. For temporary or no-save inventories (`self.isTemporary` or `self.noSave`), the item is created in memory only with a negative auto-decrementing ID and is never written to the database. For persistent inventories, an INSERT query is issued to `ax_items`; the `callback` is invoked with the new item instance once the query completes. On success, broadcasts `"inventory.item.add"` to all receivers. Returns false and a reason string on validation failure.
+    ---@realm server
+    ---@param class string The item class name to instantiate (must exist in `ax.item.stored`).
+    ---@param data table|nil Initial item data to store in `itemObject.data`. Defaults to `{}`.
+    ---@param callback function|nil Called as `callback(itemObject)` after the item is created.
+    ---@return boolean|nil # False on validation failure; nil on async DB path (result via callback).
+    ---@return string|nil # A human-readable reason string when returning false.
     function inventory:AddItem(class, data, callback)
         if ( !istable(self.items) ) then self.items = {} end
 
@@ -715,11 +676,10 @@ if ( SERVER ) then
         query:Execute()
     end
 
-    --- Removes an item from this inventory by ID or class name and deletes it from the database.
-    -- When `itemID` is a string class name, the first matching item's numeric ID is resolved before removal. For temporary or no-save inventories (or items flagged as such), the item is removed from `self.items` and `ax.item.instances` immediately with no database call. For persistent items, a DELETE query is issued to `ax_items` and, on success, broadcasts `"inventory.item.remove"` to all receivers and removes the item from in-memory tables. Returns false when no matching item is found.
-    -- @realm server
-    -- @param itemID number|string The numeric item ID or string class name to remove.
-    -- @return boolean True on success (or async DB path), false if the item was not found.
+    --- Removes an item from this inventory by ID or class name and deletes it from the database. When `itemID` is a string class name, the first matching item's numeric ID is resolved before removal. For temporary or no-save inventories (or items flagged as such), the item is removed from `self.items` and `ax.item.instances` immediately with no database call. For persistent items, a DELETE query is issued to `ax_items` and, on success, broadcasts `"inventory.item.remove"` to all receivers and removes the item from in-memory tables. Returns false when no matching item is found.
+    ---@realm server
+    ---@param itemID number|string The numeric item ID or string class name to remove.
+    ---@return boolean # True on success (or async DB path), false if the item was not found.
     function inventory:RemoveItem(itemID)
         if ( !istable(self.items) ) then
             ax.util:PrintWarning("Invalid inventory items table.")

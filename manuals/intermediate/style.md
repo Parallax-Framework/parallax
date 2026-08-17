@@ -123,33 +123,45 @@ end
 
 ---
 
-## ✅ Documentation Rules (LDOC)
+## ✅ Documentation Rules (GLuaLS)
+
+Documentation uses the **GLuaLS** annotation dialect (the LuaLS / EmmyLua `---@` tags). The old ldoc tags (`-- @param`, `-- @tparam`, `-- @treturn`, `-- @module`) are not understood by GLuaLS and must not be used. Every line in a doc block starts with `---`.
 
 Each **global function** must include:
-* Short description of purpose
-* `@realm` — `server`, `client`, or `shared`
-* `@param` for each argument with argument name, type and description
-* `@return` values (if any)
-* `@usage` — example of function usage
+* Short description of purpose, on a single line
+* `---@realm` — `server`, `client`, or `shared`
+* `---@param` for each argument with argument name, type and description
+* `---@return` values (if any)
+* `---@usage` — example of function usage
 
 ### Example:
 ```lua
 --- Sends a chat message to the player.
--- @realm shared
--- @param client Player The player receiving the message.
--- @param ... any Message parts.
--- @usage ax.util:SendChatText(client, "Hello", Color(255, 255, 255), " world!")
+---@realm shared
+---@param client Player The player receiving the message.
+---@param ... any Message parts.
+---@usage ax.util:SendChatText(client, "Hello", Color(255, 255, 255), " world!")
 function ax.util:SendChatText(client, ...)
     -- implementation
 end
 ```
 
+Mark optional arguments with `?` (`---@param data? table`). A return with no name takes `#` before its description (`---@return table # Every registered flag.`).
+
 ### Tables and Constants
-* Use `@table`, `@field`, and `@usage` for global tables.
+* Use `---@class` on the backing table of a subsystem, `---@field` for its stored fields, and `---@type` for typed globals and locals.
+
+```lua
+---@class ax.flag
+--- Flag management system for character permissions and abilities.
+---@field stored table<string, table> Registered flags keyed by their single-letter identifier.
+ax.flag = ax.flag or {}
+```
 
 ### Style Consistency
 * Documentation must exactly match function behavior.
-* Optional: Use `@see` for related utilities.
+* Prose is never hard-wrapped — a description is one line, however long.
+* Optional: Use `---@see` for related utilities.
 
 ---
 

@@ -9,10 +9,8 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
---- Entity and global variable relay system for synchronized data storage.
--- Provides networked variable storage for entities and global values with automatic cleanup.
--- Similar to SetNWVar/GetNWVar but with more control over networking and recipients.
--- @module ax.relay
+---@class ax.relay
+--- Entity and global variable relay system for synchronized data storage. Provides networked variable storage for entities and global values with automatic cleanup. Similar to SetNWVar/GetNWVar but with more control over networking and recipients.
 
 ax.relay = ax.relay or {}
 ax.relay.data = ax.relay.data or {}
@@ -29,15 +27,14 @@ end
 
 local ENTITY = FindMetaTable("Entity")
 
---- Set a relay variable on an entity with optional networking.
--- Stores a value associated with this entity and optionally syncs it to clients.
--- @realm shared
--- @param name string The variable name to set
--- @param value any The value to store (will be networked if on server)
--- @param bNoNetworking boolean Optional flag to disable networking (server only)
--- @param recipients table Optional specific recipients for networking (server only)
--- @usage entity:SetRelay("health_percentage", 0.75)
--- @usage player:SetRelay("status", "injured", false, {otherPlayer})
+--- Set a relay variable on an entity with optional networking. Stores a value associated with this entity and optionally syncs it to clients.
+---@realm shared
+---@param name string The variable name to set
+---@param value any The value to store (will be networked if on server)
+---@param bNoNetworking? boolean Optional flag to disable networking (server only)
+---@param recipients? table Optional specific recipients for networking (server only)
+---@usage entity:SetRelay("health_percentage", 0.75)
+---@usage player:SetRelay("status", "injured", false, {otherPlayer})
 function ENTITY:SetRelay(name, value, bNoNetworking, recipients)
     if ( !isstring(name) ) then
         ax.util:PrintError("Invalid 'name' argument provided to method Entity:SetRelay()")
@@ -68,14 +65,13 @@ function ENTITY:SetRelay(name, value, bNoNetworking, recipients)
     end
 end
 
---- Get a relay variable from an entity.
--- Retrieves a stored value associated with this entity.
--- @realm shared
--- @param name string The variable name to retrieve
--- @param fallback any Optional fallback value if variable is not set
--- @return any The stored value or fallback if not found
--- @usage local health = entity:GetRelay("health_percentage", 1.0)
--- @usage local status = player:GetRelay("status", "healthy")
+--- Get a relay variable from an entity. Retrieves a stored value associated with this entity.
+---@realm shared
+---@param name string The variable name to retrieve
+---@param fallback? any Optional fallback value if variable is not set
+---@return any # The stored value or fallback if not found
+---@usage local health = entity:GetRelay("health_percentage", 1.0)
+---@usage local status = player:GetRelay("status", "healthy")
 function ENTITY:GetRelay(name, fallback)
     if ( !isstring(name) ) then return fallback end
 
@@ -89,15 +85,14 @@ function ENTITY:GetRelay(name, fallback)
     return ax.relay.data[index][name] == nil and fallback or ax.relay.data[index][name]
 end
 
---- Set a global relay variable with optional networking.
--- Stores a global value that can be accessed from anywhere and optionally syncs to clients.
--- @realm shared
--- @param name string The variable name to set
--- @param value any The value to store (will be networked if on server)
--- @param bNoNetworking boolean Optional flag to disable networking (server only)
--- @param recipients table Optional specific recipients for networking (server only)
--- @usage SetRelay("round_state", "preparation")
--- @usage SetRelay("server_message", "Welcome!", false, specificPlayers)
+--- Set a global relay variable with optional networking. Stores a global value that can be accessed from anywhere and optionally syncs to clients.
+---@realm shared
+---@param name string The variable name to set
+---@param value any The value to store (will be networked if on server)
+---@param bNoNetworking? boolean Optional flag to disable networking (server only)
+---@param recipients? table Optional specific recipients for networking (server only)
+---@usage SetRelay("round_state", "preparation")
+---@usage SetRelay("server_message", "Welcome!", false, specificPlayers)
 function SetRelay(name, value, bNoNetworking, recipients)
     if ( !isstring(name) ) then
         ax.util:PrintError("Invalid 'name' argument provided to function SetRelay()")
@@ -116,14 +111,13 @@ function SetRelay(name, value, bNoNetworking, recipients)
     end
 end
 
---- Get a global relay variable.
--- Retrieves a stored global value that can be accessed from anywhere.
--- @realm shared
--- @param name string The variable name to retrieve
--- @param fallback any Optional fallback value if variable is not set
--- @return any The stored value or fallback if not found
--- @usage local roundState = GetRelay("round_state", "waiting")
--- @usage local message = GetRelay("server_message", "")
+--- Get a global relay variable. Retrieves a stored global value that can be accessed from anywhere.
+---@realm shared
+---@param name string The variable name to retrieve
+---@param fallback? any Optional fallback value if variable is not set
+---@return any # The stored value or fallback if not found
+---@usage local roundState = GetRelay("round_state", "waiting")
+---@usage local message = GetRelay("server_message", "")
 function GetRelay(name, fallback)
     if ( !isstring(name) ) then return fallback end
 

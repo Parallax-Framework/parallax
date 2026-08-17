@@ -9,8 +9,8 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
+---@class ax.recognition
 --- Server-side net receivers for the recognition module.
--- @module ax.recognition (net, server)
 
 --- Client requests an introduction: they send the entity index of the target and a chosen alias.
 -- The server validates proximity using the IC hear distance, then delegates to Introduce().

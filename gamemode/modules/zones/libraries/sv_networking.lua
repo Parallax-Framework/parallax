@@ -9,7 +9,7 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
--- @module ax.zones
+---@class ax.zones
 
 ax.zones = ax.zones or {}
 
@@ -48,7 +48,7 @@ local function BuildSyncPayload()
 end
 
 --- Synchronize zones to all clients.
--- @realm server
+---@realm server
 function ax.zones:Sync()
     local payload = BuildSyncPayload()
     ax.net:Start(nil, "zones.sync", payload)
@@ -57,8 +57,8 @@ function ax.zones:Sync()
 end
 
 --- Synchronize zones to a specific player.
--- @realm server
--- @tparam Player client Player to sync to
+---@realm server
+---@param client Player Player to sync to
 function ax.zones:SyncToPlayer(client)
     if ( !ax.util:IsValidPlayer(client) ) then return end
     local payload = BuildSyncPayload()

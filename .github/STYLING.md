@@ -226,17 +226,34 @@ end
 
 ## 10) Documentation
 
-Public-facing functions should use LDOC-style comments.
+Public-facing functions, library tables, and meaningful fields use **GLuaLS** annotations (the LuaLS / EmmyLua `---@` dialect). Do **not** use the old ldoc tags (`-- @param`, `-- @tparam`, `-- @treturn`, `-- @module`, `-- @function`) — GLuaLS does not understand them.
+
+Every line in a doc block is a `---` line: plain prose for the description, `---@tag` for annotations.
 
 ```lua
 --- Adds an item to the inventory.
--- @realm server
--- @param client Player The target player
--- @param itemData table The item definition/data
--- @return boolean success
+---@realm server
+---@param client Player The target player.
+---@param itemData table The item definition/data.
+---@return boolean success Whether the item was added.
 function inventory:AddItem(client, itemData)
 end
 ```
+
+Annotate the backing table of an `ax.*` subsystem with `---@class`, and document stored fields with `---@field`.
+
+```lua
+---@class ax.flag
+--- Flag management system for character permissions and abilities.
+---@field stored table<string, table> Registered flags keyed by their single-letter identifier.
+ax.flag = ax.flag or {}
+```
+
+Tags in use: `---@class`, `---@field`, `---@realm server|client|shared`, `---@param name <type> desc` (optional args take `name?`), `---@return <type> [name] desc` (use `# desc` when the return has no name), `---@type`, `---@usage`, `---@see`, `---@private`.
+
+Use real GLua types: `Player`, `Entity`, `Vector`, `Angle`, `Color`, `Panel`, `CMoveData`, plus `string`, `number`, `boolean`, `table`, `function`. Use unions (`string|nil`) where accurate.
+
+The description at the top of a doc block — and any plain `--` prose comment above a function, method, field, or block — must be a **single line**, no matter how long. Do not hard-wrap prose; `---@param` / `---@return` lines still get one line each.
 
 Docs must match behavior. If the doc lies, fix the code or the doc.
 

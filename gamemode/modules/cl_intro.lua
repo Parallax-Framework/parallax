@@ -331,15 +331,15 @@ local function GetIntroColor()
 end
 
 --- Registers a line in the intro sequence.
--- @realm client
--- @param text any Text string or function returning a string
--- @param font string Font name
--- @param showingTime number How long the line stays visible
--- @param col Color Base color for the line
--- @param startX number Start X
--- @param startY number Start Y
--- @param xAlign number X alignment
--- @param yAlign number Y alignment
+---@realm client
+---@param text any Text string or function returning a string
+---@param font string Font name
+---@param showingTime number How long the line stays visible
+---@param col Color Base color for the line
+---@param startX number Start X
+---@param startY number Start Y
+---@param xAlign number X alignment
+---@param yAlign number Y alignment
 function MODULE:Register(text, font, showingTime, col, startX, startY, xAlign, yAlign)
     self.stored[#self.stored + 1] = {
         text = "",
@@ -378,8 +378,8 @@ function MODULE:ResetIntro()
 end
 
 --- Builds and optionally starts the intro sequence.
--- @realm client
--- @param bStart boolean Whether to start immediately
+---@realm client
+---@param bStart boolean Whether to start immediately
 function MODULE:InitializeIntro(bStart)
     self.stored = {}
 

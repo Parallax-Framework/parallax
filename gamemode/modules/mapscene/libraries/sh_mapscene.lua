@@ -9,28 +9,28 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
+---@class ax.mapscene
 --- Map scene library shared helpers.
--- @module ax.mapscene
 
 ax.mapscene = ax.mapscene or {}
 ax.mapscene.scenes = ax.mapscene.scenes or {}
 ax.mapscene.version = ax.mapscene.version or 1
 
 --- Returns all stored scenes.
--- @return table
+---@return table
 function ax.mapscene:GetScenes()
     return self.scenes or {}
 end
 
 --- Returns the number of stored scenes.
--- @return number
+---@return number
 function ax.mapscene:GetCount()
     return #self:GetScenes()
 end
 
 --- Check if a number is finite and non-NaN.
--- @param value any
--- @return boolean
+---@param value any
+---@return boolean
 function ax.mapscene:IsFiniteNumber(value)
     if ( !isnumber(value) ) then return false end
     if ( value != value ) then return false end
@@ -40,8 +40,8 @@ function ax.mapscene:IsFiniteNumber(value)
 end
 
 --- Validate a Vector.
--- @param vec any
--- @return boolean
+---@param vec any
+---@return boolean
 function ax.mapscene:IsValidVector(vec)
     if ( !isvector(vec) ) then return false end
 
@@ -49,8 +49,8 @@ function ax.mapscene:IsValidVector(vec)
 end
 
 --- Validate an Angle.
--- @param ang any
--- @return boolean
+---@param ang any
+---@return boolean
 function ax.mapscene:IsValidAngle(ang)
     if ( !isangle(ang) ) then return false end
 
@@ -58,8 +58,8 @@ function ax.mapscene:IsValidAngle(ang)
 end
 
 --- Normalize a name string.
--- @param name any
--- @return string|nil
+---@param name any
+---@return string|nil
 function ax.mapscene:NormalizeName(name)
     if ( !isstring(name) ) then return nil end
 
@@ -70,8 +70,8 @@ function ax.mapscene:NormalizeName(name)
 end
 
 --- Parse a tag list from a string.
--- @param tagString string
--- @return table
+---@param tagString string
+---@return table
 function ax.mapscene:ParseTags(tagString)
     if ( !isstring(tagString) or tagString == "" ) then return {} end
 
@@ -88,8 +88,8 @@ function ax.mapscene:ParseTags(tagString)
 end
 
 --- Normalize tags to a cleaned list of unique, lowercase strings.
--- @param tags table
--- @return table
+---@param tags table
+---@return table
 function ax.mapscene:NormalizeTags(tags)
     if ( !istable(tags) ) then return {} end
 
@@ -125,15 +125,16 @@ function ax.mapscene:NormalizeTags(tags)
 end
 
 --- Check if a scene entry is a paired scene.
--- @param scene table
--- @return boolean
+---@param scene table
+---@return boolean
 function ax.mapscene:IsPair(scene)
     return istable(scene) and self:IsValidVector(scene.origin2) and self:IsValidAngle(scene.angles2)
 end
 
 --- Validate and sanitize a scene entry.
--- @param scene table
--- @return table|nil, string|nil
+---@param scene table
+---@return table|nil
+---@return string|nil
 function ax.mapscene:SanitizeScene(scene)
     if ( !istable(scene) ) then
         return nil, "Scene is not a table"
@@ -178,8 +179,9 @@ function ax.mapscene:SanitizeScene(scene)
 end
 
 --- Find a scene by name (case-insensitive).
--- @param name string
--- @return table|nil, number|nil
+---@param name string
+---@return table|nil
+---@return number|nil
 function ax.mapscene:FindByName(name)
     if ( !isstring(name) or name == "" ) then return nil end
 
@@ -195,8 +197,9 @@ function ax.mapscene:FindByName(name)
 end
 
 --- Resolve a scene by index or name.
--- @param identifier any
--- @return table|nil, number|nil
+---@param identifier any
+---@return table|nil
+---@return number|nil
 function ax.mapscene:ResolveScene(identifier)
     if ( isnumber(identifier) ) then
         local scene = self.scenes[identifier]
@@ -213,8 +216,8 @@ function ax.mapscene:ResolveScene(identifier)
 end
 
 --- Pack a scene for JSON export (convert vectors/angles to tables).
--- @param scene table
--- @return table
+---@param scene table
+---@return table
 function ax.mapscene:PackScene(scene)
     if ( !istable(scene) ) then return nil end
 
@@ -235,8 +238,9 @@ function ax.mapscene:PackScene(scene)
 end
 
 --- Unpack a scene from JSON export format.
--- @param data table
--- @return table|nil, string|nil
+---@param data table
+---@return table|nil
+---@return string|nil
 function ax.mapscene:UnpackScene(data)
     if ( !istable(data) ) then return nil, "Invalid data" end
 
@@ -264,9 +268,9 @@ function ax.mapscene:UnpackScene(data)
 end
 
 --- Handle config changes relevant to map scenes.
--- @param key string
--- @param oldValue any
--- @param value any
+---@param key string
+---@param oldValue any
+---@param value any
 function ax.mapscene:OnConfigChanged(key, oldValue, value)
     if ( !isstring(key) ) then return end
     if ( !string.StartWith(key, "map.scene.") ) then return end

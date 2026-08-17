@@ -9,8 +9,8 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
+---@class ax.mapscene
 --- Server-side map scene management.
--- @module ax.mapscene
 
 ax.mapscene = ax.mapscene or {}
 ax.mapscene.scenes = ax.mapscene.scenes or {}
@@ -19,13 +19,13 @@ ax.mapscene.pendingPairs = ax.mapscene.pendingPairs or {}
 local MAX_CHUNK = 60000
 
 --- Build the persistence key for map scenes.
--- @return string
+---@return string
 function ax.mapscene:GetDataKey()
     return "map_scenes"
 end
 
 --- Get the configured persistence scope.
--- @return string
+---@return string
 function ax.mapscene:GetScope()
     local scope = ax.config:Get("map.scene.scope", "map")
     if ( scope != "map" and scope != "project" and scope != "global" ) then
@@ -36,7 +36,7 @@ function ax.mapscene:GetScope()
 end
 
 --- Load scenes from disk.
--- @realm server
+---@realm server
 function ax.mapscene:Load()
     local data = ax.data:Get(self:GetDataKey(), nil, {
         scope = self:GetScope()
@@ -68,7 +68,7 @@ function ax.mapscene:Load()
 end
 
 --- Save scenes to disk.
--- @realm server
+---@realm server
 function ax.mapscene:Save()
     ax.data:Set(self:GetDataKey(), {
         version = self.version or 1,
@@ -80,7 +80,7 @@ function ax.mapscene:Save()
 end
 
 --- Serialize scenes for network sync using sfs + compression.
--- @return string|nil
+---@return string|nil
 function ax.mapscene:SerializeScenes()
     local payload = {
         version = self.version or 1,
@@ -106,7 +106,7 @@ function ax.mapscene:SerializeScenes()
 end
 
 --- Send a scene sync to a player or broadcast.
--- @param target Player|table|nil
+---@param target Player|table|nil
 function ax.mapscene:Sync(target)
     local compressed = self:SerializeScenes()
     if ( !compressed ) then
@@ -138,8 +138,9 @@ function ax.mapscene:Sync(target)
 end
 
 --- Add a scene to the registry.
--- @param scene table
--- @return boolean, string|nil
+---@param scene table
+---@return boolean
+---@return string|nil
 function ax.mapscene:AddScene(scene)
     local maxScenes = ax.config:Get("map.scene.max", 128)
     if ( self:GetCount() >= maxScenes ) then
@@ -163,9 +164,9 @@ function ax.mapscene:AddScene(scene)
 end
 
 --- Remove scenes near a position.
--- @param position Vector
--- @param radius number
--- @return number
+---@param position Vector
+---@param radius number
+---@return number
 function ax.mapscene:RemoveScenesNear(position, radius)
     if ( !self:IsValidVector(position) ) then return 0 end
 
@@ -198,7 +199,7 @@ function ax.mapscene:RemoveScenesNear(position, radius)
 end
 
 --- Export scenes to JSON for sharing.
--- @return string|nil
+---@return string|nil
 function ax.mapscene:ExportToJSON()
     local export = {
         version = self.version or 1,
@@ -213,8 +214,9 @@ function ax.mapscene:ExportToJSON()
 end
 
 --- Import scenes from JSON.
--- @param json string
--- @return boolean, string|nil
+---@param json string
+---@return boolean
+---@return string|nil
 function ax.mapscene:ImportFromJSON(json)
     if ( !isstring(json) or json == "" ) then
         return false, "Invalid JSON"
@@ -253,10 +255,11 @@ function ax.mapscene:ImportFromJSON(json)
 end
 
 --- Queue or complete a paired scene capture.
--- @param client Player
--- @param scene table
--- @param bPair boolean
--- @return boolean, string|nil
+---@param client Player
+---@param scene table
+---@param bPair boolean
+---@return boolean
+---@return string|nil
 function ax.mapscene:HandlePairCapture(client, scene, bPair)
     if ( !bPair ) then
         return self:AddScene(scene)
@@ -278,15 +281,15 @@ function ax.mapscene:HandlePairCapture(client, scene, bPair)
 end
 
 --- Send a preview target to a specific client.
--- @param client Player
--- @param identifier number|string|nil
+---@param client Player
+---@param identifier number|string|nil
 function ax.mapscene:SendPreview(client, identifier)
     if ( !ax.util:IsValidPlayer(client) ) then return end
     ax.net:Start(client, "mapscene.preview", identifier)
 end
 
 --- Add map scene origin to the PVS.
--- @param client Player
+---@param client Player
 function ax.mapscene:SetupPlayerVisibility(client)
     if ( !ax.util:IsValidPlayer(client) ) then return end
 

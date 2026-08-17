@@ -9,8 +9,8 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
+---@class ax.mapscene
 --- Map scene networking (server).
--- @module ax.mapscene
 
 ax.net:Hook("mapscene.pvs", function(client, origin)
     if ( !ax.util:IsValidPlayer(client) ) then return end

@@ -9,10 +9,8 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
---- Action bar system for displaying circular progress indicators with timers.
--- Displays a centered circular progress bar with countdown timer and customizable label.
---
--- @module ax.actionBar
+---@class ax.actionBar
+--- Action bar system for displaying circular progress indicators with timers. Displays a centered circular progress bar with countdown timer and customizable label.
 
 ax.actionBar = ax.actionBar or {}
 ax.actionBar.active = ax.actionBar.active or false
@@ -24,11 +22,11 @@ ax.actionBar.onComplete = ax.actionBar.onComplete or nil
 ax.actionBar.onCancel = ax.actionBar.onCancel or nil
 
 --- Start displaying an action bar
--- @realm client
--- @param label string Label text to display (default: "Processing...")
--- @param duration number Duration in seconds
--- @param onComplete function Optional callback when action completes
--- @param onCancel function Optional callback when action is cancelled
+---@realm client
+---@param label string Label text to display (default: "Processing...")
+---@param duration number Duration in seconds
+---@param onComplete? function Optional callback when action completes
+---@param onCancel? function Optional callback when action is cancelled
 function ax.actionBar:Start(label, duration, onComplete, onCancel)
     if ( label == nil ) then return end
 
@@ -42,8 +40,8 @@ function ax.actionBar:Start(label, duration, onComplete, onCancel)
 end
 
 --- Stop the current action bar
--- @realm client
--- @param cancelled bool Whether the action was cancelled (triggers onCancel callback)
+---@realm client
+---@param cancelled boolean Whether the action was cancelled (triggers onCancel callback)
 function ax.actionBar:Stop(cancelled, suppressNetwork)
     if ( !self:IsActive() ) then return end
 
@@ -61,15 +59,15 @@ function ax.actionBar:Stop(cancelled, suppressNetwork)
 end
 
 --- Check if an action bar is currently active
--- @realm client
--- @return bool Whether an action bar is active
+---@realm client
+---@return boolean # Whether an action bar is active
 function ax.actionBar:IsActive()
     return self.active
 end
 
 --- Get remaining time for the active action bar
--- @realm client
--- @return number Remaining time in seconds (0 if no active bar)
+---@realm client
+---@return number # Remaining time in seconds (0 if no active bar)
 function ax.actionBar:GetRemainingTime()
     if ( !self:IsActive() ) then return 0 end
 

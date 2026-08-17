@@ -9,14 +9,14 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
--- @module ax.zones
+---@class ax.zones
 
 ax.zones = ax.zones or {}
 
 --- Get all physical zones that contain a position.
--- @realm shared
--- @tparam Vector pos Position to test
--- @treturn table Array of zone specs, sorted by priority (desc) then id (asc)
+---@realm shared
+---@param pos Vector Position to test
+---@return table # Array of zone specs, sorted by priority (desc) then id (asc)
 function ax.zones:AtPos(pos)
     if ( !isvector(pos) ) then return {} end
 
@@ -46,9 +46,9 @@ function ax.zones:AtPos(pos)
 end
 
 --- Get all PVS and trace zones visible to an entity.
--- @realm shared
--- @tparam Entity ent Entity to test visibility from
--- @treturn table Array of zone specs with weight field, sorted by priority desc
+---@realm shared
+---@param ent Entity Entity to test visibility from
+---@return table # Array of zone specs with weight field, sorted by priority desc
 function ax.zones:VisibleZones(ent)
     if ( !IsValid(ent) ) then return {} end
 
@@ -87,11 +87,10 @@ function ax.zones:VisibleZones(ent)
     return result
 end
 
---- Compute zone blend for an entity.
--- Returns physical zones, visible zones, and the dominant zone.
--- @realm shared
--- @tparam Entity ent Entity to evaluate
--- @treturn table Result with fields: physical (array), visible (array), dominant (zone|nil)
+--- Compute zone blend for an entity. Returns physical zones, visible zones, and the dominant zone.
+---@realm shared
+---@param ent Entity Entity to evaluate
+---@return table # Result with fields: physical (array), visible (array), dominant (zone|nil)
 function ax.zones:BlendFor(ent)
     if ( !IsValid(ent) ) then
         return { physical = {}, visible = {}, dominant = nil }
@@ -121,9 +120,9 @@ function ax.zones:BlendFor(ent)
 end
 
 --- Get the dominant zone for an entity (convenience method).
--- @realm shared
--- @tparam Entity ent Entity to evaluate
--- @treturn table|nil The dominant zone or nil
+---@realm shared
+---@param ent Entity Entity to evaluate
+---@return table|nil # The dominant zone or nil
 function ax.zones:GetDominant(ent)
     local blend = self:BlendFor(ent)
     return blend.dominant

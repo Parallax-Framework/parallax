@@ -11,12 +11,10 @@
 
 local player = ax.player.meta or FindMetaTable("Player")
 
---- Returns the player's translated animation hold type.
--- Checks the active weapon, optional `Weapon:GetCustomHoldType(client)` override, and the `GetPlayerHoldType` hook before falling back to `HOLDTYPE_TRANSLATOR`.
--- Returns `"normal"` when the player or active weapon is invalid.
--- @realm shared
--- @return string The hold type used by the animation system.
--- @usage local holdType = client:GetHoldType()
+--- Returns the player's translated animation hold type. Checks the active weapon, optional `Weapon:GetCustomHoldType(client)` override, and the `GetPlayerHoldType` hook before falling back to `HOLDTYPE_TRANSLATOR`. Returns `"normal"` when the player or active weapon is invalid.
+---@realm shared
+---@return string # The hold type used by the animation system.
+---@usage local holdType = client:GetHoldType()
 function player:GetHoldType()
     if ( !ax.util:IsValidPlayer(self) ) then return "normal" end
 
@@ -55,10 +53,8 @@ local function GetForcedSequenceResolveTimerName(client)
 end
 
 if ( CLIENT ) then
-    --- Clears this player's cached forced sequence resolution on the client.
-    -- Removes the cached sequence ID/duration pair and clears the local `sequence.id` relay value.
-    -- This is called when the sequence identifier becomes invalid or needs to be resolved again for a new model.
-    -- @realm client
+    --- Clears this player's cached forced sequence resolution on the client. Removes the cached sequence ID/duration pair and clears the local `sequence.id` relay value. This is called when the sequence identifier becomes invalid or needs to be resolved again for a new model.
+    ---@realm client
     function player:ClearForcedSequenceResolution()
         local clientTable = self:GetTable()
         clientTable.axForcedSequence = nil
@@ -66,14 +62,12 @@ if ( CLIENT ) then
         self:SetRelay("sequence.id", nil, true)
     end
 
-    --- Resolves a forced sequence identifier to a client-local sequence ID and duration.
-    -- Accepts a numeric sequence ID or string sequence name. String names are looked up against the player's current model and cached per model/sequence pair.
-    -- Updates the local `sequence.id` relay value with the resolved ID so animation hooks can consume it.
-    -- @realm client
-    -- @param sequence string|number|nil Sequence name or ID. Defaults to the current `sequence.identifier` relay value.
-    -- @return number|nil The resolved sequence ID, or nil when no valid sequence exists.
-    -- @return number The resolved sequence duration in seconds, or 0 when unresolved.
-    -- @usage local sequenceID, duration = client:ResolveForcedSequence("idle_all_01")
+    --- Resolves a forced sequence identifier to a client-local sequence ID and duration. Accepts a numeric sequence ID or string sequence name. String names are looked up against the player's current model and cached per model/sequence pair. Updates the local `sequence.id` relay value with the resolved ID so animation hooks can consume it.
+    ---@realm client
+    ---@param sequence string|number|nil Sequence name or ID. Defaults to the current `sequence.identifier` relay value.
+    ---@return number|nil # The resolved sequence ID, or nil when no valid sequence exists.
+    ---@return number # The resolved sequence duration in seconds, or 0 when unresolved.
+    ---@usage local sequenceID, duration = client:ResolveForcedSequence("idle_all_01")
     function player:ResolveForcedSequence(sequence)
         sequence = sequence != nil and sequence or self:GetRelay("sequence.identifier")
         if ( sequence == nil ) then
@@ -118,18 +112,16 @@ if ( CLIENT ) then
         return resolvedID, duration
     end
 else
-    --- Stub for clearing forced sequence resolution outside the client realm.
-    -- Exists so shared code can safely call `ClearForcedSequenceResolution` without realm checks.
-    -- @realm server
+    --- Stub for clearing forced sequence resolution outside the client realm. Exists so shared code can safely call `ClearForcedSequenceResolution` without realm checks.
+    ---@realm server
     function player:ClearForcedSequenceResolution()
     end
 
-    --- Stub for resolving forced sequences outside the client realm.
-    -- Server timing is either supplied explicitly or resolved by the client through networking, so this always returns nil and 0.
-    -- @realm server
-    -- @param sequence string|number|nil Ignored outside the client realm.
-    -- @return nil Always nil on the server.
-    -- @return number Always 0 on the server.
+    --- Stub for resolving forced sequences outside the client realm. Server timing is either supplied explicitly or resolved by the client through networking, so this always returns nil and 0.
+    ---@realm server
+    ---@param sequence string|number|nil Ignored outside the client realm.
+    ---@return nil # Always nil on the server.
+    ---@return number # Always 0 on the server.
     function player:ResolveForcedSequence(sequence)
         return nil, 0
     end
@@ -139,10 +131,9 @@ if ( SERVER ) then
     ax.animations.forcedSequenceCallbacks = ax.animations.forcedSequenceCallbacks or {}
     ax.animations.forcedSequencePending = ax.animations.forcedSequencePending or {}
 
-    --- Clears any pending client-authoritative sequence resolution for a player.
-    -- Removes the stored pending resolve entry and its timeout timer.
-    -- @realm server
-    -- @param client Player The player whose pending forced sequence resolve should be cleared.
+    --- Clears any pending client-authoritative sequence resolution for a player. Removes the stored pending resolve entry and its timeout timer.
+    ---@realm server
+    ---@param client Player The player whose pending forced sequence resolve should be cleared.
     function ax.animations:ClearForcedSequencePending(client)
         if ( !ax.util:IsValidPlayer(client) ) then return end
 
@@ -150,13 +141,12 @@ if ( SERVER ) then
         timer.Remove(GetForcedSequenceResolveTimerName(client))
     end
 
-    --- Applies timing behavior for a forced sequence on a player.
-    -- Non-zero sequence times create an automatic leave timer. A zero time marks the sequence as looping until the player cancels it.
-    -- @realm server
-    -- @param client Player The player currently in the forced sequence.
-    -- @param sequence string|number The sequence identifier, used for debug output.
-    -- @param sequenceTime number Duration in seconds. Use 0 for a looping/cancellable sequence.
-    -- @return number The normalized sequence duration in seconds.
+    --- Applies timing behavior for a forced sequence on a player. Non-zero sequence times create an automatic leave timer. A zero time marks the sequence as looping until the player cancels it.
+    ---@realm server
+    ---@param client Player The player currently in the forced sequence.
+    ---@param sequence string|number The sequence identifier, used for debug output.
+    ---@param sequenceTime number Duration in seconds. Use 0 for a looping/cancellable sequence.
+    ---@return number # The normalized sequence duration in seconds.
     function ax.animations:ApplyForcedSequenceTiming(client, sequence, sequenceTime)
         if ( !ax.util:IsValidPlayer(client) ) then
             return 0
@@ -189,15 +179,13 @@ if ( SERVER ) then
         return sequenceTime
     end
 
-    --- Resolves a pending forced sequence timing request from the client.
-    -- Validates the pending serial and current sequence identifier to ignore stale or mismatched responses.
-    -- On success, clears the pending entry and applies the supplied sequence timing.
-    -- @realm server
-    -- @param client Player The player that resolved the sequence.
-    -- @param serial number The forced sequence serial sent to the client.
-    -- @param sequenceTime number Resolved duration in seconds.
-    -- @return boolean True if the pending resolve was accepted.
-    -- @return number|string Applied sequence time on success, or an error message on failure.
+    --- Resolves a pending forced sequence timing request from the client. Validates the pending serial and current sequence identifier to ignore stale or mismatched responses. On success, clears the pending entry and applies the supplied sequence timing.
+    ---@realm server
+    ---@param client Player The player that resolved the sequence.
+    ---@param serial number The forced sequence serial sent to the client.
+    ---@param sequenceTime number Resolved duration in seconds.
+    ---@return boolean # True if the pending resolve was accepted.
+    ---@return number|string # Applied sequence time on success, or an error message on failure.
     function ax.animations:ResolveForcedSequencePending(client, serial, sequenceTime)
         if ( !ax.util:IsValidPlayer(client) ) then
             return false, "Invalid player."
@@ -221,11 +209,9 @@ if ( SERVER ) then
         return true, self:ApplyForcedSequenceTiming(client, pending.identifier, sequenceTime)
     end
 
-    --- Clears this player's currently forced animation sequence.
-    -- Runs `PrePlayerLeaveSequence` before clearing state and `PostPlayerLeaveSequence` after cleanup.
-    -- Removes sequence timers, clears all sequence relay values, sends the `sequence.reset` net message, and invokes any stored completion callback.
-    -- @realm server
-    -- @usage client:LeaveSequence()
+    --- Clears this player's currently forced animation sequence. Runs `PrePlayerLeaveSequence` before clearing state and `PostPlayerLeaveSequence` after cleanup. Removes sequence timers, clears all sequence relay values, sends the `sequence.reset` net message, and invokes any stored completion callback.
+    ---@realm server
+    ---@usage client:LeaveSequence()
     function player:LeaveSequence()
         local prevent = hook.Run("PrePlayerLeaveSequence", self)
         if ( prevent != nil and prevent == false ) then return end
@@ -254,19 +240,16 @@ if ( SERVER ) then
         hook.Run("PostPlayerLeaveSequence", self)
     end
 
-    --- Forces this player into a specific animation sequence.
-    -- Sets sequence relay data and broadcasts `sequence.set` so clients play the requested sequence.
-    -- When `time` is nil, waits for a client-authoritative duration resolve before applying timing. Passing nil as `sequence` resets the current sequence.
-    -- Hooks `PrePlayerForceSequence` and `PostPlayerForceSequence` are fired around the operation.
-    -- @realm server
-    -- @param sequence string|number|nil Sequence name or ID to force, or nil to leave the current sequence.
-    -- @param callback function|nil Called as `callback(client)` when the sequence is cleared.
-    -- @param time number|nil Explicit duration in seconds. Use 0 for a looping sequence.
-    -- @param noFreeze boolean|nil When true, marks the sequence as frozen in relay data for consumers.
-    -- @return number|nil The explicit sequence time when provided, otherwise nil while waiting for client resolution.
-    -- @usage client:ForceSequence("idle_all_01", function(client)
-    --     client:Notify("Sequence finished.")
-    -- end)
+    --- Forces this player into a specific animation sequence. Sets sequence relay data and broadcasts `sequence.set` so clients play the requested sequence. When `time` is nil, waits for a client-authoritative duration resolve before applying timing. Passing nil as `sequence` resets the current sequence. Hooks `PrePlayerForceSequence` and `PostPlayerForceSequence` are fired around the operation.
+    ---@realm server
+    ---@param sequence string|number|nil Sequence name or ID to force, or nil to leave the current sequence.
+    ---@param callback function|nil Called as `callback(client)` when the sequence is cleared.
+    ---@param time number|nil Explicit duration in seconds. Use 0 for a looping sequence.
+    ---@param noFreeze boolean|nil When true, marks the sequence as frozen in relay data for consumers.
+    ---@return number|nil # The explicit sequence time when provided, otherwise nil while waiting for client resolution.
+    ---@usage client:ForceSequence("idle_all_01", function(client)
+    ---     client:Notify("Sequence finished.")
+    --- end)
     function player:ForceSequence(sequence, callback, time, noFreeze)
         local prevent = hook.Run("PrePlayerForceSequence", self, sequence, callback, time, noFreeze)
         if ( prevent != nil and prevent == false ) then

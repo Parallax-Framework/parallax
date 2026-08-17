@@ -49,9 +49,9 @@ function ENTITY:TakeDoorAccess(client)
 end
 
 --- Locks a door and syncs the state to clients via relay. Also locks the partner door if one exists.
--- @realm server
--- @param bNoPartner boolean If true, skips locking the partner door (used internally to avoid recursion)
--- @return boolean success
+---@realm server
+---@param bNoPartner boolean If true, skips locking the partner door (used internally to avoid recursion)
+---@return boolean success
 function ENTITY:LockDoor(bNoPartner)
     if ( !self:IsDoor() ) then return false end
 
@@ -70,9 +70,9 @@ function ENTITY:LockDoor(bNoPartner)
 end
 
 --- Unlocks a door and syncs the state to clients via relay. Also unlocks the partner door if one exists.
--- @realm server
--- @param bNoPartner boolean If true, skips unlocking the partner door (used internally to avoid recursion)
--- @return boolean success
+---@realm server
+---@param bNoPartner boolean If true, skips unlocking the partner door (used internally to avoid recursion)
+---@return boolean success
 function ENTITY:UnlockDoor(bNoPartner)
     if ( !self:IsDoor() ) then return false end
 
@@ -91,8 +91,8 @@ function ENTITY:UnlockDoor(bNoPartner)
 end
 
 --- Toggles a door's lock state and syncs to clients via relay.
--- @realm server
--- @return boolean success
+---@realm server
+---@return boolean success
 function ENTITY:ToggleDoorLock()
     if ( !self:IsDoor() ) then return false end
 

@@ -9,10 +9,8 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
---- Easing functions for lerping values.
--- This module provides a set of easing functions to create smooth transitions between values.
--- It allows you to specify the type of easing function to use, such as "InQuad", "OutCubic", etc.
--- @module ax.ease
+---@class ax.ease
+--- Easing functions for lerping values. This module provides a set of easing functions to create smooth transitions between values. It allows you to specify the type of easing function to use, such as "InQuad", "OutCubic", etc.
 
 ax.ease = ax.ease or {}
 
@@ -80,12 +78,12 @@ ax.ease.list = {
 }
 
 --- Lerp a value, color, vector, or angle using an easing function.
--- @realm shared
--- @param easeType The type of easing function to use (e.g., "InOutQuad")
--- @param time The time value (0 to 1) to interpolate between startValue and endValue.
--- @param startValue The starting value for the interpolation (number, color table, vector, or angle).
--- @param endValue The ending value for the interpolation (number, color table, vector, or angle).
--- @return The interpolated value based on the easing function.
+---@realm shared
+---@param easeType string The name of the easing function to use (e.g., `"InOutQuad"`).
+---@param time number The time value (0 to 1) to interpolate between startValue and endValue.
+---@param startValue number|Color|Vector|Angle The starting value for the interpolation.
+---@param endValue number|Color|Vector|Angle The ending value for the interpolation.
+---@return number|Color|Vector|Angle # The interpolated value, matching the type of the input values.
 function ax.ease:Lerp(easeType, time, startValue, endValue)
     if ( !isstring(easeType) ) then
         error("[easeLerp] easeType must be a string, got: " .. type(easeType))

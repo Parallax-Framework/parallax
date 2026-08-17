@@ -9,39 +9,35 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
---- Character-based currency system for managing multiple currencies in roleplay scenarios.
--- This library provides currency registration, formatting, and character-based storage with
--- networking support for synchronized currency values between server and clients.
--- @module ax.currencies
+---@class ax.currencies
+--- Character-based currency system for managing multiple currencies in roleplay scenarios. This library provides currency registration, formatting, and character-based storage with networking support for synchronized currency values between server and clients.
 
 ax.currencies = ax.currencies or {}
 ax.currencies.registry = ax.currencies.registry or {}
 
---- Register a new currency type.
--- Creates a currency definition that can be used for character money management.
--- Automatically registers a character variable for storing the currency value.
--- @realm shared
--- @param uniqueID string The unique identifier for the currency (e.g., "default", "tokens")
--- @param data table Currency configuration table with the following fields:
---   - name (string): Display name of the currency
---   - symbol (string): Currency symbol (e.g., "$", "¥", "₹")
---   - default (number): Default starting amount (defaults to 0)
---   - singular (string): Singular form of currency name (e.g., "dollar")
---   - plural (string): Plural form of currency name (e.g., "default")
---   - symbolPosition (string): "prefix" or "suffix" for how the symbol is placed in formatted text
---   - symbolSpacing (boolean): Whether to add a space between the symbol and amount in formatted text
---   - model (string): Inventory/world preview model used for this currency
---   - description (string): Description shown in UI panels
---   - physical (boolean): Whether the currency can exist as a world entity or be directly handed over
---   - format (function): Optional custom formatting function(amount) -> string
--- @return bool True if registration succeeded, false otherwise
--- @usage ax.currencies:Register("default", {
---     name = "Dollars",
---     symbol = "$",
---     default = 100,
---     singular = "dollar",
---     plural = "default"
--- })
+--- Register a new currency type. Creates a currency definition that can be used for character money management. Automatically registers a character variable for storing the currency value.
+---@realm shared
+---@param uniqueID string The unique identifier for the currency (e.g., "default", "tokens")
+---@param data table Currency configuration table with the following fields:
+--- - name (string): Display name of the currency
+--- - symbol (string): Currency symbol (e.g., "$", "¥", "₹")
+--- - default (number): Default starting amount (defaults to 0)
+--- - singular (string): Singular form of currency name (e.g., "dollar")
+--- - plural (string): Plural form of currency name (e.g., "default")
+--- - symbolPosition (string): "prefix" or "suffix" for how the symbol is placed in formatted text
+--- - symbolSpacing (boolean): Whether to add a space between the symbol and amount in formatted text
+--- - model (string): Inventory/world preview model used for this currency
+--- - description (string): Description shown in UI panels
+--- - physical (boolean): Whether the currency can exist as a world entity or be directly handed over
+--- - format (function): Optional custom formatting function(amount) -> string
+---@return boolean # True if registration succeeded, false otherwise
+---@usage ax.currencies:Register("default", {
+---     name = "Dollars",
+---     symbol = "$",
+---     default = 100,
+---     singular = "dollar",
+---     plural = "default"
+--- })
 function ax.currencies:Register(uniqueID, data)
     if ( !isstring(uniqueID) or !istable(data) ) then
         ax.util:PrintError("Invalid arguments provided to ax.currencies:Register()")
@@ -84,10 +80,10 @@ function ax.currencies:Register(uniqueID, data)
 end
 
 --- Get a registered currency by its unique ID.
--- @realm shared
--- @param uniqueID string The unique identifier of the currency
--- @return table|nil The currency data table if found, nil otherwise
--- @usage local default = ax.currencies:Get("default")
+---@realm shared
+---@param uniqueID string The unique identifier of the currency
+---@return table|nil # The currency data table if found, nil otherwise
+---@usage local default = ax.currencies:Get("default")
 function ax.currencies:Get(uniqueID)
     if ( !isstring(uniqueID) ) then
         ax.util:PrintError("Invalid currency ID provided to ax.currencies:Get()")
@@ -97,14 +93,13 @@ function ax.currencies:Get(uniqueID)
     return self.registry[uniqueID]
 end
 
---- Find a currency by its uniqueID, name, symbol, singular, or plural form.
--- Performs a case-insensitive search with fallback from exact match → prefix match → substring match.
--- @realm shared
--- @param query string The uniqueID, name, symbol, singular, or plural to search for
--- @return table|nil The currency data table if a match is found, nil otherwise
--- @usage local currency = ax.currencies:Find("default") -- Finds by uniqueID
--- @usage local currency = ax.currencies:Find("req")     -- Finds "requisition" by prefix
--- @usage local currency = ax.currencies:Find("$")       -- Finds by symbol
+--- Find a currency by its uniqueID, name, symbol, singular, or plural form. Performs a case-insensitive search with fallback from exact match → prefix match → substring match.
+---@realm shared
+---@param query string The uniqueID, name, symbol, singular, or plural to search for
+---@return table|nil # The currency data table if a match is found, nil otherwise
+---@usage local currency = ax.currencies:Find("default") -- Finds by uniqueID
+---@usage local currency = ax.currencies:Find("req")  -- Finds "requisition" by prefix
+---@usage local currency = ax.currencies:Find("$")    -- Finds by symbol
 function ax.currencies:Find(query)
     if ( !isstring(query) or query == "" ) then
         return nil
@@ -147,44 +142,43 @@ function ax.currencies:Find(query)
 end
 
 --- Get all registered currencies.
--- @realm shared
--- @return table Table of all registered currencies keyed by their unique IDs
--- @usage for id, currencyData in pairs(ax.currencies:GetAll()) do
---     print(id, currencyData.name)
--- end
+---@realm shared
+---@return table # Table of all registered currencies keyed by their unique IDs
+---@usage for id, currencyData in pairs(ax.currencies:GetAll()) do
+---     print(id, currencyData.name)
+--- end
 function ax.currencies:GetAll()
     return self.registry
 end
 
 --- Check if a currency is valid and registered.
--- @realm shared
--- @param uniqueID string The unique identifier to check
--- @return bool True if the currency exists, false otherwise
--- @usage if (ax.currencies:IsValid("default")) then
---     print("Dollars currency is registered")
--- end
+---@realm shared
+---@param uniqueID string The unique identifier to check
+---@return boolean # True if the currency exists, false otherwise
+---@usage if (ax.currencies:IsValid("default")) then
+---     print("Dollars currency is registered")
+--- end
 function ax.currencies:IsValid(uniqueID)
     return self.registry[uniqueID] != nil
 end
 
 --- Check if a currency supports physical interactions like dropping or direct handoffs.
--- @realm shared
--- @param uniqueID string The unique identifier to check
--- @return bool True if the currency is physical, false otherwise
+---@realm shared
+---@param uniqueID string The unique identifier to check
+---@return boolean # True if the currency is physical, false otherwise
 function ax.currencies:IsPhysical(uniqueID)
     uniqueID = uniqueID or "default"
 
     return self.registry[uniqueID] != nil and self.registry[uniqueID].physical == true
 end
 
---- Format a currency amount using the currency's formatter.
--- Falls back to basic formatting if currency is not found or invalid.
--- @realm shared
--- @param amount number The amount to format
--- @param uniqueID string The unique identifier of the currency
--- @return string Formatted currency string (e.g., "$ 1,234 Dollars")
--- @usage local formatted = ax.currencies:Format("default", 1000)
--- -- Returns: "$ 1,000 Dollars"
+--- Format a currency amount using the currency's formatter. Falls back to basic formatting if currency is not found or invalid.
+---@realm shared
+---@param amount number The amount to format
+---@param uniqueID string The unique identifier of the currency
+---@return string # Formatted currency string (e.g., "$ 1,234 Dollars")
+---@usage local formatted = ax.currencies:Format("default", 1000)
+--- -- Returns: "$ 1,000 Dollars"
 function ax.currencies:Format(amount, uniqueID, useText)
     amount = tonumber(amount) or 0
     uniqueID = uniqueID or "default"
@@ -216,14 +210,14 @@ function ax.currencies:Format(amount, uniqueID, useText)
 end
 
 --- Format a currency amount with symbol prefix or suffix.
--- @realm shared
--- @param amount number The amount to format
--- @param uniqueID string The unique identifier of the currency
--- @param useSymbol boolean Whether to include the currency symbol (default: false)
--- @param symbolPosition string "prefix" or "suffix" to position the symbol (default: "prefix")
--- @return string Formatted currency string with symbol (e.g., "$ 1,000 Dollars" or "1,000$ Dollars")
--- @usage local formatted = ax.currencies:FormatWithSymbol(1000, "default", true, "prefix")
--- -- Returns: "$ 1,000 Dollars"
+---@realm shared
+---@param amount number The amount to format
+---@param uniqueID string The unique identifier of the currency
+---@param useSymbol boolean Whether to include the currency symbol (default: false)
+---@param symbolPosition string "prefix" or "suffix" to position the symbol (default: "prefix")
+---@return string # Formatted currency string with symbol (e.g., "$ 1,000 Dollars" or "1,000$ Dollars")
+---@usage local formatted = ax.currencies:FormatWithSymbol(1000, "default", true, "prefix")
+--- -- Returns: "$ 1,000 Dollars"
 function ax.currencies:FormatWithSymbol(amount, uniqueID, useSymbol, symbolPosition, useText)
     amount = tonumber(amount) or 0
     uniqueID = uniqueID or "default"
@@ -254,15 +248,14 @@ function ax.currencies:FormatWithSymbol(amount, uniqueID, useSymbol, symbolPosit
 end
 
 -- Register default currency immediately
---- Spawn a currency entity in the world (server only).
--- Creates a physical entity representing dropped currency that players can pick up.
--- @realm server
--- @param amount number The amount of currency to spawn
--- @param uniqueID string The unique identifier of the currency (defaults to "default")
--- @param position vector|Player The position to spawn at, or a player (spawns at their drop position)
--- @param angle Angle Optional angle for the entity (defaults to random)
--- @return Entity|nil The spawned currency entity, or nil if invalid parameters
--- @usage local money = ax.currencies:Spawn(500, "default", player:GetPos() + Vector(0, 0, 32))
+--- Spawn a currency entity in the world (server only). Creates a physical entity representing dropped currency that players can pick up.
+---@realm server
+---@param amount number The amount of currency to spawn
+---@param uniqueID string The unique identifier of the currency (defaults to "default")
+---@param position Vector|Player The position to spawn at, or a player (spawns at their drop position)
+---@param angle? Angle Optional angle for the entity (defaults to random)
+---@return Entity|nil # The spawned currency entity, or nil if invalid parameters
+---@usage local money = ax.currencies:Spawn(500, "default", player:GetPos() + Vector(0, 0, 32))
 function ax.currencies:Spawn(amount, uniqueID, position, angle)
     if ( CLIENT ) then return nil end
 

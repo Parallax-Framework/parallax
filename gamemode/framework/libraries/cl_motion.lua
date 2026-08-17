@@ -9,16 +9,16 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
+---@class ax.motion
 --- Advanced panel animation handler using easing for custom fields. Supports delays, per-field animation isolation, and cancelation.
--- @module ax.motion
 
 ax.motion = ax.motion or {}
 ax.motion.active = ax.motion.active or {}
 
 --- Starts a property animation on a panel.
--- @tparam Panel panel The target panel.
--- @tparam number duration Duration in seconds.
--- @tparam table data Contains Target, Easing, optional Delay, Think, OnComplete.
+---@param panel Panel The target panel.
+---@param duration number Duration in seconds.
+---@param data table Contains Target, Easing, optional Delay, Think, OnComplete.
 function ax.motion:Motion(panel, duration, data)
     if ( !IsValid(panel) or !istable(data) or !istable(data.Target) ) then return end
 
@@ -99,8 +99,8 @@ function ax.motion:Motion(panel, duration, data)
 end
 
 --- Cancels a specific animation on a panel.
--- @tparam Panel panel The panel whose animation to cancel.
--- @tparam string key The custom property key to cancel.
+---@param panel Panel The panel whose animation to cancel.
+---@param key string The custom property key to cancel.
 function ax.motion:Cancel(panel, key)
     for i = #self.active, 1, -1 do
         local a = self.active[i]
@@ -117,7 +117,7 @@ function ax.motion:Cancel(panel, key)
 end
 
 --- Cancels all animations on a panel.
--- @tparam Panel panel The panel to cancel all animations for.
+---@param panel Panel The panel to cancel all animations for.
 function ax.motion:CancelAll(panel)
     for i = #self.active, 1, -1 do
         if ( self.active[i].panel == panel ) then
@@ -176,14 +176,14 @@ do
     local PANEL = FindMetaTable("Panel")
 
     --- Animate custom properties with easing.
-    -- @tparam number duration Duration in seconds.
-    -- @tparam table data Table with Target, Easing, Delay, Think, OnComplete.
+    ---@param duration number Duration in seconds.
+    ---@param data table Table with Target, Easing, Delay, Think, OnComplete.
     function PANEL:Motion(duration, data)
         ax.motion:Motion(self, duration, data)
     end
 
     --- Cancel a specific animation on this panel.
-    -- @tparam string key The property key to cancel.
+    ---@param key string The property key to cancel.
     function PANEL:CancelAnimation(key)
         ax.motion:Cancel(self, key)
     end

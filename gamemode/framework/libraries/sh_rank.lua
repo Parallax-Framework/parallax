@@ -9,19 +9,16 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
---- Rank management system for creating, storing, and retrieving rank data.
--- Supports rank variables, faction associations, and validation checks.
--- @module ax.rank
+---@class ax.rank
+--- Rank management system for creating, storing, and retrieving rank data. Supports rank variables, faction associations, and validation checks.
 
 ax.rank = ax.rank or {}
 ax.rank.instances = ax.rank.instances or {}
 ax.rank.stored = ax.rank.stored or {}
 
---- Initialize the rank system by loading all rank files.
--- Automatically includes ranks from framework, modules, and schema directories.
--- Called during framework boot to set up all available ranks.
--- @realm shared
--- @usage ax.rank:Initialize()
+--- Initialize the rank system by loading all rank files. Automatically includes ranks from framework, modules, and schema directories. Called during framework boot to set up all available ranks.
+---@realm shared
+---@usage ax.rank:Initialize()
 function ax.rank:Initialize()
     self:Include("parallax/gamemode/ranks")
 
@@ -38,13 +35,11 @@ function ax.rank:Initialize()
     end
 end
 
---- Include and load rank files from a directory.
--- Recursively searches for rank .lua files and loads them into the rank system.
--- Automatically handles shared/client/server file prefixes.
--- @realm shared
--- @param directory string The directory path to search for rank files
--- @return boolean True if the operation completed successfully, false on error
--- @usage ax.rank:Include("parallax/gamemode/ranks")
+--- Include and load rank files from a directory. Recursively searches for rank .lua files and loads them into the rank system. Automatically handles shared/client/server file prefixes.
+---@realm shared
+---@param directory string The directory path to search for rank files
+---@return boolean # True if the operation completed successfully, false on error
+---@usage ax.rank:Include("parallax/gamemode/ranks")
 function ax.rank:Include(directory, timeFilter)
     if ( !isstring(directory) or directory == "" ) then
         ax.util:PrintError("Include: Invalid directory parameter provided")
@@ -120,13 +115,12 @@ function ax.rank:Include(directory, timeFilter)
     return true
 end
 
---- Get a rank by its identifier.
--- Supports lookup by unique ID string, index number, name, or partial name matching.
--- @realm shared
--- @param identifier string|number The rank ID, index, or name to search for
--- @return table|nil The rank table if found, nil otherwise
--- @usage local rank = ax.rank:Get("security")
--- @usage local rank = ax.rank:Get(1)
+--- Get a rank by its identifier. Supports lookup by unique ID string, index number, name, or partial name matching.
+---@realm shared
+---@param identifier string|number The rank ID, index, or name to search for
+---@return table|nil # The rank table if found, nil otherwise
+---@usage local rank = ax.rank:Get("security")
+---@usage local rank = ax.rank:Get(1)
 function ax.rank:Get(identifier)
     if ( isstring(identifier) and self.stored[identifier] ) then
         return self.stored[identifier]
@@ -146,13 +140,13 @@ function ax.rank:Get(identifier)
     return nil
 end
 
---- Check if a player can become a specific rank.
--- Runs through hook validation and rank-specific CanBecome functions.
--- @realm shared
--- @param rank string|number The rank ID, index, or name
--- @param client Player The player entity to check permissions for
--- @return boolean, string|nil True if allowed, false if not. Error message if denied.
--- @usage local canBecome, reason = ax.rank:CanBecome("security", player)
+--- Check if a player can become a specific rank. Runs through hook validation and rank-specific CanBecome functions.
+---@realm shared
+---@param rank string|number The rank ID, index, or name
+---@param client Player The player entity to check permissions for
+---@return boolean # True if allowed, false if not.
+---@return string|nil # Error message if denied.
+---@usage local canBecome, reason = ax.rank:CanBecome("security", player)
 function ax.rank:CanBecome(rank, client)
     local rankTable = self:Get(faction)
     local try, catch = hook.Run("CanBecomeRank", rankTable, client)
@@ -172,11 +166,10 @@ function ax.rank:CanBecome(rank, client)
     return true, nil
 end
 
---- Get all loaded rank instances.
--- Returns the complete list of ranks indexed by their ID.
--- @realm shared
--- @return table Array of all rank instances
--- @usage local allRanks = ax.rank:GetAll()
+--- Get all loaded rank instances. Returns the complete list of ranks indexed by their ID.
+---@realm shared
+---@return table # Array of all rank instances
+---@usage local allRanks = ax.rank:GetAll()
 function ax.rank:GetAll(filter)
     if ( filter and istable(filter) ) then
         local filtered = {}
@@ -204,12 +197,11 @@ function ax.rank:GetAll(filter)
     return self.instances
 end
 
---- Check if a rank exists and is valid.
--- Validates rank existence by attempting to retrieve it.
--- @realm shared
--- @param rank string|number The rank identifier to validate
--- @return boolean True if the rank exists, false otherwise
--- @usage if ax.rank:IsValid("security") then print("Rank exists") end
+--- Check if a rank exists and is valid. Validates rank existence by attempting to retrieve it.
+---@realm shared
+---@param rank string|number The rank identifier to validate
+---@return boolean # True if the rank exists, false otherwise
+---@usage if ax.rank:IsValid("security") then print("Rank exists") end
 function ax.rank:IsValid(rank)
     if ( self:Get(rank) != nil ) then
         return true
@@ -218,13 +210,12 @@ function ax.rank:IsValid(rank)
     return false
 end
 
---- Check if a rank matches any in a list of ranks.
--- Used for validating if a rank belongs to a set of allowed ranks.
--- @realm shared
--- @param rank string|number The rank identifier to check
--- @param ranks table Array of rank identifiers to compare against
--- @return boolean True if the rank matches any in the list, false otherwise
--- @usage if ax.rank:HasAny(playerRank, {RANK_SECURITY, RANK_SCIENTIST}) then print("Player is security or scientist") end
+--- Check if a rank matches any in a list of ranks. Used for validating if a rank belongs to a set of allowed ranks.
+---@realm shared
+---@param rank string|number The rank identifier to check
+---@param ranks table Array of rank identifiers to compare against
+---@return boolean # True if the rank matches any in the list, false otherwise
+---@usage if ax.rank:HasAny(playerRank, {RANK_SECURITY, RANK_SCIENTIST}) then print("Player is security or scientist") end
 function ax.rank:HasAny(rank, ranks)
     if ( !isstring(rank) and !isnumber(rank) ) then return false end
     if ( !istable(ranks) ) then return false end

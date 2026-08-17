@@ -9,25 +9,24 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
+---@class ax.recognition
 --- Client-side recognition: nameplate/chat display overrides, alias input panel, and journal tab.
--- @module ax.recognition (client)
 
 local UNKNOWN_COLOR_FALLBACK = Color(150, 150, 150)
 
 --- Return the muted display colour used for unrecognised character names.
--- @realm client
--- @return Color
+---@realm client
+---@return Color
 local function GetUnknownColor()
     local cfg = ax.config:Get("recognition_unknown_colour", UNKNOWN_COLOR_FALLBACK)
     return IsColor(cfg) and cfg or UNKNOWN_COLOR_FALLBACK
 end
 
---- Derive the familiarity tier that the local character has toward `targetChar`.
--- Returns 0 (STRANGER) when no record exists, unless the target is globally recognised.
--- @realm client
--- @param localChar table Local player's character instance
--- @param targetChar table Target character instance
--- @return number Tier integer (0–4)
+--- Derive the familiarity tier that the local character has toward `targetChar`. Returns 0 (STRANGER) when no record exists, unless the target is globally recognised.
+---@realm client
+---@param localChar table Local player's character instance
+---@param targetChar table Target character instance
+---@return number # Tier integer (0–4)
 local function GetLocalTier(localChar, targetChar)
     if ( ax.recognition:IsGloballyRecognized(targetChar) ) then
         return ax.recognition.TIERS.ACQUAINTED
@@ -46,9 +45,9 @@ local function GetLocalTier(localChar, targetChar)
 end
 
 --- Format a UNIX timestamp as a human-readable relative time string.
--- @realm client
--- @param timestamp number UNIX timestamp
--- @return string e.g. "just now", "3 hours ago", "5 days ago"
+---@realm client
+---@param timestamp number UNIX timestamp
+---@return string # e.g. "just now", "3 hours ago", "5 days ago"
 local function FormatRelativeTime(timestamp)
     local diff = os.time() - (tonumber(timestamp) or 0)
 
@@ -61,9 +60,9 @@ local function FormatRelativeTime(timestamp)
 end
 
 --- Mirror the chat targeting lookup used by the core chat formatter.
--- @realm client
--- @param speaker Player
--- @return Player|nil
+---@realm client
+---@param speaker Player
+---@return Player|nil
 local function GetLookTarget(speaker)
     if ( !ax.util:IsValidPlayer(speaker) ) then return nil end
 
@@ -74,10 +73,10 @@ local function GetLookTarget(speaker)
 end
 
 --- Resolve the display name a viewer should see for a given player.
--- @realm client
--- @param viewer Player The client receiving the message
--- @param subject Player The player whose name should be resolved
--- @return string
+---@realm client
+---@param viewer Player The client receiving the message
+---@param subject Player The player whose name should be resolved
+---@return string
 local function GetRecognizedChatName(viewer, subject)
     if ( !ax.util:IsValidPlayer(subject) ) then return "" end
 
@@ -89,13 +88,12 @@ local function GetRecognizedChatName(viewer, subject)
     return subject:Nick()
 end
 
---- Replace the leading speaker name inside a formatted chat string.
--- Supports plain strings and strings wrapped in a leading font tag.
--- @realm client
--- @param formatted string
--- @param oldName string
--- @param newName string
--- @return string
+--- Replace the leading speaker name inside a formatted chat string. Supports plain strings and strings wrapped in a leading font tag.
+---@realm client
+---@param formatted string
+---@param oldName string
+---@param newName string
+---@return string
 local function ReplaceLeadingName(formatted, oldName, newName)
     if ( !isstring(formatted) or !isstring(oldName) or !isstring(newName) ) then return formatted end
     if ( oldName == "" or oldName == newName ) then return formatted end
@@ -124,11 +122,11 @@ local function ReplaceLeadingName(formatted, oldName, newName)
 end
 
 --- Apply recognition-based speaker/target name substitutions to a formatted IC string.
--- @realm client
--- @param viewer Player The client receiving the message
--- @param speaker Player The speaking player
--- @param formatted string The already formatted chat line
--- @return string
+---@realm client
+---@param viewer Player The client receiving the message
+---@param speaker Player The speaking player
+---@param formatted string The already formatted chat line
+---@return string
 local function ApplyRecognizedChatNames(viewer, speaker, formatted)
     if ( !ax.util:IsValidPlayer(viewer) or !ax.util:IsValidPlayer(speaker) ) then return formatted end
     if ( !isstring(formatted) or formatted == "" ) then return formatted end
@@ -158,9 +156,8 @@ end
 -- Nameplate override
 -- ─────────────────────────────────────────────────────────────────────────────
 
---- Override the nameplate text for players based on familiarity.
--- Replaces the default Nick() with the stored alias or "Unknown" as appropriate.
--- @realm client
+--- Override the nameplate text for players based on familiarity. Replaces the default Nick() with the stored alias or "Unknown" as appropriate.
+---@realm client
 local function HandleGetPlayerDisplayName(entity, name)
     if ( !ax.util:IsValidPlayer(entity) or entity == ax.client ) then return end
 
@@ -196,7 +193,7 @@ hook.Add("GetPlayerDisplayName", "ax.recognition.Nameplate", HandleGetPlayerDisp
 -- ─────────────────────────────────────────────────────────────────────────────
 
 --- Tint the chat name colour for unrecognised characters (used in OOC/LOOC).
--- @realm client
+---@realm client
 local function HandleGetChatNameColor(client)
     if ( client == ax.client ) then return end
     if ( !ax.util:IsValidPlayer(ax.client) ) then return end
@@ -219,11 +216,9 @@ hook.Add("GetChatNameColor", "ax.recognition.ChatColor", HandleGetChatNameColor)
 -- IC chat name substitution
 -- ─────────────────────────────────────────────────────────────────────────────
 
---- Wrap a chat type's OnFormatForListener to substitute the speaker's real name
--- with whatever alias the local character has stored for them.
--- Uses a guard flag to prevent double-wrapping on hot-reload.
--- @realm client
--- @param chatType string Chat type key (e.g. "ic", "yell", "whisper")
+--- Wrap a chat type's OnFormatForListener to substitute the speaker's real name with whatever alias the local character has stored for them. Uses a guard flag to prevent double-wrapping on hot-reload.
+---@realm client
+---@param chatType string Chat type key (e.g. "ic", "yell", "whisper")
 local function WrapChatTypeListener(chatType)
     local chatClass = ax.chat.registry[chatType]
     if ( !istable(chatClass) ) then return end
@@ -272,9 +267,8 @@ hook.Add("OnSchemaLoaded", "ax.recognition.WrapChatTypes", WrapChatTypes)
 -- Alias introduction panel
 -- ─────────────────────────────────────────────────────────────────────────────
 
---- Open the introduction panel when the player presses USE while holding ALT.
--- Uses an eye trace to find the nearest player target.
--- @realm client
+--- Open the introduction panel when the player presses USE while holding ALT. Uses an eye trace to find the nearest player target.
+---@realm client
 local function HandleIntroduceKey(client, bind, pressed)
     if ( !pressed ) then return end
     if ( !string.find(bind, "use", 1, true) ) then return end

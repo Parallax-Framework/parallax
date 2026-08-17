@@ -20,16 +20,14 @@ SWEP.SwayScale = 0 -- Disable default gmod swaying
 
 SWEP.IronSightsProgress = 0
 
---- Returns the ironsight transition duration in seconds.
--- Override per-SWEP: set SWEP.IronSightsDuration = 0.18, etc.
--- @treturn number duration seconds
+--- Returns the ironsight transition duration in seconds. Override per-SWEP: set SWEP.IronSightsDuration = 0.18, etc.
+---@return number duration seconds
 function SWEP:GetIronSightsDuration()
     return self.IronSightsDuration or math.sin(math.pi / 4)
 end
 
---- Starts a timed lerp for ironsight progress from current to target.
--- Internal helper; called when ironsight state flips.
--- @tparam boolean aiming target ironsight state
+--- Starts a timed lerp for ironsight progress from current to target. Internal helper; called when ironsight state flips.
+---@param aiming boolean target ironsight state
 function SWEP:_StartIronsightLerp(aiming)
     self._ironStartTime = CurTime()
     self._ironFrom = self.IronSightsProgress or (aiming and 0 or 1)

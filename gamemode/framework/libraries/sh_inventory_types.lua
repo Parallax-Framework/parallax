@@ -9,39 +9,29 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
---- Inventory type registry: how items are addressed within an inventory (grid `x,y`,
--- named `slotID`, or no addressing at all), plus the reusable `gridBehavior`/
--- `slotBehavior` primitives concrete types build on.
--- @module ax.inventory
--- @realm shared
+---@class ax.inventory
+--- Inventory type registry: how items are addressed within an inventory (grid `x,y`, named `slotID`, or no addressing at all), plus the reusable `gridBehavior`/ `slotBehavior` primitives concrete types build on.
+---@realm shared
 
 ax.inventory = ax.inventory or {}
 ax.inventory.types = ax.inventory.types or {}
 
---- Registers an inventory type definition.
--- A type defines how items are addressed within an inventory (grid `x,y`, named
--- `slotID`, or no addressing at all) plus optional access rules and a UI renderer
--- id. Concrete types register themselves from their own schema/module, reusing the
--- shared `ax.inventory.gridBehavior`/`ax.inventory.slotBehavior` primitives as-is or
--- merged with their own `CanReceiveItem`/`CanRemoveItem` rules.
--- @realm shared
--- @param id string Unique type identifier (e.g. "weight", "bag", "equipment")
--- @param data table Type definition. Recognised keys: `GetWidth`, `GetHeight`,
--- `GetItemAt`, `CanItemFit`, `FindEmptySlot` (grid-capable types only),
--- `CanReceiveItem`, `CanRemoveItem`. Addressing is optional - a type with none of
--- these keys is a non-addressed type (e.g. the default `weight` type below), and
--- placement validation is simply skipped for it.
+--- Registers an inventory type definition. A type defines how items are addressed within an inventory (grid `x,y`, named `slotID`, or no addressing at all) plus optional access rules and a UI renderer id. Concrete types register themselves from their own schema/module, reusing the shared `ax.inventory.gridBehavior`/`ax.inventory.slotBehavior` primitives as-is or merged with their own `CanReceiveItem`/`CanRemoveItem` rules.
+---@realm shared
+---@param id string Unique type identifier (e.g. "weight", "bag", "equipment")
+---@param data table Type definition. Recognised keys: `GetWidth`, `GetHeight`,
+--- `GetItemAt`, `CanItemFit`, `FindEmptySlot` (grid-capable types only),
+--- `CanReceiveItem`, `CanRemoveItem`. Addressing is optional - a type with none of
+--- these keys is a non-addressed type (e.g. the default `weight` type below), and
+--- placement validation is simply skipped for it.
 function ax.inventory:RegisterType(id, data)
     self.types[id] = data
 end
 
---- Returns the registered type definition for an inventory instance.
--- Inventories created before the type registry existed (or by code that never set
--- `typeID`) default to `"weight"` for back-compat - the same weight-limited-list
--- behaviour `ax.inventory` has always had.
--- @realm shared
--- @param inventory table The inventory instance
--- @return table|nil The type definition, or nil if the inventory's typeID is set but unregistered
+--- Returns the registered type definition for an inventory instance. Inventories created before the type registry existed (or by code that never set `typeID`) default to `"weight"` for back-compat - the same weight-limited-list behaviour `ax.inventory` has always had.
+---@realm shared
+---@param inventory table The inventory instance
+---@return table|nil # The type definition, or nil if the inventory's typeID is set but unregistered
 function ax.inventory:GetType(inventory)
     if ( !istable(inventory) ) then return nil end
 
@@ -55,10 +45,8 @@ function ax.inventory:GetType(inventory)
     return typeDef
 end
 
---- Positional (grid/x,y-addressed) behaviour primitive. Reusable as-is by any
--- grid-addressed type (e.g. a personal grid, a bag), or merged with type-specific
--- `CanReceiveItem`/`CanRemoveItem` rules.
--- @realm shared
+--- Positional (grid/x,y-addressed) behaviour primitive. Reusable as-is by any grid-addressed type (e.g. a personal grid, a bag), or merged with type-specific `CanReceiveItem`/`CanRemoveItem` rules.
+---@realm shared
 ax.inventory.gridBehavior = {
     GetWidth = function(self)
         return self:GetData("width", 5)
@@ -181,12 +169,8 @@ ax.inventory.gridBehavior = {
     end,
 }
 
---- Non-positional (named-slot-addressed) behaviour primitive. Used by equipment-like
--- types - occupancy is by a unique slot key rather than x/y coordinates, so there is
--- only ever one item per slot and no width/height concept. Deliberately has no
--- `FindEmptySlot`: an item's target slot is always its own `GetSlotID()`, never a
--- free choice among several.
--- @realm shared
+--- Non-positional (named-slot-addressed) behaviour primitive. Used by equipment-like types - occupancy is by a unique slot key rather than x/y coordinates, so there is only ever one item per slot and no width/height concept. Deliberately has no `FindEmptySlot`: an item's target slot is always its own `GetSlotID()`, never a free choice among several.
+---@realm shared
 ax.inventory.slotBehavior = {
     GetItemAt = function(self, slotID)
         if ( slotID == nil ) then return nil end
@@ -239,10 +223,6 @@ ax.inventory.slotBehavior = {
     end,
 }
 
---- The default inventory type: a weight-limited list with no positional addressing,
--- i.e. exactly current `ax.inventory` behaviour (`GetWeight`/`CanStoreWeight`/
--- `CanStoreItem` on the meta already implement this). Every inventory without an
--- explicit `typeID` resolves to this type (see `GetType` above) so existing schemas
--- and the containers module see no behaviour change.
--- @realm shared
+--- The default inventory type: a weight-limited list with no positional addressing, i.e. exactly current `ax.inventory` behaviour (`GetWeight`/`CanStoreWeight`/ `CanStoreItem` on the meta already implement this). Every inventory without an explicit `typeID` resolves to this type (see `GetType` above) so existing schemas and the containers module see no behaviour change.
+---@realm shared
 ax.inventory:RegisterType("weight", {})

@@ -11,7 +11,7 @@
 
 if ( SERVER ) then return end
 
--- @module ax.zones
+---@class ax.zones
 
 ax.zones = ax.zones or {}
 local cache = {

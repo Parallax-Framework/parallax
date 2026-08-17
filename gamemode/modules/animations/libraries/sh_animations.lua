@@ -26,19 +26,12 @@ HOLDTYPE_TRANSLATOR["camera"] = "smg"
 HOLDTYPE_TRANSLATOR["magic"] = "normal"
 HOLDTYPE_TRANSLATOR["revolver"] = "pistol"
 
---- Animation library
--- @module ax.animations
-
+---@class ax.animations
+--- Animation library.
+---@field stored table<string, table> Stored animations keyed by model class.
+---@field translations table<string, string> Translations cache mapping a lower-cased model path to its animation class.
 ax.animations = ax.animations or {}
-
---- Stored animations for model classes
--- @realm shared
--- @table ax.animations.stored
 ax.animations.stored = ax.animations.stored or {}
-
---- Translations cache for model classes
--- @realm shared
--- @table ax.animations.translations
 ax.animations.translations = ax.animations.translations or {}
 
 ax.animations.stored["citizen_male"] = {
@@ -590,10 +583,10 @@ ax.animations.stored["player"] = {
 }
 
 --- Returns the flinch gesture sequence name for a model class and hitgroup.
--- @realm shared
--- @param modelClass string The model class (e.g. "citizen_male")
--- @param hitGroup number The HITGROUP_* constant
--- @return string|nil The gesture sequence name, or nil if none defined
+---@realm shared
+---@param modelClass string The model class (e.g. "citizen_male")
+---@param hitGroup number The HITGROUP_* constant
+---@return string|nil # The gesture sequence name, or nil if none defined
 function ax.animations:GetFlinchGesture(modelClass, hitGroup)
     local classData = self.stored[modelClass]
     if ( !classData or !classData["flinch"] ) then return end
@@ -607,8 +600,8 @@ function ax.animations:GetFlinchGesture(modelClass, hitGroup)
 end
 
 --- Sets a model class translation for a specific model.
--- @param model The model to set the translation for.
--- @param class The class to set the translation to.
+---@param model string The model path to set the translation for.
+---@param class string The animation class to set the translation to.
 function ax.animations:SetModelClass(model, class)
     if ( !model or !class ) then return end
 
@@ -625,8 +618,8 @@ function ax.animations:SetModelClass(model, class)
 end
 
 --- Gets the model class for a specific model.
--- @param model The model to get the class for.
--- @return The model class.
+---@param model string The model path to get the class for.
+---@return string|nil # The animation class bound to the model, or nil when none is registered.
 function ax.animations:GetModelClass(model)
     if ( !model ) then return end
 

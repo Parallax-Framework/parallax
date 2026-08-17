@@ -11,12 +11,10 @@
 
 local player = ax.player.meta or FindMetaTable("Player")
 
---- Sets whether this player's active weapon is raised.
--- Updates the `ax.weapon.raised` relay state, forwards the state to the active weapon when it implements `SetWeaponRaised`, and fires `PlayerWeaponRaised`.
--- Passing nil defaults to true.
--- @realm server
--- @param bRaised boolean|nil True to raise the weapon, false to lower it. Defaults to true.
--- @usage client:SetWeaponRaised(false)
+--- Sets whether this player's active weapon is raised. Updates the `ax.weapon.raised` relay state, forwards the state to the active weapon when it implements `SetWeaponRaised`, and fires `PlayerWeaponRaised`. Passing nil defaults to true.
+---@realm server
+---@param bRaised boolean|nil True to raise the weapon, false to lower it. Defaults to true.
+---@usage client:SetWeaponRaised(false)
 function player:SetWeaponRaised(bRaised)
     if ( bRaised == nil ) then bRaised = true end
 
@@ -30,10 +28,9 @@ function player:SetWeaponRaised(bRaised)
     hook.Run("PlayerWeaponRaised", self, bRaised)
 end
 
---- Toggles this player's weapon raised state.
--- Reads the current `ax.weapon.raised` relay value and applies the inverse via `SetWeaponRaised`.
--- @realm server
--- @usage client:ToggleWeaponRaise()
+--- Toggles this player's weapon raised state. Reads the current `ax.weapon.raised` relay value and applies the inverse via `SetWeaponRaised`.
+---@realm server
+---@usage client:ToggleWeaponRaise()
 function player:ToggleWeaponRaise()
     local bRaised = self:GetRelay("ax.weapon.raised", false)
     self:SetWeaponRaised(!bRaised)

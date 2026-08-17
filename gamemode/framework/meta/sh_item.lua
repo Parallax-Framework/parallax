@@ -24,84 +24,72 @@ item.class = item.class
 -- `OnRemoved()` - the item is being destroyed; raised after the database delete succeeds, so it never fires for a removal that failed.
 -- `OnSave()` - the item's data is about to be written, the place to fold runtime state into `self.data`; calling `SetData` from here is safe (re-entry is guarded) but will not raise `OnSave` again.
 
---- Returns a human-readable string representation of the item.
--- Format: `"Item [id][name][class]"`. Useful for debug output and logging.
--- @realm shared
--- @return string A formatted string identifying this item.
+--- Returns a human-readable string representation of the item. Format: `"Item [id][name][class]"`. Useful for debug output and logging.
+---@realm shared
+---@return string # A formatted string identifying this item.
 function item:__tostring()
     return string.format("Item [%d][%s][%s]", self.id, self:GetName(), self:GetClass())
 end
 
---- Returns the unique numeric ID of this item instance.
--- This is the primary key from the `ax_items` table. Temporary items use negative IDs auto-decremented from -1.
--- @realm shared
--- @return number The item's numeric ID.
+--- Returns the unique numeric ID of this item instance. This is the primary key from the `ax_items` table. Temporary items use negative IDs auto-decremented from -1.
+---@realm shared
+---@return number # The item's numeric ID.
 function item:GetID()
     return self.id
 end
 
---- Returns the class name of this item.
--- The class name identifies which registered item definition in `ax.item.stored` this instance belongs to (e.g. `"weapon_pistol"`, `"food_bread"`).
--- @realm shared
--- @return string The item's class name string.
+--- Returns the class name of this item. The class name identifies which registered item definition in `ax.item.stored` this instance belongs to (e.g. `"weapon_pistol"`, `"food_bread"`).
+---@realm shared
+---@return string # The item's class name string.
 function item:GetClass()
     return self.class or "undefined_item_class"
 end
 
---- Returns the display name of this item.
--- Falls back to `"Unknown"` when `self.name` is nil or not set. This is the value shown in inventory UIs and item tooltips.
--- @realm shared
--- @return string The item's display name, or `"Unknown"` if unset.
+--- Returns the display name of this item. Falls back to `"Unknown"` when `self.name` is nil or not set. This is the value shown in inventory UIs and item tooltips.
+---@realm shared
+---@return string # The item's display name, or `"Unknown"` if unset.
 function item:GetName()
     return self.name or "Unknown"
 end
 
---- Returns the description text for this item.
--- Falls back to `"No description available."` when `self.description` is nil.
--- Displayed in item tooltips and examine prompts.
--- @realm shared
--- @return string The item's description, or a default placeholder string.
+--- Returns the description text for this item. Falls back to `"No description available."` when `self.description` is nil. Displayed in item tooltips and examine prompts.
+---@realm shared
+---@return string # The item's description, or a default placeholder string.
 function item:GetDescription()
     return self.description or "No description available."
 end
 
---- Returns the weight of this item.
--- Used by `inventory:GetWeight()` and `inventory:CanStoreWeight()` for capacity checks. Falls back to 0 when no weight is defined on the item class.
--- @realm shared
--- @return number The item's weight, or 0 if not set.
+--- Returns the weight of this item. Used by `inventory:GetWeight()` and `inventory:CanStoreWeight()` for capacity checks. Falls back to 0 when no weight is defined on the item class.
+---@realm shared
+---@return number # The item's weight, or 0 if not set.
 function item:GetWeight()
     return self.weight or 0
 end
 
---- Returns the world model path for this item.
--- Used when spawning the item as a world entity or displaying it in a 3D panel.
--- Falls back to the wooden crate model when `self.model` is unset.
--- @realm shared
--- @return string The model path string.
+--- Returns the world model path for this item. Used when spawning the item as a world entity or displaying it in a 3D panel. Falls back to the wooden crate model when `self.model` is unset.
+---@realm shared
+---@return string # The model path string.
 function item:GetModel()
     return self.model or Model("models/props_junk/wood_crate001a.mdl")
 end
 
---- Returns the skin index for this item's model.
--- Clamps the value to 0 or above via `math.max` and coerces it to a non-negative integer via `math.floor`. Falls back to 0 when `self.skin` is unset or non-numeric.
--- @realm shared
--- @return number The skin index (≥ 0).
+--- Returns the skin index for this item's model. Clamps the value to 0 or above via `math.max` and coerces it to a non-negative integer via `math.floor`. Falls back to 0 when `self.skin` is unset or non-numeric.
+---@realm shared
+---@return number # The skin index (≥ 0).
 function item:GetSkin()
     return math.max(math.floor(tonumber(self.skin) or 0), 0)
 end
 
---- Returns the color applied to this item's model.
--- Delegates to `ax.item:NormalizeColor` which coerces `self.color` into a valid `Color` object. Returns white (`Color(255, 255, 255, 255)`) when unset.
--- @realm shared
--- @return Color The item's color value.
+--- Returns the color applied to this item's model. Delegates to `ax.item:NormalizeColor` which coerces `self.color` into a valid `Color` object. Returns white (`Color(255, 255, 255, 255)`) when unset.
+---@realm shared
+---@return Color # The item's color value.
 function item:GetColor()
     return ax.util:NormalizeColor(self.color)
 end
 
---- Returns the material override for this item's model.
--- Returns an empty string when `self.material` is not a string, which is interpreted by GMod as "no material override".
--- @realm shared
--- @return string The material path, or `""` if not set.
+--- Returns the material override for this item's model. Returns an empty string when `self.material` is not a string, which is interpreted by GMod as "no material override".
+---@realm shared
+---@return string # The material path, or `""` if not set.
 function item:GetMaterial()
     return isstring(self.material) and self.material or ""
 end
@@ -111,19 +99,16 @@ end
         ["groupID"] = groupValue,
     }
 ]]
---- Returns the bodygroup overrides table for this item.
--- The table maps bodygroup IDs (string or number keys) to their desired values. The format is `{ ["groupID"] = groupValue }` where groupID can be either the numeric bodygroup index or a named string resolved via `ax.util:ResolveBodygroupIndex`.
--- Returns an empty table when no bodygroups are defined.
--- @realm shared
--- @return table The bodygroups table, or `{}` if not set.
+--- Returns the bodygroup overrides table for this item. The table maps bodygroup IDs (string or number keys) to their desired values. The format is `{ ["groupID"] = groupValue }` where groupID can be either the numeric bodygroup index or a named string resolved via `ax.util:ResolveBodygroupIndex`. Returns an empty table when no bodygroups are defined.
+---@realm shared
+---@return table # The bodygroups table, or `{}` if not set.
 function item:GetBodygroups()
     return istable(self.bodygroups) and self.bodygroups or {}
 end
 
---- Returns whether this item has any non-default appearance overrides.
--- Checks skin (> 0), material (non-empty), color (not pure white/opaque), or any bodygroup entries. Used to decide whether `ApplyAppearance` needs to be called at all, avoiding unnecessary engine calls for items using default visuals.
--- @realm shared
--- @return boolean True if any appearance property differs from the default.
+--- Returns whether this item has any non-default appearance overrides. Checks skin (> 0), material (non-empty), color (not pure white/opaque), or any bodygroup entries. Used to decide whether `ApplyAppearance` needs to be called at all, avoiding unnecessary engine calls for items using default visuals.
+---@realm shared
+---@return boolean # True if any appearance property differs from the default.
 function item:HasAppearanceOverrides()
     local color = self:GetColor()
     if ( self:GetSkin() > 0 ) then
@@ -141,11 +126,10 @@ function item:HasAppearanceOverrides()
     return next(self:GetBodygroups()) != nil
 end
 
---- Applies this item's visual appearance to a world entity.
--- Sets the entity's skin, material, color, and bodygroups from the item's current values. Bodygroup IDs are resolved through `ax.util:ResolveBodygroupIndex` which supports both numeric indices and named string keys. Skips bodygroups whose index cannot be resolved. Returns false immediately if `entity` is not valid.
--- @realm shared
--- @param entity Entity The entity to apply appearance properties to.
--- @return boolean True on success, false if `entity` is not valid.
+--- Applies this item's visual appearance to a world entity. Sets the entity's skin, material, color, and bodygroups from the item's current values. Bodygroup IDs are resolved through `ax.util:ResolveBodygroupIndex` which supports both numeric indices and named string keys. Skips bodygroups whose index cannot be resolved. Returns false immediately if `entity` is not valid.
+---@realm shared
+---@param entity Entity The entity to apply appearance properties to.
+---@return boolean # True on success, false if `entity` is not valid.
 function item:ApplyAppearance(entity)
     if ( !IsValid(entity) ) then
         return false
@@ -168,10 +152,9 @@ function item:ApplyAppearance(entity)
     return true
 end
 
---- Returns the inventory ID that contains this item.
--- First checks `self.invID` (set when the item is loaded into an inventory). If that is nil, performs a linear search through all loaded inventory instances to find which one's items table contains this item ID. Returns nil when the item is not found in any loaded inventory.
--- @realm shared
--- @return number|nil The inventory ID, or nil if not found in any loaded inventory.
+--- Returns the inventory ID that contains this item. First checks `self.invID` (set when the item is loaded into an inventory). If that is nil, performs a linear search through all loaded inventory instances to find which one's items table contains this item ID. Returns nil when the item is not found in any loaded inventory.
+---@realm shared
+---@return number|nil # The inventory ID, or nil if not found in any loaded inventory.
 function item:GetInventoryID()
     if ( self.invID != nil ) then
         return self.invID
@@ -190,15 +173,9 @@ function item:GetInventoryID()
     return inventoryID
 end
 
---- Returns every loaded inventory owned by this item (e.g. a bag's contents) - the reverse of
--- `GetInventoryID()`, which is the inventory this item sits *in*. An item only has owned
--- inventories if something created one via `ax.inventory:Create({ owner = itemInstance, ... })`
--- (see `ax.inventory:RegisterOwnerResolver`'s built-in `"item"` kind) - most items have none, so
--- this returns an empty table for them. Only inventories already loaded into
--- `ax.inventory.instances` are returned - call `ax.inventory:RestoreOwner(itemInstance, ...)`
--- first if this item was just loaded and its owned inventories haven't synced yet.
--- @realm shared
--- @return table An array of inventory instances.
+--- Returns every loaded inventory owned by this item (e.g. a bag's contents) - the reverse of `GetInventoryID()`, which is the inventory this item sits *in*. An item only has owned inventories if something created one via `ax.inventory:Create({ owner = itemInstance, ... })` (see `ax.inventory:RegisterOwnerResolver`'s built-in `"item"` kind) - most items have none, so this returns an empty table for them. Only inventories already loaded into `ax.inventory.instances` are returned - call `ax.inventory:RestoreOwner(itemInstance, ...)` first if this item was just loaded and its owned inventories haven't synced yet.
+---@realm shared
+---@return table # An array of inventory instances.
 function item:GetInventories()
     local owned = {}
 
@@ -214,11 +191,10 @@ function item:GetInventories()
     return owned
 end
 
---- Returns this item's owned inventory of the given type (e.g. `"bag"`), or nil if it doesn't
--- have one loaded. See `GetInventories`.
--- @realm shared
--- @param typeID string The inventory type id to look for.
--- @return table|nil
+--- Returns this item's owned inventory of the given type (e.g. `"bag"`), or nil if it doesn't have one loaded. See `GetInventories`.
+---@realm shared
+---@param typeID string The inventory type id to look for.
+---@return table|nil
 function item:GetInventoryByType(typeID)
     for _, inventory in pairs(self:GetInventories()) do
         if ( inventory:GetTypeID() == typeID ) then
@@ -229,93 +205,81 @@ function item:GetInventoryByType(typeID)
     return nil
 end
 
---- Grid column this item currently occupies, if placed in a grid-addressed inventory.
--- Set at instance/placement time (`item.gridX`), not persisted on the item definition itself. Nil for items not in a grid-addressed inventory.
--- @realm shared
--- @return number|nil
+--- Grid column this item currently occupies, if placed in a grid-addressed inventory. Set at instance/placement time (`item.gridX`), not persisted on the item definition itself. Nil for items not in a grid-addressed inventory.
+---@realm shared
+---@return number|nil
 function item:GetGridX()
     return self.gridX
 end
 
 --- Grid row this item currently occupies. See `GetGridX`.
--- @realm shared
--- @return number|nil
+---@realm shared
+---@return number|nil
 function item:GetGridY()
     return self.gridY
 end
 
 --- Named slot this item currently occupies, if placed in a slot-addressed inventory (e.g. equipment). Set at instance/placement time (`item.slotID`).
--- @realm shared
--- @return string|nil
+---@realm shared
+---@return string|nil
 function item:GetSlotID()
     return self.slotID
 end
 
---- Returns whether this item is locked by an in-progress transfer transaction.
--- Set by `ax.inventory:Transfer` for the duration of a single transfer to close the race
--- where two players act on the same item (e.g. a shared container) before the first
--- transfer's database write returns. Purely an in-memory flag - never persisted, never
--- true across a restart.
--- @realm server
--- @return boolean
+--- Returns whether this item is locked by an in-progress transfer transaction. Set by `ax.inventory:Transfer` for the duration of a single transfer to close the race where two players act on the same item (e.g. a shared container) before the first transfer's database write returns. Purely an in-memory flag - never persisted, never true across a restart.
+---@realm server
+---@return boolean
 function item:IsLocked()
     return self.locked == true
 end
 
---- Locks this item, blocking further transfers until `Unlock` is called.
--- Internal - called by `ax.inventory:Transfer` at the start of a transaction. Not
--- meant to be called directly by gameplay code.
--- @realm server
--- @internal
+--- Locks this item, blocking further transfers until `Unlock` is called. Internal - called by `ax.inventory:Transfer` at the start of a transaction. Not meant to be called directly by gameplay code.
+---@realm server
+---@private
 function item:Lock()
     self.locked = true
 end
 
---- Unlocks this item after its in-progress transfer transaction finishes, successfully or not.
--- Internal - called by `ax.inventory:Transfer`. Not meant to be called directly by gameplay code.
--- @realm server
--- @internal
+--- Unlocks this item after its in-progress transfer transaction finishes, successfully or not. Internal - called by `ax.inventory:Transfer`. Not meant to be called directly by gameplay code.
+---@realm server
+---@private
 function item:Unlock()
     self.locked = false
 end
 
 --- Item footprint width in grid cells. Static per item class (`ITEM.width`, inherited via the instance metatable), defaults to 1 for items that never declare it.
--- @realm shared
--- @return number
+---@realm shared
+---@return number
 function item:GetWidth()
     return self.width or 1
 end
 
 --- Item footprint height in grid cells. See `GetWidth`.
--- @realm shared
--- @return number
+---@realm shared
+---@return number
 function item:GetHeight()
     return self.height or 1
 end
 
---- Returns a value from this item's data store, with an optional fallback.
--- Initialises `self.data` to an empty table if it is not already a table. Returns `default` when the key is nil; returns the stored value otherwise.
--- Use `SetData` to write values that should be persisted to the database.
--- @realm shared
--- @param key string The data key to retrieve.
--- @param default any The value to return when the key is not set. Defaults to nil.
--- @return any The stored value, or `default` if the key is absent.
--- @usage local isActive = item:GetData("active", false)
+--- Returns a value from this item's data store, with an optional fallback. Initialises `self.data` to an empty table if it is not already a table. Returns `default` when the key is nil; returns the stored value otherwise. Use `SetData` to write values that should be persisted to the database.
+---@realm shared
+---@param key string The data key to retrieve.
+---@param default any The value to return when the key is not set. Defaults to nil.
+---@return any # The stored value, or `default` if the key is absent.
+---@usage local isActive = item:GetData("active", false)
 function item:GetData(key, default)
     if ( !istable(self.data) ) then self.data = {} end
 
     return self.data[key] == nil and default or self.data[key]
 end
 
---- Calls a named method on this item instance with optional player and entity context.
--- Temporarily sets `self.player` and `self.entity` on the item table before invoking the method, then restores both values afterwards. This allows item methods to access `self.player` and `self.entity` without the caller needing to pass them as arguments.
--- Returns all values returned by the invoked method via `unpack`. Returns nothing if `method` is not a string or the method does not exist on this item.
--- @realm shared
--- @param method string The name of the method to call on this item.
--- @param client Player|nil The player to bind as `self.player` during the call. Pass nil to leave unchanged.
--- @param entity Entity|nil The entity to bind as `self.entity` during the call. Pass nil to leave unchanged.
--- @param ... any Additional arguments forwarded to the method.
--- @return any All return values from the called method.
+--- Calls a named method on this item instance with optional player and entity context. Temporarily sets `self.player` and `self.entity` on the item table before invoking the method, then restores both values afterwards. This allows item methods to access `self.player` and `self.entity` without the caller needing to pass them as arguments. Returns all values returned by the invoked method via `unpack`. Returns nothing if `method` is not a string or the method does not exist on this item.
+---@realm shared
+---@param method string The name of the method to call on this item.
+---@param client Player|nil The player to bind as `self.player` during the call. Pass nil to leave unchanged.
+---@param entity Entity|nil The entity to bind as `self.entity` during the call. Pass nil to leave unchanged.
+---@param ... any Additional arguments forwarded to the method.
+---@return any # All return values from the called method.
 function item:Call(method, client, entity, ...)
     if ( !isstring(method) or method == "" ) then
         return
@@ -344,13 +308,11 @@ function item:Call(method, client, entity, ...)
     return unpack(results)
 end
 
---- Sets a value in this item's data store and persists the change to the database.
--- Writes `value` to `self.data[key]`. On the server, skips persistence for temporary or no-save items (and inventories). For persistent items, issues a MySQL UPDATE to `ax_items` serialising the entire data table as JSON. After the write, broadcasts the single changed `(key, value)` pair to the owning inventory's receivers - not a full `ax.inventory:Sync` (this is the hottest call site of the two, since any item stat/durability/ammo change goes through here).
--- This function is safe to call on the client (does not issue queries client-side).
--- @realm shared
--- @param key string The data key to write.
--- @param value any The value to store. Must be JSON-serialisable when persisting.
--- @param bNoDBUpdate boolean Whether to skip the database update. Defaults to false.
+--- Sets a value in this item's data store and persists the change to the database. Writes `value` to `self.data[key]`. On the server, skips persistence for temporary or no-save items (and inventories). For persistent items, issues a MySQL UPDATE to `ax_items` serialising the entire data table as JSON. After the write, broadcasts the single changed `(key, value)` pair to the owning inventory's receivers - not a full `ax.inventory:Sync` (this is the hottest call site of the two, since any item stat/durability/ammo change goes through here). This function is safe to call on the client (does not issue queries client-side).
+---@realm shared
+---@param key string The data key to write.
+---@param value any The value to store. Must be JSON-serialisable when persisting.
+---@param bNoDBUpdate boolean Whether to skip the database update. Defaults to false.
 function item:SetData(key, value, bNoDBUpdate)
     if ( !istable(self.data) ) then self.data = {} end
 
@@ -404,12 +366,9 @@ function item:SetData(key, value, bNoDBUpdate)
     end
 end
 
---- Returns the actions table for this item.
--- Delegates to `ax.item:GetActionsForClass(self.class)` when the item has a valid class string, which returns the merged action set (including inherited base actions).
--- Falls back to `self.actions` or an empty table when the class is unavailable.
--- Actions are keyed by name and each entry is a table with at minimum a `label` and an `OnRun` callback.
--- @realm shared
--- @return table The actions table keyed by action name.
+--- Returns the actions table for this item. Delegates to `ax.item:GetActionsForClass(self.class)` when the item has a valid class string, which returns the merged action set (including inherited base actions). Falls back to `self.actions` or an empty table when the class is unavailable. Actions are keyed by name and each entry is a table with at minimum a `label` and an `OnRun` callback.
+---@realm shared
+---@return table # The actions table keyed by action name.
 function item:GetActions()
     if ( isstring(self.class) and ax.item and isfunction(ax.item.GetActionsForClass) ) then
         return ax.item:GetActionsForClass(self.class)
@@ -418,13 +377,11 @@ function item:GetActions()
     return self.actions or {}
 end
 
---- Registers a named action on this item class.
--- Actions are stored globally in `ax.item.actions[self.class]` rather than on the instance, so they are shared across all instances of the same class. When the class has a base, the base class actions are copied first so inheritance is preserved.
--- Passing an empty or invalid `name` or non-table `actionData` returns immediately.
--- @realm shared
--- @param name string The unique action identifier (e.g. `"use"`, `"drop"`, `"eat"`).
--- @param actionData table The action definition table. Should contain at minimum a `label` string and an `OnRun` callback function.
--- @usage item:AddAction("eat", { label = "Eat", OnRun = function(self) ... end })
+--- Registers a named action on this item class. Actions are stored globally in `ax.item.actions[self.class]` rather than on the instance, so they are shared across all instances of the same class. When the class has a base, the base class actions are copied first so inheritance is preserved. Passing an empty or invalid `name` or non-table `actionData` returns immediately.
+---@realm shared
+---@param name string The unique action identifier (e.g. `"use"`, `"drop"`, `"eat"`).
+---@param actionData table The action definition table. Should contain at minimum a `label` string and an `OnRun` callback function.
+---@usage item:AddAction("eat", { label = "Eat", OnRun = function(self) ... end })
 function item:AddAction(name, actionData)
     if ( !isstring(name) or name == "" ) then return end
     if ( !istable(actionData) ) then return end
@@ -445,20 +402,18 @@ function item:AddAction(name, actionData)
     ax.item.actions[self.class] = actions
 end
 
---- Returns whether a player is allowed to perform a named action on this item.
--- Runs three checks in order:
--- 1. Fires `"CanPlayerInteractItem"` hook — returning false blocks the action and optionally sends `catch` as an error notification to the client (unless `silent`).
--- 2. Calls `self:CanUse(client, action, context)` if the item (or its base) defines it — a single item-wide gate that applies to every action, so a base item can lock all of its interactions behind one condition instead of repeating it per action.
--- 3. Calls `actionTable:CanUse(client, self, context)` if the action defines it — returning false similarly blocks the action with an optional notification.
--- Only an explicit `false` blocks; returning nothing is treated as "no opinion" so items that only guard some cases keep working.
--- Returns true and no second value when all checks pass.
--- @realm shared
--- @param client Player The player attempting the interaction.
--- @param action string The action name to validate (must exist in `self:GetActions()`).
--- @param silent boolean|nil When true, suppresses error notifications sent to `client`.
--- @param context any|nil Optional context value forwarded to `CanUse` and the hook.
--- @return boolean True if the interaction is allowed, false otherwise.
--- @return string|nil A human-readable reason when returning false.
+--- Returns whether a player is allowed to perform a named action on this item. Runs three checks in order:
+--- 1. Fires `"CanPlayerInteractItem"` hook — returning false blocks the action and optionally sends `catch` as an error notification to the client (unless `silent`).
+--- 2. Calls `self:CanUse(client, action, context)` if the item (or its base) defines it — a single item-wide gate that applies to every action, so a base item can lock all of its interactions behind one condition instead of repeating it per action.
+--- 3. Calls `actionTable:CanUse(client, self, context)` if the action defines it — returning false similarly blocks the action with an optional notification.
+--- Only an explicit `false` blocks; returning nothing is treated as "no opinion" so items that only guard some cases keep working. Returns true and no second value when all checks pass.
+---@realm shared
+---@param client Player The player attempting the interaction.
+---@param action string The action name to validate (must exist in `self:GetActions()`).
+---@param silent boolean|nil When true, suppresses error notifications sent to `client`.
+---@param context? any|nil Optional context value forwarded to `CanUse` and the hook.
+---@return boolean # True if the interaction is allowed, false otherwise.
+---@return string|nil # A human-readable reason when returning false.
 function item:CanInteract(client, action, silent, context)
     local try, catch = hook.Run("CanPlayerInteractItem", client, self, action, context)
     if ( try == false ) then

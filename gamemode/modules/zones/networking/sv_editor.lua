@@ -9,7 +9,7 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
--- @module ax.zones.editor
+---@class ax.zones.editor
 
 if ( CLIENT ) then return end
 

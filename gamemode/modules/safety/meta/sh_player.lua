@@ -17,14 +17,12 @@ AX_ALWAYS_RAISED["swep_construction_kit"] = true
 
 local player = ax.player.meta or FindMetaTable("Player")
 
---- Returns whether this player's active weapon is raised.
--- The global `weapon.raise.alwaysraised` config and weapons listed in `AX_ALWAYS_RAISED` always return true.
--- Otherwise, reads the `ax.weapon.raised` relay state set by `Player:SetWeaponRaised`.
--- @realm shared
--- @return boolean True if the weapon should be considered raised, false otherwise.
--- @usage if ( client:IsWeaponRaised() ) then
---     print("Weapon is raised.")
--- end
+--- Returns whether this player's active weapon is raised. The global `weapon.raise.alwaysraised` config and weapons listed in `AX_ALWAYS_RAISED` always return true. Otherwise, reads the `ax.weapon.raised` relay state set by `Player:SetWeaponRaised`.
+---@realm shared
+---@return boolean # True if the weapon should be considered raised, false otherwise.
+---@usage if ( client:IsWeaponRaised() ) then
+---     print("Weapon is raised.")
+--- end
 function player:IsWeaponRaised()
     if ( ax.config:Get("weapon.raise.alwaysraised", false) ) then return true end
 

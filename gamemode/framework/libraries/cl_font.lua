@@ -9,16 +9,11 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
---- Font management system for creating and storing fonts used throughout the Parallax Framework.
--- Automatically generates all possible combinations of font styles for each font family.
--- Supports: bold, italic, shadow, and all their combinations.
---
--- @usage
--- -- Use any combination of styles:
--- draw.SimpleText("Hello", "ax.regular.bold.italic", x, y)
--- draw.SimpleText("World", "ax.large.shadow", x, y + 20)
---
--- @module ax.font
+---@class ax.font
+--- Font management system for creating and storing fonts used throughout the Parallax Framework. Automatically generates all possible combinations of font styles for each font family. Supports: bold, italic, shadow, and all their combinations.
+---@usage -- Use any combination of styles:
+--- draw.SimpleText("Hello", "ax.regular.bold.italic", x, y)
+--- draw.SimpleText("World", "ax.large.shadow", x, y + 20)
 
 ax.font = ax.font or {}
 ax.font.stored = ax.font.stored or {}
@@ -41,9 +36,9 @@ end
 local styleModifiers = { "black", "bold", "italic", "shadow" }
 
 --- Generate all permutations of a table
--- @realm client
--- @param arr table The array to permute
--- @return table Array of all permutations
+---@realm client
+---@param arr table The array to permute
+---@return table # Array of all permutations
 local function GeneratePermutations(arr)
     if ( #arr == 0 ) then return { {} } end
     if ( #arr == 1 ) then return { arr } end
@@ -74,8 +69,8 @@ local function GeneratePermutations(arr)
 end
 
 --- Generate all style combinations with all orderings (cached)
--- @realm client
--- @return table Array of all style combinations
+---@realm client
+---@return table # Array of all style combinations
 function ax.font:GenerateStyleCombinations()
     if ( self.styleCombinations ) then
         return self.styleCombinations
@@ -108,11 +103,11 @@ function ax.font:GenerateStyleCombinations()
 end
 
 --- Create a font family with all style variations
--- @realm client
--- @param name string The base name for the font family
--- @param font string The font face name
--- @param size number The font size
--- @param fontData table Optional additional font data
+---@realm client
+---@param name string The base name for the font family
+---@param font string The font face name
+---@param size number The font size
+---@param fontData? table Optional additional font data
 function ax.font:CreateFamily(name, font, size, fontData)
     if ( !font or !size or size <= 0 ) then
         ax.util:PrintError("Invalid font family '" .. name .. "'")
@@ -183,8 +178,8 @@ function ax.font:Load()
 end
 
 --- Generate list of all available fonts
--- @realm client
--- @return table Array of all font names
+---@realm client
+---@return table # Array of all font names
 function ax.font:GenerateAvailableFonts()
     local fonts = {}
     local baseFonts = { "tiny", "small", "regular", "medium", "large", "massive", "huge", "giant" }
@@ -231,6 +226,7 @@ concommand.Add("ax_font_wipe", function(client, cmd, args)
     ax.util:Print("Wiped and reloaded all Parallax Framework fonts.")
 end, nil, "Wipe and reload all Parallax Framework fonts")
 
---- Available fonts registered in the Parallax Framework
--- @table AX_FONTS
+--- Available fonts registered in the Parallax Framework.
+---@realm client
+---@type table
 AX_FONTS = ax.font:GenerateAvailableFonts()

@@ -9,9 +9,8 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
---- Advanced key binding system allowing registration of key combinations with press and release callbacks.
--- Supports multiple simultaneous key presses and overlapping combinations.
--- @module ax.bind
+---@class ax.bind
+--- Advanced key binding system allowing registration of key combinations with press and release callbacks. Supports multiple simultaneous key presses and overlapping combinations.
 
 ax.bind = ax.bind or {}
 ax.bind.stored = ax.bind.stored or {}
@@ -152,8 +151,8 @@ ax.bind.translations = {
 }
 
 --- Translate a list of KEY_* constants into a human-readable string.
--- @param ... varargs variable number of KEY_* constants.
--- @treturn string The translated key combination, or "NONE"
+---@param ... any variable number of KEY_* constants.
+---@return string # The translated key combination, or "NONE"
 function ax.bind:Translate(...)
     local parts = {}
 
@@ -215,15 +214,14 @@ for _, binding in pairs(ax.bind.stored) do
 end
 
 --- Register a key combination with press and release callbacks.
--- @param keys table table of KEY_* constants representing the key combination.
--- @param onPress function function to call when the key combination is pressed.
--- @param onRelease function function to call when the key combination is released.
--- @usage
--- ax.bind:Register({KEY_LCTRL, KEY_K}, function()
---     print("You pressed LCTRL + K")
--- end, function()
---     print("You released LCTRL + K")
--- end)
+---@param keys table table of KEY_* constants representing the key combination.
+---@param onPress function function to call when the key combination is pressed.
+---@param onRelease function function to call when the key combination is released.
+---@usage ax.bind:Register({KEY_LCTRL, KEY_K}, function()
+---     print("You pressed LCTRL + K")
+--- end, function()
+---     print("You released LCTRL + K")
+--- end)
 function ax.bind:Register(keys, onPress, onRelease)
     if ( !istable(keys) ) then
         error("ax.bind:Register: 'keys' must be a table of KEY_* constants", 2)

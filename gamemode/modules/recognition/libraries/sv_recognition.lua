@@ -9,8 +9,8 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
+---@class ax.recognition
 --- Server-side recognition logic: proximity ticks, chat bonuses, introductions, decay, and admin tools.
--- @module ax.recognition (server extension)
 
 CAMI.RegisterPrivilege({
     Name = "Parallax - Recognition",
@@ -19,8 +19,8 @@ CAMI.RegisterPrivilege({
 })
 
 --- Persist a character's familiarity blob after in-place normalization/mutation.
--- @realm server
--- @param char table Character whose familiarity should be saved
+---@realm server
+---@param char table Character whose familiarity should be saved
 local function SaveFamiliarity(char)
     if ( !istable(char) ) then return end
 
@@ -41,11 +41,10 @@ local function SaveFamiliarity(char)
     query:Execute()
 end
 
---- Normalize a loaded character's familiarity data and resync it to the owner.
--- This repairs legacy mixed-key entries before a later save/relog can drop aliases.
--- @realm server
--- @param client Player Character owner
--- @param char table Loaded character
+--- Normalize a loaded character's familiarity data and resync it to the owner. This repairs legacy mixed-key entries before a later save/relog can drop aliases.
+---@realm server
+---@param client Player Character owner
+---@param char table Loaded character
 local function NormalizeLoadedFamiliarity(client, char)
     if ( !istable(char) ) then return end
 
@@ -62,15 +61,13 @@ end
 
 hook.Add("PlayerLoadedCharacter", "ax.recognition.NormalizeLoadedFamiliarity", NormalizeLoadedFamiliarity)
 
---- Award familiarity score from `client`'s character toward `targetClient`'s character, and vice versa.
--- Fires tier-crossing hooks when the score crosses a threshold boundary.
--- Networking is sent only to the respective character owners.
--- @realm server
--- @param client Player The first player
--- @param char table The first player's character
--- @param targetClient Player The second player
--- @param targetChar table The second player's character
--- @param amount number Score to add (both directions)
+--- Award familiarity score from `client`'s character toward `targetClient`'s character, and vice versa. Fires tier-crossing hooks when the score crosses a threshold boundary. Networking is sent only to the respective character owners.
+---@realm server
+---@param client Player The first player
+---@param char table The first player's character
+---@param targetClient Player The second player
+---@param targetChar table The second player's character
+---@param amount number Score to add (both directions)
 local function AwardScore(client, char, targetClient, targetChar, amount)
     local charID = char:GetID()
     local targetID = targetChar:GetID()
@@ -119,10 +116,9 @@ local function AwardScore(client, char, targetClient, targetChar, amount)
     ApplyGain(targetClient, targetChar, client, charID, amount)
 end
 
---- Perform a proximity familiarity tick for a single player.
--- Checks all nearby players using the IC chat hear distance and awards passive score.
--- @realm server
--- @param client Player The player to process
+--- Perform a proximity familiarity tick for a single player. Checks all nearby players using the IC chat hear distance and awards passive score.
+---@realm server
+---@param client Player The player to process
 local function HandleProximityTick(client)
     if ( !ax.util:IsValidPlayer(client) or !client:Alive() ) then return end
 
@@ -154,9 +150,8 @@ end
 
 hook.Add("PlayerThink", "ax.recognition.ProximityTick", HandleProximityTick)
 
---- Apply chat interaction bonus score when a player sends an IC message.
--- Bonus is awarded between the speaker and every player who can hear the message.
--- @realm server
+--- Apply chat interaction bonus score when a player sends an IC message. Bonus is awarded between the speaker and every player who can hear the message.
+---@realm server
 local function HandleChatBonus(speaker, chatType, rawText, text, receivers, data)
     if ( !ax.util:IsValidPlayer(speaker) ) then return end
 
@@ -188,13 +183,11 @@ end
 
 hook.Add("PlayerMessageSend", "ax.recognition.ChatBonus", HandleChatBonus)
 
---- Record that `client` has introduced themselves to `targetClient` using `alias`.
--- Floors the score to ACQUAINTED if currently below, then stores the alias.
--- Only the client's own familiarity record is updated; the alias is theirs to give.
--- @realm server
--- @param client Player The player performing the introduction
--- @param targetClient Player The player being introduced to
--- @param alias string The name the client is presenting (1–48 characters)
+--- Record that `client` has introduced themselves to `targetClient` using `alias`. Floors the score to ACQUAINTED if currently below, then stores the alias. Only the client's own familiarity record is updated; the alias is theirs to give.
+---@realm server
+---@param client Player The player performing the introduction
+---@param targetClient Player The player being introduced to
+---@param alias string The name the client is presenting (1–48 characters)
 function ax.recognition:Introduce(client, targetClient, alias)
     if ( !ax.util:IsValidPlayer(client) or !ax.util:IsValidPlayer(targetClient) ) then return end
 
@@ -246,14 +239,12 @@ function ax.recognition:Introduce(client, targetClient, alias)
     ax.util:PrintDebug("[Recognition] " .. client:Nick() .. " introduced as '" .. alias .. "' to " .. targetClient:Nick())
 end
 
---- Directly set the familiarity score between two characters (admin tool).
--- Score is clamped to 0–2000 and saved immediately. Fires `OnFamiliarityChanged` if the
--- tier changes. Requires the CAMI privilege "Parallax - Recognition".
--- @realm server
--- @param admin Player The admin executing the change
--- @param charID number The character whose record is being modified
--- @param targetID number The target character ID
--- @param score number The new raw score to set
+--- Directly set the familiarity score between two characters (admin tool). Score is clamped to 0–2000 and saved immediately. Fires `OnFamiliarityChanged` if the tier changes. Requires the CAMI privilege "Parallax - Recognition".
+---@realm server
+---@param admin Player The admin executing the change
+---@param charID number The character whose record is being modified
+---@param targetID number The target character ID
+---@param score number The new raw score to set
 function ax.recognition:AdminSetFamiliarity(admin, charID, targetID, score)
     if ( !ax.util:IsValidPlayer(admin) ) then return end
 
@@ -313,7 +304,7 @@ function ax.recognition:AdminSetFamiliarity(admin, charID, targetID, score)
 end
 
 --- Clear the in-memory next-tick timestamp when a character is unloaded.
--- @realm server
+---@realm server
 local function HandlePlayerUnloadedCharacter(client, character)
     if ( !ax.util:IsValidPlayer(client) ) then return end
     client:GetTable().axRecogNextTick = nil
@@ -321,10 +312,8 @@ end
 
 hook.Add("PlayerUnloadedCharacter", "ax.recognition.Cleanup", HandlePlayerUnloadedCharacter)
 
---- Daily decay timer: reduce familiarity scores for characters that have not been seen recently.
--- Pruned records (score 0, no alias) are removed to keep the data payload small.
--- Decay is skipped entirely when `recognition_decay_days` is 0.
--- @realm server
+--- Daily decay timer: reduce familiarity scores for characters that have not been seen recently. Pruned records (score 0, no alias) are removed to keep the data payload small. Decay is skipped entirely when `recognition_decay_days` is 0.
+---@realm server
 local DECAY_TIMER = "ax.recognition.Decay"
 
 local function RunDecay()

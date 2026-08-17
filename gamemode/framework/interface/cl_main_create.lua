@@ -23,10 +23,8 @@ function PANEL:Init()
     hook.Run("PostMainMenuCreateCreated", self)
 end
 
---- Resets the character creation state so the panel can be reused for a fresh character.
--- Wipes the payload back to its defaults, destroys any cached tab pages, and clears the
--- in-flight submission guard. Called on panel init and every time the panel slides in.
--- @realm client
+--- Resets the character creation state so the panel can be reused for a fresh character. Wipes the payload back to its defaults, destroys any cached tab pages, and clears the in-flight submission guard. Called on panel init and every time the panel slides in.
+---@realm client
 function PANEL:Reset()
     self.payload = {}
     self.bSending = false

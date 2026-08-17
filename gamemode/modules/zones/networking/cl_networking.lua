@@ -10,7 +10,7 @@
 ]]
 
 --- Receive zone sync from server.
--- @realm client
+---@realm client
 ax.net:Hook("zones.sync", function(payload)
     if ( !istable(payload) ) then return end
 

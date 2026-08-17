@@ -9,9 +9,8 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
--- ax.net
--- Streaming data layer using sfs. NetStream-style API.
--- @realm shared
+--- ax.net Streaming data layer using sfs. NetStream-style API.
+---@realm shared
 
 ax.net = ax.net or {}
 ax.net.stored = ax.net.stored or {}
@@ -20,7 +19,7 @@ ax.net.queue = ax.net.queue or {}
 ax.net.queueActive = ax.net.queueActive or false
 
 --- Enqueue a net job to prevent overlapping net.Start calls.
--- @param job function Callback that receives a done() function.
+---@param job function Callback that receives a done() function.
 function ax.net:Enqueue(job)
     if ( !isfunction(job) ) then return end
 
@@ -61,8 +60,8 @@ end
 local AX_NET_MAX_PAYLOAD = 65000
 
 --- Builds the encoded payload for a net message.
--- @param arguments table
--- @return string|boolean Encoded payload or false on failure.
+---@param arguments table
+---@return string|boolean # Encoded payload or false on failure.
 function ax.net:BuildPayload(arguments)
     local encoded = sfs.encode(arguments)
 
@@ -74,11 +73,11 @@ function ax.net:BuildPayload(arguments)
 end
 
 --- Queues a net message to avoid overlapping net.Start calls.
--- @param name string
--- @param arguments table
--- @param sendFunc function
--- @param debugMessage string
--- @param warningMessage string
+---@param name string
+---@param arguments table
+---@param sendFunc function
+---@param debugMessage string
+---@param warningMessage string
 function ax.net:QueueMessage(name, arguments, sendFunc, debugMessage, warningMessage)
     if ( !isfunction(sendFunc) ) then return end
 
@@ -110,8 +109,8 @@ function ax.net:QueueMessage(name, arguments, sendFunc, debugMessage, warningMes
 end
 
 --- Hooks a network message.
--- @string name Unique identifier.
--- @func callback Callback with player, unpacked arguments.
+---@param name string Unique identifier.
+---@param callback function Callback with player, unpacked arguments.
 function ax.net:Hook(name, callback, bNoDelay)
     self.stored[name] = {callback, bNoDelay or false}
 end
@@ -137,9 +136,9 @@ if ( SERVER ) then
     end
 
     --- Starts a stream.
-    -- @param target Player, table, vector or nil (nil = broadcast or to server).
-    -- @string name Hook name.
-    -- @vararg Arguments to send.
+    ---@param target Player|table|Vector|nil A player, a table of players, a position, or nil to broadcast (server) / send to the server (client).
+    ---@param name string Hook name.
+    ---@param ... any Arguments to send.
     function ax.net:Start(target, name, ...)
         local arguments = {...}
         -- Fast paths
@@ -189,9 +188,9 @@ if ( SERVER ) then
     end
 
     --- Starts a stream, sends to people other than the specified target.
-    -- @param target Player, table, vector or nil (nil = broadcast or to server).
-    -- @string name Hook name.
-    -- @vararg Arguments to send.
+    ---@param target Player|table|Vector|nil A player, a table of players, a position, or nil to broadcast (server) / send to the server (client).
+    ---@param name string Hook name.
+    ---@param ... any Arguments to send.
     function ax.net:StartOmit(target, name, ...)
         local arguments = {...}
         -- Fast paths
@@ -241,9 +240,9 @@ if ( SERVER ) then
     end
 else
     --- Starts a stream.
-    -- @param target Player, table, vector or nil (nil = broadcast or to server).
-    -- @string name Hook name.
-    -- @vararg Arguments to send.
+    ---@param target Player|table|Vector|nil A player, a table of players, a position, or nil to broadcast (server) / send to the server (client).
+    ---@param name string Hook name.
+    ---@param ... any Arguments to send.
     function ax.net:Start(name, ...)
         local arguments = {...}
 

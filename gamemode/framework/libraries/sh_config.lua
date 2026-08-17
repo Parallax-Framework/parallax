@@ -9,111 +9,83 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
---- Configuration system for server-owned settings with optional client networking.
--- Server maintains the authoritative config values and can optionally sync them to clients.
--- Supports categorization, validation, and automatic persistence to JSON files.
--- @module ax.config
--- @usage ax.config:Add("thirdperson", ax.type.bool, true, { description = "Enable third-person view.", category = "camera" })
--- @usage ax.config:Set("thirdperson", false)
--- @usage print(ax.config:Get("thirdperson", true))  -- server: source of truth; client: cached
+---@class ax.config
+--- Configuration system for server-owned settings with optional client networking. Server maintains the authoritative config values and can optionally sync them to clients. Supports categorization, validation, and automatic persistence to JSON files.
+---@usage ax.config:Add("thirdperson", ax.type.bool, true, { description = "Enable third-person view.", category = "camera" })
+---@usage ax.config:Set("thirdperson", false)
+---@usage print(ax.config:Get("thirdperson", true))  -- server: source of truth; client: cached
 
---- Store-generated config accessors.
--- `ax.config` is created via `ax.util:CreateStore`, so these methods are added
--- dynamically at runtime rather than declared directly in this file.
--- @section accessors
+-- The accessors below are store-generated: `ax.config` is created via `ax.util:CreateStore`, so these methods are added dynamically at runtime rather than declared directly in this file.
 
---- Register a config key definition.
--- Set `data.bServerOnly = true` to keep the value strictly on the server: it is
--- never transmitted to clients, and the key is not registered in the client
--- registry at all (client `Get` calls return the caller's fallback).
--- @realm shared
--- @function ax.config:Add
--- @param key string Unique config key
--- @param type any `ax.type` value used for sanitization/coercion
--- @param default any Default value for the key
--- @param[opt] data table Metadata (description, category, min/max, decimals, `OnChanged`, `bServerOnly`, etc.)
--- @return boolean success True on success
--- @usage ax.config:Add("voice.distance", ax.type.number, 512, { min = 64, max = 4096, category = "voice" })
--- @usage ax.config:Add("admin.webhook", ax.type.string, "", { bServerOnly = true, category = "general" })
+--- `ax.config:Add(key, type, default, data)` - registers a config key definition. Set `data.bServerOnly = true` to keep the value strictly on the server: it is never transmitted to clients, and the key is not registered in the client registry at all (client `Get` calls return the caller's fallback).
+---@realm shared
+---@param key string Unique config key
+---@param type any `ax.type` value used for sanitization/coercion
+---@param default any Default value for the key
+---@param data? table Metadata (description, category, min/max, decimals, `OnChanged`, `bServerOnly`, etc.)
+---@return boolean success True on success
+---@usage ax.config:Add("voice.distance", ax.type.number, 512, { min = 64, max = 4096, category = "voice" })
+---@usage ax.config:Add("admin.webhook", ax.type.string, "", { bServerOnly = true, category = "general" })
 
---- Get a config value.
--- On the client, this returns the replicated cache value when available.
--- @realm shared
--- @function ax.config:Get
--- @param key string Config key
--- @param[opt] fallback any Value returned when the key is missing
--- @return any value Resolved config value or fallback/default
--- @usage local dist = ax.config:Get("voice.distance", 512)
+--- `ax.config:Get(key, fallback)` - gets a config value. On the client, this returns the replicated cache value when available.
+---@realm shared
+---@param key string Config key
+---@param fallback? any Value returned when the key is missing
+---@return any value The resolved config value, or the fallback/default when the key is missing.
+---@usage local dist = ax.config:Get("voice.distance", 512)
 
---- Set a config value.
--- Values are sanitized to the registered type and networked when the key is
--- configured for replication.
--- @realm shared
--- @function ax.config:Set
--- @param key string Config key
--- @param value any New value
--- @param[opt=false] bNoSave boolean Skip persistence when `true`
--- @param[opt=false] bNoCallback boolean Skip `OnChanged` and hook callbacks when `true`
--- @return boolean success True when the value changed and was accepted
--- @usage ax.config:Set("voice.distance", 768)
+--- `ax.config:Set(key, value, bNoSave, bNoCallback)` - sets a config value. Values are sanitized to the registered type and networked when the key is configured for replication.
+---@realm shared
+---@param key string Config key
+---@param value any New value
+---@param bNoSave? boolean Skip persistence when `true`. Defaults to `false`.
+---@param bNoCallback? boolean Skip `OnChanged` and hook callbacks when `true`. Defaults to `false`.
+---@return boolean success True when the value changed and was accepted
+---@usage ax.config:Set("voice.distance", 768)
 
---- Get metadata for a registered config key.
--- Returns a copy of the definition metadata table.
--- @realm shared
--- @function ax.config:GetData
--- @param key string Config key
--- @return table|nil metadata
--- @usage local meta = ax.config:GetData("voice.distance")
+--- `ax.config:GetData(key)` - gets the metadata for a registered config key. Returns a copy of the definition metadata table.
+---@realm shared
+---@param key string Config key
+---@return table|nil metadata
+---@usage local meta = ax.config:GetData("voice.distance")
 
---- Get the default value for a config key.
--- @realm shared
--- @function ax.config:GetDefault
--- @param key string Config key
--- @return any defaultValue
--- @usage local defaultDistance = ax.config:GetDefault("voice.distance")
+--- `ax.config:GetDefault(key)` - gets the default value for a config key.
+---@realm shared
+---@param key string Config key
+---@return any defaultValue
+---@usage local defaultDistance = ax.config:GetDefault("voice.distance")
 
---- Get all registered config definitions.
--- @realm shared
--- @function ax.config:GetAllDefinitions
--- @return table definitions Map of `key -> definition`
--- @usage local defs = ax.config:GetAllDefinitions()
+--- `ax.config:GetAllDefinitions()` - gets all registered config definitions.
+---@realm shared
+---@return table definitions Map of `key -> definition`
+---@usage local defs = ax.config:GetAllDefinitions()
 
---- Get all config categories present in the registry.
--- @realm shared
--- @function ax.config:GetAllCategories
--- @return table categories Array of category names
--- @usage local categories = ax.config:GetAllCategories()
+--- `ax.config:GetAllCategories()` - gets all config categories present in the registry.
+---@realm shared
+---@return table categories Array of category names
+---@usage local categories = ax.config:GetAllCategories()
 
---- Get config definitions matching a category string.
--- Performs case-insensitive partial matching on the category name.
--- @realm shared
--- @function ax.config:GetAllByCategory
--- @param category string Category filter text
--- @return table definitions Map of `key -> definition`
--- @usage local voiceDefs = ax.config:GetAllByCategory("voice")
+--- `ax.config:GetAllByCategory(category)` - gets the config definitions matching a category string. Performs case-insensitive partial matching on the category name.
+---@realm shared
+---@param category string Category filter text
+---@return table definitions Map of `key -> definition`
+---@usage local voiceDefs = ax.config:GetAllByCategory("voice")
 
---- Reload persisted config values from disk.
--- Only has effect on the authority side (server for `ax.config`).
--- @realm shared
--- @function ax.config:Load
--- @return boolean success
--- @usage ax.config:Load()
+--- `ax.config:Load()` - reloads persisted config values from disk. Only has effect on the authority side (server for `ax.config`).
+---@realm shared
+---@return boolean success
+---@usage ax.config:Load()
 
---- Persist the current config values to disk.
--- Only has effect on the authority side (server for `ax.config`).
--- @realm shared
--- @function ax.config:Save
--- @return boolean success
--- @usage ax.config:Save()
+--- `ax.config:Save()` - persists the current config values to disk. Only has effect on the authority side (server for `ax.config`).
+---@realm shared
+---@return boolean success
+---@usage ax.config:Save()
 
---- Sync networked config keys to clients.
--- When called on the server, a specific client (or list of clients) may be
--- provided to limit the initial sync target.
--- @realm shared
--- @function ax.config:Sync
--- @param[opt] target Player|table Optional client or recipients list
--- @usage ax.config:Sync(client)
--- @usage ax.config:Sync()
+--- `ax.config:Sync(target)` - syncs networked config keys to clients. When called on the server, a specific client (or list of clients) may be provided to limit the initial sync target.
+---@realm shared
+---@param target? Player|table Optional client or recipients list
+---@usage ax.config:Sync(client)
+---@usage ax.config:Sync()
 
 --[[
     Config System - Server-owned settings with optional client networking

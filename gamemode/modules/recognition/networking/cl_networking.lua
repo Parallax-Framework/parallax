@@ -9,8 +9,8 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
+---@class ax.recognition
 --- Client-side net receivers for the recognition module.
--- @module ax.recognition (net, client)
 
 --- Server notifies the local client that someone just introduced themselves.
 -- Only the alias is sent — the introducer's real identity is intentionally withheld.

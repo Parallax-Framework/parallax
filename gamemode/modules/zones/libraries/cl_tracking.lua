@@ -9,7 +9,7 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
--- @module ax.zones
+---@class ax.zones
 
 ax.zones = ax.zones or {}
 
@@ -45,14 +45,14 @@ local function GetTrackingNumber(key, fallback, minValue, maxValue)
 end
 
 --- Get the client's zone tracking state.
--- @realm client
--- @treturn table Tracking state with physical, visible, and dominant fields
+---@realm client
+---@return table # Tracking state with physical, visible, and dominant fields
 function ax.zones:GetClientTracking()
     return self.clientTracking
 end
 
 --- Update client-side tracking for local player.
--- @realm client
+---@realm client
 local function UpdateClientTracking()
     local client = ax.client
     if ( !ax.util:IsValidPlayer(client) ) then return end

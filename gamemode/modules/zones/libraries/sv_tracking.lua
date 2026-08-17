@@ -9,7 +9,7 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
--- @module ax.zones
+---@class ax.zones
 
 ax.zones = ax.zones or {}
 ax.zones.tracked = ax.zones.tracked or {}
@@ -33,8 +33,8 @@ local function GetTrackingNumber(key, fallback, minValue, maxValue)
 end
 
 --- Start tracking an entity for zone events.
--- @realm server
--- @tparam Entity ent Entity to track
+---@realm server
+---@param ent Entity Entity to track
 function ax.zones:TrackEntity(ent)
     if ( !IsValid(ent) ) then return end
 
@@ -57,8 +57,8 @@ function ax.zones:TrackEntity(ent)
 end
 
 --- Stop tracking an entity.
--- @realm server
--- @tparam Entity ent Entity to stop tracking
+---@realm server
+---@param ent Entity Entity to stop tracking
 function ax.zones:UntrackEntity(ent)
     if ( !IsValid(ent) ) then return end
 
@@ -69,17 +69,17 @@ function ax.zones:UntrackEntity(ent)
 end
 
 --- Get tracking state for an entity.
--- @realm server
--- @tparam Entity ent Entity
--- @treturn table|nil Tracking state or nil
+---@realm server
+---@param ent Entity Entity
+---@return table|nil # Tracking state or nil
 function ax.zones:GetTracking(ent)
     if ( !IsValid(ent) ) then return nil end
     return self.tracked[ent:EntIndex()]
 end
 
 --- Update tracking for a single entity.
--- @realm server
--- @tparam Entity ent Entity to update
+---@realm server
+---@param ent Entity Entity to update
 local function UpdateTracking(ent)
     if ( !IsValid(ent) ) then return end
 

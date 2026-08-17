@@ -9,10 +9,8 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
---- Item management system for creating, storing, and managing game items.
--- Supports item inheritance, base items, actions, and instance management.
--- Includes automatic loading from framework, schema, and module directories.
--- @module ax.item
+---@class ax.item
+--- Item management system for creating, storing, and managing game items. Supports item inheritance, base items, actions, and instance management. Includes automatic loading from framework, schema, and module directories.
 
 ax.item = ax.item or {}
 ax.item.stored = ax.item.stored or {}
@@ -424,12 +422,12 @@ function ax.item:ExtractItemName(fileName)
 end
 
 --- Registers an item definition programmatically without requiring a file.
--- @realm shared
--- @param className string The unique class identifier for the item
--- @param baseName string|nil The base item class to inherit from
--- @param bIsBase boolean Whether this item is a base item
--- @param bAddDefaultActions boolean Whether to add default take/drop actions (default true)
--- @return table The item definition table, or nil on failure
+---@realm shared
+---@param className string The unique class identifier for the item
+---@param baseName string|nil The base item class to inherit from
+---@param bIsBase boolean Whether this item is a base item
+---@param bAddDefaultActions boolean Whether to add default take/drop actions (default true)
+---@return table # The item definition table, or nil on failure
 function ax.item:Register(className, baseName, bIsBase, bAddDefaultActions)
     if ( !isstring(className) or className == "" ) then
         ErrorNoHalt("[ax.item] Register called with invalid className\n")

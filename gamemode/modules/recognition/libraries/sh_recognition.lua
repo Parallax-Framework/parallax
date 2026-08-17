@@ -9,16 +9,13 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
---- Recognition system for tracking character familiarity, aliases, and name display.
--- Characters begin as strangers and accumulate familiarity through proximity and IC
--- chat interaction. At sufficient familiarity, introductions unlock the alias shown on
--- nameplates and in IC chat. Faction-level global recognition bypasses per-character scores.
--- @module ax.recognition
+---@class ax.recognition
+--- Recognition system for tracking character familiarity, aliases, and name display. Characters begin as strangers and accumulate familiarity through proximity and IC chat interaction. At sufficient familiarity, introductions unlock the alias shown on nameplates and in IC chat. Faction-level global recognition bypasses per-character scores.
 
 ax.recognition = ax.recognition or {}
 
 --- Familiarity tier identifiers.
--- @realm shared
+---@realm shared
 ax.recognition.TIERS = {
     STRANGER   = 0,
     SEEN       = 1,
@@ -27,19 +24,14 @@ ax.recognition.TIERS = {
     TRUSTED    = 4,
 }
 
---- Minimum score required to reach each tier.
--- Index position (1-based) maps to tier value (0-based), so THRESHOLDS[1] = 0 (STRANGER),
--- THRESHOLDS[3] = 500 (ACQUAINTED), etc.
--- @realm shared
+--- Minimum score required to reach each tier. Index position (1-based) maps to tier value (0-based), so THRESHOLDS[1] = 0 (STRANGER), THRESHOLDS[3] = 500 (ACQUAINTED), etc.
+---@realm shared
 ax.recognition.THRESHOLDS = { 0, 250, 500, 1000, 1500 }
 
---- Normalize a familiarity table to canonical string keys and sanitized records.
--- This prevents JSON/network round-trips from collapsing mixed numeric/string keys
--- (e.g. `123` and `"123"`) into duplicate object keys, which can silently discard
--- aliases after reconnects.
--- @realm shared
--- @param familiarity table Familiarity map keyed by target character ID
--- @return boolean True when the table was modified in-place
+--- Normalize a familiarity table to canonical string keys and sanitized records. This prevents JSON/network round-trips from collapsing mixed numeric/string keys (e.g. `123` and `"123"`) into duplicate object keys, which can silently discard aliases after reconnects.
+---@realm shared
+---@param familiarity table Familiarity map keyed by target character ID
+---@return boolean # True when the table was modified in-place
 function ax.recognition:NormalizeFamiliarity(familiarity)
     if ( !istable(familiarity) ) then return false end
 
@@ -111,9 +103,9 @@ function ax.recognition:NormalizeFamiliarity(familiarity)
 end
 
 --- Derive the familiarity tier for a given raw score.
--- @realm shared
--- @param score number Raw familiarity score (0–200+)
--- @return number Tier integer (0 = STRANGER … 4 = TRUSTED)
+---@realm shared
+---@param score number Raw familiarity score (0–200+)
+---@return number # Tier integer (0 = STRANGER … 4 = TRUSTED)
 function ax.recognition:GetTier(score)
     score = tonumber(score) or 0
 
@@ -131,10 +123,10 @@ function ax.recognition:GetTier(score)
 end
 
 --- Retrieve the familiarity record that `char` holds for `targetID`.
--- @realm shared
--- @param char table The perceiver's character instance
--- @param targetID number The target character's ID
--- @return table|nil Record `{ score, alias, lastSeen }`, or nil if none exists
+---@realm shared
+---@param char table The perceiver's character instance
+---@param targetID number The target character's ID
+---@return table|nil # Record `{ score, alias, lastSeen }`, or nil if none exists
 function ax.recognition:GetRecord(char, targetID)
     if ( !istable(char) ) then return nil end
 
@@ -149,13 +141,11 @@ function ax.recognition:GetRecord(char, targetID)
     return familiarity[tostring(numID)]
 end
 
---- Resolve the display name that `char` uses for the character with ID `targetID`.
--- Returns the stored alias at ACQUAINTED or above, otherwise "Unknown".
--- Globally recognised faction members always show their real name.
--- @realm shared
--- @param char table The perceiver's character instance
--- @param targetID number The target character's ID
--- @return string Display name or fallback string
+--- Resolve the display name that `char` uses for the character with ID `targetID`. Returns the stored alias at ACQUAINTED or above, otherwise "Unknown". Globally recognised faction members always show their real name.
+---@realm shared
+---@param char table The perceiver's character instance
+---@param targetID number The target character's ID
+---@return string # Display name or fallback string
 function ax.recognition:GetAlias(char, targetID)
     if ( !istable(char) ) then return ax.localization:GetPhrase("unknown") end
 
@@ -180,13 +170,11 @@ function ax.recognition:GetAlias(char, targetID)
     return ax.localization:GetPhrase("unknown")
 end
 
---- Resolve the description that `char` should see for the character with ID `targetID`.
--- Returns nil for strangers (description hidden). Returns the real description at SEEN or above.
--- Globally recognised faction members always show their real description.
--- @realm shared
--- @param char table The perceiver's character instance
--- @param targetID number The target character's ID
--- @return string|nil Description string, or nil when the perceiver shouldn't see one yet
+--- Resolve the description that `char` should see for the character with ID `targetID`. Returns nil for strangers (description hidden). Returns the real description at SEEN or above. Globally recognised faction members always show their real description.
+---@realm shared
+---@param char table The perceiver's character instance
+---@param targetID number The target character's ID
+---@return string|nil # Description string, or nil when the perceiver shouldn't see one yet
 function ax.recognition:GetDisplayDescription(char, targetID)
     if ( !istable(char) ) then return nil end
 
@@ -199,14 +187,10 @@ function ax.recognition:GetDisplayDescription(char, targetID)
     return targetChar:GetDescription()
 end
 
---- Check whether a character's faction grants global recognition.
--- When a faction sets `isGloballyRecognized = true`, all of its members are treated
--- as at least ACQUAINTED by every perceiver, regardless of individual score.
--- The optional `globalFamiliarityFloor` field on the faction sets which tier is the
--- minimum; it defaults to ACQUAINTED (2) when omitted.
--- @realm shared
--- @param targetChar table The target character instance
--- @return boolean True when the target's faction is globally recognised
+--- Check whether a character's faction grants global recognition. When a faction sets `isGloballyRecognized = true`, all of its members are treated as at least ACQUAINTED by every perceiver, regardless of individual score. The optional `globalFamiliarityFloor` field on the faction sets which tier is the minimum; it defaults to ACQUAINTED (2) when omitted.
+---@realm shared
+---@param targetChar table The target character instance
+---@return boolean # True when the target's faction is globally recognised
 function ax.recognition:IsGloballyRecognized(targetChar)
     if ( !istable(targetChar) ) then return false end
 

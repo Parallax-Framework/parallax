@@ -9,8 +9,8 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
+---@class ax.notification
 --- Minimal stacked notifications rendered above all VGUI.
--- @module ax.notification
 
 ax.notification = ax.notification or {}
 
@@ -23,11 +23,11 @@ ax.notification.enums.TYPE_SUCCESS = 4
 
 if ( SERVER ) then
     --- Send a notification to one or more players.
-    -- @realm server
-    -- @tparam Player|Player[]|nil target Player entity, list of players, or nil for broadcast
-    -- @tparam string text Message text
-    -- @tparam[opt="info"] string type Type: error|warning|info|success
-    -- @tparam[opt] number length Seconds to show (falls back to config default)
+    ---@realm server
+    ---@param target Player|Player[]|nil Player entity, list of players, or nil for broadcast
+    ---@param text string Message text
+    ---@param type? string Type: error|warning|info|success. Defaults to `"info"`.
+    ---@param length? number Seconds to show (falls back to config default)
     function ax.notification:Send(target, text, type, length)
         local message = tostring(text or "")
         if ( message == "" ) then return end
@@ -188,10 +188,10 @@ if ( CLIENT ) then
     end
 
     --- Add a new notification.
-    -- @realm client
-    -- @tparam string text Message text
-    -- @tparam[opt="info"] string type Type: error|warning|info|success
-    -- @tparam[opt] number length Seconds to remain visible
+    ---@realm client
+    ---@param text string Message text
+    ---@param type? string Type: error|warning|info|success. Defaults to `"info"`.
+    ---@param length? number Seconds to remain visible
     function ax.notification:Add(text, type, length)
         if ( !ax.option:Get("notification.enabled", true) ) then return end
 

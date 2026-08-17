@@ -12,32 +12,29 @@
 local character = ax.character.meta or {}
 character.__index = character
 
---- Returns a human-readable string representation of the character.
--- Format: `"Character [id][name]"`. Useful for debug output and logging.
--- @realm shared
--- @return string A formatted string identifying this character.
+--- Returns a human-readable string representation of the character. Format: `"Character [id][name]"`. Useful for debug output and logging.
+---@realm shared
+---@return string # A formatted string identifying this character.
 function character:__tostring()
     return string.format("Character [%d][%s]", self.id, self.vars.name or "Unknown")
 end
 
---- Returns the character's unique database ID.
--- This is the primary key from the `ax_characters` table. Temporary bot characters use the owner's SteamID64 as their ID instead.
--- @realm shared
--- @return number The character's numeric ID.
+--- Returns the character's unique database ID. This is the primary key from the `ax_characters` table. Temporary bot characters use the owner's SteamID64 as their ID instead.
+---@realm shared
+---@return number # The character's numeric ID.
 function character:GetID()
     return self.id
 end
 
---- Returns the character's vars table containing all stored variable values.
--- The vars table holds every registered character variable (name, faction, model, description, etc.). Modifications to this table are live but not automatically persisted — call `Save()` to write changes to the database.
--- @realm shared
--- @return table The character's vars table.
+--- Returns the character's vars table containing all stored variable values. The vars table holds every registered character variable (name, faction, model, description, etc.). Modifications to this table are live but not automatically persisted — call `Save()` to write changes to the database.
+---@realm shared
+---@return table # The character's vars table.
 function character:GetVars()
     return self.vars
 end
 
 --- Reads a registered character variable by name, the generic form of the `Get<Name>` accessor `ax.character:RegisterVar` generates - useful when the variable name is only known at runtime, or from generic code that should not hardcode one accessor.
--- For an `ax.type.data` variable, `fallback` is read as the nested key and `dataFallback` supplies the value when that key is absent.
+--- For an `ax.type.data` variable, `fallback` is read as the nested key and `dataFallback` supplies the value when that key is absent.
 ---@realm shared
 ---@param name string The registered variable name.
 ---@param fallback? any Value returned when the variable is unset, or the nested key for `ax.type.data` variables.
@@ -49,7 +46,7 @@ function character:GetVar(name, fallback, dataFallback)
 end
 
 --- Writes a registered character variable by name, the generic form of the `Set<Name>` mutator `ax.character:RegisterVar` generates - it runs the same `changed` callback, networking, and database write.
--- For an `ax.type.data` variable, pass the nested key as `value` and the stored value as `options.dataValue`.
+--- For an `ax.type.data` variable, pass the nested key as `value` and the stored value as `options.dataValue`.
 ---@realm shared
 ---@param name string The registered variable name.
 ---@param value any The new value, or the nested key for `ax.type.data` variables.
@@ -59,25 +56,18 @@ function character:SetVar(name, value, options)
     return ax.character:SetVar(self, name, value, options)
 end
 
---- Returns the inventory instance associated with this character.
--- Looks up `ax.inventory.instances` using the character's stored inventory ID.
--- Returns nil when the inventory has not been loaded or the ID is 0.
--- Aliased as `character.GetInv`.
--- @realm shared
--- @return table|nil The inventory instance, or nil if not loaded.
+--- Returns the inventory instance associated with this character. Looks up `ax.inventory.instances` using the character's stored inventory ID. Returns nil when the inventory has not been loaded or the ID is 0. Aliased as `character.GetInv`.
+---@realm shared
+---@return table|nil # The inventory instance, or nil if not loaded.
 function character:GetInventory()
     return ax.inventory.instances[self.vars.inventory]
 end
 
 character.GetInv = character.GetInventory
 
---- Returns every loaded inventory owned by this character (the legacy primary
--- inventory plus any others created with `owner = character`, e.g. a
--- schema-registered equipment inventory). Only inventories already loaded into
--- `ax.inventory.instances` are returned - call `ax.inventory:RestoreOwner(character, ...)`
--- first if this character was just loaded and its extra inventories haven't synced yet.
--- @realm shared
--- @return table An array of inventory instances.
+--- Returns every loaded inventory owned by this character (the legacy primary inventory plus any others created with `owner = character`, e.g. a schema-registered equipment inventory). Only inventories already loaded into `ax.inventory.instances` are returned - call `ax.inventory:RestoreOwner(character, ...)` first if this character was just loaded and its extra inventories haven't synced yet.
+---@realm shared
+---@return table # An array of inventory instances.
 function character:GetInventories()
     local owned = {}
 
@@ -93,11 +83,10 @@ function character:GetInventories()
     return owned
 end
 
---- Returns this character's inventory of the given type (e.g. `"equipment"`), or nil
--- if it doesn't have one loaded. See `GetInventories`.
--- @realm shared
--- @param typeID string The inventory type id to look for.
--- @return table|nil
+--- Returns this character's inventory of the given type (e.g. `"equipment"`), or nil if it doesn't have one loaded. See `GetInventories`.
+---@realm shared
+---@param typeID string The inventory type id to look for.
+---@return table|nil
 function character:GetInventoryByType(typeID)
     for _, inventory in pairs(self:GetInventories()) do
         if ( inventory:GetTypeID() == typeID ) then
@@ -108,20 +97,18 @@ function character:GetInventoryByType(typeID)
     return nil
 end
 
---- Returns the numeric ID of the character's inventory.
--- This is the database ID of the associated inventory row. Returns 0 when no inventory has been assigned (e.g. freshly created characters before an inventory is allocated). Aliased as `character.GetInvID`.
--- @realm shared
--- @return number The inventory ID, or 0 if none is set.
+--- Returns the numeric ID of the character's inventory. This is the database ID of the associated inventory row. Returns 0 when no inventory has been assigned (e.g. freshly created characters before an inventory is allocated). Aliased as `character.GetInvID`.
+---@realm shared
+---@return number # The inventory ID, or 0 if none is set.
 function character:GetInventoryID()
     return tonumber(self.vars.inventory) or 0
 end
 
 character.GetInvID = character.GetInventoryID
 
---- Returns the player entity that owns this character.
--- Returns the player stored in `self.player` at load time. May be nil for offline or bot characters that have been unloaded. Aliased as `GetPlayer`, `GetPly`, `GetUser`, and `GetClient`.
--- @realm shared
--- @return Player|nil The owning player entity, or nil if unloaded.
+--- Returns the player entity that owns this character. Returns the player stored in `self.player` at load time. May be nil for offline or bot characters that have been unloaded. Aliased as `GetPlayer`, `GetPly`, `GetUser`, and `GetClient`.
+---@realm shared
+---@return Player|nil # The owning player entity, or nil if unloaded.
 function character:GetOwner()
     return self.player
 end
@@ -131,36 +118,31 @@ character.GetPly = character.GetOwner
 character.GetUser = character.GetOwner
 character.GetClient = character.GetOwner
 
---- Returns the faction definition table for this character's faction.
--- Delegates to `ax.faction:Get` using `self.vars.faction`. Returns nil when the faction index is unset or not registered.
--- @realm shared
--- @return table|nil The faction definition, or nil if not found.
+--- Returns the faction definition table for this character's faction. Delegates to `ax.faction:Get` using `self.vars.faction`. Returns nil when the faction index is unset or not registered.
+---@realm shared
+---@return table|nil # The faction definition, or nil if not found.
 function character:GetFactionData()
     return ax.faction:Get(self.vars.faction)
 end
 
---- Returns the class definition table for this character's class.
--- Delegates to `ax.class:Get` using `self.vars.class`. Returns nil when no class is assigned or the class is not registered.
--- @realm shared
--- @return table|nil The class definition, or nil if not found.
+--- Returns the class definition table for this character's class. Delegates to `ax.class:Get` using `self.vars.class`. Returns nil when no class is assigned or the class is not registered.
+---@realm shared
+---@return table|nil # The class definition, or nil if not found.
 function character:GetClassData()
     return ax.class:Get(self.vars.class)
 end
 
---- Returns the rank definition table for this character's rank.
--- Delegates to `ax.rank:Get` using `self.vars.rank`. Returns nil when no rank is assigned or the rank is not registered.
--- @realm shared
--- @return table|nil The rank definition, or nil if not found.
+--- Returns the rank definition table for this character's rank. Delegates to `ax.rank:Get` using `self.vars.rank`. Returns nil when no rank is assigned or the rank is not registered.
+---@realm shared
+---@return table|nil # The rank definition, or nil if not found.
 function character:GetRankData()
     return ax.rank:Get(self.vars.rank)
 end
 
---- Returns true if the character holds all of the specified flags.
--- Iterates each letter in `flags` and checks whether it appears in the character's stored flags string (via a case-sensitive `FindString` call).
--- Returns false as soon as any letter is missing. An empty `flags` string always returns true.
--- @realm shared
--- @param flags string A string of single-character flag letters to test for (e.g. `"acf"` checks for flags a, c, and f).
--- @return boolean True if every flag letter is present, false otherwise.
+--- Returns true if the character holds all of the specified flags. Iterates each letter in `flags` and checks whether it appears in the character's stored flags string (via a case-sensitive `FindString` call). Returns false as soon as any letter is missing. An empty `flags` string always returns true.
+---@realm shared
+---@param flags string A string of single-character flag letters to test for (e.g. `"acf"` checks for flags a, c, and f).
+---@return boolean # True if every flag letter is present, false otherwise.
 function character:HasFlags(flags)
     local data = self:GetData("flags", "")
     for i = 1, #flags do
@@ -175,40 +157,36 @@ end
 
 character.HasFlag = character.HasFlags
 
---- Returns the value of a bodygroup index for this character.
--- Looks up the bodygroup value in the character's data table under `"bodygroups"` keyed by the index as a string. Returns 0 if no value is set for that index.
--- @realm shared
--- @param index number The bodygroup index to query.
--- @return number The bodygroup value, or 0 if not set.
+--- Returns the value of a bodygroup index for this character. Looks up the bodygroup value in the character's data table under `"bodygroups"` keyed by the index as a string. Returns 0 if no value is set for that index.
+---@realm shared
+---@param index number The bodygroup index to query.
+---@return number # The bodygroup value, or 0 if not set.
 function character:GetBodygroup(index)
     local bodygroups = self:GetData("bodygroups", {})
     return tonumber(bodygroups[tostring(index)]) or 0
 end
 
---- Returns the value of a bodygroup by name for this character.
--- Looks up the bodygroup value in the character's data table under `"bodygroups"` keyed by the name string. Returns 0 if no value is set for that name.
--- @realm shared
--- @param name string The bodygroup name to query.
--- @return number The bodygroup value, or 0 if not set.
+--- Returns the value of a bodygroup by name for this character. Looks up the bodygroup value in the character's data table under `"bodygroups"` keyed by the name string. Returns 0 if no value is set for that name.
+---@realm shared
+---@param name string The bodygroup name to query.
+---@return number # The bodygroup value, or 0 if not set.
 function character:GetBodygroupName(name)
     local bodygroups = self:GetData("bodygroups", {})
     return tonumber(bodygroups[name]) or 0
 end
 
---- Returns a table of all bodygroup values for this character.
--- Returns the entire `"bodygroups"` table from the character's data, or an empty table if none is set. The keys are bodygroup indices as strings or bodygroup names, and the values are the corresponding bodygroup values as numbers. This is useful for iterating all bodygroups or when you need the full set of bodygroup values for saving or transferring to another character.
--- @realm shared
--- @return table A table of bodygroup values keyed by index (as strings) and name. Values are numbers. Returns an empty table if no bodygroups are set.
+--- Returns a table of all bodygroup values for this character. Returns the entire `"bodygroups"` table from the character's data, or an empty table if none is set. The keys are bodygroup indices as strings or bodygroup names, and the values are the corresponding bodygroup values as numbers. This is useful for iterating all bodygroups or when you need the full set of bodygroup values for saving or transferring to another character.
+---@realm shared
+---@return table # A table of bodygroup values keyed by index (as strings) and name. Values are numbers. Returns an empty table if no bodygroups are set.
 function character:GetBodyGroups()
     return self:GetData("bodygroups", {})
 end
 
 if ( SERVER ) then
-    --- Sets a bodygroup on the character's player model and persists it.
-    -- Immediately applies the bodygroup to the owning player (if online) via `Player:SetBodygroup`, then stores the value in the character's data under `"bodygroups"` keyed by the numeric index (as a string) and saves via `SetData`. The stored value is reapplied when the character loads.
-    -- @realm server
-    -- @param index number The bodygroup index to set.
-    -- @param value number The bodygroup value to apply.
+    --- Sets a bodygroup on the character's player model and persists it. Immediately applies the bodygroup to the owning player (if online) via `Player:SetBodygroup`, then stores the value in the character's data under `"bodygroups"` keyed by the numeric index (as a string) and saves via `SetData`. The stored value is reapplied when the character loads.
+    ---@realm server
+    ---@param index number The bodygroup index to set.
+    ---@param value number The bodygroup value to apply.
     function character:SetBodygroup(index, value)
         local owner = self:GetOwner()
         if ( ax.util:IsValidPlayer(owner) ) then
@@ -221,11 +199,10 @@ if ( SERVER ) then
         self:SetData("bodygroups", bodygroups)
     end
 
-    --- Sets a bodygroup by name on the character's player model and persists it.
-    -- Resolves the bodygroup name to an index via `Player:FindBodygroupByName` and applies it on the owning player if online. Stores the value in the character's data under `"bodygroups"` keyed by the name string, so it can be reapplied by name on model load. Prefer this over `SetBodygroup` when working with named bodygroups to avoid hardcoding indices.
-    -- @realm server
-    -- @param name string The bodygroup name as defined in the model.
-    -- @param value number The bodygroup value to apply.
+    --- Sets a bodygroup by name on the character's player model and persists it. Resolves the bodygroup name to an index via `Player:FindBodygroupByName` and applies it on the owning player if online. Stores the value in the character's data under `"bodygroups"` keyed by the name string, so it can be reapplied by name on model load. Prefer this over `SetBodygroup` when working with named bodygroups to avoid hardcoding indices.
+    ---@realm server
+    ---@param name string The bodygroup name as defined in the model.
+    ---@param value number The bodygroup value to apply.
     function character:SetBodygroupName(name, value)
         local owner = self:GetOwner()
         if ( ax.util:IsValidPlayer(owner) ) then
@@ -241,16 +218,15 @@ if ( SERVER ) then
         self:SetData("bodygroups", bodygroups)
     end
 
-    --- Grants one or more flags to the character.
-    -- Iterates each letter in `flags`. For each letter:
-    -- - Skips letters whose flag data is not registered in `ax.flag`.
-    -- - Skips letters the character already holds (idempotent).
-    -- - Appends the letter to the character's stored flags string.
-    -- - Calls `flagData:OnGiven(character)` if the flag defines it.
-    -- - Fires the `"CharacterFlagGiven"` hook with the character and letter.
-    -- After all letters are processed, calls `Save()` if any new flag was added. Returns immediately for empty or non-string input.
-    -- @realm server
-    -- @param flags string A string of single-character flag letters to grant.
+    --- Grants one or more flags to the character. Iterates each letter in `flags`. For each letter:
+    --- - Skips letters whose flag data is not registered in `ax.flag`.
+    --- - Skips letters the character already holds (idempotent).
+    --- - Appends the letter to the character's stored flags string.
+    --- - Calls `flagData:OnGiven(character)` if the flag defines it.
+    --- - Fires the `"CharacterFlagGiven"` hook with the character and letter.
+    --- After all letters are processed, calls `Save()` if any new flag was added. Returns immediately for empty or non-string input.
+    ---@realm server
+    ---@param flags string A string of single-character flag letters to grant.
     function character:GiveFlags(flags)
         if ( !isstring(flags) or #flags < 1 ) then return end
 
@@ -281,17 +257,15 @@ if ( SERVER ) then
         end
     end
 
-    --- Removes one or more flags from the character.
-    -- Iterates each letter in `flags`. For each letter:
-    -- - Skips letters whose flag data is not registered in `ax.flag`.
-    -- - Skips letters the character does not currently hold (idempotent).
-    -- - Removes the letter from the character's stored flags string via `string.Replace`.
-    -- - Calls `flagData:OnTaken(character)` if the flag defines it.
-    -- - Fires the `"CharacterFlagTaken"` hook with the character and letter.
-    -- After all letters are processed, calls `Save()` if any flag was removed.
-    -- Returns immediately for empty or non-string input.
-    -- @realm server
-    -- @param flags string A string of single-character flag letters to remove.
+    --- Removes one or more flags from the character. Iterates each letter in `flags`. For each letter:
+    --- - Skips letters whose flag data is not registered in `ax.flag`.
+    --- - Skips letters the character does not currently hold (idempotent).
+    --- - Removes the letter from the character's stored flags string via `string.Replace`.
+    --- - Calls `flagData:OnTaken(character)` if the flag defines it.
+    --- - Fires the `"CharacterFlagTaken"` hook with the character and letter.
+    --- After all letters are processed, calls `Save()` if any flag was removed. Returns immediately for empty or non-string input.
+    ---@realm server
+    ---@param flags string A string of single-character flag letters to remove.
     function character:TakeFlags(flags)
         if ( !isstring(flags) or #flags < 1 ) then return end
 
@@ -326,10 +300,9 @@ if ( SERVER ) then
     character.GiveFlag = character.GiveFlags
     character.TakeFlag = character.TakeFlags
 
-    --- Replaces the character's entire flag set with the given flags.
-    -- Diffs the current flags against `flags`: letters present in the current set but absent from `flags` are removed via `TakeFlags` (triggering their `OnTaken` callbacks). The stored flags are then set to the new string and saved. Finally, `GiveFlags` is called for each letter in `flags` to trigger `OnGiven` callbacks for newly granted flags. Returns immediately for non-string input.
-    -- @realm server
-    -- @param flags string The complete new flag string to assign to the character. Letters not currently held will be granted; letters held but not present in this string will be revoked.
+    --- Replaces the character's entire flag set with the given flags. Diffs the current flags against `flags`: letters present in the current set but absent from `flags` are removed via `TakeFlags` (triggering their `OnTaken` callbacks). The stored flags are then set to the new string and saved. Finally, `GiveFlags` is called for each letter in `flags` to trigger `OnGiven` callbacks for newly granted flags. Returns immediately for non-string input.
+    ---@realm server
+    ---@param flags string The complete new flag string to assign to the character. Letters not currently held will be granted; letters held but not present in this string will be revoked.
     function character:SetFlags(flags)
         if ( !isstring(flags) ) then return end
 
@@ -352,9 +325,8 @@ if ( SERVER ) then
         end
     end
 
-    --- Persists all character variables and data to the database.
-    -- Constructs a MySQL UPDATE query targeting the `ax_characters` table, filtering by the character's ID. All registered character vars that declare a `field` in their schema are included; table values are serialised to JSON. The `data` blob (arbitrary key/value store) is always written as JSON. Falls back to the registered default when a var has no value set. Call this after any direct modification to `self.vars` that bypasses the standard `SetVar` / `SetData` pathway.
-    -- @realm server
+    --- Persists all character variables and data to the database. Constructs a MySQL UPDATE query targeting the `ax_characters` table, filtering by the character's ID. All registered character vars that declare a `field` in their schema are included; table values are serialised to JSON. The `data` blob (arbitrary key/value store) is always written as JSON. Falls back to the registered default when a var has no value set. Call this after any direct modification to `self.vars` that bypasses the standard `SetVar` / `SetData` pathway.
+    ---@realm server
     function character:Save()
         if ( !istable(self.vars.data) ) then self.vars.data = {} end
 

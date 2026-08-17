@@ -9,19 +9,16 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
---- Module management system for loading and retrieving modules.
--- Supports automatic inclusion of module files and directories.
--- @module ax.module
+---@class ax.module
+--- Module management system for loading and retrieving modules. Supports automatic inclusion of module files and directories.
 
 ax.module = ax.module or {}
 ax.module.stored = ax.module.stored or {}
 
---- Include and load modules from a directory path.
--- Automatically loads both single-file modules and directory-based modules with boot.lua.
--- For directory modules, includes all standard framework directories in proper order.
--- @realm shared
--- @param path string The directory path to search for modules
--- @usage ax.module:Include("parallax/gamemode/modules")
+--- Include and load modules from a directory path. Automatically loads both single-file modules and directory-based modules with boot.lua. For directory modules, includes all standard framework directories in proper order.
+---@realm shared
+---@param path string The directory path to search for modules
+---@usage ax.module:Include("parallax/gamemode/modules")
 function ax.module:Include(path, timeFilter)
     local files, directories = file.Find(path .. "/*", "LUA")
 
@@ -193,12 +190,11 @@ function ax.module:Include(path, timeFilter)
     end
 end
 
---- Get a loaded module by its unique identifier.
--- Retrieves a module that has been previously loaded.
--- @realm shared
--- @param name string The module's unique identifier
--- @return table|nil The module table if found, nil otherwise
--- @usage local myModule = ax.module:Get("example_module")
+--- Get a loaded module by its unique identifier. Retrieves a module that has been previously loaded.
+---@realm shared
+---@param name string The module's unique identifier
+---@return table|nil # The module table if found, nil otherwise
+---@usage local myModule = ax.module:Get("example_module")
 function ax.module:Get(name)
     if ( !name or name == "" ) then return nil end
 
@@ -212,18 +208,18 @@ function ax.module:Get(name)
 end
 
 --- Get all loaded modules.
--- @realm shared
--- @return table Map of unique id -> module table
--- @usage local modules = ax.module:GetAll()
+---@realm shared
+---@return table # Map of unique id -> module table
+---@usage local modules = ax.module:GetAll()
 function ax.module:GetAll()
     return self.stored
 end
 
 --- Get modules filtered by scope.
--- @realm shared
--- @param scope string Scope to filter by (`"framework"` or `"schema"`)
--- @return table Map of unique id -> module table
--- @usage local schemaModules = ax.module:GetByScope("schema")
+---@realm shared
+---@param scope string Scope to filter by (`"framework"` or `"schema"`)
+---@return table # Map of unique id -> module table
+---@usage local schemaModules = ax.module:GetByScope("schema")
 function ax.module:GetByScope(scope)
     local modules = {}
 
@@ -240,12 +236,11 @@ function ax.module:GetByScope(scope)
     return modules
 end
 
---- Check if a module is loaded.
--- Tests whether a module with the given name has been successfully loaded.
--- @realm shared
--- @param name string The module's unique identifier
--- @return boolean True if the module is loaded, false otherwise
--- @usage if ax.module:IsLoaded("example_module") then print("Module available") end
+--- Check if a module is loaded. Tests whether a module with the given name has been successfully loaded.
+---@realm shared
+---@param name string The module's unique identifier
+---@return boolean # True if the module is loaded, false otherwise
+---@usage if ax.module:IsLoaded("example_module") then print("Module available") end
 function ax.module:IsLoaded(name)
     if ( !name or name == "" ) then return false end
 

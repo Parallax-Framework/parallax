@@ -9,19 +9,16 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
---- Faction management system for creating, storing, and retrieving faction data.
--- Supports default player models, faction joining restrictions, and team setup.
--- @module ax.faction
+---@class ax.faction
+--- Faction management system for creating, storing, and retrieving faction data. Supports default player models, faction joining restrictions, and team setup.
 
 ax.faction = ax.faction or {}
 ax.faction.instances = ax.faction.instances or {}
 ax.faction.stored = ax.faction.stored or {}
 
---- Initialize the faction system by loading all faction files.
--- Automatically includes factions from framework, modules, and schema directories.
--- Called during framework boot to set up all available factions.
--- @realm shared
--- @usage ax.faction:Initialize()
+--- Initialize the faction system by loading all faction files. Automatically includes factions from framework, modules, and schema directories. Called during framework boot to set up all available factions.
+---@realm shared
+---@usage ax.faction:Initialize()
 function ax.faction:Initialize()
     self:Include("parallax/gamemode/factions")
 
@@ -64,13 +61,11 @@ FACTION_DEFAULT_MODELS = {
     "models/humans/group02/male_09.mdl"
 }
 
---- Include and load faction files from a directory.
--- Recursively searches for faction .lua files and loads them into the faction system.
--- Automatically handles shared/client/server file prefixes and sets up team data.
--- @realm shared
--- @param directory string The directory path to search for faction files
--- @return boolean True if the operation completed successfully, false on error
--- @usage ax.faction:Include("parallax/gamemode/factions")
+--- Include and load faction files from a directory. Recursively searches for faction .lua files and loads them into the faction system. Automatically handles shared/client/server file prefixes and sets up team data.
+---@realm shared
+---@param directory string The directory path to search for faction files
+---@return boolean # True if the operation completed successfully, false on error
+---@usage ax.faction:Include("parallax/gamemode/factions")
 function ax.faction:Include(directory, timeFilter)
     if ( !isstring(directory) or directory == "" ) then
         ax.util:PrintError("Include: Invalid directory parameter provided")
@@ -141,13 +136,12 @@ function ax.faction:Include(directory, timeFilter)
     return true
 end
 
---- Get a faction by its identifier.
--- Supports lookup by unique ID string, index number, name, or partial name matching.
--- @realm shared
--- @param identifier string|number The faction ID, index, or name to search for
--- @return table|nil The faction table if found, nil otherwise
--- @usage local faction = ax.faction:Get("citizen")
--- @usage local faction = ax.faction:Get(1)
+--- Get a faction by its identifier. Supports lookup by unique ID string, index number, name, or partial name matching.
+---@realm shared
+---@param identifier string|number The faction ID, index, or name to search for
+---@return table|nil # The faction table if found, nil otherwise
+---@usage local faction = ax.faction:Get("citizen")
+---@usage local faction = ax.faction:Get(1)
 function ax.faction:Get(identifier)
     if ( isstring(identifier) and self.stored[identifier] ) then
         return self.stored[identifier]
@@ -167,13 +161,13 @@ function ax.faction:Get(identifier)
     return nil
 end
 
---- Check if a player can join a specific faction.
--- Runs through hook validation and faction-specific CanBecome functions.
--- @realm shared
--- @param identifier string|number The faction ID, index, or name
--- @param client Player The player entity to check permissions for
--- @return boolean, string|nil True if allowed, false if not. Error message if denied.
--- @usage local canJoin, reason = ax.faction:CanBecome("citizen", player)
+--- Check if a player can join a specific faction. Runs through hook validation and faction-specific CanBecome functions.
+---@realm shared
+---@param identifier string|number The faction ID, index, or name
+---@param client Player The player entity to check permissions for
+---@return boolean # True if allowed, false if not.
+---@return string|nil # Error message if denied.
+---@usage local canJoin, reason = ax.faction:CanBecome("citizen", player)
 function ax.faction:CanBecome(identifier, client)
     local factionTable = self:Get(identifier)
     if ( !factionTable ) then
@@ -195,21 +189,19 @@ function ax.faction:CanBecome(identifier, client)
     return true, nil
 end
 
---- Get all loaded faction instances.
--- Returns the complete list of factions indexed by their team index.
--- @realm shared
--- @return table Array of all faction instances indexed by team number
--- @usage local allFactions = ax.faction:GetAll()
+--- Get all loaded faction instances. Returns the complete list of factions indexed by their team index.
+---@realm shared
+---@return table # Array of all faction instances indexed by team number
+---@usage local allFactions = ax.faction:GetAll()
 function ax.faction:GetAll()
     return self.instances
 end
 
---- Check if a faction exists and is valid.
--- Validates faction existence by attempting to retrieve it.
--- @realm shared
--- @param faction string|number The faction identifier to validate
--- @return boolean True if the faction exists, false otherwise
--- @usage if ax.faction:IsValid("citizen") then print("Faction exists") end
+--- Check if a faction exists and is valid. Validates faction existence by attempting to retrieve it.
+---@realm shared
+---@param faction string|number The faction identifier to validate
+---@return boolean # True if the faction exists, false otherwise
+---@usage if ax.faction:IsValid("citizen") then print("Faction exists") end
 function ax.faction:IsValid(faction)
     if ( self:Get(faction) != nil ) then
         return true

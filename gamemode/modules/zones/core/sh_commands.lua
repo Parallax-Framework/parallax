@@ -9,7 +9,7 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
--- @module ax.zones
+---@class ax.zones
 
 -- Helper function to get target position based on player's trace
 local function GetTargetPosition(client)

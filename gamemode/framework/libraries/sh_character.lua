@@ -9,10 +9,8 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
---- Character management system for creating, storing, and retrieving character data.
--- Supports character variables with custom getters, setters, and change callbacks.
--- Includes networking for synchronizing character data between server and clients.
--- @module ax.character
+---@class ax.character
+--- Character management system for creating, storing, and retrieving character data. Supports character variables with custom getters, setters, and change callbacks. Includes networking for synchronizing character data between server and clients.
 
 ax.character = ax.character or {}
 ax.character.instances = ax.character.instances or {}
@@ -21,10 +19,10 @@ ax.character.vars = ax.character.vars or {}
 ax.character.loaded = ax.character.loaded or {}
 
 --- Get a character by their unique ID.
--- @realm shared
--- @param id number The character's unique ID
--- @return table|nil The character table if found, nil if invalid ID or not found
--- @usage local character = ax.character:Get(123)
+---@realm shared
+---@param id number The character's unique ID
+---@return table|nil # The character table if found, nil if invalid ID or not found
+---@usage local character = ax.character:Get(123)
 function ax.character:Get(id)
     if ( isstring(id) ) then
         local isBot = ax.character.instances[id] and ax.character.instances[id].isBot
@@ -42,7 +40,7 @@ function ax.character:Get(id)
 end
 
 --- Builds a character instance from a table of variable values and registers it in `ax.character.instances`.
--- Every registered variable is filled in: a key absent from `data` falls back to that variable's `default`, and `ax.type.data` variables are normalised into tables so a JSON string straight out of the database is usable immediately. This is the shared constructor behind `ax.character:Create` and `ax.character:Restore` - schemas should go through those rather than calling this directly, since neither the database row nor the player's character list is written here.
+--- Every registered variable is filled in: a key absent from `data` falls back to that variable's `default`, and `ax.type.data` variables are normalised into tables so a JSON string straight out of the database is usable immediately. This is the shared constructor behind `ax.character:Create` and `ax.character:Restore` - schemas should go through those rather than calling this directly, since neither the database row nor the player's character list is written here.
 ---@realm shared
 ---@param data table Variable values keyed by variable name (not by database column).
 ---@param id number|string The character ID to register the instance under. Bot characters key off their owner's SteamID64 instead of a database ID, so strings are accepted.
@@ -87,18 +85,15 @@ function ax.character:New(data, id, client, steamID)
     return character
 end
 
---- Get a character variable's value.
--- Retrieves a character variable with fallback to default or provided fallback value.
--- For `ax.type.data` variables, passing `fallback` reads a nested key and
--- `dataFallback` is used when that nested key is absent.
--- @realm shared
--- @param char table The character instance
--- @param name string The variable name to retrieve
--- @param[opt] fallback any Optional fallback value, or nested data key for `ax.type.data` vars
--- @param[opt] dataFallback any Fallback value for nested `ax.type.data` lookups
--- @return any The variable value, default value, or fallback
--- @usage local description = ax.character:GetVar(character, "description", "No description")
--- @usage local flags = ax.character:GetVar(character, "data", "flags", "")
+--- Get a character variable's value. Retrieves a character variable with fallback to default or provided fallback value. For `ax.type.data` variables, passing `fallback` reads a nested key and `dataFallback` is used when that nested key is absent.
+---@realm shared
+---@param char table The character instance
+---@param name string The variable name to retrieve
+---@param fallback? any Optional fallback value, or nested data key for `ax.type.data` vars
+---@param dataFallback? any Fallback value for nested `ax.type.data` lookups
+---@return any # The variable value, default value, or fallback
+---@usage local description = ax.character:GetVar(character, "description", "No description")
+---@usage local flags = ax.character:GetVar(character, "data", "flags", "")
 function ax.character:GetVar(char, name, fallback, dataFallback)
     local varTable = ax.character.vars[name]
     if ( !istable(varTable) ) then
@@ -129,17 +124,14 @@ function ax.character:GetVar(char, name, fallback, dataFallback)
     return char.vars[name] == nil and fallback or char.vars[name]
 end
 
---- Set a character variable's value.
--- Updates a character variable and handles networking and change callbacks.
--- For `ax.type.data` variables, pass the nested key as `value` and provide
--- `opts.dataValue` for the stored value.
--- @realm shared
--- @param char table The character instance
--- @param name string The variable name to set
--- @param value any New value, or nested data key for `ax.type.data` vars
--- @param[opt] opts table Options (`dataValue`, `bNoNetworking`, `recipients`, `bNoDBUpdate`)
--- @usage ax.character:SetVar(character, "name", "John Doe")
--- @usage ax.character:SetVar(character, "data", "flags", {dataValue = "ab", bNoNetworking = true})
+--- Set a character variable's value. Updates a character variable and handles networking and change callbacks. For `ax.type.data` variables, pass the nested key as `value` and provide `opts.dataValue` for the stored value.
+---@realm shared
+---@param char table The character instance
+---@param name string The variable name to set
+---@param value any New value, or nested data key for `ax.type.data` vars
+---@param opts? table Options (`dataValue`, `bNoNetworking`, `recipients`, `bNoDBUpdate`)
+---@usage ax.character:SetVar(character, "name", "John Doe")
+---@usage ax.character:SetVar(character, "data", "flags", {dataValue = "ab", bNoNetworking = true})
 function ax.character:SetVar(char, name, value, opts)
     local varTable = ax.character.vars[name]
     if ( !istable(varTable) ) then
@@ -268,11 +260,12 @@ function ax.character:SetVar(char, name, value, opts)
 end
 
 --- Verifies the input based on the character variable's validate function, if it exists.
--- @realm shared
--- @param varName string The variable name to validate
--- @param value any The value to validate
--- @return boolean, string|nil True if valid, false if not. Error message if invalid.
--- @usage local isValid, errorMsg = ax.character:ValidateVar("detailedDescription", inputValue)
+---@realm shared
+---@param varName string The variable name to validate
+---@param value any The value to validate
+---@return boolean # True if valid, false if not.
+---@return string|nil # Error message if invalid.
+---@usage local isValid, errorMsg = ax.character:ValidateVar("detailedDescription", inputValue)
 function ax.character:ValidateVar(varName, value)
     local varTable = self.vars[varName]
     if ( !istable(varTable) ) then
@@ -294,12 +287,11 @@ function ax.character:ValidateVar(varName, value)
     end
 end
 
---- Sync a bot character to all clients for variable updates.
--- Sends bot character data to clients so they can receive variable changes.
--- @realm server
--- @param char table The bot character instance
--- @param recipients table Optional specific recipients, defaults to all players
--- @usage ax.character:SyncBotToClients(botCharacter)
+--- Sync a bot character to all clients for variable updates. Sends bot character data to clients so they can receive variable changes.
+---@realm server
+---@param char table The bot character instance
+---@param recipients? table Optional specific recipients, defaults to all players
+---@usage ax.character:SyncBotToClients(botCharacter)
 function ax.character:SyncBotToClients(char, recipients)
     if ( CLIENT ) then return end
 
@@ -312,14 +304,14 @@ function ax.character:SyncBotToClients(char, recipients)
     ax.net:Start(recipients or player.GetAll(), "character.bot.sync", char:GetID(), char)
 end
 
---- Check if a variable can be populated during character creation.
--- Server-side validation to determine if a variable is available for population.
--- @realm server
--- @param varName string The variable name to check
--- @param payload table Character creation payload data
--- @param client Player The client creating the character
--- @return boolean, string|nil True if allowed, false if not. Error message if denied.
--- @usage local canPop, reason = ax.character:CanPopulateVar("description", data, player)
+--- Check if a variable can be populated during character creation. Server-side validation to determine if a variable is available for population.
+---@realm server
+---@param varName string The variable name to check
+---@param payload table Character creation payload data
+---@param client Player The client creating the character
+---@return boolean # True if allowed, false if not.
+---@return string|nil # Error message if denied.
+---@usage local canPop, reason = ax.character:CanPopulateVar("description", data, player)
 function ax.character:CanPopulateVar(varName, payload, client)
     local varTable = self.vars[varName]
     if ( !istable(varTable) ) then
@@ -342,13 +334,11 @@ function ax.character:CanPopulateVar(varName, payload, client)
     return true, nil
 end
 
---- Register a new character variable.
--- Creates a character variable with getter/setter methods and database integration.
--- Automatically generates Get/Set methods unless disabled with bNoGetter/bNoSetter.
--- @realm shared
--- @param name string The variable name
--- @param data table Variable configuration including default, field, fieldType, etc.
--- @usage ax.character:RegisterVar("description", {default = "", fieldType = ax.type.text})
+--- Register a new character variable. Creates a character variable with getter/setter methods and database integration. Automatically generates Get/Set methods unless disabled with bNoGetter/bNoSetter.
+---@realm shared
+---@param name string The variable name
+---@param data table Variable configuration including default, field, fieldType, etc.
+---@usage ax.character:RegisterVar("description", {default = "", fieldType = ax.type.text})
 function ax.character:RegisterVar(name, data)
     if ( !isstring(name) or !istable(data) ) then
         ax.util:PrintError("Invalid arguments provided to ax.character:RegisterVar()")

@@ -9,22 +9,18 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
---- Chat system for registering chat types with commands, permissions, and custom formatting.
--- Supports message preprocessing with shortcuts, capitalization, and punctuation normalization.
--- @module ax.chat
+---@class ax.chat
+--- Chat system for registering chat types with commands, permissions, and custom formatting. Supports message preprocessing with shortcuts, capitalization, and punctuation normalization.
 
 ax.chat = ax.chat or {}
 ax.chat.registry = ax.chat.registry or {}
 
---- Register a chat type definition.
--- Adds a chat mode to the registry and, on the client, automatically registers
--- matching slash commands that route through the chat system.
--- Default `CanHear` and `CanSay` callbacks are generated when omitted.
--- @realm shared
--- @param key string Unique chat type identifier (for example `"ic"` or `"y"`)
--- @param def table Chat definition (name, prefix, hearDistance, formatting callbacks, etc.)
--- @usage ax.chat:Add("ic", { name = "In Character", prefix = {"/me"} })
--- @usage ax.chat:Add("y", { name = "Yell", hearDistance = 1024, noSpaceAfter = false })
+--- Register a chat type definition. Adds a chat mode to the registry and, on the client, automatically registers matching slash commands that route through the chat system. Default `CanHear` and `CanSay` callbacks are generated when omitted.
+---@realm shared
+---@param key string Unique chat type identifier (for example `"ic"` or `"y"`)
+---@param def table Chat definition (name, prefix, hearDistance, formatting callbacks, etc.)
+---@usage ax.chat:Add("ic", { name = "In Character", prefix = {"/me"} })
+---@usage ax.chat:Add("y", { name = "Yell", hearDistance = 1024, noSpaceAfter = false })
 function ax.chat:Add(key, def)
     if ( !isstring(key) or key == "" ) then
         ax.util:PrintError("[CHAT] Invalid chat key provided")
@@ -114,13 +110,12 @@ function ax.chat:Add(key, def)
     self.registry[key] = def
 end
 
---- Identifies which chat mode should be used based on text input
--- Credits to helix for the logic
--- @realm shared
--- @param message string The input message
--- @return string chatType The identified chat type
--- @return string message The processed after the chat type prefix is removed
--- @usage local chatType, text = ax.chat:Parse("/y hello there")
+--- Identifies which chat mode should be used based on text input Credits to helix for the logic
+---@realm shared
+---@param message string The input message
+---@return string chatType The identified chat type
+---@return string message The processed after the chat type prefix is removed
+---@usage local chatType, text = ax.chat:Parse("/y hello there")
 function ax.chat:Parse(message)
     local chatType = "ic"
 
@@ -160,17 +155,15 @@ function ax.chat:Parse(message)
 end
 
 if ( SERVER ) then
-    --- Send a chat message to eligible receivers.
-    -- Validates the chat class, runs `CanSay`/`CanHear`, applies hooks, and
-    -- networks the final payload to recipients.
-    -- @realm server
-    -- @param speaker Player|Entity Message sender
-    -- @param chatType string Registered chat type key
-    -- @param text string Raw message text
-    -- @param[opt] data table Extra payload metadata sent with the message
-    -- @param[opt] receivers table|Vector Explicit receivers or PAS/PVS origin
-    -- @return string|nil text Final processed text when sent successfully
-    -- @usage ax.chat:Send(client, "ic", "hello", {})
+    --- Send a chat message to eligible receivers. Validates the chat class, runs `CanSay`/`CanHear`, applies hooks, and networks the final payload to recipients.
+    ---@realm server
+    ---@param speaker Player|Entity Message sender
+    ---@param chatType string Registered chat type key
+    ---@param text string Raw message text
+    ---@param data? table Extra payload metadata sent with the message
+    ---@param receivers? table|Vector Explicit receivers or PAS/PVS origin
+    ---@return string|nil text Final processed text when sent successfully
+    ---@usage ax.chat:Send(client, "ic", "hello", {})
     function ax.chat:Send(speaker, chatType, text, data, receivers)
         local chatClass = self.registry[chatType]
         if ( !istable(chatClass) ) then
@@ -281,9 +274,9 @@ local SHORTCUTS = {
 }
 
 --- Apply chat shortcuts to text
--- @realm shared
--- @param text string The text to process
--- @return string The text with shortcuts replaced
+---@realm shared
+---@param text string The text to process
+---@return string # The text with shortcuts replaced
 function ax.chat:ApplyShortcuts(text)
     for k, v in pairs(SHORTCUTS) do
         text = string.gsub(text, "%f[%a]" .. k .. "%f[^%a]", v)
@@ -293,9 +286,9 @@ end
 
 
 --- Normalize spacing in text
--- @realm shared
--- @param text string The text to normalize
--- @return string The normalized text
+---@realm shared
+---@param text string The text to normalize
+---@return string # The normalized text
 function ax.chat:NormalizeSpacing(text)
     text = string.gsub(text, "%s+", " ")
     text = string.gsub(text, "%s+([,%.%!%?%:%;])", "%1")
@@ -307,9 +300,9 @@ function ax.chat:NormalizeSpacing(text)
 end
 
 --- Capitalize the first letter of sentences
--- @realm shared
--- @param text string The text to capitalize
--- @return string The capitalized text
+---@realm shared
+---@param text string The text to capitalize
+---@return string # The capitalized text
 function ax.chat:CapitalizeSentences(text)
     -- Capitalize first letter (skip markdown markers)
     text = string.gsub(text, "^([%s%*_~]*)([%l])", function(prefix, ch)
@@ -325,9 +318,9 @@ function ax.chat:CapitalizeSentences(text)
 end
 
 --- Fix pronoun "I" capitalization
--- @realm shared
--- @param text string The text to fix
--- @return string The fixed text
+---@realm shared
+---@param text string The text to fix
+---@return string # The fixed text
 function ax.chat:FixPronounI(text)
     text = string.gsub(text, "%f[%a]i%f[^%a]", "I")
     text = string.gsub(text, "%f[%a]i('?)m%f[^%a]", "I'm")
@@ -338,9 +331,9 @@ function ax.chat:FixPronounI(text)
 end
 
 --- Detect capitalization style of text
--- @realm shared
--- @param text string The text to analyze
--- @return string "upper", "lower", or "mixed"
+---@realm shared
+---@param text string The text to analyze
+---@return string # "upper", "lower", or "mixed"
 function ax.chat:DetectCapitalization(text)
     if ( utf8.upper(text) == text ) then return "upper" end
     if ( utf8.lower(text) == text ) then return "lower" end
@@ -348,10 +341,10 @@ function ax.chat:DetectCapitalization(text)
 end
 
 --- Build font name from active styles
--- @realm shared
--- @param baseFont string The base font name
--- @param styles table Table of active styles (bold, italic)
--- @return string The complete font name
+---@realm shared
+---@param baseFont string The base font name
+---@param styles table Table of active styles (bold, italic)
+---@return string # The complete font name
 function ax.chat:BuildFontName(baseFont, styles)
     if ( !next(styles) ) then return baseFont end
 
@@ -363,13 +356,12 @@ function ax.chat:BuildFontName(baseFont, styles)
     return baseFont .. "." .. table.concat(styleNames, ".")
 end
 
---- Parse Discord-style markdown into font tags
--- Supports: *italic*, **bold**, ***bold+italic***
--- @realm shared
--- @param text string The text to parse
--- @param baseFont string The base font name (default: "ax.small")
--- @param styles table Active styles being applied
--- @return string The formatted text with font tags
+--- Parse Discord-style markdown into font tags Supports: *italic*, **bold**, ***bold+italic***
+---@realm shared
+---@param text string The text to parse
+---@param baseFont string The base font name (default: "ax.small")
+---@param styles table Active styles being applied
+---@return string # The formatted text with font tags
 function ax.chat:ParseMarkdown(text, baseFont, styles)
     if ( !isstring(text) or text == "" ) then return text end
 
@@ -463,12 +455,12 @@ function ax.chat:ParseMarkdown(text, baseFont, styles)
 end
 
 --- Format a chat message with text processing and optional markdown
--- @realm shared
--- @param message string The message to format
--- @param options table Options table (baseFont, markdown)
--- @return string The formatted message
--- @usage local text = ax.chat:Format("hello there")
--- @usage local rich = ax.chat:Format("**hello**", { baseFont = "ax.small.shadow", markdown = true })
+---@realm shared
+---@param message string The message to format
+---@param options table Options table (baseFont, markdown)
+---@return string # The formatted message
+---@usage local text = ax.chat:Format("hello there")
+---@usage local rich = ax.chat:Format("**hello**", { baseFont = "ax.small.shadow", markdown = true })
 function ax.chat:Format(message, options)
     if ( !isstring(message) or message == "" ) then return "" end
 
@@ -526,13 +518,12 @@ function ax.chat:Format(message, options)
     return message
 end
 
---- Format a message with markdown support enabled.
--- Convenience wrapper around `ax.chat:Format` that forces markdown parsing.
--- @realm shared
--- @param message string The message to format
--- @param[opt] baseFont string Base font used when generating font tags
--- @return string The formatted message with markdown tags applied
--- @usage local rich = ax.chat:FormatWithMarkdown("**Hello** there", "ax.small.shadow")
+--- Format a message with markdown support enabled. Convenience wrapper around `ax.chat:Format` that forces markdown parsing.
+---@realm shared
+---@param message string The message to format
+---@param baseFont? string Base font used when generating font tags
+---@return string # The formatted message with markdown tags applied
+---@usage local rich = ax.chat:FormatWithMarkdown("**Hello** there", "ax.small.shadow")
 function ax.chat:FormatWithMarkdown(message, baseFont)
     return self:Format(message, { markdown = true, baseFont = baseFont })
 end

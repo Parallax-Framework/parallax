@@ -9,23 +9,20 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
---- Simple data persistence helpers.
--- Stores files under the Garry's Mod `data/` folder with options for
--- global, project, or map-scoped storage. Returns cached values by
--- default and supports human-readable JSON output.
--- @module ax.data
+---@class ax.data
+--- Simple data persistence helpers. Stores files under the Garry's Mod `data/` folder with options for global, project, or map-scoped storage. Returns cached values by default and supports human-readable JSON output.
 
 ax.data = ax.data or {}
 ax.data.cache = ax.data.cache or {}
 
 --- Save a value to disk.
--- @param key string Unique key used to name the file.
--- @param value any Value to persist. Tables are serialized as JSON.
--- @param options table Optional. Fields:
---  - scope: "global"|"project"|"map" (default: "project")
---  - human: boolean If true, writes pretty JSON (.json extension)
---  - noCache: boolean If true, clears cache after writing
--- @usage ax.data:Set("settings_player", { volume = 0.8 }, { scope = "project", human = true })
+---@param key string Unique key used to name the file.
+---@param value any Value to persist. Tables are serialized as JSON.
+---@param options table Optional. Fields:
+--- - scope: "global"|"project"|"map" (default: "project")
+--- - human: boolean If true, writes pretty JSON (.json extension)
+--- - noCache: boolean If true, clears cache after writing
+---@usage ax.data:Set("settings_player", { volume = 0.8 }, { scope = "project", human = true })
 function ax.data:Set(key, value, options)
     options = options or {}
 
@@ -60,13 +57,13 @@ function ax.data:Set(key, value, options)
 end
 
 --- Load a value from disk.
--- @param key string
--- @param default any Value returned if the file does not exist.
--- @param options table Optional. Fields:
---  - scope: "global"|"project"|"map" (default: "project")
---  - force: boolean If true, bypass cache and read from disk
--- @return any
--- @usage local cfg = ax.data:Get("settings_player", {}, { force = false })
+---@param key string
+---@param default any Value returned if the file does not exist.
+---@param options table Optional. Fields:
+--- - scope: "global"|"project"|"map" (default: "project")
+--- - force: boolean If true, bypass cache and read from disk
+---@return any
+---@usage local cfg = ax.data:Get("settings_player", {}, { force = false })
 function ax.data:Get(key, default, options)
     options = options or {}
 
@@ -106,10 +103,10 @@ function ax.data:Get(key, default, options)
 end
 
 --- Delete a stored file.
--- @param key string
--- @param options table Optional. Fields:
---  - scope: "global"|"project"|"map" (default: "project")
--- @usage ax.data:Delete("settings_player", { scope = "project" })
+---@param key string
+---@param options table Optional. Fields:
+--- - scope: "global"|"project"|"map" (default: "project")
+---@usage ax.data:Delete("settings_player", { scope = "project" })
 function ax.data:Delete(key, options)
     options = options or {}
 

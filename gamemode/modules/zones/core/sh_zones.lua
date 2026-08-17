@@ -9,7 +9,7 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
--- @module ax.zones
+---@class ax.zones
 
 ax.zones = ax.zones or {}
 
@@ -56,9 +56,9 @@ end
 -- Box zone type
 ax.zones:RegisterType("box", {
     --- Validate a box zone specification.
-    -- @tparam table spec Zone spec with mins and maxs
-    -- @treturn boolean success
-    -- @treturn string|nil error
+    ---@param spec table Zone spec with mins and maxs
+    ---@return boolean success
+    ---@return string|nil error
     Validate = function(spec)
         if ( !spec.mins or !isvector(spec.mins) ) then
             return false, "Box zone requires mins Vector"
@@ -76,17 +76,17 @@ ax.zones:RegisterType("box", {
     end,
 
     --- Get axis-aligned bounding box for a box zone.
-    -- @tparam table spec Zone spec
-    -- @treturn Vector mins
-    -- @treturn Vector maxs
+    ---@param spec table Zone spec
+    ---@return Vector mins
+    ---@return Vector maxs
     AABB = function(spec)
         return spec.mins, spec.maxs
     end,
 
     --- Check if a position is inside a box zone.
-    -- @tparam table spec Zone spec
-    -- @tparam Vector pos Position to test
-    -- @treturn boolean contained
+    ---@param spec table Zone spec
+    ---@param pos Vector Position to test
+    ---@return boolean contained
     Contains = function(spec, pos)
         return pos.x >= spec.mins.x and pos.x <= spec.maxs.x
             and pos.y >= spec.mins.y and pos.y <= spec.maxs.y
@@ -97,9 +97,9 @@ ax.zones:RegisterType("box", {
 -- Sphere zone type
 ax.zones:RegisterType("sphere", {
     --- Validate a sphere zone specification.
-    -- @tparam table spec Zone spec with center and radius
-    -- @treturn boolean success
-    -- @treturn string|nil error
+    ---@param spec table Zone spec with center and radius
+    ---@return boolean success
+    ---@return string|nil error
     Validate = function(spec)
         if ( !spec.center or !isvector(spec.center) ) then
             return false, "Sphere zone requires center Vector"
@@ -113,18 +113,18 @@ ax.zones:RegisterType("sphere", {
     end,
 
     --- Get axis-aligned bounding box for a sphere zone.
-    -- @tparam table spec Zone spec
-    -- @treturn Vector mins
-    -- @treturn Vector maxs
+    ---@param spec table Zone spec
+    ---@return Vector mins
+    ---@return Vector maxs
     AABB = function(spec)
         local r = spec.radius
         return spec.center - Vector(r, r, r), spec.center + Vector(r, r, r)
     end,
 
     --- Check if a position is inside a sphere zone.
-    -- @tparam table spec Zone spec
-    -- @tparam Vector pos Position to test
-    -- @treturn boolean contained
+    ---@param spec table Zone spec
+    ---@param pos Vector Position to test
+    ---@return boolean contained
     Contains = function(spec, pos)
         return spec.center:DistToSqr(pos) <= (spec.radius * spec.radius)
     end,
@@ -133,9 +133,9 @@ ax.zones:RegisterType("sphere", {
 -- PVS (visibility) zone type
 ax.zones:RegisterType("pvs", {
     --- Validate a PVS zone specification.
-    -- @tparam table spec Zone spec with origin and optional radius
-    -- @treturn boolean success
-    -- @treturn string|nil error
+    ---@param spec table Zone spec with origin and optional radius
+    ---@return boolean success
+    ---@return string|nil error
     Validate = function(spec)
         if ( !spec.origin or !isvector(spec.origin) ) then
             return false, "PVS zone requires origin Vector"
@@ -149,26 +149,26 @@ ax.zones:RegisterType("pvs", {
     end,
 
     --- Get axis-aligned bounding box for a PVS zone (returns origin point).
-    -- @tparam table spec Zone spec
-    -- @treturn Vector mins
-    -- @treturn Vector maxs
+    ---@param spec table Zone spec
+    ---@return Vector mins
+    ---@return Vector maxs
     AABB = function(spec)
         return spec.origin, spec.origin
     end,
 
     --- PVS zones don't use physical containment.
-    -- @tparam table spec Zone spec
-    -- @tparam Vector pos Position to test
-    -- @treturn boolean always false
+    ---@param spec table Zone spec
+    ---@param pos Vector Position to test
+    ---@return boolean # always false
     Contains = function(spec, pos)
         return false
     end,
 
     --- Calculate visibility weight for a PVS zone.
-    -- @tparam table spec Zone spec
-    -- @tparam Vector pos Entity position
-    -- @tparam Entity ent The entity (used for PVS checks)
-    -- @treturn number weight 0.0 to 1.0, higher is more relevant
+    ---@param spec table Zone spec
+    ---@param pos Vector Entity position
+    ---@param ent Entity The entity (used for PVS checks)
+    ---@return number weight 0.0 to 1.0, higher is more relevant
     Weight = function(spec, pos, ent)
         -- If entity can't see the zone origin, weight is 0
         if ( !ent or !IsValid(ent) ) then return 0 end
@@ -205,9 +205,9 @@ ax.zones:RegisterType("pvs", {
 -- Trace (line-of-sight) zone type
 ax.zones:RegisterType("trace", {
     --- Validate a trace zone specification.
-    -- @tparam table spec Zone spec with origin and optional radius
-    -- @treturn boolean success
-    -- @treturn string|nil error
+    ---@param spec table Zone spec with origin and optional radius
+    ---@return boolean success
+    ---@return string|nil error
     Validate = function(spec)
         if ( !spec.origin or !isvector(spec.origin) ) then
             return false, "Trace zone requires origin Vector"
@@ -221,26 +221,26 @@ ax.zones:RegisterType("trace", {
     end,
 
     --- Get axis-aligned bounding box for a trace zone (returns origin point).
-    -- @tparam table spec Zone spec
-    -- @treturn Vector mins
-    -- @treturn Vector maxs
+    ---@param spec table Zone spec
+    ---@return Vector mins
+    ---@return Vector maxs
     AABB = function(spec)
         return spec.origin, spec.origin
     end,
 
     --- Trace zones don't use physical containment.
-    -- @tparam table spec Zone spec
-    -- @tparam Vector pos Position to test
-    -- @treturn boolean always false
+    ---@param spec table Zone spec
+    ---@param pos Vector Position to test
+    ---@return boolean # always false
     Contains = function(spec, pos)
         return false
     end,
 
     --- Calculate trace weight for a trace zone.
-    -- @tparam table spec Zone spec
-    -- @tparam Vector pos Entity position
-    -- @tparam Entity ent The entity (used for trace origin)
-    -- @treturn number weight 0.0 to 1.0, higher is more relevant
+    ---@param spec table Zone spec
+    ---@param pos Vector Entity position
+    ---@param ent Entity The entity (used for trace origin)
+    ---@return number weight 0.0 to 1.0, higher is more relevant
     Weight = function(spec, pos, ent)
         if ( !ent or !IsValid(ent) ) then return 0 end
 

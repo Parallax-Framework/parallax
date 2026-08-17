@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Generate MkDocs documentation for Parallax from Lua doc comments.
+Generate MkDocs documentation for Parallax from GLuaLS (`---@`) Lua doc comments.
 """
 
 from __future__ import annotations
@@ -50,13 +50,14 @@ ASSIGN_FUNCTION_DEF_RE = re.compile(
 )
 HEADER_RE = re.compile(r"^\s*#\s+(.+)\s*$")
 
-PARAM_TAG_RE = re.compile(r"^@param\s+(\.\.\.|[A-Za-z_][\w]*)\s+([^\s]+)\s*(.*)$")
+PARAM_TAG_RE = re.compile(r"^@param\s+(\.\.\.|[A-Za-z_][\w]*\??)\s+([^\s]+)\s*(.*)$")
 RETURN_TAG_RE = re.compile(r"^@return\s+([^\s]+)\s*(.*)$")
 TRETURN_TAG_RE = re.compile(r"^@treturn\s+([^\s]+)\s*(.*)$")
 REALM_TAG_RE = re.compile(r"^@realm\s+([^\s]+)\s*$")
 USAGE_TAG_RE = re.compile(r"^@usage\s*(.*)$")
-MODULE_TAG_RE = re.compile(r"^@module\s+([^\s]+)\s*$")
+MODULE_TAG_RE = re.compile(r"^@(?:module|class)\s+([^\s:]+)(?:\s*:.*)?$")
 SECTION_TAG_RE = re.compile(r"^@section\s+([^\s]+)\s*$")
+RETURN_NAME_RE = re.compile(r"^([a-z_][\w]*)(?:\s+(.*))?$")
 GENERIC_TAG_RE = re.compile(r"^@([A-Za-z_][\w\[\]=\.]*)\s+([A-Za-z_][\w]*)\s*(.*)$")
 
 GM_HOOK_DEF_RE = re.compile(r"^\s*(?:local\s+)?function\s+GM:([A-Za-z_][\w]*)\s*\(")
@@ -115,12 +116,18 @@ class ParamDoc:
     name: str
     type_name: str
     description: str
+    optional: bool = False
+
+    @property
+    def display_name(self) -> str:
+        return f"{self.name}?" if self.optional else self.name
 
 
 @dataclass
 class ReturnDoc:
     type_name: str
     description: str
+    name: Optional[str] = None
 
 
 @dataclass
@@ -372,6 +379,19 @@ def collect_doc_lines_above(lines: Sequence[str], index: int) -> List[str]:
     return cleaned
 
 
+def split_return_remainder(remainder: str) -> Tuple[Optional[str], str]:
+    """Splits what follows a GLuaLS `@return <type>` into an optional return name and its description. A leading `#` marks the rest as description with no name."""
+    text = remainder.strip()
+    if text.startswith("#"):
+        return None, text[1:].lstrip("-: ").strip()
+
+    name_match = RETURN_NAME_RE.match(text)
+    if name_match:
+        return name_match.group(1), (name_match.group(2) or "").lstrip("-: ").strip()
+
+    return None, text.lstrip("-: ").strip()
+
+
 def parse_comment_lines(comment_lines: Sequence[str]) -> ParsedComment:
     parsed = ParsedComment()
     description_lines: List[str] = []
@@ -418,6 +438,11 @@ def parse_comment_lines(comment_lines: Sequence[str]) -> ParsedComment:
                 type_name = param_match.group(2).rstrip(":")
                 description = param_match.group(3).lstrip("-: ").strip()
 
+                # GLuaLS marks an optional argument with a trailing `?` on the name.
+                optional = name.endswith("?")
+                if optional:
+                    name = name[:-1]
+
                 # Support description-first varargs style:
                 # @param ... A variable number of KEY_* constants.
                 if name == "..." and type_name.casefold() in {"a", "an", "the"}:
@@ -429,24 +454,19 @@ def parse_comment_lines(comment_lines: Sequence[str]) -> ParsedComment:
                         name=name,
                         type_name=type_name.strip(),
                         description=description,
+                        optional=optional,
                     )
                 )
                 context = "param"
                 continue
 
-            return_match = RETURN_TAG_RE.match(line)
+            return_match = RETURN_TAG_RE.match(line) or TRETURN_TAG_RE.match(line)
             if return_match:
                 type_name = return_match.group(1).rstrip(":")
-                description = return_match.group(2).lstrip("-: ").strip()
-                parsed.returns.append(ReturnDoc(type_name=type_name.strip(), description=description))
-                context = "return"
-                continue
-
-            treturn_match = TRETURN_TAG_RE.match(line)
-            if treturn_match:
-                type_name = treturn_match.group(1).rstrip(":")
-                description = treturn_match.group(2).lstrip("-: ").strip()
-                parsed.returns.append(ReturnDoc(type_name=type_name.strip(), description=description))
+                name, description = split_return_remainder(return_match.group(2))
+                parsed.returns.append(
+                    ReturnDoc(type_name=type_name.strip(), description=description, name=name)
+                )
                 context = "return"
                 continue
 
@@ -496,7 +516,11 @@ def parse_comment_lines(comment_lines: Sequence[str]) -> ParsedComment:
     return parsed
 
 
-def parse_file_metadata(lines: Sequence[str], first_function_index: int) -> Tuple[Optional[str], Optional[str], Optional[str]]:
+def parse_file_metadata(
+    lines: Sequence[str],
+    first_function_index: int,
+) -> Tuple[Optional[str], Optional[str], Optional[str]]:
+    """Reads the page label, section, and summary out of a file's prelude. A legacy `@module` wins outright; otherwise the first namespaced GLuaLS `@class` (`ax.foo`) becomes the label, so files that only annotate bare struct types (vendored CAMI's `CAMI_USERGROUP`) keep their path label."""
     prelude = lines[:first_function_index] if first_function_index > 0 else lines
     module: Optional[str] = None
     section: Optional[str] = None
@@ -514,6 +538,10 @@ def parse_file_metadata(lines: Sequence[str], first_function_index: int) -> Tupl
     module_match = re.search(r"@module\s+([^\s]+)", joined)
     if module_match:
         module = module_match.group(1).strip()
+    else:
+        class_match = re.search(r"@class\s+([A-Za-z_][\w]*(?:\.[\w]+)+)", joined)
+        if class_match:
+            module = class_match.group(1).strip()
 
     section_match = re.search(r"@section\s+([^\s]+)", joined)
     if section_match:
@@ -778,7 +806,7 @@ def render_meta_page(
             for param in function_doc.params:
                 lines.append(
                     "| `{}` | `{}` | {} |".format(
-                        escape_table_cell(param.name),
+                        escape_table_cell(param.display_name),
                         escape_table_cell(param.type_name),
                         escape_table_cell(param.description or "-"),
                     )
@@ -789,10 +817,7 @@ def render_meta_page(
             lines.append("**Returns**")
             lines.append("")
             for return_doc in function_doc.returns:
-                if return_doc.description:
-                    lines.append(f"- `{return_doc.type_name}`: {return_doc.description}")
-                else:
-                    lines.append(f"- `{return_doc.type_name}`")
+                lines.append(render_return_line(return_doc))
             lines.append("")
 
         if function_doc.usage:
@@ -934,7 +959,7 @@ def render_library_page(
                 description = param.description or "-"
                 lines.append(
                     "| `{}` | `{}` | {} |".format(
-                        escape_table_cell(param.name),
+                        escape_table_cell(param.display_name),
                         escape_table_cell(param.type_name),
                         escape_table_cell(description),
                     )
@@ -945,10 +970,7 @@ def render_library_page(
             lines.append("**Returns**")
             lines.append("")
             for return_doc in function_doc.returns:
-                if return_doc.description:
-                    lines.append(f"- `{return_doc.type_name}`: {return_doc.description}")
-                else:
-                    lines.append(f"- `{return_doc.type_name}`")
+                lines.append(render_return_line(return_doc))
             lines.append("")
 
         if function_doc.usage:
@@ -1317,6 +1339,15 @@ def escape_table_cell(value: str) -> str:
     return escaped.replace("\n", "<br>")
 
 
+def render_return_line(return_doc: ReturnDoc) -> str:
+    prefix = f"- `{return_doc.type_name}`"
+    if return_doc.name:
+        prefix += f" `{return_doc.name}`"
+    if return_doc.description:
+        return f"{prefix}: {return_doc.description}"
+    return prefix
+
+
 def build_file_doc(
     root: Path,
     source_dir: Path,
@@ -1440,7 +1471,7 @@ def render_file_markdown(file_doc: FileDoc, root: Path) -> str:
                 description = param.description or "-"
                 lines.append(
                     "| `{}` | `{}` | {} |".format(
-                        escape_table_cell(param.name),
+                        escape_table_cell(param.display_name),
                         escape_table_cell(param.type_name),
                         escape_table_cell(description),
                     )
@@ -1451,12 +1482,7 @@ def render_file_markdown(file_doc: FileDoc, root: Path) -> str:
             lines.append("**Returns**")
             lines.append("")
             for return_doc in function.returns:
-                if return_doc.description:
-                    lines.append(
-                        f"- `{return_doc.type_name}`: {return_doc.description}"
-                    )
-                else:
-                    lines.append(f"- `{return_doc.type_name}`")
+                lines.append(render_return_line(return_doc))
             lines.append("")
 
         if function.usage:
@@ -1488,7 +1514,7 @@ def render_api_index(
     lines: List[str] = []
     lines.append("# Source Reference")
     lines.append("")
-    lines.append("File-organized view of all documented Lua source, generated from LDOC annotations.")
+    lines.append("File-organized view of all documented Lua source, generated from GLuaLS annotations.")
     lines.append("")
     lines.append("For concept-first browsing, use [Libraries](../{}/index.md).".format(libraries_subdir))
     lines.append("For metatable extensions, use [Metatables](../{}/index.md).".format(meta_subdir))

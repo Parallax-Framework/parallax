@@ -9,9 +9,8 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
---- Server-side character management for database operations and character lifecycle.
--- Handles character creation, loading, saving, and synchronization with clients.
--- @module ax.character
+---@class ax.character
+--- Server-side character management for database operations and character lifecycle. Handles character creation, loading, saving, and synchronization with clients.
 
 ax.character = ax.character or {}
 ax.character.instances = ax.character.instances or {}
@@ -80,13 +79,11 @@ local function deleteCharacterInventories(characterID, legacyInventoryID, callba
     ownedQuery:Execute()
 end
 
---- Create a new character in the database.
--- Creates a character with the provided payload data and automatically creates an inventory.
--- Calls the callback with the character and inventory objects upon completion.
--- @realm server
--- @param payload table Character creation data containing variable values
--- @param callback function Optional callback function called with (character, inventory) or (false) on failure
--- @usage ax.character:Create({name = "John Doe", description = "A citizen"}, function(char, inv) end)
+--- Create a new character in the database. Creates a character with the provided payload data and automatically creates an inventory. Calls the callback with the character and inventory objects upon completion.
+---@realm server
+---@param payload table Character creation data containing variable values
+---@param callback? function Optional callback function called with (character, inventory) or (false) on failure
+---@usage ax.character:Create({name = "John Doe", description = "A citizen"}, function(char, inv) end)
 function ax.character:Create(payload, callback)
     local creationTime = math.floor(os.time())
 
@@ -161,13 +158,11 @@ function ax.character:Create(payload, callback)
     query:Execute()
 end
 
---- Load a character for a player.
--- Associates a character with a player, syncs character data, and sets up inventory.
--- Automatically respawns the player after loading the character.
--- @realm server
--- @param client Player The player entity to load the character for
--- @param character table The character object to load
--- @usage ax.character:Load(player, characterObject)
+--- Load a character for a player. Associates a character with a player, syncs character data, and sets up inventory. Automatically respawns the player after loading the character.
+---@realm server
+---@param client Player The player entity to load the character for
+---@param character table The character object to load
+---@usage ax.character:Load(player, characterObject)
 function ax.character:Load(client, character)
     if ( !ax.util:IsValidPlayer(client) ) then
         ax.util:PrintError("Attempted to load character ID " .. character.id .. " for an invalid player")
@@ -261,11 +256,11 @@ function ax.character:Load(client, character)
 end
 
 --- Kick a player out of their active character and return them to the menu.
--- @realm server
--- @param client Player The player to kick out of their character
--- @param reason string|nil Optional reason to notify the player with
--- @return boolean True if a character was unloaded
--- @usage ax.character:Kick(client, "You have been kicked to the menu.")
+---@realm server
+---@param client Player The player to kick out of their character
+---@param reason? string|nil Optional reason to notify the player with
+---@return boolean # True if a character was unloaded
+---@usage ax.character:Kick(client, "You have been kicked to the menu.")
 function ax.character:Kick(client, reason)
     if ( !ax.util:IsValidPlayer(client) ) then return false end
 
@@ -310,12 +305,11 @@ function ax.character:Kick(client, reason)
     return true
 end
 
---- Restore all characters for a player from the database.
--- Loads all characters associated with the player's SteamID64 and sends them to the client.
--- @realm server
--- @param client Player The player entity to restore characters for
--- @param callback function Optional callback function called with the character array
--- @usage ax.character:Restore(player, function(characters) print("Loaded", #characters, "characters") end)
+--- Restore all characters for a player from the database. Loads all characters associated with the player's SteamID64 and sends them to the client.
+---@realm server
+---@param client Player The player entity to restore characters for
+---@param callback? function Optional callback function called with the character array
+---@usage ax.character:Restore(player, function(characters) print("Loaded", #characters, "characters") end)
 function ax.character:Restore(client, callback)
     local clientData = client:GetTable()
     clientData.axCharacters = clientData.axCharacters or {}
@@ -370,12 +364,11 @@ function ax.character:Restore(client, callback)
     query:Execute()
 end
 
---- Delete a character from the database.
--- Permanently removes a character and its associated inventory from the database.
--- @realm server
--- @param id number The character ID to delete
--- @param callback function Optional callback function called with success boolean
--- @usage ax.character:Delete(123, function(success) print("Deleted:", success) end)
+--- Delete a character from the database. Permanently removes a character and its associated inventory from the database.
+---@realm server
+---@param id number The character ID to delete
+---@param callback? function Optional callback function called with success boolean
+---@usage ax.character:Delete(123, function(success) print("Deleted:", success) end)
 function ax.character:Delete(id, callback)
     -- First fetch the character row to validate existence and schema
     local sel = mysql:Select("ax_characters")
@@ -485,14 +478,13 @@ function ax.character:Delete(id, callback)
     sel:Execute()
 end
 
---- Synchronize character data to all clients or a specific recipient.
--- Broadcasts character information to all connected players or a specific player for client-side access.
--- @realm server
--- @param client Player The player associated with the character
--- @param character table The character object to synchronize
--- @param recipient Player Optional specific recipient; if nil, broadcasts to all
--- @usage ax.character:Sync(player, characterObject)
--- @usage ax.character:Sync(player, characterObject, newPlayer)
+--- Synchronize character data to all clients or a specific recipient. Broadcasts character information to all connected players or a specific player for client-side access.
+---@realm server
+---@param client Player The player associated with the character
+---@param character table The character object to synchronize
+---@param recipient? Player Optional specific recipient; if nil, broadcasts to all
+---@usage ax.character:Sync(player, characterObject)
+---@usage ax.character:Sync(player, characterObject, newPlayer)
 function ax.character:Sync(client, character, recipient)
     if ( istable(recipient) or isentity(recipient) ) then
         ax.net:Start(recipient, "character.sync", client, character)

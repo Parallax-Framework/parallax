@@ -9,10 +9,8 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
---- Hook attachment system that registers every function member of a table as its own
--- `hook.Add` handler. Replaces the previous `hook.Call` hijack used to dispatch
--- `SCHEMA:HookName` and `MODULE:HookName` methods.
--- @module ax.hook
+---@class ax.hook
+--- Hook attachment system that registers every function member of a table as its own `hook.Add` handler. Replaces the previous `hook.Call` hijack used to dispatch `SCHEMA:HookName` and `MODULE:HookName` methods.
 
 ax.hook = ax.hook or {}
 ax.hook.attached = ax.hook.attached or {}
@@ -25,12 +23,10 @@ ax.hook.registered = ax.hook.registered or {}
 -- SCHEMA is attached by ax.schema:Initialize under its own identifier, so it is seeded here to keep a manual ax.hook:Register("SCHEMA") a no-op instead of a second attachment that would dispatch every schema hook twice.
 ax.hook.registered.SCHEMA = ax.hook.registered.SCHEMA or "schema"
 
---- Attach every function member of the given table as an individual `hook.Add` handler.
--- Any existing attachment under the same identifier is removed first, so this is safe
--- to call again on hot reload.
--- @realm shared
--- @param tbl table The table whose functions should be registered as hooks (e.g. `SCHEMA`, a `MODULE` table).
--- @param identifier string A unique identifier used to namespace the underlying hook names.
+--- Attach every function member of the given table as an individual `hook.Add` handler. Any existing attachment under the same identifier is removed first, so this is safe to call again on hot reload.
+---@realm shared
+---@param tbl table The table whose functions should be registered as hooks (e.g. `SCHEMA`, a `MODULE` table).
+---@param identifier string A unique identifier used to namespace the underlying hook names.
 function ax.hook:AttachHooks(tbl, identifier)
     if ( !istable(tbl) ) then
         ax.util:PrintError("ax.hook:AttachHooks expected a table, got " .. type(tbl) .. ".\n")
@@ -106,8 +102,8 @@ function ax.hook:RefreshRegistered()
 end
 
 --- Detach all hooks previously attached under the given identifier.
--- @realm shared
--- @param identifier string The identifier passed to `ax.hook:AttachHooks`.
+---@realm shared
+---@param identifier string The identifier passed to `ax.hook:AttachHooks`.
 function ax.hook:DetachHooks(identifier)
     local events = self.attached[identifier]
     if ( !events ) then return end

@@ -9,10 +9,9 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
---- ax.frame
--- Base window panel with blur, fade-in, draggable, sizable, and close/maximize/minimize support.
--- Children may be docked; operates modally.
--- @panel ax.frame
+---@class ax.frame : Panel
+--- Base window panel with blur, fade-in, draggable, sizable, and close/maximize/minimize support. Children may be docked; operates modally.
+---@realm client
 
 local PANEL = {}
 

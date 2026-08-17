@@ -9,35 +9,24 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
---- Inventory management system for creating, storing, and retrieving inventory data.
--- Supports item storage, weight limits, and synchronization between server and clients.
--- @module ax.inventory
+---@class ax.inventory
+--- Inventory management system for creating, storing, and retrieving inventory data. Supports item storage, weight limits, and synchronization between server and clients.
 
 ax.inventory = ax.inventory or {}
 ax.inventory.meta = ax.inventory.meta or {}
 ax.inventory.instances = ax.inventory.instances or {}
 
---- Candidate index for `ItemOwnsInventory`: `itemID -> inventoryID` for inventories
--- with `ownerKind == "item"`. A candidate only - entries are never actively removed
--- when an inventory is disposed of (disposal happens from many call sites, several
--- of them client-only, and this stays a shared-realm file), so every read re-verifies
--- the candidate against the live instance and self-heals by dropping stale entries.
--- @realm shared
+--- Candidate index for `ItemOwnsInventory`: `itemID -> inventoryID` for inventories with `ownerKind == "item"`. A candidate only - entries are never actively removed when an inventory is disposed of (disposal happens from many call sites, several of them client-only, and this stays a shared-realm file), so every read re-verifies the candidate against the live instance and self-heals by dropping stale entries.
+---@realm shared
 ax.inventory.itemOwnerIndex = ax.inventory.itemOwnerIndex or {}
 
---- Registry of owner resolvers. `owner_kind`/`owner_id` are unavoidably strings/numbers
--- in the database, but nothing above the database layer should ever type one of those
--- strings by hand - a typo'd `"charcter"` would silently create an unreachable
--- inventory. Instead, every owner-facing API (`Create`, `RestoreOwner`) takes the
--- actual owner object (a character, an item, an entity, ...)
--- and resolves it through this registry via metatable identity, the same way
--- `ax.type:Detect` resolves Lua values to type IDs.
--- @realm shared
+--- Registry of owner resolvers. `owner_kind`/`owner_id` are unavoidably strings/numbers in the database, but nothing above the database layer should ever type one of those strings by hand - a typo'd `"charcter"` would silently create an unreachable inventory. Instead, every owner-facing API (`Create`, `RestoreOwner`) takes the actual owner object (a character, an item, an entity, ...) and resolves it through this registry via metatable identity, the same way `ax.type:Detect` resolves Lua values to type IDs.
+---@realm shared
 ax.inventory.ownerResolvers = ax.inventory.ownerResolvers or {}
 
 --- Registers an owner resolver.
--- @realm shared
--- @param def table `{ kind = string, checkOwner = function(owner) -> boolean, getOwner = function(owner) -> number, resolveOwner = function(ownerID) -> any }`. `kind` is the `owner_kind` string this resolver produces (e.g. `"character"`, `"item"`, `"entity"`); `checkOwner` recognises whether a value is this kind of owner; `getOwner` extracts the stable id to persist as `owner_id`. For entity owners this must be a persistent id (survives a restart), never `Entity:EntIndex()`. `resolveOwner` is the inverse - given that id, returns the live owner object again (or nil if it isn't loaded) - it powers `inventory:GetOwner()`. Optional: omitting it just means `GetOwner()` can't resolve that kind back to an object.
+---@realm shared
+---@param def table `{ kind = string, checkOwner = function(owner) -> boolean, getOwner = function(owner) -> number, resolveOwner = function(ownerID) -> any }`. `kind` is the `owner_kind` string this resolver produces (e.g. `"character"`, `"item"`, `"entity"`); `checkOwner` recognises whether a value is this kind of owner; `getOwner` extracts the stable id to persist as `owner_id`. For entity owners this must be a persistent id (survives a restart), never `Entity:EntIndex()`. `resolveOwner` is the inverse - given that id, returns the live owner object again (or nil if it isn't loaded) - it powers `inventory:GetOwner()`. Optional: omitting it just means `GetOwner()` can't resolve that kind back to an object.
 function ax.inventory:RegisterOwnerResolver(def)
     if ( !istable(def) or !isstring(def.kind) or def.kind == "" or !isfunction(def.checkOwner) or !isfunction(def.getOwner) ) then
         ax.util:PrintError("Invalid owner resolver registration for kind '" .. tostring(def and def.kind) .. "'.")
@@ -47,15 +36,11 @@ function ax.inventory:RegisterOwnerResolver(def)
     self.ownerResolvers[def.kind] = def
 end
 
---- Resolves an `(ownerKind, ownerID)` pair back to the live owner object, via the
--- `resolveOwner` callback of the resolver registered for `ownerKind` - the inverse of
--- `ResolveOwner`. Returns nil if `ownerKind` is nil, unregistered, or its resolver didn't
--- provide a `resolveOwner` callback (e.g. some `"entity"` resolvers, where the owner may
--- no longer exist in the world).
--- @realm shared
--- @param ownerKind string|nil
--- @param ownerID number|nil
--- @return any|nil The owner object, or nil if it can't be resolved.
+--- Resolves an `(ownerKind, ownerID)` pair back to the live owner object, via the `resolveOwner` callback of the resolver registered for `ownerKind` - the inverse of `ResolveOwner`. Returns nil if `ownerKind` is nil, unregistered, or its resolver didn't provide a `resolveOwner` callback (e.g. some `"entity"` resolvers, where the owner may no longer exist in the world).
+---@realm shared
+---@param ownerKind string|nil
+---@param ownerID number|nil
+---@return any|nil # The owner object, or nil if it can't be resolved.
 function ax.inventory:ResolveOwnerObject(ownerKind, ownerID)
     if ( ownerKind == nil or ownerID == nil ) then return nil end
 
@@ -65,14 +50,12 @@ function ax.inventory:ResolveOwnerObject(ownerKind, ownerID)
     return resolver.resolveOwner(ownerID)
 end
 
---- Resolves an owner object to its `(ownerKind, ownerID)` pair via the registered
--- resolvers. Passing `nil` is valid and yields `nil, nil` (an ownerless/legacy
--- inventory - back-compat for code that never had an owner concept).
--- @realm shared
--- @param owner any A character, item, entity, or anything a registered resolver recognises.
--- @return string|nil ownerKind
--- @return number|nil ownerID
--- @usage local kind, id = ax.inventory:ResolveOwner(character) -- "character", character:GetID()
+--- Resolves an owner object to its `(ownerKind, ownerID)` pair via the registered resolvers. Passing `nil` is valid and yields `nil, nil` (an ownerless/legacy inventory - back-compat for code that never had an owner concept).
+---@realm shared
+---@param owner any A character, item, entity, or anything a registered resolver recognises.
+---@return string|nil ownerKind
+---@return number|nil ownerID
+---@usage local kind, id = ax.inventory:ResolveOwner(character) -- "character", character:GetID()
 function ax.inventory:ResolveOwner(owner)
     if ( owner == nil ) then return nil, nil end
 
@@ -121,15 +104,11 @@ ax.inventory:RegisterOwnerResolver({
     end,
 })
 
---- Whether `client` may modify (not merely view/receive sync for) `inventory`, per the
--- core's one built-in rule (an owner-character may modify their own inventories) plus
--- the inventory type's own `CanAccess` rule (distance, locks, faction/rank, ...).
--- Called by `ax.item:Transfer` on both transfer endpoints. Receiver/sync visibility is
--- a separate concept and does not go through this.
--- @realm shared
--- @param inventory table
--- @param client Player
--- @return boolean
+--- Whether `client` may modify (not merely view/receive sync for) `inventory`, per the core's one built-in rule (an owner-character may modify their own inventories) plus the inventory type's own `CanAccess` rule (distance, locks, faction/rank, ...). Called by `ax.item:Transfer` on both transfer endpoints. Receiver/sync visibility is a separate concept and does not go through this.
+---@realm shared
+---@param inventory table
+---@param client Player
+---@return boolean
 function ax.inventory:CanAccess(inventory, client)
     if ( !istable(inventory) ) then return false end
     if ( inventory.id == 0 ) then return true end -- World: Transfer's own callers gate this (entity validity/distance).
@@ -162,17 +141,12 @@ function ax.inventory:CanAccess(inventory, client)
     return false
 end
 
---- Whether `itemID` owns an inventory (e.g. a bag/container item) - i.e. some
--- inventory instance has `ownerKind == "item"` and `ownerID == itemID`. Used by
--- `ax.item:Transfer` to enforce the depth-1 nesting rule: a bag can never end up
--- inside another inventory that is itself nested inside an item.
---
--- O(1) via `itemOwnerIndex` instead of scanning every live inventory - this is
--- called on every Transfer into an item-owned inventory, so its cost must not
--- scale with how many inventories exist on the server.
--- @realm shared
--- @param itemID number
--- @return boolean
+--- Whether `itemID` owns an inventory (e.g. a bag/container item) - i.e. some inventory instance has `ownerKind == "item"` and `ownerID == itemID`. Used by `ax.item:Transfer` to enforce the depth-1 nesting rule: a bag can never end up inside another inventory that is itself nested inside an item.
+---
+--- O(1) via `itemOwnerIndex` instead of scanning every live inventory - this is called on every Transfer into an item-owned inventory, so its cost must not scale with how many inventories exist on the server.
+---@realm shared
+---@param itemID number
+---@return boolean
 function ax.inventory:ItemOwnsInventory(itemID)
     local inventoryID = self.itemOwnerIndex[itemID]
     if ( inventoryID == nil ) then return false end
@@ -205,7 +179,7 @@ ax.inventory.instances[0] = setmetatable({
 }, ax.inventory.meta)
 
 --- Returns a live inventory instance by ID, the canonical read-side counterpart to `ax.inventory:Create` - ID `0` is the world (dropped items) and always resolves, temporary inventories use negative IDs, and an inventory that exists in the database but has not been restored yet resolves to nil.
--- An inventory instance passed straight through is returned as-is, so callers holding either an ID or an instance can normalise with one call.
+--- An inventory instance passed straight through is returned as-is, so callers holding either an ID or an instance can normalise with one call.
 ---@realm shared
 ---@param id number|table The inventory ID, or an inventory instance to pass through.
 ---@return table|nil inventory The inventory instance, or nil when it is not loaded.
@@ -221,22 +195,16 @@ function ax.inventory:Get(id)
     return self.instances[id]
 end
 
---- Returns the inventory type (and its instance data) new inventories are created with when
--- `ax.inventory:Create`/`CreateTemporary` is called without an explicit `typeID` - e.g. a
--- character's primary inventory (`vars.inventory`, created via `ax.inventory:Create({ owner =
--- character })`). Reads `SCHEMA.defaultInventoryType`/`SCHEMA.defaultInventoryData` - declare
--- these once in `schema/boot.lua`, the same convention as `SCHEMA.name`/`SCHEMA.author` - falling
--- back to `"weight"`/`{}` if the schema never sets them, so schemas that never opt in see zero
--- behaviour change.
--- @realm shared
--- @return string typeID
--- @return table data Instance data (e.g. `{ width = 8, height = 6 }`), may include `maxWeight`.
--- Falls back to `"weight"` with a warning if `SCHEMA.defaultInventoryType` names a type that was
--- never registered via `ax.inventory:RegisterType` (e.g. a typo, or the registering file hasn't
--- loaded yet) - never silently creates inventories of a type that doesn't exist.
--- @usage -- schema/boot.lua
--- @usage SCHEMA.defaultInventoryType = "character_grid"
--- @usage SCHEMA.defaultInventoryData = { width = 8, height = 6 }
+--- Returns the inventory type (and its instance data) new inventories are created with when `ax.inventory:Create`/`CreateTemporary` is called without an explicit `typeID` - e.g. a character's primary inventory (`vars.inventory`, created via `ax.inventory:Create({ owner = character })`). Reads `SCHEMA.defaultInventoryType`/`SCHEMA.defaultInventoryData` - declare these once in `schema/boot.lua`, the same convention as `SCHEMA.name`/`SCHEMA.author` - falling back to `"weight"`/`{}` if the schema never sets them, so schemas that never opt in see zero behaviour change.
+---@realm shared
+---@return string typeID
+---@return table data Instance data (e.g. `{ width = 8, height = 6 }`), may include `maxWeight`.
+--- Falls back to `"weight"` with a warning if `SCHEMA.defaultInventoryType` names a type that was
+--- never registered via `ax.inventory:RegisterType` (e.g. a typo, or the registering file hasn't
+--- loaded yet) - never silently creates inventories of a type that doesn't exist.
+---@usage -- schema/boot.lua
+---@usage SCHEMA.defaultInventoryType = "character_grid"
+---@usage SCHEMA.defaultInventoryData = { width = 8, height = 6 }
 function ax.inventory:GetDefaultType()
     local data = ( SCHEMA and istable(SCHEMA.defaultInventoryData) ) and SCHEMA.defaultInventoryData or {}
     local typeID = ( SCHEMA and SCHEMA.defaultInventoryType ) or "weight"
@@ -253,11 +221,11 @@ end
 
 if ( SERVER ) then
     --- Creates a temporary in-memory inventory instance (no database persistence).
-    -- @realm server
-    -- @param data table Optional data table. Recognised keys: `id`, `maxWeight`, `typeID`
-    -- (defaults to `"weight"`), `owner` (resolved via `ax.inventory:ResolveOwner`), `data`
-    -- (instance data).
-    -- @param callback function|nil Optional callback function called with the created inventory.
+    ---@realm server
+    ---@param data? table Optional data table. Recognised keys: `id`, `maxWeight`, `typeID`
+    --- (defaults to `"weight"`), `owner` (resolved via `ax.inventory:ResolveOwner`), `data`
+    --- (instance data).
+    ---@param callback? function|nil Optional callback function called with the created inventory.
     function ax.inventory:CreateTemporary(data, callback)
         data = data or {}
 
@@ -317,18 +285,14 @@ if ( SERVER ) then
         return inventory
     end
 
-    --- Creates a new inventory in the database and returns the inventory object via callback.
-    -- Back-compat: called with no `typeID`/`owner` (or `data` at all), this creates
-    -- exactly the weight-limited, ownerless inventory `ax.inventory:Create` has always
-    -- created. `typeID`/`owner`/instance `data` are additive - existing callers are
-    -- unaffected.
-    -- @realm server
-    -- @param data table Optional data table. Recognised keys: `maxWeight`, `typeID`
-    -- (defaults to `SCHEMA.defaultInventoryType`, itself `"weight"` unless the schema sets it -
-    -- see `ax.inventory:GetDefaultType`), `owner` (a character/item/entity object - resolved via
-    -- `ax.inventory:ResolveOwner`, never pass a raw owner_kind string), `data` (instance
-    -- data - grid size, slot set - stored on the inventory, see `GetData`).
-    -- @param callback function|nil Optional callback function called with the created inventory or false on failure.
+    --- Creates a new inventory in the database and returns the inventory object via callback. Back-compat: called with no `typeID`/`owner` (or `data` at all), this creates exactly the weight-limited, ownerless inventory `ax.inventory:Create` has always created. `typeID`/`owner`/instance `data` are additive - existing callers are unaffected.
+    ---@realm server
+    ---@param data? table Optional data table. Recognised keys: `maxWeight`, `typeID`
+    --- (defaults to `SCHEMA.defaultInventoryType`, itself `"weight"` unless the schema sets it -
+    --- see `ax.inventory:GetDefaultType`), `owner` (a character/item/entity object - resolved via
+    --- `ax.inventory:ResolveOwner`, never pass a raw owner_kind string), `data` (instance
+    --- data - grid size, slot set - stored on the inventory, see `GetData`).
+    ---@param callback? function|nil Optional callback function called with the created inventory or false on failure.
     function ax.inventory:Create(data, callback)
         data = data or {}
 
@@ -377,13 +341,10 @@ if ( SERVER ) then
         query:Execute()
     end
 
-    --- Restores every inventory owned by `owner` from the database, items included. A
-    -- character has as many owned inventories as it was created with (main grid,
-    -- equipment, ...) - this is how they're all found again on load, regardless of how
-    -- many there are or what types they are.
-    -- @realm server
-    -- @param owner any A character/item/entity object - resolved via `ax.inventory:ResolveOwner`.
-    -- @param callback function|nil Called with an array of restored inventories (possibly empty).
+    --- Restores every inventory owned by `owner` from the database, items included. A character has as many owned inventories as it was created with (main grid, equipment, ...) - this is how they're all found again on load, regardless of how many there are or what types they are.
+    ---@realm server
+    ---@param owner any A character/item/entity object - resolved via `ax.inventory:ResolveOwner`.
+    ---@param callback function|nil Called with an array of restored inventories (possibly empty).
     function ax.inventory:RestoreOwner(owner, callback)
         local ownerKind, ownerID = self:ResolveOwner(owner)
         if ( ownerKind == nil or ownerID == nil ) then
@@ -420,13 +381,11 @@ if ( SERVER ) then
         query:Execute()
     end
 
-    --- Builds a live inventory instance (without items) from an `ax_inventories` row.
-    -- Shared by `RestoreRow`/`RestoreRows` so the row-to-instance shape (type/owner/data
-    -- columns) is defined once.
-    -- @realm server
-    -- @param row table A row from `ax_inventories` (as returned by the mysql library).
-    -- @return table inventory The shell instance (`.items` not yet populated).
-    -- @return table|nil typeDef The inventory's resolved type definition.
+    --- Builds a live inventory instance (without items) from an `ax_inventories` row. Shared by `RestoreRow`/`RestoreRows` so the row-to-instance shape (type/owner/data columns) is defined once.
+    ---@realm server
+    ---@param row table A row from `ax_inventories` (as returned by the mysql library).
+    ---@return table inventory The shell instance (`.items` not yet populated).
+    ---@return table|nil typeDef The inventory's resolved type definition.
     local function BuildInventoryShell(row)
         local inventory = setmetatable({}, ax.inventory.meta)
         inventory.id = tonumber(row.id)
@@ -440,15 +399,11 @@ if ( SERVER ) then
         return inventory, ax.inventory:GetType(inventory)
     end
 
-    --- Populates an inventory shell's `.items` from a set of `ax_items` rows and
-    -- publishes it to `self.instances`. Shared by `RestoreRow`/`RestoreRows` so the
-    -- item-row-to-object shape (placement columns via the type's `ApplyItemRow`) is
-    -- defined once regardless of whether the rows came from a per-inventory or a
-    -- batched `WhereIn` query.
-    -- @realm server
-    -- @param inventory table The inventory shell from `BuildInventoryShell`.
-    -- @param typeDef table|nil The inventory's resolved type definition.
-    -- @param itemsResult table Rows from `ax_items` belonging to this inventory.
+    --- Populates an inventory shell's `.items` from a set of `ax_items` rows and publishes it to `self.instances`. Shared by `RestoreRow`/`RestoreRows` so the item-row-to-object shape (placement columns via the type's `ApplyItemRow`) is defined once regardless of whether the rows came from a per-inventory or a batched `WhereIn` query.
+    ---@realm server
+    ---@param inventory table The inventory shell from `BuildInventoryShell`.
+    ---@param typeDef table|nil The inventory's resolved type definition.
+    ---@param itemsResult table Rows from `ax_items` belonging to this inventory.
     local function ApplyItemRows(inventory, typeDef, itemsResult)
         local items = {}
 
@@ -476,14 +431,12 @@ if ( SERVER ) then
         end
     end
 
-    --- Restores a single `ax_inventories` row (plus its items) into a live inventory
-    -- instance. Shared by `RestoreOwner`/`Restore` so the row-to-instance shape
-    -- (type/owner/data columns, item placement columns) is defined once.
-    -- @realm server
-    -- @param row table A row from `ax_inventories` (as returned by the mysql library).
-    -- @param callback function Called with the restored inventory instance, or `false`
-    -- if the item fetch failed - always called exactly once so callers that count down
-    -- across multiple rows (e.g. `RestoreOwner`) can rely on it, success or failure.
+    --- Restores a single `ax_inventories` row (plus its items) into a live inventory instance. Shared by `RestoreOwner`/`Restore` so the row-to-instance shape (type/owner/data columns, item placement columns) is defined once.
+    ---@realm server
+    ---@param row table A row from `ax_inventories` (as returned by the mysql library).
+    ---@param callback function Called with the restored inventory instance, or `false`
+    --- if the item fetch failed - always called exactly once so callers that count down
+    --- across multiple rows (e.g. `RestoreOwner`) can rely on it, success or failure.
     function ax.inventory:RestoreRow(row, callback)
         local inventoryID = tonumber(row.id)
 
@@ -515,15 +468,12 @@ if ( SERVER ) then
         itemQuery:Execute()
     end
 
-    --- Batch-restores multiple `ax_inventories` rows (plus their items) using a single
-    -- `WhereIn` items query instead of one items query per row. Used by `Restore` to
-    -- load every inventory owned by any of a client's characters without the query
-    -- count scaling with the number of inventories found.
-    -- @realm server
-    -- @param rows table Array of `ax_inventories` rows (as returned by the mysql library).
-    -- @param callback function|nil Called once with an array of restored inventory
-    -- instances (order not guaranteed to match `rows`). Already-live instances are
-    -- resolved instantly and included without issuing any query for them.
+    --- Batch-restores multiple `ax_inventories` rows (plus their items) using a single `WhereIn` items query instead of one items query per row. Used by `Restore` to load every inventory owned by any of a client's characters without the query count scaling with the number of inventories found.
+    ---@realm server
+    ---@param rows table Array of `ax_inventories` rows (as returned by the mysql library).
+    ---@param callback function|nil Called once with an array of restored inventory
+    --- instances (order not guaranteed to match `rows`). Already-live instances are
+    --- resolved instantly and included without issuing any query for them.
     function ax.inventory:RestoreRows(rows, callback)
         if ( !istable(rows) or rows[1] == nil ) then
             if ( isfunction(callback) ) then callback({}) end
@@ -631,9 +581,9 @@ if ( SERVER ) then
     end
 
     --- Synchronizes the specified inventory with all clients.
-    -- @realm server
-    -- @param inventory table|number The inventory table or inventory ID to sync.
-    -- @usage ax.inventory:Sync(inventory)
+    ---@realm server
+    ---@param inventory table|number The inventory table or inventory ID to sync.
+    ---@usage ax.inventory:Sync(inventory)
     function ax.inventory:Sync(inventory)
         if ( isnumber(inventory) ) then
             inventory = ax.inventory.instances[inventory]
@@ -684,10 +634,10 @@ if ( SERVER ) then
     end
 
     --- Restores all inventories associated with the client's characters from the database.
-    -- @realm server
-    -- @param client Player The player whose inventories should be restored.
-    -- @usage ax.inventory:Restore(client)
-    -- @internal
+    ---@realm server
+    ---@param client Player The player whose inventories should be restored.
+    ---@usage ax.inventory:Restore(client)
+    ---@private
     function ax.inventory:Restore(client, callback)
         local characterIDs = {}
         local clientTable = client:GetTable()

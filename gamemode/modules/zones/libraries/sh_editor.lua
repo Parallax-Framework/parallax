@@ -9,7 +9,7 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
--- @module ax.zones.editor
+---@class ax.zones.editor
 
 ax.zones = ax.zones or {}
 ax.zones.editor = ax.zones.editor or {}

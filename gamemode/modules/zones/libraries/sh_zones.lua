@@ -9,9 +9,8 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
---- Zone system core library.
--- Provides registration, CRUD operations, and type management for zones.
--- @module ax.zones
+---@class ax.zones
+--- Zone system core library. Provides registration, CRUD operations, and type management for zones.
 
 ax.zones = ax.zones or {}
 ax.zones.types = ax.zones.types or {}
@@ -19,10 +18,10 @@ ax.zones.stored = ax.zones.stored or {}
 ax.zones.nextId = ax.zones.nextId or 1
 
 --- Register a zone type with validation and containment logic.
--- @realm shared
--- @tparam string typeName The unique identifier for this zone type (e.g., "box", "sphere", "pvs")
--- @tparam table impl Implementation table with optional methods: Validate, AABB, Contains, Weight
--- @usage ax.zones:RegisterType("box", { Validate = function(spec) ... end, Contains = function(spec, pos) ... end })
+---@realm shared
+---@param typeName string The unique identifier for this zone type (e.g., "box", "sphere", "pvs")
+---@param impl table Implementation table with optional methods: Validate, AABB, Contains, Weight
+---@usage ax.zones:RegisterType("box", { Validate = function(spec) ... end, Contains = function(spec, pos) ... end })
 function ax.zones:RegisterType(typeName, impl)
     if ( !typeName or !impl ) then
         ax.util:PrintError("RegisterType requires typeName and impl.")
@@ -34,18 +33,18 @@ function ax.zones:RegisterType(typeName, impl)
 end
 
 --- Get a registered zone type implementation.
--- @realm shared
--- @tparam string typeName The zone type identifier
--- @treturn table|nil The type implementation or nil if not found
+---@realm shared
+---@param typeName string The zone type identifier
+---@return table|nil # The type implementation or nil if not found
 function ax.zones:GetType(typeName)
     return self.types[typeName]
 end
 
 --- Validate a zone spec against its type implementation.
--- @realm shared
--- @tparam table spec The zone specification to validate
--- @treturn boolean success Whether validation passed
--- @treturn string|nil error Error message if validation failed
+---@realm shared
+---@param spec table The zone specification to validate
+---@return boolean success Whether validation passed
+---@return string|nil error Error message if validation failed
 function ax.zones:ValidateSpec(spec)
     if ( !spec ) then
         return false, "Zone spec is nil"
@@ -75,10 +74,10 @@ function ax.zones:ValidateSpec(spec)
 end
 
 --- Add a new zone to the registry.
--- @realm server
--- @tparam table spec Zone specification with name, type, priority, flags, data, and geometry
--- @treturn number|nil id The assigned zone ID, or nil on failure
--- @treturn string|nil error Error message if addition failed
+---@realm server
+---@param spec table Zone specification with name, type, priority, flags, data, and geometry
+---@return number|nil id The assigned zone ID, or nil on failure
+---@return string|nil error Error message if addition failed
 function ax.zones:Add(spec)
     if ( CLIENT ) then return end
 
@@ -128,10 +127,10 @@ function ax.zones:Add(spec)
 end
 
 --- Update an existing zone.
--- @realm server
--- @tparam number|string identifier Zone ID or name
--- @tparam table patch Fields to merge into the existing zone
--- @treturn boolean success Whether the update succeeded
+---@realm server
+---@param identifier number|string Zone ID or name
+---@param patch table Fields to merge into the existing zone
+---@return boolean success Whether the update succeeded
 function ax.zones:Update(identifier, patch)
     if ( CLIENT ) then return false end
     if ( !identifier or !patch ) then return false end
@@ -166,9 +165,9 @@ function ax.zones:Update(identifier, patch)
 end
 
 --- Remove a zone from the registry.
--- @realm server
--- @tparam number|string identifier Zone ID or name
--- @treturn boolean success Whether the removal succeeded
+---@realm server
+---@param identifier number|string Zone ID or name
+---@return boolean success Whether the removal succeeded
 function ax.zones:Remove(identifier)
     if ( CLIENT ) then return false end
     if ( !identifier ) then return false end
@@ -191,9 +190,9 @@ function ax.zones:Remove(identifier)
 end
 
 --- Get a zone by ID or name.
--- @realm shared
--- @tparam number|string identifier Zone ID or name (supports partial match)
--- @treturn table|nil The zone spec or nil if not found
+---@realm shared
+---@param identifier number|string Zone ID or name (supports partial match)
+---@return table|nil # The zone spec or nil if not found
 function ax.zones:Get(identifier)
     if ( !identifier ) then return nil end
 
@@ -222,14 +221,14 @@ function ax.zones:Get(identifier)
 end
 
 --- Get all zones.
--- @realm shared
--- @treturn table Table of zone IDs mapped to zone specs
+---@realm shared
+---@return table # Table of zone IDs mapped to zone specs
 function ax.zones:GetAll()
     return self.stored
 end
 
 --- Clear all zones (runtime only).
--- @realm server
+---@realm server
 function ax.zones:Clear()
     if ( CLIENT ) then return end
 

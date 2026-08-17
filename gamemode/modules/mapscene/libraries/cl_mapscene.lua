@@ -9,8 +9,8 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
+---@class ax.mapscene
 --- Client-side map scene behavior.
--- @module ax.mapscene
 
 ax.mapscene = ax.mapscene or {}
 ax.mapscene.scenes = ax.mapscene.scenes or {}
@@ -58,8 +58,8 @@ ax.mapscene.music = ax.mapscene.music or {
 }
 
 --- Determine if map scenes should render.
--- @param client Player
--- @return boolean
+---@param client Player
+---@return boolean
 function ax.mapscene:ShouldRenderMapScene(client)
     if ( !ax.util:IsValidPlayer(client) ) then return false end
     if ( !IsValid(ax.gui.main) ) then return false end
@@ -90,7 +90,7 @@ function ax.mapscene:ResetState()
 end
 
 --- Apply a preview override.
--- @param identifier number|string|nil
+---@param identifier number|string|nil
 function ax.mapscene:SetPreview(identifier)
     self.state.preview = identifier
     self:ResetState()
@@ -103,8 +103,8 @@ function ax.mapscene:ClearPreview()
 end
 
 --- Normalize a music path string.
--- @param path any
--- @return string|nil
+---@param path any
+---@return string|nil
 function ax.mapscene:NormalizeMusicPath(path)
     if ( !isstring(path) ) then return nil end
 
@@ -119,8 +119,10 @@ function ax.mapscene:NormalizeMusicPath(path)
 end
 
 --- Resolve the active music path (supports overrides).
--- @param defaultPath string
--- @return string, boolean, boolean
+---@param defaultPath string
+---@return string
+---@return boolean
+---@return boolean
 function ax.mapscene:ResolveMusicPath(defaultPath)
     local resolveId = (self.music.resolveId or 0) + 1
     self.music.resolveId = resolveId
@@ -175,8 +177,8 @@ function ax.mapscene:ResolveMusicPath(defaultPath)
 end
 
 --- Get music duration in seconds.
--- @param path any
--- @return number
+---@param path any
+---@return number
 function ax.mapscene:GetMusicDuration(path)
     if ( !isstring(path) ) then return 0 end
 
@@ -196,7 +198,7 @@ function ax.mapscene:GetMusicDuration(path)
 end
 
 --- Set music volume and cache it.
--- @param volume number
+---@param volume number
 function ax.mapscene:SetMusicVolume(volume)
     local music = self.music
     music.currentVolume = volume or 0
@@ -207,8 +209,8 @@ function ax.mapscene:SetMusicVolume(volume)
 end
 
 --- Stop map scene music.
--- @param fadeOut number
--- @param bForce boolean
+---@param fadeOut number
+---@param bForce boolean
 function ax.mapscene:StopMusic(fadeOut, bForce)
     local music = self.music
     ax.util:PrintDebug("[MAPSCENE] StopMusic called (fadeOut=" .. tostring(fadeOut) .. ", force=" .. tostring(bForce) .. ")")
@@ -265,7 +267,7 @@ function ax.mapscene:ResetMusic()
 end
 
 --- Start map scene music.
--- @param path string
+---@param path string
 function ax.mapscene:StartMusic(path)
     local music = self.music
     local resolveId = music.pendingResolveId or music.resolveId or 0
@@ -333,8 +335,8 @@ function ax.mapscene:StartMusic(path)
 end
 
 --- Determine if music should currently play.
--- @param pathOverride string|nil
--- @return boolean
+---@param pathOverride string|nil
+---@return boolean
 function ax.mapscene:ShouldPlayMusic(pathOverride)
     if ( !self:ShouldRenderMapScene(ax.client) ) then return false end
 
@@ -514,7 +516,8 @@ function ax.mapscene:UpdateMusic()
 end
 
 --- Choose the next scene based on config.
--- @return table|nil, number|nil
+---@return table|nil
+---@return number|nil
 function ax.mapscene:PickNextScene()
     local scenes = self.scenes
     if ( !istable(scenes) or #scenes < 1 ) then return nil end
@@ -557,8 +560,8 @@ function ax.mapscene:PickNextScene()
 end
 
 --- Start transitioning to a scene.
--- @param scene table
--- @param index number
+---@param scene table
+---@param index number
 function ax.mapscene:BeginScene(scene, index)
     local now = CurTime()
     local duration = ax.config:Get("map.scene.time", 30)
@@ -585,9 +588,9 @@ end
 local view = {}
 
 --- Update and return the map scene view override.
--- @param client Player
--- @param patch table
--- @return table|nil
+---@param client Player
+---@param patch table
+---@return table|nil
 function ax.mapscene:ApplyView(client, patch)
     if ( !self:ShouldRenderMapScene(client) ) then
         self:SendPVS(nil)
@@ -680,7 +683,7 @@ function ax.mapscene:ApplyView(client, patch)
 end
 
 --- Send PVS origin to the server (or clear it).
--- @param origin Vector|nil
+---@param origin Vector|nil
 function ax.mapscene:SendPVS(origin, bForce)
     local minInterval = 0.5
     local minDistSqr = 256

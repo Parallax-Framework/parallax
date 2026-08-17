@@ -9,8 +9,8 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
+---@class ax.mapscene
 --- Map scene commands.
--- @module ax.mapscene
 
 local function BuildSceneFromClient(client, name, weight, tagString)
     local tags = ax.mapscene:ParseTags(tagString or "")

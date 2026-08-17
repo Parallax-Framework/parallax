@@ -9,14 +9,14 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
+---@class ax.mapscene
 --- Map scene networking (client).
--- @module ax.mapscene
 
 ax.mapscene = ax.mapscene or {}
 ax.mapscene.pendingSync = ax.mapscene.pendingSync or {}
 
 --- Apply a decoded payload to client state.
--- @param payload table
+---@param payload table
 function ax.mapscene:ApplyPayload(payload)
     if ( !istable(payload) ) then return end
 
@@ -25,7 +25,7 @@ function ax.mapscene:ApplyPayload(payload)
 end
 
 --- Handle a compressed sync payload.
--- @param compressed string
+---@param compressed string
 function ax.mapscene:HandleSyncPayload(compressed)
     if ( !isstring(compressed) or compressed == "" ) then return end
 

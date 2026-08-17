@@ -9,10 +9,8 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
---- Shared client-side radial menu utilities and base panel rendering.
--- Provides common geometry helpers, easing, glass rendering, and a reusable
--- panel class for schema and framework radial menus.
--- @module ax.radialmenu
+---@class ax.radialmenu
+--- Shared client-side radial menu utilities and base panel rendering. Provides common geometry helpers, easing, glass rendering, and a reusable panel class for schema and framework radial menus.
 
 ax.radialmenu = ax.radialmenu or {}
 

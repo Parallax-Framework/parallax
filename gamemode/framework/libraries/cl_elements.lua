@@ -9,10 +9,8 @@
     Attribution is required. If you use or modify this file, you must retain this notice.
 ]]
 
---- Client-side HUD element registry and default framework elements.
--- Provides a configurable rendering pipeline so schemas and modules can add or
--- override HUD pieces without editing framework hooks directly.
--- @module ax.elements
+---@class ax.elements
+--- Client-side HUD element registry and default framework elements. Provides a configurable rendering pipeline so schemas and modules can add or override HUD pieces without editing framework hooks directly.
 
 ax.elements = ax.elements or {}
 ax.elements.stored = ax.elements.stored or {}
@@ -47,10 +45,10 @@ local function SortElements()
 end
 
 --- Registers a HUD element.
--- @realm client
--- @param uniqueID string Stable identifier for the element.
--- @param data table Element definition. Supports order, option, enabled, ShouldDraw, Think, Paint.
--- @return table|nil element The registered element, or nil when invalid.
+---@realm client
+---@param uniqueID string Stable identifier for the element.
+---@param data table Element definition. Supports order, option, enabled, ShouldDraw, Think, Paint.
+---@return table|nil element The registered element, or nil when invalid.
 function ax.elements:Register(uniqueID, data)
     if ( !isstring(uniqueID) or uniqueID == "" ) then return end
     if ( !istable(data) ) then return end
@@ -66,8 +64,8 @@ function ax.elements:Register(uniqueID, data)
 end
 
 --- Removes a HUD element from the registry.
--- @realm client
--- @param uniqueID string Element identifier.
+---@realm client
+---@param uniqueID string Element identifier.
 function ax.elements:Unregister(uniqueID)
     if ( !isstring(uniqueID) or uniqueID == "" ) then return end
 
@@ -76,24 +74,24 @@ function ax.elements:Unregister(uniqueID)
 end
 
 --- Gets a HUD element by identifier.
--- @realm client
--- @param uniqueID string Element identifier.
--- @return table|nil element The registered element.
+---@realm client
+---@param uniqueID string Element identifier.
+---@return table|nil element The registered element.
 function ax.elements:Get(uniqueID)
     return self.stored[uniqueID]
 end
 
 --- Gets all registered HUD elements.
--- @realm client
--- @return table elements Registry table keyed by unique identifier.
+---@realm client
+---@return table elements Registry table keyed by unique identifier.
 function ax.elements:GetAll()
     return self.stored
 end
 
 --- Changes the draw order of a registered element.
--- @realm client
--- @param uniqueID string Element identifier.
--- @param order number New draw order. Lower draws earlier.
+---@realm client
+---@param uniqueID string Element identifier.
+---@param order number New draw order. Lower draws earlier.
 function ax.elements:SetOrder(uniqueID, order)
     local element = self:Get(uniqueID)
     if ( !element ) then return end
@@ -103,10 +101,10 @@ function ax.elements:SetOrder(uniqueID, order)
 end
 
 --- Returns whether an element is currently enabled.
--- @realm client
--- @param element table Element definition.
--- @param context table Paint context.
--- @return boolean bEnabled Whether the element should be considered for drawing.
+---@realm client
+---@param element table Element definition.
+---@param context table Paint context.
+---@return boolean bEnabled Whether the element should be considered for drawing.
 function ax.elements:IsEnabled(element, context)
     if ( !istable(element) or element.enabled == false ) then return false end
 
@@ -122,7 +120,7 @@ function ax.elements:IsEnabled(element, context)
 end
 
 --- Paints all registered HUD elements.
--- @realm client
+---@realm client
 function ax.elements:PaintHUD()
     if ( ax.option:Get("hud.elements.enabled", true) == false ) then return end
 
@@ -152,9 +150,9 @@ function ax.elements:PaintHUD()
 end
 
 --- Builds the default interaction trace used by the TargetID element.
--- @realm client
--- @param client Player Local player.
--- @return table trace Hull trace result.
+---@realm client
+---@param client Player Local player.
+---@return table trace Hull trace result.
 function ax.elements:GetTargetTrace(client)
     local distance = ax.option:Get("hud.targetid.distance", 96)
     distance = math.Clamp(tonumber(distance) or 96, 32, 512)
@@ -170,19 +168,19 @@ function ax.elements:GetTargetTrace(client)
 end
 
 --- Resolves the entity that should be used for display data.
--- @realm client
--- @param entity Entity Traced entity.
--- @return Entity entity Display entity.
+---@realm client
+---@param entity Entity Traced entity.
+---@return Entity entity Display entity.
 function ax.elements:GetDisplayEntity(entity)
     return ax.util:GetPlayerFromAttachedRagdoll(entity) or entity
 end
 
 --- Gets the default display text for an entity.
--- @realm client
--- @param entity Entity Display entity.
--- @return string|nil text Display text.
--- @return Color|nil color Display color.
--- @return boolean|nil bShouldFlash Whether the text should softly flash.
+---@realm client
+---@param entity Entity Display entity.
+---@return string|nil text Display text.
+---@return Color|nil color Display color.
+---@return boolean|nil bShouldFlash Whether the text should softly flash.
 function ax.elements:GetEntityDisplayText(entity)
     local target = entity
 
@@ -221,9 +219,9 @@ function ax.elements:GetEntityDisplayText(entity)
 end
 
 --- Gets the default description for a TargetID entity.
--- @realm client
--- @param entity Entity Display entity.
--- @return string|nil description Description text.
+---@realm client
+---@param entity Entity Display entity.
+---@return string|nil description Description text.
 function ax.elements:GetEntityDisplayDescription(entity)
     local target = self:GetDisplayEntity(entity)
     local itemTable = target.GetItemTable and target:GetItemTable() or nil
@@ -242,31 +240,31 @@ function ax.elements:GetEntityDisplayDescription(entity)
 end
 
 --- Draws centered text with a soft shadow.
--- @realm client
--- @param text string Text to draw.
--- @param font string Font name.
--- @param x number Screen X.
--- @param y number Screen Y.
--- @param color Color Text color.
--- @param alpha number Text alpha.
--- @param shadowAlpha number Shadow alpha.
+---@realm client
+---@param text string Text to draw.
+---@param font string Font name.
+---@param x number Screen X.
+---@param y number Screen Y.
+---@param color Color Text color.
+---@param alpha number Text alpha.
+---@param shadowAlpha number Shadow alpha.
 function ax.elements:DrawText(text, font, x, y, color, alpha, shadowAlpha)
     draw.SimpleText(text, font, x + 1, y + 1, ColorAlpha(DEFAULT_SHADOW_COLOR, shadowAlpha), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
     draw.SimpleText(text, font, x, y, ColorAlpha(color, alpha), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 end
 
 --- Draws wrapped centered lines and returns the updated line count.
--- @realm client
--- @param text string Text to wrap and draw.
--- @param font string Font name.
--- @param x number Screen X.
--- @param y number Starting Y.
--- @param color Color Text color.
--- @param alpha number Base alpha.
--- @param lineCount number Current line count.
--- @param maxWidth number Maximum wrapped width.
--- @param lineSpacing number Vertical line spacing.
--- @return number lineCount Updated line count.
+---@realm client
+---@param text string Text to wrap and draw.
+---@param font string Font name.
+---@param x number Screen X.
+---@param y number Starting Y.
+---@param color Color Text color.
+---@param alpha number Base alpha.
+---@param lineCount number Current line count.
+---@param maxWidth number Maximum wrapped width.
+---@param lineSpacing number Vertical line spacing.
+---@return number lineCount Updated line count.
 function ax.elements:DrawWrappedLines(text, font, x, y, color, alpha, lineCount, maxWidth, lineSpacing)
     if ( !isstring(text) or text == "" ) then return lineCount end
 
@@ -287,15 +285,13 @@ function ax.elements:DrawWrappedLines(text, font, x, y, color, alpha, lineCount,
     return lineCount
 end
 
---- Creates a simple TargetID line drawing context.
--- Modules and schemas can use this to add tooltip lines without managing fonts,
--- wrapping, shadows, alpha, or line counters manually.
--- @realm client
--- @param x number Screen X.
--- @param y number Screen Y.
--- @param alpha number Current TargetID alpha.
--- @param data table|nil Optional overrides: font, maxWidth, lineSpacing, lines.
--- @return table context TargetID drawing context.
+--- Creates a simple TargetID line drawing context. Modules and schemas can use this to add tooltip lines without managing fonts, wrapping, shadows, alpha, or line counters manually.
+---@realm client
+---@param x number Screen X.
+---@param y number Screen Y.
+---@param alpha number Current TargetID alpha.
+---@param data? table|nil Optional overrides: font, maxWidth, lineSpacing, lines.
+---@return table context TargetID drawing context.
 function ax.elements:CreateTargetContext(x, y, alpha, data)
     data = istable(data) and data or {}
 
@@ -312,13 +308,13 @@ function ax.elements:CreateTargetContext(x, y, alpha, data)
 end
 
 --- Adds one line to a TargetID context.
--- @realm client
--- @param context table TargetID context from CreateTargetContext.
--- @param text string Text to draw. Empty text is ignored.
--- @param color Color|nil Text color.
--- @param data table|nil Optional overrides: font, maxWidth, bNoWrap.
--- @return table context The same context for chaining.
--- @usage ax.elements:AddTargetLine(context, "Locked", Color(200, 80, 80))
+---@realm client
+---@param context table TargetID context from CreateTargetContext.
+---@param text string Text to draw. Empty text is ignored.
+---@param color Color|nil Text color.
+---@param data? table|nil Optional overrides: font, maxWidth, bNoWrap.
+---@return table context The same context for chaining.
+---@usage ax.elements:AddTargetLine(context, "Locked", Color(200, 80, 80))
 function ax.elements:AddTargetLine(context, text, color, data)
     if ( !istable(context) ) then return context end
     if ( !isstring(text) or text == "" ) then return context end
@@ -336,12 +332,11 @@ function ax.elements:AddTargetLine(context, text, color, data)
     return context
 end
 
---- Adds multiple TargetID lines from simple tables.
--- Each line supports text, color, font, maxWidth, and bNoWrap.
--- @realm client
--- @param context table TargetID context from CreateTargetContext.
--- @param lines table Array of line definitions.
--- @return table context The same context for chaining.
+--- Adds multiple TargetID lines from simple tables. Each line supports text, color, font, maxWidth, and bNoWrap.
+---@realm client
+---@param context table TargetID context from CreateTargetContext.
+---@param lines table Array of line definitions.
+---@return table context The same context for chaining.
 function ax.elements:AddTargetLines(context, lines)
     if ( !istable(context) or !istable(lines) ) then return context end
 
@@ -357,30 +352,20 @@ function ax.elements:AddTargetLines(context, lines)
     return context
 end
 
---- Builds TargetID line definitions from a hook result.
--- Use this from modules/schemas when you want to provide tooltip lines without
--- handling any drawing yourself:
--- ```lua
--- function MODULE:GetTargetIDLines(entity)
---     if ( !entity:IsDoor() ) then return end
---
---     return {
---         { text = "Locked", color = Color(200, 80, 80) },
---         { text = "Owned by you", color = Color(100, 200, 100) },
---     }
--- end
--- ```
--- @realm client
--- @param entity Entity Display entity.
--- @return table|nil lines Array of line definitions.
+--- Builds TargetID line definitions from a hook result. Use this from modules/schemas when you want to provide tooltip lines without handling any drawing yourself: ```lua function MODULE:GetTargetIDLines(entity) if ( !entity:IsDoor() ) then return end
+---
+--- return { { text = "Locked", color = Color(200, 80, 80) }, { text = "Owned by you", color = Color(100, 200, 100) }, } end ```
+---@realm client
+---@param entity Entity Display entity.
+---@return table|nil lines Array of line definitions.
 function GM:GetTargetIDLines(entity)
 end
 
 --- Adds lines returned from the GetTargetIDLines hook to a context.
--- @realm client
--- @param context table TargetID context from CreateTargetContext.
--- @param entity Entity Display entity.
--- @return table context The same context for chaining.
+---@realm client
+---@param context table TargetID context from CreateTargetContext.
+---@param entity Entity Display entity.
+---@return table context The same context for chaining.
 function ax.elements:AddHookedTargetLines(context, entity)
     if ( !istable(context) or !IsValid(entity) ) then return context end
 
@@ -395,9 +380,9 @@ function ax.elements:AddHookedTargetLines(context, entity)
 end
 
 --- Draws all queued TargetID lines and returns the updated line count.
--- @realm client
--- @param context table TargetID context from CreateTargetContext.
--- @return number lineCount Final line count.
+---@realm client
+---@param context table TargetID context from CreateTargetContext.
+---@return number lineCount Final line count.
 function ax.elements:DrawTargetLines(context)
     if ( !istable(context) ) then return 0 end
 
@@ -419,11 +404,11 @@ function ax.elements:DrawTargetLines(context)
 end
 
 --- Draws default TargetID extra lines for descriptions and entity extras.
--- @realm client
--- @param entity Entity Display entity.
--- @param x number Screen X.
--- @param y number Screen Y.
--- @param alpha number Current alpha.
+---@realm client
+---@param entity Entity Display entity.
+---@param x number Screen X.
+---@param y number Screen Y.
+---@param alpha number Current alpha.
 function ax.elements:PaintTargetIDExtra(entity, x, y, alpha)
     local target = self:GetDisplayEntity(entity)
     local context = self:CreateTargetContext(x, y, alpha)
@@ -446,8 +431,8 @@ function ax.elements:PaintTargetIDExtra(entity, x, y, alpha)
 end
 
 --- Paints the default TargetID HUD element.
--- @realm client
--- @param context table Paint context.
+---@realm client
+---@param context table Paint context.
 function ax.elements:PaintTargetID(context)
     local client = context.client
     local trace = self:GetTargetTrace(client)

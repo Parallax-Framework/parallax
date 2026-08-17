@@ -46,10 +46,10 @@ local function NotifyCallback(callback, ok, result, err)
 end
 
 --- Registers a Parallax usergroup and mirrors it to CAMI when available.
--- @realm shared
--- @param uniqueID string Stable lower-case usergroup identifier
--- @param data table Usergroup metadata
--- @return table|nil usergroup Registered usergroup data
+---@realm shared
+---@param uniqueID string Stable lower-case usergroup identifier
+---@param data table Usergroup metadata
+---@return table|nil usergroup Registered usergroup data
 function MODULE:RegisterUsergroup(uniqueID, data)
     uniqueID = NormalizeID(uniqueID)
     if ( !uniqueID ) then return nil end
@@ -92,9 +92,9 @@ function MODULE:RegisterUsergroup(uniqueID, data)
 end
 
 --- Returns a registered usergroup by identifier.
--- @realm shared
--- @param uniqueID string Usergroup identifier
--- @return table|nil usergroup Usergroup data
+---@realm shared
+---@param uniqueID string Usergroup identifier
+---@return table|nil usergroup Usergroup data
 function MODULE:GetUsergroup(uniqueID)
     uniqueID = NormalizeID(uniqueID)
     if ( !uniqueID ) then return nil end
@@ -103,15 +103,15 @@ function MODULE:GetUsergroup(uniqueID)
 end
 
 --- Returns all registered usergroups.
--- @realm shared
--- @return table usergroups Usergroup registry keyed by unique ID
+---@realm shared
+---@return table usergroups Usergroup registry keyed by unique ID
 function MODULE:GetUsergroups()
     return self.usergroups
 end
 
 --- Returns all registered usergroups sorted by level then name.
--- @realm shared
--- @return table usergroups Sorted usergroup array
+---@realm shared
+---@return table usergroups Sorted usergroup array
 function MODULE:GetSortedUsergroups()
     local usergroups = {}
 
@@ -135,11 +135,11 @@ function MODULE:GetSortedUsergroups()
 end
 
 --- Normalizes a usergroup identifier, accepting exact names and unambiguous partial matches.
--- @realm shared
--- @param uniqueID string Usergroup identifier, display name, or partial match
--- @return string|nil uniqueID Normalized identifier
--- @return table|nil usergroup Usergroup data
--- @return string|nil err Failure reason
+---@realm shared
+---@param uniqueID string Usergroup identifier, display name, or partial match
+---@return string|nil uniqueID Normalized identifier
+---@return table|nil usergroup Usergroup data
+---@return string|nil err Failure reason
 function MODULE:NormalizeUsergroup(uniqueID)
     uniqueID = NormalizeID(uniqueID)
     if ( !uniqueID ) then
@@ -177,18 +177,18 @@ function MODULE:NormalizeUsergroup(uniqueID)
 end
 
 --- Returns whether a usergroup exists.
--- @realm shared
--- @param uniqueID string Usergroup identifier
--- @return boolean exists Whether the usergroup exists
+---@realm shared
+---@param uniqueID string Usergroup identifier
+---@return boolean exists Whether the usergroup exists
 function MODULE:IsUsergroup(uniqueID)
     local normalizedID = self:NormalizeUsergroup(uniqueID)
     return normalizedID != nil
 end
 
 --- Returns a usergroup's access level.
--- @realm shared
--- @param uniqueID string Usergroup identifier
--- @return number level Usergroup access level
+---@realm shared
+---@param uniqueID string Usergroup identifier
+---@return number level Usergroup access level
 function MODULE:GetUsergroupLevel(uniqueID)
     local _, usergroup = self:NormalizeUsergroup(uniqueID)
     if ( !istable(usergroup) ) then return 0 end
@@ -197,9 +197,9 @@ function MODULE:GetUsergroupLevel(uniqueID)
 end
 
 --- Returns a usergroup's target immunity value.
--- @realm shared
--- @param uniqueID string Usergroup identifier
--- @return number immunity Usergroup immunity value
+---@realm shared
+---@param uniqueID string Usergroup identifier
+---@return number immunity Usergroup immunity value
 function MODULE:GetUsergroupImmunity(uniqueID)
     local _, usergroup = self:NormalizeUsergroup(uniqueID)
     if ( !istable(usergroup) ) then return 0 end
@@ -208,10 +208,10 @@ function MODULE:GetUsergroupImmunity(uniqueID)
 end
 
 --- Returns whether a usergroup inherits from another usergroup.
--- @realm shared
--- @param uniqueID string Child usergroup identifier
--- @param parentID string Parent usergroup identifier
--- @return boolean inherits Whether the child inherits from the parent
+---@realm shared
+---@param uniqueID string Child usergroup identifier
+---@param parentID string Parent usergroup identifier
+---@return boolean inherits Whether the child inherits from the parent
 function MODULE:UsergroupInherits(uniqueID, parentID)
     local childID = self:NormalizeUsergroup(uniqueID)
     local normalizedParentID = self:NormalizeUsergroup(parentID)
@@ -235,9 +235,9 @@ function MODULE:UsergroupInherits(uniqueID, parentID)
 end
 
 --- Normalizes a SteamID or SteamID64 into SteamID64 form.
--- @realm shared
--- @param identifier string SteamID or SteamID64
--- @return string|nil steamID64 Normalized SteamID64
+---@realm shared
+---@param identifier string SteamID or SteamID64
+---@return string|nil steamID64 Normalized SteamID64
 function MODULE:NormalizeSteamID64(identifier)
     identifier = string.Trim(tostring(identifier or ""))
     if ( identifier == "" ) then return nil end
@@ -257,9 +257,9 @@ function MODULE:NormalizeSteamID64(identifier)
 end
 
 --- Returns the best known Parallax usergroup for a player.
--- @realm shared
--- @param client Player Target player
--- @return string usergroup Usergroup identifier
+---@realm shared
+---@param client Player Target player
+---@return string usergroup Usergroup identifier
 function MODULE:GetPlayerUsergroup(client)
     if ( !ax.util:IsValidPlayer(client) ) then return "user" end
     if ( client:IsListenServerHost() ) then return "superadmin" end
@@ -277,26 +277,26 @@ function MODULE:GetPlayerUsergroup(client)
 end
 
 --- Returns a player's access level.
--- @realm shared
--- @param client Player Target player
--- @return number level Player access level
+---@realm shared
+---@param client Player Target player
+---@return number level Player access level
 function MODULE:GetPlayerUsergroupLevel(client)
     return self:GetUsergroupLevel(self:GetPlayerUsergroup(client))
 end
 
 --- Returns a player's target immunity value.
--- @realm shared
--- @param client Player Target player
--- @return number immunity Player immunity value
+---@realm shared
+---@param client Player Target player
+---@return number immunity Player immunity value
 function MODULE:GetPlayerUsergroupImmunity(client)
     return self:GetUsergroupImmunity(self:GetPlayerUsergroup(client))
 end
 
 --- Applies a player's stored usergroup to Garry's Mod runtime state.
--- @realm server
--- @param client Player Target player
--- @param usergroup string|nil Optional usergroup override
--- @return string usergroup Applied usergroup
+---@realm server
+---@param client Player Target player
+---@param usergroup? string|nil Optional usergroup override
+---@return string usergroup Applied usergroup
 function MODULE:SyncPlayerUsergroup(client, usergroup)
     if ( !SERVER or !ax.util:IsValidPlayer(client) ) then return "user" end
 
@@ -313,11 +313,11 @@ function MODULE:SyncPlayerUsergroup(client, usergroup)
 end
 
 --- Checks whether a player can use a CAMI privilege with a local fallback.
--- @realm shared
--- @param client Player|nil Player to check; console always passes
--- @param privilege string CAMI privilege name
--- @param fallback string Fallback access level: user, admin, or superadmin
--- @return boolean allowed Whether access is granted
+---@realm shared
+---@param client Player|nil Player to check; console always passes
+---@param privilege string CAMI privilege name
+---@param fallback string Fallback access level: user, admin, or superadmin
+---@return boolean allowed Whether access is granted
 function MODULE:CanAccessPrivilege(client, privilege, fallback)
     if ( !ax.util:IsValidPlayer(client) ) then return true end
 
@@ -343,11 +343,11 @@ function MODULE:CanAccessPrivilege(client, privilege, fallback)
 end
 
 --- Checks whether an actor can target a player for usergroup management.
--- @realm server
--- @param actor Player|nil Actor player; console always passes
--- @param target Player Target player
--- @return boolean allowed Whether targeting is allowed
--- @return string|nil reason Failure reason
+---@realm server
+---@param actor Player|nil Actor player; console always passes
+---@param target Player Target player
+---@return boolean allowed Whether targeting is allowed
+---@return string|nil reason Failure reason
 function MODULE:CanTarget(actor, target)
     if ( !ax.util:IsValidPlayer(target) ) then
         return false, "You must specify a valid target player."
@@ -373,11 +373,11 @@ function MODULE:CanTarget(actor, target)
 end
 
 --- Checks whether an actor can assign a usergroup.
--- @realm server
--- @param actor Player|nil Actor player; console always passes
--- @param usergroup string Usergroup identifier
--- @return boolean allowed Whether assignment is allowed
--- @return string|nil reason Failure reason
+---@realm server
+---@param actor Player|nil Actor player; console always passes
+---@param usergroup string Usergroup identifier
+---@return boolean allowed Whether assignment is allowed
+---@return string|nil reason Failure reason
 function MODULE:CanAssignUsergroup(actor, usergroup)
     local normalizedID, group, err = self:NormalizeUsergroup(usergroup)
     if ( !normalizedID or !istable(group) ) then
@@ -396,14 +396,14 @@ function MODULE:CanAssignUsergroup(actor, usergroup)
 end
 
 --- Checks whether an actor can change a target player to a usergroup.
--- @realm server
--- @param actor Player|nil Actor player; console always passes
--- @param target Player Target player
--- @param usergroup string Desired usergroup
--- @return boolean allowed Whether management is allowed
--- @return string|nil reason Failure reason
--- @return string|nil uniqueID Normalized usergroup identifier
--- @return table|nil group Usergroup data
+---@realm server
+---@param actor Player|nil Actor player; console always passes
+---@param target Player Target player
+---@param usergroup string Desired usergroup
+---@return boolean allowed Whether management is allowed
+---@return string|nil reason Failure reason
+---@return string|nil uniqueID Normalized usergroup identifier
+---@return table|nil group Usergroup data
 function MODULE:CanManageUsergroup(actor, target, usergroup)
     local normalizedID, group, err = self:NormalizeUsergroup(usergroup)
     if ( !normalizedID or !istable(group) ) then
@@ -433,13 +433,13 @@ function MODULE:CanManageUsergroup(actor, target, usergroup)
 end
 
 --- Sets an online player's usergroup through the authoritative admin API.
--- @realm server
--- @param actor Player|nil Actor player; console may be nil
--- @param target Player Target player
--- @param usergroup string Desired usergroup
--- @param callback function|nil Optional callback receiving (ok, result, err)
--- @return boolean ok Whether the change started/succeeded
--- @return string|nil err Failure reason when ok is false
+---@realm server
+---@param actor Player|nil Actor player; console may be nil
+---@param target Player Target player
+---@param usergroup string Desired usergroup
+---@param callback? function|nil Optional callback receiving (ok, result, err)
+---@return boolean ok Whether the change started/succeeded
+---@return string|nil err Failure reason when ok is false
 function MODULE:SetPlayerUsergroup(actor, target, usergroup, callback)
     if ( !SERVER ) then return false, "Usergroups can only be changed on the server." end
 
@@ -490,13 +490,13 @@ function MODULE:SetPlayerUsergroup(actor, target, usergroup, callback)
 end
 
 --- Sets an offline player's persisted usergroup by SteamID64.
--- @realm server
--- @param actor Player|nil Actor player; console may be nil
--- @param identifier string SteamID or SteamID64
--- @param usergroup string Desired usergroup
--- @param callback function|nil Optional callback receiving (ok, result, err)
--- @return boolean ok Whether the request was accepted
--- @return string|nil err Failure reason when request validation fails
+---@realm server
+---@param actor Player|nil Actor player; console may be nil
+---@param identifier string SteamID or SteamID64
+---@param usergroup string Desired usergroup
+---@param callback? function|nil Optional callback receiving (ok, result, err)
+---@return boolean ok Whether the request was accepted
+---@return string|nil err Failure reason when request validation fails
 function MODULE:SetSteamIDUsergroup(actor, identifier, usergroup, callback)
     if ( !SERVER ) then return false, "Usergroups can only be changed on the server." end
 

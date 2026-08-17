@@ -131,27 +131,18 @@ function ax.item:RunAction(client, item, action, context, callback)
     return true
 end
 
---- The single transaction that moves (or repositions) an item. Every scenario that
--- changes an item's placement - drag-and-drop, equip, world drop/pickup, a reward
--- grant - goes through this; there is no other way to change `ax_items.placement`
--- / `inventory_id`.
--- Check order: client access to both endpoints -> anti-dupe lock -> item-level
--- "CanTransferItem" hook -> `from` type's `CanRemoveItem` -> weight capacity + `to`
--- type's `CanReceiveItem` -> placement resolution/validation (skipped for
--- non-addressed types) -> depth-1 nesting. Memory is only mutated after the database
--- write confirms - failures before that point never touch `self.items`, so there is
--- nothing to roll back on a DB error, only the lock to release.
--- @realm server
--- @param item table The item instance to move.
--- @param fromInventory table|number|nil Source inventory (instance, id, or 0/nil for world).
--- @param toInventory table|number|nil Destination inventory (instance, id, or 0/nil for world).
--- @param placement table|nil Target placement for addressed types - `{ gridX, gridY }`
--- or `{ slotID }`. Omit to auto-place (grid types only - `FindEmptySlot`).
--- @param client Player|nil The player initiating the transfer. Nil means a trusted/system
--- call (reward grants, admin commands, migrations) - the access gate is skipped.
--- @param callback function|nil Called as `callback(success, reasonCode|nil)`.
--- @return boolean|nil False on synchronous validation failure; nil once the async DB path has started (result via callback).
--- @return string|nil A phrase-key reason (e.g. `"inventory.reason.no_space"`) when returning false.
+--- The single transaction that moves (or repositions) an item. Every scenario that changes an item's placement - drag-and-drop, equip, world drop/pickup, a reward grant - goes through this; there is no other way to change `ax_items.placement` / `inventory_id`. Check order: client access to both endpoints -> anti-dupe lock -> item-level "CanTransferItem" hook -> `from` type's `CanRemoveItem` -> weight capacity + `to` type's `CanReceiveItem` -> placement resolution/validation (skipped for non-addressed types) -> depth-1 nesting. Memory is only mutated after the database write confirms - failures before that point never touch `self.items`, so there is nothing to roll back on a DB error, only the lock to release.
+---@realm server
+---@param item table The item instance to move.
+---@param fromInventory table|number|nil Source inventory (instance, id, or 0/nil for world).
+---@param toInventory table|number|nil Destination inventory (instance, id, or 0/nil for world).
+---@param placement table|nil Target placement for addressed types - `{ gridX, gridY }`
+--- or `{ slotID }`. Omit to auto-place (grid types only - `FindEmptySlot`).
+---@param client Player|nil The player initiating the transfer. Nil means a trusted/system
+--- call (reward grants, admin commands, migrations) - the access gate is skipped.
+---@param callback function|nil Called as `callback(success, reasonCode|nil)`.
+---@return boolean|nil # False on synchronous validation failure; nil once the async DB path has started (result via callback).
+---@return string|nil # A phrase-key reason (e.g. `"inventory.reason.no_space"`) when returning false.
 function ax.item:Transfer(item, fromInventory, toInventory, placement, client, callback)
     if ( !istable(item) ) then
         return false, "inventory.reason.invalid"
