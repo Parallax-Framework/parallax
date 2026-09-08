@@ -51,6 +51,8 @@ if ( SERVER ) then
         local item = self:GetItemTable()
         if ( !istable(item) ) then return end
 
+        if ( ax.item:OpenWorldActions(activator, self) ) then return end
+
         local ent = self
         entTable.axPickupPending = true
 
@@ -87,7 +89,7 @@ if ( SERVER ) then
     end
 
     function ENT:OnRemove()
-        if ( self:GetTable().axTakeInProgress ) then return end
+        if ( self:GetTable().axTakeInProgress or self:GetTable().axItemRemoving ) then return end
 
         local id = self:GetItemID()
         local item = ax.item.instances[id]

@@ -17,9 +17,7 @@ local ACTION_CALLBACKS = {
     unequip = "OnUnequip",
 }
 
---- Destroys an item instance outright - the Parallax counterpart to Helix's `item:Remove()`.
--- An item held in an inventory is removed through that inventory, so receivers are notified and the database row is deleted along the same path as any other removal. An item lying in the world has its `ax_item` entity removed instead, which is what deletes its row (see `ENT:OnRemove`), and the removal is broadcast so clients drop their copy of the instance.
--- The item's `OnRemoved` callback fires either way.
+--- Destroys an item through its inventory or deletes its world record before entity cleanup; OnRemoved fires on successful removal.
 ---@realm server
 ---@param item table|number The item instance, or an item ID.
 ---@param callback? function Called as `callback(bSuccess)` once removal has been attempted.
@@ -48,23 +46,7 @@ function ax.item:Remove(item, callback)
         return true
     end
 
-    item:Call("OnRemoved")
-
-    local worldEntities = ents.FindByClass("ax_item")
-    for i = 1, #worldEntities do
-        local entity = worldEntities[i]
-        if ( entity:GetItemID() == item.id ) then
-            SafeRemoveEntity(entity)
-        end
-    end
-
-    self.instances[item.id] = nil
-
-    ax.net:Start(nil, "inventory.item.remove", 0, item.id)
-
-    if ( isfunction(callback) ) then callback(true) end
-
-    return true
+    return self:RemoveWorldItem(item, callback)
 end
 
 function ax.item:RunAction(client, item, action, context, callback)
@@ -106,11 +88,11 @@ function ax.item:RunAction(client, item, action, context, callback)
     end
 
     if ( bRemoveAfter == true ) then
-        local inventory = ax.inventory.instances[item:GetInventoryID()]
-        if ( istable(inventory) ) then
-            inventory:RemoveItem(item.id)
+        if ( item:GetInventoryID() == 0 ) then
+            self:RemoveWorldItem(item)
         else
-            ax.util:PrintError("Failed to remove item ID " .. item.id .. " after action '" .. action .. "' because its inventory does not exist.")
+            local inventory = ax.inventory.instances[item:GetInventoryID()]
+            if ( istable(inventory) ) then inventory:RemoveItem(item.id) end
         end
     end
 

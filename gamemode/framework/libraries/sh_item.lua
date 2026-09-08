@@ -204,6 +204,8 @@ end
 function ax.item:CreateDefaultDropAction()
     return {
         name = "Drop",
+        world = false,
+        inventory = true,
         icon = "parallax/icons/caret-down-circle.png",
         order = 1000,
         CanUse = function(action, client, item)
@@ -254,6 +256,8 @@ end
 function ax.item:CreateDefaultTakeAction()
     return {
         name = "Take",
+        world = true,
+        inventory = false,
         icon = "parallax/icons/hand-up.png",
         order = 0,
         CanUse = function(action, client, item, context)

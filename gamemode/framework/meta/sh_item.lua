@@ -380,7 +380,7 @@ end
 --- Registers a named action on this item class. Actions are stored globally in `ax.item.actions[self.class]` rather than on the instance, so they are shared across all instances of the same class. When the class has a base, the base class actions are copied first so inheritance is preserved. Passing an empty or invalid `name` or non-table `actionData` returns immediately.
 ---@realm shared
 ---@param name string The unique action identifier (e.g. `"use"`, `"drop"`, `"eat"`).
----@param actionData table The action definition table. Should contain at minimum a `label` string and an `OnRun` callback function.
+---@param actionData table The action definition table. Set world=true for dropped actions and inventory=false for world-only actions. Should contain at minimum a `label` string and an `OnRun` callback function.
 ---@usage item:AddAction("eat", { label = "Eat", OnRun = function(self) ... end })
 function item:AddAction(name, actionData)
     if ( !isstring(name) or name == "" ) then return end
@@ -415,6 +415,17 @@ end
 ---@return boolean # True if the interaction is allowed, false otherwise.
 ---@return string|nil # A human-readable reason when returning false.
 function item:CanInteract(client, action, silent, context)
+    local definition = self:GetActions()[action]
+    if ( !istable(definition) ) then return false end
+
+    local bWorld = istable(context) and IsValid(context.entity)
+    if ( bWorld ) then
+        if ( definition.world != true ) then return false end
+        if ( SERVER and !ax.item:CanInteractWorld(client, context.entity, self) ) then return false end
+    elseif ( definition.inventory == false or self:GetInventoryID() == 0 ) then
+        return false
+    end
+
     local try, catch = hook.Run("CanPlayerInteractItem", client, self, action, context)
     if ( try == false ) then
         if ( isstring(catch) and #catch > 0 and !silent ) then

@@ -48,14 +48,14 @@ ITEM:AddAction("drink", {
   name = "Drink",
   description = "Drink the water bottle.",
   icon = "icon16/drink.png",
-  OnRun = function(action, item, client)
+  OnRun = function(action, client, item)
     if ( SERVER ) then
       client:SetHealth(math.min(client:Health() + 5, client:GetMaxHealth()))
       client:Notify("You drink the water and feel refreshed!", "info")
     end
     return true -- remove the item after use
   end,
-  CanUse = function(action, item, client)
+  CanUse = function(action, client, item)
     return true -- always allow
   end
 })
@@ -228,3 +228,21 @@ Items are added to or removed from player inventories via schema APIs. For custo
   * Run `developer 1` in console to enable Parallax debug output
   * Run `ax_debug_realm 3` to see both client and server realm logs (`1` = client, `2` = server, `3` = both)
 * Ensure models exist in content addons and paths are correct.
+
+### Dropped-item actions
+
+Actions default to inventory-only. Set `world = true` to also offer an action on a dropped item; set `inventory = false` to make it world-only. The built-in pickup action is world-only. Existing `CanUse` hooks still apply, and callbacks receive `context.entity` for world interactions.
+
+```lua
+ITEM:AddAction("inspect_world", {
+    name = "Inspect",
+    world = true,
+    inventory = false,
+    OnRun = function(action, client, item, context)
+        client:Notify("You inspect " .. item.name .. ".")
+        return false
+    end,
+})
+```
+
+Press Use to open the menu when at least one custom world action is permitted. Pick up transfers immediately; items without custom world actions retain hold-to-pick-up. Returning `true` from `OnRun` consumes the item, including when dropped. Return `false` or nothing to retain it. World availability is evaluated on the server; opening a menu does not reserve an item, and all conditions are checked again on selection. Action callbacks should finish their mutations synchronously or manage their own locks for delayed work.
