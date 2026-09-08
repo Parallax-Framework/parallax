@@ -521,13 +521,8 @@ ax.net:Hook("inventory.item.remove", function(inventoryID, itemID)
         return
     end
 
-    for invItemID in pairs(inv.items) do
-        if ( invItemID == itemID ) then
-            inv.items[invItemID] = nil
-            ax.item.instances[invItemID] = nil
-            break
-        end
-    end
+    if ( istable(inv.items) ) then inv.items[itemID] = nil end
+    ax.item.instances[itemID] = nil
 
     if ( IsValid(ax.gui.inventory) ) then
         ax.gui.inventory:PopulateItems()

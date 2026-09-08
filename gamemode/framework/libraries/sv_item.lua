@@ -42,11 +42,11 @@ function ax.item:RunAction(client, item, action, context, callback)
 
     local bRemoveAfter = actionTable:OnRun(client, item, context)
     if ( bRemoveAfter == true ) then
-        local inventory = ax.inventory.instances[item:GetInventoryID()]
-        if ( istable(inventory) ) then
-            inventory:RemoveItem(item.id)
+        if ( item:GetInventoryID() == 0 ) then
+            self:RemoveWorldItem(item)
         else
-            ax.util:PrintError("Failed to remove item ID " .. item.id .. " after action '" .. action .. "' because its inventory does not exist.")
+            local inventory = ax.inventory.instances[item:GetInventoryID()]
+            if ( istable(inventory) ) then inventory:RemoveItem(item.id) end
         end
     end
 
